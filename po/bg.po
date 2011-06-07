@@ -1,15 +1,16 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
+# Alexander Shopov <ash@kambanaria.org>, 2011
+# Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-03-22 15:37+0000\n"
-"Last-Translator: al_shopov <ash@kambanaria.org>\n"
+"POT-Creation-Date: 2011-05-04 10:50+0100\n"
+"PO-Revision-Date: 2011-05-04 09:56+0000\n"
+"Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,8 +44,7 @@ msgid "False"
 msgstr "Лъжа"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
-#. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:180 ../src/pk-polkit-action-lookup.c:332
+#: ../client/pk-console.c:180
 msgid "Role"
 msgstr "Роля"
 
@@ -58,8 +58,7 @@ msgid "(seconds)"
 msgstr "(секунди)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:189 ../src/pk-polkit-action-lookup.c:346
+#: ../client/pk-console.c:189
 msgid "Command line"
 msgstr "Команден ред"
 
@@ -136,15 +135,11 @@ msgstr "Подробности за обновлението:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:345 ../client/pk-console.c:615
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
-#: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
-msgid_plural "Packages"
-msgstr[0] "Пакет"
-msgstr[1] "Пакети"
+msgstr "Пакети"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
@@ -201,7 +196,7 @@ msgstr "Издаден"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:515
+#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:524
 msgid "Updated"
 msgstr "Обновен"
 
@@ -397,179 +392,189 @@ msgstr "Подкоманди:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1234
+#: ../client/pk-console.c:1235
 msgid "Failed to get the time since this action was last completed"
 msgstr "Неуспешно получаване на времето от последно завършване на операцията"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
+#: ../client/pk-console.c:1277 ../client/pk-monitor.c:371
 msgid "Show the program version and exit"
 msgstr "Извеждане на версията на програмата и изход"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1280
 msgid "Set the filter, e.g. installed"
 msgstr "Задаване на филтър, напр. „инсталирани“"
 
 #. TRANSLATORS: command line argument, use a non-standard install prefix
-#: ../client/pk-console.c:1281
+#: ../client/pk-console.c:1283
 msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
 msgstr "Задаване на папката за инсталиране, напр „/“, „/mnt/ltsp“…"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1284
+#: ../client/pk-console.c:1286
 msgid "Exit without waiting for actions to complete"
 msgstr "Изход без изчакване на завършването на действията"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1287
+#: ../client/pk-console.c:1289
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "Инсталиране на пакетите без изчакване на потвърждение"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1290
+#: ../client/pk-console.c:1292
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr ""
 "Изпълняване на мрежовата команда при ненатоварен компютър като се ползва и "
 "по-малко ток"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1293
+#: ../client/pk-console.c:1295
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "Отпечатване на машинно четим изход без анимирани графични обекти"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1296
+#: ../client/pk-console.c:1298
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "Максималната възраст за временните файлове. „-1“ — без ограничение."
 
+#. TRANSLATORS: command line argument, --help
+#: ../client/pk-console.c:1301
+msgid "Show help options."
+msgstr ""
+
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1333
+#: ../client/pk-console.c:1331
+msgid "Failed to parse command line"
+msgstr ""
+
+#. TRANSLATORS: we failed to contact the daemon
+#: ../client/pk-console.c:1341
 msgid "Failed to contact PackageKit"
 msgstr "Неуспех при свързване с PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1381
+#: ../client/pk-console.c:1394
 msgid "The proxy could not be set"
 msgstr "Сървърът-посредник не може да бъде зададен"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1393
+#: ../client/pk-console.c:1406
 msgid "The install root could not be set"
 msgstr "Основната папка при инсталиране не може да е тази"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1405
+#: ../client/pk-console.c:1418
 msgid "The filter specified was invalid"
 msgstr "Указаният филтър е неправилен"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1424
+#: ../client/pk-console.c:1437
 msgid "A search type is required, e.g. name"
 msgstr "Трябва да укажете вида на търсенето, напр. по име"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1431 ../client/pk-console.c:1443
-#: ../client/pk-console.c:1455 ../client/pk-console.c:1467
+#: ../client/pk-console.c:1444 ../client/pk-console.c:1456
+#: ../client/pk-console.c:1468 ../client/pk-console.c:1480
 msgid "A search term is required"
 msgstr "Трябва да укажете дума за търсене"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1477
+#: ../client/pk-console.c:1490
 msgid "Invalid search type"
 msgstr "Неправилен вид търсене"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1483
+#: ../client/pk-console.c:1496
 msgid "A package name to install is required"
 msgstr "Трябва да укажете име на пакет за инсталиране"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1492
+#: ../client/pk-console.c:1505
 msgid "A filename to install is required"
 msgstr "Трябва да укажете име на файл за инсталиране"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1516
 msgid "A type, key_id and package_id are required"
 msgstr "Трябва да укажете вид, идентификатор на ключ и на пакет"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1514
+#: ../client/pk-console.c:1527
 msgid "A package name to remove is required"
 msgstr "Трябва да укажете име на пакет за деинсталиране"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1536
 msgid "A destination directory and the package names to download are required"
 msgstr ""
 "Трябва да укажете целевата папка и имената на пакетите, които да се изтеглят"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1530
+#: ../client/pk-console.c:1543
 msgid "Directory not found"
 msgstr "Папката не е открита"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1539
+#: ../client/pk-console.c:1552
 msgid "A licence identifier (eula-id) is required"
 msgstr "Трябва да укажете идентификатор на лиценз"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1563
 msgid "A transaction identifier (tid) is required"
 msgstr "Трябва да укажете идентификатор на транзакция (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1571
+#: ../client/pk-console.c:1584
 msgid "A package name to resolve is required"
 msgstr "Трябва да укажете име на пакет"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1582 ../client/pk-console.c:1593
+#: ../client/pk-console.c:1595 ../client/pk-console.c:1606
 msgid "A repository name is required"
 msgstr "Трябва да укажете име на хранилището"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1604
+#: ../client/pk-console.c:1617
 msgid "A repo name, parameter and value are required"
 msgstr "Трябва да укажете име на хранилище, параметър и стойност"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1621
+#: ../client/pk-console.c:1634
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Трябва да укажете действие, напр. „update-system“"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1628
+#: ../client/pk-console.c:1641
 msgid "A correct role is required"
 msgstr "Трябва да укажете правилна роля"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1638 ../client/pk-console.c:1652
-#: ../client/pk-console.c:1661 ../client/pk-console.c:1681
-#: ../client/pk-console.c:1690 ../client/pk-generate-pack.c:314
+#: ../client/pk-console.c:1651 ../client/pk-console.c:1665
+#: ../client/pk-console.c:1674 ../client/pk-console.c:1694
+#: ../client/pk-console.c:1703 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr "Трябва да укажете име на пакет"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1670
+#: ../client/pk-console.c:1683
 msgid "A package provide string is required"
 msgstr "Трябва да укажете име на пакет, предоставящ ресурса"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1714
+#: ../client/pk-console.c:1727
 msgid "A distribution name is required"
 msgstr "Трябва да укажете име на дистрибуция"
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1720
+#: ../client/pk-console.c:1733
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 "Трябва да укажете вида на надграждането — „minimal“ (минимално), „default“ "
@@ -577,13 +582,13 @@ msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1770
+#: ../client/pk-console.c:1783
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Опцията „%s“ не се поддържа"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1780
+#: ../client/pk-console.c:1793
 msgid "Command failed"
 msgstr "Неуспешна команда"
 
@@ -823,58 +828,58 @@ msgstr "Командата на PackageKit не е открита"
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:739
+#: ../contrib/command-not-found/pk-command-not-found.c:741
 msgid "command not found"
 msgstr "командата не е открита."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:757
+#: ../contrib/command-not-found/pk-command-not-found.c:759
 msgid "Similar command is:"
 msgstr "Подобна команда е:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:771
+#: ../contrib/command-not-found/pk-command-not-found.c:773
 msgid "Run similar command:"
 msgstr "Изпълняване на подобната команда:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:785
-#: ../contrib/command-not-found/pk-command-not-found.c:794
+#: ../contrib/command-not-found/pk-command-not-found.c:787
+#: ../contrib/command-not-found/pk-command-not-found.c:796
 msgid "Similar commands are:"
 msgstr "Подобни команди са:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:801
+#: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "Please choose a command to run"
 msgstr "Изберете командата за изпълнение"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:819
+#: ../contrib/command-not-found/pk-command-not-found.c:821
 msgid "The package providing this file is:"
 msgstr "Пакетът, който предоставя този файл, е:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:826
+#: ../contrib/command-not-found/pk-command-not-found.c:828
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Да се инсталира ли пакетът „%s“, който предоставя командата „%s“?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:853
+#: ../contrib/command-not-found/pk-command-not-found.c:855
 msgid "Packages providing this file are:"
 msgstr "Пакетите, които предоставят този файл са:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:863
+#: ../contrib/command-not-found/pk-command-not-found.c:865
 msgid "Suitable packages are:"
 msgstr "Подходящите пакети са:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:872
+#: ../contrib/command-not-found/pk-command-not-found.c:874
 msgid "Please choose a package to install"
 msgstr "Изберете пакета за инсталиране"
 
@@ -1048,7 +1053,7 @@ msgstr "В режим на симулация не се инсталират п�
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
-#: ../lib/packagekit-glib2/pk-console-shared.c:287
+#: ../lib/packagekit-glib2/pk-console-shared.c:296
 #, c-format
 msgid "Installing packages"
 msgstr "Инсталиране на пакети"
@@ -1182,474 +1187,474 @@ msgstr "Списък с пакети на PackageKit"
 msgid "PackageKit Service Pack"
 msgstr "Сервизен пакет на PackageKit"
 
-#: ../lib/packagekit-glib2/pk-console-shared.c:63
+#: ../lib/packagekit-glib2/pk-console-shared.c:64
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Въведете число от 1 до %i: "
 
 #. TRANSLATORS: more than one package could be found that matched, to follow
 #. is a list of possible packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:189
+#: ../lib/packagekit-glib2/pk-console-shared.c:198
 msgid "More than one package matches:"
 msgstr "Открит бе повече от един подобен пакет:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../lib/packagekit-glib2/pk-console-shared.c:200
+#: ../lib/packagekit-glib2/pk-console-shared.c:209
 msgid "Please choose the correct package: "
 msgstr "Изберете правилния пакет: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: ../lib/packagekit-glib2/pk-console-shared.c:255
+#: ../lib/packagekit-glib2/pk-console-shared.c:264
 msgid "Unknown state"
 msgstr "Неизвестно състояние"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: ../lib/packagekit-glib2/pk-console-shared.c:259
+#: ../lib/packagekit-glib2/pk-console-shared.c:268
 msgid "Starting"
 msgstr "Начало"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
-#: ../lib/packagekit-glib2/pk-console-shared.c:263
+#: ../lib/packagekit-glib2/pk-console-shared.c:272
 msgid "Waiting in queue"
 msgstr "Изчакване в опашка"
 
 #. TRANSLATORS: transaction state, just started
-#: ../lib/packagekit-glib2/pk-console-shared.c:267
+#: ../lib/packagekit-glib2/pk-console-shared.c:276
 msgid "Running"
 msgstr "Изпълнение"
 
 #. TRANSLATORS: transaction state, is querying data
-#: ../lib/packagekit-glib2/pk-console-shared.c:271
+#: ../lib/packagekit-glib2/pk-console-shared.c:280
 msgid "Querying"
 msgstr "Запитване"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:275
+#: ../lib/packagekit-glib2/pk-console-shared.c:284
 msgid "Getting information"
 msgstr "Получаване на информация"
 
 #. TRANSLATORS: transaction state, removing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:279
+#: ../lib/packagekit-glib2/pk-console-shared.c:288
 msgid "Removing packages"
 msgstr "Деинсталиране на пакeти"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:283
-#: ../lib/packagekit-glib2/pk-console-shared.c:661
+#: ../lib/packagekit-glib2/pk-console-shared.c:292
+#: ../lib/packagekit-glib2/pk-console-shared.c:670
 msgid "Downloading packages"
 msgstr "Изтегляне на пакети"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: ../lib/packagekit-glib2/pk-console-shared.c:291
+#: ../lib/packagekit-glib2/pk-console-shared.c:300
 msgid "Refreshing software list"
 msgstr "Обновяване на списъка със софтуер"
 
 #. TRANSLATORS: transaction state, installing updates
-#: ../lib/packagekit-glib2/pk-console-shared.c:295
+#: ../lib/packagekit-glib2/pk-console-shared.c:304
 msgid "Installing updates"
 msgstr "Инсталиране на обновления"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
-#: ../lib/packagekit-glib2/pk-console-shared.c:299
+#: ../lib/packagekit-glib2/pk-console-shared.c:308
 msgid "Cleaning up packages"
 msgstr "Изчистване на пакети"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:303
+#: ../lib/packagekit-glib2/pk-console-shared.c:312
 msgid "Obsoleting packages"
 msgstr "Обявяване на пакети за остарели"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: ../lib/packagekit-glib2/pk-console-shared.c:307
+#: ../lib/packagekit-glib2/pk-console-shared.c:316
 msgid "Resolving dependencies"
 msgstr "Изчисляване на зависимости"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
-#: ../lib/packagekit-glib2/pk-console-shared.c:311
+#: ../lib/packagekit-glib2/pk-console-shared.c:320
 msgid "Checking signatures"
 msgstr "Проверка на подписи"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:315
-#: ../lib/packagekit-glib2/pk-console-shared.c:621
+#: ../lib/packagekit-glib2/pk-console-shared.c:324
+#: ../lib/packagekit-glib2/pk-console-shared.c:630
 msgid "Rolling back"
 msgstr "Връщане на транзакция"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:319
+#: ../lib/packagekit-glib2/pk-console-shared.c:328
 msgid "Testing changes"
 msgstr "Проверка на промените"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
-#: ../lib/packagekit-glib2/pk-console-shared.c:323
+#: ../lib/packagekit-glib2/pk-console-shared.c:332
 msgid "Committing changes"
 msgstr "Трайно задаване на промените"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:327
+#: ../lib/packagekit-glib2/pk-console-shared.c:336
 msgid "Requesting data"
 msgstr "Запитване за данни"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:331
+#: ../lib/packagekit-glib2/pk-console-shared.c:340
 msgid "Finished"
 msgstr "Завършено"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:335
+#: ../lib/packagekit-glib2/pk-console-shared.c:344
 msgid "Cancelling"
 msgstr "Отказване"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:339
+#: ../lib/packagekit-glib2/pk-console-shared.c:348
 msgid "Downloading repository information"
 msgstr "Изтегляне на информация за хранилищата на софтуер"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:343
+#: ../lib/packagekit-glib2/pk-console-shared.c:352
 msgid "Downloading list of packages"
 msgstr "Изтегляне на списъка с пакети"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:347
+#: ../lib/packagekit-glib2/pk-console-shared.c:356
 msgid "Downloading file lists"
 msgstr "Изтегляне на списъците с файлове"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:351
+#: ../lib/packagekit-glib2/pk-console-shared.c:360
 msgid "Downloading lists of changes"
 msgstr "Изтегляне на списъците с промени"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:355
+#: ../lib/packagekit-glib2/pk-console-shared.c:364
 msgid "Downloading groups"
 msgstr "Изтегляне на групите"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:359
+#: ../lib/packagekit-glib2/pk-console-shared.c:368
 msgid "Downloading update information"
 msgstr "Изтегляне на информация за обновленията"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:363
+#: ../lib/packagekit-glib2/pk-console-shared.c:372
 msgid "Repackaging files"
 msgstr "Повторно пакетиране на файлове"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:367
+#: ../lib/packagekit-glib2/pk-console-shared.c:376
 msgid "Loading cache"
 msgstr "Зареждане на временните файлове"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:371
+#: ../lib/packagekit-glib2/pk-console-shared.c:380
 msgid "Scanning applications"
 msgstr "Проверка на програмите"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:375
+#: ../lib/packagekit-glib2/pk-console-shared.c:384
 msgid "Generating package lists"
 msgstr "Генериране на списъци с пакети"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:379
+#: ../lib/packagekit-glib2/pk-console-shared.c:388
 msgid "Waiting for package manager lock"
 msgstr "Изчакване на заключване от управлението на пакети"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:383
+#: ../lib/packagekit-glib2/pk-console-shared.c:392
 msgid "Waiting for authentication"
 msgstr "Изчакване на идентификация"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:387
+#: ../lib/packagekit-glib2/pk-console-shared.c:396
 msgid "Updating running applications"
 msgstr "Обновяване на работеща в момента програма"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:391
+#: ../lib/packagekit-glib2/pk-console-shared.c:400
 msgid "Checking applications in use"
 msgstr "Проверка на ползваните програми"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
-#: ../lib/packagekit-glib2/pk-console-shared.c:395
+#: ../lib/packagekit-glib2/pk-console-shared.c:404
 msgid "Checking libraries in use"
 msgstr "Проверка на ползваните библиотеки"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:399
+#: ../lib/packagekit-glib2/pk-console-shared.c:408
 msgid "Copying files"
 msgstr "Копиране на файлове"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:417
+#: ../lib/packagekit-glib2/pk-console-shared.c:426
 msgid "Trivial"
 msgstr "Дребно"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:421
+#: ../lib/packagekit-glib2/pk-console-shared.c:430
 msgid "Normal"
 msgstr "Обикновено"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:425
+#: ../lib/packagekit-glib2/pk-console-shared.c:434
 msgid "Important"
 msgstr "Важно"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:429
+#: ../lib/packagekit-glib2/pk-console-shared.c:438
 msgid "Security"
 msgstr "За сигурността"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:433
+#: ../lib/packagekit-glib2/pk-console-shared.c:442
 msgid "Bug fix "
 msgstr "Поправка на грешки"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:437
+#: ../lib/packagekit-glib2/pk-console-shared.c:446
 msgid "Enhancement"
 msgstr "Подобрение"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:441
+#: ../lib/packagekit-glib2/pk-console-shared.c:450
 msgid "Blocked"
 msgstr "Блокирано"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:446
-#: ../lib/packagekit-glib2/pk-console-shared.c:519
+#: ../lib/packagekit-glib2/pk-console-shared.c:455
+#: ../lib/packagekit-glib2/pk-console-shared.c:528
 msgid "Installed"
 msgstr "Инсталиран"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-console-shared.c:451
+#: ../lib/packagekit-glib2/pk-console-shared.c:460
 msgid "Available"
 msgstr "Наличен"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:469
+#: ../lib/packagekit-glib2/pk-console-shared.c:478
 msgid "Downloading"
 msgstr "Изтегляне"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:473
+#: ../lib/packagekit-glib2/pk-console-shared.c:482
 msgid "Updating"
 msgstr "Обновяване"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:477
-#: ../lib/packagekit-glib2/pk-console-shared.c:597
+#: ../lib/packagekit-glib2/pk-console-shared.c:486
+#: ../lib/packagekit-glib2/pk-console-shared.c:606
 msgid "Installing"
 msgstr "Инсталиране"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:481
-#: ../lib/packagekit-glib2/pk-console-shared.c:593
+#: ../lib/packagekit-glib2/pk-console-shared.c:490
+#: ../lib/packagekit-glib2/pk-console-shared.c:602
 msgid "Removing"
 msgstr "Деинсталиране"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:485
+#: ../lib/packagekit-glib2/pk-console-shared.c:494
 msgid "Cleaning up"
 msgstr "Изчистване"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:489
+#: ../lib/packagekit-glib2/pk-console-shared.c:498
 msgid "Obsoleting"
 msgstr "Обявяване за остарели"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:493
+#: ../lib/packagekit-glib2/pk-console-shared.c:502
 msgid "Reinstalling"
 msgstr "Преинсталиране"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:511
+#: ../lib/packagekit-glib2/pk-console-shared.c:520
 msgid "Downloaded"
 msgstr "Изтеглен"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:523
+#: ../lib/packagekit-glib2/pk-console-shared.c:532
 msgid "Removed"
 msgstr "Деинсталиран"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:527
+#: ../lib/packagekit-glib2/pk-console-shared.c:536
 msgid "Cleaned up"
 msgstr "Изчистен"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:531
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
 msgid "Obsoleted"
 msgstr "Обявен за остарял"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:535
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
 msgid "Reinstalled"
 msgstr "Преинсталиран"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:553
+#: ../lib/packagekit-glib2/pk-console-shared.c:562
 msgid "Unknown role type"
 msgstr "Непознат вид роля"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:557
+#: ../lib/packagekit-glib2/pk-console-shared.c:566
 msgid "Getting dependencies"
 msgstr "Изтегляне на зависимости"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:561
+#: ../lib/packagekit-glib2/pk-console-shared.c:570
 msgid "Getting update details"
 msgstr "Получаване на информация за обновление"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:565
+#: ../lib/packagekit-glib2/pk-console-shared.c:574
 msgid "Getting details"
 msgstr "Получаване на информация"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:569
+#: ../lib/packagekit-glib2/pk-console-shared.c:578
 msgid "Getting requires"
 msgstr "Получаване на зависимости"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:573
+#: ../lib/packagekit-glib2/pk-console-shared.c:582
 msgid "Getting updates"
 msgstr "Получаване на обновления"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:577
+#: ../lib/packagekit-glib2/pk-console-shared.c:586
 msgid "Searching by details"
 msgstr "Търсене по информация"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:581
+#: ../lib/packagekit-glib2/pk-console-shared.c:590
 msgid "Searching by file"
 msgstr "Търсене по файл"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:585
+#: ../lib/packagekit-glib2/pk-console-shared.c:594
 msgid "Searching groups"
 msgstr "Търсене в групи"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:589
+#: ../lib/packagekit-glib2/pk-console-shared.c:598
 msgid "Searching by name"
 msgstr "Търсене по име"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:601
+#: ../lib/packagekit-glib2/pk-console-shared.c:610
 msgid "Installing files"
 msgstr "Инсталиране на файлове"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:605
+#: ../lib/packagekit-glib2/pk-console-shared.c:614
 msgid "Refreshing cache"
 msgstr "Обновяване на временните файлове"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:609
+#: ../lib/packagekit-glib2/pk-console-shared.c:618
 msgid "Updating packages"
 msgstr "Обновяване на пакети"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:613
+#: ../lib/packagekit-glib2/pk-console-shared.c:622
 msgid "Updating system"
 msgstr "Обновяване на системата"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:617
+#: ../lib/packagekit-glib2/pk-console-shared.c:626
 msgid "Canceling"
 msgstr "Отказване"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:625
+#: ../lib/packagekit-glib2/pk-console-shared.c:634
 msgid "Getting repositories"
 msgstr "Получаване на хранилищата със софтуер"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:629
+#: ../lib/packagekit-glib2/pk-console-shared.c:638
 msgid "Enabling repository"
 msgstr "Включване на хранилище"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:633
+#: ../lib/packagekit-glib2/pk-console-shared.c:642
 msgid "Setting data"
 msgstr "Задаване на данни"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:637
+#: ../lib/packagekit-glib2/pk-console-shared.c:646
 msgid "Resolving"
 msgstr "Изчисляване"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:641
+#: ../lib/packagekit-glib2/pk-console-shared.c:650
 msgid "Getting file list"
 msgstr "Получаване на списъка с файлове"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:645
+#: ../lib/packagekit-glib2/pk-console-shared.c:654
 msgid "Getting provides"
 msgstr "Получаване на предоставяните ресурси"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:649
+#: ../lib/packagekit-glib2/pk-console-shared.c:658
 msgid "Installing signature"
 msgstr "Инсталиране на подпис"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:653
+#: ../lib/packagekit-glib2/pk-console-shared.c:662
 msgid "Getting packages"
 msgstr "Получаване на пакети"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:657
+#: ../lib/packagekit-glib2/pk-console-shared.c:666
 msgid "Accepting EULA"
 msgstr "Приемане на EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:665
+#: ../lib/packagekit-glib2/pk-console-shared.c:674
 msgid "Getting upgrades"
 msgstr "Получаване на надграждания"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:669
+#: ../lib/packagekit-glib2/pk-console-shared.c:678
 msgid "Getting categories"
 msgstr "Получаване на категории"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:673
+#: ../lib/packagekit-glib2/pk-console-shared.c:682
 msgid "Getting transactions"
 msgstr "Получаване на транзакции"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:677
-#: ../lib/packagekit-glib2/pk-console-shared.c:681
+#: ../lib/packagekit-glib2/pk-console-shared.c:686
+#: ../lib/packagekit-glib2/pk-console-shared.c:690
 msgid "Simulating install"
 msgstr "Симулация на инсталиране"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:685
+#: ../lib/packagekit-glib2/pk-console-shared.c:694
 msgid "Simulating remove"
 msgstr "Симулация на деинсталиране"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:689
+#: ../lib/packagekit-glib2/pk-console-shared.c:698
 msgid "Simulating update"
 msgstr "Симулация на обновяване"
 
@@ -2016,24 +2021,24 @@ msgid "Upgrade System"
 msgstr "Надграждане на системата"
 
 #. TRANSLATORS: failed due to DBus security
-#: ../src/pk-main.c:87
+#: ../src/pk-main.c:91
 msgid "Startup failed due to security policies on this machine."
 msgstr "Неуспешно стартиране поради политиката за сигурност на тази машина."
 
 #. TRANSLATORS: only two ways this can fail...
-#: ../src/pk-main.c:89
+#: ../src/pk-main.c:93
 msgid "This can happen for two reasons:"
 msgstr "Това може да се случи поради две причини:"
 
 #. TRANSLATORS: only allowed to be owned by root
-#: ../src/pk-main.c:91
+#: ../src/pk-main.c:95
 msgid "The correct user is not launching the executable (usually root)"
 msgstr ""
 "Неправилен потребител стартира програмата (обикновено трябва да е "
 "администратор)"
 
 #. TRANSLATORS: or we are installed in a prefix
-#: ../src/pk-main.c:93
+#: ../src/pk-main.c:97
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
@@ -2041,87 +2046,77 @@ msgstr ""
 "Файлът „org.freedesktop.PackageKit.conf“ не е инсталиран в системната папка:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:200
+#: ../src/pk-main.c:223
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Пакетно ядро, което да се ползва, напр. „dummy“"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:203
+#: ../src/pk-main.c:226
 msgid "Daemonize and detach from the terminal"
 msgstr "Преминаване в режим на демон и освобождаване на терминала"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:206
+#: ../src/pk-main.c:229
 msgid "Disable the idle timer"
 msgstr "Изключване на хронометъра за бездействие"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:209
+#: ../src/pk-main.c:232
 msgid "Show version and exit"
 msgstr "Извеждане на версията и изход"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:212
+#: ../src/pk-main.c:235
 msgid "Exit after a small delay"
 msgstr "Изход след кратко изчакване"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:215
+#: ../src/pk-main.c:238
 msgid "Exit after the engine has loaded"
 msgstr "Изход след зареждането на ядрото"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:230
+#: ../src/pk-main.c:253
 msgid "PackageKit service"
 msgstr "Услуга PackageKit"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:267
+#: ../src/pk-main.c:298
 msgid "Cannot connect to the system bus"
 msgstr "Не може да се осъществи връзка към системната шина"
 
+#: ../src/pk-main.c:344
+msgid "Failed to load any of the specified backends:"
+msgstr ""
+
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
 #. follows
-#: ../src/pk-main.c:316
+#: ../src/pk-main.c:358
 msgid "Error trying to start:"
 msgstr "Грешка при опита за стартиране:"
 
-#: ../src/pk-polkit-action-lookup.c:150
-msgid "To install debugging packages, extra sources need to be enabled"
-msgstr ""
-"За да инсталирате пакети за изчистване на грешки, трябва да включите още "
-"хранилища на софтуер"
-
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
+#: ../src/pk-transaction.c:2611 ../src/pk-transaction.c:2618
 msgid "The software is not from a trusted source."
 msgstr "Програмата не е от доверено хранилище."
 
-#: ../src/pk-polkit-action-lookup.c:176
+#: ../src/pk-transaction.c:2623
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Не обновявайте пакета, освен ако не сте сигурни, че това е безопасно."
 
-#: ../src/pk-polkit-action-lookup.c:177
+#: ../src/pk-transaction.c:2624
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr ""
 "Не обновявайте пакетите, освен ако не сте сигурни, че това е безопасно."
 
-#: ../src/pk-polkit-action-lookup.c:195
+#: ../src/pk-transaction.c:2634
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
 "Не инсталирайте пакета, освен ако не сте сигурни, че това е безопасно."
 
-#: ../src/pk-polkit-action-lookup.c:196
+#: ../src/pk-transaction.c:2635
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr ""
 "Не инсталирайте пакетите, освен ако не сте сигурни, че това е безопасно."
 
-#. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:273
-msgid "Many packages"
-msgstr "Много пакети"
 
-#. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:339
-msgid "Only trusted"
-msgstr "Само доверени"

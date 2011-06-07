@@ -1,3 +1,30 @@
+Version 0.6.15
+~~~~~~~~~~~~~~
+Released: 2011-06-07
+
+Libraries:
+ - gir: Annotations for file arrays (Matthias Klumpp)
+ - gir: Some more annotation updates (Matthias Klumpp)
+ - packagekit-qt2: Remove package caching as we use const Packages now (Daniel Nicoletti)
+
+Backends:
+ - alpm: Fix package cache location (Jonathan Conder)
+ - alpm: Improve backend messages (Jonathan Conder)
+ - aptcc: Emit repos while refreshing cache, and speed up searchDetails a bit (Daniel Nicoletti)
+ - aptcc: Fix the way we emit repos, now it emits the string more human readable (Daniel Nicoletti)
+ - yum: Allow the 'any' WhatProvides kind to match already formatted provide strings (Richard Hughes)
+ - yum: Fix a failure to get updates caused by using the rename of pre_process (Richard Hughes)
+ - zypp: Fix deletion of package locks (bnc#690038) (Duncan Mac-Vicar P)
+ - zypp: log to ZYpp's log the start of a PK backend function to ease debugging (Duncan Mac-Vicar P)
+
+New Features:
+ - Added PK_INFO_ENUM_UNTRUSTED so we can tell which packages are trusted (Daniel Nicoletti)
+ - When refreshing cache backends should emit RepoDetail as frontends will be able to present extra details (Daniel Nicoletti)
+
+Bugfixes:
+ - Do not prevent updating when firefox is running, we don't have all the client UI ready yet (Richard Hughes)
+ - Only include glib-unix.h if the GLib version is >= 2.29.4 (Richard Hughes)
+
 Version 0.6.14
 ~~~~~~~~~~~~~~
 Released: 2011-05-04
