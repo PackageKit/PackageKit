@@ -1267,20 +1267,76 @@ void aptcc::updateInterface(int fd, int writeFd)
 					new_file.append(1, str[i]);
 				i++;
 
-				gchar *confmsg;
-				confmsg = g_strdup_printf("The configuration file '%s' "
-							  "(modified by you or a script) "
-							  "has a newer version '%s'.\n"
-							  "Please verify your changes and update it manually.",
-							  orig_file.c_str(),
-							  new_file.c_str());
-				pk_backend_message(m_backend,
-						   PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-						   confmsg);
-				if (write(writeFd, "N\n", 2) != 2) {
-					// TODO we need a DPKG patch to use debconf
-					g_debug("Failed to write");
-				}
+                gchar *filename;
+                filename = g_build_filename(DATADIR, "PackageKit", "helpers", "aptcc", "pkconffile", NULL);
+                gint exit_code;
+                gchar **argv;
+                gchar **envp;
+                GError *error = NULL;
+                argv = (gchar **) g_malloc(5 * sizeof(gchar *));
+                argv[0] = filename;
+                argv[1] = g_strdup(m_lastPackage.c_str());
+                argv[2] = g_strdup(orig_file.c_str());
+                argv[3] = g_strdup(new_file.c_str());
+                argv[4] = NULL;
+
+                gchar *socket;
+                if (socket = pk_backend_get_frontend_socket(m_backend)) {
+                    envp = (gchar **) g_malloc(3 * sizeof(gchar *));
+                    envp[0] = g_strdup("DEBIAN_FRONTEND=passthrough");
+                    envp[1] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
+                    envp[2] = NULL;
+                } else {
+                    // we don't have a socket set, let's fallback to noninteractive
+                    envp = (gchar **) g_malloc(2 * sizeof(gchar *));
+                    envp[0] = g_strdup("DEBIAN_FRONTEND=noninteractive");
+                    envp[1] = NULL;
+                }
+
+                gboolean ret;
+                ret = g_spawn_sync(NULL, // working dir
+                             argv, // argv
+                             envp, // envp
+                             G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
+                             NULL, // child_setup
+                             NULL, // user_data
+                             NULL, // standard_output
+                             NULL, // standard_error
+                             &exit_code,
+                             &error);
+
+                cout << filename << " " << exit_code << " ret: "<< ret << endl;
+
+                if (exit_code == 10) {
+                    // 1 means the user wants the package config
+                    if (write(writeFd, "Y\n", 2) != 2) {
+                        // TODO we need a DPKG patch to use debconf
+                        g_debug("Failed to write");
+                    }
+                } else if (exit_code == 20) {
+                    // 2 means the user wants to keep the current config
+                    if (write(writeFd, "N\n", 2) != 2) {
+                        // TODO we need a DPKG patch to use debconf
+                        g_debug("Failed to write");
+                    }
+                } else {
+                    // either the user didn't choose an option or the front end failed'
+                    gchar *confmsg;
+                    confmsg = g_strdup_printf("The configuration file '%s' "
+                                "(modified by you or a script) "
+                                "has a newer version '%s'.\n"
+                                "Please verify your changes and update it manually.",
+                                orig_file.c_str(),
+                                new_file.c_str());
+                    pk_backend_message(m_backend,
+                                       PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+                                       confmsg);
+                    // fall back to keep the current config file
+                    if (write(writeFd, "N\n", 2) != 2) {
+                        // TODO we need a DPKG patch to use debconf
+                        g_debug("Failed to write");
+                    }
+                }
 			} else if (strstr(status, "pmstatus") != NULL) {
 				// INSTALL & UPDATE
 				// - Running dpkg

@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+
+use Debconf::Client::ConfModule ':all';
+use Cwd 'abs_path';
+use strict;
+
+my $template = '/tmp/pkconffile.templates';
+
+# (1) quit unless we have the correct number of command-line args
+if ($#ARGV + 1 != 3) {
+    print STDERR "Usage: ./pkconffile package original_conf new_conf\n";
+    exit;
+}
+
+## Process template so we can add the diff at the end
+## the abs_path will give us the full path where this script is so we can find the template
+open (TEMP_NODIFF, abs_path($0).'.nodiff') || die ("could not open the template");
+open (TEMPLATE, ">$template");
+
+## Adds the original template
+while (<TEMP_NODIFF>) {
+    print TEMPLATE $_;
+}
+close (TEMP_NODIFF);
+
+## get the original and new files
+my $package = $ARGV[0];
+my $forig   = $ARGV[1];
+my $fnew    = $ARGV[2];
+
+## Add the diff to the end of the TEMPLATE
+my @diff = `diff -u $forig $fnew`;
+foreach (@diff) {
+    if ($_ =~ /^\$/) {
+        print TEMPLATE " .\n";
+    } else {
+        chomp;
+        ## Add two spaces here so that the extended description
+        ## receives the proper line breaks.
+        print TEMPLATE "  $_\n";
+    }
+}
+close (TEMPLATE);
+
+## Force the template to be loaded again
+x_loadtemplatefile($template);
+
+## set the package name in the title
+subst("pkconffile/title", "package", $package);
+settitle("pkconffile/title");
+
+my $state = 1;
+while (1) {
+    if ($state == 1) {
+        ## ask the user what to do with the conf file
+        fset("pkconffile/what_to_do", "seen", "false");
+        subst("pkconffile/what_to_do", "forig", $forig);
+        input("high", "pkconffile/what_to_do");
+    } else {
+        ## the user whants to see the diff
+        fset("pkconffile/diff", "seen", "false");
+        subst("pkconffile/diff", "forig", $forig);
+        subst("pkconffile/diff", "fnew", $fnew);
+        input("high", "pkconffile/diff");
+    }
+
+    ## get the user answer
+    if (go() == 0 && $state == 1) {
+        my @ret = get("pkconffile/what_to_do");
+        if ($ret[1] =~ "Keep the currently installed version") {
+            $state = 10;
+            last;
+        } elsif ($ret[1] =~ "Install the package maintainer's version") {
+            $state = 20;
+            last;
+        }
+        $state = 2;
+    } else {
+        $state = 1;
+    }
+}
+
+unlink($template);
+exit $state;
