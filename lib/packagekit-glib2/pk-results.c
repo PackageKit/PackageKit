@@ -536,10 +536,11 @@ pk_results_get_error_code (PkResults *results)
  *
  * Gets the packages from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkDetails's, free with g_ptr_array_unref().
+ * Return value: (element-type PkPackage) (transfer full): A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
+
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
@@ -570,7 +571,7 @@ pk_results_get_package_sack (PkResults *results)
  *
  * Gets the package details from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
+ * Return value: (element-type PkDetails) (transfer container): A #GPtrArray array of #PkDetails's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -587,7 +588,7 @@ pk_results_get_details_array (PkResults *results)
  *
  * Gets the update details from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkUpdateDetail's, free with g_ptr_array_unref().
+ * Return value: (element-type PkUpdateDetail) (transfer container): A #GPtrArray array of #PkUpdateDetail's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -604,7 +605,7 @@ pk_results_get_update_detail_array (PkResults *results)
  *
  * Gets the categories from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
+ * Return value: (element-type PkCategory) (transfer container): A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -621,7 +622,7 @@ pk_results_get_category_array (PkResults *results)
  *
  * Gets the distribution upgrades from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
+ * Return value: (element-type PkDistroUpgrade) (transfer container): A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -638,7 +639,7 @@ pk_results_get_distro_upgrade_array (PkResults *results)
  *
  * Gets the require restarts from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkRequireRestart's, free with g_ptr_array_unref().
+ * Return value: (element-type PkRequireRestart) (transfer container): A #GPtrArray array of #PkRequireRestart's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -695,7 +696,7 @@ pk_results_get_require_restart_worst (PkResults *results)
  *
  * Gets the transactions from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkTransactionPast's, free with g_ptr_array_unref().
+ * Return value: (element-type PkTransactionPast) (transfer container): A #GPtrArray array of #PkTransactionPast's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -712,7 +713,7 @@ pk_results_get_transaction_array (PkResults *results)
  *
  * Gets the files from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkFiles's, free with g_ptr_array_unref().
+ * Return value: (element-type PkFiles) (transfer container): A #GPtrArray array of #PkFiles's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -729,7 +730,7 @@ pk_results_get_files_array (PkResults *results)
  *
  * Gets the repository signatures required from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkRepoSignatureRequired's, free with g_ptr_array_unref().
+ * Return value: (element-type PkRepoSignatureRequired) (transfer container): A #GPtrArray array of #PkRepoSignatureRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -746,7 +747,7 @@ pk_results_get_repo_signature_required_array (PkResults *results)
  *
  * Gets the eulas required from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkEulaRequired's, free with g_ptr_array_unref().
+ * Return value: (element-type PkEulaRequired) (transfer container): A #GPtrArray array of #PkEulaRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -763,7 +764,7 @@ pk_results_get_eula_required_array (PkResults *results)
  *
  * Gets the media changes required from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
+ * Return value: (element-type PkMediaChangeRequired) (transfer container): A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -780,7 +781,7 @@ pk_results_get_media_change_required_array (PkResults *results)
  *
  * Gets the repository details from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkRepoDetail's, free with g_ptr_array_unref().
+ * Return value: (element-type PkRepoDetail) (transfer container): A #GPtrArray array of #PkRepoDetail's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -797,7 +798,7 @@ pk_results_get_repo_detail_array (PkResults *results)
  *
  * Gets the messages from the transaction.
  *
- * Return value: (transfer container): A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
+ * Return value: (element-type PkMessage) (transfer container): A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
