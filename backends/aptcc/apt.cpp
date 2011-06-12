@@ -256,7 +256,8 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
-		if (pkg->CurrentState == pkgCache::State::Installed) {
+        if (pkg->CurrentState == pkgCache::State::Installed &&
+            pkg.CurrentVer() == ver) {
 			state = PK_INFO_ENUM_INSTALLED;
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
