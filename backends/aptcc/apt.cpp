@@ -180,11 +180,13 @@ void aptcc::cancel()
 }
 
 pair<pkgCache::PkgIterator, pkgCache::VerIterator>
-		      aptcc::find_package_id(const gchar *package_id)
+		      aptcc::find_package_id(const gchar *package_id, bool &found)
 {
 	gchar **parts;
 	pkgCache::VerIterator ver;
 	pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+
+    found = true;
 
 	parts = pk_package_id_split (package_id);
 	pkg_ver.first = packageCache->FindPkg(parts[PK_PACKAGE_ID_NAME]);
@@ -217,6 +219,7 @@ pair<pkgCache::PkgIterator, pkgCache::VerIterator>
 		return pkg_ver;
 	}
 
+    found = false;
 	g_strfreev (parts);
 	return pkg_ver;
 }
@@ -460,9 +463,14 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
+void aptcc::emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
 {
-	pkgCache::VerIterator ver = find_ver(pkg);
+	pkgCache::VerIterator ver;
+    if (version.end() == false) {
+        ver = version;
+    } else {
+        ver = find_ver(pkg);
+    }
 	std::string section = ver.Section() == NULL ? "" : ver.Section();
 
 	size_t found;
@@ -487,10 +495,10 @@ void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
+void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
 {
     // Get the version of the current package
-    pkgCache::VerIterator     currver = find_ver(pkg);
+    pkgCache::VerIterator currver = find_ver(pkg);
     pkgCache::VerFileIterator currvf  = currver.FileList();
     // Build a package_id from the current version
     gchar *current_package_id;
@@ -500,7 +508,12 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
                                              currvf.File().Archive() == NULL ? "" : currvf.File().Archive());
 
     // Get the update version
-    pkgCache::VerIterator candver = find_candidate_ver(pkg);
+    pkgCache::VerIterator candver;
+    if (version.end() == false) {
+        candver = version;
+    } else {
+        candver = find_candidate_ver(pkg);
+    }
 
     pkgCache::VerFileIterator vf = candver.FileList();
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();

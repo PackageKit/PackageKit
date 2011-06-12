@@ -62,7 +62,7 @@ public:
 	// Check the returned VerIterator.end()
 	// if it's true we could not find it
 	pair<pkgCache::PkgIterator, pkgCache::VerIterator>
-			find_package_id(const gchar *package_id);
+			find_package_id(const gchar *package_id, bool &found);
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
@@ -110,12 +110,12 @@ public:
 	/**
 	 *  Emits details
 	 */
-	void emit_details(const pkgCache::PkgIterator &pkg);
+	void emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
 
 	/**
 	 *  Emits update detail
 	 */
-	void emit_update_detail(const pkgCache::PkgIterator &pkg);
+	void emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
 
 	/**
 	 *  seems to install packages

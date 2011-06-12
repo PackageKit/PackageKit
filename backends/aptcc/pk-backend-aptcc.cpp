@@ -194,8 +194,9 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		}
 
 		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pkg_ver = m_apt->find_package_id(pi);
-		if (pkg_ver.second.end() == true)
+        bool found;
+		pkg_ver = m_apt->find_package_id(pi, found);
+		if (!found)
 		{
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -288,8 +289,9 @@ backend_get_files_thread (PkBackend *backend)
 		}
 
 		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pkg_ver = m_apt->find_package_id(pi);
-		if (pkg_ver.second.end() == true)
+        bool found;
+		pkg_ver = m_apt->find_package_id(pi, found);
+		if (!found)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
 			delete m_apt;
@@ -358,8 +360,9 @@ backend_get_details_thread (PkBackend *backend)
 		}
 
 		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pkg_ver = m_apt->find_package_id(pi);
-		if (pkg_ver.second.end() == true)
+        bool found;
+		pkg_ver = m_apt->find_package_id(pi, found);
+		if (!found)
 		{
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -371,9 +374,9 @@ backend_get_details_thread (PkBackend *backend)
 		}
 
 		if (updateDetail) {
-			m_apt->emit_update_detail(pkg_ver.first);
+			m_apt->emit_update_detail(pkg_ver.first, pkg_ver.second);
 		} else {
-			m_apt->emit_details(pkg_ver.first);
+			m_apt->emit_details(pkg_ver.first, pkg_ver.second);
 		}
 	}
 
@@ -672,9 +675,10 @@ pk_backend_download_packages_thread (PkBackend *backend)
 		}
 
 		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pkg_ver = m_apt->find_package_id(pi);
+        bool found;
+		pkg_ver = m_apt->find_package_id(pi, found);
 		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (pkg_ver.second.end() == true)
+		if (!found)
 		{
 			_error->Error("Can't find this package id \"%s\".", pi);
 			continue;
@@ -854,9 +858,10 @@ pk_backend_resolve_thread (PkBackend *backend)
 				output.push_back(pkg_ver);
 			}
 		} else {
-			pkg_ver = m_apt->find_package_id(pi);
+            bool found;
+			pkg_ver = m_apt->find_package_id(pi, found);
 			// check to see if we found the package
-			if (pkg_ver.second.end() == false)
+			if (found)
 			{
 				output.push_back(pkg_ver);
 			}
@@ -1209,9 +1214,10 @@ backend_manage_packages_thread (PkBackend *backend)
 		}
 
 		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pkg_ver = m_apt->find_package_id(pi);
+        bool found;
+		pkg_ver = m_apt->find_package_id(pi, found);
 		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (pkg_ver.second.end() == true)
+		if (!found)
 		{
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
