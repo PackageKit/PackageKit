@@ -84,6 +84,9 @@ bool aptcc::init()
 // 		_config->Set("APT::Acquire::Translation", _locale);
 	}
 
+    // Disable apt-listbugs as it freezes PK
+    setenv("APT_LISTBUGS_FRONTEND", "none", 1);
+
 	// set http proxy
 	http_proxy = pk_backend_get_proxy_http(m_backend);
 	setenv("http_proxy", http_proxy, 1);
