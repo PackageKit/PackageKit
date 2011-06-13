@@ -32,3 +32,5 @@ packagekit_plugin_la_SOURCES =			\
 EXTRA_DIST =					\
 	tests/test.html
 
+
+-include $(top_srcdir)/git.mk

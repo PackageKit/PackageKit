@@ -49,3 +49,5 @@ dist_conf_DATA = CommandNotFound.conf
 EXTRA_DIST = PackageKit.sh.in
 
 CLEANFILES = PackageKit.sh
+
+-include $(top_srcdir)/git.mk

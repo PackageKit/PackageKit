@@ -33,3 +33,5 @@ install-data-hook:
 clean-local :
 	rm -f *~
 	rm -f *.pyc
+
+-include $(top_srcdir)/git.mk

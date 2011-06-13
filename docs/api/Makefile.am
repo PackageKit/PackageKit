@@ -61,9 +61,8 @@ HTML_IMAGES =						\
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
 content_files =						\
 	version.xml					\
-	dbus/org.freedesktop.PackageKit.ref.xml			\
-	dbus/org.freedesktop.PackageKit.Transaction.ref.xml		\
-	$(NULL)
+	dbus/org.freedesktop.PackageKit.ref.xml		\
+	dbus/org.freedesktop.PackageKit.Transaction.ref.xml
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
@@ -99,3 +98,19 @@ include $(top_srcdir)/gtk-doc.make
 # Other files to distribute
 EXTRA_DIST += version.xml.in
 
+CLEANFILES =						\
+	*.txt						\
+	*.types						\
+	*.args						\
+	*.hierarchy					\
+	*.interfaces					\
+	*.prerequisites					\
+	*.signals					\
+	*.stamp						\
+	tmpl
+
+DISTCLEANFILES =					\
+	org.freedesktop.PackageKit.ref.xml		\
+	org.freedesktop.PackageKit.Transaction.ref.xml
+
+-include $(top_srcdir)/git.mk

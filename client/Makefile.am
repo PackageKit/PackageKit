@@ -114,7 +114,7 @@ clean-local:
 	rm -f manpage.*
 	rm -f *.out
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) $(man_MANS)
 
 DISTCLEANFILES =					\
 	$(NULL)
@@ -124,3 +124,5 @@ MAINTAINERCLEANFILES =					\
 	Makefile.in					\
 	$(NULL)
 
+
+-include $(top_srcdir)/git.mk

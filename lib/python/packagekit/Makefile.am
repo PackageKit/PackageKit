@@ -20,7 +20,12 @@ packagekitpython_PYTHON =				\
 	misc.py						\
 	$(NULL)
 
+MAINTAINERCLEANFILES =					\
+	*.pyc
+
 clean-local :
 	rm -f *.pyc
 	rm -f *~
 
+
+-include $(top_srcdir)/git.mk

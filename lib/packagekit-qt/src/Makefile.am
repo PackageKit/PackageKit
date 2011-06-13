@@ -114,3 +114,5 @@ dbus_proxies.stamp: ${top_srcdir}/src/org.freedesktop.PackageKit.xml ${top_srcdi
 	qdbusxml2cpp -c TransactionProxy -p transactionproxy -m -N ${top_srcdir}/src/org.freedesktop.PackageKit.Transaction.xml
 	touch $@
 
+
+-include $(top_srcdir)/git.mk

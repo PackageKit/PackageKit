@@ -46,3 +46,5 @@ EXTRA_DIST=$(script_SCRIPTS)
 
 scriptdir = $(bindir)
 
+
+-include $(top_srcdir)/git.mk

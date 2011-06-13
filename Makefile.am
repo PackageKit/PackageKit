@@ -2,8 +2,6 @@ AUTOMAKE_OPTIONS = 1.7
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-NULL =
-
 SUBDIRS = 						\
 	po						\
 	policy						\
@@ -15,8 +13,7 @@ SUBDIRS = 						\
 	tools						\
 	backends					\
 	contrib						\
-	docs						\
-	$(NULL)
+	docs
 
 clean-local :
 	rm -f *~
@@ -28,35 +25,32 @@ snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
 
 DISTCLEANFILES =					\
-	PackageKit-*.tar.gz				\
-	packagekit.pc					\
-	intltool-extract				\
-	intltool-merge					\
-	intltool-update					\
-	packagekit-decl-list.txt			\
-	packagekit-decl.txt				\
-	packagekit-overrides.txt			\
-	packagekit-sections.txt				\
-	packagekit.types				\
-	$(NULL)
+	PackageKit-*.tar.*
 
 MAINTAINERCLEANFILES =					\
-	*~						\
-	intltool-*.in					\
-	compile						\
-	configure					\
-	INSTALL						\
-	install-sh					\
-	missing						\
-	mkinstalldirs					\
-	config.guess					\
-	ltmain.sh					\
-	config.sub					\
-	depcomp						\
-	Makefile.in					\
-	config.h.*					\
-	aclocal.m4					\
-	$(NULL)
+	$(srcdir)/INSTALL				\
+	$(srcdir)/ABOUT-NLS				\
+	$(srcdir)/aclocal.m4				\
+	$(srcdir)/autoscan.log				\
+	$(srcdir)/compile				\
+	$(srcdir)/config.guess				\
+	$(srcdir)/config.rpath				\
+	$(srcdir)/config.h.in				\
+	$(srcdir)/config.sub				\
+	$(srcdir)/configure.scan			\
+	$(srcdir)/depcomp				\
+	$(srcdir)/install-sh				\
+	$(srcdir)/ltmain.sh				\
+	$(srcdir)/missing				\
+	$(srcdir)/mkinstalldirs				\
+	$(srcdir)/omf.make				\
+	$(srcdir)/xmldocs.make				\
+	$(srcdir)/gtk-doc.make				\
+	$(srcdir)/ChangeLog				\
+	$(srcdir)/py-compile				\
+	`find "$(srcdir)" -type f -name Makefile -print` \
+	`find "$(srcdir)" -type f -name Makefile.in -print` \
+	`find "$(srcdir)" -type f -name *.pyc -print`
 
 EXTRA_DIST =						\
 	COPYING						\
@@ -65,21 +59,20 @@ EXTRA_DIST =						\
 	INSTALL						\
 	README						\
 	HACKING						\
-        TODO						\
+	TODO						\
 	NEWS						\
-        autogen.sh					\
+	autogen.sh					\
 	config.h					\
 	moc.mk						\
-        intltool-extract.in				\
-        intltool-merge.in				\
-        intltool-update.in				\
+	intltool-extract.in				\
+	intltool-merge.in				\
+	intltool-update.in				\
 	$(NULL)
 
 DISTCHECK_CONFIGURE_FLAGS = 				\
 	--enable-gtk-doc				\
 	--with-security-framework=dummy			\
-	--disable-tests					\
-	$(NULL)
+	--disable-tests
 
 distclean-local:
 	if test $(srdcir) = .; then :; else \
@@ -101,3 +94,5 @@ ChangeLog:
 	fi
 
 .PHONY: ChangeLog
+
+-include $(top_srcdir)/git.mk

@@ -52,3 +52,5 @@ libpk_backend_alpm_la_CFLAGS = $(PK_PLUGIN_CFLAGS) \
 			       $(WARNINGFLAGS_C)
 
 EXTRA_DIST = $(conf_DATA) $(libpk_backend_alpm_la_SOURCES:.c=.h)
+
+-include $(top_srcdir)/git.mk

@@ -38,9 +38,13 @@ pk_device_rebind_CFLAGS =				\
 	-DG_UDEV_API_IS_SUBJECT_TO_CHANGE		\
 	$(NULL)
 
+CLEANFILES = $(man_MANS)
+
 clean-local:
 	rm -f *~
 	rm -f *.1
 	rm -f manpage.*
 	rm -f *.out
 
+
+-include $(top_srcdir)/git.mk

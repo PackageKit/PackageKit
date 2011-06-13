@@ -15,3 +15,5 @@ libpk_backend_smart_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
+
+-include $(top_srcdir)/git.mk

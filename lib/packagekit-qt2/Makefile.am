@@ -127,3 +127,5 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = 					\
 	packagekit-qt2.pc				\
 	$(NULL)
+
+-include $(top_srcdir)/git.mk

@@ -2,6 +2,9 @@ NULL =
 
 SUBDIRS = 						\
 	api						\
-	html						\
-	$(NULL)
+	html
 
+MAINTAINERCLEANFILES =					\
+	packagekit-qt
+
+-include $(top_srcdir)/git.mk

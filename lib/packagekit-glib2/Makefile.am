@@ -235,7 +235,7 @@ pk-marshal.c: pk-marshal.list
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) *.a
 
 if HAVE_INTROSPECTION
 introspection_sources = $(libpackagekit_glib2_la_SOURCES)
@@ -266,3 +266,5 @@ clean-local:
 	rm -f *~
 	rm -f $(CLEANFILES)
 
+
+-include $(top_srcdir)/git.mk

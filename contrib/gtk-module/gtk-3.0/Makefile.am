@@ -14,3 +14,5 @@ clean-local:
 local: all
 	GTK_MODULES="$$GTK_MODULES:$$PWD/.libs/libpk-gtk-module.so" $(APP)
 
+
+-include $(top_srcdir)/git.mk

@@ -9,3 +9,5 @@ EXTRA_DIST =						\
 	packagekit-qt.pc.in				\
 	Doxyfile
 
+
+-include $(top_srcdir)/git.mk

@@ -12,3 +12,5 @@ libpk_backend_urpmi_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 clean-local:
 	rm -f *.gcno
 
+
+-include $(top_srcdir)/git.mk

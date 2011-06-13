@@ -32,3 +32,5 @@ clean-local:
 	rm -f *.gcno
 	rm -f *~
 
+
+-include $(top_srcdir)/git.mk

@@ -9,3 +9,5 @@ libpk_backend_box_la_LDFLAGS = -module -avoid-version
 libpk_backend_box_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 libpk_backend_box_la_INCLUDES = $(BOX_CFLAGS)
 
+
+-include $(top_srcdir)/git.mk

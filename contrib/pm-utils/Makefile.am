@@ -8,3 +8,5 @@ EXTRA_DIST =						\
 install-data-hook:
 	chmod a+x $(DESTDIR)$(libdir)/pm-utils/sleep.d/95packagekit;
 
+
+-include $(top_srcdir)/git.mk

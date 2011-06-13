@@ -16,3 +16,5 @@ EXTRA_DIST =		\
 	zypp-utils.h	\
 	zypp-events.h
 
+
+-include $(top_srcdir)/git.mk

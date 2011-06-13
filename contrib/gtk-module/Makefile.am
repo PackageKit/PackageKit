@@ -12,3 +12,5 @@ EXTRA_DIST =						\
 	README						\
 	GLASS.txt
 
+
+-include $(top_srcdir)/git.mk

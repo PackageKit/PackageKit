@@ -25,3 +25,5 @@ EXTRA_DIST =						\
 DISTCLEANFILES =					\
 	PackageKit.conf
 
+
+-include $(top_srcdir)/git.mk

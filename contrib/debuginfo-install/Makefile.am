@@ -47,9 +47,13 @@ pk_debuginfo_install_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
+CLEANFILES = $(man_MANS)
+
 clean-local:
 	rm -f *~
 	rm -f *.1
 	rm -f manpage.*
 	rm -f *.out
 
+
+-include $(top_srcdir)/git.mk

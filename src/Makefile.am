@@ -220,3 +220,5 @@ clean-local:
 
 CLEANFILES = *~ $(BUILT_SOURCES)
 
+
+-include $(top_srcdir)/git.mk

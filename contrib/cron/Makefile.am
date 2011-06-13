@@ -9,3 +9,5 @@ EXTRA_DIST =						\
 	packagekit-background.cron			\
 	$(NULL)
 
+
+-include $(top_srcdir)/git.mk

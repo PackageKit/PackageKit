@@ -8,3 +8,5 @@ libpk_gtk_module_la_CFLAGS = $(PK_GTK_MODULE_GTK2_CFLAGS) $(WARNINGFLAGS_C)
 clean-local:
 	rm -f *~
 
+
+-include $(top_srcdir)/git.mk
