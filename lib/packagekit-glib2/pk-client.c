@@ -955,41 +955,47 @@ static void
 pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *package_id, const gchar *summary, PkClientState *state)
 {
 	gboolean ret;
+	GError *error = NULL;
 	PkInfoEnum info_enum;
-	PkPackage *item;
 	PkPackage *package;
 	g_return_if_fail (PK_IS_CLIENT (state->client));
 
-	/* add to results */
-	info_enum = pk_info_enum_from_string (info_text);
-	if (info_enum != PK_INFO_ENUM_FINISHED) {
-		item = pk_package_new ();
-		g_object_set (item,
-			      "info", info_enum,
-			      "package-id", package_id,
-			      "summary", summary,
-			      NULL);
-		pk_results_add_package (state->results, item);
-		g_object_unref (item);
-	}
-
-	/* save package-id */
-	ret = pk_progress_set_package_id (state->progress, package_id);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
-
-	/* save package object */
+	/* create virtual package */
 	package = pk_package_new ();
-	pk_package_set_id (package, package_id, NULL);
+	ret = pk_package_set_id (package, package_id, &error);
+	if (!ret) {
+		g_warning ("failed to set package id for %s", package_id);
+		g_error_free (error);
+		goto out;
+	}
+	info_enum = pk_info_enum_from_string (info_text);
 	g_object_set (package,
 		      "info", info_enum,
 		      "summary", summary,
 		      "role", state->role,
 		      "transaction-id", state->transaction_id,
 		      NULL);
+
+	/* add to results */
+	if (info_enum != PK_INFO_ENUM_FINISHED)
+		pk_results_add_package (state->results, package);
+
+	/* save package-id */
+	ret = pk_progress_set_package_id (state->progress, package_id);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PACKAGE_ID,
+					  state->progress_user_data);
+	}
+
+	/* save package object */
 	ret = pk_progress_set_package (state->progress, package);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE, state->progress_user_data);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PACKAGE,
+					  state->progress_user_data);
+	}
+out:
 	g_object_unref (package);
 }
 

@@ -423,10 +423,6 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_INFO:
 		priv->info = g_value_get_uint (value);
 		break;
-	case PROP_PACKAGE_ID:
-		g_free (priv->package_id);
-		priv->package_id = g_strdup (g_value_get_string (value));
-		break;
 	case PROP_SUMMARY:
 		g_free (priv->summary);
 		priv->summary = g_strdup (g_value_get_string (value));
@@ -529,7 +525,7 @@ pk_package_class_init (PkPackageClass *klass)
 	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
