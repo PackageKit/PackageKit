@@ -209,17 +209,17 @@ pk_main_create_window (PkPlugin *plugin)
 	if (gdk_window == NULL) {
 		GdkWindowAttr attr;
 		GdkWindow *parent;
-		GdkDisplay *gdk_display;
+		GdkDisplay *display;
 
 		// TODO - is it correct? Do we want to translate xdisplay -> GdkDisplay?
-		gdk_display = gdk_display_get_default ();
-		if (gdk_display == NULL) {
+		display = gdk_display_get_default ();
+		if (display == NULL) {
 			pk_debug ("invalid display returned by gdk_display_get_default ()\n");
 			return;
 		}
 
 		/* get parent */
-		parent = gdk_x11_window_foreign_new_for_display (gdk_display, xwindow);
+		parent = gdk_x11_window_foreign_new_for_display (display, xwindow);
 		if (parent == NULL) {
 			pk_debug ("invalid window given for setup (id %lu)\n", xwindow);
 			return;
