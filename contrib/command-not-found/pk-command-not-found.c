@@ -676,7 +676,6 @@ int
 main (int argc, char *argv[])
 {
 	gboolean ret;
-	GOptionContext *context;
 	GPtrArray *array = NULL;
 	gchar **package_ids = NULL;
 	PkCnfPolicyConfig *config = NULL;
@@ -687,10 +686,6 @@ main (int argc, char *argv[])
 	gchar **parts;
 	guint retval = EXIT_SUCCESS;
 
-	const GOptionEntry options[] = {
-		{ NULL}
-	};
-
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -700,13 +695,6 @@ main (int argc, char *argv[])
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
 	g_type_init ();
-
-	context = g_option_context_new (NULL);
-	/* TRANSLATORS: tool that gets called when the command is not found */
-	g_option_context_set_summary (context, _("PackageKit Command Not Found"));
-	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_parse (context, &argc, &argv, NULL);
-	g_option_context_free (context);
 
 	/* don't show debugging, unless VERBOSE is specified */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
