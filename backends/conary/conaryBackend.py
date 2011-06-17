@@ -265,9 +265,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _show_package_list(self, lst):
         """@lst(list(tuple) = [ ( troveTuple, status ) ]
         """
+        def is_redirected_package(version):
+            # The format of a revision string is
+            #   "<upstream version>-<source count>-<build count>".
+            # If upstream version is 0, the package has become nil.
+            return version.split("-")[0] == "0"
+
         for pkg, status in lst:
             name, v, f = pkg["trove"]
             version = str(v.trailingRevision())
+            if is_redirected_package(version):
+                continue
             label = str(v.trailingLabel())
             arch = conarypk.get_arch(f)
 
