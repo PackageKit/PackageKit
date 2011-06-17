@@ -1797,6 +1797,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             bump = (95/len(self.yumbase.repos.listEnabled()))/2
 
             for repo in self.yumbase.repos.listEnabled():
+
+                # emit details for UI
+                self.repo_detail(repo.id, repo.name, True)
+
                 # is physical media
                 if repo.mediaid:
                     continue
