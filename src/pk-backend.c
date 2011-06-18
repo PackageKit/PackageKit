@@ -1132,15 +1132,19 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	gchar *summary_safe = NULL;
 	PkPackage *item = NULL;
 	gboolean ret;
+	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* check we are valid */
-	ret = pk_package_id_check (package_id);
+	item = pk_package_new ();
+	ret = pk_package_set_id (item, package_id, &error);
 	if (!ret) {
-		g_warning ("package_id invalid and cannot be processed: %s", package_id);
+		g_warning ("package_id %s invalid and cannot be processed: %s",
+			   package_id, error->message);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -1159,10 +1163,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* create a new package object AFTER we emulate the info value */
-	item = pk_package_new ();
 	g_object_set (item,
 		      "info", info,
-		      "package-id", package_id,
 		      "summary", summary_safe,
 		      NULL);
 
