@@ -337,7 +337,8 @@ public:
         ProvidesMimetype,
         ProvidesFont,
         ProvidesHardwareDriver,
-        ProvidesPostscriptDriver
+        ProvidesPostscriptDriver,
+        ProvidesPlasmaService
     } Provides;
 
     /**

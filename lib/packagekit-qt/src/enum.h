@@ -450,6 +450,7 @@ public:
         ProvidesFont,
         ProvidesHardwareDriver,
         ProvidesPostscriptDriver,
+        ProvidesPlasmaService,
         /* this always has to be at the end of the list */
         LastProvides
     } Provides;

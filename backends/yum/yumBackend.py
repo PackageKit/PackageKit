@@ -902,12 +902,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return [ "mimehandler(%s)" % value ]
         if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
             return [ "postscriptdriver(%s)" % value ]
+        if provides_type == PROVIDES_PLASMA_SERVICE:
+            return [ "plasma4(%s)" % value ]
         if provides_type == PROVIDES_ANY:
             provides = []
             provides.append(self._get_provides_query(PROVIDES_CODEC, value)[0])
             provides.append(self._get_provides_query(PROVIDES_FONT, value)[0])
             provides.append(self._get_provides_query(PROVIDES_MIMETYPE, value)[0])
             provides.append(self._get_provides_query(PROVIDES_POSTSCRIPT_DRIVER, value)[0])
+            provides.append(self._get_provides_query(PROVIDES_PLASMA_SERVICE, value)[0])
             provides.append(value)
             return provides
 
