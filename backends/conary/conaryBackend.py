@@ -131,7 +131,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _search_package(self, pkg_list, name):
         for pkg in pkg_list:
-            if pkg["trove"][0] == name:
+            if pkg["name"] == name:
                 return pkg
         return None
 
@@ -146,17 +146,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
          searchlist(str)ist as the package for search like
          filters(str) as the filter
         """
-        fltlist = filters
         if where not in ("name", "details", "group", "all"):
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
 
         pkgList = self.xmlcache.search(searchlist, where )
 
         if len(pkgList) > 0 :
-            to_resolve = [self._convert_package((p["name"], None, None), p)
-                    for p in pkgList]
-
-            self._resolve_list(to_resolve, fltlist)
+            pkgs = self._resolve_list(pkgList, filters)
+            self._show_package_list(pkgs)
         else:
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
@@ -172,7 +169,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self._resolve_repo(pkgFilter, pkg_list)
 
         package_list = pkgFilter.post_process()
-        self._show_package_list(package_list)
+        return package_list
 
     def _resolve_local(self, pkgFilter, pkg_list):
         '''Find out installed packages from pkg_list
@@ -184,18 +181,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         ret = []
 
-        list_trove_all = [p.get("trove") for p in pkg_list]
-        db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
+        troves_all = [(p["name"], None, None) for p in pkg_list]
+        troves_local = self.client.db.findTroves(None, troves_all,
+                allowMissing=True)
 
-        list_installed = []
-        for trv in list_trove_all:
-            if trv in db_trove_list:
-                pkg = self._search_package(pkg_list, trv[0])
-                # A package may have different versions/flavors installed.
-                for t in db_trove_list[trv]:
-                    list_installed.append(self._convert_package(t, pkg["metadata"]))
-                ret.append(pkg)
-        pkgFilter.add_installed(list_installed)
+        for trv in troves_local:
+            pkg = self._search_package(pkg_list, trv[0])
+            ret.append(pkg)
+
+            # A package may have different versions/flavors installed.
+            for t in troves_local[trv]:
+                pkgFilter.add_installed([self._convert_package(t, pkg)])
 
         return ret
 
@@ -207,24 +203,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         No return value.
         '''
-        list_trove_all = []
-        for pkg in pkg_list:
-            name, version, flavor = pkg.get("trove")
-            trv = (name, version, self.conary.flavor)
-            list_trove_all.append(trv)
+        troves_all = [(pkg["name"], None, self.conary.flavor) for pkg in
+                pkg_list]
+        troves_repo = self.client.repos.findTroves(self.conary.default_label,
+                troves_all, allowMissing=True)
 
-        repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
-                list_trove_all, allowMissing=True)
-
-        list_available = []
-        for trv in list_trove_all:
-            if trv in repo_trove_list:
-                # only use the first trove in the list
-                t = repo_trove_list[trv][0]
-                pkg = self._search_package(pkg_list, t[0])
-                pkg["trove"] = t
-                list_available.append(pkg)
-        pkgFilter.add_available(list_available)
+        for trv in troves_repo:
+            # only use the first trove in the list
+            t = troves_repo[trv][0]
+            pkg = self._search_package(pkg_list, t[0])
+            pkgFilter.add_available([self._convert_package(t, pkg)])
 
     def resolve(self, filters, package ):
         """
@@ -239,32 +227,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if pkg_dict is None:
             return None
 
-        # Our list of troves doesn't contain information about whether trove is
-        # installed, so ConaryFilter can't do proper filtering. Don't pass
-        # @filters to it. Instead manually check the filters before calling
-        # add_installed() and add_available().
-        pkgfilter = ConaryFilter()
-
-        is_found_locally = False
-        if FILTER_NOT_INSTALLED not in filters:
-            trove_installed = self.conary.query(pkg_dict.get("name"))
-            for trv in trove_installed:
-                pkg = self._convert_package(trv, pkg_dict)
-                pkgfilter.add_installed([pkg])
-                is_found_locally = True
-
-        if not is_found_locally and FILTER_INSTALLED not in filters:
-            trove_available = self.conary.repo_query(pkg_dict.get("name"))
-            for trv in trove_available:
-                pkg = self._convert_package(trv, pkg_dict)
-                pkgfilter.add_available([pkg])
-
-        package_list = pkgfilter.post_process()
-        self._show_package_list(package_list)
+        pkgs = self._resolve_list([pkg_dict], filters)
+        self._show_package_list(pkgs)
 
     def _show_package_list(self, lst):
-        """@lst(list(tuple) = [ ( troveTuple, status ) ]
-        """
+        '''Emit Package signals for a list of packages
+
+        pkgs should be a list of (trove, status) tuples.
+
+        Trove is a dict of {(name, version, flavor), metadata}, as constructed
+        by _convert_package.
+        '''
         def is_redirected_package(version):
             # The format of a revision string is
             #   "<upstream version>-<source count>-<build count>".
@@ -344,19 +317,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.xmlcache.refresh()
 
-    def _show_packages(self, pkgs):
-        '''Emit Package signals for a list of packages
-
-        pkgs should be a list of (name, Version, Flavor, status) tuples.
-        '''
-        for (name, v, f, status) in pkgs:
-            version = str(v.trailingRevision())
-            arch = conarypk.get_arch(f)
-            label = str(v.trailingLabel())
-            pkg_id = get_package_id(name, version, arch, label)
-            summary = self._format_package_summary(name, "")
-            self.package(pkg_id, status, summary)
-
     def _display_update_jobs(self, install_jobs, erase_jobs, update_jobs):
         '''Emit package status for a list of installing/erasing/updating jobs
         '''
@@ -370,7 +330,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for (name, (oldVer, oldFla), (newVer, newFla)) in update_jobs:
             ret.append((name, oldVer, oldFla, INFO_UPDATING))
 
-        self._show_packages(ret)
+        pkgs = [(self._convert_package((n, v, f), {}), info)
+                for (n, v, f, info) in ret]
+        self._show_package_list(pkgs)
 
     def install_packages(self, only_trusted, package_ids):
         self._install_packages(only_trusted, package_ids)
@@ -489,7 +451,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             info = self._get_update_priority(name)
             ret.append((name, newVer, newFla, info))
 
-        self._show_packages(ret)
+        pkgs = [(self._convert_package((n, v, f), {}), info)
+                for (n, v, f, info) in ret]
+        self._show_package_list(pkgs)
 
     @ConaryExceptionHandler
     def get_updates(self, filters):
