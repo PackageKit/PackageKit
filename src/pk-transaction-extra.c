@@ -44,6 +44,9 @@
 #include "pk-proc.h"
 #include "pk-conf.h"
 
+/* for when parsing /etc/login.defs fails */
+#define PK_TRANSACTION_EXTRA_UID_MIN_DEFALT	500
+
 #define PK_POST_TRANS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_POST_TRANS, PkTransactionExtraPrivate))
 
 struct PkTransactionExtraPrivate
@@ -789,6 +792,37 @@ out:
 	return uid;
 }
 
+static guint
+pk_transaction_extra_get_uid_min (void)
+{
+	gboolean ret;
+	guint i;
+	gchar *data = NULL;
+	gchar **split = NULL;
+	GError *error = NULL;
+	guint uid_min = G_MAXUINT;
+
+	/* get contents */
+	ret = g_file_get_contents ("/etc/login.defs", &data, NULL, &error);
+	if (!ret) {
+		g_warning ("failed to get login UID_MIN: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	split = g_strsplit (data, "\n", -1);
+	for (i = 0; split[i] != NULL; i++) {
+		if (!g_str_has_prefix (split[i], "UID_MIN"))
+			continue;
+		uid_min = atoi (g_strchug (split[i]+7));
+		break;
+	}
+out:
+	g_free (data);
+	g_strfreev (split);
+	return uid_min;
+}
+
 /**
  * pk_transaction_extra_check_library_restart:
  **/
@@ -805,6 +839,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 	GPtrArray *files_system;
 	PkPackage *package;
 	GPtrArray *pids;
+	guint uid_min;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
@@ -819,6 +854,11 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 	/* set status */
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_LIBRARIES);
+
+	/* get user UID range */
+	uid_min = pk_transaction_extra_get_uid_min ();
+	if (uid_min == G_MAXUINT)
+		uid_min = PK_TRANSACTION_EXTRA_UID_MIN_DEFALT;
 
 	/* find the package name of each pid */
 	for (i=0; i<pids->len; i++) {
