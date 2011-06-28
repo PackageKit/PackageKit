@@ -3719,6 +3719,11 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 	guint i;
 	guint idle_id;
 
+	/* not allowed to use a cache */
+	ret = pk_conf_get_bool (transaction->priv->conf, "UseUpdateCache");
+	if (!ret)
+		goto out;
+
 	/* get results */
 	results = pk_cache_get_results (transaction->priv->cache, transaction->priv->role);
 	if (results == NULL)

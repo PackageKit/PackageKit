@@ -35,8 +35,6 @@
 
 struct PkCachePrivate
 {
-	PkConf			*conf;
-	gboolean		 use_cache;
 	PkResults		*get_updates;
 };
 
@@ -50,12 +48,6 @@ PkResults *
 pk_cache_get_results (PkCache *cache, PkRoleEnum role)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), NULL);
-
-	/* do not use */
-	if (!cache->priv->use_cache) {
-		g_debug ("not using cache");
-		return NULL;
-	}
 
 	/* only support GetUpdates */
 	if (role != PK_ROLE_ENUM_GET_UPDATES) {
@@ -77,12 +69,6 @@ pk_cache_set_results (PkCache *cache, PkRoleEnum role, PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 	g_return_val_if_fail (results != NULL, FALSE);
-
-	/* do not use */
-	if (!cache->priv->use_cache) {
-		g_debug ("not using cache");
-		return FALSE;
-	}
 
 	/* only support GetUpdates */
 	if (role != PK_ROLE_ENUM_GET_UPDATES) {
@@ -153,8 +139,6 @@ pk_cache_init (PkCache *cache)
 {
 	cache->priv = PK_CACHE_GET_PRIVATE (cache);
 	cache->priv->get_updates = NULL;
-	cache->priv->conf = pk_conf_new ();
-	cache->priv->use_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCache");
 }
 
 /**
