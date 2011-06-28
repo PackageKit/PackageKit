@@ -2609,7 +2609,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 		}
 
 		/* get group */
-		state_tmp = zif_state_get_child (state_local);
+		state_tmp = zif_state_get_child (state_loop);
 		group_str = zif_package_get_group (package, state_tmp, &error);
 
 		/* not being in a group is non-fatal */
@@ -2649,7 +2649,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 		}
 
 		/* get url */
-		state_tmp = zif_state_get_child (state_local);
+		state_tmp = zif_state_get_child (state_loop);
 		url = zif_package_get_url (package, state_tmp, NULL);
 
 		/* this section done */
@@ -2664,7 +2664,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 		}
 
 		/* get size */
-		state_tmp = zif_state_get_child (state_local);
+		state_tmp = zif_state_get_child (state_loop);
 		size = zif_package_get_size (package, state_tmp, NULL);
 
 		/* this section done */
