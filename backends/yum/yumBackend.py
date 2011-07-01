@@ -1732,8 +1732,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # if only_trusted is true, it means that we will only update signed files
         if only_trusted:
             self.yumbase.conf.gpgcheck = 1
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 0
 
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
@@ -1956,8 +1960,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # if only_trusted is true, it means that we will only update signed files
         if only_trusted:
             self.yumbase.conf.gpgcheck = 1
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 0
 
         for package_id in package_ids:
             grp = self._is_meta_package(package_id)
@@ -2149,8 +2157,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # If only_trusted is true, it means that we will only install trusted files
         if only_trusted or simulate:
             self.yumbase.conf.gpgcheck = 1
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 0
 
         # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
         # This means we don't run runYumTransaction, and don't get the GPG failure in
@@ -2304,8 +2316,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # if only_trusted is true, it means that we will only update signed files
         if only_trusted:
             self.yumbase.conf.gpgcheck = 1
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 1
         else:
             self.yumbase.conf.gpgcheck = 0
+            if hasattr(self.yumbase.conf, 'localpkg_gpgcheck'):
+                self.yumbase.conf.localpkg_gpgcheck = 0
 
         txmbrs = []
         try:
