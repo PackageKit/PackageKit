@@ -3950,6 +3950,7 @@ pk_backend_update_system_thread (PkBackend *backend)
 	guint i;
 	ZifPackage *package;
 	ZifState *state_local;
+	ZifStore *store_local = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -3995,7 +3996,9 @@ pk_backend_update_system_thread (PkBackend *backend)
 
 	/* get all updates */
 	state_local = zif_state_get_child (priv->state);
+	store_local = zif_store_local_new ();
 	updates = zif_store_array_get_updates (store_array,
+					       store_local,
 					       state_local,
 					       &error);
 	if (updates == NULL) {
@@ -4064,6 +4067,8 @@ pk_backend_update_system_thread (PkBackend *backend)
 	}
 out:
 	pk_backend_finished (backend);
+	if (store_local != NULL)
+		g_object_unref (store_local);
 	if (updates != NULL)
 		g_ptr_array_unref (updates);
 	if (store_array != NULL)
