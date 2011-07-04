@@ -1,3 +1,36 @@
+Version 0.6.16
+~~~~~~~~~~~~~~
+Released: 2011-07-04
+
+Libraries:
+ - glib: Added element-type annotations for each function returning a GPtrArray (Alex Eftimie)
+ - glib: Ensure packages from the progress handler have the package_id assigned (Richard Hughes)
+
+Backends:
+ - aptcc: Better put last fix in pk_backend_initialize (Daniel Nicoletti)
+ - aptcc: Fix bug that resolved packages were emited as installed when updates (Daniel Nicoletti)
+ - aptcc: Fix getDetails to actually use the resolved version, deb#606135 (Daniel Nicoletti)
+ - aptcc: Initial support to conffile handling (Daniel Nicoletti)
+ - aptcc: Set env var to disable apt-listbugs closes deb#628835 (Daniel Nicoletti)
+ - conary: Don't show redirected packages (Jesse Zhang)
+ - conary: Simplify _resolve_list (Jesse Zhang)
+ - yum: Emit RepoDetail when refreshing a repository (Richard Hughes)
+ - yum: Fix CVE-2011-2515 which only affects the YUM backend (Richard Hughes)
+ - zif: Fix a critical warning when getting details about a package (Richard Hughes)
+ - zif: Implement UpdateSystem (Richard Hughes)
+
+New Features:
+ - Generate .tar.xz release tarballs (Richard Hughes)
+ - Support looking up Plasma services (Kevin Kofler)
+
+Bugfixes:
+ - Do not hardcode G_DISABLE_DEPRECATED as it breaks with GTK+-2 and GLib (Richard Hughes)
+ - Do not hardcode the UID_MIN as 500. Fixes rh#717110 (Richard Hughes)
+ - Do not try to parse any arguments in command-not-found (Richard Hughes)
+ - Ensure we save the updates cache for the pre-transaction checks (Richard Hughes)
+ - Fix a build error in the browser plugin when using old versions of gdk (Richard Hughes)
+ - Update the PackageKit matrix webpage to reflect current backends (Robert Xu)
+
 Version 0.6.15
 ~~~~~~~~~~~~~~
 Released: 2011-06-07
