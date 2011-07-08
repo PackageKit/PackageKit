@@ -2624,7 +2624,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         pkgver = _get_package_ver(pkg)
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-        desc = pkg.description
+        desc = _to_unicode(pkg.description)
+        url = _to_unicode(pkg.url)
+        license = _to_unicode(pkg.license)
 
         # some RPM's (especially from google) have no description
         if desc:
@@ -2639,7 +2641,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             size = 0
 
         group = self.comps.get_group(pkg.name)
-        self.details(package_id, pkg.license, group, desc, pkg.url, size)
+        self.details(package_id, license, group, desc, url, size)
 
     def get_files(self, package_ids):
         try:
