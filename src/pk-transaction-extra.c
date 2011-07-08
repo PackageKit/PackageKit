@@ -533,27 +533,6 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 }
 
 /**
- * pk_transaction_extra_clear_firmware_requests:
- **/
-gboolean
-pk_transaction_extra_clear_firmware_requests (PkTransactionExtra *extra)
-{
-	gboolean ret;
-	gchar *filename;
-
-	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-
-	/* clear the firmware requests directory */
-	filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
-	g_debug ("clearing udev firmware requests at %s", filename);
-	ret = pk_directory_remove_contents (filename);
-	if (!ret)
-		g_warning ("failed to clear %s", filename);
-	g_free (filename);
-	return ret;
-}
-
-/**
  * pk_transaction_extra_update_files_check_running_cb:
  **/
 static void

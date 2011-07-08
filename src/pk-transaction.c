@@ -1075,9 +1075,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret)
 			pk_transaction_extra_import_desktop_files (transaction->priv->transaction_extra);
-
-		/* clear the firmware requests directory */
-		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
 
 	/* run the plugins */

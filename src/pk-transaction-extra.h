@@ -49,7 +49,6 @@ typedef struct
 GType		 pk_transaction_extra_get_type			(void);
 PkTransactionExtra	*pk_transaction_extra_new		(void);
 
-gboolean	 pk_transaction_extra_clear_firmware_requests	(PkTransactionExtra	*extra);
 gboolean	 pk_transaction_extra_update_package_list	(PkTransactionExtra	*extra);
 gboolean	 pk_transaction_extra_import_desktop_files	(PkTransactionExtra	*extra);
 gboolean	 pk_transaction_extra_check_running_process	(PkTransactionExtra	*extra,
