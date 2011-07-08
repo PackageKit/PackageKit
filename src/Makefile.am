@@ -220,5 +220,12 @@ clean-local:
 
 CLEANFILES = *~ $(BUILT_SOURCES)
 
+# plugins
+plugindir = $(LIBDIR)/packagekit-plugins
+plugin_LTLIBRARIES = libpk_plugin_scripts.la
+libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
+libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)
+libpk_plugin_scripts_la_LDFLAGS = -module -avoid-version
+libpk_plugin_scripts_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
