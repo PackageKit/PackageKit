@@ -165,7 +165,15 @@ struct PkTransactionPrivate
 	guint			 signal_update_detail;
 	guint			 signal_category;
 	guint			 signal_speed;
+	GPtrArray		*plugins;
 };
+
+typedef enum {
+	PK_TRANSACTION_PLUGIN_PHASE_INIT,
+	PK_TRANSACTION_PLUGIN_PHASE_PRE,
+	PK_TRANSACTION_PLUGIN_PHASE_POST,
+	PK_TRANSACTION_PLUGIN_PHASE_UNKNOWN
+} PkTransactionPluginPhase;
 
 enum {
 	SIGNAL_DETAILS,
@@ -261,6 +269,100 @@ pk_transaction_error_get_type (void)
 		etype = g_enum_register_static ("PkTransactionError", values);
 	}
 	return etype;
+}
+
+/**
+ * pk_transaction_load_plugin:
+ */
+static void
+pk_transaction_load_plugin (PkTransaction *transaction,
+			    const gchar *filename)
+{
+	gboolean ret;
+	GModule *module;
+	PkTransactionPluginGetDescFunc plugin_desc = NULL;
+	PkTransactionPluginFunc plugin_func = NULL;
+
+	module = g_module_open (filename,
+				0);
+	if (module == NULL) {
+		g_warning ("failed to open plugin %s: %s",
+			   filename, g_module_error ());
+		goto out;
+	}
+
+	/* get description */
+	ret = g_module_symbol (module,
+			       "pk_transaction_plugin_get_description",
+			       (gpointer *) &plugin_desc);
+	if (!ret) {
+		g_warning ("Plugin %s requires description",
+			   filename);
+		g_module_close (module);
+		goto out;
+	}
+
+	/* print what we know */
+	g_debug ("opened plugin %s: %s",
+		 filename, plugin_desc ());
+
+	/* optionally initialize plugin */
+	ret = g_module_symbol (module,
+			       "pk_transaction_plugin_initialize",
+			       (gpointer *) &plugin_func);
+	if (ret) {
+		g_debug ("running init on %s", filename);
+		plugin_func (transaction);
+	}
+
+	/* add to array */
+	g_ptr_array_add (transaction->priv->plugins,
+			 module);
+out:
+	return;
+}
+
+/**
+ * pk_transaction_load_plugins:
+ */
+static void
+pk_transaction_load_plugins (PkTransaction *transaction)
+{
+	const gchar *filename_tmp;
+	gchar *filename_plugin;
+	gchar *path;
+	GDir *dir;
+	GError *error = NULL;
+
+	/* search in the plugin directory for plugins */
+	path = g_build_filename (LIBDIR, "packagekit-plugins", NULL);
+	dir = g_dir_open (path, 0, &error);
+	if (dir == NULL) {
+		g_warning ("failed to open plugin directory: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* try to open each plugin */
+	g_debug ("searching for plugins in %s", path);
+	do {
+		filename_tmp = g_dir_read_name (dir);
+		if (filename_tmp == NULL)
+			break;
+		if (!g_str_has_suffix (filename_tmp, ".so"))
+			continue;
+		filename_plugin = g_build_filename (path,
+						    filename_tmp,
+						    NULL);
+		pk_transaction_load_plugin (transaction,
+					    filename_plugin);
+		g_free (filename_plugin);
+	} while (TRUE);
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	g_free (path);
 }
 
 /**
@@ -872,6 +974,50 @@ pk_transaction_get_state (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_plugin_phase:
+ **/
+static void
+pk_transaction_plugin_phase (PkTransaction *transaction,
+			     PkTransactionPluginPhase phase)
+{
+	guint i;
+	const gchar *function = NULL;
+	GModule *module;
+	gboolean ret;
+	PkTransactionPluginFunc plugin_func = NULL;
+
+	switch (phase) {
+	case PK_TRANSACTION_PLUGIN_PHASE_INIT:
+		function = "pk_transaction_plugin_initialize";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_PRE:
+		function = "pk_transaction_plugin_transaction_pre";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_POST:
+		function = "pk_transaction_plugin_transaction_post";
+		break;
+	default:
+		break;
+	}
+
+	g_assert (function != NULL);
+
+	/* run each plugin */
+	for (i=0; i<transaction->priv->plugins->len; i++) {
+		module = g_ptr_array_index (transaction->priv->plugins, i);
+		ret = g_module_symbol (module,
+				       function,
+				       (gpointer *) &plugin_func);
+		if (!ret)
+			continue;
+		g_debug ("run %s on %s",
+			 function,
+			 g_module_name (module));
+		plugin_func (transaction);
+	}
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1036,6 +1182,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* clear the firmware requests directory */
 		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
+
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_POST);
 
 	/* do the post-transaction.d scripts */
 	pk_transaction_process_scripts (transaction, "post-transaction.d");
@@ -2077,6 +2227,10 @@ pk_transaction_run (PkTransaction *transaction)
 	gboolean ret;
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_PRE);
 
 	/* do the pre-transaction.d scripts */
 	pk_transaction_process_scripts (transaction, "pre-transaction.d");
@@ -5950,6 +6104,10 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
+
+	/* get plugins */
+	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_module_close);
+	pk_transaction_load_plugins (transaction);
 }
 
 /**
@@ -6032,6 +6190,7 @@ pk_transaction_finalize (GObject *object)
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
 #endif
+	g_ptr_array_unref (transaction->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }

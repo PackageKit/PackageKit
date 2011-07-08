@@ -248,6 +248,16 @@ gboolean	 pk_transaction_filter_check			(const gchar	*filter,
 gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
 								 GError		**error);
 
+/* plugin support */
+typedef const gchar	*(*PkTransactionPluginGetDescFunc)	(void);
+typedef void		 (*PkTransactionPluginFunc)		(PkTransaction	*transaction);
+
+const gchar	*pk_transaction_plugin_get_description		(void);
+void		 pk_transaction_plugin_initialize		(PkTransaction	*transaction);
+void		 pk_transaction_plugin_destroy			(PkTransaction	*transaction);
+void		 pk_transaction_plugin_transaction_pre		(PkTransaction	*transaction);
+void		 pk_transaction_plugin_transaction_post		(PkTransaction	*transaction);
+
 G_END_DECLS
 
 #endif /* __PK_TRANSACTION_H */

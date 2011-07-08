@@ -271,6 +271,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-?.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
@@ -346,6 +347,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
+%{_libdir}/packagekit-plugins/*.so
 
 %files docs
 %defattr(-,root,root,-)
