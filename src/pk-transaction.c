@@ -1118,11 +1118,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
-		/* generate the package list */
-		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageList");
-		if (ret)
-			pk_transaction_extra_update_package_list (transaction->priv->transaction_extra);
-
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret)
