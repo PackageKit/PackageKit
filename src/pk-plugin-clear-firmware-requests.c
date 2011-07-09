@@ -35,10 +35,10 @@ pk_transaction_plugin_get_description (void)
 }
 
 /**
- * pk_transaction_plugin_transaction_post:
+ * pk_transaction_plugin_finished_end:
  */
 void
-pk_transaction_plugin_transaction_post (PkTransaction *transaction)
+pk_transaction_plugin_finished_end (PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar *filename = NULL;

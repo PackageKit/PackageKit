@@ -62,19 +62,37 @@ pk_transaction_plugin_destroy (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_plugin_transaction_pre:
+ * pk_transaction_plugin_run:
  */
 void
-pk_transaction_plugin_transaction_pre (PkTransaction *transaction)
+pk_transaction_plugin_run (PkTransaction *transaction)
 {
-	g_debug ("plugin: pre");
+	g_debug ("plugin: run");
 }
 
 /**
- * pk_transaction_plugin_transaction_post:
+ * pk_transaction_plugin_finished_start:
  */
 void
-pk_transaction_plugin_transaction_post (PkTransaction *transaction)
+pk_transaction_plugin_finished_start (PkTransaction *transaction)
 {
-	g_debug ("plugin: post");
+	g_debug ("plugin: finished-start");
+}
+
+/**
+ * pk_transaction_plugin_finished_results:
+ */
+void
+pk_transaction_plugin_finished_results (PkTransaction *transaction)
+{
+	g_debug ("plugin: finished-results");
+}
+
+/**
+ * pk_transaction_plugin_finished_end:
+ */
+void
+pk_transaction_plugin_finished_end (PkTransaction *transaction)
+{
+	g_debug ("plugin: finished-end");
 }

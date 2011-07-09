@@ -138,20 +138,20 @@ out:
 }
 
 /**
- * pk_transaction_plugin_transaction_pre:
+ * pk_transaction_plugin_run:
  */
 void
-pk_transaction_plugin_transaction_pre (PkTransaction *transaction)
+pk_transaction_plugin_run (PkTransaction *transaction)
 {
 	pk_transaction_process_scripts (transaction,
 					"pre-transaction.d");
 }
 
 /**
- * pk_transaction_plugin_transaction_post:
+ * pk_transaction_plugin_finished_end:
  */
 void
-pk_transaction_plugin_transaction_post (PkTransaction *transaction)
+pk_transaction_plugin_finished_end (PkTransaction *transaction)
 {
 	pk_transaction_process_scripts (transaction,
 					"post-transaction.d");

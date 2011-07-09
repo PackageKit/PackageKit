@@ -170,8 +170,10 @@ struct PkTransactionPrivate
 
 typedef enum {
 	PK_TRANSACTION_PLUGIN_PHASE_INIT,
-	PK_TRANSACTION_PLUGIN_PHASE_PRE,
-	PK_TRANSACTION_PLUGIN_PHASE_POST,
+	PK_TRANSACTION_PLUGIN_PHASE_RUN,
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START,
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS,
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END,
 	PK_TRANSACTION_PLUGIN_PHASE_UNKNOWN
 } PkTransactionPluginPhase;
 
@@ -887,11 +889,17 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	case PK_TRANSACTION_PLUGIN_PHASE_INIT:
 		function = "pk_transaction_plugin_initialize";
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_PRE:
-		function = "pk_transaction_plugin_transaction_pre";
+	case PK_TRANSACTION_PLUGIN_PHASE_RUN:
+		function = "pk_transaction_plugin_run";
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_POST:
-		function = "pk_transaction_plugin_transaction_post";
+	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START:
+		function = "pk_transaction_plugin_finished_start";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS:
+		function = "pk_transaction_plugin_finished_results";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END:
+		function = "pk_transaction_plugin_finished_end";
 		break;
 	default:
 		break;
@@ -960,20 +968,41 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		return;
 	}
 
-	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_distro_upgrade);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_media_change_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_speed);
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START);
+
+	/* disconnect these straight away */
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_details);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_error_code);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_files);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_distro_upgrade);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_finished);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_package);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_repo_detail);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_repo_signature_required);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_eula_required);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_media_change_required);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_update_detail);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_category);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_speed);
+
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS);
 
 	/* check for session restarts */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
@@ -1074,11 +1103,16 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	}
 
 	/* signals we are not allowed to send from the second phase post transaction */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_require_restart);
 
 	/* do some optional extra actions when we've finished refreshing the cache */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
@@ -1097,7 +1131,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_POST);
+				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END);
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
@@ -2139,7 +2173,7 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_PRE);
+				     PK_TRANSACTION_PLUGIN_PHASE_RUN);
 
 	ret = pk_transaction_set_running (transaction);
 	return ret;

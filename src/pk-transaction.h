@@ -260,8 +260,10 @@ typedef void		 (*PkTransactionPluginFunc)		(PkTransaction	*transaction);
 const gchar	*pk_transaction_plugin_get_description		(void);
 void		 pk_transaction_plugin_initialize		(PkTransaction	*transaction);
 void		 pk_transaction_plugin_destroy			(PkTransaction	*transaction);
-void		 pk_transaction_plugin_transaction_pre		(PkTransaction	*transaction);
-void		 pk_transaction_plugin_transaction_post		(PkTransaction	*transaction);
+void		 pk_transaction_plugin_run			(PkTransaction	*transaction);
+void		 pk_transaction_plugin_finished_start		(PkTransaction	*transaction);
+void		 pk_transaction_plugin_finished_results		(PkTransaction	*transaction);
+void		 pk_transaction_plugin_finished_end		(PkTransaction	*transaction);
 
 G_END_DECLS
 
