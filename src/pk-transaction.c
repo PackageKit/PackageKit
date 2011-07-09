@@ -915,6 +915,24 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 }
 
 /**
+ * pk_transaction_priv_get_conf:
+ **/
+PkConf *
+pk_transaction_priv_get_conf (PkTransaction *transaction)
+{
+	return transaction->priv->conf;
+}
+
+/**
+ * pk_transaction_priv_get_backend:
+ **/
+PkBackend *
+pk_transaction_priv_get_backend (PkTransaction *transaction)
+{
+	return transaction->priv->backend;
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void

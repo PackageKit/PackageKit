@@ -26,6 +26,9 @@
 #include <dbus/dbus-glib.h>
 #include <packagekit-glib2/pk-enum.h>
 
+#include "pk-conf.h"
+#include "pk-backend.h"
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_TRANSACTION		(pk_transaction_get_type ())
@@ -99,6 +102,8 @@ gboolean	 pk_transaction_run				(PkTransaction      *transaction)
 /* internal status */
 void		 pk_transaction_priv_cancel_bg			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_priv_get_role			(PkTransaction	*transaction);
+PkConf		*pk_transaction_priv_get_conf			(PkTransaction	*transaction);
+PkBackend	*pk_transaction_priv_get_backend		(PkTransaction	*transaction);
 PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
 gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
 								 PkTransactionState state);
