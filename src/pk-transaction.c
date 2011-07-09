@@ -941,6 +941,15 @@ pk_transaction_priv_get_backend (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_priv_get_package_ids:
+ **/
+gchar **
+pk_transaction_priv_get_package_ids (PkTransaction *transaction)
+{
+	return transaction->priv->cached_package_ids;
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1726,13 +1735,6 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	PkInfoEnum info;
 	PkTransactionPrivate *priv = transaction->priv;
 
-	/* only do this for update actions, FIXME: need to get cached updtae list for update */
-	if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		success = pk_transaction_extra_applications_are_running (priv->transaction_extra, package_ids, error);
-		if (!success)
-			goto out;
-	}
-
 	/* check we have anything to process */
 	if (package_ids == NULL) {
 		g_debug ("no package_ids for %s", pk_role_enum_to_string (priv->role));
@@ -1972,6 +1974,19 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
 
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_RUN);
+
+	/* is an error code set? */
+	if (pk_backend_get_is_error_set (priv->backend)) {
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+
+		/* do not fail the tranaction */
+		ret = TRUE;
+		goto out;
+	}
+
 	/* do any pre transaction checks */
 	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids, &error);
 	if (!ret) {
@@ -2165,10 +2180,6 @@ pk_transaction_run (PkTransaction *transaction)
 	gboolean ret;
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_RUN);
 
 	ret = pk_transaction_set_running (transaction);
 	return ret;

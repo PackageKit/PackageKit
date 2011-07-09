@@ -60,7 +60,6 @@ struct PkTransactionExtraPrivate
 	PkConf			*conf;
 	guint			 finished_id;
 	guint			 package_id;
-	gchar			**no_update_process_list;
 	GHashTable		*hash;
 	GPtrArray		*files_list;
 	GPtrArray		*pids;
@@ -821,145 +820,6 @@ out:
 }
 
 /**
- * pk_transaction_extra_match_running_file:
- *
- * Only if the pattern matches the old and new names we refuse to run
- **/
-static gboolean
-pk_transaction_extra_match_running_file (PkTransactionExtra *extra, const gchar *filename)
-{
-	guint i;
-	gchar **list;
-	gboolean ret;
-
-	/* compare each pattern */
-	list = extra->priv->no_update_process_list;
-	for (i=0; list[i] != NULL; i++) {
-
-		/* does the package filename match */
-		ret = g_pattern_match_simple (list[i], filename);
-		if (ret) {
-			/* is there a running process that also matches */
-			ret = pk_proc_find_exec (extra->priv->proc, list[i]);
-			if (ret)
-				goto out;
-		}
-	}
-
-	/* we failed */
-	ret = FALSE;
-out:
-	return ret;
-}
-
-/**
- * pk_transaction_extra_files_check_applications_are_running_cb:
- **/
-static void
-pk_transaction_extra_files_check_applications_are_running_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
-{
-	guint i;
-	guint len;
-	gboolean ret;
-	gchar **filenames = NULL;
-
-	/* get data */
-	g_object_get (files,
-		      "files", &filenames,
-		      NULL);
-
-	/* check each file to see if it's a system shared library */
-	len = g_strv_length (filenames);
-	g_debug ("len=%i", len);
-	for (i=0; i<len; i++) {
-
-		/* does the package filename match */
-		ret = pk_transaction_extra_match_running_file (extra, filenames[i]);
-		if (!ret)
-			continue;
-
-		/* add as it matches the criteria */
-		g_debug ("adding filename %s", filenames[i]);
-		g_ptr_array_add (extra->priv->files_list, g_strdup (filenames[i]));
-	}
-	g_strfreev (filenames);
-}
-
-/**
- * pk_transaction_extra_applications_are_running:
- **/
-gboolean
-pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar **package_ids, GError **error)
-{
-	gboolean ret = TRUE;
-	const gchar *file;
-	gchar **files = NULL;
-	gchar *process = NULL;
-	guint signal_files = 0;
-
-	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-	g_return_val_if_fail (package_ids != NULL, FALSE);
-
-	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		g_debug ("cannot get files");
-		/* return success, as we're not setting an error */
-		return TRUE;
-	}
-
-	/* check we have entry */
-	if (extra->priv->no_update_process_list == NULL ||
-	    extra->priv->no_update_process_list[0] == NULL) {
-		g_debug ("no processes to watch");
-		/* return success, as we're not setting an error */
-		return TRUE;
-	}
-
-	/* reset */
-	g_ptr_array_set_size (extra->priv->files_list, 0);
-
-	/* set status */
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
-	pk_transaction_extra_set_progress_changed (extra, 101);
-
-	/* get list from proc */
-	ret = pk_proc_refresh (extra->priv->proc);
-	if (!ret) {
-		g_warning ("failed to refresh");
-		/* non-fatal */
-		ret = TRUE;
-		goto out;
-	}
-
-	/* set status */
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
-
-	signal_files = g_signal_connect (extra->priv->backend, "files",
-					 G_CALLBACK (pk_transaction_extra_files_check_applications_are_running_cb), extra);
-
-	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (extra->priv->backend);
-	pk_backend_get_files (extra->priv->backend, package_ids);
-
-	/* wait for finished */
-	g_main_loop_run (extra->priv->loop);
-
-	/* there is a file we can't COW */
-	if (extra->priv->files_list->len != 0) {
-		file = g_ptr_array_index (extra->priv->files_list, 0);
-		g_set_error (error, 1, 0, "failed to run as %s is running", file);
-		ret = FALSE;
-		goto out;
-	}
-out:
-	pk_transaction_extra_set_progress_changed (extra, 100);
-	if (signal_files > 0)
-		g_signal_handler_disconnect (extra->priv->backend, signal_files);
-	g_strfreev (files);
-	g_free (process);
-	return ret;
-}
-
-/**
  * pk_transaction_extra_check_library_restart_pre:
  * @package_ids: the list of security updates
  *
@@ -1073,7 +933,6 @@ pk_transaction_extra_finalize (GObject *object)
 	sqlite3_close (extra->priv->db);
 	g_hash_table_unref (extra->priv->hash);
 	g_ptr_array_unref (extra->priv->files_list);
-	g_strfreev (extra->priv->no_update_process_list);
 
 	g_object_unref (extra->priv->backend);
 	g_object_unref (extra->priv->lsof);
@@ -1138,9 +997,6 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv->package_id =
 		g_signal_connect (extra->priv->backend, "package",
 				  G_CALLBACK (pk_transaction_extra_package_cb), extra);
-
-	/* get the list of processes we should neverupdate when running */
-	extra->priv->no_update_process_list = pk_conf_get_strv (extra->priv->conf, "NoUpdateProcessList");
 
 	/* check if exists */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);

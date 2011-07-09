@@ -104,6 +104,7 @@ void		 pk_transaction_priv_cancel_bg			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_priv_get_role			(PkTransaction	*transaction);
 PkConf		*pk_transaction_priv_get_conf			(PkTransaction	*transaction);
 PkBackend	*pk_transaction_priv_get_backend		(PkTransaction	*transaction);
+gchar		**pk_transaction_priv_get_package_ids		(PkTransaction	*transaction);
 PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
 gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
 								 PkTransactionState state);

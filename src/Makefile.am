@@ -225,6 +225,7 @@ plugindir = $(LIBDIR)/packagekit-plugins
 plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
 	libpk_plugin-update-package-list.la		\
+	libpk_plugin-no-update-process.la		\
 	libpk-plugin-clear-firmware-requests.la
 
 libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
@@ -241,5 +242,10 @@ libpk_plugin_update_package_list_la_SOURCES = pk-plugin-update-package-list.c
 libpk_plugin_update_package_list_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_package_list_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_package_list_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
+
+libpk_plugin_no_update_process_la_SOURCES = pk-plugin-no-update-process.c
+libpk_plugin_no_update_process_la_LIBADD = $(PK_PLUGIN_LIBS)
+libpk_plugin_no_update_process_la_LDFLAGS = -module -avoid-version
+libpk_plugin_no_update_process_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
