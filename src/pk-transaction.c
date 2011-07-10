@@ -283,7 +283,6 @@ pk_transaction_load_plugin (PkTransaction *transaction,
 	gboolean ret;
 	GModule *module;
 	PkTransactionPluginGetDescFunc plugin_desc = NULL;
-	PkTransactionPluginFunc plugin_func = NULL;
 
 	module = g_module_open (filename,
 				0);
@@ -307,15 +306,6 @@ pk_transaction_load_plugin (PkTransaction *transaction,
 	/* print what we know */
 	g_debug ("opened plugin %s: %s",
 		 filename, plugin_desc ());
-
-	/* optionally initialize plugin */
-	ret = g_module_symbol (module,
-			       "pk_transaction_plugin_initialize",
-			       (gpointer *) &plugin_func);
-	if (ret) {
-		g_debug ("running init on %s", filename);
-		plugin_func (transaction);
-	}
 
 	/* add to array */
 	g_ptr_array_add (transaction->priv->plugins,
@@ -6054,6 +6044,11 @@ pk_transaction_init (PkTransaction *transaction)
 	/* get plugins */
 	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_module_close);
 	pk_transaction_load_plugins (transaction);
+
+	/* initialize plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_INIT);
+
 }
 
 /**
