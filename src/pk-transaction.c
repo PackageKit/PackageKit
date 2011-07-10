@@ -164,6 +164,7 @@ struct PkTransactionPrivate
 	guint			 signal_category;
 	guint			 signal_speed;
 	GPtrArray		*plugins;
+	GPtrArray		*supported_mime_types;
 };
 
 typedef enum {
@@ -3732,27 +3733,22 @@ out:
  * pk_transaction_is_supported_content_type:
  **/
 static gboolean
-pk_transaction_is_supported_content_type (PkTransaction *transaction, const gchar *content_type)
+pk_transaction_is_supported_content_type (PkTransaction *transaction,
+					  const gchar *content_type)
 {
-	guint i;
+	const gchar *mime_type_tmp;
 	gboolean ret = FALSE;
-	gchar *mime_types_str;
-	gchar **mime_types;
-
-	/* get list of mime types supported by backends */
-	mime_types_str = pk_backend_get_mime_types (transaction->priv->backend);
-	mime_types = g_strsplit (mime_types_str, ";", -1);
+	GPtrArray *array = transaction->priv->supported_mime_types;
+	guint i;
 
 	/* can we support this one? */
-	for (i=0; mime_types[i] != NULL; i++) {
-		if (g_strcmp0 (mime_types[i], content_type) == 0) {
+	for (i=0; i<array->len; i++) {
+		mime_type_tmp = g_ptr_array_index (array, i);
+		if (g_strcmp0 (mime_type_tmp, content_type) == 0) {
 			ret = TRUE;
 			break;
 		}
 	}
-
-	g_free (mime_types_str);
-	g_strfreev (mime_types);
 	return ret;
 }
 
@@ -5465,6 +5461,42 @@ pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_i
 }
 
 /**
+ * pk_transaction_add_supported_mime_type:
+ *
+ * Designed to be used by plugins.
+ **/
+void
+pk_transaction_add_supported_mime_type (PkTransaction *transaction,
+					const gchar *mime_type)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_ptr_array_add (transaction->priv->supported_mime_types,
+			 g_strdup (mime_type));
+}
+
+/**
+ * pk_transaction_setup_mime_types:
+ **/
+static void
+pk_transaction_setup_mime_types (PkTransaction *transaction)
+{
+	guint i;
+	gchar *mime_types_str;
+	gchar **mime_types;
+
+	/* get list of mime types supported by backends */
+	mime_types_str = pk_backend_get_mime_types (transaction->priv->backend);
+	mime_types = g_strsplit (mime_types_str, ";", -1);
+	for (i=0; mime_types[i] != NULL; i++) {
+		g_ptr_array_add (transaction->priv->supported_mime_types,
+				 g_strdup (mime_types[i]));
+	}
+
+	g_free (mime_types_str);
+	g_strfreev (mime_types);
+}
+
+/**
  * pk_transaction_get_property:
  **/
 static void
@@ -5780,6 +5812,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->syslog = pk_syslog_new ();
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
+	transaction->priv->supported_mime_types = g_ptr_array_new_with_free_func (g_free);
 #ifdef USE_SECURITY_POLKIT
 #if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
@@ -5800,6 +5833,9 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
+
+	/* setup supported mime types */
+	pk_transaction_setup_mime_types (transaction);
 
 	/* get plugins */
 	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_module_close);

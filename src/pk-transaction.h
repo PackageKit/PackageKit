@@ -255,6 +255,8 @@ gboolean	 pk_transaction_filter_check			(const gchar	*filter,
 								 GError		**error);
 gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
 								 GError		**error);
+void		 pk_transaction_add_supported_mime_type		(PkTransaction	*transaction,
+								 const gchar	*mime_type);
 
 /* plugin support */
 typedef const gchar	*(*PkTransactionPluginGetDescFunc)	(void);
