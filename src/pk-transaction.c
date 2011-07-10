@@ -64,7 +64,6 @@
 #include "pk-shared.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
-#include "pk-transaction-extra.h"
 #include "pk-syslog.h"
 #include "pk-dbus.h"
 
@@ -115,7 +114,6 @@ struct PkTransactionPrivate
 	PolkitSubject		*subject;
 	GCancellable		*cancellable;
 #endif
-	PkTransactionExtra	*transaction_extra;
 	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
@@ -954,7 +952,6 @@ pk_transaction_priv_get_package_ids (PkTransaction *transaction)
 static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransaction *transaction)
 {
-	gboolean ret;
 	guint time_ms;
 	gchar *packages;
 	guint i;
@@ -1007,15 +1004,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS);
-
-	/* look for library restarts */
-	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {
-		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
-		if (ret) {
-			/* now emit what we found ealier */
-			pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra);
-		}
-	}
 
 	/* signals we are not allowed to send from the second phase post transaction */
 	g_signal_handler_disconnect (transaction->priv->backend,
@@ -1610,124 +1598,6 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
 }
 
 /**
- * pk_transaction_pre_transaction_checks:
- * @package_ids: the list of packages to process
- *
- * This function does any pre-transaction checks before the backend is connected
- */
-static gboolean
-pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids, GError **error)
-{
-	GPtrArray *updates = NULL;
-	PkPackage *item;
-	PkResults *results;
-	guint i;
-	guint j = 0;
-	guint length = 0;
-	gboolean ret = FALSE;
-	gboolean success = TRUE;
-	gchar **package_ids_security = NULL;
-	gchar *package_id;
-	PkInfoEnum info;
-	PkTransactionPrivate *priv = transaction->priv;
-
-	/* check we have anything to process */
-	if (package_ids == NULL) {
-		g_debug ("no package_ids for %s", pk_role_enum_to_string (priv->role));
-		goto out;
-	}
-
-	/* only do this for update actions */
-	if (priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	    priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		g_debug ("doing nothing, as not update or install");
-		goto out;
-	}
-
-	/* do we want to enable this codepath? */
-	ret = pk_conf_get_bool (priv->conf, "CheckSharedLibrariesInUse");
-	if (!ret) {
-		g_warning ("not checking for library restarts");
-		goto out;
-	}
-
-	/* do we have a cache */
-	results = pk_cache_get_results (priv->cache, PK_ROLE_ENUM_GET_UPDATES);
-	if (results == NULL) {
-		g_warning ("no updates cache");
-		goto out;
-	}
-
-	/* find security update packages */
-	updates = pk_results_get_package_array (results);
-	for (i=0; i<updates->len; i++) {
-		item = g_ptr_array_index (updates, i);
-		g_object_get (item,
-			      "info", &info,
-			      "package-id", &package_id,
-			      NULL);
-		if (info == PK_INFO_ENUM_SECURITY) {
-			g_debug ("security update: %s", package_id);
-			length++;
-		}
-		g_free (package_id);
-	}
-
-	/* nothing to scan for */
-	if (length == 0) {
-		g_debug ("no security updates");
-		goto out;
-	}
-
-	/* create list of security packages */
-	package_ids_security = g_new0 (gchar *, length+1);
-	for (i=0; i<updates->len; i++) {
-		item = g_ptr_array_index (updates, i);
-		g_object_get (item,
-			      "info", &info,
-			      "package-id", &package_id,
-			      NULL);
-		if (info == PK_INFO_ENUM_SECURITY)
-			package_ids_security[j++] = g_strdup (package_id);
-		g_free (package_id);
-	}
-
-	/* is a security update we are installing */
-	if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		ret = FALSE;
-
-		/* do any of the packages we are updating match */
-		for (i=0; package_ids_security[i] != NULL; i++) {
-			for (j=0; package_ids[j] != NULL; j++) {
-				if (g_strcmp0 (package_ids_security[i], package_ids[j]) == 0) {
-					ret = TRUE;
-					break;
-				}
-			}
-		}
-
-		/* nothing matched */
-		if (!ret) {
-			g_debug ("not installing a security update package");
-			goto out;
-		}
-	}
-
-	/* find files in security updates */
-	ret = pk_transaction_extra_check_library_restart_pre (priv->transaction_extra, package_ids_security);
-	if (!ret) {
-		g_debug ("could not check the library list");
-		goto out;
-	}
-out:
-	if (updates != NULL)
-		g_ptr_array_unref (updates);
-	g_strfreev (package_ids_security);
-	return success;
-}
-
-/**
  * pk_transaction_set_session_state:
  */
 static gboolean
@@ -1861,6 +1731,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
+		ret = TRUE;
 		g_debug ("failed to set the session state (non-fatal): %s",
 			 error->message);
 		g_clear_error (&error);
@@ -1880,21 +1751,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 		/* do not fail the tranaction */
 		ret = TRUE;
-		goto out;
-	}
-
-	/* do any pre transaction checks */
-	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids, &error);
-	if (!ret) {
-		/* run a fake transaction */
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS, error->message);
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-
-		/* do not fail the tranaction */
-		ret = TRUE;
-
-		g_error_free (error);
 		goto out;
 	}
 
@@ -5933,12 +5789,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cancellable = g_cancellable_new ();
 #endif
 
-	transaction->priv->transaction_extra = pk_transaction_extra_new ();
-	g_signal_connect (transaction->priv->transaction_extra, "status-changed",
-			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	g_signal_connect (transaction->priv->transaction_extra, "progress-changed",
-			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
-
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
@@ -6031,7 +5881,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->syslog);
-	g_object_unref (transaction->priv->transaction_extra);
 	g_object_unref (transaction->priv->results);
 #ifdef USE_SECURITY_POLKIT
 //	g_object_unref (transaction->priv->authority);

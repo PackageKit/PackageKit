@@ -57,8 +57,6 @@ shared_SOURCES =					\
 	pk-dbus.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
-	pk-transaction-extra.c				\
-	pk-transaction-extra.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-network.c					\
@@ -228,6 +226,7 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-no-update-process.la		\
 	libpk_plugin-scan-desktop-files.la		\
 	libpk_plugin-update-check-processes.la		\
+	libpk_plugin-check-shared-libraries-in-use.la	\
 	libpk-plugin-clear-firmware-requests.la
 
 libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
@@ -259,5 +258,10 @@ libpk_plugin_update_check_processes_la_SOURCES = pk-plugin-update-check-processe
 libpk_plugin_update_check_processes_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_check_processes_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_check_processes_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
+
+libpk_plugin_check_shared_libraries_in_use_la_SOURCES = pk-plugin-check-shared-libraries-in-use.c
+libpk_plugin_check_shared_libraries_in_use_la_LIBADD = $(PK_PLUGIN_LIBS)
+libpk_plugin_check_shared_libraries_in_use_la_LDFLAGS = -module -avoid-version
+libpk_plugin_check_shared_libraries_in_use_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
