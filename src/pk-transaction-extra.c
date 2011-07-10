@@ -51,7 +51,6 @@
 
 struct PkTransactionExtraPrivate
 {
-	sqlite3			*db;
 	PkBackend		*backend;
 	GMainLoop		*loop;
 	GPtrArray		*list;
@@ -60,7 +59,6 @@ struct PkTransactionExtraPrivate
 	PkConf			*conf;
 	guint			 finished_id;
 	guint			 package_id;
-	GHashTable		*hash;
 	GPtrArray		*files_list;
 	GPtrArray		*pids;
 };
@@ -156,297 +154,6 @@ out:
 }
 
 /**
- * pk_transaction_extra_get_filename_md5:
- **/
-static gchar *
-pk_transaction_extra_get_filename_md5 (const gchar *filename)
-{
-	gchar *md5 = NULL;
-	gchar *data = NULL;
-	gsize length;
-	GError *error = NULL;
-	gboolean ret;
-
-	/* check is no longer exists */
-	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
-	if (!ret)
-		goto out;
-
-	/* get data */
-	ret = g_file_get_contents (filename, &data, &length, &error);
-	if (!ret) {
-		g_warning ("failed to open file %s: %s", filename, error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* check md5 is same */
-	md5 = g_compute_checksum_for_data (G_CHECKSUM_MD5, (const guchar *) data, length);
-out:
-	g_free (data);
-	return md5;
-}
-
-/**
- * pk_transaction_extra_sqlite_remove_filename:
- **/
-static gint
-pk_transaction_extra_sqlite_remove_filename (PkTransactionExtra *extra, const gchar *filename)
-{
-	gchar *statement;
-	gint rc;
-
-	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
-	rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, NULL);
-	g_free (statement);
-	return rc;
-}
-
-/**
- * pk_transaction_extra_sqlite_add_filename_details:
- **/
-static gint
-pk_transaction_extra_sqlite_add_filename_details (PkTransactionExtra *extra, const gchar *filename, const gchar *package, const gchar *md5)
-{
-	gchar *statement;
-	gchar *error_msg = NULL;
-	sqlite3_stmt *sql_statement = NULL;
-	gint rc = -1;
-	gint show;
-	GDesktopAppInfo *info;
-
-	/* find out if we should show desktop file in menus */
-	info = g_desktop_app_info_new_from_filename (filename);
-	if (info == NULL) {
-		g_warning ("could not load desktop file %s", filename);
-		goto out;
-	}
-	show = g_app_info_should_show (G_APP_INFO (info));
-	g_object_unref (info);
-
-	g_debug ("add filename %s from %s with md5: %s (show: %i)", filename, package, md5, show);
-
-	/* the row might already exist */
-	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
-	sqlite3_exec (extra->priv->db, statement, NULL, NULL, NULL);
-	g_free (statement);
-
-	/* prepare the query, as we don't escape it */
-	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO cache (filename, package, show, md5) VALUES (?, ?, ?, ?)", -1, &sql_statement, NULL);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL failed to prepare: %s", sqlite3_errmsg (extra->priv->db));
-		goto out;
-	}
-
-	/* add data */
-	sqlite3_bind_text (sql_statement, 1, filename, -1, SQLITE_STATIC);
-	sqlite3_bind_text (sql_statement, 2, package, -1, SQLITE_STATIC);
-	sqlite3_bind_int (sql_statement, 3, show);
-	sqlite3_bind_text (sql_statement, 4, md5, -1, SQLITE_STATIC);
-
-	/* save this */
-	sqlite3_step (sql_statement);
-	rc = sqlite3_finalize (sql_statement);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-		goto out;
-	}
-
-out:
-	return rc;
-}
-
-/**
- * pk_transaction_extra_sqlite_add_filename:
- **/
-static gint
-pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar *filename, const gchar *md5_opt)
-{
-	gchar *md5 = NULL;
-	gint rc = -1;
-	PkPackage *package;
-	gchar **parts = NULL;
-
-	/* if we've got it, use old data */
-	if (md5_opt != NULL)
-		md5 = g_strdup (md5_opt);
-	else
-		md5 = pk_transaction_extra_get_filename_md5 (filename);
-
-	/* resolve */
-	package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
-	if (package == NULL) {
-		g_warning ("failed to get list");
-		goto out;
-	}
-
-	/* add */
-	parts = pk_package_id_split (pk_package_get_id (package));
-	rc = pk_transaction_extra_sqlite_add_filename_details (extra, filename, parts[PK_PACKAGE_ID_NAME], md5);
-out:
-	g_strfreev (parts);
-	g_free (md5);
-	return rc;
-}
-
-/**
- * pk_transaction_extra_sqlite_cache_rescan_cb:
- **/
-static gint
-pk_transaction_extra_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar **col_name)
-{
-	PkTransactionExtra *extra = PK_POST_TRANS (data);
-	const gchar *filename = NULL;
-	const gchar *md5 = NULL;
-	gchar *md5_calc = NULL;
-	gint i;
-
-	/* add the filename data to the array */
-	for (i=0; i<argc; i++) {
-		if (g_strcmp0 (col_name[i], "filename") == 0 && argv[i] != NULL)
-			filename = argv[i];
-		else if (g_strcmp0 (col_name[i], "md5") == 0 && argv[i] != NULL)
-			md5 = argv[i];
-	}
-
-	/* sanity check */
-	if (filename == NULL || md5 == NULL) {
-		g_warning ("filename %s and md5 %s)", filename, md5);
-		goto out;
-	}
-
-	/* get md5 */
-	md5_calc = pk_transaction_extra_get_filename_md5 (filename);
-	if (md5_calc == NULL) {
-		g_debug ("remove of %s as no longer found", filename);
-		pk_transaction_extra_sqlite_remove_filename (extra, filename);
-		goto out;
-	}
-
-	/* we've checked the file */
-	g_hash_table_insert (extra->priv->hash, g_strdup (filename), GUINT_TO_POINTER (1));
-
-	/* check md5 is same */
-	if (g_strcmp0 (md5, md5_calc) != 0) {
-		g_debug ("add of %s as md5 invalid (%s vs %s)", filename, md5, md5_calc);
-		pk_transaction_extra_sqlite_add_filename (extra, filename, md5_calc);
-	}
-
-	g_debug ("existing filename %s valid, md5=%s", filename, md5);
-out:
-	g_free (md5_calc);
-	return 0;
-}
-
-/**
- * pk_transaction_extra_get_desktop_files:
- **/
-static void
-pk_transaction_extra_get_desktop_files (PkTransactionExtra *extra,
-					const gchar *app_dir,
-					GPtrArray *array)
-{
-	GError *error = NULL;
-	GDir *dir;
-	const gchar *filename;
-	gpointer data;
-	gchar *path;
-
-	/* open directory */
-	dir = g_dir_open (app_dir, 0, &error);
-	if (dir == NULL) {
-		g_warning ("failed to open directory %s: %s", app_dir, error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* go through desktop files and add them to an array if not present */
-	filename = g_dir_read_name (dir);
-	while (filename != NULL) {
-		path = g_build_filename (app_dir, filename, NULL);
-		if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
-			pk_transaction_extra_get_desktop_files (extra, path, array);
-		} else if (g_str_has_suffix (filename, ".desktop")) {
-			data = g_hash_table_lookup (extra->priv->hash, path);
-			if (data == NULL) {
-				g_debug ("add of %s as not present in db", path);
-				g_ptr_array_add (array, g_strdup (path));
-			}
-		}
-		g_free (path);
-		filename = g_dir_read_name (dir);
-	}
-	g_dir_close (dir);
-}
-
-/**
- * pk_transaction_extra_import_desktop_files:
- **/
-gboolean
-pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
-{
-	gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-	gchar *path;
-	GPtrArray *array;
-	gfloat step;
-	guint i;
-
-	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-
-	/* no database */
-	if (extra->priv->db == NULL) {
-		g_debug ("unable to import: no database");
-		return FALSE;
-	}
-
-	/* no support */
-	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
-		g_debug ("cannot search files");
-		return FALSE;
-	}
-
-	/* use a local backend instance */
-	pk_backend_reset (extra->priv->backend);
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-
-	/* reset hash */
-	g_hash_table_remove_all (extra->priv->hash);
-	pk_transaction_extra_set_progress_changed (extra, 101);
-
-	/* first go through the existing data, and look for modifications and removals */
-	statement = g_strdup ("SELECT filename, md5 FROM cache");
-	rc = sqlite3_exec (extra->priv->db, statement, pk_transaction_extra_sqlite_cache_rescan_cb, extra, &error_msg);
-	g_free (statement);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-	}
-
-	array = g_ptr_array_new_with_free_func (g_free);
-	pk_transaction_extra_get_desktop_files (extra, PK_DESKTOP_DEFAULT_APPLICATION_DIR, array);
-
-	if (array->len) {
-		step = 100.0f / array->len;
-		pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-
-		/* process files in an array */
-		for (i=0; i<array->len; i++) {
-			pk_transaction_extra_set_progress_changed (extra, i * step);
-			path = g_ptr_array_index (array, i);
-			pk_transaction_extra_sqlite_add_filename (extra, path, NULL);
-		}
-	}
-	g_ptr_array_free (array, TRUE);
-
-	pk_transaction_extra_set_progress_changed (extra, 100);
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_FINISHED);
-	return TRUE;
-}
-
-/**
  * pk_transaction_extra_update_files_check_running_cb:
  **/
 static void
@@ -510,84 +217,6 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 
 	signal_files = g_signal_connect (extra->priv->backend, "files",
 					 G_CALLBACK (pk_transaction_extra_update_files_check_running_cb), extra);
-
-	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (extra->priv->backend);
-	pk_backend_get_files (extra->priv->backend, package_ids);
-
-	/* wait for finished */
-	g_main_loop_run (extra->priv->loop);
-
-	g_signal_handler_disconnect (extra->priv->backend, signal_files);
-	pk_transaction_extra_set_progress_changed (extra, 100);
-	return TRUE;
-}
-
-/**
- * pk_transaction_extra_update_files_check_desktop_cb:
- **/
-static void
-pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
-{
-	guint i;
-	guint len;
-	gboolean ret;
-	gchar **package;
-	gchar *md5;
-	gchar **filenames = NULL;
-	gchar *package_id = NULL;
-
-	/* get data */
-	g_object_get (files,
-		      "package-id", &package_id,
-		      "files", &filenames,
-		      NULL);
-
-	package = pk_package_id_split (package_id);
-
-	/* check each file */
-	len = g_strv_length (filenames);
-	for (i=0; i<len; i++) {
-		/* exists? */
-		ret = g_file_test (filenames[i], G_FILE_TEST_EXISTS);
-		if (!ret)
-			continue;
-
-		/* .desktop file? */
-		ret = g_str_has_suffix (filenames[i], ".desktop");
-		if (!ret)
-			continue;
-
-		g_debug ("adding filename %s", filenames[i]);
-		md5 = pk_transaction_extra_get_filename_md5 (filenames[i]);
-		pk_transaction_extra_sqlite_add_filename_details (extra, filenames[i], package[PK_PACKAGE_ID_NAME], md5);
-		g_free (md5);
-	}
-	g_strfreev (filenames);
-	g_strfreev (package);
-	g_free (package_id);
-}
-
-/**
- * pk_transaction_extra_check_desktop_files:
- **/
-gboolean
-pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **package_ids)
-{
-	guint signal_files = 0;
-
-	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-
-	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		g_debug ("cannot get files");
-		return FALSE;
-	}
-
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-	pk_transaction_extra_set_progress_changed (extra, 101);
-
-	signal_files = g_signal_connect (extra->priv->backend, "files",
-					 G_CALLBACK (pk_transaction_extra_update_files_check_desktop_cb), extra);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
@@ -930,8 +559,6 @@ pk_transaction_extra_finalize (GObject *object)
 	if (g_main_loop_is_running (extra->priv->loop))
 		g_main_loop_quit (extra->priv->loop);
 	g_main_loop_unref (extra->priv->loop);
-	sqlite3_close (extra->priv->db);
-	g_hash_table_unref (extra->priv->hash);
 	g_ptr_array_unref (extra->priv->files_list);
 
 	g_object_unref (extra->priv->backend);
@@ -974,20 +601,13 @@ pk_transaction_extra_class_init (PkTransactionExtraClass *klass)
 static void
 pk_transaction_extra_init (PkTransactionExtra *extra)
 {
-	gboolean ret;
-	const gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-
 	extra->priv = PK_POST_TRANS_GET_PRIVATE (extra);
 	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
 	extra->priv->proc = pk_proc_new ();
-	extra->priv->db = NULL;
 	extra->priv->pids = NULL;
-	extra->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	extra->priv->files_list = g_ptr_array_new_with_free_func (g_free);
 	extra->priv->conf = pk_conf_new ();
 
@@ -997,36 +617,6 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv->package_id =
 		g_signal_connect (extra->priv->backend, "package",
 				  G_CALLBACK (pk_transaction_extra_package_cb), extra);
-
-	/* check if exists */
-	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
-
-	g_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
-	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &extra->priv->db);
-	if (rc != 0) {
-		g_warning ("Can't open desktop database: %s\n", sqlite3_errmsg (extra->priv->db));
-		sqlite3_close (extra->priv->db);
-		extra->priv->db = NULL;
-		return;
-	}
-
-	/* create if not exists */
-	if (!ret) {
-		g_debug ("creating database cache in %s", PK_DESKTOP_DEFAULT_DATABASE);
-		statement = "CREATE TABLE cache ("
-			    "filename TEXT,"
-			    "package TEXT,"
-			    "show INTEGER,"
-			    "md5 TEXT);";
-		rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
-		if (rc != SQLITE_OK) {
-			g_warning ("SQL error: %s\n", error_msg);
-			sqlite3_free (error_msg);
-		}
-	}
-
-	/* we don't need to keep syncing */
-	sqlite3_exec (extra->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
 }
 
 /**

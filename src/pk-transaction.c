@@ -931,6 +931,15 @@ pk_transaction_priv_get_backend (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_priv_get_results:
+ **/
+PkResults *
+pk_transaction_priv_get_results (PkTransaction *transaction)
+{
+	return transaction->priv->results;
+}
+
+/**
  * pk_transaction_priv_get_package_ids:
  **/
 gchar **
@@ -1048,50 +1057,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		}
 	}
 
-	/* rescan desktop files after install */
-	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-
-		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
-		if (ret) {
-			/* get results */
-			array = pk_results_get_package_array (transaction->priv->results);
-
-			/* filter on INSTALLING | UPDATING */
-			list = g_ptr_array_new_with_free_func (g_free);
-			for (i=0; i<array->len; i++) {
-				item = g_ptr_array_index (array, i);
-				g_object_get (item,
-					      "info", &info,
-					      "package-id", &package_id,
-					      NULL);
-				if (info == PK_INFO_ENUM_INSTALLING ||
-				    info == PK_INFO_ENUM_UPDATING) {
-					/* we convert the package_id data to be 'installed' */
-					split = pk_package_id_split (package_id);
-					package_id_tmp = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
-									      split[PK_PACKAGE_ID_VERSION],
-									      split[PK_PACKAGE_ID_ARCH],
-									      "installed");
-					g_ptr_array_add (list, package_id_tmp);
-					g_strfreev (split);
-				}
-				g_free (package_id);
-			}
-
-			g_debug ("processing %i packags for desktop files", list->len);
-			/* process file lists on these packages */
-			if (list->len > 0) {
-				package_ids = pk_ptr_array_to_strv (list);
-				pk_transaction_extra_check_desktop_files (transaction->priv->transaction_extra, package_ids);
-				g_strfreev (package_ids);
-			}
-			g_ptr_array_unref (array);
-			g_ptr_array_unref (list);
-		}
-	}
-
 	/* look for library restarts */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {
 		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
@@ -1112,16 +1077,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				     transaction->priv->signal_progress_changed);
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_require_restart);
-
-	/* do some optional extra actions when we've finished refreshing the cache */
-	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
-	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-
-		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
-		if (ret)
-			pk_transaction_extra_import_desktop_files (transaction->priv->transaction_extra);
-	}
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
