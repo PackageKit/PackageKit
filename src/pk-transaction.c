@@ -957,14 +957,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	gboolean ret;
 	guint time_ms;
 	gchar *packages;
-	gchar **package_ids;
 	guint i;
-	GPtrArray *list;
 	GPtrArray *array;
 	PkPackage *item;
 	gchar *package_id;
-	gchar *package_id_tmp;
-	gchar **split;
 	PkInfoEnum info;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1011,51 +1007,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS);
-
-	/* check for session restarts */
-	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
-	    (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	     transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
-
-		/* check updated packages file lists and running processes */
-		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcesses");
-		if (ret) {
-			/* get results */
-			array = pk_results_get_package_array (transaction->priv->results);
-
-			/* filter on UPDATING */
-			list = g_ptr_array_new_with_free_func (g_free);
-			for (i=0; i<array->len; i++) {
-				item = g_ptr_array_index (array, i);
-				g_object_get (item,
-					      "info", &info,
-					      "package-id", &package_id,
-					      NULL);
-				if (info == PK_INFO_ENUM_UPDATING) {
-					/* we convert the package_id data to be 'installed' as this means
-					 * we can use the local package database for GetFiles rather than
-					 * downloading new remote metadata */
-					split = pk_package_id_split (package_id);
-					package_id_tmp = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
-									      split[PK_PACKAGE_ID_VERSION],
-									      split[PK_PACKAGE_ID_ARCH],
-									      "installed");
-					g_ptr_array_add (list, package_id_tmp);
-					g_strfreev (split);
-				}
-				g_free (package_id);
-			}
-
-			/* process file lists on these packages */
-			if (list->len > 0) {
-				package_ids = pk_ptr_array_to_strv (list);
-				pk_transaction_extra_check_running_process (transaction->priv->transaction_extra, package_ids);
-				g_strfreev (package_ids);
-			}
-			g_ptr_array_unref (array);
-			g_ptr_array_unref (list);
-		}
-	}
 
 	/* look for library restarts */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {

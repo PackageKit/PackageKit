@@ -41,7 +41,6 @@
 #include "pk-marshal.h"
 #include "pk-backend.h"
 #include "pk-lsof.h"
-#include "pk-proc.h"
 #include "pk-conf.h"
 
 /* for when parsing /etc/login.defs fails */
@@ -55,7 +54,6 @@ struct PkTransactionExtraPrivate
 	GMainLoop		*loop;
 	GPtrArray		*list;
 	PkLsof			*lsof;
-	PkProc			*proc;
 	PkConf			*conf;
 	guint			 finished_id;
 	guint			 package_id;
@@ -151,83 +149,6 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 	}
 out:
 	return package;
-}
-
-/**
- * pk_transaction_extra_update_files_check_running_cb:
- **/
-static void
-pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
-{
-	guint i;
-	guint len;
-	gboolean ret;
-	gchar **filenames = NULL;
-	gchar *package_id = NULL;
-
-	/* get data */
-	g_object_get (files,
-		      "package-id", &package_id,
-		      "files", &filenames,
-		      NULL);
-
-	/* check each file */
-	len = g_strv_length (filenames);
-	for (i=0; i<len; i++) {
-		/* executable? */
-		ret = g_file_test (filenames[i], G_FILE_TEST_IS_REGULAR | G_FILE_TEST_IS_EXECUTABLE | G_FILE_TEST_EXISTS);
-		if (!ret)
-			continue;
-
-		/* running? */
-		ret = pk_proc_find_exec (extra->priv->proc, filenames[i]);
-		if (!ret)
-			continue;
-
-		/* TODO: findout if the executable has a desktop file, and if so,
-		 * suggest an application restart instead */
-
-		/* send signal about session restart */
-		g_debug ("package %s updated, and %s is running", package_id, filenames[i]);
-		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SESSION, package_id);
-	}
-	g_strfreev (filenames);
-	g_free (package_id);
-}
-
-/**
- * pk_transaction_extra_check_running_process:
- **/
-gboolean
-pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **package_ids)
-{
-	guint signal_files = 0;
-
-	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-
-	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		g_debug ("cannot get files");
-		return FALSE;
-	}
-
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
-	pk_transaction_extra_set_progress_changed (extra, 101);
-
-	pk_proc_refresh (extra->priv->proc);
-
-	signal_files = g_signal_connect (extra->priv->backend, "files",
-					 G_CALLBACK (pk_transaction_extra_update_files_check_running_cb), extra);
-
-	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (extra->priv->backend);
-	pk_backend_get_files (extra->priv->backend, package_ids);
-
-	/* wait for finished */
-	g_main_loop_run (extra->priv->loop);
-
-	g_signal_handler_disconnect (extra->priv->backend, signal_files);
-	pk_transaction_extra_set_progress_changed (extra, 100);
-	return TRUE;
 }
 
 /**
@@ -563,7 +484,6 @@ pk_transaction_extra_finalize (GObject *object)
 
 	g_object_unref (extra->priv->backend);
 	g_object_unref (extra->priv->lsof);
-	g_object_unref (extra->priv->proc);
 	g_object_unref (extra->priv->conf);
 	g_ptr_array_unref (extra->priv->list);
 
@@ -606,7 +526,6 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
-	extra->priv->proc = pk_proc_new ();
 	extra->priv->pids = NULL;
 	extra->priv->files_list = g_ptr_array_new_with_free_func (g_free);
 	extra->priv->conf = pk_conf_new ();
