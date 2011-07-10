@@ -63,8 +63,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->files_list = g_ptr_array_new_with_free_func (g_free);
 	priv->lsof = pk_lsof_new ();
-
-	g_debug ("plugin: initialize");
 }
 
 /**
@@ -73,7 +71,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_main_loop_unref (priv->loop);
 	g_ptr_array_unref (priv->list);
 	g_object_unref (priv->lsof);
@@ -432,7 +429,6 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	}
 
 	/* don't emit until we've run the transaction and it's success */
-	g_debug ("plugin: run");
 	pk_backend_set_percentage (backend, 100);
 out:
 	if (backend != NULL) {

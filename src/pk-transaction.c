@@ -172,6 +172,7 @@ typedef enum {
 	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START,
 	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS,
 	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END,
+	PK_TRANSACTION_PLUGIN_PHASE_DESTROY,
 	PK_TRANSACTION_PLUGIN_PHASE_UNKNOWN
 } PkTransactionPluginPhase;
 
@@ -888,6 +889,9 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		break;
 	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END:
 		function = "pk_transaction_plugin_finished_end";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_DESTROY:
+		function = "pk_transaction_plugin_destroy";
 		break;
 	default:
 		break;
@@ -5850,6 +5854,10 @@ pk_transaction_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);
+
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_DESTROY);
 
 #ifdef USE_SECURITY_POLKIT
 	if (transaction->priv->subject != NULL)

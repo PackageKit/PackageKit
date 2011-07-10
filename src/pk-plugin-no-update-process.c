@@ -81,8 +81,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	/* get the list of processes we should neverupdate when running */
 	conf = pk_transaction_priv_get_conf (transaction);
 	priv->no_update_process_list = pk_conf_get_strv (conf, "NoUpdateProcessList");
-
-	g_debug ("plugin: initialize");
 }
 
 /**
@@ -91,7 +89,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_main_loop_unref (priv->loop);
 	g_strfreev (priv->no_update_process_list);
 	g_ptr_array_unref (priv->files_list);

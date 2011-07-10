@@ -51,8 +51,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	priv = g_new0 (PluginPrivate, 1);
 	priv->loop = g_main_loop_new (NULL, FALSE);
 	priv->proc = pk_proc_new ();
-
-	g_debug ("plugin: initialize");
 }
 
 /**
@@ -61,7 +59,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_main_loop_unref (priv->loop);
 	g_object_unref (priv->proc);
 	g_free (priv);
@@ -218,7 +215,6 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 
 	pk_backend_set_percentage (backend, 100);
 
-	g_debug ("plugin: finished-results");
 out:
 	g_strfreev (package_ids);
 	if (backend == NULL) {

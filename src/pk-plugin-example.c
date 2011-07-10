@@ -47,8 +47,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	/* create private area */
 	priv = g_new0 (PluginPrivate, 1);
 	priv->dummy = 999;
-
-	g_debug ("plugin: initialize");
 }
 
 /**
@@ -57,7 +55,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_free (priv);
 }
 
@@ -90,8 +87,6 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 		g_debug ("cannot get packages");
 		goto out;
 	}
-
-	g_debug ("plugin: run");
 out:
 	return;
 }
@@ -102,7 +97,6 @@ out:
 void
 pk_transaction_plugin_finished_start (PkTransaction *transaction)
 {
-	g_debug ("plugin: finished-start");
 }
 
 /**
@@ -111,7 +105,6 @@ pk_transaction_plugin_finished_start (PkTransaction *transaction)
 void
 pk_transaction_plugin_finished_results (PkTransaction *transaction)
 {
-	g_debug ("plugin: finished-results");
 }
 
 /**
@@ -120,5 +113,4 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 void
 pk_transaction_plugin_finished_end (PkTransaction *transaction)
 {
-	g_debug ("plugin: finished-end");
 }

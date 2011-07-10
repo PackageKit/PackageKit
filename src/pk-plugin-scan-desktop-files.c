@@ -135,7 +135,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	/* we don't need to keep syncing */
 	sqlite3_exec (priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
 
-	g_debug ("plugin: initialize");
 out:
 	return;
 }
@@ -146,7 +145,6 @@ out:
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_ptr_array_unref (priv->list);
 	g_main_loop_unref (priv->loop);
 	g_hash_table_unref (priv->hash);
@@ -403,7 +401,6 @@ out:
 	return 0;
 }
 
-
 /**
  * pk_plugin_get_desktop_files:
  **/
@@ -488,8 +485,6 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	package_id = g_signal_connect (backend, "package",
 				       G_CALLBACK (pk_plugin_package_cb), NULL);
 
-	g_debug ("plugin: finished-end");
-
 	/* use a local backend instance */
 	pk_backend_reset (backend);
 	pk_backend_set_status (backend,
@@ -546,7 +541,6 @@ out:
 			g_signal_handler_disconnect (backend, finished_id);
 	}
 }
-
 
 /**
  * pk_plugin_files_cb:

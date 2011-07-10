@@ -79,8 +79,6 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	priv = g_new0 (PluginPrivate, 1);
 	priv->loop = g_main_loop_new (NULL, FALSE);
 	priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-
-	g_debug ("plugin: initialize");
 }
 
 /**
@@ -89,12 +87,10 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 void
 pk_transaction_plugin_destroy (PkTransaction *transaction)
 {
-	g_debug ("plugin: destroy");
 	g_ptr_array_unref (priv->list);
 	g_main_loop_unref (priv->loop);
 	g_free (priv);
 }
-
 
 /**
  * pk_plugin_package_list_to_string:
