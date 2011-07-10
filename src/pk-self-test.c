@@ -41,7 +41,6 @@
 #include "pk-time.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction-db.h"
-#include "pk-transaction-extra.h"
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
 
@@ -1529,17 +1528,6 @@ pk_test_transaction_db_func (void)
 	g_object_unref (db);
 }
 
-static void
-pk_test_transaction_extra_func (void)
-{
-	PkTransactionExtra *extra;
-
-	extra = pk_transaction_extra_new ();
-	g_assert (extra != NULL);
-
-	g_object_unref (extra);
-}
-
 static PkTransactionDb *db = NULL;
 
 /**
@@ -1882,7 +1870,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);
-	g_test_add_func ("/packagekit/transaction-extra", pk_test_transaction_extra_func);
 
 	/* backend stuff */
 	g_test_add_func ("/packagekit/backend", pk_test_backend_func);
