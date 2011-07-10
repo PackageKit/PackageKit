@@ -36,11 +36,16 @@ INCLUDES =						\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/PackageKit/backend
-
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
-	pk-backend-spawn.h				\
-	$(NULL)
+	pk-backend-spawn.h
+
+pluginincludedir=$(includedir)/PackageKit/plugin
+plugininclude_HEADERS =					\
+	packagekit-plugin.h				\
+	pk-backend.h					\
+	pk-conf.h					\
+	pk-transaction.h
 
 shared_SOURCES =					\
 	egg-string.c					\
@@ -149,6 +154,10 @@ BUILT_SOURCES =						\
 	org.freedesktop.PackageKit.h			\
 	org.freedesktop.PackageKit.Transaction.h	\
 	$(NULL)
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = 					\
+	packagekit-plugin.pc
 
 pk-marshal.c: pk-marshal.list
 	echo "#include \"pk-marshal.h\"" > $@ && \

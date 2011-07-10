@@ -839,6 +839,7 @@ lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
 src/Makefile
+src/packagekit-plugin.pc
 client/Makefile
 tools/Makefile
 po/Makefile.in

@@ -462,6 +462,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit
 %dir %{_includedir}/PackageKit/backend
 %{_includedir}/PackageKit/backend/*.h
+%{_includedir}/PackageKit/plugin
+%{_libdir}/pkgconfig/packagekit-plugin.pc
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

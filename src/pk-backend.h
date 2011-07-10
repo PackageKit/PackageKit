@@ -34,10 +34,7 @@
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-bitfield.h>
 
-#include "pk-store.h"
 #include "pk-backend.h"
-
-#include "egg-string.h"
 
 G_BEGIN_DECLS
 
