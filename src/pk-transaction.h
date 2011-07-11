@@ -107,6 +107,8 @@ PkConf		*pk_transaction_priv_get_conf			(PkTransaction	*transaction);
 PkBackend	*pk_transaction_priv_get_backend		(PkTransaction	*transaction);
 PkResults	*pk_transaction_priv_get_results		(PkTransaction	*transaction);
 gchar		**pk_transaction_priv_get_package_ids		(PkTransaction	*transaction);
+gchar		**pk_transaction_priv_get_values		(PkTransaction	*transaction);
+gchar		**pk_transaction_priv_get_files			(PkTransaction	*transaction);
 PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
 gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
 								 PkTransactionState state);

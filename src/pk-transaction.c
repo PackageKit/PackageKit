@@ -956,6 +956,24 @@ pk_transaction_priv_get_package_ids (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_priv_get_values:
+ **/
+gchar **
+pk_transaction_priv_get_values (PkTransaction *transaction)
+{
+	return transaction->priv->cached_values;
+}
+
+/**
+ * pk_transaction_priv_get_files:
+ **/
+gchar **
+pk_transaction_priv_get_files (PkTransaction *transaction)
+{
+	return transaction->priv->cached_full_paths;
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
