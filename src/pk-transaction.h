@@ -266,6 +266,7 @@ const gchar	*pk_transaction_plugin_get_description		(void);
 void		 pk_transaction_plugin_initialize		(PkTransaction	*transaction);
 void		 pk_transaction_plugin_destroy			(PkTransaction	*transaction);
 void		 pk_transaction_plugin_run			(PkTransaction	*transaction);
+void		 pk_transaction_plugin_started			(PkTransaction	*transaction);
 void		 pk_transaction_plugin_finished_start		(PkTransaction	*transaction);
 void		 pk_transaction_plugin_finished_results		(PkTransaction	*transaction);
 void		 pk_transaction_plugin_finished_end		(PkTransaction	*transaction);

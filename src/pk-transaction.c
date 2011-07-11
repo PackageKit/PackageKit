@@ -168,12 +168,13 @@ struct PkTransactionPrivate
 };
 
 typedef enum {
-	PK_TRANSACTION_PLUGIN_PHASE_INIT,
-	PK_TRANSACTION_PLUGIN_PHASE_RUN,
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START,
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS,
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END,
-	PK_TRANSACTION_PLUGIN_PHASE_DESTROY,
+	PK_TRANSACTION_PLUGIN_PHASE_INIT,		/* plugin started */
+	PK_TRANSACTION_PLUGIN_PHASE_RUN,		/* only this running */
+	PK_TRANSACTION_PLUGIN_PHASE_STARTED,		/* all signals connected */
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START,	/* finshed with all signals */
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS,	/* finished with some signals */
+	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END,	/* finished with no signals */
+	PK_TRANSACTION_PLUGIN_PHASE_DESTROY,		/* plugin finalized */
 	PK_TRANSACTION_PLUGIN_PHASE_UNKNOWN
 } PkTransactionPluginPhase;
 
@@ -881,6 +882,9 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		break;
 	case PK_TRANSACTION_PLUGIN_PHASE_RUN:
 		function = "pk_transaction_plugin_run";
+		break;
+	case PK_TRANSACTION_PLUGIN_PHASE_STARTED:
+		function = "pk_transaction_plugin_started";
 		break;
 	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START:
 		function = "pk_transaction_plugin_finished_start";
@@ -1764,7 +1768,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
-	g_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
+	g_debug ("setting role for %s to %s",
+		 priv->tid,
+		 pk_role_enum_to_string (priv->role));
 
 	/* connect up the signals */
 	priv->signal_allow_cancel =
@@ -1821,6 +1827,19 @@ pk_transaction_set_running (PkTransaction *transaction)
 	priv->signal_speed =
 		g_signal_connect (priv->backend, "notify::speed",
 				  G_CALLBACK (pk_transaction_speed_cb), transaction);
+
+	/* run the plugins */
+	pk_transaction_plugin_phase (transaction,
+				     PK_TRANSACTION_PLUGIN_PHASE_STARTED);
+
+	/* is an error code set? */
+	if (pk_backend_get_is_error_set (priv->backend)) {
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+
+		/* do not fail the tranaction */
+		ret = TRUE;
+		goto out;
+	}
 
 	/* mark running */
 	priv->allow_cancel = FALSE;
