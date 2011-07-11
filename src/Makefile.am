@@ -1,6 +1,8 @@
 ## We require new-style dependency handling.
 AUTOMAKE_OPTIONS = 1.7
 
+SUBDIRS = plugins
+
 NULL =
 
 PK_GLIB2_LIBS =						\
@@ -153,12 +155,7 @@ BUILT_SOURCES =						\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	org.freedesktop.PackageKit.h			\
-	org.freedesktop.PackageKit.Transaction.h	\
-	$(NULL)
-
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = 					\
-	packagekit-plugin.pc
+	org.freedesktop.PackageKit.Transaction.h
 
 pk-marshal.c: pk-marshal.list
 	echo "#include \"pk-marshal.h\"" > $@ && \
@@ -227,59 +224,5 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = *~ $(BUILT_SOURCES)
-
-# plugins
-plugindir = $(LIBDIR)/packagekit-plugins
-noinst_LTLIBRARIES =					\
-	libpk_plugin_example.la
-
-plugin_LTLIBRARIES =					\
-	libpk_plugin_scripts.la				\
-	libpk_plugin-update-package-list.la		\
-	libpk_plugin-no-update-process.la		\
-	libpk_plugin-scan-desktop-files.la		\
-	libpk_plugin-update-check-processes.la		\
-	libpk_plugin-check-shared-libraries-in-use.la	\
-	libpk-plugin-clear-firmware-requests.la
-
-libpk_plugin_example_la_SOURCES = pk-plugin-example.c
-libpk_plugin_example_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_example_la_LDFLAGS = -module -avoid-version
-libpk_plugin_example_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
-libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_scripts_la_LDFLAGS = -module -avoid-version
-libpk_plugin_scripts_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_clear_firmware_requests_la_SOURCES = pk-plugin-clear-firmware-requests.c
-libpk_plugin_clear_firmware_requests_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_clear_firmware_requests_la_LDFLAGS = -module -avoid-version
-libpk_plugin_clear_firmware_requests_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_update_package_list_la_SOURCES = pk-plugin-update-package-list.c
-libpk_plugin_update_package_list_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_update_package_list_la_LDFLAGS = -module -avoid-version
-libpk_plugin_update_package_list_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_no_update_process_la_SOURCES = pk-plugin-no-update-process.c
-libpk_plugin_no_update_process_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_no_update_process_la_LDFLAGS = -module -avoid-version
-libpk_plugin_no_update_process_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_scan_desktop_files_la_SOURCES = pk-plugin-scan-desktop-files.c
-libpk_plugin_scan_desktop_files_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_scan_desktop_files_la_LDFLAGS = -module -avoid-version
-libpk_plugin_scan_desktop_files_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_update_check_processes_la_SOURCES = pk-plugin-update-check-processes.c
-libpk_plugin_update_check_processes_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_update_check_processes_la_LDFLAGS = -module -avoid-version
-libpk_plugin_update_check_processes_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_check_shared_libraries_in_use_la_SOURCES = pk-plugin-check-shared-libraries-in-use.c
-libpk_plugin_check_shared_libraries_in_use_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_check_shared_libraries_in_use_la_LDFLAGS = -module -avoid-version
-libpk_plugin_check_shared_libraries_in_use_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
