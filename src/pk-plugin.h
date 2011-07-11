@@ -35,6 +35,18 @@ typedef struct {
 	PkPluginPrivate		*priv;
 } PkPlugin;
 
+
+typedef enum {
+	PK_PLUGIN_PHASE_INIT,				/* plugin started */
+	PK_PLUGIN_PHASE_TRANSACTION_RUN,		/* only this running */
+	PK_PLUGIN_PHASE_TRANSACTION_STARTED,		/* all signals connected */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START,	/* finshed with all signals */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS,	/* finished with some signals */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END,	/* finished with no signals */
+	PK_PLUGIN_PHASE_DESTROY,			/* plugin finalized */
+	PK_PLUGIN_PHASE_UNKNOWN
+} PkPluginPhase;
+
 #define	PK_TRANSACTION_PLUGIN_GET_PRIVATE(x)		g_new0 (x,1)
 
 typedef const gchar	*(*PkPluginGetDescFunc)		(void);

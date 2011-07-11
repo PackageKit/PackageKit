@@ -64,7 +64,8 @@ pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
 		       PkPlugin *plugin)
 {
-	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	if (!g_main_loop_is_running (plugin->priv->loop))
+		return;
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		g_warning ("%s failed with exit code: %s",
 			   pk_role_enum_to_string (pk_backend_get_role (backend)),

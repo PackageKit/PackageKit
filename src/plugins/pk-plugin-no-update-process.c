@@ -52,7 +52,8 @@ pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
 		       PkPlugin *plugin)
 {
-	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	if (!g_main_loop_is_running (plugin->priv->loop))
+		return;
 	g_main_loop_quit (plugin->priv->loop);
 }
 

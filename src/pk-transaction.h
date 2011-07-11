@@ -89,6 +89,8 @@ const gchar	*pk_transaction_state_to_string			(PkTransactionState state);
 const gchar	*pk_transaction_get_tid				(PkTransaction	*transaction);
 void		 pk_transaction_add_supported_mime_type		(PkTransaction	*transaction,
 								 const gchar	*mime_type);
+void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
+								 GPtrArray	*plugins);
 
 G_END_DECLS
 

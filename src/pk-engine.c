@@ -46,21 +46,22 @@
 
 #include "egg-string.h"
 
-#include "pk-network.h"
-#include "pk-cache.h"
-#include "pk-shared.h"
 #include "pk-backend.h"
-#include "pk-engine.h"
-#include "pk-transaction.h"
-#include "pk-transaction-dbus.h"
-#include "pk-transaction-db.h"
-#include "pk-transaction-list.h"
-#include "pk-inhibit.h"
-#include "pk-marshal.h"
-#include "pk-notify.h"
-#include "pk-file-monitor.h"
+#include "pk-cache.h"
 #include "pk-conf.h"
 #include "pk-dbus.h"
+#include "pk-engine.h"
+#include "pk-file-monitor.h"
+#include "pk-inhibit.h"
+#include "pk-marshal.h"
+#include "pk-network.h"
+#include "pk-notify.h"
+#include "pk-plugin.h"
+#include "pk-shared.h"
+#include "pk-transaction-db.h"
+#include "pk-transaction-dbus.h"
+#include "pk-transaction.h"
+#include "pk-transaction-list.h"
 
 static void     pk_engine_finalize	(GObject       *object);
 
@@ -100,6 +101,7 @@ struct PkEnginePrivate
 #endif
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
+	GPtrArray		*plugins;
 };
 
 enum {
@@ -1469,6 +1471,148 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
 
+
+/**
+ * pk_engine_load_plugin:
+ */
+static void
+pk_engine_load_plugin (PkEngine *engine,
+			    const gchar *filename)
+{
+	gboolean ret;
+	GModule *module;
+	PkPlugin *plugin;
+	PkPluginGetDescFunc plugin_desc = NULL;
+
+	module = g_module_open (filename,
+				0);
+	if (module == NULL) {
+		g_warning ("failed to open plugin %s: %s",
+			   filename, g_module_error ());
+		goto out;
+	}
+
+	/* get description */
+	ret = g_module_symbol (module,
+			       "pk_plugin_get_description",
+			       (gpointer *) &plugin_desc);
+	if (!ret) {
+		g_warning ("Plugin %s requires description",
+			   filename);
+		g_module_close (module);
+		goto out;
+	}
+
+	/* print what we know */
+	plugin = g_new0 (PkPlugin, 1);
+	plugin->module = module;
+	g_debug ("opened plugin %s: %s",
+		 filename, plugin_desc ());
+
+	/* add to array */
+	g_ptr_array_add (engine->priv->plugins,
+			 plugin);
+out:
+	return;
+}
+
+/**
+ * pk_engine_load_plugins:
+ */
+static void
+pk_engine_load_plugins (PkEngine *engine)
+{
+	const gchar *filename_tmp;
+	gchar *filename_plugin;
+	gchar *path;
+	GDir *dir;
+	GError *error = NULL;
+
+	/* search in the plugin directory for plugins */
+	path = g_build_filename (LIBDIR, "packagekit-plugins", NULL);
+	dir = g_dir_open (path, 0, &error);
+	if (dir == NULL) {
+		g_warning ("failed to open plugin directory: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* try to open each plugin */
+	g_debug ("searching for plugins in %s", path);
+	do {
+		filename_tmp = g_dir_read_name (dir);
+		if (filename_tmp == NULL)
+			break;
+		if (!g_str_has_suffix (filename_tmp, ".so"))
+			continue;
+		filename_plugin = g_build_filename (path,
+						    filename_tmp,
+						    NULL);
+		pk_engine_load_plugin (engine,
+					    filename_plugin);
+		g_free (filename_plugin);
+	} while (TRUE);
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	g_free (path);
+}
+
+/**
+ * pk_engine_plugin_free:
+ **/
+static void
+pk_engine_plugin_free (PkPlugin *plugin)
+{
+	g_free (plugin->priv);
+	g_module_close (plugin->module);
+	g_free (plugin);
+}
+
+
+/**
+ * pk_engine_plugin_phase:
+ **/
+static void
+pk_engine_plugin_phase (PkEngine *engine,
+			PkPluginPhase phase)
+{
+	guint i;
+	const gchar *function = NULL;
+	gboolean ret;
+	PkPluginFunc plugin_func = NULL;
+	PkPlugin *plugin;
+
+	switch (phase) {
+	case PK_PLUGIN_PHASE_INIT:
+		function = "pk_plugin_initialize";
+		break;
+	case PK_PLUGIN_PHASE_DESTROY:
+		function = "pk_plugin_destroy";
+		break;
+	default:
+		g_assert_not_reached ();
+		break;
+	}
+
+	g_assert (function != NULL);
+
+	/* run each plugin */
+	for (i=0; i<engine->priv->plugins->len; i++) {
+		plugin = g_ptr_array_index (engine->priv->plugins, i);
+		ret = g_module_symbol (plugin->module,
+				       function,
+				       (gpointer *) &plugin_func);
+		if (!ret)
+			continue;
+		g_debug ("run %s on %s",
+			 function,
+			 g_module_name (plugin->module));
+		plugin_func (plugin);
+	}
+}
+
 /**
  * pk_engine_init:
  **/
@@ -1634,12 +1778,23 @@ pk_engine_init (PkEngine *engine)
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 
+	/* get plugins */
+	engine->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_engine_plugin_free);
+	pk_engine_load_plugins (engine);
+	pk_transaction_list_set_plugins (engine->priv->transaction_list,
+					 engine->priv->plugins);
+
+
 	engine->priv->inhibit = pk_inhibit_new ();
 	g_signal_connect (engine->priv->inhibit, "locked",
 			  G_CALLBACK (pk_engine_inhibit_locked_cb), engine);
 
 	/* we use a trasaction db to store old transactions and to do rollbacks */
 	engine->priv->transaction_db = pk_transaction_db_new ();
+
+	/* initialize plugins */
+	pk_engine_plugin_phase (engine,
+				PK_PLUGIN_PHASE_INIT);
 }
 
 /**
@@ -1658,6 +1813,10 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
+
+	/* run the plugins */
+	pk_engine_plugin_phase (engine,
+				PK_PLUGIN_PHASE_DESTROY);
 
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);
@@ -1690,6 +1849,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->cache);
 	g_object_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
+	g_ptr_array_unref (engine->priv->plugins);
 	g_free (engine->priv->mime_types);
 	g_free (engine->priv->backend_name);
 	g_free (engine->priv->backend_description);

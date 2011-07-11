@@ -59,6 +59,7 @@ struct PkTransactionListPrivate
 	guint			 unwedge1_id;
 	guint			 unwedge2_id;
 	PkConf			*conf;
+	GPtrArray		*plugins;
 };
 
 typedef struct {
@@ -479,6 +480,10 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 		g_signal_connect_after (item->transaction, "finished",
 					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
 
+	/* set plugins */
+	pk_transaction_set_plugins (item->transaction,
+				    tlist->priv->plugins);
+
 	/* set transaction state */
 	ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
 	if (!ret) {
@@ -898,6 +903,16 @@ pk_transaction_list_wedge_check1 (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_set_plugins:
+ */
+void
+pk_transaction_list_set_plugins (PkTransactionList *tlist,
+				 GPtrArray *plugins)
+{
+	tlist->priv->plugins = g_ptr_array_ref (plugins);
+}
+
+/**
  * pk_transaction_list_class_init:
  * @klass: The PkTransactionListClass
  **/
@@ -958,6 +973,7 @@ pk_transaction_list_finalize (GObject *object)
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
 	g_object_unref (tlist->priv->conf);
+	g_ptr_array_unref (tlist->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }

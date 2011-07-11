@@ -76,6 +76,8 @@ guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransaction	*pk_transaction_list_get_transaction	(PkTransactionList	*tlist,
 							 const gchar		*tid);
 void		 pk_transaction_list_cancel_background	(PkTransactionList	*tlist);
+void		 pk_transaction_list_set_plugins	(PkTransactionList	*tlist,
+							 GPtrArray		*plugins);
 
 G_END_DECLS
 

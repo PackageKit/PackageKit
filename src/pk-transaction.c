@@ -195,17 +195,6 @@ typedef enum {
 	PK_TRANSACTION_ERROR_LAST
 } PkTransactionError;
 
-typedef enum {
-	PK_PLUGIN_PHASE_INIT,				/* plugin started */
-	PK_PLUGIN_PHASE_TRANSACTION_RUN,		/* only this running */
-	PK_PLUGIN_PHASE_TRANSACTION_STARTED,		/* all signals connected */
-	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START,	/* finshed with all signals */
-	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS,	/* finished with some signals */
-	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END,	/* finished with no signals */
-	PK_PLUGIN_PHASE_DESTROY,			/* plugin finalized */
-	PK_PLUGIN_PHASE_UNKNOWN
-} PkPluginPhase;
-
 enum {
 	SIGNAL_DETAILS,
 	SIGNAL_ERROR_CODE,
@@ -303,90 +292,13 @@ pk_transaction_error_get_type (void)
 }
 
 /**
- * pk_transaction_load_plugin:
+ * pk_transaction_set_plugins:
  */
-static void
-pk_transaction_load_plugin (PkTransaction *transaction,
-			    const gchar *filename)
+void
+pk_transaction_set_plugins (PkTransaction *transaction,
+			    GPtrArray *plugins)
 {
-	gboolean ret;
-	GModule *module;
-	PkPlugin *plugin;
-	PkPluginGetDescFunc plugin_desc = NULL;
-
-	module = g_module_open (filename,
-				0);
-	if (module == NULL) {
-		g_warning ("failed to open plugin %s: %s",
-			   filename, g_module_error ());
-		goto out;
-	}
-
-	/* get description */
-	ret = g_module_symbol (module,
-			       "pk_plugin_get_description",
-			       (gpointer *) &plugin_desc);
-	if (!ret) {
-		g_warning ("Plugin %s requires description",
-			   filename);
-		g_module_close (module);
-		goto out;
-	}
-
-	/* print what we know */
-	plugin = g_new0 (PkPlugin, 1);
-	plugin->module = module;
-	g_debug ("opened plugin %s: %s",
-		 filename, plugin_desc ());
-
-	/* add to array */
-	g_ptr_array_add (transaction->priv->plugins,
-			 plugin);
-out:
-	return;
-}
-
-/**
- * pk_transaction_load_plugins:
- */
-static void
-pk_transaction_load_plugins (PkTransaction *transaction)
-{
-	const gchar *filename_tmp;
-	gchar *filename_plugin;
-	gchar *path;
-	GDir *dir;
-	GError *error = NULL;
-
-	/* search in the plugin directory for plugins */
-	path = g_build_filename (LIBDIR, "packagekit-plugins", NULL);
-	dir = g_dir_open (path, 0, &error);
-	if (dir == NULL) {
-		g_warning ("failed to open plugin directory: %s",
-			   error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* try to open each plugin */
-	g_debug ("searching for plugins in %s", path);
-	do {
-		filename_tmp = g_dir_read_name (dir);
-		if (filename_tmp == NULL)
-			break;
-		if (!g_str_has_suffix (filename_tmp, ".so"))
-			continue;
-		filename_plugin = g_build_filename (path,
-						    filename_tmp,
-						    NULL);
-		pk_transaction_load_plugin (transaction,
-					    filename_plugin);
-		g_free (filename_plugin);
-	} while (TRUE);
-out:
-	if (dir != NULL)
-		g_dir_close (dir);
-	g_free (path);
+	transaction->priv->plugins = g_ptr_array_ref (plugins);
 }
 
 /**
@@ -904,42 +816,27 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	guint i;
 	const gchar *function = NULL;
 	gboolean ret;
-	gboolean use_transaction;
-	PkPluginFunc plugin_func = NULL;
-	PkPluginTransactionFunc plugin_trans_func = NULL;
-	gpointer func;
+	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
 
 	switch (phase) {
-	case PK_PLUGIN_PHASE_INIT:
-		function = "pk_plugin_initialize";
-		use_transaction = FALSE;
-		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
-		use_transaction = TRUE;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
 		function = "pk_plugin_transaction_started";
-		use_transaction = TRUE;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
 		function = "pk_plugin_transaction_finished_start";
-		use_transaction = TRUE;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
 		function = "pk_plugin_transaction_finished_results";
-		use_transaction = TRUE;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END:
 		function = "pk_plugin_transaction_finished_end";
-		use_transaction = TRUE;
-		break;
-	case PK_PLUGIN_PHASE_DESTROY:
-		function = "pk_plugin_destroy";
-		use_transaction = FALSE;
 		break;
 	default:
+		g_assert_not_reached ();
 		break;
 	}
 
@@ -950,20 +847,14 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		plugin = g_ptr_array_index (transaction->priv->plugins, i);
 		ret = g_module_symbol (plugin->module,
 				       function,
-				       &func);
+				       (gpointer *) &plugin_func);
 		if (!ret)
 			continue;
 
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
-		if (!use_transaction) {
-			plugin_func = (PkPluginFunc) func;
-			plugin_func (plugin);
-		} else {
-			plugin_trans_func = (PkPluginTransactionFunc) func;
-			plugin_trans_func (plugin, transaction);
-		}
+		plugin_func (plugin, transaction);
 	}
 }
 
@@ -5568,17 +5459,6 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_plugin_free:
- **/
-static void
-pk_transaction_plugin_free (PkPlugin *plugin)
-{
-	g_free (plugin->priv);
-	g_module_close (plugin->module);
-	g_free (plugin);
-}
-
-/**
  * pk_transaction_get_property:
  **/
 static void
@@ -5918,15 +5798,6 @@ pk_transaction_init (PkTransaction *transaction)
 
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
-
-	/* get plugins */
-	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_transaction_plugin_free);
-	pk_transaction_load_plugins (transaction);
-
-	/* initialize plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_INIT);
-
 }
 
 /**
@@ -5972,10 +5843,6 @@ pk_transaction_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_DESTROY);
 
 #ifdef USE_SECURITY_POLKIT
 	if (transaction->priv->subject != NULL)
