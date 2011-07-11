@@ -92,6 +92,14 @@ out:
 }
 
 /**
+ * pk_transaction_plugin_started:
+ */
+void
+pk_transaction_plugin_started (PkTransaction *transaction)
+{
+}
+
+/**
  * pk_transaction_plugin_finished_start:
  */
 void
