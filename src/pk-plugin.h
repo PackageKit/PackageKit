@@ -38,6 +38,7 @@ typedef struct {
 
 typedef enum {
 	PK_PLUGIN_PHASE_INIT,				/* plugin started */
+	PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES,	/* for adding content types */
 	PK_PLUGIN_PHASE_TRANSACTION_RUN,		/* only this running */
 	PK_PLUGIN_PHASE_TRANSACTION_STARTED,		/* all signals connected */
 	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START,	/* finshed with all signals */
@@ -66,6 +67,8 @@ void		 pk_plugin_transaction_finished_start	(PkPlugin	*plugin,
 void		 pk_plugin_transaction_finished_results	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_finished_end	(PkPlugin	*plugin,
+							 PkTransaction	*transaction);
+void		 pk_plugin_transaction_content_types	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 
 G_END_DECLS
