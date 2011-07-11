@@ -816,6 +816,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	guint i;
 	const gchar *function = NULL;
 	gboolean ret;
+	gboolean ran_one = FALSE;
 	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
 
@@ -851,11 +852,14 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		if (!ret)
 			continue;
 
+		ran_one = TRUE;
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
 		plugin_func (plugin, transaction);
 	}
+	if (!ran_one)
+		g_debug ("no plugins provided %s", function);
 }
 
 /**
