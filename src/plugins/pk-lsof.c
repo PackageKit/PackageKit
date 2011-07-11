@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <glib.h>
 
-#include "egg-string.h"
-
 #include "pk-lsof.h"
 
 #define PK_LSOF_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_LSOF, PkLsofPrivate))
@@ -132,6 +130,35 @@ pk_lsof_type_from_string (const gchar *type)
 }
 
 /**
+ * pk_lsof_strtoint:
+ **/
+static gboolean
+pk_lsof_strtoint (const gchar *text, gint *value)
+{
+	gchar *endptr = NULL;
+	gint64 value_raw;
+
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
+
+	/* parse */
+	value_raw = g_ascii_strtoll (text, &endptr, 10);
+
+	/* parsing error */
+	if (endptr == text)
+		return FALSE;
+
+	/* out of range */
+	if (value_raw > G_MAXINT || value_raw < G_MININT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (gint) value_raw;
+	return TRUE;
+}
+
+/**
  * pk_lsof_refresh:
  **/
 gboolean
@@ -191,7 +218,7 @@ pk_lsof_refresh (PkLsof *lsof)
 		case 'p':
 
 			/* parse PID */
-			ret = egg_strtoint (value, &pid);
+			ret = pk_lsof_strtoint (value, &pid);
 			if (!ret) {
 				g_warning ("failed to parse pid: '%s'", value);
 				pid = -1;

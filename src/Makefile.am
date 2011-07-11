@@ -56,8 +56,6 @@ shared_SOURCES =					\
 	egg-dbus-monitor.h				\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-lsof.c					\
-	pk-lsof.h					\
 	pk-proc.c					\
 	pk-proc.h					\
 	pk-dbus.c					\
