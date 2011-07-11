@@ -79,7 +79,7 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	priv->proc = pk_proc_new ();
 
 	/* get the list of processes we should neverupdate when running */
-	conf = pk_transaction_priv_get_conf (transaction);
+	conf = pk_transaction_get_conf (transaction);
 	priv->no_update_process_list = pk_conf_get_strv (conf, "NoUpdateProcessList");
 }
 
@@ -180,12 +180,12 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	PkRoleEnum role;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_UPDATE_PACKAGES)
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 	    PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
@@ -223,7 +223,7 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 					G_CALLBACK (pk_plugin_finished_cb), NULL);
 
 	/* get all the files touched in the packages we just updated */
-	package_ids = pk_transaction_priv_get_package_ids (transaction);
+	package_ids = pk_transaction_get_package_ids (transaction);
 	pk_backend_reset (backend);
 	pk_backend_get_files (backend, package_ids);
 

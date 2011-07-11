@@ -94,7 +94,7 @@ pk_transaction_plugin_initialize (PkTransaction *transaction)
 	priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	/* check the config file */
-	conf = pk_transaction_priv_get_conf (transaction);
+	conf = pk_transaction_get_conf (transaction);
 	ret = pk_conf_get_bool (conf, "ScanDesktopFiles");
 	if (!ret)
 		goto out;
@@ -218,7 +218,7 @@ pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
 	/* use PK to find the correct package */
 	if (priv->list->len > 0)
 		g_ptr_array_set_size (priv->list, 0);
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	pk_backend_reset (backend);
 	filenames = g_strsplit (filename, "|||", -1);
 	pk_backend_search_files (backend,
@@ -469,12 +469,12 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 		goto out;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_REFRESH_CACHE)
 		goto out;
 
 	/* connect to backend */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 					PK_ROLE_ENUM_SEARCH_FILE)) {
 		g_debug ("cannot search files");
@@ -616,12 +616,12 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 		goto out;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES)
 		goto out;
 
 	/* connect to backend */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 					PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
@@ -633,7 +633,7 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 				     G_CALLBACK (pk_plugin_files_cb), NULL);
 
 	/* get results */
-	results = pk_transaction_priv_get_results (transaction);
+	results = pk_transaction_get_results (transaction);
 	array = pk_results_get_package_array (results);
 
 	/* filter on INSTALLING | UPDATING */

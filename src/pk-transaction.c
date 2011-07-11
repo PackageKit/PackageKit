@@ -169,6 +169,32 @@ struct PkTransactionPrivate
 };
 
 typedef enum {
+	PK_TRANSACTION_ERROR_DENIED,
+	PK_TRANSACTION_ERROR_NOT_RUNNING,
+	PK_TRANSACTION_ERROR_NO_ROLE,
+	PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+	PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+	PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION,
+	PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+	PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,
+	PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
+	PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+	PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+	PK_TRANSACTION_ERROR_SEARCH_INVALID,
+	PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
+	PK_TRANSACTION_ERROR_FILTER_INVALID,
+	PK_TRANSACTION_ERROR_INPUT_INVALID,
+	PK_TRANSACTION_ERROR_INVALID_STATE,
+	PK_TRANSACTION_ERROR_INITIALIZE_FAILED,
+	PK_TRANSACTION_ERROR_COMMIT_FAILED,
+	PK_TRANSACTION_ERROR_INVALID_PROVIDE,
+	PK_TRANSACTION_ERROR_PACK_INVALID,
+	PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+	PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+	PK_TRANSACTION_ERROR_LAST
+} PkTransactionError;
+
+typedef enum {
 	PK_TRANSACTION_PLUGIN_PHASE_INIT,		/* plugin started */
 	PK_TRANSACTION_PLUGIN_PHASE_RUN,		/* only this running */
 	PK_TRANSACTION_PLUGIN_PHASE_STARTED,		/* all signals connected */
@@ -921,55 +947,55 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 }
 
 /**
- * pk_transaction_priv_get_conf:
+ * pk_transaction_get_conf:
  **/
 PkConf *
-pk_transaction_priv_get_conf (PkTransaction *transaction)
+pk_transaction_get_conf (PkTransaction *transaction)
 {
 	return transaction->priv->conf;
 }
 
 /**
- * pk_transaction_priv_get_backend:
+ * pk_transaction_get_backend:
  **/
 PkBackend *
-pk_transaction_priv_get_backend (PkTransaction *transaction)
+pk_transaction_get_backend (PkTransaction *transaction)
 {
 	return transaction->priv->backend;
 }
 
 /**
- * pk_transaction_priv_get_results:
+ * pk_transaction_get_results:
  **/
 PkResults *
-pk_transaction_priv_get_results (PkTransaction *transaction)
+pk_transaction_get_results (PkTransaction *transaction)
 {
 	return transaction->priv->results;
 }
 
 /**
- * pk_transaction_priv_get_package_ids:
+ * pk_transaction_get_package_ids:
  **/
 gchar **
-pk_transaction_priv_get_package_ids (PkTransaction *transaction)
+pk_transaction_get_package_ids (PkTransaction *transaction)
 {
 	return transaction->priv->cached_package_ids;
 }
 
 /**
- * pk_transaction_priv_get_values:
+ * pk_transaction_get_values:
  **/
 gchar **
-pk_transaction_priv_get_values (PkTransaction *transaction)
+pk_transaction_get_values (PkTransaction *transaction)
 {
 	return transaction->priv->cached_values;
 }
 
 /**
- * pk_transaction_priv_get_files:
+ * pk_transaction_get_full_paths:
  **/
 gchar **
-pk_transaction_priv_get_files (PkTransaction *transaction)
+pk_transaction_get_full_paths (PkTransaction *transaction)
 {
 	return transaction->priv->cached_full_paths;
 }
@@ -1717,10 +1743,10 @@ pk_transaction_speed_cb (GObject *object, GParamSpec *pspec, PkTransaction *tran
 }
 
 /**
- * pk_transaction_set_running:
+ * pk_transaction_run:
  */
-G_GNUC_WARN_UNUSED_RESULT static gboolean
-pk_transaction_set_running (PkTransaction *transaction)
+gboolean
+pk_transaction_run (PkTransaction *transaction)
 {
 	gboolean ret;
 	guint i;
@@ -1963,20 +1989,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 		ret = FALSE;
 	}
 out:
-	return ret;
-}
-
-/**
- * pk_transaction_run:
- */
-gboolean
-pk_transaction_run (PkTransaction *transaction)
-{
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	ret = pk_transaction_set_running (transaction);
 	return ret;
 }
 
@@ -2582,10 +2594,10 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 #endif
 
 /**
- * pk_transaction_priv_get_role:
+ * pk_transaction_get_role:
  **/
 PkRoleEnum
-pk_transaction_priv_get_role (PkTransaction *transaction)
+pk_transaction_get_role (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	return transaction->priv->role;
@@ -2708,10 +2720,10 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 }
 
 /**
- * pk_transaction_priv_cancel_bg:
+ * pk_transaction_cancel_bg:
  **/
 void
-pk_transaction_priv_cancel_bg (PkTransaction *transaction)
+pk_transaction_cancel_bg (PkTransaction *transaction)
 {
 	g_debug ("CancelBg method called on %s", transaction->priv->tid);
 

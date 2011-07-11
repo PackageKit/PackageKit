@@ -111,7 +111,7 @@ pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
 
 	/* use PK to find the correct package */
 	g_ptr_array_set_size (priv->list, 0);
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	pk_backend_reset (backend);
 	filenames = g_strsplit (filename, "|||", -1);
 	pk_backend_search_files (backend,
@@ -301,20 +301,20 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	PkCache *cache = NULL;
 
 	/* check the config file */
-	conf = pk_transaction_priv_get_conf (transaction);
+	conf = pk_transaction_get_conf (transaction);
 	ret = pk_conf_get_bool (conf, "CheckSharedLibrariesInUse");
 	if (!ret)
 		goto out;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
 	    role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
 	    role != PK_ROLE_ENUM_INSTALL_PACKAGES)
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 	    PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
@@ -368,7 +368,7 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	}
 
 	/* is a security update we are installing */
-	package_ids = pk_transaction_priv_get_package_ids (transaction);
+	package_ids = pk_transaction_get_package_ids (transaction);
 	if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		ret = FALSE;
 
@@ -479,18 +479,18 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	guint uid_min;
 
 	/* check the config file */
-	conf = pk_transaction_priv_get_conf (transaction);
+	conf = pk_transaction_get_conf (transaction);
 	ret = pk_conf_get_bool (conf, "CheckSharedLibrariesInUse");
 	if (!ret)
 		goto out;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_GET_UPDATES)
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 	    PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");

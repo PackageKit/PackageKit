@@ -73,7 +73,7 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 	}
 
 	/* format the argument list */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	command = g_strdup_printf ("%s %s NOTAPISTABLE",
 				   filename,
 				   pk_role_enum_to_string (role));

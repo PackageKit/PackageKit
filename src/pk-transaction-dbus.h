@@ -156,6 +156,15 @@ void		 pk_transaction_upgrade_system			(PkTransaction	*transaction,
 								 const gchar	*upgrade_kind_str,
 								 DBusGMethodInvocation *context);
 
+gboolean	 pk_transaction_set_sender			(PkTransaction	*transaction,
+								 const gchar	*sender);
+gboolean	 pk_transaction_filter_check			(const gchar	*filter,
+								 GError		**error);
+gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
+								 GError		**error);
+gboolean	 pk_transaction_set_tid				(PkTransaction	*transaction,
+								 const gchar	*tid);
+
 G_END_DECLS
 
 #endif /* __PK_TRANSACTION_DBUS_H */

@@ -70,18 +70,18 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	PkRoleEnum role;
 
 	/* check the config file */
-	conf = pk_transaction_priv_get_conf (transaction);
+	conf = pk_transaction_get_conf (transaction);
 	ret = pk_conf_get_bool (conf, "UseDummy");
 	if (!ret)
 		goto out;
 
 	/* check the role */
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_REFRESH_CACHE)
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_priv_get_backend (transaction);
+	backend = pk_transaction_get_backend (transaction);
 	if (!pk_backend_is_implemented (backend,
 	    PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");

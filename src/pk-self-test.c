@@ -36,13 +36,15 @@
 #include "pk-lsof.h"
 #include "pk-notify.h"
 #include "pk-proc.h"
-#include "pk-syslog.h"
 #include "pk-spawn.h"
+#include "pk-store.h"
+#include "pk-syslog.h"
 #include "pk-time.h"
-#include "pk-transaction-db.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
+
+#define PK_TRANSACTION_ERROR_INPUT_INVALID	14
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;

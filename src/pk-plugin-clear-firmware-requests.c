@@ -44,7 +44,7 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	gchar *filename = NULL;
 	PkRoleEnum role;
 
-	role = pk_transaction_priv_get_role (transaction);
+	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_REFRESH_CACHE)
 		goto out;
 

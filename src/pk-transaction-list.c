@@ -149,7 +149,7 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 		/* we might have recently finished this, but not removed it */
 		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_FINISHED)
 			continue;
-		role_temp = pk_transaction_priv_get_role (item->transaction);
+		role_temp = pk_transaction_get_role (item->transaction);
 		if (role_temp == role)
 			return TRUE;
 	}
@@ -583,7 +583,7 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 			continue;
 		g_debug ("cancelling pending transaction %s",
 			 item->tid);
-		pk_transaction_priv_cancel_bg (item->transaction);
+		pk_transaction_cancel_bg (item->transaction);
 	}
 
 	/* cancel any running transactions */
@@ -596,7 +596,7 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 			continue;
 		g_debug ("cancelling running background transaction %s",
 			 item->tid);
-		pk_transaction_priv_cancel_bg (item->transaction);
+		pk_transaction_cancel_bg (item->transaction);
 	}
 }
 
@@ -661,7 +661,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 		g_debug ("cancelling running background transaction %s "
 			 "and instead running %s",
 			 item_active->tid, item->tid);
-		pk_transaction_priv_cancel_bg (item_active->transaction);
+		pk_transaction_cancel_bg (item_active->transaction);
 		goto out;
 	}
 out:
@@ -747,7 +747,7 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
-		role = pk_transaction_priv_get_role (item->transaction);
+		role = pk_transaction_get_role (item->transaction);
 		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] background[%i]\n", i,
 					pk_role_enum_to_string (role), item->tid,
 					pk_transaction_state_to_string (state),
@@ -817,7 +817,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
-		role = pk_transaction_priv_get_role (item->transaction);
+		role = pk_transaction_get_role (item->transaction);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
 			unknown_role++;
 	}
