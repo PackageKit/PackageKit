@@ -205,23 +205,34 @@ static gint
 pk_plugin_get_uid (PkTransaction *transaction, guint pid)
 {
 	gboolean ret;
-	gint uid = -1;
+	gchar *endptr = NULL;
 	gchar *filename = NULL;
-	gchar *uid_text = NULL;
+	gchar *text = NULL;
+	guint64 value_raw;
+	gint uid = -1;
 
 	/* get command line from proc */
 	filename = g_strdup_printf ("/proc/%i/loginuid", pid);
-	ret = g_file_get_contents (filename, &uid_text, NULL, NULL);
+	ret = g_file_get_contents (filename, &text, NULL, NULL);
 	if (!ret)
 		goto out;
 
-	/* convert from text */
-	ret = egg_strtoint (uid_text, &uid);
-	if (!ret)
+	/* parse */
+	value_raw = g_ascii_strtoull (text, &endptr, 10);
+
+	/* parsing error */
+	if (endptr == text)
 		goto out;
+
+	/* out of range */
+	if (value_raw > G_MAXUINT)
+		goto out;
+
+	/* cast back down to value */
+	uid = (gint) value_raw;
 out:
 	g_free (filename);
-	g_free (uid_text);
+	g_free (text);
 	return uid;
 }
 
