@@ -52,6 +52,7 @@
 #include "pk-backend.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
+#include "pk-transaction-dbus.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction-list.h"
 #include "pk-inhibit.h"

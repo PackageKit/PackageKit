@@ -55,6 +55,7 @@
 #include "egg-dbus-monitor.h"
 
 #include "pk-transaction.h"
+#include "pk-transaction-dbus.h"
 #include "pk-transaction-list.h"
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"

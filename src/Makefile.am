@@ -62,6 +62,7 @@ shared_SOURCES =					\
 	pk-dbus.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
+	pk-transaction-dbus.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-network.c					\

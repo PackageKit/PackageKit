@@ -42,6 +42,7 @@
 #include "egg-string.h"
 
 #include "pk-conf.h"
+#include "pk-transaction-dbus.h"
 #include "pk-transaction-list.h"
 #include "org.freedesktop.PackageKit.Transaction.h"
 
