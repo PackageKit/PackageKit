@@ -21,13 +21,13 @@
 
 #include <config.h>
 #include <gio/gio.h>
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Runs external scrips";
 }
@@ -138,20 +138,22 @@ out:
 }
 
 /**
- * pk_transaction_plugin_run:
+ * pk_plugin_transaction_run:
  */
 void
-pk_transaction_plugin_run (PkTransaction *transaction)
+pk_plugin_transaction_run (PkPlugin *plugin,
+			   PkTransaction *transaction)
 {
 	pk_transaction_process_scripts (transaction,
 					"pre-transaction.d");
 }
 
 /**
- * pk_transaction_plugin_finished_end:
+ * pk_plugin_transaction_finished_end:
  */
 void
-pk_transaction_plugin_finished_end (PkTransaction *transaction)
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
 {
 	pk_transaction_process_scripts (transaction,
 					"post-transaction.d");

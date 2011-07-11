@@ -21,27 +21,25 @@
 
 #include <config.h>
 #include <gio/gio.h>
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 
 #include <packagekit-glib2/pk-package.h>
 #include <packagekit-glib2/pk-files.h>
 
 #include "pk-proc.h"
 
-typedef struct {
+struct PkPluginPrivate {
 	GMainLoop		*loop;
 	GPtrArray		*files_list;
-	gchar			**no_update_process_list;
+	gchar			**no_update;
 	PkProc			*proc;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Updates the package lists after refresh";
 }
@@ -52,48 +50,35 @@ pk_transaction_plugin_get_description (void)
 static void
 pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
-		       gpointer user_data)
+		       PkPlugin *plugin)
 {
-	if (!g_main_loop_is_running (priv->loop))
-		return;
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("%s failed with exit code: %s",
-			     pk_role_enum_to_string (pk_backend_get_role (backend)),
-			     pk_exit_enum_to_string (exit_enum));
-	}
-	g_main_loop_quit (priv->loop);
+	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	g_main_loop_quit (plugin->priv->loop);
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
-	PkConf *conf;
-
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->loop = g_main_loop_new (NULL, FALSE);
-	priv->files_list = g_ptr_array_new_with_free_func (g_free);
-	priv->proc = pk_proc_new ();
-
-	/* get the list of processes we should neverupdate when running */
-	conf = pk_transaction_get_conf (transaction);
-	priv->no_update_process_list = pk_conf_get_strv (conf, "NoUpdateProcessList");
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
+	plugin->priv->files_list = g_ptr_array_new_with_free_func (g_free);
+	plugin->priv->proc = pk_proc_new ();
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_main_loop_unref (priv->loop);
-	g_strfreev (priv->no_update_process_list);
-	g_ptr_array_unref (priv->files_list);
-	g_object_unref (priv->proc);
-	g_free (priv);
+	g_main_loop_unref (plugin->priv->loop);
+	g_strfreev (plugin->priv->no_update);
+	g_ptr_array_unref (plugin->priv->files_list);
+	g_object_unref (plugin->priv->proc);
 }
 
 /**
@@ -102,21 +87,21 @@ pk_transaction_plugin_destroy (PkTransaction *transaction)
  * Only if the pattern matches the old and new names we refuse to run
  **/
 static gboolean
-pk_plugin_match_running_file (gpointer user_data, const gchar *filename)
+pk_plugin_match_running_file (PkPlugin *plugin, const gchar *filename)
 {
 	guint i;
 	gchar **list;
 	gboolean ret;
 
 	/* compare each pattern */
-	list = priv->no_update_process_list;
+	list = plugin->priv->no_update;
 	for (i=0; list[i] != NULL; i++) {
 
 		/* does the package filename match */
 		ret = g_pattern_match_simple (list[i], filename);
 		if (ret) {
 			/* is there a running process that also matches */
-			ret = pk_proc_find_exec (priv->proc, list[i]);
+			ret = pk_proc_find_exec (plugin->priv->proc, list[i]);
 			if (ret)
 				goto out;
 		}
@@ -134,7 +119,7 @@ out:
 static void
 pk_plugin_files_cb (PkBackend *backend,
 		    PkFiles *files,
-		    gpointer user_data)
+		    PkPlugin *plugin)
 {
 	guint i;
 	guint len;
@@ -152,22 +137,23 @@ pk_plugin_files_cb (PkBackend *backend,
 	for (i=0; i<len; i++) {
 
 		/* does the package filename match */
-		ret = pk_plugin_match_running_file (backend, filenames[i]);
+		ret = pk_plugin_match_running_file (plugin, filenames[i]);
 		if (!ret)
 			continue;
 
 		/* add as it matches the criteria */
 		g_debug ("adding filename %s", filenames[i]);
-		g_ptr_array_add (priv->files_list, g_strdup (filenames[i]));
+		g_ptr_array_add (plugin->priv->files_list, g_strdup (filenames[i]));
 	}
 	g_strfreev (filenames);
 }
 
 /**
- * pk_transaction_plugin_run:
+ * pk_plugin_transaction_run:
  */
 void
-pk_transaction_plugin_run (PkTransaction *transaction)
+pk_plugin_transaction_run (PkPlugin *plugin,
+			   PkTransaction *transaction)
 {
 	const gchar *file;
 	gboolean ret;
@@ -177,6 +163,7 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	guint files_id = 0;
 	guint finished_id = 0;
 	PkBackend *backend = NULL;
+	PkConf *conf;
 	PkRoleEnum role;
 
 	/* check the role */
@@ -192,22 +179,28 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 		goto out;
 	}
 
+	/* get the list of processes we should neverupdate when running */
+	conf = pk_transaction_get_conf (transaction);
+	if (plugin->priv->no_update == NULL) {
+		plugin->priv->no_update = pk_conf_get_strv (conf, "NoUpdateProcessList");
+	}
+
 	/* check we have entry */
-	if (priv->no_update_process_list == NULL ||
-	    priv->no_update_process_list[0] == NULL) {
+	if (plugin->priv->no_update == NULL ||
+	    plugin->priv->no_update[0] == NULL) {
 		g_debug ("no processes to watch");
 		goto out;
 	}
 
 	/* reset */
-	g_ptr_array_set_size (priv->files_list, 0);
+	g_ptr_array_set_size (plugin->priv->files_list, 0);
 
 	/* set status */
 	pk_backend_set_status (backend, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
 	pk_backend_set_percentage (backend, 101);
 
 	/* get list from proc */
-	ret = pk_proc_refresh (priv->proc);
+	ret = pk_proc_refresh (plugin->priv->proc);
 	if (!ret) {
 		g_warning ("failed to refresh");
 		/* non-fatal */
@@ -218,9 +211,9 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 
 	files_id = g_signal_connect (backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), NULL);
+				     G_CALLBACK (pk_plugin_files_cb), plugin);
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
 	/* get all the files touched in the packages we just updated */
 	package_ids = pk_transaction_get_package_ids (transaction);
@@ -228,12 +221,12 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	pk_backend_get_files (backend, package_ids);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 	pk_backend_set_percentage (backend, 100);
 
 	/* there is a file we can't COW */
-	if (priv->files_list->len != 0) {
-		file = g_ptr_array_index (priv->files_list, 0);
+	if (plugin->priv->files_list->len != 0) {
+		file = g_ptr_array_index (plugin->priv->files_list, 0);
 		pk_backend_error_code (backend,
 				       PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS,
 				       "failed to run as %s is running", file);

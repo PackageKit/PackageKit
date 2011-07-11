@@ -22,26 +22,25 @@
 #include <config.h>
 #include <gio/gdesktopappinfo.h>
 #include <gio/gio.h>
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 #include <sqlite3.h>
 
 #include <packagekit-glib2/pk-desktop.h>
 #include <packagekit-glib2/pk-package.h>
 
-typedef struct {
+struct PkPluginPrivate {
 	sqlite3			*db;
 	GPtrArray		*list;
 	GMainLoop		*loop;
 	GHashTable		*hash;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+	PkBackend		*backend;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Scans desktop files on refresh and adds them to a database";
 }
@@ -52,9 +51,9 @@ pk_transaction_plugin_get_description (void)
 static void
 pk_plugin_package_cb (PkBackend *backend,
 		      PkPackage *package,
-		      gpointer user_data)
+		      PkPlugin *plugin)
 {
-	g_ptr_array_add (priv->list, g_object_ref (package));
+	g_ptr_array_add (plugin->priv->list, g_object_ref (package));
 }
 
 /**
@@ -63,93 +62,40 @@ pk_plugin_package_cb (PkBackend *backend,
 static void
 pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
-		       gpointer user_data)
+		       PkPlugin *plugin)
 {
-	if (!g_main_loop_is_running (priv->loop))
-		return;
+	g_assert (g_main_loop_is_running (plugin->priv->loop));
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		g_warning ("%s failed with exit code: %s",
 			   pk_role_enum_to_string (pk_backend_get_role (backend)),
 			   pk_exit_enum_to_string (exit_enum));
 	}
-	g_main_loop_quit (priv->loop);
+	g_main_loop_quit (plugin->priv->loop);
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
-	const gchar *statement_create;
-	gboolean ret;
-	gchar *error_msg = NULL;
-	gint rc;
-	PkConf *conf;
-
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->loop = g_main_loop_new (NULL, FALSE);
-	priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
-	/* check the config file */
-	conf = pk_transaction_get_conf (transaction);
-	ret = pk_conf_get_bool (conf, "ScanDesktopFiles");
-	if (!ret)
-		goto out;
-
-	/* check if database exists */
-	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE,
-			   G_FILE_TEST_EXISTS);
-
-	g_debug ("trying to open database '%s'",
-		 PK_DESKTOP_DEFAULT_DATABASE);
-	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &priv->db);
-	if (rc != 0) {
-		g_warning ("Can't open desktop database: %s\n",
-			   sqlite3_errmsg (priv->db));
-		sqlite3_close (priv->db);
-		priv->db = NULL;
-		goto out;
-	}
-
-	/* create if not exists */
-	if (!ret) {
-		g_debug ("creating database cache in %s",
-			 PK_DESKTOP_DEFAULT_DATABASE);
-		statement_create = "CREATE TABLE cache ("
-				   "filename TEXT,"
-				   "package TEXT,"
-				   "show INTEGER,"
-				   "md5 TEXT);";
-		rc = sqlite3_exec (priv->db, statement_create,
-				   NULL, NULL, &error_msg);
-		if (rc != SQLITE_OK) {
-			g_warning ("SQL error: %s\n", error_msg);
-			sqlite3_free (error_msg);
-			goto out;
-		}
-	}
-
-	/* we don't need to keep syncing */
-	sqlite3_exec (priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-
-out:
-	return;
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
+	plugin->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	plugin->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_ptr_array_unref (priv->list);
-	g_main_loop_unref (priv->loop);
-	g_hash_table_unref (priv->hash);
-	sqlite3_close (priv->db);
-	g_free (priv);
+	g_ptr_array_unref (plugin->priv->list);
+	g_main_loop_unref (plugin->priv->loop);
+	g_hash_table_unref (plugin->priv->hash);
+	sqlite3_close (plugin->priv->db);
 }
 
 /**
@@ -191,7 +137,7 @@ out:
  * pk_plugin_sqlite_remove_filename:
  **/
 static gint
-pk_plugin_sqlite_remove_filename (PkTransaction *transaction,
+pk_plugin_sqlite_remove_filename (PkPlugin *plugin,
 				  const gchar *filename)
 {
 	gchar *statement;
@@ -199,7 +145,7 @@ pk_plugin_sqlite_remove_filename (PkTransaction *transaction,
 
 	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'",
 				     filename);
-	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
+	rc = sqlite3_exec (plugin->priv->db, statement, NULL, NULL, NULL);
 	g_free (statement);
 	return rc;
 }
@@ -208,35 +154,33 @@ pk_plugin_sqlite_remove_filename (PkTransaction *transaction,
  * pk_plugin_get_installed_package_for_file:
  **/
 static PkPackage *
-pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
+pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 					  const gchar *filename)
 {
 	PkPackage *package = NULL;
 	gchar **filenames;
-	PkBackend *backend = NULL;
 
 	/* use PK to find the correct package */
-	if (priv->list->len > 0)
-		g_ptr_array_set_size (priv->list, 0);
-	backend = pk_transaction_get_backend (transaction);
-	pk_backend_reset (backend);
+	if (plugin->priv->list->len > 0)
+		g_ptr_array_set_size (plugin->priv->list, 0);
+	pk_backend_reset (plugin->priv->backend);
 	filenames = g_strsplit (filename, "|||", -1);
-	pk_backend_search_files (backend,
+	pk_backend_search_files (plugin->priv->backend,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 				 filenames);
 	g_strfreev (filenames);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	/* check that we only matched one package */
-	if (priv->list->len != 1) {
-		g_warning ("not correct size, %i", priv->list->len);
+	if (plugin->priv->list->len != 1) {
+		g_warning ("not correct size, %i", plugin->priv->list->len);
 		goto out;
 	}
 
 	/* get the package */
-	package = g_ptr_array_index (priv->list, 0);
+	package = g_ptr_array_index (plugin->priv->list, 0);
 	if (package == NULL) {
 		g_warning ("cannot get package");
 		goto out;
@@ -249,7 +193,7 @@ out:
  * pk_plugin_sqlite_add_filename_details:
  **/
 static gint
-pk_plugin_sqlite_add_filename_details (PkTransaction *transaction,
+pk_plugin_sqlite_add_filename_details (PkPlugin *plugin,
 				       const gchar *filename,
 				       const gchar *package,
 				       const gchar *md5)
@@ -276,17 +220,17 @@ pk_plugin_sqlite_add_filename_details (PkTransaction *transaction,
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'",
 				     filename);
-	sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
+	sqlite3_exec (plugin->priv->db, statement, NULL, NULL, NULL);
 	g_free (statement);
 
 	/* prepare the query, as we don't escape it */
-	rc = sqlite3_prepare_v2 (priv->db,
+	rc = sqlite3_prepare_v2 (plugin->priv->db,
 				 "INSERT INTO cache (filename, package, show, md5) "
 				 "VALUES (?, ?, ?, ?)",
 				 -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
 		g_warning ("SQL failed to prepare: %s",
-			   sqlite3_errmsg (priv->db));
+			   sqlite3_errmsg (plugin->priv->db));
 		goto out;
 	}
 
@@ -312,7 +256,7 @@ out:
  * pk_plugin_sqlite_add_filename:
  **/
 static gint
-pk_plugin_sqlite_add_filename (PkTransaction *transaction,
+pk_plugin_sqlite_add_filename (PkPlugin *plugin,
 			       const gchar *filename,
 			       const gchar *md5_opt)
 {
@@ -327,7 +271,7 @@ pk_plugin_sqlite_add_filename (PkTransaction *transaction,
 		md5 = pk_plugin_get_filename_md5 (filename);
 
 	/* resolve */
-	package = pk_plugin_get_installed_package_for_file (transaction,
+	package = pk_plugin_get_installed_package_for_file (plugin,
 							    filename);
 	if (package == NULL) {
 		g_warning ("failed to get list");
@@ -335,7 +279,7 @@ pk_plugin_sqlite_add_filename (PkTransaction *transaction,
 	}
 
 	/* add */
-	rc = pk_plugin_sqlite_add_filename_details (transaction,
+	rc = pk_plugin_sqlite_add_filename_details (plugin,
 						    filename,
 						    pk_package_get_name (package),
 						    md5);
@@ -353,7 +297,7 @@ pk_plugin_sqlite_cache_rescan_cb (void *data,
 				  gchar **argv,
 				  gchar **col_name)
 {
-	PkTransaction *transaction = PK_TRANSACTION (data);
+	PkPlugin *plugin = (PkPlugin*) data;
 	const gchar *filename = NULL;
 	const gchar *md5 = NULL;
 	gchar *md5_calc = NULL;
@@ -377,12 +321,12 @@ pk_plugin_sqlite_cache_rescan_cb (void *data,
 	md5_calc = pk_plugin_get_filename_md5 (filename);
 	if (md5_calc == NULL) {
 		g_debug ("remove of %s as no longer found", filename);
-		pk_plugin_sqlite_remove_filename (transaction, filename);
+		pk_plugin_sqlite_remove_filename (plugin, filename);
 		goto out;
 	}
 
 	/* we've checked the file */
-	g_hash_table_insert (priv->hash,
+	g_hash_table_insert (plugin->priv->hash,
 			     g_strdup (filename),
 			     GUINT_TO_POINTER (1));
 
@@ -390,7 +334,7 @@ pk_plugin_sqlite_cache_rescan_cb (void *data,
 	if (g_strcmp0 (md5, md5_calc) != 0) {
 		g_debug ("add of %s as md5 invalid (%s vs %s)",
 			 filename, md5, md5_calc);
-		pk_plugin_sqlite_add_filename (transaction,
+		pk_plugin_sqlite_add_filename (plugin,
 					       filename,
 					       md5_calc);
 	}
@@ -405,7 +349,7 @@ out:
  * pk_plugin_get_desktop_files:
  **/
 static void
-pk_plugin_get_desktop_files (PkTransaction *transaction,
+pk_plugin_get_desktop_files (PkPlugin *plugin,
 			     const gchar *app_dir,
 			     GPtrArray *array)
 {
@@ -430,10 +374,10 @@ pk_plugin_get_desktop_files (PkTransaction *transaction,
 	while (filename != NULL) {
 		path = g_build_filename (app_dir, filename, NULL);
 		if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
-			pk_plugin_get_desktop_files (transaction,
+			pk_plugin_get_desktop_files (plugin,
 						     path, array);
 		} else if (g_str_has_suffix (filename, ".desktop")) {
-			data = g_hash_table_lookup (priv->hash, path);
+			data = g_hash_table_lookup (plugin->priv->hash, path);
 			if (data == NULL) {
 				g_debug ("add of %s as not present in db",
 					 path);
@@ -447,10 +391,69 @@ pk_plugin_get_desktop_files (PkTransaction *transaction,
 }
 
 /**
- * pk_transaction_plugin_finished_end:
+ * pk_transaction_plugin_load_db:
+ */
+static void
+pk_transaction_plugin_load_db (PkPlugin *plugin,
+			       PkTransaction *transaction)
+{
+	const gchar *statement_create;
+	gboolean ret;
+	gchar *error_msg = NULL;
+	gint rc;
+	PkConf *conf;
+
+	/* check the config file */
+	conf = pk_transaction_get_conf (transaction);
+	ret = pk_conf_get_bool (conf, "ScanDesktopFiles");
+	if (!ret)
+		goto out;
+
+	/* check if database exists */
+	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE,
+			   G_FILE_TEST_EXISTS);
+
+	g_debug ("trying to open database '%s'",
+		 PK_DESKTOP_DEFAULT_DATABASE);
+	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &plugin->priv->db);
+	if (rc != 0) {
+		g_warning ("Can't open desktop database: %s\n",
+			   sqlite3_errmsg (plugin->priv->db));
+		sqlite3_close (plugin->priv->db);
+		plugin->priv->db = NULL;
+		goto out;
+	}
+
+	/* create if not exists */
+	if (!ret) {
+		g_debug ("creating database cache in %s",
+			 PK_DESKTOP_DEFAULT_DATABASE);
+		statement_create = "CREATE TABLE cache ("
+				   "filename TEXT,"
+				   "package TEXT,"
+				   "show INTEGER,"
+				   "md5 TEXT);";
+		rc = sqlite3_exec (plugin->priv->db, statement_create,
+				   NULL, NULL, &error_msg);
+		if (rc != SQLITE_OK) {
+			g_warning ("SQL error: %s\n", error_msg);
+			sqlite3_free (error_msg);
+			goto out;
+		}
+	}
+
+	/* we don't need to keep syncing */
+	sqlite3_exec (plugin->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+out:
+	return;
+}
+
+/**
+ * pk_plugin_transaction_finished_end:
  */
 void
-pk_transaction_plugin_finished_end (PkTransaction *transaction)
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
 {
 	gchar *error_msg = NULL;
 	gchar *path;
@@ -464,8 +467,12 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	PkBackend *backend = NULL;
 	PkRoleEnum role;
 
+	/* load */
+	if (plugin->priv->db == NULL)
+		pk_transaction_plugin_load_db (plugin, transaction);
+
 	/* no database */
-	if (priv->db == NULL)
+	if (plugin->priv->db == NULL)
 		goto out;
 
 	/* check the role */
@@ -481,26 +488,29 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 		goto out;
 	}
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 	package_id = g_signal_connect (backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), NULL);
+				       G_CALLBACK (pk_plugin_package_cb), plugin);
 
 	/* use a local backend instance */
 	pk_backend_reset (backend);
 	pk_backend_set_status (backend,
 			       PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
+	/* cache */
+	plugin->priv->backend = backend;
+
 	/* reset hash */
-	g_hash_table_remove_all (priv->hash);
+	g_hash_table_remove_all (plugin->priv->hash);
 	pk_backend_set_percentage (backend, 101);
 
 	/* first go through the existing data, and look for
 	 * modifications and removals */
 	statement = g_strdup ("SELECT filename, md5 FROM cache");
-	rc = sqlite3_exec (priv->db,
+	rc = sqlite3_exec (plugin->priv->db,
 			   statement,
 			   pk_plugin_sqlite_cache_rescan_cb,
-			   transaction,
+			   plugin,
 			   &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
@@ -510,7 +520,7 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	}
 
 	array = g_ptr_array_new_with_free_func (g_free);
-	pk_plugin_get_desktop_files (transaction,
+	pk_plugin_get_desktop_files (plugin,
 				     PK_DESKTOP_DEFAULT_APPLICATION_DIR,
 				     array);
 
@@ -523,7 +533,7 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 		for (i=0; i<array->len; i++) {
 			pk_backend_set_percentage (backend, i * step);
 			path = g_ptr_array_index (array, i);
-			pk_plugin_sqlite_add_filename (transaction,
+			pk_plugin_sqlite_add_filename (plugin,
 						       path,
 						       NULL);
 		}
@@ -548,7 +558,7 @@ out:
 static void
 pk_plugin_files_cb (PkBackend *backend,
 		    PkFiles *files,
-		    PkTransaction *transaction)
+		    PkPlugin *plugin)
 {
 	guint i;
 	guint len;
@@ -581,7 +591,7 @@ pk_plugin_files_cb (PkBackend *backend,
 
 		g_debug ("adding filename %s", filenames[i]);
 		md5 = pk_plugin_get_filename_md5 (filenames[i]);
-		pk_plugin_sqlite_add_filename_details (transaction,
+		pk_plugin_sqlite_add_filename_details (plugin,
 						       filenames[i],
 						       package[PK_PACKAGE_ID_NAME],
 						       md5);
@@ -593,10 +603,11 @@ pk_plugin_files_cb (PkBackend *backend,
 }
 
 /**
- * pk_transaction_plugin_finished_results:
+ * pk_plugin_transaction_finished_results:
  */
 void
-pk_transaction_plugin_finished_results (PkTransaction *transaction)
+pk_plugin_transaction_finished_results (PkPlugin *plugin,
+					PkTransaction *transaction)
 {
 	gchar **package_ids = NULL;
 	gchar *package_id_tmp;
@@ -611,8 +622,12 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	PkResults *results;
 	PkRoleEnum role;
 
+	/* load */
+	if (plugin->priv->db == NULL)
+		pk_transaction_plugin_load_db (plugin, transaction);
+
 	/* no database */
-	if (priv->db == NULL)
+	if (plugin->priv->db == NULL)
 		goto out;
 
 	/* check the role */
@@ -628,9 +643,12 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 		goto out;
 	}
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 	files_id = g_signal_connect (backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), NULL);
+				     G_CALLBACK (pk_plugin_files_cb), plugin);
+
+	/* cache */
+	plugin->priv->backend = backend;
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -665,7 +683,7 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	pk_backend_get_files (backend, package_ids);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	pk_backend_set_percentage (backend, 100);
 out:

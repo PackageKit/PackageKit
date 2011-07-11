@@ -47,6 +47,7 @@ plugininclude_HEADERS =					\
 	packagekit-plugin.h				\
 	pk-backend.h					\
 	pk-conf.h					\
+	pk-plugin.h					\
 	pk-transaction.h
 
 shared_SOURCES =					\

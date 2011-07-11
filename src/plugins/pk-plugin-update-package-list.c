@@ -21,21 +21,19 @@
 
 #include <config.h>
 #include <gio/gio.h>
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 #include <packagekit-glib2/pk-package.h>
 
-typedef struct {
+struct PkPluginPrivate {
 	GPtrArray		*list;
 	GMainLoop		*loop;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Updates the package lists after refresh";
 }
@@ -46,9 +44,9 @@ pk_transaction_plugin_get_description (void)
 static void
 pk_plugin_package_cb (PkBackend *backend,
 		      PkPackage *package,
-		      gpointer user_data)
+		      PkPlugin *plugin)
 {
-	g_ptr_array_add (priv->list, g_object_ref (package));
+	g_ptr_array_add (plugin->priv->list, g_object_ref (package));
 }
 
 /**
@@ -57,39 +55,32 @@ pk_plugin_package_cb (PkBackend *backend,
 static void
 pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
-		       gpointer user_data)
+		       PkPlugin *plugin)
 {
-	if (!g_main_loop_is_running (priv->loop))
-		return;
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("%s failed with exit code: %s",
-			     pk_role_enum_to_string (pk_backend_get_role (backend)),
-			     pk_exit_enum_to_string (exit_enum));
-	}
-	g_main_loop_quit (priv->loop);
+	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	g_main_loop_quit (plugin->priv->loop);
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->loop = g_main_loop_new (NULL, FALSE);
-	priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
+	plugin->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_ptr_array_unref (priv->list);
-	g_main_loop_unref (priv->loop);
-	g_free (priv);
+	g_ptr_array_unref (plugin->priv->list);
+	g_main_loop_unref (plugin->priv->loop);
 }
 
 /**
@@ -128,10 +119,11 @@ pk_plugin_package_list_to_string (GPtrArray *array)
 }
 
 /**
- * pk_transaction_plugin_finished_end:
+ * pk_plugin_transaction_finished_end:
  */
 void
-pk_transaction_plugin_finished_end (PkTransaction *transaction)
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar *data = NULL;
@@ -164,15 +156,15 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	/* connect to backend */
 	backend = pk_transaction_get_backend (transaction);
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 	package_id = g_signal_connect (backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), NULL);
+				       G_CALLBACK (pk_plugin_package_cb), plugin);
 
 	g_debug ("plugin: updating package lists");
 
 	/* clear old list */
-	if (priv->list->len > 0)
-		g_ptr_array_set_size (priv->list, 0);
+	if (plugin->priv->list->len > 0)
+		g_ptr_array_set_size (plugin->priv->list, 0);
 
 	/* update UI */
 	pk_backend_set_status (backend,
@@ -184,13 +176,13 @@ pk_transaction_plugin_finished_end (PkTransaction *transaction)
 	pk_backend_get_packages (backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	/* update UI */
 	pk_backend_set_percentage (backend, 90);
 
 	/* convert to a file */
-	data = pk_plugin_package_list_to_string (priv->list);
+	data = pk_plugin_package_list_to_string (plugin->priv->list);
 	ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
 				   data, -1, &error);
 	if (!ret) {

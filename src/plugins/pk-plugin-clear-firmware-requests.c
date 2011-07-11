@@ -21,24 +21,25 @@
 
 #include <config.h>
 #include <gio/gio.h>
+#include <pk-plugin.h>
 
-#include "pk-transaction.h"
 #include "pk-shared.h"
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Clears firmware requests";
 }
 
 /**
- * pk_transaction_plugin_finished_end:
+ * pk_plugin_transaction_finished_end:
  */
 void
-pk_transaction_plugin_finished_end (PkTransaction *transaction)
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar *filename = NULL;

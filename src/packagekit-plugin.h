@@ -29,7 +29,9 @@
 #include <packagekit-glib2/packagekit.h>
 
 #define __PACKAGEKIT_H_INSIDE__
+
 #include <plugin/pk-backend.h>
+#include <plugin/pk-plugin.h>
 #include <plugin/pk-transaction.h>
 
 #undef __PACKAGEKIT_H_INSIDE__

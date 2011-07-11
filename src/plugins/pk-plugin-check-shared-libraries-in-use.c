@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 
 #include "pk-cache.h"
 #include "pk-lsof.h"
@@ -32,52 +32,49 @@
 /* for when parsing /etc/login.defs fails */
 #define PK_TRANSACTION_EXTRA_UID_MIN_DEFALT	500
 
-typedef struct {
+struct PkPluginPrivate {
 	GMainLoop		*loop;
 	GPtrArray		*list;
 	GPtrArray		*pids;
 	GPtrArray		*files_list;
 	PkLsof			*lsof;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "checks for any shared libraries in use after a security update";
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->loop = g_main_loop_new (NULL, FALSE);
-	priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->files_list = g_ptr_array_new_with_free_func (g_free);
-	priv->lsof = pk_lsof_new ();
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
+	plugin->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	plugin->priv->files_list = g_ptr_array_new_with_free_func (g_free);
+	plugin->priv->lsof = pk_lsof_new ();
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_main_loop_unref (priv->loop);
-	g_ptr_array_unref (priv->list);
-	g_object_unref (priv->lsof);
-	g_ptr_array_unref (priv->files_list);
-	if (priv->pids != NULL)
-		g_ptr_array_free (priv->pids, TRUE);
-	g_free (priv);
+	g_main_loop_unref (plugin->priv->loop);
+	g_ptr_array_unref (plugin->priv->list);
+	g_object_unref (plugin->priv->lsof);
+	g_ptr_array_unref (plugin->priv->files_list);
+	if (plugin->priv->pids != NULL)
+		g_ptr_array_free (plugin->priv->pids, TRUE);
 }
 
 /**
@@ -86,23 +83,18 @@ pk_transaction_plugin_destroy (PkTransaction *transaction)
 static void
 pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
-		       gpointer user_data)
+		       PkPlugin *plugin)
 {
-	if (!g_main_loop_is_running (priv->loop))
-		return;
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("%s failed with exit code: %s",
-			     pk_role_enum_to_string (pk_backend_get_role (backend)),
-			     pk_exit_enum_to_string (exit_enum));
-	}
-	g_main_loop_quit (priv->loop);
+	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	g_main_loop_quit (plugin->priv->loop);
 }
 
 /**
  * pk_plugin_get_installed_package_for_file:
  **/
 static PkPackage *
-pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
+pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
+					  PkTransaction *transaction,
 					  const gchar *filename)
 {
 	PkPackage *package = NULL;
@@ -110,7 +102,7 @@ pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
 	PkBackend *backend;
 
 	/* use PK to find the correct package */
-	g_ptr_array_set_size (priv->list, 0);
+	g_ptr_array_set_size (plugin->priv->list, 0);
 	backend = pk_transaction_get_backend (transaction);
 	pk_backend_reset (backend);
 	filenames = g_strsplit (filename, "|||", -1);
@@ -119,16 +111,16 @@ pk_plugin_get_installed_package_for_file (PkTransaction *transaction,
 				 filenames);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	/* check that we only matched one package */
-	if (priv->list->len != 1) {
-		g_warning ("not correct size, %i", priv->list->len);
+	if (plugin->priv->list->len != 1) {
+		g_warning ("not correct size, %i", plugin->priv->list->len);
 		goto out;
 	}
 
 	/* get the package */
-	package = g_ptr_array_index (priv->list, 0);
+	package = g_ptr_array_index (plugin->priv->list, 0);
 	if (package == NULL) {
 		g_warning ("cannot get package");
 		goto out;
@@ -144,7 +136,7 @@ out:
 static void
 pk_plugin_files_cb (PkBackend *backend,
 		    PkFiles *files,
-		    PkTransaction *transaction)
+		    PkPlugin *plugin)
 {
 	guint i;
 	guint len;
@@ -168,7 +160,7 @@ pk_plugin_files_cb (PkBackend *backend,
 
 		/* add as it matches the criteria */
 		g_debug ("adding filename %s", filenames[i]);
-		g_ptr_array_add (priv->files_list,
+		g_ptr_array_add (plugin->priv->files_list,
 				 g_strdup (filenames[i]));
 	}
 	g_strfreev (filenames);
@@ -268,7 +260,7 @@ out:
 }
 
 /**
- * pk_transaction_plugin_run:
+ * pk_plugin_transaction_run:
  *
  * This function does the following things:
  *  1) Refreshes the list of open files
@@ -279,7 +271,8 @@ out:
  *  6) For each package, emit a RequireRestart of the correct type (according to the UID)
  */
 void
-pk_transaction_plugin_run (PkTransaction *transaction)
+pk_plugin_transaction_run (PkPlugin *plugin,
+			   PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar **files = NULL;
@@ -321,9 +314,9 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 		goto out;
 	}
 	files_id = g_signal_connect (backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), NULL);
+				     G_CALLBACK (pk_plugin_files_cb), plugin);
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
 	/* do we have a cache */
 	cache = pk_cache_new ();
@@ -391,11 +384,11 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	}
 
 	/* reset */
-	g_ptr_array_set_size (priv->files_list, 0);
+	g_ptr_array_set_size (plugin->priv->files_list, 0);
 
-	if (priv->pids != NULL) {
-		g_ptr_array_free (priv->pids, TRUE);
-		priv->pids = NULL;
+	if (plugin->priv->pids != NULL) {
+		g_ptr_array_free (plugin->priv->pids, TRUE);
+		plugin->priv->pids = NULL;
 	}
 
 	/* set status */
@@ -403,7 +396,7 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	pk_backend_set_percentage (backend, 101);
 
 	/* get list from lsof */
-	ret = pk_lsof_refresh (priv->lsof);
+	ret = pk_lsof_refresh (plugin->priv->lsof);
 	if (!ret) {
 		g_warning ("failed to refresh");
 		goto out;
@@ -415,26 +408,26 @@ pk_transaction_plugin_run (PkTransaction *transaction)
 	pk_backend_get_files (backend, package_ids_security);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	/* nothing to do */
-	if (priv->files_list->len == 0) {
+	if (plugin->priv->files_list->len == 0) {
 		g_debug ("no files");
 		goto out;
 	}
 
 	/* get the list of PIDs */
-	files = pk_ptr_array_to_strv (priv->files_list);
-	priv->pids = pk_lsof_get_pids_for_filenames (priv->lsof, files);
+	files = pk_ptr_array_to_strv (plugin->priv->files_list);
+	plugin->priv->pids = pk_lsof_get_pids_for_filenames (plugin->priv->lsof, files);
 
 	/* nothing depends on these libraries */
-	if (priv->pids == NULL) {
+	if (plugin->priv->pids == NULL) {
 		g_warning ("failed to get process list");
 		goto out;
 	}
 
 	/* nothing depends on these libraries */
-	if (priv->pids->len == 0) {
+	if (plugin->priv->pids->len == 0) {
 		g_debug ("no processes depend on these libraries");
 		goto out;
 	}
@@ -457,10 +450,11 @@ out:
 }
 
 /**
- * pk_transaction_plugin_finished_results:
+ * pk_plugin_transaction_finished_results:
  */
 void
-pk_transaction_plugin_finished_results (PkTransaction *transaction)
+pk_plugin_transaction_finished_results (PkPlugin *plugin,
+					PkTransaction *transaction)
 {
 	gboolean ret;
 	PkBackend *backend = NULL;
@@ -502,7 +496,7 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	files_system = g_ptr_array_new_with_free_func (g_free);
 
 	/* get local array */
-	pids = priv->pids;
+	pids = plugin->priv->pids;
 	if (pids == NULL)
 		goto out;
 
@@ -552,7 +546,8 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	for (i=0; i<files_session->len; i++) {
 		filename = g_ptr_array_index (files_session, i);
 
-		package = pk_plugin_get_installed_package_for_file (transaction,
+		package = pk_plugin_get_installed_package_for_file (plugin,
+								    transaction,
 								    filename);
 		if (package == NULL) {
 			g_debug ("failed to find package for %s", filename);
@@ -567,7 +562,8 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	for (i=0; i<files_system->len; i++) {
 		filename = g_ptr_array_index (files_system, i);
 
-		package = pk_plugin_get_installed_package_for_file (transaction,
+		package = pk_plugin_get_installed_package_for_file (plugin,
+								    transaction,
 								    filename);
 		if (package == NULL) {
 			g_debug ("failed to find package for %s", filename);

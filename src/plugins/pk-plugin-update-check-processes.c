@@ -21,47 +21,44 @@
 
 #include <config.h>
 #include <gio/gio.h>
-#include <pk-transaction.h>
+#include <pk-plugin.h>
 
 #include "pk-proc.h"
 
-typedef struct {
+struct PkPluginPrivate {
 	PkProc			*proc;
 	GMainLoop		*loop;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "Checks for running processes during update for session restarts";
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->loop = g_main_loop_new (NULL, FALSE);
-	priv->proc = pk_proc_new ();
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
+	plugin->priv->proc = pk_proc_new ();
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_main_loop_unref (priv->loop);
-	g_object_unref (priv->proc);
-	g_free (priv);
+	g_main_loop_unref (plugin->priv->loop);
+	g_object_unref (plugin->priv->proc);
 }
 
 /**
@@ -70,16 +67,10 @@ pk_transaction_plugin_destroy (PkTransaction *transaction)
 static void
 pk_plugin_finished_cb (PkBackend *backend,
 		       PkExitEnum exit_enum,
-		       gpointer user_data)
+		       PkPlugin *plugin)
 {
-	if (!g_main_loop_is_running (priv->loop))
-		return;
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("%s failed with exit code: %s",
-			     pk_role_enum_to_string (pk_backend_get_role (backend)),
-			     pk_exit_enum_to_string (exit_enum));
-	}
-	g_main_loop_quit (priv->loop);
+	g_assert (g_main_loop_is_running (plugin->priv->loop));
+	g_main_loop_quit (plugin->priv->loop);
 }
 
 /**
@@ -88,7 +79,7 @@ pk_plugin_finished_cb (PkBackend *backend,
 static void
 pk_plugin_files_cb (PkBackend *backend,
 		    PkFiles *files,
-		    PkTransaction *transaction)
+		    PkPlugin *plugin)
 {
 	guint i;
 	guint len;
@@ -114,7 +105,7 @@ pk_plugin_files_cb (PkBackend *backend,
 			continue;
 
 		/* running? */
-		ret = pk_proc_find_exec (priv->proc, filenames[i]);
+		ret = pk_proc_find_exec (plugin->priv->proc, filenames[i]);
 		if (!ret)
 			continue;
 
@@ -133,10 +124,11 @@ pk_plugin_files_cb (PkBackend *backend,
 }
 
 /**
- * pk_transaction_plugin_finished_results:
+ * pk_plugin_transaction_finished_results:
  */
 void
-pk_transaction_plugin_finished_results (PkTransaction *transaction)
+pk_plugin_transaction_finished_results (PkPlugin *plugin,
+					PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar **package_ids = NULL;
@@ -172,9 +164,9 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 		goto out;
 	}
 	finished_id = g_signal_connect (backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), NULL);
+					G_CALLBACK (pk_plugin_finished_cb), plugin);
 	files_id = g_signal_connect (backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), NULL);
+				     G_CALLBACK (pk_plugin_files_cb), plugin);
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -201,7 +193,7 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 		goto out;
 
 	/* get all the running processes */
-	pk_proc_refresh (priv->proc);
+	pk_proc_refresh (plugin->priv->proc);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (backend);
@@ -211,7 +203,7 @@ pk_transaction_plugin_finished_results (PkTransaction *transaction)
 	pk_backend_get_files (backend, package_ids);
 
 	/* wait for finished */
-	g_main_loop_run (priv->loop);
+	g_main_loop_run (plugin->priv->loop);
 
 	pk_backend_set_percentage (backend, 100);
 

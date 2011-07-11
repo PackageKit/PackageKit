@@ -42,46 +42,44 @@ libpk_plugin_external_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
 #include <stdlib.h>
 #include <PackageKit/plugin/packagekit-plugin.h>
 
-typedef struct {
+struct PkPluginPrivate {
 	guint			 dummy;
-} PluginPrivate;
-
-static PluginPrivate *priv;
+};
 
 /**
- * pk_transaction_plugin_get_description:
+ * pk_plugin_get_description:
  */
 const gchar *
-pk_transaction_plugin_get_description (void)
+pk_plugin_get_description (void)
 {
 	return "An external plugin that compiles outside of PK";
 }
 
 /**
- * pk_transaction_plugin_initialize:
+ * pk_plugin_initialize:
  */
 void
-pk_transaction_plugin_initialize (PkTransaction *transaction)
+pk_plugin_initialize (PkPlugin *plugin)
 {
 	/* create private area */
-	priv = g_new0 (PluginPrivate, 1);
-	priv->dummy = 999;
+	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
+	plugin->priv->dummy = 999;
 }
 
 /**
- * pk_transaction_plugin_destroy:
+ * pk_plugin_destroy:
  */
 void
-pk_transaction_plugin_destroy (PkTransaction *transaction)
+pk_plugin_destroy (PkPlugin *plugin)
 {
-	g_free (priv);
 }
 
 /**
- * pk_transaction_plugin_run:
+ * pk_plugin_transaction_run:
  */
 void
-pk_transaction_plugin_run (PkTransaction *transaction)
+pk_plugin_transaction_run (PkPlugin *plugin,
+			   PkTransaction *transaction)
 {
 	gboolean ret;
 	PkBackend *backend = NULL;
@@ -111,33 +109,37 @@ out:
 }
 
 /**
- * pk_transaction_plugin_started:
+ * pk_plugin_transaction_started:
  */
 void
-pk_transaction_plugin_started (PkTransaction *transaction)
+pk_plugin_transaction_started (PkPlugin *plugin,
+			       PkTransaction *transaction)
 {
 }
 
 /**
- * pk_transaction_plugin_finished_start:
+ * pk_plugin_transaction_finished_start:
  */
 void
-pk_transaction_plugin_finished_start (PkTransaction *transaction)
+pk_plugin_transaction_finished_start (PkPlugin *plugin,
+				      PkTransaction *transaction)
 {
 }
 
 /**
- * pk_transaction_plugin_finished_results:
+ * pk_plugin_transaction_finished_results:
  */
 void
-pk_transaction_plugin_finished_results (PkTransaction *transaction)
+pk_plugin_transaction_finished_results (PkPlugin *plugin,
+					PkTransaction *transaction)
 {
 }
 
 /**
- * pk_transaction_plugin_finished_end:
+ * pk_plugin_transaction_finished_end:
  */
 void
-pk_transaction_plugin_finished_end (PkTransaction *transaction)
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
 {
 }

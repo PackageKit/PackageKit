@@ -90,18 +90,6 @@ const gchar	*pk_transaction_get_tid				(PkTransaction	*transaction);
 void		 pk_transaction_add_supported_mime_type		(PkTransaction	*transaction,
 								 const gchar	*mime_type);
 
-/* plugin support */
-typedef const gchar	*(*PkTransactionPluginGetDescFunc)	(void);
-typedef void		 (*PkTransactionPluginFunc)		(PkTransaction	*transaction);
-const gchar	*pk_transaction_plugin_get_description		(void);
-void		 pk_transaction_plugin_initialize		(PkTransaction	*transaction);
-void		 pk_transaction_plugin_destroy			(PkTransaction	*transaction);
-void		 pk_transaction_plugin_run			(PkTransaction	*transaction);
-void		 pk_transaction_plugin_started			(PkTransaction	*transaction);
-void		 pk_transaction_plugin_finished_start		(PkTransaction	*transaction);
-void		 pk_transaction_plugin_finished_results		(PkTransaction	*transaction);
-void		 pk_transaction_plugin_finished_end		(PkTransaction	*transaction);
-
 G_END_DECLS
 
 #endif /* __PK_TRANSACTION_H */

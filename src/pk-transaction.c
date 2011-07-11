@@ -54,19 +54,20 @@
 #include "egg-string.h"
 #include "egg-dbus-monitor.h"
 
-#include "pk-transaction.h"
-#include "pk-transaction-dbus.h"
-#include "pk-transaction-list.h"
-#include "pk-transaction-db.h"
-#include "pk-marshal.h"
 #include "pk-backend.h"
-#include "pk-inhibit.h"
-#include "pk-conf.h"
-#include "pk-shared.h"
 #include "pk-cache.h"
-#include "pk-notify.h"
-#include "pk-syslog.h"
+#include "pk-conf.h"
 #include "pk-dbus.h"
+#include "pk-inhibit.h"
+#include "pk-marshal.h"
+#include "pk-notify.h"
+#include "pk-plugin.h"
+#include "pk-shared.h"
+#include "pk-syslog.h"
+#include "pk-transaction-db.h"
+#include "pk-transaction-dbus.h"
+#include "pk-transaction.h"
+#include "pk-transaction-list.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
@@ -195,15 +196,15 @@ typedef enum {
 } PkTransactionError;
 
 typedef enum {
-	PK_TRANSACTION_PLUGIN_PHASE_INIT,		/* plugin started */
-	PK_TRANSACTION_PLUGIN_PHASE_RUN,		/* only this running */
-	PK_TRANSACTION_PLUGIN_PHASE_STARTED,		/* all signals connected */
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START,	/* finshed with all signals */
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS,	/* finished with some signals */
-	PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END,	/* finished with no signals */
-	PK_TRANSACTION_PLUGIN_PHASE_DESTROY,		/* plugin finalized */
-	PK_TRANSACTION_PLUGIN_PHASE_UNKNOWN
-} PkTransactionPluginPhase;
+	PK_PLUGIN_PHASE_INIT,				/* plugin started */
+	PK_PLUGIN_PHASE_TRANSACTION_RUN,		/* only this running */
+	PK_PLUGIN_PHASE_TRANSACTION_STARTED,		/* all signals connected */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START,	/* finshed with all signals */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS,	/* finished with some signals */
+	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END,	/* finished with no signals */
+	PK_PLUGIN_PHASE_DESTROY,			/* plugin finalized */
+	PK_PLUGIN_PHASE_UNKNOWN
+} PkPluginPhase;
 
 enum {
 	SIGNAL_DETAILS,
@@ -310,7 +311,8 @@ pk_transaction_load_plugin (PkTransaction *transaction,
 {
 	gboolean ret;
 	GModule *module;
-	PkTransactionPluginGetDescFunc plugin_desc = NULL;
+	PkPlugin *plugin;
+	PkPluginGetDescFunc plugin_desc = NULL;
 
 	module = g_module_open (filename,
 				0);
@@ -322,7 +324,7 @@ pk_transaction_load_plugin (PkTransaction *transaction,
 
 	/* get description */
 	ret = g_module_symbol (module,
-			       "pk_transaction_plugin_get_description",
+			       "pk_plugin_get_description",
 			       (gpointer *) &plugin_desc);
 	if (!ret) {
 		g_warning ("Plugin %s requires description",
@@ -332,12 +334,14 @@ pk_transaction_load_plugin (PkTransaction *transaction,
 	}
 
 	/* print what we know */
+	plugin = g_new0 (PkPlugin, 1);
+	plugin->module = module;
 	g_debug ("opened plugin %s: %s",
 		 filename, plugin_desc ());
 
 	/* add to array */
 	g_ptr_array_add (transaction->priv->plugins,
-			 module);
+			 plugin);
 out:
 	return;
 }
@@ -895,35 +899,45 @@ pk_transaction_get_state (PkTransaction *transaction)
  **/
 static void
 pk_transaction_plugin_phase (PkTransaction *transaction,
-			     PkTransactionPluginPhase phase)
+			     PkPluginPhase phase)
 {
 	guint i;
 	const gchar *function = NULL;
-	GModule *module;
 	gboolean ret;
-	PkTransactionPluginFunc plugin_func = NULL;
+	gboolean use_transaction;
+	PkPluginFunc plugin_func = NULL;
+	PkPluginTransactionFunc plugin_trans_func = NULL;
+	gpointer func;
+	PkPlugin *plugin;
 
 	switch (phase) {
-	case PK_TRANSACTION_PLUGIN_PHASE_INIT:
-		function = "pk_transaction_plugin_initialize";
+	case PK_PLUGIN_PHASE_INIT:
+		function = "pk_plugin_initialize";
+		use_transaction = FALSE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_RUN:
-		function = "pk_transaction_plugin_run";
+	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
+		function = "pk_plugin_transaction_run";
+		use_transaction = TRUE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_STARTED:
-		function = "pk_transaction_plugin_started";
+	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
+		function = "pk_plugin_transaction_started";
+		use_transaction = TRUE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START:
-		function = "pk_transaction_plugin_finished_start";
+	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
+		function = "pk_plugin_transaction_finished_start";
+		use_transaction = TRUE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS:
-		function = "pk_transaction_plugin_finished_results";
+	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
+		function = "pk_plugin_transaction_finished_results";
+		use_transaction = TRUE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END:
-		function = "pk_transaction_plugin_finished_end";
+	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END:
+		function = "pk_plugin_transaction_finished_end";
+		use_transaction = TRUE;
 		break;
-	case PK_TRANSACTION_PLUGIN_PHASE_DESTROY:
-		function = "pk_transaction_plugin_destroy";
+	case PK_PLUGIN_PHASE_DESTROY:
+		function = "pk_plugin_destroy";
+		use_transaction = FALSE;
 		break;
 	default:
 		break;
@@ -933,16 +947,23 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 
 	/* run each plugin */
 	for (i=0; i<transaction->priv->plugins->len; i++) {
-		module = g_ptr_array_index (transaction->priv->plugins, i);
-		ret = g_module_symbol (module,
+		plugin = g_ptr_array_index (transaction->priv->plugins, i);
+		ret = g_module_symbol (plugin->module,
 				       function,
-				       (gpointer *) &plugin_func);
+				       &func);
 		if (!ret)
 			continue;
+
 		g_debug ("run %s on %s",
 			 function,
-			 g_module_name (module));
-		plugin_func (transaction);
+			 g_module_name (plugin->module));
+		if (!use_transaction) {
+			plugin_func = (PkPluginFunc) func;
+			plugin_func (plugin);
+		} else {
+			plugin_trans_func = (PkPluginTransactionFunc) func;
+			plugin_trans_func (plugin, transaction);
+		}
 	}
 }
 
@@ -1025,7 +1046,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_START);
+				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START);
 
 	/* disconnect these straight away */
 	g_signal_handler_disconnect (transaction->priv->backend,
@@ -1057,7 +1078,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_RESULTS);
+				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS);
 
 	/* signals we are not allowed to send from the second phase post transaction */
 	g_signal_handler_disconnect (transaction->priv->backend,
@@ -1073,7 +1094,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_FINISHED_END);
+				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END);
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
@@ -1797,7 +1818,7 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_RUN);
+				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
 
 	/* is an error code set? */
 	if (pk_backend_get_is_error_set (priv->backend)) {
@@ -1875,7 +1896,7 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_STARTED);
+				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
 
 	/* is an error code set? */
 	if (pk_backend_get_is_error_set (priv->backend)) {
@@ -5547,6 +5568,17 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_plugin_free:
+ **/
+static void
+pk_transaction_plugin_free (PkPlugin *plugin)
+{
+	g_free (plugin->priv);
+	g_module_close (plugin->module);
+	g_free (plugin);
+}
+
+/**
  * pk_transaction_get_property:
  **/
 static void
@@ -5888,12 +5920,12 @@ pk_transaction_init (PkTransaction *transaction)
 	pk_transaction_setup_mime_types (transaction);
 
 	/* get plugins */
-	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_module_close);
+	transaction->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_transaction_plugin_free);
 	pk_transaction_load_plugins (transaction);
 
 	/* initialize plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_INIT);
+				     PK_PLUGIN_PHASE_INIT);
 
 }
 
@@ -5943,7 +5975,7 @@ pk_transaction_finalize (GObject *object)
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
-				     PK_TRANSACTION_PLUGIN_PHASE_DESTROY);
+				     PK_PLUGIN_PHASE_DESTROY);
 
 #ifdef USE_SECURITY_POLKIT
 	if (transaction->priv->subject != NULL)
