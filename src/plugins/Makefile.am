@@ -97,7 +97,7 @@ libpk_plugin_update_check_processes_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_check_processes_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_check_processes_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
-libpk_plugin_check_shared_libraries_in_use_la_SOURCES =
+libpk_plugin_check_shared_libraries_in_use_la_SOURCES =	\
 	pk-plugin-check-shared-libraries-in-use.c	\
 	pk-lsof.h					\
 	pk-lsof.c
