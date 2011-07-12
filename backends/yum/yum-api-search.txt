@@ -1,0 +1,87 @@
+== PROPERTIES ===
+
+yb.comps.categories
+yb.comps._categories[cat_id]
+yb.comps.compscount
+yb.comps.groups:
+yb.conf.cache = 1
+yb.conf.exactarchlist
+yb.conf.exclude
+yb.conf.gpgcheck = 0
+yb.conf.localpkg_gpgcheck
+yb.conf.skip_broken
+yb.conf.throttle
+yb.conf.yumvar['releasever']
+yb.missingGPGKey
+yb.pkgSack
+yb.rpmdb
+yb.rpmdb.auto_close
+yb.tsInfo
+yb._tsInfo
+yb.tsInfo.pkgSack
+yb.up
+
+=== METHODS ===
+
+rpmdb.searchNevra(name=pkg.name)
+yb.allowedMultipleInstalls(pkg)
+yb.buildTransaction()
+yb._checkSignatures([po], None)
+yb.closeRpmDB()
+yb.comps._categories.has_key(cat_id):
+yb.comps.has_group(x)
+yb.comps.return_group(grp_id)
+yb.deselectGroup(grp.groupid)
+yb.doConfigSetup(errorlevel=0, debuglevel=0)
+yb.doGroupSetup()
+yb.doLock(foo)
+yb.doPackageLists(pkgnarrow='obsoletes')
+yb.doPackageLists(pkgnarrow='recent')
+yb.doPackageLists(pkgnarrow='updates')
+yb.doUnlock(foo)
+yb.findDeps(pkgs)
+yb.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
+yb.getKeyForRepo(repo, callback = lambda x: True)
+yb.groupRemove(grp.groupid)
+yb.groupUnremove(grp.groupid)
+yb.installLocal(inst_file)
+yb.install(po=pkg)
+yb._media_find_root(repo.mediaid)
+yb.pkgSack.returnNewestByName(name=package)
+yb.pkgSack.searchFiles(value)
+yb.pkgSack.searchNames(names=name_list)
+yb.pkgSack.searchNevra(n, e, v, r, a)
+yb.pkgSack.searchProvides(provide)
+yb.processTransaction()
+yb.remove(po=pkg)
+yb.repos.disableRepo(repo.id)
+yb.repos.doSetup(thisrepo=repoid)
+yb.repos.findRepos(repo)
+yb.repos.getRepo(pkg_download.repoid)
+yb.repos.getRepo(pkg.repoid)
+yb.repos.getRepo(repoid)
+yb.repos.listEnabled()
+yb.repos.populateSack(repo)
+yb.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
+yb.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
+yb.repos.repos.values()
+yb.repos.setProgressBar()
+yb.rpmdb.installed(po=pkg)
+yb.rpmdb.searchFiles(value)
+yb.rpmdb.searchNevra(name=n, epoch=e, ver=v, arch=a)
+yb.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+yb.rpmdb.searchNevra(name=package)
+yb.rpmdb.searchNevra(name=pkg.name)
+yb.rpmdb.searchNevra(name=pkg.name, arch=pkg.arch)
+yb.rpmdb.searchNevra(name=pkg.name, epoch=e, ver=v, rel=r, arch=a)
+yb.rpmdb.searchPkgTuple(installed)[0]
+yb.rpmdb.searchProvides(provide)
+yb.searchGenerator(searchlist, values)
+yb.selectGroup(grp.groupid)
+yb.update()
+yb.update(po=pkg)
+yb.up.doObsoletes()
+yb.up.getObsoletesTuples(newest=1)
+yb.up.getUpdatesTuples()
+YumLocalPackage(ts=yb.rpmdb.readOnlyTS(), filename=inst_file)
+yum.misc.find_unfinished_transactions(yumlibpath=foo)
