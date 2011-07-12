@@ -9,16 +9,11 @@ packagekitpythondir = ${PYTHON_PACKAGE_DIR}
 packagekitpython_PYTHON =				\
 	__init__.py					\
 	backend.py					\
-	frontend.py					\
 	enums.py					\
-	pkexceptions.py					\
-	pkdbus.py					\
 	progress.py					\
 	package.py					\
-	client.py					\
 	filter.py					\
-	misc.py						\
-	$(NULL)
+	misc.py
 
 MAINTAINERCLEANFILES =					\
 	*.pyc
