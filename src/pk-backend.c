@@ -2210,6 +2210,16 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 }
 
 /**
+ * pk_backend_get_exit_code:
+ **/
+PkExitEnum
+pk_backend_get_exit_code (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_EXIT_ENUM_UNKNOWN);
+	return backend->priv->exit;
+}
+
+/**
  * pk_backend_transaction_start:
  *
  * This is called just before the threaded transaction method, and in

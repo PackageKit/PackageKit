@@ -202,6 +202,7 @@ gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
 gboolean	 pk_backend_set_role			(PkBackend	*backend,
 							 PkRoleEnum	 role);
 PkRoleEnum	 pk_backend_get_role			(PkBackend	*backend);
+PkExitEnum	 pk_backend_get_exit_code		(PkBackend	*backend);
 gboolean	 pk_backend_set_status			(PkBackend	*backend,
 							 PkStatusEnum	 status);
 gboolean	 pk_backend_set_allow_cancel		(PkBackend	*backend,

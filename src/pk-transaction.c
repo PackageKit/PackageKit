@@ -1701,6 +1701,7 @@ pk_transaction_run (PkTransaction *transaction)
 	guint i;
 	GError *error = NULL;
 	PkBitfield filters;
+	PkExitEnum exit_status;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -1826,11 +1827,10 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
 
-	/* is an error code set? */
-	if (pk_backend_get_is_error_set (priv->backend)) {
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-
-		/* do not fail the tranaction */
+	/* did the plugin finish or abort the transaction */
+	exit_status = pk_backend_get_exit_code (priv->backend);
+	if (exit_status != PK_EXIT_ENUM_UNKNOWN)  {
+		pk_transaction_finished_emit (transaction, exit_status, 0);
 		ret = TRUE;
 		goto out;
 	}
