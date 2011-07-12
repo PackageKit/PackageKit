@@ -479,63 +479,6 @@ typedef struct {
 	gpointer	padding[7];
 } PkBackendDesc;
 
-/* this is deprecated */
-#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_groups, get_filters, get_roles, \
-			   get_mime_types, cancel, download_packages, get_categories, get_depends,	\
-			   get_details, get_distro_upgrades, get_files, get_packages, get_repo_list,	\
-			   get_requires, get_update_detail, get_updates, install_files,			\
-			   install_packages, install_signature, refresh_cache, remove_packages,		\
-			   repo_enable, repo_set_data, resolve, rollback, search_details, search_file,	\
-			   search_group, search_name, update_packages, update_system, what_provides,	\
-			   simulate_install_files, simulate_install_packages, simulate_remove_packages,	\
-			   simulate_update_packages, upgrade_system, transaction_start, transaction_stop ) \
-	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 					\
-		description,			\
-		author,				\
-		initialize,			\
-		destroy,			\
-		get_groups,			\
-		get_filters,			\
-		get_roles,			\
-		get_mime_types,			\
-		cancel,				\
-		download_packages,		\
-		get_categories,			\
-		get_depends,			\
-		get_details,			\
-		get_distro_upgrades,		\
-		get_files,			\
-		get_packages,			\
-		get_repo_list,			\
-		get_requires,			\
-		get_update_detail,		\
-		get_updates,			\
-		install_files,			\
-		install_packages,		\
-		install_signature,		\
-		refresh_cache,			\
-		remove_packages,		\
-		repo_enable,			\
-		repo_set_data,			\
-		resolve,			\
-		rollback,			\
-		search_details,			\
-		search_file,			\
-		search_group,			\
-		search_name,			\
-		update_packages,		\
-		update_system,			\
-		what_provides,			\
-		simulate_install_files,		\
-		simulate_install_packages,	\
-		simulate_remove_packages,	\
-		simulate_update_packages,	\
-		upgrade_system,			\
-		transaction_start,		\
-		transaction_stop,		\
-		{0} 				\
-	}
-
 G_END_DECLS
 
 #endif /* __PK_BACKEND_H */
