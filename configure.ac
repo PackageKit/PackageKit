@@ -480,7 +480,6 @@ AM_CONDITIONAL(PK_BUILD_PM_UTILS, test $build_pm_utils = "yes")
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
-AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
 AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),enable_aptcc=$enableval,enable_aptcc=no)
 AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
 AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
@@ -501,7 +500,6 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes])
@@ -597,7 +595,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,razor,slapt,smart,urpmi,yum,zif,zypp (dummy)]))
+                           alpm,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,razor,slapt,smart,urpmi,yum,zif,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -607,7 +605,7 @@ if test x$with_default_backend = x; then
 	elif test -f /usr/lib/libalpm.so; then
 		with_default_backend=alpm
 	elif test -f /usr/bin/apt-get ; then
-		with_default_backend=apt
+		with_default_backend=aptcc
 	elif test -f /usr/bin/conary ; then
 		with_default_backend=conary
 	elif test -f /usr/bin/box-repos ; then
@@ -656,18 +654,6 @@ if test x$enable_zif = xyes; then
 	fi
 fi
 AM_CONDITIONAL(PK_BUILD_ZIF, test $build_zif = "yes")
-
-if test x$enable_apt = xyes; then
-	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
-	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
-		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
-			       "Meta release is available"), 
-		     AC_MSG_WARN([Distro upgrade notification not supported]))
-	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
-		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
-			       "Python software properties is available"),
-		     AC_MSG_WARN([Repository handling not supported]))
-fi
 
 if test x$enable_aptcc = xyes; then
 	dnl Use C++
@@ -796,7 +782,6 @@ contrib/device-rebind/Makefile
 contrib/pm-utils/Makefile
 backends/Makefile
 backends/alpm/Makefile
-backends/apt/Makefile
 backends/aptcc/Makefile
 backends/box/Makefile
 backends/conary/Makefile
@@ -875,7 +860,6 @@ echo "
 
         Backends:
         ALPM backend:              ${enable_alpm}
-        APT backend:               ${enable_apt}
         APTcc backend:             ${enable_aptcc}
         BOX backend:               ${enable_box}
         CONARY backend:            ${enable_conary}
