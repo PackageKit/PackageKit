@@ -2618,7 +2618,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 				   error->message);
 			g_clear_error (&error);
 		}
-		group = pk_group_enum_from_text (group_str);
+		group = pk_group_enum_from_string (group_str);
 
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
