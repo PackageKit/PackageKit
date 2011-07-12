@@ -35,7 +35,6 @@
 
 #include <glib/gi18n.h>
 
-#include "egg-dbus-monitor.h"
 #include "pk-network.h"
 #include "pk-network-stack.h"
 #include "pk-network-stack-unix.h"

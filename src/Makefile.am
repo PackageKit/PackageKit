@@ -53,8 +53,6 @@ plugininclude_HEADERS =					\
 shared_SOURCES =					\
 	egg-string.c					\
 	egg-string.h					\
-	egg-dbus-monitor.c				\
-	egg-dbus-monitor.h				\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-dbus.c					\

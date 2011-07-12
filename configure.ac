@@ -144,7 +144,7 @@ AM_GLIB_GNU_GETTEXT
 dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
-GLIB_REQUIRED=2.22.0
+GLIB_REQUIRED=2.26.0
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74

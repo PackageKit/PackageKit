@@ -24,9 +24,8 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gio/gio.h>
 #include <dbus/dbus-glib.h>
-
-#include "egg-dbus-monitor.h"
 
 #include "pk-network-stack-connman.h"
 #include "pk-conf.h"
@@ -34,7 +33,7 @@
 
 struct PkNetworkStackConnmanPrivate
 {
-	EggDbusMonitor		*dbus_monitor;
+	guint			 watch_id;
 	PkConf			*conf;
 	gboolean		 is_enabled;
 	DBusGConnection		*bus;
@@ -210,6 +209,34 @@ pk_network_stack_connman_is_enabled (PkNetworkStack *nstack)
 }
 
 /**
+ * pk_network_stack_connman_appeared_cb:
+ **/
+static void
+pk_network_stack_connman_appeared_cb (GDBusConnection *connection,
+				      const gchar *name,
+				      const gchar *name_owner,
+				      gpointer user_data)
+{
+	gboolean ret;
+	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (user_data);
+	ret = pk_conf_get_bool (nstack_connman->priv->conf,
+				"UseNetworkConnman");
+	nstack_connman->priv->is_enabled = ret;
+}
+
+/**
+ * pk_network_stack_connman_vanished_cb:
+ **/
+static void
+pk_network_stack_connman_vanished_cb (GDBusConnection *connection,
+				      const gchar *name,
+				      gpointer user_data)
+{
+	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (user_data);
+	nstack_connman->priv->is_enabled = FALSE;
+}
+
+/**
  * pk_network_stack_connman_init:
  **/
 static void
@@ -217,14 +244,9 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 {
 	GError *error = NULL;
 	DBusGProxy *proxy;
-	gboolean service_alive;
 
 	nstack_connman->priv = PK_NETWORK_STACK_CONNMAN_GET_PRIVATE (nstack_connman);
 	nstack_connman->priv->conf = pk_conf_new ();
-
-	/* do we use this code? */
-	nstack_connman->priv->is_enabled = pk_conf_get_bool (nstack_connman->priv->conf, "UseNetworkConnman");
-	nstack_connman->priv->proxy = NULL;
 
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_BOXED,
 					   G_TYPE_NONE, G_TYPE_STRING,
@@ -239,15 +261,14 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	}
 
 	/* check if ConnMan is on the bus */
-	nstack_connman->priv->dbus_monitor = egg_dbus_monitor_new ();
-	egg_dbus_monitor_assign (nstack_connman->priv->dbus_monitor, EGG_DBUS_MONITOR_SYSTEM, CONNMAN_DBUS_NAME);
-	service_alive = egg_dbus_monitor_is_connected (nstack_connman->priv->dbus_monitor);
-
-	/* ConnMan isn't up, so we can't use it */
-	if (nstack_connman->priv->is_enabled && !service_alive) {
-		g_warning ("UseNetworkConnman true, but %s not up", CONNMAN_DBUS_NAME);
-		nstack_connman->priv->is_enabled = FALSE;
-	}
+	nstack_connman->priv->watch_id =
+		g_bus_watch_name (G_BUS_TYPE_SYSTEM,
+				  CONNMAN_DBUS_NAME,
+				  G_BUS_NAME_WATCHER_FLAGS_NONE,
+				  pk_network_stack_connman_appeared_cb,
+				  pk_network_stack_connman_vanished_cb,
+				  nstack_connman,
+				  NULL);
 
 	proxy = dbus_g_proxy_new_for_name_owner (nstack_connman->priv->bus,
 						 CONNMAN_DBUS_NAME,
@@ -280,7 +301,7 @@ pk_network_stack_connman_finalize (GObject *object)
 	nstack_connman = PK_NETWORK_STACK_CONNMAN (object);
 	g_return_if_fail (nstack_connman->priv != NULL);
 
-	g_object_unref (nstack_connman->priv->dbus_monitor);
+	g_bus_unwatch_name (nstack_connman->priv->watch_id);
 	g_object_unref (nstack_connman->priv->conf);
 	if (nstack_connman->priv->proxy != NULL)
 		g_object_unref (nstack_connman->priv->proxy);

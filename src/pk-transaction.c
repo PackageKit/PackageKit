@@ -38,6 +38,7 @@
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <gio/gio.h>
@@ -52,7 +53,6 @@
 #endif
 
 #include "egg-string.h"
-#include "egg-dbus-monitor.h"
 
 #include "pk-backend.h"
 #include "pk-cache.h"
@@ -104,7 +104,7 @@ struct PkTransactionPrivate
 	gchar			*frontend_socket;
 	guint			 cache_age;
 	guint			 uid;
-	EggDbusMonitor		*monitor;
+	guint			 watch_id;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkCache			*cache;
@@ -470,27 +470,6 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 
 	g_debug ("emitting allow-cancel %i", allow_cancel);
 	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
-}
-
-/**
- * pk_transaction_caller_active_changed_cb:
- **/
-static void
-pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean caller_active, PkTransaction *transaction)
-{
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	/* already set */
-	if (transaction->priv->caller_active == caller_active)
-		return;
-
-	/* save as a property */
-	transaction->priv->caller_active = caller_active;
-
-	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -1963,6 +1942,25 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 }
 
 /**
+ * pk_transaction_vanished_cb:
+ **/
+static void
+pk_transaction_vanished_cb (GDBusConnection *connection,
+			    const gchar *name,
+			    gpointer user_data)
+{
+	PkTransaction *transaction = PK_TRANSACTION (user_data);
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	transaction->priv->caller_active = FALSE;
+
+	/* emit */
+	g_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+}
+
+/**
  * pk_transaction_set_sender:
  */
 gboolean
@@ -1974,7 +1972,15 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 
 	g_debug ("setting sender to %s", sender);
 	transaction->priv->sender = g_strdup (sender);
-	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
+
+	transaction->priv->watch_id =
+		g_bus_watch_name (G_BUS_TYPE_SYSTEM,
+				  sender,
+				  G_BUS_NAME_WATCHER_FLAGS_NONE,
+				  NULL,
+				  pk_transaction_vanished_cb,
+				  transaction,
+				  NULL);
 
 	/* we get the UID for all callers as we need to know when to cancel */
 #ifdef USE_SECURITY_POLKIT
@@ -5828,10 +5834,6 @@ pk_transaction_init (PkTransaction *transaction)
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
 
-	transaction->priv->monitor = egg_dbus_monitor_new ();
-	g_signal_connect (transaction->priv->monitor, "connection-changed",
-			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
-
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
 }
@@ -5884,6 +5886,8 @@ pk_transaction_finalize (GObject *object)
 	if (transaction->priv->subject != NULL)
 		g_object_unref (transaction->priv->subject);
 #endif
+	if (transaction->priv->watch_id > 0)
+		g_bus_unwatch_name (transaction->priv->watch_id);
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->locale);
 	g_free (transaction->priv->frontend_socket);
@@ -5905,7 +5909,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->cache);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
-	g_object_unref (transaction->priv->monitor);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);

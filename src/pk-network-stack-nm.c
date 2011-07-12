@@ -23,10 +23,9 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <NetworkManager.h>
-
-#include "egg-dbus-monitor.h"
 
 #include "pk-network-stack-nm.h"
 #include "pk-conf.h"
@@ -38,7 +37,7 @@
 
 struct PkNetworkStackNmPrivate
 {
-	EggDbusMonitor		*dbus_monitor;
+	guint			 watch_id;
 	PkConf			*conf;
 	DBusGConnection		*bus;
 	gboolean		 is_enabled;
@@ -292,19 +291,43 @@ pk_network_stack_nm_is_enabled (PkNetworkStack *nstack)
 }
 
 /**
+ * pk_network_stack_connman_appeared_cb:
+ **/
+static void
+pk_network_stack_connman_appeared_cb (GDBusConnection *connection,
+				      const gchar *name,
+				      const gchar *name_owner,
+				      gpointer user_data)
+{
+	gboolean ret;
+	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (user_data);
+	ret = pk_conf_get_bool (nstack_nm->priv->conf,
+				"UseNetworkManager");
+	nstack_nm->priv->is_enabled = ret;
+}
+
+/**
+ * pk_network_stack_connman_vanished_cb:
+ **/
+static void
+pk_network_stack_connman_vanished_cb (GDBusConnection *connection,
+				      const gchar *name,
+				      gpointer user_data)
+{
+	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (user_data);
+	nstack_nm->priv->is_enabled = FALSE;
+}
+
+/**
  * pk_network_stack_nm_init:
  **/
 static void
 pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 {
 	GError *error = NULL;
-	gboolean service_alive;
 
 	nstack_nm->priv = PK_NETWORK_STACK_NM_GET_PRIVATE (nstack_nm);
 	nstack_nm->priv->conf = pk_conf_new ();
-
-	/* do we use this code? */
-	nstack_nm->priv->is_enabled = pk_conf_get_bool (nstack_nm->priv->conf, "UseNetworkManager");
 
 	/* get system connection */
 	nstack_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -314,11 +337,17 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	}
 
 	/* check if NM is on the bus */
-	nstack_nm->priv->dbus_monitor = egg_dbus_monitor_new ();
-	egg_dbus_monitor_assign (nstack_nm->priv->dbus_monitor, EGG_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
-	service_alive = egg_dbus_monitor_is_connected (nstack_nm->priv->dbus_monitor);
+	nstack_nm->priv->watch_id =
+		g_bus_watch_name (G_BUS_TYPE_SYSTEM,
+				  "org.freedesktop.NetworkManager",
+				  G_BUS_NAME_WATCHER_FLAGS_NONE,
+				  pk_network_stack_connman_appeared_cb,
+				  pk_network_stack_connman_vanished_cb,
+				  nstack_nm,
+				  NULL);
 
-	/* connect to changed as libnm-glib is teh suck and causes multithreading issues with dbus-glib */
+	/* connect to changed as libnm-glib is teh suck and causes
+	 * multithreading issues with dbus-glib */
 	nstack_nm->priv->proxy_changed = dbus_g_proxy_new_for_name (nstack_nm->priv->bus,
 								    "org.freedesktop.NetworkManager",
 								    "/org/freedesktop/NetworkManager",
@@ -326,12 +355,6 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	dbus_g_proxy_add_signal (nstack_nm->priv->proxy_changed, "StateChanged", G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (nstack_nm->priv->proxy_changed, "StateChanged",
 				     G_CALLBACK (pk_network_stack_nm_status_changed_cb), nstack_nm, NULL);
-
-	/* NetworkManager isn't up, so we can't use it */
-	if (nstack_nm->priv->is_enabled && !service_alive) {
-		g_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
-		nstack_nm->priv->is_enabled = FALSE;
-	}
 }
 
 /**
@@ -352,7 +375,7 @@ pk_network_stack_nm_finalize (GObject *object)
 					G_CALLBACK (pk_network_stack_nm_status_changed_cb), nstack_nm);
 	g_object_unref (nstack_nm->priv->proxy_changed);
 	g_object_unref (nstack_nm->priv->conf);
-	g_object_unref (nstack_nm->priv->dbus_monitor);
+	g_bus_unwatch_name (nstack_nm->priv->watch_id);
 
 	G_OBJECT_CLASS (pk_network_stack_nm_parent_class)->finalize (object);
 }

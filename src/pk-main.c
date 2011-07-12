@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -36,8 +36,6 @@
 #if GLIB_CHECK_VERSION(2,29,4)
  #include <glib-unix.h>
 #endif
-
-#include "egg-dbus-monitor.h"
 
 #include "pk-conf.h"
 #include "pk-engine.h"
@@ -84,13 +82,14 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 
 	/* abort as the DBUS method failed */
 	if (!ret) {
-		g_warning ("RequestName failed!");
 		g_clear_error (error);
-		message = g_strdup_printf ("%s\n%s\n* %s\n* %s '%s'\n",
+		message = g_strdup_printf ("%s\n%s\n* %s\n* %s\n* %s '%s'\n",
 					   /* TRANSLATORS: failed due to DBus security */
-					   _("Startup failed due to security policies on this machine."),
+					   _("Could not request the D-Bus name."),
 					   /* TRANSLATORS: only two ways this can fail... */
-					   _("This can happen for two reasons:"),
+					   _("This can happen for three reasons:"),
+					   /* TRANSLATORS: only allowed to be running once */
+					   _("The daemon is already running"),
 					   /* TRANSLATORS: only allowed to be owned by root */
 					   _("The correct user is not launching the executable (usually root)"),
 					   /* TRANSLATORS: or we are installed in a prefix */
@@ -198,8 +197,7 @@ int
 main (int argc, char *argv[])
 {
 	DBusGConnection *system_connection;
-	EggDbusMonitor *monitor;
-	gboolean ret;
+	gboolean ret = TRUE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
 	gboolean use_daemon = FALSE;
@@ -258,16 +256,6 @@ main (int argc, char *argv[])
 
 	if (version) {
 		g_print ("Version %s\n", VERSION);
-		goto exit_program;
-	}
-
-	/* check if an instance is already running */
-	monitor = egg_dbus_monitor_new ();
-	egg_dbus_monitor_assign (monitor, EGG_DBUS_MONITOR_SYSTEM, PK_DBUS_SERVICE);
-	ret = egg_dbus_monitor_is_connected (monitor);
-	g_object_unref (monitor);
-	if (ret) {
-		g_print ("Already running service which provides %s\n", PK_DBUS_SERVICE);
 		goto exit_program;
 	}
 
