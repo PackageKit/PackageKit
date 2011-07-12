@@ -1777,7 +1777,6 @@ main (int argc, char **argv)
 #endif
 
 	/* components */
-	g_test_add_func ("/packagekit/notify", pk_test_proc_func);
 	g_test_add_func ("/packagekit/file-monitor", pk_test_file_monitor_func);
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
