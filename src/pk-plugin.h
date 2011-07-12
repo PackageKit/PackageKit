@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 
+#include "pk-backend.h"
 #include "pk-transaction.h"
 
 G_BEGIN_DECLS
@@ -32,6 +33,7 @@ typedef struct PkPluginPrivate PkPluginPrivate;
 
 typedef struct {
 	GModule			*module;
+	PkBackend		*backend;
 	PkPluginPrivate		*priv;
 } PkPlugin;
 

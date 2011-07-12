@@ -1477,7 +1477,7 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
  */
 static void
 pk_engine_load_plugin (PkEngine *engine,
-			    const gchar *filename)
+		       const gchar *filename)
 {
 	gboolean ret;
 	GModule *module;
@@ -1506,6 +1506,7 @@ pk_engine_load_plugin (PkEngine *engine,
 	/* print what we know */
 	plugin = g_new0 (PkPlugin, 1);
 	plugin->module = module;
+	plugin->backend = g_object_ref (engine->priv->backend);
 	g_debug ("opened plugin %s: %s",
 		 filename, plugin_desc ());
 
@@ -1566,6 +1567,7 @@ static void
 pk_engine_plugin_free (PkPlugin *plugin)
 {
 	g_free (plugin->priv);
+	g_object_unref (plugin->backend);
 	g_module_close (plugin->module);
 	g_free (plugin);
 }
