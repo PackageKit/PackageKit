@@ -524,7 +524,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 			cmdline_full = g_strdup_printf ("/usr/bin/%s", cmdline);
 
 		g_debug ("pid=%i: %s (%i)", pid, cmdline_full, uid);
-		if (uid < 500)
+		if (uid < (gint)uid_min)
 			g_ptr_array_add (files_system, cmdline_full);
 		else
 			g_ptr_array_add (files_session, cmdline_full);
