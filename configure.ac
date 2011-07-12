@@ -409,27 +409,15 @@ AM_CONDITIONAL(PK_BUILD_GSTREAMER_PLUGIN, test $build_gstreamer_plugin = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Able to build GTK module
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module functionality]),
+AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK+-3 module functionality]),
 	      enable_gtk_module=$enableval,enable_gtk_module=yes)
 if test x$enable_gtk_module = xyes; then
-	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK2, gtk+-2.0 >= 2.14.0 pangoft2 fontconfig dbus-glib-1,
-	                  build_gtk_module_gtk2=yes, build_gtk_module_gtk2=no)
-	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK3, gtk+-3.0 >= 2.91.0 pangoft2 fontconfig dbus-glib-1,
-	                  build_gtk_module_gtk3=yes, build_gtk_module_gtk3=no)
-	# if either are true, visit the gtk-module directory
-	if test $build_gtk_module_gtk2 = "yes" -o $build_gtk_module_gtk3 = "yes"; then
-		build_gtk_module=yes
-	else
-		build_gtk_module=no
-	fi
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-3.0 >= 3.0.0 pangoft2 fontconfig dbus-glib-1,
+	                  build_gtk_module=yes, build_gtk_module=no)
 else
 	build_gtk_module=no
-	build_gtk_module_gtk2=no
-	build_gtk_module_gtk3=no
 fi
 AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
-AM_CONDITIONAL(PK_BUILD_GTK_MODULE_GTK2, test $build_gtk_module_gtk2 = "yes")
-AM_CONDITIONAL(PK_BUILD_GTK_MODULE_GTK3, test $build_gtk_module_gtk3 = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build BASH command-not-found functionality
@@ -764,8 +752,6 @@ contrib/Makefile
 contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
-contrib/gtk-module/gtk-2.0/Makefile
-contrib/gtk-module/gtk-3.0/Makefile
 contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
@@ -839,8 +825,7 @@ echo "
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
-        Pango module (GTK2):       ${build_gtk_module_gtk2}
-        Pango module (GTK3):       ${build_gtk_module_gtk3}
+        Pango module (GTK+3):      ${build_gtk_module}
         gobject-introspection:     ${found_introspection}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}

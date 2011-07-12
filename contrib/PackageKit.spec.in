@@ -54,6 +54,9 @@ BuildRequires: zif-devel >= 0.1.3
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
 Obsoletes: udev-packagekit < %{version}-%{release}
 
+# No more GTK+-2 plugin
+Obsoletes: PackageKit-gtk-module < %{version}-%{release}
+
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
@@ -206,16 +209,6 @@ Provides: codeina = 0.10.1-10
 The PackageKit GStreamer plugin allows any Gstreamer application to install
 codecs from configured repositories using PackageKit.
 
-%package gtk-module
-Summary: Install fonts automatically using PackageKit
-Group: Development/Libraries
-Requires: pango
-Requires: PackageKit-glib = %{version}-%{release}
-
-%description gtk-module
-The PackageKit GTK2+ module allows any Pango application to install
-fonts from configured repositories using PackageKit.
-
 %package gtk3-module
 Summary: Install fonts automatically using PackageKit
 Group: Development/Libraries
@@ -273,7 +266,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-?.0/modules/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
@@ -413,10 +406,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %{_libexecdir}/pk-gstreamer-install
 %{_libexecdir}/gst-install-plugins-helper
-
-%files gtk-module
-%defattr(-,root,root,-)
-%{_libdir}/gtk-2.0/modules/*.so
 
 %files gtk3-module
 %defattr(-,root,root,-)
