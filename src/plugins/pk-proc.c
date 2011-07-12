@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <glib.h>
 
-#include "egg-string.h"
-
 #include "pk-proc.h"
 
 #define PK_PROC_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PROC, PkProcPrivate))
@@ -97,6 +95,28 @@ out:
 }
 
 /**
+ * egg_strtoint:
+ **/
+static gboolean
+egg_strtoint (const gchar *text, gint *value)
+{
+	gchar *endptr = NULL;
+	gint64 value_raw;
+
+	value_raw = g_ascii_strtoll (text, &endptr, 10);
+	if (endptr == text)
+		return FALSE;
+
+	/* out of range */
+	if (value_raw > G_MAXINT || value_raw < G_MININT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (gint) value_raw;
+	return TRUE;
+}
+
+/**
  * pk_proc_refresh_add_file:
  **/
 static gboolean
@@ -106,7 +126,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	GError *error = NULL;
 	gchar *cmdline = NULL;
 	gint pid = -1;
-	guint uid;
+	gint uid;
 	PkProcData *data;
 	gchar *cmdline_full = NULL;
 	gchar *offset;
@@ -172,7 +192,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 		goto out;
 
 	/* parse UID */
-	ret = egg_strtouint (contents, &uid);
+	ret = egg_strtoint (contents, &uid);
 	if (!ret)
 		goto out;
 

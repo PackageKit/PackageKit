@@ -34,7 +34,6 @@
 #include "pk-file-monitor.h"
 #include "pk-inhibit.h"
 #include "pk-notify.h"
-#include "pk-proc.h"
 #include "pk-spawn.h"
 #include "pk-store.h"
 #include "pk-syslog.h"
@@ -832,23 +831,6 @@ pk_test_notify_func (void)
 	g_assert (notify != NULL);
 
 	g_object_unref (notify);
-}
-
-static void
-pk_test_proc_func (void)
-{
-	gboolean ret;
-	PkProc *proc;
-//	gchar *files[] = { "/sbin/udevd", NULL };
-
-	proc = pk_proc_new ();
-	g_assert (proc != NULL);
-
-	/* refresh proc data */
-	ret = pk_proc_refresh (proc);
-	g_assert (ret);
-
-	g_object_unref (proc);
 }
 
 PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
@@ -1796,7 +1778,6 @@ main (int argc, char **argv)
 
 	/* components */
 	g_test_add_func ("/packagekit/notify", pk_test_proc_func);
-	g_test_add_func ("/packagekit/proc", pk_test_proc_func);
 	g_test_add_func ("/packagekit/file-monitor", pk_test_file_monitor_func);
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
