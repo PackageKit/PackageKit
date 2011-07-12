@@ -871,6 +871,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 PkConf *
 pk_transaction_get_conf (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->conf;
 }
 
@@ -880,6 +881,7 @@ pk_transaction_get_conf (PkTransaction *transaction)
 PkBackend *
 pk_transaction_get_backend (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->backend;
 }
 
@@ -889,6 +891,7 @@ pk_transaction_get_backend (PkTransaction *transaction)
 PkResults *
 pk_transaction_get_results (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->results;
 }
 
@@ -898,7 +901,20 @@ pk_transaction_get_results (PkTransaction *transaction)
 gchar **
 pk_transaction_get_package_ids (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->cached_package_ids;
+}
+
+/**
+ * pk_transaction_set_package_ids:
+ **/
+void
+pk_transaction_set_package_ids (PkTransaction *transaction,
+			        gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_strfreev (transaction->priv->cached_package_ids);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 }
 
 /**
@@ -907,6 +923,7 @@ pk_transaction_get_package_ids (PkTransaction *transaction)
 gchar **
 pk_transaction_get_values (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->cached_values;
 }
 
@@ -916,7 +933,20 @@ pk_transaction_get_values (PkTransaction *transaction)
 gchar **
 pk_transaction_get_full_paths (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->cached_full_paths;
+}
+
+/**
+ * pk_transaction_set_full_paths:
+ **/
+void
+pk_transaction_set_full_paths (PkTransaction *transaction,
+			       gchar **full_paths)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_strfreev (transaction->priv->cached_full_paths);
+	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 }
 
 /**

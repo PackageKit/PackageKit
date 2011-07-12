@@ -80,8 +80,12 @@ PkConf		*pk_transaction_get_conf			(PkTransaction	*transaction);
 PkBackend	*pk_transaction_get_backend			(PkTransaction	*transaction);
 PkResults	*pk_transaction_get_results			(PkTransaction	*transaction);
 gchar		**pk_transaction_get_package_ids		(PkTransaction	*transaction);
+void		 pk_transaction_set_package_ids			(PkTransaction	*transaction,
+								 gchar		**package_ids);
 gchar		**pk_transaction_get_values			(PkTransaction	*transaction);
 gchar		**pk_transaction_get_full_paths			(PkTransaction	*transaction);
+void		 pk_transaction_set_full_paths			(PkTransaction	*transaction,
+								 gchar		**full_paths);
 PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
 gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
 								 PkTransactionState state);
