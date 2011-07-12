@@ -101,6 +101,8 @@ gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
 gboolean	 pk_backend_has_set_error_code		(PkBackend	*backend);
 gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
 							 PkRoleEnum	 role);
+void		 pk_backend_implement			(PkBackend	*backend,
+							 PkRoleEnum	 role);
 gchar		*pk_backend_get_accepted_eula_string	(PkBackend	*backend);
 void		pk_backend_cancel			(PkBackend	*backend);
 void		pk_backend_download_packages		(PkBackend	*backend,
