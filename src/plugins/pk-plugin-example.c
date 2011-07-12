@@ -64,7 +64,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 			   PkTransaction *transaction)
 {
 	gboolean ret;
-	PkBackend *backend = NULL;
 	PkConf *conf;
 	PkRoleEnum role;
 
@@ -80,8 +79,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");
 		goto out;

@@ -876,16 +876,6 @@ pk_transaction_get_conf (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_get_backend:
- **/
-PkBackend *
-pk_transaction_get_backend (PkTransaction *transaction)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	return transaction->priv->backend;
-}
-
-/**
  * pk_transaction_get_results:
  **/
 PkResults *

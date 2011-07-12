@@ -100,14 +100,12 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 {
 	PkPackage *package = NULL;
 	gchar **filenames;
-	PkBackend *backend;
 
 	/* use PK to find the correct package */
 	g_ptr_array_set_size (plugin->priv->list, 0);
-	backend = pk_transaction_get_backend (transaction);
-	pk_backend_reset (backend);
+	pk_backend_reset (plugin->backend);
 	filenames = g_strsplit (filename, "|||", -1);
-	pk_backend_search_files (backend,
+	pk_backend_search_files (plugin->backend,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 				 filenames);
 
@@ -286,7 +284,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	guint length = 0;
 	guint files_id = 0;
 	guint finished_id = 0;
-	PkBackend *backend = NULL;
 	PkConf *conf;
 	PkInfoEnum info;
 	PkPackage *item;
@@ -308,15 +305,14 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
 		goto out;
 	}
-	files_id = g_signal_connect (backend, "files",
+	files_id = g_signal_connect (plugin->backend, "files",
 				     G_CALLBACK (pk_plugin_files_cb), plugin);
-	finished_id = g_signal_connect (backend, "finished",
+	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
 	/* do we have a cache */
@@ -393,8 +389,8 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* set status */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
-	pk_backend_set_percentage (backend, 101);
+	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
+	pk_backend_set_percentage (plugin->backend, 101);
 
 	/* get list from lsof */
 	ret = pk_lsof_refresh (plugin->priv->lsof);
@@ -404,9 +400,10 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (backend);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_CHECK_LIBRARIES);
-	pk_backend_get_files (backend, package_ids_security);
+	pk_backend_reset (plugin->backend);
+	pk_backend_set_status (plugin->backend,
+			       PK_STATUS_ENUM_CHECK_LIBRARIES);
+	pk_backend_get_files (plugin->backend, package_ids_security);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
@@ -434,14 +431,12 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* don't emit until we've run the transaction and it's success */
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_set_percentage (plugin->backend, 100);
 out:
-	if (backend != NULL) {
-		if (files_id > 0)
-			g_signal_handler_disconnect (backend, files_id);
-		if (finished_id > 0)
-			g_signal_handler_disconnect (backend, finished_id);
-	}
+	if (files_id > 0)
+		g_signal_handler_disconnect (plugin->backend, files_id);
+	if (finished_id > 0)
+		g_signal_handler_disconnect (plugin->backend, finished_id);
 	g_strfreev (files);
 	if (updates != NULL)
 		g_ptr_array_unref (updates);
@@ -458,7 +453,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 					PkTransaction *transaction)
 {
 	gboolean ret;
-	PkBackend *backend = NULL;
 	PkConf *conf;
 	PkRoleEnum role;
 	gint uid;
@@ -485,8 +479,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");
 		goto out;
@@ -502,7 +495,8 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		goto out;
 
 	/* set status */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_CHECK_LIBRARIES);
+	pk_backend_set_status (plugin->backend,
+			       PK_STATUS_ENUM_CHECK_LIBRARIES);
 
 	/* get user UID range */
 	uid_min = pk_plugin_get_uid_min ();
@@ -554,7 +548,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_backend_require_restart (backend,
+		pk_backend_require_restart (plugin->backend,
 					    PK_RESTART_ENUM_SECURITY_SESSION,
 					    pk_package_get_id (package));
 	}
@@ -570,7 +564,9 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
+		pk_backend_require_restart (plugin->backend,
+					    PK_RESTART_ENUM_SECURITY_SYSTEM,
+					    pk_package_get_id (package));
 	}
 out:
 	if (files_session != NULL)

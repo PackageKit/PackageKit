@@ -33,7 +33,6 @@ struct PkPluginPrivate {
 	GPtrArray		*list;
 	GMainLoop		*loop;
 	GHashTable		*hash;
-	PkBackend		*backend;
 };
 
 /**
@@ -164,9 +163,9 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 	/* use PK to find the correct package */
 	if (plugin->priv->list->len > 0)
 		g_ptr_array_set_size (plugin->priv->list, 0);
-	pk_backend_reset (plugin->priv->backend);
+	pk_backend_reset (plugin->backend);
 	filenames = g_strsplit (filename, "|||", -1);
-	pk_backend_search_files (plugin->priv->backend,
+	pk_backend_search_files (plugin->backend,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 				 filenames);
 	g_strfreev (filenames);
@@ -465,7 +464,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	guint finished_id = 0;
 	guint i;
 	guint package_id = 0;
-	PkBackend *backend = NULL;
 	PkRoleEnum role;
 
 	/* load */
@@ -482,28 +480,24 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		goto out;
 
 	/* connect to backend */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 					PK_ROLE_ENUM_SEARCH_FILE)) {
 		g_debug ("cannot search files");
 		goto out;
 	}
-	finished_id = g_signal_connect (backend, "finished",
+	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (backend, "package",
+	package_id = g_signal_connect (plugin->backend, "package",
 				       G_CALLBACK (pk_plugin_package_cb), plugin);
 
 	/* use a local backend instance */
-	pk_backend_reset (backend);
-	pk_backend_set_status (backend,
+	pk_backend_reset (plugin->backend);
+	pk_backend_set_status (plugin->backend,
 			       PK_STATUS_ENUM_SCAN_APPLICATIONS);
-
-	/* cache */
-	plugin->priv->backend = backend;
 
 	/* reset hash */
 	g_hash_table_remove_all (plugin->priv->hash);
-	pk_backend_set_percentage (backend, 101);
+	pk_backend_set_percentage (plugin->backend, 101);
 
 	/* first go through the existing data, and look for
 	 * modifications and removals */
@@ -527,12 +521,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	if (array->len) {
 		step = 100.0f / array->len;
-		pk_backend_set_status (backend,
+		pk_backend_set_status (plugin->backend,
 				       PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
 
 		/* process files in an array */
 		for (i=0; i<array->len; i++) {
-			pk_backend_set_percentage (backend, i * step);
+			pk_backend_set_percentage (plugin->backend, i * step);
 			path = g_ptr_array_index (array, i);
 			pk_plugin_sqlite_add_filename (plugin,
 						       path,
@@ -540,17 +534,15 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		}
 	}
 
-	pk_backend_set_percentage (backend, 100);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
+	pk_backend_set_percentage (plugin->backend, 100);
+	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	if (backend == NULL) {
-		if (package_id > 0)
-			g_signal_handler_disconnect (backend, package_id);
-		if (finished_id > 0)
-			g_signal_handler_disconnect (backend, finished_id);
-	}
+	if (package_id > 0)
+		g_signal_handler_disconnect (plugin->backend, package_id);
+	if (finished_id > 0)
+		g_signal_handler_disconnect (plugin->backend, finished_id);
 }
 
 /**
@@ -617,7 +609,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	guint files_id = 0;
 	guint finished_id = 0;
 	guint i;
-	PkBackend *backend = NULL;
 	PkInfoEnum info;
 	PkPackage *item;
 	PkResults *results;
@@ -637,19 +628,15 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		goto out;
 
 	/* connect to backend */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 					PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
 		goto out;
 	}
-	finished_id = g_signal_connect (backend, "finished",
+	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	files_id = g_signal_connect (backend, "files",
+	files_id = g_signal_connect (plugin->backend, "files",
 				     G_CALLBACK (pk_plugin_files_cb), plugin);
-
-	/* cache */
-	plugin->priv->backend = backend;
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -677,23 +664,21 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		goto out;
 
 	/* get all the files touched in the packages we just installed */
-	pk_backend_reset (backend);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-	pk_backend_set_percentage (backend, 101);
+	pk_backend_reset (plugin->backend);
+	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_backend_set_percentage (plugin->backend, 101);
 	package_ids = pk_ptr_array_to_strv (list);
-	pk_backend_get_files (backend, package_ids);
+	pk_backend_get_files (plugin->backend, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
 
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_set_percentage (plugin->backend, 100);
 out:
-	if (backend == NULL) {
-		if (files_id > 0)
-			g_signal_handler_disconnect (backend, files_id);
-		if (finished_id > 0)
-			g_signal_handler_disconnect (backend, finished_id);
-	}
+	if (files_id > 0)
+		g_signal_handler_disconnect (plugin->backend, files_id);
+	if (finished_id > 0)
+		g_signal_handler_disconnect (plugin->backend, finished_id);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (list != NULL)

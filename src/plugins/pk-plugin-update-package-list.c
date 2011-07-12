@@ -131,7 +131,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	GError *error = NULL;
 	guint finished_id = 0;
 	guint package_id = 0;
-	PkBackend *backend = NULL;
 	PkConf *conf;
 	PkRoleEnum role;
 
@@ -147,18 +146,16 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");
 		goto out;
 	}
 
 	/* connect to backend */
-	backend = pk_transaction_get_backend (transaction);
-	finished_id = g_signal_connect (backend, "finished",
+	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (backend, "package",
+	package_id = g_signal_connect (plugin->backend, "package",
 				       G_CALLBACK (pk_plugin_package_cb), plugin);
 
 	g_debug ("plugin: updating package lists");
@@ -168,19 +165,19 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		g_ptr_array_set_size (plugin->priv->list, 0);
 
 	/* update UI */
-	pk_backend_set_status (backend,
+	pk_backend_set_status (plugin->backend,
 			       PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-	pk_backend_set_percentage (backend, 101);
+	pk_backend_set_percentage (plugin->backend, 101);
 
 	/* get the new package list */
-	pk_backend_reset (backend);
-	pk_backend_get_packages (backend, PK_FILTER_ENUM_NONE);
+	pk_backend_reset (plugin->backend);
+	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
 
 	/* update UI */
-	pk_backend_set_percentage (backend, 90);
+	pk_backend_set_percentage (plugin->backend, 90);
 
 	/* convert to a file */
 	data = pk_plugin_package_list_to_string (plugin->priv->list);
@@ -193,12 +190,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	}
 
 	/* update UI */
-	pk_backend_set_percentage (backend, 100);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
+	pk_backend_set_percentage (plugin->backend, 100);
+	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
 out:
-	if (backend != NULL) {
-		g_signal_handler_disconnect (backend, finished_id);
-		g_signal_handler_disconnect (backend, package_id);
+	if (finished_id != 0) {
+		g_signal_handler_disconnect (plugin->backend, finished_id);
+		g_signal_handler_disconnect (plugin->backend, package_id);
 	}
 	g_free (data);
 }

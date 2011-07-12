@@ -163,7 +163,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	gchar *process = NULL;
 	guint files_id = 0;
 	guint finished_id = 0;
-	PkBackend *backend = NULL;
 	PkConf *conf;
 	PkRoleEnum role;
 
@@ -173,8 +172,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		goto out;
 
 	/* check we can do the action */
-	backend = pk_transaction_get_backend (transaction);
-	if (!pk_backend_is_implemented (backend,
+	if (!pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_FILES)) {
 		g_debug ("cannot get files");
 		goto out;
@@ -197,8 +195,9 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	g_ptr_array_set_size (plugin->priv->files_list, 0);
 
 	/* set status */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
-	pk_backend_set_percentage (backend, 101);
+	pk_backend_set_status (plugin->backend,
+			       PK_STATUS_ENUM_SCAN_PROCESS_LIST);
+	pk_backend_set_percentage (plugin->backend, 101);
 
 	/* get list from proc */
 	ret = pk_proc_refresh (plugin->priv->proc);
@@ -209,35 +208,36 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* set status */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
+	pk_backend_set_status (plugin->backend,
+			       PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 
-	files_id = g_signal_connect (backend, "files",
+	files_id = g_signal_connect (plugin->backend, "files",
 				     G_CALLBACK (pk_plugin_files_cb), plugin);
-	finished_id = g_signal_connect (backend, "finished",
+	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
 	/* get all the files touched in the packages we just updated */
 	package_ids = pk_transaction_get_package_ids (transaction);
-	pk_backend_reset (backend);
-	pk_backend_get_files (backend, package_ids);
+	pk_backend_reset (plugin->backend);
+	pk_backend_get_files (plugin->backend, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_set_percentage (plugin->backend, 100);
 
 	/* there is a file we can't COW */
 	if (plugin->priv->files_list->len != 0) {
 		file = g_ptr_array_index (plugin->priv->files_list, 0);
-		pk_backend_error_code (backend,
+		pk_backend_error_code (plugin->backend,
 				       PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS,
 				       "failed to run as %s is running", file);
 		goto out;
 	}
 out:
 	if (files_id > 0)
-		g_signal_handler_disconnect (backend, files_id);
+		g_signal_handler_disconnect (plugin->backend, files_id);
 	if (finished_id > 0)
-		g_signal_handler_disconnect (backend, finished_id);
+		g_signal_handler_disconnect (plugin->backend, finished_id);
 	g_strfreev (files);
 	g_free (process);
 }
