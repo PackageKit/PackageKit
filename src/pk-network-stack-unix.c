@@ -35,19 +35,19 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #include "egg-string.h"
 
 #include "pk-network-stack-unix.h"
 #include "pk-marshal.h"
 #include "pk-conf.h"
-#include "pk-file-monitor.h"
 
 struct PkNetworkStackUnixPrivate
 {
 	PkConf			*conf;
 	PkNetworkEnum		 state_old;
-	PkFileMonitor		*file_monitor;
+	GFileMonitor		*monitor;
 	gboolean		 is_enabled;
 };
 
@@ -168,7 +168,11 @@ out:
  * pk_network_stack_unix_file_monitor_changed_cb:
  **/
 static void
-pk_network_stack_unix_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkNetworkStackUnix *nstack_unix)
+pk_network_stack_unix_file_monitor_changed_cb (GFileMonitor *monitor,
+					       GFile *file,
+					       GFile *other_file,
+					       GFileMonitorEvent event_type,
+					       PkNetworkStackUnix *nstack_unix)
 {
 	PkNetworkEnum state;
 
@@ -211,18 +215,33 @@ pk_network_stack_unix_is_enabled (PkNetworkStack *nstack)
 static void
 pk_network_stack_unix_init (PkNetworkStackUnix *nstack_unix)
 {
+	GError *error = NULL;
+	GFile *file;
+
 	nstack_unix->priv = PK_NETWORK_STACK_UNIX_GET_PRIVATE (nstack_unix);
 	nstack_unix->priv->state_old = PK_NETWORK_ENUM_UNKNOWN;
 	nstack_unix->priv->conf = pk_conf_new ();
 
 	/* do we use this code? */
-	nstack_unix->priv->is_enabled = pk_conf_get_bool (nstack_unix->priv->conf, "UseNetworkHeuristic");
+	nstack_unix->priv->is_enabled = pk_conf_get_bool (nstack_unix->priv->conf,
+							  "UseNetworkHeuristic");
 
-	/* monitor the config file for changes */
-	nstack_unix->priv->file_monitor = pk_file_monitor_new ();
-	pk_file_monitor_set_file (nstack_unix->priv->file_monitor, PK_NETWORK_PROC_ROUTE);
-	g_signal_connect (nstack_unix->priv->file_monitor, "file-changed",
-			  G_CALLBACK (pk_network_stack_unix_file_monitor_changed_cb), nstack_unix);
+	/* monitor the route file for changes */
+	file = g_file_new_for_path (PK_NETWORK_PROC_ROUTE);
+	nstack_unix->priv->monitor = g_file_monitor_file (file,
+							  G_FILE_MONITOR_NONE,
+							  NULL,
+							  &error);
+	if (nstack_unix->priv->monitor == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   PK_NETWORK_PROC_ROUTE,
+			   error->message);
+		g_error_free (error);
+	} else {
+		g_signal_connect (nstack_unix->priv->monitor, "changed",
+				  G_CALLBACK (pk_network_stack_unix_file_monitor_changed_cb), nstack_unix);
+	}
+	g_object_unref (file);
 }
 
 /**
@@ -240,7 +259,7 @@ pk_network_stack_unix_finalize (GObject *object)
 	g_return_if_fail (nstack_unix->priv != NULL);
 
 	g_object_unref (nstack_unix->priv->conf);
-	g_object_unref (nstack_unix->priv->file_monitor);
+	g_object_unref (nstack_unix->priv->monitor);
 
 	G_OBJECT_CLASS (pk_network_stack_unix_parent_class)->finalize (object);
 }

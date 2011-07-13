@@ -45,7 +45,6 @@
 #include "pk-store.h"
 #include "pk-shared.h"
 #include "pk-time.h"
-#include "pk-file-monitor.h"
 #include "pk-notify.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -129,7 +128,7 @@ struct PkBackendPrivate
 	PkBitfield		 roles;
 	PkConf			*conf;
 	PkExitEnum		 exit;
-	PkFileMonitor		*file_monitor;
+	GFileMonitor		*monitor;
 	PkPackage		*last_package;
 	PkNetwork		*network;
 	PkResults		*results;
@@ -2694,12 +2693,32 @@ out:
 }
 
 /**
+ * pk_backend_file_monitor_changed_cb:
+ **/
+static void
+pk_backend_file_monitor_changed_cb (GFileMonitor *monitor,
+				    GFile *file,
+				    GFile *other_file,
+				    GFileMonitorEvent event_type,
+				    PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_debug ("config file changed");
+	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
+}
+
+/**
  * pk_backend_watch_file:
  */
 gboolean
-pk_backend_watch_file (PkBackend *backend, const gchar *filename, PkBackendFileChanged func, gpointer data)
+pk_backend_watch_file (PkBackend *backend,
+		       const gchar *filename,
+		       PkBackendFileChanged func,
+		       gpointer data)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
+	GError *error = NULL;
+	GFile *file = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);
@@ -2707,27 +2726,33 @@ pk_backend_watch_file (PkBackend *backend, const gchar *filename, PkBackendFileC
 
 	if (backend->priv->file_changed_func != NULL) {
 		g_warning ("already set");
-		return FALSE;
+		goto out;
 	}
-	ret = pk_file_monitor_set_file (backend->priv->file_monitor, filename);;
 
-	/* if we set it up, set the function callback */
-	if (ret) {
-		backend->priv->file_changed_func = func;
-		backend->priv->file_changed_data = data;
+	/* monitor config files for changes */
+	file = g_file_new_for_path (filename);
+	backend->priv->monitor = g_file_monitor_file (file,
+						      G_FILE_MONITOR_NONE,
+						      NULL,
+						      &error);
+	if (backend->priv->monitor == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   filename,
+			   error->message);
+		g_error_free (error);
+		goto out;
 	}
+
+	/* success */
+	ret = TRUE;
+	g_signal_connect (backend->priv->monitor, "changed",
+			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+	backend->priv->file_changed_func = func;
+	backend->priv->file_changed_data = data;
+out:
+	if (file != NULL)
+		g_object_unref (file);
 	return ret;
-}
-
-/**
- * pk_backend_file_monitor_changed_cb:
- **/
-static void
-pk_backend_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkBackend *backend)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_debug ("config file changed");
-	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
 }
 
 /**
@@ -3046,6 +3071,12 @@ pk_backend_reset (PkBackend *backend)
 	 * might have a reference on the data */
 	g_object_unref (backend->priv->results);
 	backend->priv->results = pk_results_new ();
+
+	/* clear monitor */
+	if (backend->priv->monitor != NULL) {
+		g_object_unref (backend->priv->monitor);
+		backend->priv->monitor = NULL;
+	}
 
 	return TRUE;
 }
@@ -3517,35 +3548,12 @@ pk_backend_init (PkBackend *backend)
 	PkConf *conf;
 
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
-	backend->priv->handle = NULL;
-	backend->priv->name = NULL;
-	backend->priv->locale = NULL;
-	backend->priv->frontend_socket = NULL;
-	backend->priv->cache_age = 0;
-	backend->priv->transaction_id = NULL;
-	backend->priv->root = NULL;
-	backend->priv->file_changed_func = NULL;
-	backend->priv->file_changed_data = NULL;
-	backend->priv->last_package = NULL;
-	backend->priv->locked = FALSE;
-	backend->priv->use_threads = FALSE;
-	backend->priv->signal_finished = 0;
-	backend->priv->speed = 0;
-	backend->priv->signal_error_timeout = 0;
-	backend->priv->during_initialize = FALSE;
-	backend->priv->simultaneous = FALSE;
-	backend->priv->roles = 0;
 	backend->priv->conf = pk_conf_new ();
 	backend->priv->results = pk_results_new ();
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
-	/* monitor config files for changes */
-	backend->priv->file_monitor = pk_file_monitor_new ();
-	g_signal_connect (backend->priv->file_monitor, "file-changed",
-			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
 
 	/* do we use time estimation? */
 	conf = pk_conf_new ();

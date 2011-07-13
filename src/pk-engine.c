@@ -51,7 +51,6 @@
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-file-monitor.h"
 #include "pk-inhibit.h"
 #include "pk-marshal.h"
 #include "pk-network.h"
@@ -82,8 +81,8 @@ struct PkEnginePrivate
 	PkNotify		*notify;
 	PkConf			*conf;
 	PkDbus			*dbus;
-	PkFileMonitor		*file_monitor_conf;
-	PkFileMonitor		*file_monitor_binary;
+	GFileMonitor		*monitor_conf;
+	GFileMonitor		*monitor_binary;
 	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
@@ -1434,7 +1433,11 @@ pk_engine_class_init (PkEngineClass *klass)
  * A config file has changed, we need to reload the daemon
  **/
 static void
-pk_engine_conf_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
+pk_engine_conf_file_changed_cb (GFileMonitor *file_monitor,
+				GFile *file,
+				GFile *other_file,
+				GFileMonitorEvent event_type,
+				PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	g_debug ("setting shutdown_as_soon_as_possible TRUE");
@@ -1445,7 +1448,11 @@ pk_engine_conf_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
  * pk_engine_binary_file_changed_cb:
  **/
 static void
-pk_engine_binary_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
+pk_engine_binary_file_changed_cb (GFileMonitor *file_monitor,
+				  GFile *file,
+				  GFile *other_file,
+				  GFileMonitorEvent event_type,
+				  PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	g_debug ("setting notify_clients_of_upgrade TRUE");
@@ -1616,6 +1623,58 @@ pk_engine_plugin_phase (PkEngine *engine,
 }
 
 /**
+ * pk_engine_setup_file_monitors:
+ **/
+static void
+pk_engine_setup_file_monitors (PkEngine *engine)
+{
+	GError *error = NULL;
+	GFile *file_conf = NULL;
+	GFile *file_binary = NULL;
+	gchar *filename = NULL;
+
+	/* monitor the binary file for changes */
+	file_binary = g_file_new_for_path (LIBEXECDIR "/packagekitd");
+	engine->priv->monitor_binary = g_file_monitor_file (file_binary,
+							    G_FILE_MONITOR_NONE,
+							    NULL,
+							    &error);
+	if (engine->priv->monitor_binary == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   LIBEXECDIR "/packagekitd",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_signal_connect (engine->priv->monitor_binary, "changed",
+			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
+
+	/* monitor config file for changes */
+	filename = pk_conf_get_filename ();
+	g_debug ("setting config file watch on %s", filename);
+	file_conf = g_file_new_for_path (filename);
+	engine->priv->monitor_conf = g_file_monitor_file (file_conf,
+							  G_FILE_MONITOR_NONE,
+							  NULL,
+							  &error);
+	if (engine->priv->monitor_conf == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   filename,
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_signal_connect (engine->priv->monitor_conf, "changed",
+			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
+out:
+	g_free (filename);
+	if (file_conf != NULL)
+		g_object_unref (file_conf);
+	if (file_binary != NULL)
+		g_object_unref (file_binary);
+}
+
+/**
  * pk_engine_init:
  **/
 static void
@@ -1636,14 +1695,6 @@ pk_engine_init (PkEngine *engine)
 #endif
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-	engine->priv->notify_clients_of_upgrade = FALSE;
-	engine->priv->shutdown_as_soon_as_possible = FALSE;
-	engine->priv->mime_types = NULL;
-	engine->priv->backend_name = NULL;
-	engine->priv->backend_description = NULL;
-	engine->priv->backend_author = NULL;
-	engine->priv->locked = FALSE;
-	engine->priv->distro_id = NULL;
 
 	/* use the config file */
 	engine->priv->conf = pk_conf_new ();
@@ -1714,13 +1765,8 @@ pk_engine_init (PkEngine *engine)
 	g_signal_connect (engine->priv->notify, "updates-changed",
 			  G_CALLBACK (pk_engine_notify_updates_changed_cb), engine);
 
-	/* monitor the config file for changes */
-	engine->priv->file_monitor_conf = pk_file_monitor_new ();
-	filename = pk_conf_get_filename ();
-	pk_file_monitor_set_file (engine->priv->file_monitor_conf, filename);
-	g_signal_connect (engine->priv->file_monitor_conf, "file-changed",
-			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
-	g_free (filename);
+	/* setup file watches */
+	pk_engine_setup_file_monitors (engine);
 
 #ifdef USE_SECURITY_POLKIT
 	/* protect the session SetProxy with a PolicyKit action */
@@ -1734,12 +1780,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->authority = polkit_authority_get ();
 #endif
 #endif
-
-	/* monitor the binary file for changes */
-	engine->priv->file_monitor_binary = pk_file_monitor_new ();
-	pk_file_monitor_set_file (engine->priv->file_monitor_binary, SBINDIR "/packagekitd");
-	g_signal_connect (engine->priv->file_monitor_binary, "file-changed",
-			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
 
 	/* set the default proxy */
 	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
@@ -1837,8 +1877,8 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
-	g_object_unref (engine->priv->file_monitor_conf);
-	g_object_unref (engine->priv->file_monitor_binary);
+	g_object_unref (engine->priv->monitor_conf);
+	g_object_unref (engine->priv->monitor_binary);
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);

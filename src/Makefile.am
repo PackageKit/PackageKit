@@ -88,8 +88,6 @@ shared_SOURCES =					\
 	pk-spawn.h					\
 	pk-sysdep.h					\
 	pk-sysdep.c					\
-	pk-file-monitor.h				\
-	pk-file-monitor.c				\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\

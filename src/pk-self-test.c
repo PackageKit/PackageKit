@@ -31,7 +31,6 @@
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-file-monitor.h"
 #include "pk-inhibit.h"
 #include "pk-notify.h"
 #include "pk-spawn.h"
@@ -761,17 +760,6 @@ pk_test_engine_func (void)
 	g_object_unref (backend);
 	g_object_unref (notify);
 	g_object_unref (engine);
-}
-
-static void
-pk_test_file_monitor_func (void)
-{
-	PkFileMonitor *file_monitor;
-
-	/* get a file_monitor */
-	file_monitor = pk_file_monitor_new ();
-	g_assert (file_monitor != NULL);
-	g_object_unref (file_monitor);
 }
 
 static void
@@ -1777,7 +1765,6 @@ main (int argc, char **argv)
 #endif
 
 	/* components */
-	g_test_add_func ("/packagekit/file-monitor", pk_test_file_monitor_func);
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/syslog", pk_test_dbus_func);
