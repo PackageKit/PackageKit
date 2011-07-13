@@ -95,10 +95,10 @@ out:
 }
 
 /**
- * egg_strtoint:
+ * pk_strtoint:
  **/
 static gboolean
-egg_strtoint (const gchar *text, gint *value)
+pk_strtoint (const gchar *text, gint *value)
 {
 	gchar *endptr = NULL;
 	gint64 value_raw;
@@ -175,7 +175,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	}
 
 	/* parse PID */
-	ret = egg_strtoint (pid_text, &pid);
+	ret = pk_strtoint (pid_text, &pid);
 	if (!ret)
 		goto out;
 
@@ -192,7 +192,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 		goto out;
 
 	/* parse UID */
-	ret = egg_strtoint (contents, &uid);
+	ret = pk_strtoint (contents, &uid);
 	if (!ret)
 		goto out;
 

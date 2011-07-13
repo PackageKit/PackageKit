@@ -44,8 +44,6 @@
 #include <polkit/polkit.h>
 #endif
 
-#include "egg-string.h"
-
 #include "pk-backend.h"
 #include "pk-cache.h"
 #include "pk-conf.h"
@@ -768,7 +766,7 @@ pk_engine_set_proxy (PkEngine *engine,
 	g_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
 
 	/* check length of http */
-	len = egg_strlen (proxy_http, 1024);
+	len = pk_strlen (proxy_http, 1024);
 	if (len == 1024) {
 		error = g_error_new_literal (PK_ENGINE_ERROR,
 					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
@@ -778,7 +776,7 @@ pk_engine_set_proxy (PkEngine *engine,
 	}
 
 	/* check length of ftp */
-	len = egg_strlen (proxy_ftp, 1024);
+	len = pk_strlen (proxy_ftp, 1024);
 	if (len == 1024) {
 		error = g_error_new_literal (PK_ENGINE_ERROR,
 					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
@@ -1032,7 +1030,7 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	g_debug ("SetRoot method called: %s", root);
 
 	/* check length of root */
-	len = egg_strlen (root, 1024);
+	len = pk_strlen (root, 1024);
 	if (len == 1024) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "root was too long: %s", root);
 		dbus_g_method_return_error (context, error);

@@ -32,8 +32,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
-#include "egg-string.h"
-
 #define PK_MAX_PATH_LEN 1023
 
 typedef enum {
@@ -717,7 +715,7 @@ main (int argc, char *argv[])
 	cancellable = g_cancellable_new ();
 
 	/* get length */
-	len = egg_strlen (argv[1], 1024);
+	len = strlen (argv[1]);
 	if (len < 1) {
 		retval = EXIT_COMMAND_NOT_FOUND;
 		goto out;

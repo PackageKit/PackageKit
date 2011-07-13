@@ -37,7 +37,19 @@ typedef enum {
 
 gboolean	 pk_directory_remove_contents		(const gchar	*directory);
 const gchar	*pk_hint_enum_to_string			(PkHintEnum	 hint);
-PkHintEnum	 pk_hint_enum_from_string			(const gchar	*hint);
+PkHintEnum	 pk_hint_enum_from_string		(const gchar	*hint);
+
+guint		 pk_strlen				(const gchar	*text,
+							 guint		 len)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_strzero				(const gchar	*text)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_strtoint				(const gchar	*text,
+							 gint		*value);
+gboolean	 pk_strtouint				(const gchar	*text,
+							 guint		*value);
+gboolean	 pk_strtouint64				(const gchar	*text,
+							 guint64	*value);
 
 G_END_DECLS
 

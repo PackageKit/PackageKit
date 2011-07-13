@@ -39,8 +39,6 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "egg-string.h"
-
 #include "pk-conf.h"
 #include "pk-transaction-dbus.h"
 #include "pk-transaction-list.h"

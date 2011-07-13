@@ -110,3 +110,141 @@ pk_hint_enum_from_string (const gchar *hint)
 		return PK_HINT_ENUM_UNSET;
 	return PK_HINT_ENUM_UNSET;
 }
+
+
+/**
+ * pk_strtoint:
+ * @text: The text the convert
+ * @value: The return numeric return value
+ *
+ * Converts a string into a signed integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+pk_strtoint (const gchar *text, gint *value)
+{
+	gchar *endptr = NULL;
+	gint64 value_raw;
+
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
+
+	/* parse */
+	value_raw = g_ascii_strtoll (text, &endptr, 10);
+
+	/* parsing error */
+	if (endptr == text)
+		return FALSE;
+
+	/* out of range */
+	if (value_raw > G_MAXINT || value_raw < G_MININT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (gint) value_raw;
+	return TRUE;
+}
+
+/**
+ * pk_strtouint64:
+ * @text: The text the convert
+ * @value: The return numeric return value
+ *
+ * Converts a string into a unsigned integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+pk_strtouint64 (const gchar *text, guint64 *value)
+{
+	gchar *endptr = NULL;
+
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
+
+	/* parse */
+	*value = g_ascii_strtoull (text, &endptr, 10);
+	if (endptr == text)
+		return FALSE;
+
+	return TRUE;
+}
+
+/**
+ * pk_strtouint:
+ * @text: The text the convert
+ * @value: The return numeric return value
+ *
+ * Converts a string into a unsigned integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+pk_strtouint (const gchar *text, guint *value)
+{
+	gboolean ret;
+	guint64 value_raw;
+
+	ret = pk_strtouint64 (text, &value_raw);
+	if (!ret)
+		return FALSE;
+
+	/* out of range */
+	if (value_raw > G_MAXUINT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (guint) value_raw;
+	return TRUE;
+}
+
+/**
+ * pk_strzero:
+ * @text: The text to check
+ *
+ * This function is a much safer way of doing "if (strlen (text) == 0))"
+ * as it does not rely on text being NULL terminated. It's also much
+ * quicker as it only checks the first byte rather than scanning the whole
+ * string just to verify it's not zero length.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+pk_strzero (const gchar *text)
+{
+	if (text == NULL)
+		return TRUE;
+	if (text[0] == '\0')
+		return TRUE;
+	return FALSE;
+}
+
+/**
+ * pk_strlen:
+ * @text: The text to check
+ * @len: The maximum length of the string
+ *
+ * This function is a much safer way of doing strlen as it checks for NULL and
+ * a stupidly long string.
+ *
+ * Return value: the length of the string, or len if the string is too long.
+ **/
+guint
+pk_strlen (const gchar *text, guint len)
+{
+	guint i;
+
+	/* common case */
+	if (text == NULL || text[0] == '\0')
+		return 0;
+
+	/* only count up to len */
+	for (i=1; i<len; i++) {
+		if (text[i] == '\0')
+			break;
+	}
+	return i;
+}

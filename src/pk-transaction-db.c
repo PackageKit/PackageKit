@@ -39,7 +39,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "egg-string.h"
+#include "pk-shared.h"
 
 #include "pk-transaction-db.h"
 
@@ -97,7 +97,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 		col = col_name[i];
 		value = argv[i];
 		if (g_strcmp0 (col, "succeeded") == 0) {
-			ret = egg_strtouint (value, &temp);
+			ret = pk_strtouint (value, &temp);
 			if (!ret)
 				g_warning ("failed to parse succeeded: %s", value);
 			if (temp == 1)
@@ -120,11 +120,11 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 			if (value != NULL)
 				g_object_set (item, "data", value, NULL);
 		} else if (g_strcmp0 (col, "uid") == 0) {
-			ret = egg_strtouint (value, &temp);
+			ret = pk_strtouint (value, &temp);
 			if (ret)
 				g_object_set (item, "uid", temp, NULL);
 		} else if (g_strcmp0 (col, "duration") == 0) {
-			ret = egg_strtouint (value, &temp);
+			ret = pk_strtouint (value, &temp);
 			if (!ret) {
 				g_warning ("failed to parse duration: %s", value);
 			} else if (temp > 60*60*12) {
@@ -478,7 +478,7 @@ pk_transaction_sqlite_job_id_cb (void *data, gint argc, gchar **argv, gchar **co
 		g_warning ("wrong number of replies: %i", argc);
 		goto out;
 	}
-	egg_strtouint (argv[0], &tdb->priv->job_count);
+	pk_strtouint (argv[0], &tdb->priv->job_count);
 out:
 	return 0;
 }
@@ -921,7 +921,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		/* get the old job count from the text file (this is a legacy file) */
 		ret = g_file_get_contents (PK_TRANSACTION_DB_ID_FILE_OBSOLETE, &text, NULL, NULL);
 		if (ret)
-			egg_strtouint (text, &tdb->priv->job_count);
+			pk_strtouint (text, &tdb->priv->job_count);
 		g_free (text);
 
 		/* save job id */

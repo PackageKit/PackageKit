@@ -37,8 +37,6 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include "egg-string.h"
-
 #include "pk-network-stack-unix.h"
 #include "pk-marshal.h"
 #include "pk-conf.h"
@@ -67,7 +65,7 @@ pk_network_stack_unix_is_valid (const gchar *line)
 	guint number_sections;
 
 	/* empty line */
-	if (egg_strzero (line))
+	if (line == NULL || line[0] == '\0')
 		goto out;
 
 	/* tab delimited */

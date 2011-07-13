@@ -42,10 +42,9 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "egg-string.h"
-
 #include "pk-spawn.h"
 #include "pk-marshal.h"
+#include "pk-shared.h"
 #include "pk-conf.h"
 
 #include "pk-sysdep.h"
@@ -125,7 +124,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint bytes_processed;
 
 	/* if nothing then don't emit */
-	if (egg_strzero (string->str))
+	if (pk_strzero (string->str))
 		return FALSE;
 
 	/* split into lines - the last line may be incomplete */
@@ -484,6 +483,39 @@ out:
 }
 
 /**
+ * pk_strvequal:
+ **/
+static gboolean
+pk_strvequal (gchar **id1, gchar **id2)
+{
+	guint i;
+	guint length1;
+	guint length2;
+
+	if (id1 == NULL && id2 == NULL)
+		return TRUE;
+
+	if (id1 == NULL || id2 == NULL) {
+		g_debug ("GStrv compare invalid '%p' and '%p'", id1, id2);
+		return FALSE;
+	}
+
+	/* check different sizes */
+	length1 = g_strv_length (id1);
+	length2 = g_strv_length (id2);
+	if (length1 != length2)
+		return FALSE;
+
+	/* text equal each one */
+	for (i=0; i<length1; i++) {
+		if (g_strcmp0 (id1[i], id2[i]) != 0)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_spawn_argv:
  * @argv: Can be generated using g_strsplit (command, " ", 0)
  * if there are no spaces in the filename
@@ -527,7 +559,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	if (spawn->priv->stdin_fd != -1) {
 		if (g_strcmp0 (spawn->priv->last_argv0, argv[0]) != 0) {
 			g_debug ("argv did not match, not reusing");
-		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
+		} else if (!pk_strvequal (spawn->priv->last_envp, envp)) {
 			g_debug ("envp did not match, not reusing");
 		} else {
 			/* join with tabs, as spaces could be in file name */

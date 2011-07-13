@@ -51,8 +51,6 @@ plugininclude_HEADERS =					\
 	pk-transaction.h
 
 shared_SOURCES =					\
-	egg-string.c					\
-	egg-string.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-dbus.c					\

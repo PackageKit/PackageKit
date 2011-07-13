@@ -21,8 +21,6 @@ PK_GLIB2_LIBS =						\
 	$(NULL)
 
 pk_command_not_found_SOURCES =				\
-	egg-string.c					\
-	egg-string.h					\
 	pk-command-not-found.c				\
 	$(NULL)
 

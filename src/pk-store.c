@@ -25,8 +25,6 @@
 
 #include <glib.h>
 
-#include "egg-string.h"
-
 #include "pk-store.h"
 
 #define PK_STORE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_STORE, PkStorePrivate))

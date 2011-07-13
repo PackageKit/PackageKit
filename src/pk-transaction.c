@@ -52,8 +52,6 @@
 #include <polkit/polkit.h>
 #endif
 
-#include "egg-string.h"
-
 #include "pk-backend.h"
 #include "pk-cache.h"
 #include "pk-conf.h"
@@ -1030,7 +1028,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 		/* save to database */
 		packages = pk_transaction_package_list_to_string (array);
-		if (!egg_strzero (packages))
+		if (!pk_strzero (packages))
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 
 		/* report to syslog */
@@ -2117,7 +2115,7 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 	guint length;
 
 	/* maximum size is 1024 */
-	length = egg_strlen (text, 1024);
+	length = pk_strlen (text, 1024);
 	if (length > 1024) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Invalid input passed to daemon: input too long: %u", length);
@@ -2144,7 +2142,7 @@ pk_transaction_search_check_item (const gchar *values, GError **error)
 	gboolean ret;
 
 	/* limit to a 1k chunk */
-	size = egg_strlen (values, 1024);
+	size = pk_strlen (values, 1024);
 
 	if (values == NULL) {
 		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
@@ -2210,7 +2208,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	g_return_val_if_fail (error != NULL, FALSE);
 
 	/* is zero? */
-	if (egg_strzero (filter)) {
+	if (pk_strzero (filter)) {
 		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "filter zero length");
 		goto out;
@@ -2226,7 +2224,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	length = g_strv_length (sections);
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
-		if (egg_strzero (sections[i])) {
+		if (pk_strzero (sections[i])) {
 			ret = FALSE;
 			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Single empty section of filter: %s", filter);
@@ -4777,7 +4775,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 
 	/* cache-age=<time-in-seconds> */
 	if (g_strcmp0 (key, "cache-age") == 0) {
-		ret = egg_strtouint (value, &priv->cache_age);
+		ret = pk_strtouint (value, &priv->cache_age);
 		if (!ret) {
 			priv->cache_age = G_MAXUINT;
 			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
