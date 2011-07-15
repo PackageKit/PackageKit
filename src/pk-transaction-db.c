@@ -560,9 +560,7 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 		tdb->priv->database_save_id =
 			g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc)
 					 pk_transaction_db_defer_write_job_count_cb, tdb, NULL);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (tdb->priv->database_save_id, "[PkTransactionDb] save");
-#endif
 	}
 
 	/* make the tid */

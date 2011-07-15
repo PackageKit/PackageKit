@@ -109,9 +109,7 @@ pk_notify_wait_updates_changed (PkNotify *notify, guint timeout)
 
 	/* schedule */
 	notify->priv->timeout_id = g_timeout_add (timeout, pk_notify_finished_updates_changed_cb, notify);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (notify->priv->timeout_id, "[PkNotify] updates-changed");
-#endif
 	return TRUE;
 }
 

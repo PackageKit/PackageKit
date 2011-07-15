@@ -157,9 +157,7 @@ queue_install_fonts_tag (const char *tag)
 	if (tags == NULL) {
 		tags = g_ptr_array_new ();
 		idle_id = g_idle_add (pk_install_fonts_idle_cb, NULL);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (idle_id, "[PkGtkModule] install fonts");
-#endif
 	}
 
 	g_ptr_array_add (tags, (gpointer) g_strdup (tag));

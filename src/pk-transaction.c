@@ -2654,9 +2654,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 
 	/* we are done */
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from accept");
-#endif
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
@@ -3323,9 +3321,7 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-old-transactions");
-#endif
 
 	return TRUE;
 }
@@ -3615,10 +3611,7 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 
 	/* we are done */
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (idle_id, "[PkTransaction] try-emit-cache");
-#endif
-
 out:
 	if (package_array != NULL)
 		g_ptr_array_unref (package_array);

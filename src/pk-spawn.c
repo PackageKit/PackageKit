@@ -378,9 +378,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	/* the program might not be able to handle SIGQUIT, give it a few seconds and then SIGKILL it */
 	if (spawn->priv->allow_sigkill) {
 		spawn->priv->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (spawn->priv->kill_id, "[PkSpawn] sigkill");
-#endif
 	}
 	return TRUE;
 }
@@ -653,9 +651,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (spawn->priv->poll_id, "[PkSpawn] main poll");
-#endif
 
 	return TRUE;
 }

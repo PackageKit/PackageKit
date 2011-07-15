@@ -125,9 +125,7 @@ pk_plugin_install_set_status (PkPluginInstall *self, PkPluginInstallPackageStatu
 
 		if (status == INSTALLING) {
 			self->priv->timeout = g_timeout_add (80, spinner_timeout, self);
-#if GLIB_CHECK_VERSION(2,25,8)
 			g_source_set_name_by_id (self->priv->timeout, "[PkPluginInstall] spinner");
-#endif
 		}
 		else if (self->priv->timeout) {
 			g_source_remove (self->priv->timeout);

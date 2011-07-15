@@ -308,9 +308,7 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
 
 	/* add this idle, so that we don't have a deep out-of-order callchain */
 	item->idle_id = g_idle_add ((GSourceFunc) pk_transaction_list_run_idle_cb, item);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (item->idle_id, "[PkTransactionList] run");
-#endif
 }
 
 /**
@@ -392,9 +390,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	/* give the client a few seconds to still query the runner */
 	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionKeepFinishedTimeout");
 	item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (item->remove_id, "[PkTransactionList] remove");
-#endif
 
 	/* do the next transaction now if we have another queued */
 	item = pk_transaction_list_get_next_item (tlist);
@@ -532,9 +528,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
 	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionCreateCommitTimeout");
 	item->commit_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_no_commit_cb, item);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (item->commit_id, "[PkTransactionList] commit");
-#endif
 
 	g_debug ("adding transaction %p, item %p", item->transaction, item);
 	g_ptr_array_add (tlist->priv->array, item);
@@ -891,9 +885,7 @@ pk_transaction_list_wedge_check1 (PkTransactionList *tlist)
 		/* we have to do this twice, as we might idle add inbetween a transition */
 		g_warning ("list is consistent, scheduling another check");
 		tlist->priv->unwedge2_id = g_timeout_add (500, (GSourceFunc) pk_transaction_list_wedge_check2, tlist);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (tlist->priv->unwedge2_id, "[PkTransactionList] wedge-check");
-#endif
 	}
 
 	/* always repeat */
@@ -943,9 +935,7 @@ pk_transaction_list_init (PkTransactionList *tlist)
 	tlist->priv->unwedge2_id = 0;
 	tlist->priv->unwedge1_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
 							  (GSourceFunc) pk_transaction_list_wedge_check1, tlist);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (tlist->priv->unwedge1_id, "[PkTransactionList] wedge-check (main)");
-#endif
 }
 
 /**

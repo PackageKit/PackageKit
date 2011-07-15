@@ -2065,9 +2065,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *
 	/* we only allow a short time to send finished after error_code */
 	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_FINISHED_ERROR_TIMEOUT,
 							     pk_backend_error_timeout_delay_cb, backend);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (backend->priv->signal_error_timeout, "[PkBackend] error-code");
-#endif
 
 	/* some error codes have a different exit code */
 	need_untrusted = pk_backend_error_code_is_need_untrusted (error_code);
@@ -2411,9 +2409,7 @@ pk_backend_finished (PkBackend *backend)
 	g_debug ("adding finished %p to timeout loop", backend);
 	backend->priv->signal_finished = g_timeout_add (PK_BACKEND_FINISHED_TIMEOUT_GRACE,
 							pk_backend_finished_delay, backend);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (backend->priv->signal_finished, "[PkBackend] finished");
-#endif
 	return TRUE;
 }
 
@@ -2435,9 +2431,7 @@ pk_backend_thread_finished (PkBackend *backend)
 {
 	guint idle_id;
 	idle_id = g_idle_add ((GSourceFunc) pk_backend_thread_finished_cb, backend);
-#if GLIB_CHECK_VERSION(2,25,8)
 	g_source_set_name_by_id (idle_id, "[PkBackend] finished");
-#endif
 }
 
 /**

@@ -408,15 +408,11 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	if (is_priority) {
 		engine->priv->timeout_priority_id = g_timeout_add_seconds (engine->priv->timeout_priority,
 									   pk_engine_state_changed_cb, engine);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (engine->priv->timeout_priority_id, "[PkEngine] priority");
-#endif
 	} else {
 		engine->priv->timeout_normal_id = g_timeout_add_seconds (engine->priv->timeout_normal,
 									 pk_engine_state_changed_cb, engine);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (engine->priv->timeout_normal_id, "[PkEngine] normal");
-#endif
 	}
 
 	/* reset the timer */
