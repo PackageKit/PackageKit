@@ -21,7 +21,6 @@
 #define __PK_NETWORK_STACK_H__
 
 #include <glib-object.h>
-#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS

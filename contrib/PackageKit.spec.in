@@ -340,6 +340,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
 %{_libdir}/packagekit-plugins/*.so
+%{_datadir}/dbus-1/interfaces/*.xml
 
 %files docs
 %defattr(-,root,root,-)

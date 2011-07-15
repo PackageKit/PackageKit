@@ -23,6 +23,7 @@
 #define __PK_SHARED_H
 
 #include <glib.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -50,6 +51,8 @@ gboolean	 pk_strtouint				(const gchar	*text,
 							 guint		*value);
 gboolean	 pk_strtouint64				(const gchar	*text,
 							 guint64	*value);
+GDBusNodeInfo	*pk_load_introspection			(const gchar	*filename,
+							 GError		**error);
 
 G_END_DECLS
 

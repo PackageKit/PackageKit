@@ -23,7 +23,6 @@
 #define __PK_TRANSACTION_H
 
 #include <glib-object.h>
-#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
@@ -76,6 +75,7 @@ gboolean	 pk_transaction_run				(PkTransaction	*transaction)
 /* internal status */
 void		 pk_transaction_cancel_bg			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_get_role			(PkTransaction	*transaction);
+guint		 pk_transaction_get_uid				(PkTransaction	*transaction);
 PkConf		*pk_transaction_get_conf			(PkTransaction	*transaction);
 PkResults	*pk_transaction_get_results			(PkTransaction	*transaction);
 gchar		**pk_transaction_get_package_ids		(PkTransaction	*transaction);
@@ -94,6 +94,15 @@ void		 pk_transaction_add_supported_content_type	(PkTransaction	*transaction,
 								 const gchar	*mime_type);
 void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
+
+gboolean	 pk_transaction_set_sender			(PkTransaction	*transaction,
+								 const gchar	*sender);
+gboolean	 pk_transaction_filter_check			(const gchar	*filter,
+								 GError		**error);
+gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
+								 GError		**error);
+gboolean	 pk_transaction_set_tid				(PkTransaction	*transaction,
+								 const gchar	*tid);
 
 G_END_DECLS
 

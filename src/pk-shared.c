@@ -81,6 +81,35 @@ out:
 	return ret;
 }
 
+
+/**
+ * pk_load_introspection:
+ **/
+GDBusNodeInfo *
+pk_load_introspection (const gchar *filename, GError **error)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	GDBusNodeInfo *info = NULL;
+	GFile *file;
+
+	/* load file */
+	file = g_file_new_for_path (filename);
+	ret = g_file_load_contents (file, NULL, &data,
+				    NULL, NULL, error);
+	if (!ret)
+		goto out;
+
+	/* build introspection from XML */
+	info = g_dbus_node_info_new_for_xml (data, error);
+	if (info == NULL)
+		goto out;
+out:
+	g_object_unref (file);
+	g_free (data);
+	return info;
+}
+
 /**
  * pk_hint_enum_to_string:
  **/

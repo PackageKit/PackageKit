@@ -2557,7 +2557,7 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 		return FALSE;
 	}
 
-	/* DBus-Glib isn't threadsafe */
+	/* backend isn't threadsafe */
 	if (!backend->priv->use_threads) {
 		g_warning ("not using threads, so daemon will block");
 		ret = func (backend);

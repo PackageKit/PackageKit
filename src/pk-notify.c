@@ -31,7 +31,6 @@
 
 #include <glib/gi18n.h>
 #include <glib.h>
-#include <dbus/dbus-glib.h>
 
 #include "pk-notify.h"
 #include "pk-marshal.h"

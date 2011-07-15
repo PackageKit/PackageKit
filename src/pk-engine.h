@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -23,7 +23,6 @@
 #define __PK_ENGINE_H
 
 #include <glib-object.h>
-#include <dbus/dbus-glib.h>
 
 #define	PK_DBUS_SERVICE			"org.freedesktop.PackageKit"
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
@@ -72,42 +71,6 @@ GType		 pk_engine_error_get_type		(void);
 GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
 
-/* general */
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
-
-/* dbus methods */
-void		 pk_engine_get_tid			(PkEngine	*engine,
-							 DBusGMethodInvocation *context);
-gboolean	 pk_engine_get_daemon_state		(PkEngine	*engine,
-							 gchar		**state,
-							 GError		**error);
-gboolean	 pk_engine_get_time_since_action	(PkEngine	*engine,
-							 const gchar	*role_text,
-							 guint		*seconds,
-							 GError		**error);
-gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
-							 gchar		***transaction_list,
-							 GError		**error);
-gboolean	 pk_engine_state_has_changed		(PkEngine	*engine,
-							 const gchar	*reason,
-							 GError		**error);
-gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
-							 GError		**error);
-void		 pk_engine_set_proxy			(PkEngine	*engine,
-							 const gchar	*proxy_http,
-							 const gchar	*proxy_https,
-							 const gchar	*proxy_ftp,
-							 const gchar	*proxy_socks,
-							 const gchar	*no_proxy,
-							 const gchar	*pac,
-							 DBusGMethodInvocation *context);
-void		 pk_engine_set_root			(PkEngine	*engine,
-							 const gchar	*root,
-							 DBusGMethodInvocation *context);
-void		 pk_engine_can_authorize		(PkEngine	*engine,
-							 const gchar	*action_id,
-							 DBusGMethodInvocation *context);
-
-G_END_DECLS
 
 #endif /* __PK_ENGINE_H */

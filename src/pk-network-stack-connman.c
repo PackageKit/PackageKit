@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
-#include <dbus/dbus-glib.h>
 
 #include "pk-network-stack-connman.h"
 #include "pk-conf.h"
@@ -36,8 +35,8 @@ struct PkNetworkStackConnmanPrivate
 	guint			 watch_id;
 	PkConf			*conf;
 	gboolean		 is_enabled;
-	DBusGConnection		*bus;
-	DBusGProxy		*proxy;
+	GDBusConnection		*bus;
+	GDBusProxy		*proxy;
 };
 
 G_DEFINE_TYPE (PkNetworkStackConnman, pk_network_stack_connman, PK_TYPE_NETWORK_STACK)
@@ -89,7 +88,7 @@ pk_network_stack_connman_get_connection_type (const GValue *value)
 static PkNetworkEnum
 pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 {
-	DBusGProxy *proxy, *proxy_service;
+	GDBusProxy *proxy, *proxy_service;
 	GError *error = NULL;
 	GHashTable *hash_manager = NULL;
 	GHashTable *hash_service = NULL;
@@ -99,13 +98,13 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 	gchar *state;
 	PkNetworkEnum type;
 	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (nstack);
-	DBusGConnection *connection = nstack_connman->priv->bus;
+	GDBusConnection *connection = nstack_connman->priv->bus;
 
 	proxy = nstack_connman->priv->proxy;
 	proxy_service = NULL;
 
 	/* get services */
-	dbus_g_proxy_call (proxy, "GetProperties", &error,
+	g_dbus_proxy_call_sync (proxy, "GetProperties", &error,
 			   G_TYPE_INVALID,
 			   dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash_manager,
 			   G_TYPE_INVALID);
@@ -132,7 +131,7 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 
 		g_debug ("service path is %s", path);
 
-		proxy_service = dbus_g_proxy_new_for_name (connection,
+		proxy_service = g_dbus_proxy_new_sync (connection,
 							   CONNMAN_DBUS_NAME,
 							   path,
 							   CONNMAN_SERVICE_DBUS_INTERFACE);
@@ -152,7 +151,7 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 
 	/* now proxy_service point to first available service */
 	/* get connection type for i t*/
-	dbus_g_proxy_call (proxy_service, "GetProperties", &error,
+	g_dbus_proxy_call_sync (proxy_service, "GetProperties", &error,
 			   G_TYPE_INVALID,
 			   dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash_service,
 			   G_TYPE_INVALID);
@@ -174,13 +173,17 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
  * pk_network_stack_connman_state_changed
  **/
 static void
-pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
-					GValue *value, gpointer user_data)
+pk_network_stack_connman_state_changed (PkNetworkStackConnman *nstack_connman,
+					GVariant *parameters)
 {
 	PkNetworkEnum network_state;
 	PkNetworkStackConnman *nstack_connman = (PkNetworkStackConnman *) user_data;
 
 	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
+
+	/* I can't test this, but I'm guessing this is about right...:
+	 *  g_variant_get (parameters, "&sv", &property, &value);
+	 */
 
 	if (g_str_equal (property, "State") == TRUE) {
 		gchar *state;
@@ -193,7 +196,34 @@ pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 		g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (network_state));
 		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", network_state);
 	}
+}
 
+
+/**
+ * pk_network_stack_connman_dbus_signal_cb:
+ **/
+static void
+pk_network_stack_connman_dbus_signal_cb (GDBusProxy *proxy,
+					 gchar *sender_name,
+					 gchar *signal_name,
+					 GVariant *parameters,
+					 PkNetworkStackConnman *nstack_connman)
+{
+	PkNetworkEnum state;
+
+	g_return_if_fail (PK_IS_NETWORK_STACK_NM (nstack_connman));
+
+	/* do not use */
+	if (!nstack_connman->priv->is_enabled) {
+		g_debug ("not enabled, so ignoring %s", signal_name);
+		return;
+	}
+
+	/* don't use parameters, just refresh state */
+	if (g_strcmp0 (signal_name, "PropertyChanged") == 0) {
+		pk_network_stack_connman_state_changed (nstack_connman,
+							parameters);
+	}
 }
 
 /**
@@ -243,7 +273,7 @@ static void
 pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 {
 	GError *error = NULL;
-	DBusGProxy *proxy;
+	GDBusProxy *proxy;
 
 	nstack_connman->priv = PK_NETWORK_STACK_CONNMAN_GET_PRIVATE (nstack_connman);
 	nstack_connman->priv->conf = pk_conf_new ();
@@ -253,7 +283,7 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 					   G_TYPE_VALUE, G_TYPE_INVALID);
 
 	/* get system connection */
-	nstack_connman->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	nstack_connman->priv->bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (nstack_connman->priv->bus == NULL) {
 		g_warning ("Couldn't connect to system bus: %s", error->message);
 		g_error_free (error);
@@ -270,21 +300,24 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 				  nstack_connman,
 				  NULL);
 
-	proxy = dbus_g_proxy_new_for_name_owner (nstack_connman->priv->bus,
-						 CONNMAN_DBUS_NAME,
-						 CONNMAN_MANAGER_DBUS_PATH,
-						 CONNMAN_MANAGER_DBUS_INTERFACE, &error);
-	nstack_connman->priv->proxy = proxy;
-
-	if (error != NULL) {
+	proxy = g_dbus_proxy_new_sync (nstack_connman->priv->bus,
+				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+				       NULL,
+				       CONNMAN_DBUS_NAME,
+				       CONNMAN_MANAGER_DBUS_PATH,
+				       CONNMAN_MANAGER_DBUS_INTERFACE,
+				       NULL,
+				       &error);
+	if (proxy == NULL) {
 		g_warning ("Cannot connect to connman: %s", error->message);
 		g_error_free (error);
 		return;
 	}
-	dbus_g_proxy_add_signal (proxy, "PropertyChanged",
-				 G_TYPE_STRING, G_TYPE_VALUE, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "PropertyChanged",
-				     G_CALLBACK(pk_network_stack_connman_state_changed), nstack_connman, NULL);
+	nstack_connman->priv->proxy = proxy;
+	g_signal_connect (nstack_connman->priv->proxy,
+			  "g-signal",
+			  G_CALLBACK (pk_network_stack_connman_dbus_signal_cb),
+			  nstack_connman);
 }
 
 /**

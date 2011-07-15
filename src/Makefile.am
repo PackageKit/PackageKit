@@ -57,7 +57,6 @@ shared_SOURCES =					\
 	pk-dbus.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
-	pk-transaction-dbus.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-network.c					\
@@ -142,9 +141,7 @@ endif
 
 BUILT_SOURCES =						\
 	pk-marshal.c					\
-	pk-marshal.h					\
-	org.freedesktop.PackageKit.h			\
-	org.freedesktop.PackageKit.Transaction.h
+	pk-marshal.h
 
 pk-marshal.c: pk-marshal.list
 	echo "#include \"pk-marshal.h\"" > $@ && \
@@ -152,20 +149,6 @@ pk-marshal.c: pk-marshal.list
 
 pk-marshal.h: pk-marshal.list
 	glib-genmarshal $< --prefix=pk_marshal --header > $@
-
-org.freedesktop.PackageKit.h: org.freedesktop.PackageKit.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool	\
-		--prefix=pk_engine			\
-		--mode=glib-server			\
-		--output=org.freedesktop.PackageKit.h	\
-		$(srcdir)/org.freedesktop.PackageKit.xml
-
-org.freedesktop.PackageKit.Transaction.h: org.freedesktop.PackageKit.Transaction.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool	\
-		--prefix=pk_transaction			\
-		--mode=glib-server			\
-		--output=org.freedesktop.PackageKit.Transaction.h	\
-		$(srcdir)/org.freedesktop.PackageKit.Transaction.xml
 
 if EGG_BUILD_TESTS
 
@@ -201,11 +184,13 @@ install-data-hook:
 		mkdir -p $(DESTDIR)$(PK_LOG_DIR); \
 	fi
 
-EXTRA_DIST =						\
-	pk-marshal.list					\
+introspectiondir = $(datadir)/dbus-1/interfaces
+dist_introspection_DATA = 				\
 	org.freedesktop.PackageKit.xml			\
-	org.freedesktop.PackageKit.Transaction.xml	\
-	$(NULL)
+	org.freedesktop.PackageKit.Transaction.xml
+
+EXTRA_DIST =						\
+	pk-marshal.list
 
 clean-local:
 	rm -f *~

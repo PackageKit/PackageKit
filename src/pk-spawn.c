@@ -39,8 +39,6 @@
 #include <fcntl.h>
 
 #include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 #include "pk-spawn.h"
 #include "pk-marshal.h"

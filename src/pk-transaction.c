@@ -39,9 +39,6 @@
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
-#include <gio/gio.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-package-id.h>
@@ -62,7 +59,6 @@
 #include "pk-shared.h"
 #include "pk-syslog.h"
 #include "pk-transaction-db.h"
-#include "pk-transaction-dbus.h"
 #include "pk-transaction.h"
 #include "pk-transaction-list.h"
 
@@ -163,6 +159,9 @@ struct PkTransactionPrivate
 	guint			 signal_speed;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
+	guint			 registration_id;
+	GDBusConnection		*connection;
+	GDBusNodeInfo		*introspection;
 };
 
 typedef enum {
@@ -192,41 +191,8 @@ typedef enum {
 } PkTransactionError;
 
 enum {
-	SIGNAL_DETAILS,
-	SIGNAL_ERROR_CODE,
-	SIGNAL_DISTRO_UPGRADE,
-	SIGNAL_FILES,
 	SIGNAL_FINISHED,
-	SIGNAL_MESSAGE,
-	SIGNAL_PACKAGE,
-	SIGNAL_REPO_DETAIL,
-	SIGNAL_REPO_SIGNATURE_REQUIRED,
-	SIGNAL_EULA_REQUIRED,
-	SIGNAL_MEDIA_CHANGE_REQUIRED,
-	SIGNAL_REQUIRE_RESTART,
-	SIGNAL_TRANSACTION,
-	SIGNAL_UPDATE_DETAIL,
-	SIGNAL_CATEGORY,
-	SIGNAL_DESTROY,
-	SIGNAL_CHANGED,
 	SIGNAL_LAST
-};
-
-enum
-{
-	PROP_0,
-	PROP_ROLE,
-	PROP_STATUS,
-	PROP_LAST_PACKAGE,
-	PROP_UID,
-	PROP_PERCENTAGE,
-	PROP_SUBPERCENTAGE,
-	PROP_ALLOW_CANCEL,
-	PROP_CALLER_ACTIVE,
-	PROP_ELAPSED_TIME,
-	PROP_REMAINING_TIME,
-	PROP_SPEED,
-	PROP_LAST
 };
 
 static guint signals[SIGNAL_LAST] = { 0 };
@@ -367,11 +333,32 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	return TRUE;
 }
 
+
+/**
+ * pk_transaction_emit_changed:
+ **/
+static void
+pk_transaction_emit_changed (PkTransaction *transaction)
+{
+	g_debug ("emitting changed");
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Changed",
+				       NULL,
+				       NULL);
+}
+
 /**
  * pk_transaction_progress_changed_emit:
  **/
 static void
-pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percentage, guint subpercentage, guint elapsed, guint remaining)
+pk_transaction_progress_changed_emit (PkTransaction *transaction,
+				      guint percentage,
+				      guint subpercentage,
+				      guint elapsed,
+				      guint remaining)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
@@ -382,8 +369,7 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percenta
 	transaction->priv->remaining_time = remaining;
 
 	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -403,8 +389,7 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 	/* TODO: have master property on main interface */
 
 	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -423,39 +408,63 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	transaction->priv->status = status;
 
 	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+	pk_transaction_emit_changed (transaction);
 }
 
 /**
  * pk_transaction_finished_emit:
  **/
 static void
-pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, guint time_ms)
+pk_transaction_finished_emit (PkTransaction *transaction,
+			      PkExitEnum exit_enum,
+			      guint time_ms)
 {
 	const gchar *exit_text;
 	exit_text = pk_exit_enum_to_string (exit_enum);
 	g_debug ("emitting finished '%s', %i", exit_text, time_ms);
-	g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0, exit_text, time_ms);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Finished",
+				       g_variant_new ("(su)",
+						      exit_text,
+						      time_ms),
+				       NULL);
+
+	/* For the transaction list */
+	g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 }
 
 /**
  * pk_transaction_error_code_emit:
  **/
 static void
-pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorEnum error_enum, const gchar *details)
+pk_transaction_error_code_emit (PkTransaction *transaction,
+				PkErrorEnum error_enum,
+				const gchar *details)
 {
 	const gchar *text;
 	text = pk_error_enum_to_string (error_enum);
 	g_debug ("emitting error-code %s, '%s'", text, details);
-	g_signal_emit (transaction, signals[SIGNAL_ERROR_CODE], 0, text, details);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "ErrorCode",
+				       g_variant_new ("(ss)",
+						      text,
+						      details),
+				       NULL);
 }
 
 /**
  * pk_transaction_allow_cancel_cb:
  **/
 static void
-pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTransaction *transaction)
+pk_transaction_allow_cancel_cb (PkBackend *backend,
+				gboolean allow_cancel,
+				PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -468,7 +477,9 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend,
+			   PkDetails *item,
+			   PkTransaction *transaction)
 {
 	const gchar *group_text;
 	gchar *package_id;
@@ -497,8 +508,19 @@ pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *t
 	/* emit */
 	group_text = pk_group_enum_to_string (group);
 	g_debug ("emitting details");
-	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, package_id,
-		       license, group_text, description, url, size);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Details",
+				       g_variant_new ("(ssssst)",
+						      package_id,
+						      license,
+						      group_text,
+						      description,
+						      url,
+						      size),
+				       NULL);
 
 	g_free (package_id);
 	g_free (description);
@@ -510,7 +532,9 @@ pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *t
  * pk_transaction_error_code_cb:
  **/
 static void
-pk_transaction_error_code_cb (PkBackend *backend, PkError *item, PkTransaction *transaction)
+pk_transaction_error_code_cb (PkBackend *backend,
+			      PkError *item,
+			      PkTransaction *transaction)
 {
 	gchar *details;
 	PkErrorEnum code;
@@ -543,7 +567,9 @@ pk_transaction_error_code_cb (PkBackend *backend, PkError *item, PkTransaction *
  * pk_transaction_files_cb:
  **/
 static void
-pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *transaction)
+pk_transaction_files_cb (PkBackend *backend,
+			 PkFiles *item,
+			 PkTransaction *transaction)
 {
 	gchar *filelist = NULL;
 	guint i;
@@ -577,7 +603,15 @@ pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *trans
 	/* emit */
 	filelist = g_strjoinv (";", files);
 	g_debug ("emitting files %s, %s", package_id, filelist);
-	g_signal_emit (transaction, signals[SIGNAL_FILES], 0, package_id, filelist);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Files",
+				       g_variant_new ("(ss)",
+						      package_id,
+						      filelist),
+				       NULL);
 	g_free (filelist);
 	g_free (package_id);
 	g_strfreev (files);
@@ -587,7 +621,9 @@ pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *trans
  * pk_transaction_category_cb:
  **/
 static void
-pk_transaction_category_cb (PkBackend *backend, PkCategory *item, PkTransaction *transaction)
+pk_transaction_category_cb (PkBackend *backend,
+			    PkCategory *item,
+			    PkTransaction *transaction)
 {
 	gchar *parent_id;
 	gchar *cat_id;
@@ -612,8 +648,18 @@ pk_transaction_category_cb (PkBackend *backend, PkCategory *item, PkTransaction 
 
 	/* emit */
 	g_debug ("emitting category %s, %s, %s, %s, %s ", parent_id, cat_id, name, summary, icon);
-	g_signal_emit (transaction, signals[SIGNAL_CATEGORY], 0, parent_id, cat_id, name, summary, icon);
-
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Category",
+				       g_variant_new ("(sssss)",
+						      parent_id,
+						      cat_id,
+						      name,
+						      summary,
+						      icon),
+				       NULL);
 	g_free (parent_id);
 	g_free (cat_id);
 	g_free (name);
@@ -625,7 +671,9 @@ pk_transaction_category_cb (PkBackend *backend, PkCategory *item, PkTransaction 
  * pk_transaction_distro_upgrade_cb:
  **/
 static void
-pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgrade *item, PkTransaction *transaction)
+pk_transaction_distro_upgrade_cb (PkBackend *backend,
+				  PkDistroUpgrade *item,
+				  PkTransaction *transaction)
 {
 	const gchar *type_text;
 	gchar *name;
@@ -647,8 +695,18 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgrade *item, PkT
 
 	/* emit */
 	type_text = pk_distro_upgrade_enum_to_string (state);
-	g_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
-	g_signal_emit (transaction, signals[SIGNAL_DISTRO_UPGRADE], 0, type_text, name, summary);
+	g_debug ("emitting distro-upgrade %s, %s, %s",
+		 type_text, name, summary);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "DistroUpgrade",
+				       g_variant_new ("(sss)",
+						      type_text,
+						      name,
+						      summary),
+				       NULL);
 
 	g_free (name);
 	g_free (summary);
@@ -775,6 +833,15 @@ PkTransactionState
 pk_transaction_get_state (PkTransaction *transaction)
 {
 	return transaction->priv->state;
+}
+
+/**
+ * pk_transaction_get_uid:
+ **/
+guint
+pk_transaction_get_uid (PkTransaction *transaction)
+{
+	return transaction->priv->uid;
 }
 
 /**
@@ -1081,7 +1148,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
  * pk_transaction_message_cb:
  **/
 static void
-pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *transaction)
+pk_transaction_message_cb (PkBackend *backend,
+			   PkMessage *item,
+			   PkTransaction *transaction)
 {
 	const gchar *message_text;
 	gboolean developer_mode;
@@ -1112,8 +1181,15 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
 	/* emit */
 	message_text = pk_message_enum_to_string (type);
 	g_debug ("emitting message %s, '%s'", message_text, details);
-	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, details);
-
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Message",
+				       g_variant_new ("(ss)",
+						      message_text,
+						      details),
+				       NULL);
 	g_free (details);
 }
 
@@ -1121,13 +1197,15 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
  * pk_transaction_package_cb:
  **/
 static void
-pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *transaction)
+pk_transaction_package_cb (PkBackend *backend,
+			   PkPackage *item,
+			   PkTransaction *transaction)
 {
 	const gchar *info_text;
 	const gchar *role_text;
 	PkInfoEnum info;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
+	const gchar *package_id;
+	const gchar *summary = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1138,22 +1216,17 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 		return;
 	}
 
-	/* we need this in warnings */
-	role_text = pk_role_enum_to_string (transaction->priv->role);
-
 	/* get data */
-	g_object_get (item,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
 
 	/* check the backend is doing the right thing */
+	info = pk_package_get_info (item);
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
-			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+			role_text = pk_role_enum_to_string (transaction->priv->role);
+			pk_backend_message (transaction->priv->backend,
+					    PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action", role_text);
 			return;
@@ -1163,6 +1236,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 	/* check we are respecting the filters */
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
+			role_text = pk_role_enum_to_string (transaction->priv->role);
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was installed when "
 					    "the ~installed filter is in place", role_text);
@@ -1171,6 +1245,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 	}
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
 		if (info == PK_INFO_ENUM_AVAILABLE) {
+			role_text = pk_role_enum_to_string (transaction->priv->role);
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was ~installed when "
 					    "the installed filter is in place", role_text);
@@ -1183,33 +1258,52 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 		pk_results_add_package (transaction->priv->results, item);
 
 	/* emit */
+	package_id = pk_package_get_id (item);
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (package_id);
 	info_text = pk_info_enum_to_string (info);
+	summary = pk_package_get_summary (item);
 	g_debug ("emit package %s, %s, %s", info_text, package_id, summary);
-	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text, package_id, summary);
-	g_free (package_id);
-	g_free (summary);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Package",
+				       g_variant_new ("(sss)",
+						      info_text,
+						      package_id,
+						      summary ? summary : ""),
+				       NULL);
 }
 
 /**
  * pk_transaction_progress_changed_cb:
  **/
 static void
-pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage,
-				    guint elapsed, guint remaining, PkTransaction *transaction)
+pk_transaction_progress_changed_cb (PkBackend *backend,
+				    guint percentage,
+				    guint subpercentage,
+				    guint elapsed,
+				    guint remaining,
+				    PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_transaction_progress_changed_emit (transaction, percentage, subpercentage, elapsed, remaining);
+	pk_transaction_progress_changed_emit (transaction,
+					      percentage,
+					      subpercentage,
+					      elapsed,
+					      remaining);
 }
 
 /**
  * pk_transaction_repo_detail_cb:
  **/
 static void
-pk_transaction_repo_detail_cb (PkBackend *backend, PkRepoDetail *item, PkTransaction *transaction)
+pk_transaction_repo_detail_cb (PkBackend *backend,
+			       PkRepoDetail *item,
+			       PkTransaction *transaction)
 {
 	gchar *repo_id;
 	gchar *description;
@@ -1230,8 +1324,16 @@ pk_transaction_repo_detail_cb (PkBackend *backend, PkRepoDetail *item, PkTransac
 
 	/* emit */
 	g_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
-	g_signal_emit (transaction, signals[SIGNAL_REPO_DETAIL], 0, repo_id, description, enabled);
-
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "RepoDetail",
+				       g_variant_new ("(ssb)",
+						      repo_id,
+						      description,
+						      enabled),
+				       NULL);
 	g_free (repo_id);
 	g_free (description);
 }
@@ -1240,7 +1342,9 @@ pk_transaction_repo_detail_cb (PkBackend *backend, PkRepoDetail *item, PkTransac
  * pk_transaction_repo_signature_required_cb:
  **/
 static void
-pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRequired *item, PkTransaction *transaction)
+pk_transaction_repo_signature_required_cb (PkBackend *backend,
+					   PkRepoSignatureRequired *item,
+					   PkTransaction *transaction)
 {
 	const gchar *type_text;
 	gchar *package_id;
@@ -1273,11 +1377,23 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRe
 	/* emit */
 	type_text = pk_sig_type_enum_to_string (type);
 	g_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
-		   package_id, repository_name, key_url, key_userid, key_id,
-		   key_fingerprint, key_timestamp, type_text);
-	g_signal_emit (transaction, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0,
-		       package_id, repository_name, key_url, key_userid, key_id,
-		       key_fingerprint, key_timestamp, type_text);
+		 package_id, repository_name, key_url, key_userid, key_id,
+		 key_fingerprint, key_timestamp, type_text);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "RepoSignatureRequired",
+				       g_variant_new ("(ssssssss)",
+						      package_id,
+						      repository_name,
+						      key_url,
+						      key_userid,
+						      key_id,
+						      key_fingerprint,
+						      key_timestamp,
+						      type_text),
+				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_signature_required = TRUE;
@@ -1295,7 +1411,9 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRe
  * pk_transaction_eula_required_cb:
  **/
 static void
-pk_transaction_eula_required_cb (PkBackend *backend, PkEulaRequired *item, PkTransaction *transaction)
+pk_transaction_eula_required_cb (PkBackend *backend,
+				 PkEulaRequired *item,
+				 PkTransaction *transaction)
 {
 	gchar *eula_id;
 	gchar *package_id;
@@ -1319,8 +1437,17 @@ pk_transaction_eula_required_cb (PkBackend *backend, PkEulaRequired *item, PkTra
 	/* emit */
 	g_debug ("emitting eula-required %s, %s, %s, %s",
 		   eula_id, package_id, vendor_name, license_agreement);
-	g_signal_emit (transaction, signals[SIGNAL_EULA_REQUIRED], 0,
-		       eula_id, package_id, vendor_name, license_agreement);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "EulaRequired",
+				       g_variant_new ("(ssss)",
+						      eula_id,
+						      package_id,
+						      vendor_name,
+						      license_agreement),
+				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_eula_required = TRUE;
@@ -1335,7 +1462,9 @@ pk_transaction_eula_required_cb (PkBackend *backend, PkEulaRequired *item, PkTra
  * pk_transaction_media_change_required_cb:
  **/
 static void
-pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequired *item, PkTransaction *transaction)
+pk_transaction_media_change_required_cb (PkBackend *backend,
+					 PkMediaChangeRequired *item,
+					 PkTransaction *transaction)
 {
 	const gchar *media_type_text;
 	gchar *media_id;
@@ -1359,8 +1488,16 @@ pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequir
 	media_type_text = pk_media_type_enum_to_string (media_type);
 	g_debug ("emitting media-change-required %s, %s, %s",
 		   media_type_text, media_id, media_text);
-	g_signal_emit (transaction, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0,
-		       media_type_text, media_id, media_text);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "MediaChangeRequired",
+				       g_variant_new ("(sss)",
+						      media_type_text,
+						      media_id,
+						      media_text),
+				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_media_change_required = TRUE;
@@ -1373,7 +1510,9 @@ pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequir
  * pk_transaction_require_restart_cb:
  **/
 static void
-pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, PkTransaction *transaction)
+pk_transaction_require_restart_cb (PkBackend *backend,
+				   PkRequireRestart *item,
+				   PkTransaction *transaction)
 {
 	const gchar *restart_text;
 	PkRequireRestart *item_tmp;
@@ -1421,8 +1560,15 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, P
 
 	/* emit */
 	g_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
-	g_signal_emit (transaction, signals[SIGNAL_REQUIRE_RESTART], 0, restart_text, package_id);
-
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "MediaChangeRequired",
+				       g_variant_new ("(ss)",
+						      restart_text,
+						      package_id),
+				       NULL);
 	g_free (package_id);
 }
 
@@ -1430,7 +1576,9 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, P
  * pk_transaction_status_changed_cb:
  **/
 static void
-pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction)
+pk_transaction_status_changed_cb (PkBackend *backend,
+				  PkStatusEnum status,
+				  PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1441,7 +1589,8 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		g_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_string (status));
+		g_warning ("Already finished, so can't proxy status %s",
+			   pk_status_enum_to_string (status));
 		return;
 	}
 
@@ -1452,7 +1601,9 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
  * pk_transaction_transaction_cb:
  **/
 static void
-pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, PkTransaction *transaction)
+pk_transaction_transaction_cb (PkTransactionDb *tdb,
+			       PkTransactionPast *item,
+			       PkTransaction *transaction)
 {
 	const gchar *role_text;
 	gchar *tid;
@@ -1487,10 +1638,21 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, Pk
 	g_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
 		   tid, timespec, succeeded, role_text,
 		   duration, data, uid, cmdline);
-	g_signal_emit (transaction, signals[SIGNAL_TRANSACTION], 0,
-		       tid, timespec, succeeded, role_text,
-		       duration, data, uid, cmdline);
-
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Transaction",
+				       g_variant_new ("(ssbsusus)",
+						      tid,
+						      timespec,
+						      succeeded,
+						      role_text,
+						      duration,
+						      data,
+						      uid,
+						      cmdline),
+				       NULL);
 	g_free (tid);
 	g_free (timespec);
 	g_free (data);
@@ -1501,7 +1663,9 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, Pk
  * pk_transaction_update_detail_cb:
  **/
 static void
-pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTransaction *transaction)
+pk_transaction_update_detail_cb (PkBackend *backend,
+				 PkUpdateDetail *item,
+				 PkTransaction *transaction)
 {
 	const gchar *state_text;
 	const gchar *restart_text;
@@ -1544,10 +1708,25 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
 	g_debug ("emitting update-detail");
 	restart_text = pk_restart_enum_to_string (restart);
 	state_text = pk_update_state_enum_to_string (state);
-	g_signal_emit (transaction, signals[SIGNAL_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, vendor_url,
-		       bugzilla_url, cve_url, restart_text, update_text,
-		       changelog, state_text, issued, updated);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "UpdateDetail",
+				       g_variant_new ("(ssssssssssss)",
+						      package_id,
+						      updates,
+						      obsoletes,
+						      vendor_url,
+						      bugzilla_url,
+						      cve_url,
+						      restart_text,
+						      update_text,
+						      changelog,
+						      state_text,
+						      issued,
+						      updated),
+				       NULL);
 
 	g_free (package_id);
 	g_free (updates);
@@ -1565,7 +1744,8 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
  * pk_transaction_set_session_state:
  */
 static gboolean
-pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
+pk_transaction_set_session_state (PkTransaction *transaction,
+				  GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *session = NULL;
@@ -1642,14 +1822,15 @@ out:
  * pk_transaction_speed_cb:
  **/
 static void
-pk_transaction_speed_cb (GObject *object, GParamSpec *pspec, PkTransaction *transaction)
+pk_transaction_speed_cb (GObject *object,
+			 GParamSpec *pspec,
+			 PkTransaction *transaction)
 {
 	g_object_get (object,
 		      "speed", &transaction->priv->speed,
 		      NULL);
 	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -1886,25 +2067,6 @@ pk_transaction_get_tid (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_set_tid:
- */
-gboolean
-pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
-	g_return_val_if_fail (transaction->priv->tid == NULL, FALSE);
-
-	if (transaction->priv->tid != NULL) {
-		g_warning ("changing a tid -- why?");
-		return FALSE;
-	}
-	g_free (transaction->priv->tid);
-	transaction->priv->tid = g_strdup (tid);
-	return TRUE;
-}
-
-/**
  * pk_transaction_vanished_cb:
  **/
 static void
@@ -1919,8 +2081,7 @@ pk_transaction_vanished_cb (GDBusConnection *connection,
 	transaction->priv->caller_active = FALSE;
 
 	/* emit */
-	g_debug ("emitting changed");
-	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
+	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -2512,40 +2673,10 @@ pk_transaction_get_role (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_verify_sender:
- *
- * Verify caller of this method matches the one that got the Tid
- **/
-static gboolean
-pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation *context, GError **error)
-{
-	gboolean ret = TRUE;
-	gchar *sender = NULL;
-
-	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
-
-	/* not set inside the test suite */
-	if (context == NULL)
-		goto out;
-
-	/* check is the same as the sender that did GetTid */
-	sender = dbus_g_method_get_sender (context);
-	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
-	if (!ret) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "sender does not match (%s vs %s)", sender, transaction->priv->sender);
-		goto out;
-	}
-out:
-	g_free (sender);
-	return ret;
-}
-
-/**
- * pk_transaction_dbus_return_error:
+ * pk_transaction_dbus_return:
  **/
 static void
-pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
+pk_transaction_dbus_return (GDBusMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
 	if (context == NULL) {
@@ -2553,19 +2684,10 @@ pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 		g_error_free (error);
 		return;
 	}
-	dbus_g_method_return_error (context, error);
-}
-
-/**
- * pk_transaction_dbus_return:
- **/
-static void
-pk_transaction_dbus_return (DBusGMethodInvocation *context)
-{
-	/* not set inside the test suite */
-	if (context == NULL)
-		return;
-	dbus_g_method_return (context);
+	if (error != NULL)
+		g_dbus_method_invocation_return_gerror (context, error);
+	else
+		g_dbus_method_invocation_return_value (context, NULL);
 }
 
 /**
@@ -2573,56 +2695,54 @@ pk_transaction_dbus_return (DBusGMethodInvocation *context)
  *
  * This should be called when a eula_id needs to be added into an internal db.
  **/
-void
-pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DBusGMethodInvocation *context)
+static void
+pk_transaction_accept_eula (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	guint idle_id;
+	const gchar *eula_id = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
+	g_variant_get (params, "(&s)",
+		       &eula_id);
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (eula_id, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_ACCEPT_EULA,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	g_debug ("AcceptEula method called: %s", eula_id);
 	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+		error = g_error_new (PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "EULA failed to be added");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* we are done */
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from accept");
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
@@ -2634,8 +2754,9 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	g_debug ("CancelBg method called on %s", transaction->priv->tid);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
-		g_warning ("Cancel not yet supported by backend");
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_CANCEL)) {
+		g_warning ("Cancel not supported by backend");
 		goto out;
 	}
 
@@ -2667,12 +2788,14 @@ out:
 /**
  * pk_transaction_cancel:
  **/
-void
-pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *context)
+static void
+pk_transaction_cancel (PkTransaction *transaction,
+		       GVariant *params,
+		       GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
-	gchar *sender = NULL;
+	const gchar *sender;
 	guint uid;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -2681,10 +2804,10 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	g_debug ("Cancel method called on %s", transaction->priv->tid);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_CANCEL)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Cancel not yet supported by backend");
-		pk_transaction_dbus_return_error (context, error);
+				     "Cancel not supported by backend");
 		goto out;
 	}
 
@@ -2693,19 +2816,18 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		g_debug ("No point trying to cancel a finished transaction, ignoring");
 
 		/* return from async with success */
-		pk_transaction_dbus_return (context);
+		pk_transaction_dbus_return (context, NULL);
 		goto out;
 	}
 
 	/* check to see if we have an action */
 	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
 	/* first, check the sender -- if it's the same we don't need to check the uid */
-	sender = dbus_g_method_get_sender (context);
+	sender = g_dbus_method_invocation_get_sender (context);
 	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (ret) {
 		g_debug ("same sender, no need to check uid");
@@ -2716,7 +2838,6 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	if (transaction->priv->uid == PK_TRANSACTION_UID_INVALID) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 				     "No context from caller to get UID from");
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
@@ -2724,17 +2845,17 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 	if (uid == PK_TRANSACTION_UID_INVALID) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
 	/* check the caller uid with the originator uid */
 	if (transaction->priv->uid != uid) {
 		g_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
-		ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
+		ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_CANCEL, &error);
 		if (!ret) {
-			pk_transaction_dbus_return_error (context, error);
-			goto out;
+				goto out;
 		}
 	}
 
@@ -2748,7 +2869,7 @@ skip_uid:
 		pk_transaction_release_tid (transaction);
 
 		/* return from async with success */
-		pk_transaction_dbus_return (context);
+		pk_transaction_dbus_return (context, NULL);
 		goto out;
 	}
 
@@ -2763,21 +2884,17 @@ skip_uid:
 
 	/* actually run the method */
 	pk_backend_cancel (transaction->priv->backend);
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
 out:
-	g_free (sender);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_download_packages:
  **/
-void
+static void
 pk_transaction_download_packages (PkTransaction *transaction,
-				  gboolean store_in_cache,
-				  gchar **package_ids,
-				  DBusGMethodInvocation *context)
+				  GVariant *params,
+				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -2786,26 +2903,26 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	gint retval;
 	guint length;
 	guint max_length;
+	gboolean store_in_cache;
+	gchar **package_ids = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("DownloadPackages method called: %s", package_ids[0]);
+	g_variant_get (params, "(b^a&s)",
+		       &store_in_cache,
+		       &package_ids);
+
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	g_debug ("DownloadPackages method called: %s", package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "DownloadPackages not yet supported by backend");
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
+		error = g_error_new (PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "DownloadPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		goto out;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
@@ -2813,21 +2930,18 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	length = g_strv_length (package_ids);
 	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+		error = g_error_new (PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
@@ -2840,7 +2954,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 		if (retval != 0) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
 					     "cannot create %s", directory);
-			pk_transaction_dbus_return_error (context, error);
 			goto out;
 		}
 	}
@@ -2856,21 +2969,21 @@ pk_transaction_download_packages (PkTransaction *transaction,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
 out:
+	g_free (package_ids_temp);
 	g_free (directory);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_categories:
  **/
-void
-pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_categories (PkTransaction *transaction,
+			       GVariant *params,
+			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -2881,29 +2994,12 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 	g_debug ("GetCategories method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_CATEGORIES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_CATEGORIES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetCategories not yet supported by backend");
+				     "GetCategories not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* are we already performing an update? */
-	if (pk_transaction_list_role_present (transaction->priv->transaction_list, PK_ROLE_ENUM_GET_CATEGORIES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
-				     "Already performing get categories");
-		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_CATEGORIES);
@@ -2914,56 +3010,54 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	dbus_g_method_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_depends:
  **/
-void
-pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gchar **package_ids,
-			    gboolean recursive, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_depends (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	const gchar *filter;
+	gchar **package_ids;
+	gboolean recursive;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&sb)",
+		       &filter,
+		       &package_ids,
+		       &recursive);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDepends not yet supported by backend");
+				     "GetDepends not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -2973,20 +3067,16 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3001,48 +3091,43 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_details:
  **/
-void
-pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_details (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("GetDetails method called: %s", package_ids_temp);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DETAILS)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_DETAILS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDetails not yet supported by backend");
+				     "GetDetails not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -3052,8 +3137,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
@@ -3064,8 +3148,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3078,19 +3161,20 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_distro_upgrades:
  **/
-void
-pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_distro_upgrades (PkTransaction *transaction,
+				    GVariant *params,
+				    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -3101,20 +3185,12 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	g_debug ("GetDistroUpgrades method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDistroUpgrades not yet supported by backend");
+				     "GetDistroUpgrades not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3126,50 +3202,43 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	if (context != NULL) {
-		/* not set inside the test suite */
-		dbus_g_method_return (context);
-	}
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_files:
  **/
-void
-pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_files (PkTransaction *transaction,
+			  GVariant *params,
+			  GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("GetFiles method called: %s", package_ids_temp);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetFiles not yet supported by backend");
+				     "GetFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -3179,20 +3248,16 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3205,51 +3270,47 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_packages:
  **/
-void
-pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_packages (PkTransaction *transaction,
+			     GVariant *params,
+			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s)",
+		       &filter);
+
 	g_debug ("GetPackages method called: %s", filter);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetPackages not yet supported by backend");
+				     "GetPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3262,24 +3323,28 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_old_transactions:
  **/
-gboolean
-pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, GError **error)
+static void
+pk_transaction_get_old_transactions (PkTransaction *transaction,
+				     GVariant *params,
+				     GDBusMethodInvocation *context)
 {
 	guint idle_id;
+	guint number;
 
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(u)",
+		       &number);
 
 	g_debug ("GetOldTransactions method called");
 
@@ -3288,46 +3353,43 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-old-transactions");
 
-	return TRUE;
+	pk_transaction_dbus_return (context, NULL);
 }
 
 /**
  * pk_transaction_get_repo_list:
  **/
-void
-pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_repo_list (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s)",
+		       &filter);
+
 	g_debug ("GetRepoList method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REPO_LIST)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_REPO_LIST)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetRepoList not yet supported by backend");
+				     "GetRepoList not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3337,60 +3399,58 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+		error = g_error_new (PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_requires:
  **/
-void
-pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gchar **package_ids,
-			     gboolean recursive, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_requires (PkTransaction *transaction,
+			     GVariant *params,
+			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	const gchar *filter;
+	gchar **package_ids;
+	gboolean recursive;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&sb)",
+		       &filter,
+		       &package_ids,
+		       &recursive);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_REQUIRES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetRequires not yet supported by backend");
+				     "GetRequires not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -3400,20 +3460,16 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3428,49 +3484,44 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_get_update_detail:
  **/
-void
-pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_ids,
-				  DBusGMethodInvocation *context)
+static void
+pk_transaction_get_update_detail (PkTransaction *transaction,
+				  GVariant *params,
+				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("GetUpdateDetail method called: %s", package_ids_temp);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetUpdateDetail not yet supported by backend");
+				     "GetUpdateDetail not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -3480,20 +3531,16 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3506,12 +3553,11 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
@@ -3553,19 +3599,31 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 	package_array = pk_results_get_package_array (results);
 	for (i=0; i<package_array->len; i++) {
 		package = g_ptr_array_index (package_array, i);
-		g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
-			       pk_info_enum_to_string (pk_package_get_info (package)),
-			       pk_package_get_id (package),
-			       pk_package_get_summary (package));
+		g_dbus_connection_emit_signal (transaction->priv->connection,
+					       NULL,
+					       transaction->priv->tid,
+					       PK_DBUS_INTERFACE_TRANSACTION,
+					       "Package",
+					       g_variant_new ("(sss)",
+							      pk_info_enum_to_string (pk_package_get_info (package)),
+							      pk_package_get_id (package),
+							      pk_package_get_summary (package)),
+					       NULL);
 	}
 
 	/* messages */
 	message_array = pk_results_get_message_array (results);
 	for (i=0; i<message_array->len; i++) {
 		message = g_ptr_array_index (message_array, i);
-		g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0,
-			       pk_message_enum_to_string (pk_message_get_kind (message)),
-			       pk_message_get_details (message));
+		g_dbus_connection_emit_signal (transaction->priv->connection,
+					       NULL,
+					       transaction->priv->tid,
+					       PK_DBUS_INTERFACE_TRANSACTION,
+					       "Message",
+					       g_variant_new ("(ss)",
+							      pk_message_enum_to_string (pk_message_get_kind (message)),
+							      pk_message_get_details (message)),
+					       NULL);
 	}
 
 	/* success */
@@ -3588,40 +3646,37 @@ out:
 /**
  * pk_transaction_get_updates:
  **/
-void
-pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
+static void
+pk_transaction_get_updates (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s)",
+		       &filter);
+
 	g_debug ("GetUpdates method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_UPDATES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_UPDATES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetUpdates not yet supported by backend");
+				     "GetUpdates not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3630,12 +3685,8 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 
 	/* try and reuse cache */
 	ret = pk_transaction_try_emit_cache (transaction);
-	if (ret) {
-		/* not set inside the test suite */
-		if (context != NULL)
-			dbus_g_method_return (context);
-		return;
-	}
+	if (ret)
+		goto out;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3643,12 +3694,10 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
@@ -3706,9 +3755,10 @@ pk_transaction_is_supported_content_type (PkTransaction *transaction,
 /**
  * pk_transaction_install_files:
  **/
-void
-pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
-			      gchar **full_paths, DBusGMethodInvocation *context)
+static void
+pk_transaction_install_files (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gchar *full_paths_temp;
 	gboolean ret;
@@ -3718,28 +3768,25 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	gchar *content_type = NULL;
 	guint length;
 	guint i;
+	gboolean only_trusted;
+	gchar **full_paths;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(b^a&s)",
+		       &only_trusted,
+		       &full_paths);
+
 	full_paths_temp = pk_package_ids_to_string (full_paths);
 	g_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
-	g_free (full_paths_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_FILES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_INSTALL_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallFiles not yet supported by backend");
+				     "InstallFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		goto out;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
@@ -3757,8 +3804,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 					     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			goto out;
+				goto out;
 		}
 
 		/* get content type */
@@ -3767,8 +3813,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "Failed to get content type for file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			goto out;
+				goto out;
 		}
 
 		/* supported content type? */
@@ -3777,8 +3822,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 					     "MIME type '%s' not supported %s", content_type, full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			goto out;
+				goto out;
 		}
 
 		/* valid */
@@ -3789,8 +3833,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
 				pk_transaction_release_tid (transaction);
-				pk_transaction_dbus_return_error (context, error);
-				g_error_free (error_local);
+						g_error_free (error_local);
 				goto out;
 			}
 		}
@@ -3800,7 +3843,6 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
 
@@ -3808,49 +3850,45 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
 out:
+	g_free (full_paths_temp);
 	g_free (content_type);
-	return;
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_install_packages:
  **/
-void
-pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trusted,
-				 gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_install_packages (PkTransaction *transaction,
+				 GVariant *params,
+				 GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gboolean only_trusted;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(b^a&s)",
+		       &only_trusted,
+		       &package_ids);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("InstallPackages method called: %s", package_ids_temp);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_PACKAGES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_INSTALL_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallPackages not yet supported by backend");
+				     "InstallPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -3860,20 +3898,16 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3885,53 +3919,51 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_install_signature:
  **/
-void
-pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_type,
-				  const gchar *key_id, const gchar *package_id,
-				  DBusGMethodInvocation *context)
+static void
+pk_transaction_install_signature (PkTransaction *transaction,
+				  GVariant *params,
+				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *sig_type;
+	const gchar *key_id;
+	const gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s&s&s)",
+		       &sig_type,
+		       &key_id,
+		       &package_id);
+
 	g_debug ("InstallSignature method called: %s, %s", key_id, package_id);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallSignature not yet supported by backend");
+				     "InstallSignature not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (key_id, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_id (';;;repo-id' is used for the repo key) */
@@ -3940,8 +3972,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3950,46 +3981,45 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_INSTALL_SIGNATURE,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_refresh_cache:
  **/
-void
-pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGMethodInvocation *context)
+static void
+pk_transaction_refresh_cache (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gboolean force;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(b)",
+		       &force);
+
 	g_debug ("RefreshCache method called: %i", force);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REFRESH_CACHE)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_REFRESH_CACHE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "RefreshCache not yet supported by backend");
+			     "RefreshCache not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* we unref the update cache if it exists */
@@ -4000,53 +4030,54 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REFRESH_CACHE);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_REFRESH_CACHE,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_remove_packages:
  **/
-void
-pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
-				gboolean allow_deps, gboolean autoremove,
-				DBusGMethodInvocation *context)
+static void
+pk_transaction_remove_packages (PkTransaction *transaction,
+				GVariant *params,
+				GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
+	gboolean allow_deps;
+	gboolean autoremove;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&sbb)",
+		       &package_ids,
+		       &allow_deps,
+		       &autoremove);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
-	g_free (package_ids_temp);
+	g_debug ("RemovePackages method called: %s, %i, %i",
+		 package_ids_temp, allow_deps, autoremove);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RemovePackages not yet supported by backend");
+				     "RemovePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -4056,20 +4087,16 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4079,55 +4106,55 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_REMOVE_PACKAGES,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_repo_enable:
  **/
-void
-pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gboolean enabled,
-			    DBusGMethodInvocation *context)
+static void
+pk_transaction_repo_enable (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *repo_id;
+	gboolean enabled;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&sb)",
+		       &repo_id,
+		       &enabled);
+
 	g_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_ENABLE)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_REPO_ENABLE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RepoEnable not yet supported by backend");
+				     "RepoEnable not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4136,56 +4163,56 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_ENABLE);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_repo_set_data:
  **/
-void
-pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
-			      const gchar *parameter, const gchar *value,
-			      DBusGMethodInvocation *context)
+static void
+pk_transaction_repo_set_data (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *repo_id;
+	const gchar *parameter;
+	const gchar *value;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
+	g_variant_get (params, "(&s&s&s)",
+		       &repo_id,
+		       &parameter,
+		       &value);
+
+	g_debug ("RepoSetData method called: %s, %s, %s",
+		 repo_id, parameter, value);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_SET_DATA)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_REPO_SET_DATA)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RepoSetData not yet supported by backend");
+				     "RepoSetData not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4195,23 +4222,25 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_SET_DATA);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_REPO_SET_DATA,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_resolve:
  **/
-void
-pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
-			gchar **packages, DBusGMethodInvocation *context)
+static void
+pk_transaction_resolve (PkTransaction *transaction,
+			GVariant *params,
+			GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -4219,37 +4248,33 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	guint i;
 	guint length;
 	guint max_length;
+	const gchar *filter;
+	gchar **packages;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&s)",
+		       &filter,
+		       &packages);
+
 	packages_temp = pk_package_ids_to_string (packages);
 	g_debug ("Resolve method called: %s, %s", filter, packages_temp);
-	g_free (packages_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_RESOLVE)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_RESOLVE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Resolve not yet supported by backend");
+				     "Resolve not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -4259,8 +4284,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Too many items to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check each package for sanity */
@@ -4268,8 +4292,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		ret = pk_transaction_strvalidate (packages[i], &error);
 		if (!ret) {
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+				return;
 		}
 	}
 
@@ -4284,52 +4307,47 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (packages_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_rollback:
  **/
-void
-pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id,
-			 DBusGMethodInvocation *context)
+static void
+pk_transaction_rollback (PkTransaction *transaction,
+			 GVariant *params,
+			 GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *transaction_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s)",
+		       &transaction_id);
+
 	g_debug ("Rollback method called: %s", transaction_id);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_ROLLBACK)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_ROLLBACK)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Rollback not yet supported by backend");
+				     "Rollback not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (transaction_id, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4337,63 +4355,60 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ROLLBACK);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_ROLLBACK, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_search_details:
  **/
-void
-pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
-			       gchar **values, DBusGMethodInvocation *context)
+static void
+pk_transaction_search_details (PkTransaction *transaction,
+			       GVariant *params,
+			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *filter;
+	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&s)",
+		       &filter,
+		       &values);
+
 	g_debug ("SearchDetails method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_DETAILS)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SEARCH_DETAILS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchDetails not yet supported by backend");
+				     "SearchDetails not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4407,53 +4422,49 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_search_files:
  **/
-void
-pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
-			     gchar **values, DBusGMethodInvocation *context)
+static void
+pk_transaction_search_files (PkTransaction *transaction,
+			     GVariant *params,
+			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	guint i;
+	const gchar *filter;
+	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&s)",
+		       &filter,
+		       &values);
+
 	g_debug ("SearchFiles method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SEARCH_FILE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchFiles not yet supported by backend");
+				     "SearchFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* when not an absolute path, disallow slashes in search */
@@ -4462,8 +4473,7 @@ pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
 					     "Invalid search path");
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+				return;
 		}
 	}
 
@@ -4471,8 +4481,7 @@ pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4486,53 +4495,49 @@ pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_search_groups:
  **/
-void
-pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
-			      gchar **values, DBusGMethodInvocation *context)
+static void
+pk_transaction_search_groups (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	guint i;
+	const gchar *filter;
+	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&s)",
+		       &filter,
+		       &values);
+
 	g_debug ("SearchGroups method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_GROUP)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SEARCH_GROUP)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchGroups not yet supported by backend");
+				     "SearchGroups not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* do not allow spaces */
@@ -4541,8 +4546,7 @@ pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 					     "Invalid search containing spaces");
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+				return;
 		}
 	}
 
@@ -4550,8 +4554,7 @@ pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4565,60 +4568,55 @@ pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_search_name:
  **/
-void
-pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
-			     gchar **values, DBusGMethodInvocation *context)
+static void
+pk_transaction_search_names (PkTransaction *transaction,
+			     GVariant *params,
+			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	const gchar *filter;
+	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s^a&s)",
+		       &filter,
+		       &values);
+
 	g_debug ("SearchNames method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_NAME)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SEARCH_NAME)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchNames not yet supported by backend");
+				     "SearchNames not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4632,12 +4630,10 @@ pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
@@ -4646,7 +4642,10 @@ pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
  * Only return FALSE on error, not invalid parameter name
  */
 static gboolean
-pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gchar *value, GError **error)
+pk_transaction_set_hint (PkTransaction *transaction,
+			 const gchar *key,
+			 const gchar *value,
+			 GError **error)
 {
 	gboolean ret = TRUE;
 	PkTransactionPrivate *priv = transaction->priv;
@@ -4759,29 +4758,26 @@ out:
 /**
  * pk_transaction_set_hints:
  */
-void
-pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethodInvocation *context)
+static void
+pk_transaction_set_hints (PkTransaction *transaction,
+			  GVariant *params,
+			  GDBusMethodInvocation *context)
 {
 	GError *error = NULL;
 	gboolean ret;
 	guint i;
 	gchar **sections;
 	gchar *dbg;
+	const gchar **hints = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	dbg = g_strjoinv (", ", hints);
-	g_debug ("SetHints method called: %s", dbg);
-	g_free (dbg);
+	g_variant_get (params, "(^a&s)",
+		       &hints);
 
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
+	dbg = g_strjoinv (", ", (gchar**) hints);
+	g_debug ("SetHints method called: %s", dbg);
 
 	/* parse */
 	for (i=0; hints[i] != NULL; i++) {
@@ -4797,24 +4793,20 @@ pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethod
 
 		/* we failed, so abort current list */
 		if (!ret)
-			break;
+			goto out;
 	}
-
-	/* we failed to parse */
-	if (!ret) {
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (dbg);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_simulate_install_files:
  **/
-void
-pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_paths, DBusGMethodInvocation *context)
+static void
+pk_transaction_simulate_install_files (PkTransaction *transaction,
+				       GVariant *params,
+				       GDBusMethodInvocation *context)
 {
 	gchar *full_paths_temp;
 	gboolean ret;
@@ -4824,29 +4816,24 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 	gchar *content_type;
 	guint length;
 	guint i;
+	gchar **full_paths;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&s)",
+		       &full_paths);
+
 	full_paths_temp = pk_package_ids_to_string (full_paths);
 	g_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
-	g_free (full_paths_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateInstallFiles not yet supported by backend");
+				     "SimulateInstallFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* run the plugins */
@@ -4863,8 +4850,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 					     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* get content type */
@@ -4873,8 +4859,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "Failed to get content type for file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* supported content type? */
@@ -4884,8 +4869,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 					     "MIME type not supported %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
-			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* valid */
@@ -4896,9 +4880,8 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
 				pk_transaction_release_tid (transaction);
-				pk_transaction_dbus_return_error (context, error);
 				g_error_free (error_local);
-				return;
+				goto out;
 			}
 		}
 	}
@@ -4913,47 +4896,44 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (full_paths_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_simulate_install_packages:
  **/
-void
-pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_simulate_install_packages (PkTransaction *transaction,
+					  GVariant *params,
+					  GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
+
 	g_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
 	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateInstallPackages not yet supported by backend");
+				     "SimulateInstallPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -4963,8 +4943,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
@@ -4975,8 +4954,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -4989,47 +4967,46 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_simulate_remove_packages:
  **/
-void
-pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **package_ids, gboolean autoremove, DBusGMethodInvocation *context)
+static void
+pk_transaction_simulate_remove_packages (PkTransaction *transaction,
+					 GVariant *params,
+					 GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
+	gboolean autoremove;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("SimulateRemovePackages method called: %s", package_ids[0]);
+	g_variant_get (params, "(^a&sb)",
+		       &package_ids,
+		       &autoremove);
+
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	g_debug ("SimulateRemovePackages method called: %s", package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
 	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateRemovePackages not yet supported by backend");
+				     "SimulateRemovePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -5039,20 +5016,16 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -5066,47 +5039,45 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_simulate_update_packages:
  **/
-void
-pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_simulate_update_packages (PkTransaction *transaction,
+					 GVariant *params,
+					 GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
+
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	g_debug ("SimulateUpdatePackages method called: %s", package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
 	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateUpdatePackages not yet supported by backend");
+				     "SimulateUpdatePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -5116,20 +5087,16 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -5142,48 +5109,45 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_update_packages:
  **/
-void
-pk_transaction_update_packages (PkTransaction *transaction, gboolean only_trusted, gchar **package_ids, DBusGMethodInvocation *context)
+static void
+pk_transaction_update_packages (PkTransaction *transaction,
+				GVariant *params,
+				GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
+	gboolean only_trusted;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(b^a&s)",
+		       &only_trusted,
+		       &package_ids);
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	g_debug ("UpdatePackages method called: %s", package_ids_temp);
-	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "UpdatePackages not yet supported by backend");
+				     "UpdatePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check for length sanity */
@@ -5193,20 +5157,16 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -5218,43 +5178,40 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	g_free (package_ids_temp);
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_update_system:
  **/
-void
-pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted, DBusGMethodInvocation *context)
+static void
+pk_transaction_update_system (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gboolean only_trusted;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(b)",
+		       &only_trusted);
+
 	g_debug ("UpdateSystem method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_UPDATE_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "UpdateSystem not yet supported by backend");
+				     "UpdateSystem not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* are we already performing an update? */
@@ -5262,8 +5219,7 @@ pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted,
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	transaction->priv->cached_only_trusted = only_trusted;
@@ -5273,61 +5229,58 @@ pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted,
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_what_provides:
  **/
-void
-pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, const gchar *type,
-			      gchar **values, DBusGMethodInvocation *context)
+static void
+pk_transaction_what_provides (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	PkProvidesEnum provides;
 	GError *error = NULL;
+	const gchar *filter;
+	const gchar *type;
+	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_variant_get (params, "(&s&s^a&s)",
+		       &filter,
+		       &type,
+		       &values);
+
 	g_debug ("WhatProvides method called: %s, %s", type, values[0]);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_WHAT_PROVIDES)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_WHAT_PROVIDES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "WhatProvides not yet supported by backend");
+				     "WhatProvides not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check provides */
@@ -5336,8 +5289,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "provide type '%s' not found", type);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -5352,44 +5304,43 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
 				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 /**
  * pk_transaction_upgrade_system:
  **/
-void
-pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_id, const gchar *upgrade_kind_str, DBusGMethodInvocation *context)
+static void
+pk_transaction_upgrade_system (PkTransaction *transaction,
+			       GVariant *params,
+			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
 	PkUpgradeKindEnum upgrade_kind;
+	const gchar *distro_id;
+	const gchar *upgrade_kind_str;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("UpgradeSystem method called: %s (%s)", distro_id, upgrade_kind_str);
+	g_variant_get (params, "(&s*s)",
+		       &distro_id,
+		       &upgrade_kind_str);
+
+	g_debug ("UpgradeSystem method called: %s (%s)",
+		 distro_id, upgrade_kind_str);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "UpgradeSystem not yet supported by backend");
+				     "UpgradeSystem not supported by backend");
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check upgrade kind */
@@ -5398,8 +5349,7 @@ pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_i
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "upgrade kind '%s' not found", upgrade_kind_str);
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -5408,15 +5358,329 @@ pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_i
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPGRADE_SYSTEM, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   FALSE,
+						   PK_ROLE_ENUM_UPGRADE_SYSTEM, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+/**
+ * _g_variant_new_maybe_string:
+ **/
+static GVariant *
+_g_variant_new_maybe_string (const gchar *value)
+{
+	if (value == NULL)
+		return g_variant_new_string ("");
+	return g_variant_new_string (value);
+}
+
+/**
+ * pk_transaction_get_property:
+ **/
+static GVariant *
+pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
+			     const gchar *object_path, const gchar *interface_name,
+			     const gchar *property_name, GError **error,
+			     gpointer user_data)
+{
+	GVariant *retval = NULL;
+	PkTransaction *transaction = PK_TRANSACTION (user_data);
+	PkTransactionPrivate *priv = transaction->priv;
+
+	if (g_strcmp0 (property_name, "Role") == 0) {
+		retval = g_variant_new_string (pk_role_enum_to_string (priv->role));
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Status") == 0) {
+		retval = g_variant_new_string (pk_status_enum_to_string (priv->status));
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "LastPackage") == 0) {
+		retval = _g_variant_new_maybe_string (priv->last_package_id);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Uid") == 0) {
+		retval = g_variant_new_uint32 (priv->uid);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Percentage") == 0) {
+		retval = g_variant_new_uint32 (transaction->priv->percentage);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Subpercentage") == 0) {
+		retval = g_variant_new_uint32 (priv->subpercentage);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "AllowCancel") == 0) {
+		retval = g_variant_new_boolean (priv->allow_cancel);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "CallerActive") == 0) {
+		retval = g_variant_new_boolean (priv->caller_active);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "ElapsedTime") == 0) {
+		retval = g_variant_new_uint32 (priv->elapsed_time);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "RemainingTime") == 0) {
+		retval = g_variant_new_uint32 (priv->remaining_time);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Speed") == 0) {
+		retval = g_variant_new_uint32 (priv->speed);
+		goto out;
+	}
+out:
+	return retval;
+}
+
+/**
+ * pk_transaction_method_call:
+ **/
+static void
+pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
+			    const gchar *object_path, const gchar *interface_name,
+			    const gchar *method_name, GVariant *parameters,
+			    GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	PkTransaction *transaction = PK_TRANSACTION (user_data);
+	gboolean ret = TRUE;
+
+	g_return_if_fail (transaction->priv->sender != NULL);
+
+	/* check is the same as the sender that did GetTid */
+	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
+	if (!ret) {
+		g_dbus_method_invocation_return_error (invocation,
+						       PK_TRANSACTION_ERROR,
+						       PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+						       "sender does not match (%s vs %s)",
+						       sender,
+						       transaction->priv->sender);
+		goto out;
 	}
 
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
+	if (g_strcmp0 (method_name, "SetHints") == 0) {
+		pk_transaction_set_hints (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "AcceptEula") == 0) {
+		pk_transaction_accept_eula (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "Cancel") == 0) {
+		pk_transaction_cancel (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "DownloadPackages") == 0) {
+		pk_transaction_download_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetCategories") == 0) {
+		pk_transaction_get_categories (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetDepends") == 0) {
+		pk_transaction_get_depends (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetDetails") == 0) {
+		pk_transaction_get_details (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetFiles") == 0) {
+		pk_transaction_get_files (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetOldTransactions") == 0) {
+		pk_transaction_get_old_transactions (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetPackages") == 0) {
+		pk_transaction_get_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetRepoList") == 0) {
+		pk_transaction_get_repo_list (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetRequires") == 0) {
+		pk_transaction_get_requires (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetUpdateDetail") == 0) {
+		pk_transaction_get_update_detail (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetUpdates") == 0) {
+		pk_transaction_get_updates (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetDistroUpgrades") == 0) {
+		pk_transaction_get_distro_upgrades (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "InstallFiles") == 0) {
+		pk_transaction_install_files (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "InstallPackages") == 0) {
+		pk_transaction_install_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "InstallSignature") == 0) {
+		pk_transaction_install_signature (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RefreshCache") == 0) {
+		pk_transaction_refresh_cache (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RemovePackages") == 0) {
+		pk_transaction_remove_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RepoEnable") == 0) {
+		pk_transaction_repo_enable (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RepoSetData") == 0) {
+		pk_transaction_repo_set_data (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "Resolve") == 0) {
+		pk_transaction_resolve (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "Rollback") == 0) {
+		pk_transaction_rollback (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SearchDetails") == 0) {
+		pk_transaction_search_details (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SearchFiles") == 0) {
+		pk_transaction_search_files (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SearchGroups") == 0) {
+		pk_transaction_search_groups (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SearchNames") == 0) {
+		pk_transaction_search_names (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SimulateInstallFiles") == 0) {
+		pk_transaction_simulate_install_files (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SimulateInstallPackages") == 0) {
+		pk_transaction_simulate_install_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SimulateRemovePackages") == 0) {
+		pk_transaction_simulate_remove_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SimulateUpdatePackages") == 0) {
+		pk_transaction_simulate_update_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "UpdatePackages") == 0) {
+		pk_transaction_update_packages (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "UpdateSystem") == 0) {
+		pk_transaction_update_system (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "WhatProvides") == 0) {
+		pk_transaction_what_provides (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "UpgradeSystem") == 0) {
+		pk_transaction_upgrade_system (transaction, parameters, invocation);
+		goto out;
+	}
+out:
+	return;
+}
+
+/**
+ * pk_transaction_set_tid:
+ */
+gboolean
+pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
+{
+	static const GDBusInterfaceVTable interface_vtable = {
+		pk_transaction_method_call,
+		pk_transaction_get_property,
+		NULL
+	};
+
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->tid == NULL, FALSE);
+
+	transaction->priv->tid = g_strdup (tid);
+
+	/* register org.freedesktop.PackageKit.Transaction */
+	transaction->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, NULL);
+	g_assert (transaction->priv->connection != NULL);
+	transaction->priv->registration_id =
+		g_dbus_connection_register_object (transaction->priv->connection,
+						   tid,
+						   transaction->priv->introspection->interfaces[0],
+						   &interface_vtable,
+						   transaction,  /* user_data */
+						   NULL,  /* user_data_free_func */
+						   NULL); /* GError** */
+	g_assert (transaction->priv->registration_id > 0);
+	return TRUE;
 }
 
 /**
@@ -5457,255 +5721,18 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_get_property:
- **/
-static void
-pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
-{
-	PkTransaction *transaction;
-
-	transaction = PK_TRANSACTION (object);
-
-	switch (prop_id) {
-	case PROP_ROLE:
-		g_value_set_string (value, pk_role_enum_to_string (transaction->priv->role));
-		break;
-	case PROP_STATUS:
-		g_value_set_string (value, pk_status_enum_to_string (transaction->priv->status));
-		break;
-	case PROP_LAST_PACKAGE:
-		g_value_set_string (value, transaction->priv->last_package_id);
-		break;
-	case PROP_UID:
-		g_value_set_uint (value, transaction->priv->uid);
-		break;
-	case PROP_PERCENTAGE:
-		g_value_set_uint (value, transaction->priv->percentage);
-		break;
-	case PROP_SUBPERCENTAGE:
-		g_value_set_uint (value, transaction->priv->subpercentage);
-		break;
-	case PROP_ALLOW_CANCEL:
-		g_value_set_boolean (value, transaction->priv->allow_cancel);
-		break;
-	case PROP_CALLER_ACTIVE:
-		g_value_set_boolean (value, transaction->priv->caller_active);
-		break;
-	case PROP_ELAPSED_TIME:
-		g_value_set_uint (value, transaction->priv->elapsed_time);
-		break;
-	case PROP_REMAINING_TIME:
-		g_value_set_uint (value, transaction->priv->remaining_time);
-		break;
-	case PROP_SPEED:
-		g_value_set_uint (value, transaction->priv->speed);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
  * pk_transaction_class_init:
  * @klass: The PkTransactionClass
  **/
 static void
 pk_transaction_class_init (PkTransactionClass *klass)
 {
-	GParamSpec *spec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = pk_transaction_dispose;
 	object_class->finalize = pk_transaction_finalize;
-	object_class->get_property = pk_transaction_get_property;
 
-	/**
-	 * PkTransaction:role:
-	 */
-	spec = g_param_spec_string ("role",
-				    "Role", "The transaction role",
-				    NULL,
-				    G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ROLE, spec);
-
-	/**
-	 * PkTransaction:status:
-	 */
-	spec = g_param_spec_string ("status",
-				    "Status", "The transaction status",
-				    NULL,
-				    G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_STATUS, spec);
-
-	/**
-	 * PkTransaction:last-package:
-	 */
-	spec = g_param_spec_string ("last-package",
-				    "Last package", "The transaction last package processed",
-				    NULL,
-				    G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_LAST_PACKAGE, spec);
-
-	/**
-	 * PkTransaction:uid:
-	 */
-	spec = g_param_spec_uint ("uid",
-				  "UID", "User ID that created the transaction",
-				  0, G_MAXUINT, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_UID, spec);
-
-	/**
-	 * PkTransaction:percentage:
-	 */
-	spec = g_param_spec_uint ("percentage",
-				  "Percentage", "Percentage transaction complete",
-				  0, PK_BACKEND_PERCENTAGE_INVALID, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_PERCENTAGE, spec);
-
-	/**
-	 * PkTransaction:subpercentage:
-	 */
-	spec = g_param_spec_uint ("subpercentage",
-				  "Sub-percentage", "Percentage sub-transaction complete",
-				  0, PK_BACKEND_PERCENTAGE_INVALID, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, spec);
-
-	/**
-	 * PkTransaction:allow-cancel:
-	 */
-	spec = g_param_spec_boolean ("allow-cancel",
-				     "Allow cancel", "If the transaction can be cancelled",
-				     FALSE,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ALLOW_CANCEL, spec);
-
-	/**
-	 * PkTransaction:caller-active:
-	 */
-	spec = g_param_spec_boolean ("caller-active",
-				     "Caller Active", "If the transaction caller is still active",
-				     TRUE,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, spec);
-
-	/**
-	 * PkTransaction:elapsed-time:
-	 */
-	spec = g_param_spec_uint ("elapsed-time",
-				  "Elapsed Time", "The amount of time elapsed during the transaction",
-				  0, G_MAXUINT, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ELAPSED_TIME, spec);
-
-	/**
-	 * PkTransaction:remaining-time:
-	 */
-	spec = g_param_spec_uint ("remaining-time",
-				  "Remaining Time", "The estimated remaining time of the transaction",
-				  0, G_MAXUINT, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_REMAINING_TIME, spec);
-
-	/**
-	 * PkTransaction:speed:
-	 */
-	spec = g_param_spec_uint ("speed",
-				  "Speed", "The estimated speed of the transaction",
-				  0, G_MAXUINT, 0,
-				  G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_SPEED, spec);
-
-	signals[SIGNAL_DETAILS] =
-		g_signal_new ("details",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
-			      G_TYPE_NONE, 6, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64);
-	signals[SIGNAL_ERROR_CODE] =
-		g_signal_new ("error-code",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_FILES] =
-		g_signal_new ("files",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_CATEGORY] =
-		g_signal_new ("category",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_DISTRO_UPGRADE] =
-		g_signal_new ("distro-upgrade",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals[SIGNAL_FINISHED] =
 		g_signal_new ("finished",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
-	signals[SIGNAL_MESSAGE] =
-		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_PACKAGE] =
-		g_signal_new ("package",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_REPO_DETAIL] =
-		g_signal_new ("repo-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL,
-			      G_TYPE_NONE, 3, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_BOOLEAN);
-	signals[SIGNAL_REPO_SIGNATURE_REQUIRED] =
-		g_signal_new ("repo-signature-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_EULA_REQUIRED] =
-		g_signal_new ("eula-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_MEDIA_CHANGE_REQUIRED] =
-		g_signal_new ("media-change-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_REQUIRE_RESTART] =
-		g_signal_new ("require-restart",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_TRANSACTION] =
-		g_signal_new ("transaction",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING_UINT_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT,
-			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
-	signals[SIGNAL_UPDATE_DETAIL] =
-		g_signal_new ("update-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 12, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_DESTROY] =
-		g_signal_new ("destroy",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-	signals[SIGNAL_CHANGED] =
-		g_signal_new ("changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
@@ -5720,39 +5747,12 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
-#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	GError *error = NULL;
-#endif
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
-	transaction->priv->finished = FALSE;
-	transaction->priv->waiting_for_auth = FALSE;
 	transaction->priv->allow_cancel = TRUE;
-	transaction->priv->emit_eula_required = FALSE;
-	transaction->priv->emit_signature_required = FALSE;
-	transaction->priv->emit_media_change_required = FALSE;
 	transaction->priv->caller_active = TRUE;
-	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_only_trusted = TRUE;
-	transaction->priv->cached_key_id = NULL;
-	transaction->priv->cached_package_id = NULL;
-	transaction->priv->cached_package_ids = NULL;
-	transaction->priv->cached_transaction_id = NULL;
-	transaction->priv->cached_full_paths = NULL;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
-	transaction->priv->cached_values = NULL;
-	transaction->priv->cached_repo_id = NULL;
-	transaction->priv->cached_parameter = NULL;
-	transaction->priv->cached_value = NULL;
-	transaction->priv->last_package_id = NULL;
-	transaction->priv->tid = NULL;
-	transaction->priv->sender = NULL;
-	transaction->priv->locale = NULL;
-	transaction->priv->frontend_socket = NULL;
-	transaction->priv->cache_age = 0;
-#ifdef USE_SECURITY_POLKIT
-	transaction->priv->subject = NULL;
-#endif
-	transaction->priv->cmdline = NULL;
 	transaction->priv->uid = PK_TRANSACTION_UID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -5760,9 +5760,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
-	transaction->priv->elapsed_time = 0;
-	transaction->priv->remaining_time = 0;
-	transaction->priv->speed = 0;
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
@@ -5788,6 +5785,16 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
+
+	/* load introspection from file */
+	transaction->priv->introspection = pk_load_introspection (DATADIR "/dbus-1/interfaces/"
+								  PK_DBUS_INTERFACE_TRANSACTION ".xml",
+								  &error);
+	if (transaction->priv->introspection == NULL) {
+		g_error ("PkEngine: failed to load transaction introspection: %s",
+			 error->message);
+		g_error_free (error);
+	}
 
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
@@ -5815,9 +5822,21 @@ pk_transaction_dispose (GObject *object)
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 	}
 
+	if (transaction->priv->registration_id > 0) {
+		g_dbus_connection_unregister_object (transaction->priv->connection,
+						     transaction->priv->registration_id);
+		transaction->priv->registration_id = 0;
+	}
+
 	/* send signal to clients that we are about to be destroyed */
 	g_debug ("emitting destroy %s", transaction->priv->tid);
-	g_signal_emit (transaction, signals[SIGNAL_DESTROY], 0);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "Destroy",
+				       NULL,
+				       NULL);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);
 }
@@ -5855,6 +5874,11 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->tid);
 	g_free (transaction->priv->sender);
 	g_free (transaction->priv->cmdline);
+
+	if (transaction->priv->connection != NULL)
+		g_object_unref (transaction->priv->connection);
+	if (transaction->priv->introspection != NULL)
+		g_dbus_node_info_unref (transaction->priv->introspection);
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);

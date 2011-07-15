@@ -29,8 +29,6 @@
 #include <locale.h>
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib2/pk-debug.h>
 
 #if GLIB_CHECK_VERSION(2,29,4)
@@ -42,79 +40,9 @@
 #include "pk-syslog.h"
 #include "pk-transaction.h"
 #include "pk-backend.h"
-#include "org.freedesktop.PackageKit.h"
 
 static guint exit_idle_time;
 static GMainLoop *loop;
-
-/**
- * pk_object_register:
- * @connection: What we want to register to
- * @object: The GObject we want to register
- *
- * Register org.freedesktop.PackageKit on the system bus.
- * This function MUST be called before DBUS service will work.
- *
- * Return value: success
- **/
-G_GNUC_WARN_UNUSED_RESULT static gboolean
-pk_object_register (DBusGConnection *connection, GObject *object, GError **error)
-{
-	DBusGProxy *bus_proxy = NULL;
-	guint request_name_result;
-	gboolean ret;
-	gchar *message;
-
-	bus_proxy = dbus_g_proxy_new_for_name (connection,
-					       DBUS_SERVICE_DBUS,
-					       DBUS_PATH_DBUS,
-					       DBUS_INTERFACE_DBUS);
-
-	ret = dbus_g_proxy_call (bus_proxy, "RequestName", error,
-				 G_TYPE_STRING, PK_DBUS_SERVICE,
-				 G_TYPE_UINT, 0,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &request_name_result,
-				 G_TYPE_INVALID);
-
-	/* free the bus_proxy */
-	g_object_unref (G_OBJECT (bus_proxy));
-
-	/* abort as the DBUS method failed */
-	if (!ret) {
-		g_clear_error (error);
-		message = g_strdup_printf ("%s\n%s\n* %s\n* %s\n* %s '%s'\n",
-					   /* TRANSLATORS: failed due to DBus security */
-					   _("Could not request the D-Bus name."),
-					   /* TRANSLATORS: only two ways this can fail... */
-					   _("This can happen for three reasons:"),
-					   /* TRANSLATORS: only allowed to be running once */
-					   _("The daemon is already running"),
-					   /* TRANSLATORS: only allowed to be owned by root */
-					   _("The correct user is not launching the executable (usually root)"),
-					   /* TRANSLATORS: or we are installed in a prefix */
-					   _("The org.freedesktop.PackageKit.conf file is not "
-					     "installed in the system directory:"),
-					     "/etc/dbus-1/system.d");
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "%s", message);
-		g_free (message);
-		return FALSE;
-	}
-
-	/* already running */
- 	if (request_name_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
-			     "Already running on this machine");
-		return FALSE;
-	}
-
-	dbus_g_object_type_install_info (PK_TYPE_ENGINE, &dbus_glib_pk_engine_object_info);
-	dbus_g_error_domain_register (PK_ENGINE_ERROR, NULL, PK_ENGINE_TYPE_ERROR);
-	dbus_g_error_domain_register (PK_TRANSACTION_ERROR, NULL, PK_TRANSACTION_TYPE_ERROR);
-	dbus_g_connection_register_g_object (connection, PK_DBUS_PATH, object);
-
-	return TRUE;
-}
 
 /**
  * timed_exit_cb:
@@ -196,7 +124,6 @@ pk_main_sigint_handler (int sig)
 int
 main (int argc, char *argv[])
 {
-	DBusGConnection *system_connection;
 	gboolean ret = TRUE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
@@ -244,7 +171,6 @@ main (int argc, char *argv[])
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	dbus_g_thread_init ();
 	g_type_init ();
 
 	/* TRANSLATORS: describing the service that is running */
@@ -278,15 +204,6 @@ main (int argc, char *argv[])
 
 	/* don't let GIO start it's own session bus: http://bugzilla.gnome.org/show_bug.cgi?id=526454 */
 	setenv ("GIO_USE_VFS", "local", 1);
-
-	/* check dbus connections, exit if not valid */
-	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error) {
-		/* TRANSLATORS: fatal error, dbus is not running */
-		g_print ("%s: %s\n", _("Cannot connect to the system bus"), error->message);
-		g_error_free (error);
-		goto exit_program;
-	}
 
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
@@ -341,24 +258,15 @@ main (int argc, char *argv[])
 	g_signal_connect (engine, "quit",
 			  G_CALLBACK (pk_main_quit_cb), loop);
 
-	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
-		/* TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows */
-		g_print ("%s %s\n", _("Error trying to start:"), error->message);
-		g_error_free (error);
-		goto out;
-	}
-
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
 	if (timed_exit)
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
 
-	/* only poll every 10 seconds when we are alive */
+	/* only poll when we are alive */
 	if (exit_idle_time != 0 && !disable_timer) {
 		timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
-#if GLIB_CHECK_VERSION(2,25,8)
 		g_source_set_name_by_id (timer_id, "[PkMain] main poll");
-#endif
 	}
 
 	/* immediatly exit */

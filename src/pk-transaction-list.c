@@ -35,14 +35,10 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib2/pk-common.h>
 
 #include "pk-conf.h"
-#include "pk-transaction-dbus.h"
 #include "pk-transaction-list.h"
-#include "org.freedesktop.PackageKit.Transaction.h"
 
 static void     pk_transaction_list_finalize	(GObject        *object);
 
@@ -348,7 +344,8 @@ out:
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
-pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time_ms, PkTransactionList *tlist)
+pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
+					     PkTransactionList *tlist)
 {
 	gboolean ret;
 	guint timeout;
@@ -440,14 +437,16 @@ pk_transaction_list_get_number_transactions_for_uid (PkTransactionList *tlist, g
  * pk_transaction_list_create:
  **/
 gboolean
-pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gchar *sender, GError **error)
+pk_transaction_list_create (PkTransactionList *tlist,
+			    const gchar *tid,
+			    const gchar *sender,
+			    GError **error)
 {
 	guint count;
 	guint max_count;
 	guint timeout;
 	gboolean ret = FALSE;
 	PkTransactionItem *item;
-	DBusGConnection *connection;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
@@ -463,12 +462,6 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	item = g_new0 (PkTransactionItem, 1);
 	item->list = g_object_ref (tlist);
 	item->tid = g_strdup (tid);
-
-	/* get another connection */
-	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
-	if (connection == NULL)
-		g_error ("no connection");
-
 	item->transaction = pk_transaction_new ();
 	item->finished_id =
 		g_signal_connect_after (item->transaction, "finished",
@@ -500,9 +493,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	}
 
 	/* get the uid for the transaction */
-	g_object_get (item->transaction,
-		      "uid", &item->uid,
-		      NULL);
+	item->uid = pk_transaction_get_uid (item->transaction);
 
 	/* find out the number of transactions this uid already has in progress */
 	count = pk_transaction_list_get_number_transactions_for_uid (tlist, item->uid);
@@ -520,10 +511,6 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 		ret = FALSE;
 		goto out;
 	}
-
-	/* put on the bus */
-	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
-	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
 	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionCreateCommitTimeout");
