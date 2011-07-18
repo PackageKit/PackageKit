@@ -1,4 +1,5 @@
 AAL
+Abstyles
 Adobe
 ADSL
 AFL
@@ -15,11 +16,16 @@ ASL 1.0
 ASL 1.1
 ASL 2.0
 Baekmuk
+Barr
+Beerware
+BeOpen
 BitTorrent
 Boost
+Borceux
 BSD
 BSD Protection
 BSD with advertising
+BSD with attribution
 CATOSL
 CC0
 CC-BY
@@ -29,19 +35,26 @@ CDL
 CeCILL
 CeCILL-B
 CeCILL-C
+Charter
 CNRI
 Condor
 Copyright only
 CPAL
 CPL
+Crossword
 Crystal Stacker
 DOC
+Dotseqn
+DoubleStroke
+DSDP
 DSL
 dvipdfm
 ECL 1.0
 ECL 2.0
 eCos
 EFL 2.0
+eGenix
+Elvish
 Entessa
 EPL
 ERPL
@@ -57,6 +70,7 @@ GFDL
 Giftware
 GL2PS
 Glide
+Glulxe
 gnuplot
 GPLv1
 GPLv2
@@ -86,7 +100,9 @@ Jabber
 JasPer
 JPython
 Knuth
+Latex2e
 LBNL BSD
+LDPL
 LGPLv2
 LGPLv2+
 LGPLv2+ or Artistic
@@ -96,6 +112,7 @@ LGPLv3
 LGPLv3+
 LGPLv3+ with exceptions
 LGPLv3 with exceptions
+Lhcyr
 Liberation
 libtiff
 LLGPL
@@ -118,6 +135,7 @@ NCSA
 NetCDF
 Netscape
 Newmat
+Newsletr
 NGPL
 Nokia
 NOSL
@@ -125,6 +143,7 @@ Noweb
 OAL
 OFL
 OFSFDL
+OML
 OpenLDAP
 OpenPBS
 OpenSSL
@@ -149,6 +168,7 @@ Rdisc
 RiceBSD
 Romio
 RPSL
+Rsfs
 Ruby
 Saxpath
 SCEA
@@ -161,7 +181,10 @@ SNIA
 SPL
 STIX
 TCL
+Teeworlds
+Threeparttable
 TMate
+TORQUEv1.1
 TOSL
 TPL
 UCD
@@ -172,6 +195,7 @@ VSL
 W3C
 Wadalab
 Webmin
+Wsuipa
 WTFPL
 wxWidgets
 XANO
@@ -179,6 +203,7 @@ Xerox
 xinetd
 XSkat
 YPLv1.1
+Zed
 Zend
 zlib
 zlib with acknowledgement

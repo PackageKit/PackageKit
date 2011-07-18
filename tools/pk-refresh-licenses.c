@@ -124,8 +124,6 @@ main (int argc, char *argv[])
 	gint shortname = -1;
 	GPtrArray *data = NULL;
 	gboolean is_col;
-	GString *string_h = NULL;
-	GString *string_c = NULL;
 	GString *string_txt = NULL;
 	PkRefreshLicenseItem *item;
 	PkRefreshLicenseItem *item_tmp;
@@ -264,48 +262,10 @@ skip:
 	g_ptr_array_sort (data, pk_refresh_licenses_compare_func);
 
 	/* process data, and output to header file */
-	string_h = g_string_new ("automatically geneated, do not edit\n\n");
-	string_c = g_string_new ("automatically geneated, do not edit\n\n");
 	string_txt = g_string_new (NULL);
 	for (i=0; i<data->len; i++) {
-		gchar *tabs;
-		guint len;
-		gint no_tabs;
 		item = g_ptr_array_index (data, i);
-
-		/* trivial */
-		g_string_append_printf (string_h, "\t%s,\n", item->enum_name);
-
-		/* 5 tabs, each tab = 8 chars */
-		len = strlen (item->enum_name) + 2; /* for the { and , */
-		no_tabs = (gint) ceilf (5.0f - ((gfloat) len / 8.0f));
-		if (no_tabs > 0)
-			tabs = g_strnfill (no_tabs, '\t');
-		else
-			tabs = g_strdup (" ");
-		
-		/* need to tab properly */
-		g_string_append_printf (string_c, "\t{%s,%s\"%s\"},\n", item->enum_name, tabs, item->full_name);
 		g_string_append_printf (string_txt, "%s\n", item->full_name);
-		g_free (tabs);
-	}
-	g_string_append (string_c, "\n");
-	g_string_append (string_h, "\n");
-
-	/* set h contents */
-	ret = g_file_set_contents ("./pk-enum.h.tmp", string_h->str, -1, &error);
-	if (!ret) {
-		g_warning ("failed to set contents: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* set c contents */
-	ret = g_file_set_contents ("./pk-enum.c.tmp", string_c->str, -1, &error);
-	if (!ret) {
-		g_warning ("failed to set contents: %s", error->message);
-		g_error_free (error);
-		goto out;
 	}
 
 	/* set c contents */
@@ -318,10 +278,6 @@ skip:
 
 	retval = EXIT_SUCCESS;
 out:
-	if (string_h != NULL)
-		g_string_free (string_h, TRUE);
-	if (string_c != NULL)
-		g_string_free (string_c, TRUE);
 	if (string_txt != NULL)
 		g_string_free (string_txt, TRUE);
 	if (data != NULL)

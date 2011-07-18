@@ -53,6 +53,8 @@ class PackagekitPackage:
         '''
 
         groups = license_field.split(" and ")
+        f = open('/usr/share/PackageKit/helpers/yum/licenses.txt', 'r')
+        free_licenses = f.readlines()
 
         if len(groups) == 0:
             return False
@@ -72,7 +74,7 @@ class PackagekitPackage:
                 if len(license) < 1:
                     continue
 
-                if license in PackageKitEnum.free_licenses:
+                if license in free_licenses:
                     one_free_group = True
                     group_is_free = True
                     break
