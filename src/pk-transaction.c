@@ -1665,9 +1665,7 @@ gboolean
 pk_transaction_run (PkTransaction *transaction)
 {
 	gboolean ret;
-	guint i;
 	GError *error = NULL;
-	PkBitfield filters;
 	PkExitEnum exit_status;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
@@ -1866,38 +1864,11 @@ pk_transaction_run (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
 		pk_backend_simulate_install_files (priv->backend, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
-		/* fallback to a method we do have */
-		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
-			pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
-		} else {
-			g_warning ("falling back to get depends as simulate install packages isn't implemented");
-			/* we need to emit the original packages before we fall back */
-			for (i=0; priv->cached_package_ids[i] != NULL; i++)
-				pk_backend_package (priv->backend, PK_INFO_ENUM_INSTALLING, priv->cached_package_ids[i], "");
-			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
-		}
+		pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
-		/* fallback to a method we do have */
-		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
-			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_autoremove);
-		} else {
-			g_warning ("falling back to get requires as simulate remove packages isn't implemented");
-			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			pk_backend_get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
-		}
+		pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_autoremove);
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-		/* fallback to a method we do have */
-		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
-			pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
-		} else {
-			g_warning ("falling back to get depends as simulate update packages isn't implemented");
-			/* we need to emit the original packages before we fall back */
-			for (i=0; priv->cached_package_ids[i] != NULL; i++)
-				pk_backend_package (priv->backend, PK_INFO_ENUM_UPDATING, priv->cached_package_ids[i], "");
-			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
-		}
+		pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		pk_backend_upgrade_system (priv->backend, priv->cached_value, priv->cached_provides);
 	} else {

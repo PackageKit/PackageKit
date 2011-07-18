@@ -1727,14 +1727,6 @@ pk_engine_init (PkEngine *engine)
 	/* try to get the distro id */
 	engine->priv->distro_id = pk_get_distro_id ();
 
-	/* we allow fallback to these legacy methods */
-	if (pk_bitfield_contain (engine->priv->roles, PK_ROLE_ENUM_GET_DEPENDS))
-		pk_bitfield_add (engine->priv->roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
-	if (pk_bitfield_contain (engine->priv->roles, PK_ROLE_ENUM_GET_REQUIRES))
-		pk_bitfield_add (engine->priv->roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
-	if (pk_bitfield_contain (engine->priv->roles, PK_ROLE_ENUM_GET_DEPENDS))
-		pk_bitfield_add (engine->priv->roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
-
 	engine->priv->timer = g_timer_new ();
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
