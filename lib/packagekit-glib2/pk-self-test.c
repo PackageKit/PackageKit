@@ -1599,6 +1599,7 @@ pk_test_results_func (void)
 	PkInfoEnum info;
 	gchar *package_id;
 	gchar *summary;
+	GError *error = NULL;
 
 	/* get results */
 	results = pk_results_new ();
@@ -1625,9 +1626,13 @@ pk_test_results_func (void)
 	item = pk_package_new ();
 	g_object_set (item,
 		      "info", PK_INFO_ENUM_AVAILABLE,
-		      "package-id", "gnome-power-manager;0.1.2;i386;fedora",
 		      "summary", "Power manager for GNOME",
 		      NULL);
+	ret = pk_package_set_id (item,
+				 "gnome-power-manager;0.1.2;i386;fedora",
+				 &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 	ret = pk_results_add_package (results, item);
 	g_object_unref (item);
 	g_assert (ret);
