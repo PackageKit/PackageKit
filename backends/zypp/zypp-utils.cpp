@@ -730,8 +730,8 @@ zypp_get_patches (PkBackend *backend, set<PoolItem> &patches)
 
         for (ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<Patch>();
                         it != zypp->poolProxy ().byKindEnd<Patch>(); it ++) {
-                // check if patch is needed
-                if((*it)->isNeeded()) {
+                // check if the patch is needed and not set to taboo
+                if((*it)->isNeeded() && !((*it)->candidateObj ().isUnwanted())) {
 			Patch::constPtr patch = asKind<Patch>((*it)->candidateObj ().resolvable ());
 			if (_updating_self) {
 				if (patch->restartSuggested ())
