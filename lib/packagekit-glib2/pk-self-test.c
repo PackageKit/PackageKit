@@ -1275,16 +1275,6 @@ pk_test_enum_func (void)
 		}
 	}
 
-	/* check we convert all the license bitfield */
-	for (i=0; i<PK_LICENSE_ENUM_LAST; i++) {
-		string = pk_license_enum_to_string (i);
-		if (string == NULL) {
-			/* so we get the value of i in the assert text */
-			g_assert_cmpint (0, ==, i);
-			break;
-		}
-	}
-
 	/* check we convert all the media type bitfield */
 	for (i=0; i<PK_MEDIA_TYPE_ENUM_LAST; i++) {
 		string = pk_media_type_enum_to_string (i);
