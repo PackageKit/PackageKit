@@ -384,7 +384,7 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 
 	/* print to screen, still one line */
 	if (text != NULL)
-		g_print ("\n * %s.. ", text);
+		g_print ("\n * %s... ", text);
 }
 
 /**
