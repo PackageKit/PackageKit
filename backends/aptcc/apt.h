@@ -123,9 +123,15 @@ public:
 	bool installPackages(pkgCacheFile &Cache);
 
 	/**
-	 *  check if the package provides the codec
+	 *  check which package provides the codec
 	 */
-	void povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+	void providesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			  gchar **values);
+
+	/**
+	 *  check which package provides a shared library
+	 */
+	void providesLibrary(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			  gchar **values);
 
 	pkgRecords    *packageRecords;

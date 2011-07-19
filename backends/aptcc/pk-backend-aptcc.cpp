@@ -524,7 +524,9 @@ backend_what_provides_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (provides == PK_PROVIDES_ENUM_MIMETYPE ||
+	// We can handle libraries, mimetypes and codecs
+	if (provides == PK_PROVIDES_ENUM_LIBRARY ||
+	    provides == PK_PROVIDES_ENUM_MIMETYPE ||
 	    provides == PK_PROVIDES_ENUM_CODEC ||
 	    provides == PK_PROVIDES_ENUM_ANY) {
 		aptcc *m_apt = new aptcc(backend, _cancel);
@@ -537,30 +539,32 @@ backend_what_provides_thread (PkBackend *backend)
 			return false;
 		}
 
-
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 		vector<string> packages;
 		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-		if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+
+		if (provides == PK_PROVIDES_ENUM_LIBRARY) {
+			m_apt->providesLibrary (output, values);
+		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			packages = searchMimeType (backend, values, error, _cancel);
 		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
-			m_apt->povidesCodec(output, values);
+			m_apt->providesCodec (output, values);
 		} else {
-			// any...
+			// PK_PROVIDES_ENUM_ANY, just search for everything a package can provide
+			m_apt->providesLibrary (output, values);
+			m_apt->providesCodec (output, values);
 			packages = searchMimeType (backend, values, error, _cancel);
-			m_apt->povidesCodec(output, values);
 		}
 
-		for(vector<string>::iterator i = packages.begin();
-		    i != packages.end(); ++i)
-		{
+		for (vector<string>::iterator i = packages.begin();
+		    i != packages.end(); ++i) {
 			if (_cancel) {
 			    break;
 			}
 			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
-            if (pkg.end() == true) {
-                continue;
-            }
+			if (pkg.end() == true) {
+				continue;
+			}
 			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 			if (ver.end() == true) {
 				continue;
@@ -586,6 +590,7 @@ backend_what_provides_thread (PkBackend *backend)
 		}
 
 		delete m_apt;
+
 	} else {
 		provides_text = pk_provides_enum_to_string (provides);
 		pk_backend_error_code (backend,

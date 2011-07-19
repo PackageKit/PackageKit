@@ -43,7 +43,7 @@ GstMatcher::GstMatcher(gchar **values)
     for (uint i = 0; i < g_strv_length(values); i++) {
         value = values[i];
         regmatch_t matches[5];
-        if (regexec(&pkre, value, 5, matches, 0) == 0) {
+        if (regexec(&pkre, value, 5, matches, 0) != REG_NOMATCH) {
             Match values;
             string version, type, data, opt;
 
@@ -100,7 +100,7 @@ GstMatcher::GstMatcher(gchar **values)
 
             m_matches.push_back(values);
         } else {
-            g_debug("Did not match: %s", value);
+            g_debug("gstmatcher: Did not match: %s", value);
         }
     }
     regfree(&pkre);
