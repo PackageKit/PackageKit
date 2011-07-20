@@ -235,7 +235,7 @@ pk-marshal.c: pk-marshal.list
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
 
-CLEANFILES = $(BUILT_SOURCES) *.a
+CLEANFILES = $(BUILT_SOURCES) *.a *.servicepack
 
 if HAVE_INTROSPECTION
 introspection_sources = $(libpackagekit_glib2_la_SOURCES)
