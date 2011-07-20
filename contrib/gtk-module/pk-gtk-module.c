@@ -27,9 +27,9 @@
 #include <pango/pango.h>
 #include <pango/pangofc-fontmap.h>
 #include <pango/pangocairo.h>
-#include <dbus/dbus-glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <gio/gio.h>
 
 /**
  * Try guessing the XID of the toplevel window that triggered us
@@ -58,31 +58,29 @@ guess_xid (void)
 	return xid;
 }
 
-
 /**
  * Invoke the PackageKit InstallFonts method over D-BUS
  **/
 
 static void
-pk_install_fonts_dbus_notify_cb (DBusGProxy *proxy,
-				 DBusGProxyCall *call,
-				 gpointer user_data)
+pk_install_fonts_method_finished_cb (GObject *source_object,
+				     GAsyncResult *res,
+				     gpointer user_data)
 {
-	gboolean ret;
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	GError *error = NULL;
+	GVariant *value;
 
-	ret = dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
-
-	if (!ret) {
-		g_debug ("Did not install fonts: %s", error->message);
-		return;
-	} else {
-		/* XXX Actually get the return value of the method? */
-
-		g_debug ("Fonts installed");
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
+		g_warning ("Error occurred during install: %s", error->message);
+		g_error_free (error);
+		goto out;
 	}
-
+out:
 	/* XXX Make gtk/pango reload fonts? */
+	if (value != NULL)
+		g_variant_unref (value);
 }
 
 static GPtrArray *tags;
@@ -90,12 +88,10 @@ static GPtrArray *tags;
 static gboolean
 pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 {
-	DBusGConnection *connection;
-	DBusGProxy *proxy = NULL;
+	GDBusProxy *proxy = NULL;
 	guint xid;
 	gchar **font_tags;
 	GError *error = NULL;
-	DBusGProxyCall *call;
 
 	g_return_val_if_fail (tags->len > 0, FALSE);
 
@@ -107,38 +103,35 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	/* try to get the window XID */
 	xid = guess_xid ();
 
-	/* get bus */
-	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
-	if (connection == NULL) {
-		g_warning ("Could not connect to session bus: %s\n", error->message);
+	/* get proxy */
+	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					       NULL,
+					       "org.freedesktop.PackageKit",
+					       "/org/freedesktop/PackageKit",
+					       "org.freedesktop.PackageKit.Modify",
+					       NULL,
+					       &error);
+	if (proxy == NULL) {
+		g_warning ("Error connecting to PK session instance: %s",
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
 
-	/* get proxy */
-	proxy = dbus_g_proxy_new_for_name (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Modify");
-	if (proxy == NULL) {
-		g_warning ("Could not connect to PackageKit session service\n");
-		goto out;
-	}
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
-
 	/* invoke the method */
-	call = dbus_g_proxy_begin_call (proxy, "InstallFontconfigResources",
-					pk_install_fonts_dbus_notify_cb, NULL, NULL,
-				        G_TYPE_UINT, xid,
-				        G_TYPE_STRV, font_tags,
-					G_TYPE_STRING, "hide-finished",
-				        G_TYPE_INVALID);
-	if (call == NULL) {
-		g_warning ("Could not send method");
-		goto out;
-	}
+	g_dbus_proxy_call (proxy,
+			   "InstallPackageNames",
+			   g_variant_new ("(u^a&ss)",
+					  xid,
+					  font_tags,
+					  "hide-finished"),
+			   G_DBUS_CALL_FLAGS_NONE,
+			   60 * 60 * 1000, /* 1 hour */
+			   NULL,
+			   pk_install_fonts_method_finished_cb,
+			   NULL);
 
 	g_debug ("InstallFontconfigResources method invoked");
 
@@ -146,7 +139,6 @@ out:
 	g_strfreev (font_tags);
 	if (proxy != NULL)
 		g_object_unref (proxy);
-
 	return FALSE;
 }
 
