@@ -32,22 +32,15 @@ MAINTAINERCLEANFILES =					\
 	$(srcdir)/ABOUT-NLS				\
 	$(srcdir)/aclocal.m4				\
 	$(srcdir)/autoscan.log				\
-	$(srcdir)/compile				\
-	$(srcdir)/config.guess				\
+	$(srcdir)/build-aux				\
 	$(srcdir)/config.rpath				\
 	$(srcdir)/config.h.in				\
-	$(srcdir)/config.sub				\
 	$(srcdir)/configure.scan			\
-	$(srcdir)/depcomp				\
-	$(srcdir)/install-sh				\
-	$(srcdir)/ltmain.sh				\
-	$(srcdir)/missing				\
 	$(srcdir)/mkinstalldirs				\
 	$(srcdir)/omf.make				\
 	$(srcdir)/xmldocs.make				\
 	$(srcdir)/gtk-doc.make				\
 	$(srcdir)/ChangeLog				\
-	$(srcdir)/py-compile				\
 	`find "$(srcdir)" -type f -name Makefile -print` \
 	`find "$(srcdir)" -type f -name Makefile.in -print` \
 	`find "$(srcdir)" -type f -name *.pyc -print`

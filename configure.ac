@@ -1,5 +1,4 @@
-# Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
-AC_PREREQ(2.63)
+# Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [7])
@@ -7,16 +6,25 @@ m4_define([pk_micro_version], [0])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
-AC_INIT([PackageKit],[pk_version],[richard@hughsie.com],[PackageKit])
-AC_CONFIG_SRCDIR(src)
-AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-xz tar-ustar])
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_MACRO_DIR([m4])
+AC_PREREQ(2.63)
+AC_INIT([PackageKit],
+        [pk_version],
+        [richard@hughsie.com],
+        [PackageKit],
+        [http://www.packagekit.org/])
 
-GOBJECT_INTROSPECTION_CHECK([0.9.8])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([src])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
+AM_INIT_AUTOMAKE([1.11 -Wno-portability no-dist-gzip dist-xz tar-ustar])
+AM_MAINTAINER_MODE([enable])
 
 # enable nice build output on automake1.11
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+AM_SILENT_RULES([yes])
+
+GOBJECT_INTROSPECTION_CHECK([0.9.9])
 
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
@@ -57,8 +65,10 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_SEARCH_LIBS([strerror],[cposix])
 AC_HEADER_STDC
-LT_INIT
 AM_PROG_CC_C_O
+
+# Initialize libtool
+LT_INIT
 
 # Internationalisation
 IT_PROG_INTLTOOL([0.35.0])
@@ -68,7 +78,7 @@ AM_GLIB_GNU_GETTEXT
 AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],["$GETTEXT_PACKAGE"],[gettext domain])
 
 # set up gtk-doc
-GTK_DOC_CHECK(1.9)
+GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
