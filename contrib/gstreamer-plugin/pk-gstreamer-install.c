@@ -24,7 +24,6 @@
 #include <gst/pbutils/install-plugins.h>
 #include <string.h>
 #include <sys/utsname.h>
-#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/packagekit.h>
 
 typedef struct {
@@ -266,9 +265,7 @@ out:
 int
 main (int argc, gchar **argv)
 {
-	DBusGConnection *connection;
-	DBusGProxy *proxy = NULL;
-	gboolean ret;
+	GDBusProxy *proxy = NULL;
 	GOptionContext *context;
 	GError *error = NULL;
 	guint i;
@@ -280,6 +277,7 @@ main (int argc, gchar **argv)
 	gchar **resources = NULL;
 	GPtrArray *array = NULL;
 	gchar *resource;
+	GVariant *value = NULL;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -308,21 +306,20 @@ main (int argc, gchar **argv)
 	/* this is our parent window */
 	g_message ("PackageKit: xid = %i", xid);
 
-	/* get bus */
-	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
-	if (connection == NULL) {
-		g_print ("Could not connect to session DBUS: %s\n", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
 	/* get proxy */
-	proxy = dbus_g_proxy_new_for_name (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Modify");
+	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					       NULL,
+					       "org.freedesktop.PackageKit",
+					       "/org/freedesktop/PackageKit",
+					       "org.freedesktop.PackageKit.Modify",
+					       NULL,
+					       &error);
 	if (proxy == NULL) {
-		g_print ("Cannot connect to PackageKit session service\n");
+		g_warning ("Cannot connect to PackageKit session service: %s",
+			   error->message);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -373,17 +370,18 @@ main (int argc, gchar **argv)
 	/* convert to a GStrv */
 	resources = pk_ptr_array_to_strv (array);
 
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
-
 	/* invoke the method */
-	ret = dbus_g_proxy_call (proxy, "InstallGStreamerResources", &error,
-				 G_TYPE_UINT, xid,
-				 G_TYPE_STRV, resources,
-				 G_TYPE_STRING, "hide-finished",
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (!ret) {
+	value = g_dbus_proxy_call_sync (proxy,
+					"InstallGStreamerResources",
+					g_variant_new ("(u^a&ss)",
+						  xid,
+						  resources,
+						  "hide-finished"),
+					G_DBUS_CALL_FLAGS_NONE,
+					60 * 60 * 1000, /* 1 hour */
+					NULL,
+					&error);
+	if (value == NULL) {
 		/* use the error string to return a good GStreamer exit code */
 		retval = GST_INSTALL_PLUGINS_NOT_FOUND;
 		if (g_strrstr (error->message, "did not agree to search") != NULL)
@@ -399,6 +397,8 @@ main (int argc, gchar **argv)
 	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
+	if (value != NULL)
+		g_variant_unref (value);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	g_strfreev (resources);

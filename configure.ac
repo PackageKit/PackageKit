@@ -398,7 +398,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Build gstreamer plugin functionality]),
 	      enable_gstreamer_plugin=$enableval,enable_gstreamer_plugin=yes)
 if test x$enable_gstreamer_plugin = xyes; then
-	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
+	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0,
 	                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
 else
 	build_gstreamer_plugin=no
