@@ -24,7 +24,6 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "pk-main.h"
 #include "pk-plugin.h"
 
 #define PK_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PLUGIN, PkPluginPrivate))
@@ -77,7 +76,7 @@ pk_plugin_set_data (PkPlugin *plugin, const gchar *name, const gchar *value)
 	g_return_val_if_fail (value != NULL, FALSE);
 
 	g_hash_table_insert (plugin->priv->data, g_strdup (name), g_strdup (value));
-	pk_debug ("SET: name=%s, value=%s <%p>", name, value, plugin);
+	g_debug ("SET: name=%s, value=%s <%p>", name, value, plugin);
 
 	return TRUE;
 }
@@ -94,7 +93,7 @@ pk_plugin_get_data (PkPlugin *plugin, const gchar *name)
 	g_return_val_if_fail (name != NULL, NULL);
 
 	value = g_hash_table_lookup (plugin->priv->data, name);
-	pk_debug ("GET: name=%s, value=%s <%p>", name, value, plugin);
+	g_debug ("GET: name=%s, value=%s <%p>", name, value, plugin);
 
 	return value;
 }
@@ -107,11 +106,11 @@ pk_plugin_start (PkPlugin *plugin)
 {
 	PkPluginClass *klass = PK_PLUGIN_GET_CLASS (plugin);
 
-	pk_debug ("start <%p>", plugin);
+	g_debug ("start <%p>", plugin);
 
 	/* already started, don't restart */
 	if (plugin->priv->started) {
-		pk_warning ("already started <%p>", plugin);
+		g_warning ("already started <%p>", plugin);
 		return FALSE;
 	}
 
@@ -134,7 +133,7 @@ pk_plugin_draw (PkPlugin *plugin, cairo_t *cr)
 	if (klass->draw == NULL)
 		return FALSE;
 
-	pk_debug ("draw on %p <%p>", cr, plugin);
+	g_debug ("draw on %p <%p>", cr, plugin);
 
 	return klass->draw (plugin, cr);
 }
@@ -151,7 +150,7 @@ pk_plugin_button_press (PkPlugin *plugin, gint x, gint y, Time event_time)
 	if (klass->button_press == NULL)
 		return FALSE;
 
-	pk_debug ("button_press %i,%i <%p>", x, y, plugin);
+	g_debug ("button_press %i,%i <%p>", x, y, plugin);
 
 	return klass->button_press (plugin, x, y, event_time);
 }
@@ -168,7 +167,7 @@ pk_plugin_button_release (PkPlugin *plugin, gint x, gint y, Time event_time)
 	if (klass->button_release == NULL)
 		return FALSE;
 
-	pk_debug ("button_release %i,%i <%p>", x, y, plugin);
+	g_debug ("button_release %i,%i <%p>", x, y, plugin);
 
 	return klass->button_release (plugin, x, y, event_time);
 }
@@ -185,7 +184,7 @@ pk_plugin_motion (PkPlugin *plugin, gint x, gint y)
 	if (klass->motion == NULL)
 		return FALSE;
 
-	pk_debug ("motion %i,%i <%p>", x, y, plugin);
+	g_debug ("motion %i,%i <%p>", x, y, plugin);
 
 	return klass->motion (plugin, x, y);
 }
@@ -202,7 +201,7 @@ pk_plugin_enter (PkPlugin *plugin, gint x, gint y)
 	if (klass->enter == NULL)
 		return FALSE;
 
-	pk_debug ("enter %i,%i <%p>", x, y, plugin);
+	g_debug ("enter %i,%i <%p>", x, y, plugin);
 
 	return klass->enter (plugin, x, y);
 }
@@ -219,7 +218,7 @@ pk_plugin_leave (PkPlugin *plugin, gint x, gint y)
 	if (klass->leave == NULL)
 		return FALSE;
 
-	pk_debug ("leave %i,%i <%p>", x, y, plugin);
+	g_debug ("leave %i,%i <%p>", x, y, plugin);
 
 	return klass->leave (plugin, x, y);
 }
@@ -232,7 +231,7 @@ pk_plugin_request_refresh (PkPlugin *plugin)
 {
 	g_return_val_if_fail (PK_IS_PLUGIN (plugin), FALSE);
 
-	pk_debug ("emit refresh <%p>", plugin);
+	g_debug ("emit refresh <%p>", plugin);
 
 	g_signal_emit (plugin, signals [SIGNAL_REFRESH], 0);
 	return TRUE;

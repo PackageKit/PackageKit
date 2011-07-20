@@ -26,8 +26,7 @@ packagekit_plugin_la_SOURCES =			\
 	pk-plugin.h				\
 	pk-plugin-install.c			\
 	pk-plugin-install.h			\
-	pk-main.c				\
-	pk-main.h
+	pk-main.c
 
 EXTRA_DIST =					\
 	tests/test.html

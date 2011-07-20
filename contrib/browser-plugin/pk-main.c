@@ -37,7 +37,6 @@
 #define __USE_GNU
 #include <dlfcn.h>
 
-#include "pk-main.h"
 #include "pk-plugin.h"
 #include "pk-plugin-install.h"
 
@@ -52,55 +51,16 @@ static void pk_main_draw_window (PkPlugin *plugin);
 static void pk_main_event_handler (PkPlugin *plugin, XEvent *event);
 
 /**
- * pk_debug_real:
- **/
-void
-pk_debug_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
-{
-	va_list args;
-	gchar *buffer = NULL;
-
-	if (g_getenv ("PK_DEBUG") == NULL)
-		return;
-
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-
-	g_print ("FN:%s FC:%s LN:%i\n\t%s\n", file, func, line, buffer);
-
-	g_free (buffer);
-}
-
-/**
- * pk_warning_real:
- **/
-void
-pk_warning_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
-{
-	va_list args;
-	gchar *buffer = NULL;
-
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-
-	g_print ("FN:%s FC:%s LN:%i\n!!\t%s\n", file, func, line, buffer);
-
-	g_free (buffer);
-}
-
-/**
  * pk_main_refresh_cb:
  **/
 static void
 pk_main_refresh_cb (PkPlugin *plugin_, NPP instance)
 {
-	pk_debug ("pk_main_refresh_cb [%p]", instance);
+	g_debug ("pk_main_refresh_cb [%p]", instance);
 
 	/* invalid */
 	if (plugin_ == NULL) {
-		pk_warning ("NULL plugin");
+		g_warning ("NULL plugin");
 		return;
 	}
 
@@ -136,7 +96,7 @@ pk_main_newp (NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, 
 	gint i;
 	PkPlugin *plugin;
 
-	pk_debug ("new [%p]", instance);
+	g_debug ("new [%p]", instance);
 
 	/* create new content instance */
 	plugin = PK_PLUGIN (pk_plugin_install_new ());
@@ -165,7 +125,7 @@ pk_main_destroy (NPP instance, NPSavedData **save)
 {
 	PkPlugin *plugin = PK_PLUGIN (instance->pdata);
 
-	pk_debug ("pk_main_destroy [%p]", instance);
+	g_debug ("pk_main_destroy [%p]", instance);
 
 	/* free content instance */
 	g_signal_handlers_disconnect_by_func (plugin, G_CALLBACK (pk_main_refresh_cb), instance);
@@ -214,14 +174,14 @@ pk_main_create_window (PkPlugin *plugin)
 		// TODO - is it correct? Do we want to translate xdisplay -> GdkDisplay?
 		display = gdk_display_get_default ();
 		if (display == NULL) {
-			pk_debug ("invalid display returned by gdk_display_get_default ()\n");
+			g_debug ("invalid display returned by gdk_display_get_default ()\n");
 			return;
 		}
 
 		/* get parent */
 		parent = gdk_x11_window_foreign_new_for_display (display, xwindow);
 		if (parent == NULL) {
-			pk_debug ("invalid window given for setup (id %lu)\n", xwindow);
+			g_debug ("invalid window given for setup (id %lu)\n", xwindow);
 			return;
 		}
 
@@ -288,7 +248,7 @@ pk_main_draw_window (PkPlugin *plugin)
 	g_object_get (plugin, "gdk-window", &gdk_window, NULL);
 
 	if (gdk_window == NULL) {
-		pk_debug ("gdk_window is NULL!");
+		g_debug ("gdk_window is NULL!");
 		return;
 	}
 
@@ -307,7 +267,7 @@ pk_main_event_handler (PkPlugin *plugin, XEvent *event)
 	XMotionEvent *xme;
 	XCrossingEvent *xce;
 
-	pk_debug ("pk_main_handle_event [%p]", plugin);
+	g_debug ("pk_main_handle_event [%p]", plugin);
 
 	/* find plugin */
 	if (plugin == NULL)
@@ -320,7 +280,7 @@ pk_main_event_handler (PkPlugin *plugin, XEvent *event)
 		Display *display;
 		Window  window;
 
-		pk_debug ("Expose [%p]", plugin);
+		g_debug ("Expose [%p]", plugin);
 
 		/* get parameters */
 		g_object_get (plugin, "display", &display, "window", &window, NULL);
@@ -365,7 +325,7 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 	NPSetWindowCallbackStruct *ws_info;
 	Window window;
 
-	pk_debug ("pk_main_set_window [%p]", instance);
+	g_debug ("pk_main_set_window [%p]", instance);
 
 	/* find plugin */
 	plugin = PK_PLUGIN (instance->pdata);
@@ -379,7 +339,7 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 	}
 
 	/* type */
-	pk_debug ("type=%i (NPWindowTypeWindow=%i, NPWindowTypeDrawable=%i)",
+	g_debug ("type=%i (NPWindowTypeWindow=%i, NPWindowTypeDrawable=%i)",
 		  pNPWindow->type, NPWindowTypeWindow, NPWindowTypeDrawable);
 
 	g_object_get (plugin,
@@ -393,20 +353,20 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 	 * id.
 	 */
 	if ((Window) (pNPWindow->window) == window) {
-		pk_debug ("resize event will come");
+		g_debug ("resize event will come");
 		goto out;
 	}
 
 	/* do we have a callback struct (WebKit doesn't send this) */
 	ws_info = (NPSetWindowCallbackStruct *) pNPWindow->ws_info;
 	if (ws_info == NULL) {
-		pk_debug ("no callback struct");
+		g_debug ("no callback struct");
 		goto out;
 	}
 
 	/* no visual yet */
 	if (ws_info->visual == NULL) {
-		pk_debug ("no visual, so skipping");
+		g_debug ("no visual, so skipping");
 		goto out;
 	}
 
@@ -421,7 +381,7 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 		      "window", pNPWindow->window,
 		      NULL);
 
-	pk_debug ("x=%i, y=%i, width=%i, height=%i, display=%p, visual=%p, window=%ld",
+	g_debug ("x=%i, y=%i, width=%i, height=%i, display=%p, visual=%p, window=%ld",
 		 pNPWindow->x, pNPWindow->y, pNPWindow->width, pNPWindow->height,
 		 ws_info->display, ws_info->visual, (Window)pNPWindow->window);
 
@@ -433,7 +393,7 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 		/* start plugin */
 		ret = pk_plugin_start (plugin);
 		if (!ret)
-			pk_warning ("failed to start plugin");
+			g_warning ("failed to start plugin");
 	}
 
 	/* Set-up drawing window */
@@ -484,7 +444,7 @@ NPError NP_GetEntryPoints (NPPluginFuncs *nppfuncs);
 NPError
 NP_GetEntryPoints (NPPluginFuncs *nppfuncs)
 {
-	pk_debug ("NP_GetEntryPoints");
+	g_debug ("NP_GetEntryPoints");
 
 	nppfuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
 	nppfuncs->newp = pk_main_newp;
@@ -501,7 +461,7 @@ NP_GetEntryPoints (NPPluginFuncs *nppfuncs)
 NPError
 NP_Initialize (NPNetscapeFuncs *npnf, NPPluginFuncs *nppfuncs)
 {
-	pk_debug ("NP_Initialize");
+	g_debug ("NP_Initialize");
 
 	if (npnf == NULL)
 		return NPERR_INVALID_FUNCTABLE_ERROR;
@@ -532,7 +492,7 @@ NP_Initialize (NPNetscapeFuncs *npnf, NPPluginFuncs *nppfuncs)
 NPError
 NP_Shutdown ()
 {
-	pk_debug ("NP_Shutdown");
+	g_debug ("NP_Shutdown");
 	return NPERR_NO_ERROR;
 }
 
@@ -542,8 +502,7 @@ NP_Shutdown ()
 char *
 NP_GetMIMEDescription (void)
 {
-	pk_debug ("NP_GetMIMEDescription");
-
+	g_debug ("NP_GetMIMEDescription");
 	return (gchar*) "application/x-packagekit-plugin:bsc:PackageKit Plugin";
 }
 

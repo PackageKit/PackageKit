@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2011 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2008 Red Hat, Inc.
  *
  * Licensed under the GNU General Public License Version 2
@@ -29,13 +29,11 @@
 #include <glib/gi18n-lib.h>
 #include <gio/gdesktopappinfo.h>
 #include <pango/pangocairo.h>
-#include <dbus/dbus-glib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <math.h>
 #include <packagekit-glib2/packagekit.h>
 
-#include "pk-main.h"
 #include "pk-plugin-install.h"
 
 //#define PK_PLUGIN_INSTALL_USE_DESKTOP_FOR_INSTALLED
@@ -63,8 +61,8 @@ struct PkPluginInstallPrivate
 	gchar			**package_names;
 	PangoLayout		*pango_layout;
 	PkClient		*client;
-	DBusGProxy		*install_package_proxy;
-	DBusGProxyCall		*install_package_call;
+	GDBusProxy		*session_pk_proxy;
+	GCancellable		*cancellable;
 	gint			timeout;
 	gint			current;
 	gint			update_spinner;
@@ -78,7 +76,7 @@ G_DEFINE_TYPE (PkPluginInstall, pk_plugin_install, PK_TYPE_PLUGIN)
 static void
 pk_plugin_install_clear_layout (PkPluginInstall *self)
 {
-	pk_debug ("clearing layout");
+	g_debug ("clearing layout");
 
 	if (self->priv->pango_layout) {
 		g_object_unref (self->priv->pango_layout);
@@ -120,7 +118,7 @@ static void
 pk_plugin_install_set_status (PkPluginInstall *self, PkPluginInstallPackageStatus status)
 {
 	if (self->priv->status != status) {
-		pk_debug ("setting status %u", status);
+		g_debug ("setting status %u", status);
 		self->priv->status = status;
 
 		if (status == INSTALLING) {
@@ -141,7 +139,7 @@ pk_plugin_install_set_status (PkPluginInstall *self, PkPluginInstallPackageStatu
 static void
 pk_plugin_install_set_available_version (PkPluginInstall *self, const gchar *version)
 {
-	pk_debug ("setting available version: %s", version);
+	g_debug ("setting available version: %s", version);
 
 	g_free (self->priv->available_version);
 	self->priv->available_version = g_strdup (version);
@@ -153,7 +151,7 @@ pk_plugin_install_set_available_version (PkPluginInstall *self, const gchar *ver
 static void
 pk_plugin_install_set_available_package_name (PkPluginInstall *self, const gchar *name)
 {
-	pk_debug ("setting available package name: %s", name);
+	g_debug ("setting available package name: %s", name);
 
 	g_free (self->priv->available_package_name);
 	self->priv->available_package_name = g_strdup (name);
@@ -165,7 +163,7 @@ pk_plugin_install_set_available_package_name (PkPluginInstall *self, const gchar
 static void
 pk_plugin_install_set_installed_package_name (PkPluginInstall *self, const gchar *name)
 {
-	pk_debug ("setting installed package name: %s", name);
+	g_debug ("setting installed package name: %s", name);
 
 	g_free (self->priv->installed_package_name);
 	self->priv->installed_package_name = g_strdup (name);
@@ -177,7 +175,7 @@ pk_plugin_install_set_installed_package_name (PkPluginInstall *self, const gchar
 static void
 pk_plugin_install_set_installed_version (PkPluginInstall *self, const gchar *version)
 {
-	pk_debug ("setting installed version: %s", version);
+	g_debug ("setting installed version: %s", version);
 
 	g_free (self->priv->installed_version);
 	self->priv->installed_version = g_strdup (version);
@@ -201,7 +199,7 @@ pk_plugin_install_get_best_desktop_file (PkPluginInstall *self)
 	desktop = pk_desktop_new ();
 	ret = pk_desktop_open_database (desktop, &error);
 	if (!ret) {
-		pk_warning ("failed to open database: %s", error->message);
+		g_warning ("failed to open database: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -209,17 +207,17 @@ pk_plugin_install_get_best_desktop_file (PkPluginInstall *self)
 	/* get files */
 	package = self->priv->installed_package_name;
 	if (package == NULL) {
-		pk_warning ("installed_package_name NULL so cannot get desktop file");
+		g_warning ("installed_package_name NULL so cannot get desktop file");
 		goto out;
 	}
 	array = pk_desktop_get_shown_for_package (desktop, package, &error);
 	if (array == NULL) {
-		pk_debug ("no data: %s", error->message);
+		g_debug ("no data: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 	if (array->len == 0) {
-		pk_debug ("no matches for %s", package);
+		g_debug ("no matches for %s", package);
 		goto out;
 	}
 
@@ -264,7 +262,9 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		g_warning ("failed to install: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_warning ("failed to install: %s, %s",
+			   pk_error_enum_to_string (pk_error_get_code (error_code)),
+			   pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -449,7 +449,10 @@ pk_plugin_install_set_source_from_rgba (cairo_t *cr, guint32 rgba)
  * the window.
  **/
 static void
-pk_plugin_install_get_style (PangoFontDescription **font_desc, guint32 *foreground, guint32 *background, guint32 *linked)
+pk_plugin_install_get_style (PangoFontDescription **font_desc,
+			     guint32 *foreground,
+			     guint32 *background,
+			     guint32 *linked)
 {
 	GtkWidget *window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	GtkStyle *style;
@@ -478,7 +481,10 @@ pk_plugin_install_get_style (PangoFontDescription **font_desc, guint32 *foregrou
  * pk_plugin_install_ensure_layout:
  **/
 static void
-pk_plugin_install_ensure_layout (PkPluginInstall *self, cairo_t *cr, PangoFontDescription *font_desc, guint32 link_color)
+pk_plugin_install_ensure_layout (PkPluginInstall *self,
+				 cairo_t *cr,
+				 PangoFontDescription *font_desc,
+				 guint32 link_color)
 {
 	GString *markup = g_string_new (NULL);
 
@@ -566,7 +572,7 @@ pk_plugin_install_get_package_icon (PkPluginInstall *self)
 
 	/* do we have data? */
 	if (self->priv->installed_package_name == NULL) {
-		pk_debug ("installed_package_name NULL, so cannot get icon");
+		g_debug ("installed_package_name NULL, so cannot get icon");
 		goto out;
 	}
 
@@ -574,12 +580,12 @@ pk_plugin_install_get_package_icon (PkPluginInstall *self)
 	file = g_key_file_new ();
 	filename = pk_plugin_install_get_best_desktop_file (self);
 	if (filename == NULL) {
-		pk_debug ("no desktop file");
+		g_debug ("no desktop file");
 		goto out;
 	}
 	ret = g_key_file_load_from_file (file, filename, G_KEY_FILE_NONE, NULL);
 	if (!ret) {
-		pk_warning ("failed to open %s", filename);
+		g_warning ("failed to open %s", filename);
 		goto out;
 	}
 	data = g_key_file_get_string (file, G_KEY_FILE_DESKTOP_GROUP, G_KEY_FILE_DESKTOP_KEY_ICON, NULL);
@@ -722,7 +728,7 @@ pk_plugin_install_draw (PkPlugin *plugin, cairo_t *cr)
 
 	sep = MAX ((height - 48) / 2, radius);
 
-	pk_debug ("drawing on %ux%u (%ux%u)", x, y, width, height);
+	g_debug ("drawing on %ux%u (%ux%u)", x, y, width, height);
 
 	/* get properties */
 	pk_plugin_install_get_style (&font_desc, &foreground, &background, &linked);
@@ -814,7 +820,7 @@ pk_plugin_install_line_is_terminated (PangoLayoutIter *iter)
 	GSList *lines = pango_layout_get_lines (pango_layout_iter_get_layout (iter));
 	GSList *found = g_slist_find (lines, line);
 	if (!found) {
-		pk_warning ("Can't find line in layout line list");
+		g_warning ("Can't find line in layout line list");
 		return FALSE;
 	}
 
@@ -922,20 +928,24 @@ pk_plugin_install_get_link_index (PkPluginInstall *self, gint x, gint y)
  * pk_plugin_install_method_finished_cb:
  **/
 static void
-pk_plugin_install_method_finished_cb (DBusGProxy *proxy, DBusGProxyCall *call, void *user_data)
+pk_plugin_install_method_finished_cb (GObject *source_object,
+				      GAsyncResult *res,
+				      gpointer user_data)
 {
-	PkPluginInstall *self = (PkPluginInstall *)user_data;
+	PkPluginInstall *self = PK_PLUGIN_INSTALL (user_data);
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	GError *error = NULL;
+	GVariant *value;
 
-	if (!dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID)) {
-		pk_warning ("Error occurred during install: %s", error->message);
-		g_clear_error (&error);
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
+		g_warning ("Error occurred during install: %s", error->message);
+		g_error_free (error);
+		goto out;
 	}
-
-	g_object_unref (self->priv->install_package_proxy);
-	self->priv->install_package_proxy = NULL;
-	self->priv->install_package_call = NULL;
-
+out:
+	if (value != NULL)
+		g_variant_unref (value);
 	pk_plugin_install_recheck (self);
 }
 
@@ -949,24 +959,11 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 	GdkWindow *window;
 	guint xid = 0;
 	gchar **packages;
-	DBusGConnection *connection;
 
 	if (self->priv->available_package_name == NULL) {
-		pk_warning ("No available package to install");
+		g_warning ("No available package to install");
 		return;
 	}
-
-	if (self->priv->install_package_call != 0) {
-		pk_warning ("Already installing package");
-		return;
-	}
-
-	/* TODO: needs to be on Modify interface */
-	connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
-	self->priv->install_package_proxy = dbus_g_proxy_new_for_name (connection,
-							 "org.freedesktop.PackageKit",
-							 "/org/freedesktop/PackageKit",
-							 "org.freedesktop.PackageKit.Modify");
 
 	/* will be NULL when activated not using a keyboard or a mouse */
 	event = gtk_get_current_event ();
@@ -976,18 +973,20 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 	}
 
 	packages = g_strsplit (self->priv->available_package_name, ";", -1);
-	self->priv->install_package_call =
-		dbus_g_proxy_begin_call_with_timeout (self->priv->install_package_proxy,
-						      "InstallPackageNames",
-						      pk_plugin_install_method_finished_cb,
-						      self,
-						      (GDestroyNotify) 0,
-						      24 * 60 * 1000 * 1000, /* one day */
-						      G_TYPE_UINT, xid, /* xid */
-						      G_TYPE_STRV, packages,
-						      G_TYPE_STRING, "hide-confirm-search,hide-progress,hide-confirm-deps,hide-finished",
-						      G_TYPE_INVALID,
-						      G_TYPE_INVALID);
+	g_dbus_proxy_call (self->priv->session_pk_proxy,
+			   "InstallPackageNames",
+			   g_variant_new ("(u^a&ss)",
+					  xid,
+					  packages,
+					  "hide-confirm-search,"
+					  "hide-progress,"
+					  "hide-confirm-deps,"
+					  "hide-finished"),
+			   G_DBUS_CALL_FLAGS_NONE,
+			   60 * 60 * 1000, /* 1 hour */
+			   self->priv->cancellable,
+			   pk_plugin_install_method_finished_cb,
+			   self);
 	g_strfreev (packages);
 
 	pk_plugin_install_set_status (self, INSTALLING);
@@ -1022,7 +1021,7 @@ pk_plugin_install_run_application (PkPluginInstall *self, Time event_time)
 	GdkAppLaunchContext *context;
 
 	if (self->priv->app_info == 0) {
-		pk_warning ("Didn't find application to launch");
+		g_warning ("Didn't find application to launch");
 		return;
 	}
 
@@ -1032,7 +1031,7 @@ pk_plugin_install_run_application (PkPluginInstall *self, Time event_time)
 	context = gdk_app_launch_context_new ();
 	gdk_app_launch_context_set_timestamp (context, event_time);
 	if (!g_app_info_launch (self->priv->app_info, NULL, G_APP_LAUNCH_CONTEXT (context), &error)) {
-		pk_warning ("%s\n", error->message);
+		g_warning ("%s\n", error->message);
 		g_clear_error (&error);
 		return;
 	}
@@ -1136,10 +1135,8 @@ pk_plugin_install_finalize (GObject *object)
 	if (self->priv->app_info != NULL)
 		g_object_unref (self->priv->app_info);
 
-	if (self->priv->install_package_call != NULL) {
-		dbus_g_proxy_cancel_call (self->priv->install_package_proxy, self->priv->install_package_call);
-		g_object_unref (self->priv->install_package_proxy);
-	}
+	g_cancellable_cancel (self->priv->cancellable);
+	g_object_unref (self->priv->session_pk_proxy);
 
 	/* remove clients */
 	g_object_unref (self->priv->client);
@@ -1171,20 +1168,28 @@ pk_plugin_install_class_init (PkPluginInstallClass *klass)
 static void
 pk_plugin_install_init (PkPluginInstall *self)
 {
-	self->priv = PK_PLUGIN_INSTALL_GET_PRIVATE (self);
+	GError *error = NULL;
 
+	self->priv = PK_PLUGIN_INSTALL_GET_PRIVATE (self);
 	self->priv->status = IN_PROGRESS;
-	self->priv->available_version = NULL;
-	self->priv->available_package_name = NULL;
-	self->priv->installed_version = NULL;
-	self->priv->installed_package_name = NULL;
-	self->priv->app_info = NULL;
-	self->priv->display_name = NULL;
-	self->priv->package_names = NULL;
-	self->priv->pango_layout = NULL;
-	self->priv->install_package_proxy = NULL;
-	self->priv->install_package_call = NULL;
 	self->priv->client = pk_client_new ();
+
+	/* connect early to allow the service to start */
+	self->priv->session_pk_proxy =
+		g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					       NULL,
+					       "org.freedesktop.PackageKit",
+					       "/org/freedesktop/PackageKit",
+					       "org.freedesktop.PackageKit.Modify",
+					       self->priv->cancellable,
+					       &error);
+	if (self->priv->session_pk_proxy == NULL) {
+		g_warning ("Error connecting to PK session instance: %s",
+			   error->message);
+		g_error_free (error);
+	}
 }
 
 /**
@@ -1198,32 +1203,3 @@ pk_plugin_install_new (void)
 	self = g_object_new (PK_TYPE_PLUGIN_INSTALL, NULL);
 	return PK_PLUGIN_INSTALL (self);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_plugin_install (EggTest *test)
-{
-	PkPluginInstall *self;
-
-	if (!egg_test_start (test, "PkPluginInstall"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	self = pk_plugin_install_new ();
-	if (self != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	g_object_unref (self);
-
-	egg_test_end (test);
-}
-#endif
-
