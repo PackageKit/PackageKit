@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1723,15 +1723,11 @@ pk_engine_init (PkEngine *engine)
 
 #ifdef USE_SECURITY_POLKIT
 	/* protect the session SetProxy with a PolicyKit action */
-#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	engine->priv->authority = polkit_authority_get_sync (NULL, &error);
 	if (engine->priv->authority == NULL) {
 		g_error ("failed to get pokit authority: %s", error->message);
 		g_error_free (error);
 	}
-#else
-	engine->priv->authority = polkit_authority_get ();
-#endif
 #endif
 
 	/* set the default proxy */

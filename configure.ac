@@ -149,7 +149,7 @@ GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
 NETWORK_MANAGER_REQUIRED=0.6.4
-POLKIT_GOBJECT_REQUIRED=0.92
+POLKIT_GOBJECT_REQUIRED=0.98
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTSQL_REQUIRED=4.4.0
@@ -542,28 +542,9 @@ AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default secu
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
-	# polkit >= 0.97 uses polkit_authority_get_sync() rather than
-	# polkit_authority_get
 	PKG_CHECK_MODULES(POLKIT, \
 			  polkit-backend-1 \
-			  polkit-gobject-1 >= 0.97,
-			  has_new_polkit=yes,
-			  has_new_polkit=no)
-	if test x$has_new_polkit = xno; then
-		PKG_CHECK_MODULES(POLKIT, \
-				  polkit-backend-1 \
-				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
-	else
-		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use the new PolicyKit API])
-		save_CFLAGS="$CFLAGS"
-		save_LIBS="$LIBS"
-		CFLAGS="$CFLAGS $POLKIT_CFLAGS"
-		LIBS="$LIBS $POLKIT_LIBS"
-		# check for symbol, if using a pre-release polkit 0.97
-		AC_CHECK_FUNCS(polkit_authority_get_sync)
-		CFLAGS="$save_CFLAGS"
-		LIBS="$save_LIBS"
-	fi
+			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])

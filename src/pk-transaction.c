@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -5770,15 +5770,11 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
 #ifdef USE_SECURITY_POLKIT
-#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
 	if (transaction->priv->authority == NULL) {
 		g_error ("failed to get pokit authority: %s", error->message);
 		g_error_free (error);
 	}
-#else
-	transaction->priv->authority = polkit_authority_get ();
-#endif
 	transaction->priv->cancellable = g_cancellable_new ();
 #endif
 
