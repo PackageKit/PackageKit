@@ -12,7 +12,6 @@ PK_GLIB2_LIBS =						\
 INCLUDES =						\
 	$(GIO_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
-	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
@@ -119,7 +118,6 @@ packagekitd_LDADD =					\
 	$(GMODULE_LIBS)					\
 	$(NETWORK_MANAGER_LIBS)				\
 	$(CONNMAN_LIBS)					\
-	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(PYTHON_LIBS)					\
@@ -163,7 +161,6 @@ pk_self_test_SOURCES =					\
 pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
-	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(NETWORK_MANAGER_LIBS)				\
 	$(CONNMAN_LIBS)					\

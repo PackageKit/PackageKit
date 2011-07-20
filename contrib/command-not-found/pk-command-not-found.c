@@ -28,7 +28,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
@@ -689,7 +688,6 @@ main (int argc, char *argv[])
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	dbus_g_thread_init ();
 	g_type_init ();
 
 	/* don't show debugging, unless VERBOSE is specified */

@@ -18,7 +18,6 @@ endif
 
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
-	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DPK_COMPILATION				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
@@ -39,7 +38,6 @@ pk_debuginfo_install_SOURCES =				\
 
 pk_debuginfo_install_LDADD =				\
 	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
