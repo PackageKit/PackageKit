@@ -49,7 +49,6 @@
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-inhibit.h"
 #include "pk-marshal.h"
 #include "pk-network.h"
 #include "pk-notify.h"
@@ -74,7 +73,6 @@ struct PkEnginePrivate
 	PkTransactionDb		*transaction_db;
 	PkCache			*cache;
 	PkBackend		*backend;
-	PkInhibit		*inhibit;
 	PkNetwork		*network;
 	PkNotify		*notify;
 	PkConf			*conf;
@@ -204,6 +202,7 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	g_strfreev (transaction_list);
 }
 
+#if 0
 /**
  * pk_engine_inhibit_locked_cb:
  **/
@@ -222,6 +221,7 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 	g_debug ("emitting changed");
 	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
+#endif
 
 /**
  * pk_engine_notify_repo_list_changed_cb:
@@ -1812,11 +1812,6 @@ pk_engine_init (PkEngine *engine)
 	pk_transaction_list_set_plugins (engine->priv->transaction_list,
 					 engine->priv->plugins);
 
-
-	engine->priv->inhibit = pk_inhibit_new ();
-	g_signal_connect (engine->priv->inhibit, "locked",
-			  G_CALLBACK (pk_engine_inhibit_locked_cb), engine);
-
 	/* we use a trasaction db to store old transactions and to do rollbacks */
 	engine->priv->transaction_db = pk_transaction_db_new ();
 
@@ -1865,7 +1860,6 @@ pk_engine_finalize (GObject *object)
 	g_timer_destroy (engine->priv->timer);
 	g_object_unref (engine->priv->monitor_conf);
 	g_object_unref (engine->priv->monitor_binary);
-	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);

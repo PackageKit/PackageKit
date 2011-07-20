@@ -56,7 +56,6 @@
 #include "pk-cache.h"
 #include "pk-conf.h"
 #include "pk-dbus.h"
-#include "pk-inhibit.h"
 #include "pk-marshal.h"
 #include "pk-notify.h"
 #include "pk-plugin.h"
@@ -104,7 +103,6 @@ struct PkTransactionPrivate
 	guint			 uid;
 	guint			 watch_id;
 	PkBackend		*backend;
-	PkInhibit		*inhibit;
 	PkCache			*cache;
 	PkConf			*conf;
 	PkNotify		*notify;
@@ -402,11 +400,7 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 
 	transaction->priv->allow_cancel = allow_cancel;
 
-	/* remove or add the hal inhibit */
-	if (allow_cancel)
-		pk_inhibit_remove (transaction->priv->inhibit, transaction);
-	else
-		pk_inhibit_add (transaction->priv->inhibit, transaction);
+	/* TODO: have master property on main interface */
 
 	/* emit */
 	g_debug ("emitting changed");
@@ -1068,7 +1062,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time_ms);
 
 	/* remove any inhibit */
-	pk_inhibit_remove (transaction->priv->inhibit, transaction);
+	//TODO: on main interface
 
 	/* report to syslog */
 	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID)
@@ -5773,7 +5767,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
-	transaction->priv->inhibit = pk_inhibit_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->syslog = pk_syslog_new ();
 	transaction->priv->dbus = pk_dbus_new ();
@@ -5811,9 +5804,6 @@ pk_transaction_dispose (GObject *object)
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);
-
-	/* remove any inhibit, it's okay to call this function when it's not needed */
-	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* were we waiting for the client to authorise */
 	if (transaction->priv->waiting_for_auth) {
@@ -5869,7 +5859,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);
 	g_object_unref (transaction->priv->cache);
-	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);

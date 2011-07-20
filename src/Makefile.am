@@ -88,8 +88,6 @@ shared_SOURCES =					\
 	pk-sysdep.c					\
 	pk-engine.h					\
 	pk-engine.c					\
-	pk-inhibit.h					\
-	pk-inhibit.c					\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
 	pk-transaction-db.h				\
