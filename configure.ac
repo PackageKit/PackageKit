@@ -408,7 +408,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Build gstreamer plugin functionality]),
 	      enable_gstreamer_plugin=$enableval,enable_gstreamer_plugin=yes)
 if test x$enable_gstreamer_plugin = xyes; then
-	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0,
+	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 gio-2.0,
 	                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
 else
 	build_gstreamer_plugin=no
@@ -421,7 +421,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK+-3 module functionality]),
 	      enable_gtk_module=$enableval,enable_gtk_module=yes)
 if test x$enable_gtk_module = xyes; then
-	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-3.0 >= 3.0.0 pangoft2 fontconfig,
+	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-3.0 >= 3.0.0 pangoft2 fontconfig gio-2.0,
 	                  build_gtk_module=yes, build_gtk_module=no)
 else
 	build_gtk_module=no
