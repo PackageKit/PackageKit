@@ -156,8 +156,6 @@ dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.26.0
 GIO_REQUIRED=2.16.1
-DBUS_REQUIRED=1.1.1
-DBUS_GLIB_REQUIRED=0.74
 NETWORK_MANAGER_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.98
 QTCORE_REQUIRED=4.4.0
@@ -171,10 +169,6 @@ dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED gobject-2.0)
 PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
 PKG_CHECK_MODULES(SQLITE, sqlite3)
-PKG_CHECK_MODULES(DBUS, \
- dbus-glib-1 >= $DBUS_GLIB_REQUIRED \
- dbus-1 >= $DBUS_REQUIRED \
- gthread-2.0)
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
