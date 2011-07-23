@@ -352,7 +352,7 @@ zypp_get_packages_by_name (PkBackend *backend,
 			   vector<sat::Solvable> &result,
 			   gboolean include_local)
 {
-	ResPool pool = zypp_build_pool (backend, include_local);
+	ResPool pool(ResPool::instance());
 
         for (ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
                         it != pool.byIdentEnd (kind, package_name); it++) {
