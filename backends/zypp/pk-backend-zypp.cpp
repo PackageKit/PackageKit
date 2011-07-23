@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
+#include <pk-shared.h>
 #include <unistd.h>
 #include <string>
 #include <set>
@@ -2179,13 +2180,13 @@ pk_backend_transaction_start (PkBackend *backend)
 	gchar *pac;
 
 	locale = pk_backend_get_locale(backend);
-	if (!egg_strzero (locale)) {
+	if (!pk_strzero (locale)) {
 		setlocale(LC_ALL, locale);
 	}
 
 	/* http_proxy */
 	proxy_http = pk_backend_get_proxy_http (backend);
-	if (!egg_strzero (proxy_http)) {
+	if (!pk_strzero (proxy_http)) {
 		uri = pk_backend_spawn_convert_uri (proxy_http);
 		g_setenv ("http_proxy", uri, TRUE);
 		g_free (uri);
@@ -2193,7 +2194,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* https_proxy */
 	proxy_https = pk_backend_get_proxy_https (backend);
-	if (!egg_strzero (proxy_https)) {
+	if (!pk_strzero (proxy_https)) {
 		uri = pk_backend_spawn_convert_uri (proxy_https);
 		g_setenv ("https_proxy", uri, TRUE);
 		g_free (uri);
@@ -2201,7 +2202,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* ftp_proxy */
 	proxy_ftp = pk_backend_get_proxy_ftp (backend);
-	if (!egg_strzero (proxy_ftp)) {
+	if (!pk_strzero (proxy_ftp)) {
 		uri = pk_backend_spawn_convert_uri (proxy_ftp);
 		g_setenv ("ftp_proxy", uri, TRUE);
 		g_free (uri);
@@ -2209,7 +2210,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* socks_proxy */
 	proxy_socks = pk_backend_get_proxy_socks (backend);
-	if (!egg_strzero (proxy_socks)) {
+	if (!pk_strzero (proxy_socks)) {
 		uri = pk_backend_spawn_convert_uri (proxy_socks);
 		g_setenv ("socks_proxy", uri, TRUE);
 		g_free (uri);
@@ -2217,13 +2218,13 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* no_proxy */
 	no_proxy = pk_backend_get_no_proxy (backend);
-	if (!egg_strzero (no_proxy)) {
+	if (!pk_strzero (no_proxy)) {
 		g_setenv ("no_proxy", no_proxy, TRUE);
 	}
 
 	/* pac */
 	pac = pk_backend_get_pac (backend);
-	if (!egg_strzero (pac)) {
+	if (!pk_strzero (pac)) {
 		uri = pk_backend_spawn_convert_uri (pac);
 		g_setenv ("pac", uri, TRUE);
 		g_free (uri);
