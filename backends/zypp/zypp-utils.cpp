@@ -213,10 +213,8 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 
 	// Add resolvables from enabled repos
 	RepoManager manager;
-	list<RepoInfo> repos;
 	try {
-		repos = list<RepoInfo>(manager.repoBegin(),manager.repoEnd());
-		for (list<RepoInfo>::iterator it = repos.begin(); it != repos.end (); it++) {
+		for (RepoManager::RepoConstIterator it = manager.repoBegin(); it != manager.repoEnd(); it++) {
 			RepoInfo repo (*it);
 
 			// skip disabled repos
