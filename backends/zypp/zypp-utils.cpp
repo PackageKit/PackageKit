@@ -59,6 +59,7 @@
 #define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
 #include <packagekit-glib2/packagekit.h>
 
+#include "pk-backend-zypp-private.h"
 #include "zypp-utils.h"
 
 gchar * _repoName;
@@ -67,6 +68,8 @@ gboolean _updating_self = FALSE;
 using namespace std;
 using namespace zypp;
 using zypp::filesystem::PathInfo;
+
+extern PkBackendZYppPrivate *priv;
 
 /**
  * Initialize Zypp (Factory method)
@@ -487,7 +490,7 @@ zypp_signature_required (PkBackend *backend, const PublicKey &key)
 {
 	gboolean ok = FALSE;
 
-	if (find (_signatures[backend]->begin (), _signatures[backend]->end (), key.id ()) == _signatures[backend]->end ()) {
+	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), key.id ()) == priv->signatures[backend]->end ()) {
 		RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -517,7 +520,7 @@ zypp_signature_required (PkBackend *backend, const string &file, const string &i
 {
         gboolean ok = FALSE;
 
-	if (find (_signatures[backend]->begin (), _signatures[backend]->end (), id) == _signatures[backend]->end ()) {
+	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), id) == priv->signatures[backend]->end ()) {
 		RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -547,7 +550,7 @@ zypp_signature_required (PkBackend *backend, const string &file)
 {
 	gboolean ok = FALSE;
 
-	if (find (_signatures[backend]->begin (), _signatures[backend]->end (), file) == _signatures[backend]->end ()) {
+	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), file) == priv->signatures[backend]->end ()) {
         	RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,

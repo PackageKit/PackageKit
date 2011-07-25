@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <string>
 #include <set>
+#include <map>
+#include <list>
 #include <glib/gi18n.h>
 #include <sys/vfs.h>
 
@@ -61,11 +63,15 @@
 
 #include <zypp/sat/Solvable.h>
 
-#include <map>
-#include <list>
+#include "pk-backend-zypp-private.h"
 
 #include "zypp-utils.h"
 #include "zypp-events.h"
+
+using namespace std;
+using namespace zypp;
+
+PkBackendZYppPrivate *priv = 0L;
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -73,17 +79,6 @@ enum PkgSearchType {
 	SEARCH_TYPE_FILE = 2,
 	SEARCH_TYPE_RESOLVE = 3
 };
-
-using namespace std;
-using namespace zypp;
-
-/**
- * A map to keep track of the EventDirector objects for
- * each zypp backend that is created.
- */
-static map<PkBackend *, EventDirector *> _eventDirectors;
-
-map<PkBackend *, vector<string> *> _signatures;
 
 // helper function to restore the pool status
 // after doing operations on it
@@ -129,14 +124,15 @@ pk_backend_get_author (PkBackend *backend)
 void
 pk_backend_initialize (PkBackend *backend)
 {
+	/* create private area */
+	priv = new PkBackendZYppPrivate;
 	zypp_logging ();
-//	disabled get_zypp() - too slow for a dbus timeout after zypper clean -a
 	g_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
-	_eventDirectors [backend] = eventDirector;
-	vector<string> *signature = new vector<string> ();
-	_signatures [backend] = signature;
-	_updating_self = FALSE;
+	priv->eventDirectors[backend] = eventDirector;
+	vector<string> *signature = new vector<string>();
+	priv->signatures[backend] = signature;
+	//_updating_self = FALSE;
 }
 
 /**
@@ -148,13 +144,12 @@ pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("zypp_backend_destroy");
 
-	delete (_eventDirectors [backend]);
-	_eventDirectors.erase (backend);
-
-	delete (_signatures[backend]);
-	_signatures.erase (backend);
-
+	delete priv->eventDirectors [backend];
+	priv->eventDirectors.erase(backend);
+	delete priv->signatures[backend];
+	priv->signatures.erase(backend);
 	g_free (_repoName);
+	delete priv;
 }
 
 /**
@@ -1202,7 +1197,7 @@ backend_install_signature_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_SIG_CHECK);
 	const gchar *key_id = pk_backend_get_string (backend, "key_id");
 	const gchar *package_id = pk_backend_get_string (backend, "package_id");
-	_signatures[backend]->push_back ((string)(key_id));
+	priv->signatures[backend]->push_back ((string)(key_id));
 
 	pk_backend_finished (backend);
 	return TRUE;
