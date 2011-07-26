@@ -195,8 +195,11 @@ zypp_is_valid_repo (PkBackend *backend, RepoInfo repo)
 ResPool
 zypp_build_pool (PkBackend *backend, gboolean include_local)
 {
+	static gboolean repos_loaded = FALSE;
+
 	ZYpp::Ptr zypp = get_zypp (backend);
 
+	// the target is loaded or unloaded on request
 	if (include_local) {
 		// FIXME have to wait for fix in zypp (repeated loading of target)
 		if (sat::Pool::instance().reposFind( sat::Pool::systemRepoAlias() ).solvablesEmpty ())
@@ -213,6 +216,10 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 			repository.eraseFromPool ();
 		}
 	}
+
+	// we only load repositories once.
+	if (repos_loaded)
+		return zypp->pool();
 
 	// Add resolvables from enabled repos
 	RepoManager manager;
@@ -231,7 +238,9 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
                         //FIXME see above, skip already cached repos
                         if (sat::Pool::instance().reposFind( repo.alias ()) == Repository::noRepository)
                                 manager.loadFromCache (repo);
+
 		}
+		repos_loaded = true;
 	} catch (const repo::RepoNoAliasException &ex) {
                 g_error ("Can't figure an alias to look in cache");
         } catch (const repo::RepoNotCachedException &ex) {
