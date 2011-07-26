@@ -181,13 +181,12 @@ backend_get_requires_thread (PkBackend *backend)
 	//pk_backend_set_percentage (backend, 0);
 
 	PoolStatusSaver saver;
+	ResPool pool = zypp_build_pool (backend, true);
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		PoolItem package;
 
 		if (solvable.isSystem ()) {
-			ResPool pool = zypp_build_pool (backend, true);
-
 			gboolean found = FALSE;
 			gchar **id_parts = pk_package_id_split (package_ids[i]);
 
