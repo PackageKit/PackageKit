@@ -412,65 +412,6 @@ out:
 }
 
 /**
- * pk_backend_filter_package_array_newest:
- *
- * This function needs to scale well, and be fast to process 50,000
- * packages in less than one second. If it looks overcomplicated, it's
- * because it needs to be O(n) not O(n*n).
- **/
-static gboolean
-pk_backend_filter_package_array_newest (GPtrArray *array)
-{
-	gchar *key;
-	GHashTable *hash;
-	gint retval;
-	guint i;
-	ZifPackage *found;
-	ZifPackage *package;
-
-	/* as an indexed hash table for speed */
-	hash = g_hash_table_new_full (g_str_hash,
-				      g_str_equal,
-				      g_free,
-				      g_object_unref);
-
-	for (i=0; i<array->len; i++) {
-
-		/* generate enough data to be specific */
-		package = g_ptr_array_index (array, i);
-		key = g_strdup_printf ("%s-%s-%i",
-				       zif_package_get_name (package),
-				       zif_package_get_arch (package),
-				       zif_package_is_installed (package));
-
-		/* we've not already come across this package */
-		found = g_hash_table_lookup (hash, key);
-		if (found == NULL) {
-			g_hash_table_insert (hash, key, g_object_ref (package));
-			continue;
-		}
-
-		/* compare one package vs the other package */
-		retval = zif_package_compare (package, found);
-
-		/* the package is older than the one we have stored */
-		if (retval <= 0) {
-			g_free (key);
-			g_ptr_array_remove (array, package);
-			continue;
-		}
-
-		/* the package is newer than what we have stored,
-		 * delete the old store, and add this one */
-		g_hash_table_remove (hash, found);
-		g_hash_table_insert (hash, key, g_object_ref (package));
-	}
-
-	g_hash_table_unref (hash);
-	return TRUE;
-}
-
-/**
  * pk_backend_filter_package_array:
  **/
 static GPtrArray *
@@ -547,7 +488,7 @@ pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 
 	/* do newest filtering */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
-		pk_backend_filter_package_array_newest (result);
+		zif_package_array_filter_newest (result);
 
 	return result;
 }
