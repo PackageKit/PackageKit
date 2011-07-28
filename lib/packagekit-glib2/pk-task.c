@@ -305,16 +305,10 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
-	guint idx = 0;
 	guint i;
-	GPtrArray *array = NULL;
 	GPtrArray *array_messages = NULL;
-	PkPackage *item;
-	gboolean ret;
-	PkInfoEnum info;
 	PkMessage *message;
 	PkMessageEnum message_type;
-	const gchar *package_id;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -371,7 +365,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get data */
 	sack = pk_results_get_package_sack (results);
 
-	/* remove all the cleanup and finished packages */
+	/* remove all the packages we want to ignore */
 	pk_package_sack_remove_by_filter (sack, pk_task_package_filter_cb, state);
 
 	/* remove all the original packages from the sack */
@@ -379,43 +373,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		length = g_strv_length (state->package_ids);
 		for (i=0; i<length; i++)
 			pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
-	}
-
-	/* remove packages from the array that will not be useful */
-	if (state->package_ids != NULL) {
-		array = pk_results_get_package_array (results);
-		while (idx < array->len) {
-			item = g_ptr_array_index (array, idx);
-			package_id = pk_package_get_id (item);
-			g_object_get (item,
-				      "info", &info,
-				      NULL);
-
-			/* remove all the cleanup and finished packages */
-			if (info == PK_INFO_ENUM_CLEANUP ||
-			    info == PK_INFO_ENUM_FINISHED) {
-				g_debug ("removing %s", package_id);
-				g_ptr_array_remove (array, item);
-				continue;
-			}
-
-			/* remove all the original packages */
-			ret = FALSE;
-			length = g_strv_length (state->package_ids);
-			for (i=0; i<length; i++) {
-				if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
-					g_debug ("removing %s", package_id);
-					g_ptr_array_remove (array, item);
-					ret = TRUE;
-					break;
-				}
-			}
-			if (ret)
-				continue;
-
-			/* no removal done */
-			idx++;
-		}
 	}
 
 	/* no results from simulate */
@@ -430,8 +387,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
 out:
-	if (array != NULL)
-		g_ptr_array_unref (array);
 	if (array_messages != NULL)
 		g_ptr_array_unref (array_messages);
 	if (results != NULL)
