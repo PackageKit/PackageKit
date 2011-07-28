@@ -289,6 +289,8 @@ pk_task_package_filter_cb (PkPackage *package, gpointer user_data)
 	    info == PK_INFO_ENUM_UNTRUSTED ||
 	    info == PK_INFO_ENUM_FINISHED)
 		return FALSE;
+	if (g_strcmp0 (pk_package_get_data (package), "local") == 0)
+		return FALSE;
 	return TRUE;
 }
 
