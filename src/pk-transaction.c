@@ -515,10 +515,10 @@ pk_transaction_details_cb (PkBackend *backend,
 				       "Details",
 				       g_variant_new ("(ssssst)",
 						      package_id,
-						      license,
+						      license != NULL ? license : "",
 						      group_text,
-						      description,
-						      url,
+						      description != NULL ? description : "",
+						      url != NULL ? url : "",
 						      size),
 				       NULL);
 
@@ -658,7 +658,7 @@ pk_transaction_category_cb (PkBackend *backend,
 						      cat_id,
 						      name,
 						      summary,
-						      icon),
+						      icon != NULL ? icon : ""),
 				       NULL);
 	g_free (parent_id);
 	g_free (cat_id);
@@ -705,7 +705,7 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend,
 				       g_variant_new ("(sss)",
 						      type_text,
 						      name,
-						      summary),
+						      summary != NULL ? summary : ""),
 				       NULL);
 
 	g_free (name);
@@ -1331,7 +1331,7 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 				       "RepoDetail",
 				       g_variant_new ("(ssb)",
 						      repo_id,
-						      description,
+						      description != NULL ? description : "",
 						      enabled),
 				       NULL);
 	g_free (repo_id);
@@ -1387,11 +1387,11 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 				       g_variant_new ("(ssssssss)",
 						      package_id,
 						      repository_name,
-						      key_url,
-						      key_userid,
-						      key_id,
-						      key_fingerprint,
-						      key_timestamp,
+						      key_url != NULL ? key_url : "",
+						      key_userid != NULL ? key_userid : "",
+						      key_id != NULL ? key_id : "",
+						      key_fingerprint != NULL ? key_fingerprint : "",
+						      key_timestamp != NULL ? key_timestamp : "",
 						      type_text),
 				       NULL);
 
@@ -1445,8 +1445,8 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 				       g_variant_new ("(ssss)",
 						      eula_id,
 						      package_id,
-						      vendor_name,
-						      license_agreement),
+						      vendor_name != NULL ? vendor_name : "",
+						      license_agreement != NULL ? license_agreement : ""),
 				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
@@ -1496,7 +1496,7 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 				       g_variant_new ("(sss)",
 						      media_type_text,
 						      media_id,
-						      media_text),
+						      media_text != NULL ? media_text : ""),
 				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
@@ -1649,9 +1649,9 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb,
 						      succeeded,
 						      role_text,
 						      duration,
-						      data,
+						      data != NULL ? data : "",
 						      uid,
-						      cmdline),
+						      cmdline != NULL ? cmdline : ""),
 				       NULL);
 	g_free (tid);
 	g_free (timespec);
@@ -1715,17 +1715,17 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       "UpdateDetail",
 				       g_variant_new ("(ssssssssssss)",
 						      package_id,
-						      updates,
-						      obsoletes,
-						      vendor_url,
-						      bugzilla_url,
-						      cve_url,
+						      updates != NULL ? updates : "",
+						      obsoletes != NULL ? obsoletes : "",
+						      vendor_url != NULL ? vendor_url : "",
+						      bugzilla_url != NULL ? bugzilla_url : "",
+						      cve_url != NULL ? cve_url : "",
 						      restart_text,
-						      update_text,
-						      changelog,
+						      update_text != NULL ? update_text : "",
+						      changelog != NULL ? changelog : "",
 						      state_text,
-						      issued,
-						      updated),
+						      issued != NULL ? issued : "",
+						      updated != NULL ? updated : ""),
 				       NULL);
 
 	g_free (package_id);
