@@ -3481,14 +3481,16 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	if (simulate) {
 		ret = zif_state_set_steps (state,
 					   NULL,
-					   95, /* resolve */
+					   94, /* resolve */
+					   1, /* check trusted */
 					   5, /* print packages */
 					   -1);
 	} else {
 		ret = zif_state_set_steps (state,
 					   NULL,
 					   30, /* resolve */
-					   30, /* prepare */
+					   1, /* check trusted */
+					   29, /* prepare */
 					   40, /* commit */
 					   -1);
 	}
@@ -3513,6 +3515,33 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 		}
 		g_error_free (error);
 		goto out;
+	}
+
+	/* this section done */
+	ret = zif_state_done (state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* mark any untrusted packages */
+	install = zif_transaction_get_install (priv->transaction);
+	untrusted_array = g_ptr_array_new ();
+	for (i=0; i<install->len; i++) {
+		package = g_ptr_array_index (install, i);
+		trust_kind = zif_package_get_trust_kind (package);
+		if (trust_kind != ZIF_PACKAGE_TRUST_KIND_PUBKEY) {
+
+			/* ignore the trusted auth step */
+			pk_backend_message (backend,
+					    PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,
+					    "The package %s is untrusted",
+					    zif_package_get_printable (package));
+		}
 	}
 
 	/* this section done */
@@ -3576,7 +3605,6 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* check if any are not trusted */
 	only_trusted = pk_backend_get_bool (backend, "only_trusted");
 	if (only_trusted) {
-		install = zif_transaction_get_install (priv->transaction);
 		for (i=0; i<install->len; i++) {
 			package = g_ptr_array_index (install, i);
 			trust_kind = zif_package_get_trust_kind (package);
