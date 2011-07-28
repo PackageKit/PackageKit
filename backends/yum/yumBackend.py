@@ -2184,6 +2184,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
                     return
                 self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
+                self._show_package(po, INFO_UNTRUSTED)
             except exceptions.IOError, e:
                 self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
