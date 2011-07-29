@@ -335,17 +335,6 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
-
-	# packagekit-qt needs cppunit and QtGui for tests
-	if test x$build_qt = xyes; then
-		PKG_CHECK_MODULES(CPPUNIT, cppunit)
-		AC_SUBST(CPPUNIT_CFLAGS)
-		AC_SUBST(CPPUNIT_LIBS)
-
-		PKG_CHECK_MODULES(QTGUI, QtGui >= 4.4.0)
-		AC_SUBST(QTGUI_CFLAGS)
-		AC_SUBST(QTGUI_LIBS)
-	fi
 fi
 
 dnl ---------------------------------------------------------------------------
