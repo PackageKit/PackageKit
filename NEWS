@@ -1,3 +1,27 @@
+Version 0.6.17
+~~~~~~~~~~~~~~
+Released: 2011-08-01
+
+Notes:
+ - These are all stable-and-safe fixes suitable for distros.
+ - Use git master (0.7.x) for the new unstable but exciting code...
+
+Libraries:
+ - Add an untrusted section header when using console applications (Richard Hughes)
+
+Backends:
+ - zypp: Do not rebuild the pool on every call to find package by name (bnc#679650) (Duncan Mac-Vicar P)
+ - yum: Manually convert the results of GetDetails to unicode. Fixes rh#719916 (Richard Hughes)
+ - yum: Parse the new style .discinfo files for F15 (Chris Lumens)
+ - zif: Emit Message(UntrustedPackage) to sometimes skip the trusted authentication (Richard Hughes)
+ - zif: Use the shared version for newest filtering (Richard Hughes)
+
+Bugfixes:
+ - Actually use the value from /etc/login.defs (Richard Hughes)
+ - Ignore local packages when calculating the simulate list (Richard Hughes)
+ - Ignore untrusted packages when calculating the simulate list (Richard Hughes)
+ - pk-command-not-found: An ellipsis has three dots, not two (Adam Jackson)
+
 Version 0.6.16
 ~~~~~~~~~~~~~~
 Released: 2011-07-04
