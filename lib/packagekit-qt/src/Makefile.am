@@ -88,12 +88,11 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	$(MOCFILES)							\
-	dbus_proxies.stamp                  \
+	dbus_proxies.stamp					\
 	daemonproxy.h						\
 	daemonproxy.cpp						\
 	transactionproxy.h					\
-	transactionproxy.cpp				\
+	transactionproxy.cpp					\
 	$(NULL)
 
 MAINTAINERCLEANFILES =						\
