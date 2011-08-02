@@ -95,7 +95,6 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	$(MOCFILES)						\
 	dbus_proxies.stamp					\
 	daemonproxy.h						\
 	daemonproxy.cpp						\
