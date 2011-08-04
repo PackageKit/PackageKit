@@ -2344,9 +2344,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not txmbr:
-                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
-                        return
-                    txmbrs.extend(txmbr)
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg))
+                    else:
+                        txmbrs.extend(txmbr)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
         except Exception, e:
