@@ -506,6 +506,57 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 }
 
 /**
+ * pk_backend_sort_backends_cb:
+ **/
+static gint
+pk_backend_sort_backends_cb (const gchar **store1,
+			     const gchar **store2)
+{
+	return g_strcmp0 (*store2, *store1);
+}
+
+/**
+ * pk_backend_get_auto_array:
+ **/
+static GPtrArray *
+pk_backend_get_auto_array (GError **error)
+{
+	const gchar *tmp;
+	GDir *dir = NULL;
+	GPtrArray *array = NULL;
+
+	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
+	if (dir == NULL)
+		goto out;
+	array = g_ptr_array_new_with_free_func (g_free);
+	do {
+		tmp = g_dir_read_name (dir);
+		if (tmp == NULL)
+			break;
+		if (!g_str_has_suffix (tmp, G_MODULE_SUFFIX))
+			continue;
+		if (g_strstr_len (tmp, -1, "pk_backend_dummy"))
+			continue;
+		if (g_strstr_len (tmp, -1, "pk_backend_test"))
+			continue;
+		g_ptr_array_add (array,
+				 g_build_filename (LIBDIR,
+						   "packagekit-backend",
+						   tmp,
+						   NULL));
+	} while (1);
+
+	/* need to sort by id predictably */
+	g_ptr_array_sort (array,
+			  (GCompareFunc) pk_backend_sort_backends_cb);
+
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	return array;
+}
+
+/**
  * pk_backend_set_name:
  **/
 gboolean
@@ -515,6 +566,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 	gchar *path = NULL;
 	gboolean ret = FALSE;
 	gpointer func = NULL;
+	GPtrArray *auto_backends = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend_name != NULL, FALSE);
@@ -525,9 +577,26 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 		goto out;
 	}
 
-	/* can we load it? */
+	/* deal with auto */
 	g_debug ("Trying to load : %s", backend_name);
-	path = pk_backend_build_library_path (backend, backend_name);
+	if (g_strcmp0 (backend_name, "auto")  == 0) {
+		auto_backends = pk_backend_get_auto_array (error);
+		if (auto_backends == NULL)
+			goto out;
+		if (auto_backends->len == 0) {
+			g_set_error (error, 1, 0,
+				     "failed to find any files in %s",
+				     LIBDIR "/packagekit-backend");
+			goto out;
+		}
+		/* just pick the last to avoid 'dummy' */
+		path = g_strdup (g_ptr_array_index (auto_backends, 0));
+		g_debug ("using backend 'auto'=>'%s'", path);
+	} else {
+		path = pk_backend_build_library_path (backend, backend_name);
+	}
+
+	/* can we load it? */
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		g_set_error (error, 1, 0, "opening module %s failed : %s",
@@ -614,6 +683,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
 out:
+	if (auto_backends != NULL)
+		g_ptr_array_unref (auto_backends);
 	g_free (path);
 	return ret;
 }
