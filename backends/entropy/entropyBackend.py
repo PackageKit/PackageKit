@@ -244,10 +244,28 @@ class PackageKitEntropyMixin(object):
         packages, the on-disk size is returned instead.
         """
         pkg_id, c_repo = pkg_match
+        size = 0
         if c_repo is self._entropy.installed_repository():
-            return c_repo.retrieveOnDiskSize(pkg_id)
+            size += c_repo.retrieveOnDiskSize(pkg_id)
         else:
-            return c_repo.retrieveSize(pkg_id)
+            size += c_repo.retrieveSize(pkg_id)
+
+        supports_extra_download = hasattr(c_repo, "retrieveExtraDownload")
+        if not supports_extra_download:
+            return size
+
+        cl_id = etpConst['system_settings_plugins_ids']['client_plugin']
+        debug = self._settings[cl_id]['misc']['splitdebug']
+        extra_downloads = c_repo.retrieveExtraDownload(pkg_id)
+        for extra_download in extra_downloads:
+            if (not debug) and (extra_download['type'] == "debug") and \
+                (c_repo is not self._entropy.installed_repository()):
+                continue
+            if c_repo is self._entropy.installed_repository():
+                size += extra_download['disksize']
+            else:
+                size += extra_download['size']
+        return size
 
     def _pk_feed_sorted_pkgs(self, pkgs):
         """
