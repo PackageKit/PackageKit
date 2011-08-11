@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -31,7 +31,6 @@
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-inhibit.h"
 #include "pk-notify.h"
 #include "pk-spawn.h"
 #include "pk-store.h"
@@ -663,7 +662,6 @@ pk_test_engine_func (void)
 	gboolean ret;
 	PkEngine *engine;
 	PkBackend *backend;
-	PkInhibit *inhibit;
 	guint idle;
 	gchar *state;
 	gdouble elapsed;
@@ -729,16 +727,6 @@ pk_test_engine_func (void)
 	g_assert_cmpfloat (elapsed, >, 0.4);
 	g_assert_cmpfloat (elapsed, <, 0.6);
 
-	/* test locked */
-	inhibit = pk_inhibit_new ();
-	pk_inhibit_add (inhibit, GUINT_TO_POINTER (999));
-	g_assert (_locked);
-
-	/* test locked */
-	pk_inhibit_remove (inhibit, GUINT_TO_POINTER (999));
-	g_assert (!_locked);
-	g_object_unref (inhibit);
-
 	/* test not locked */
 	g_assert (!_locked);
 	g_assert (!_restart_schedule);
@@ -760,54 +748,6 @@ pk_test_engine_func (void)
 	g_object_unref (backend);
 	g_object_unref (notify);
 	g_object_unref (engine);
-}
-
-static void
-pk_test_inhibit_func (void)
-{
-	PkInhibit *inhibit;
-	gboolean ret;
-
-	inhibit = pk_inhibit_new ();
-	g_assert (inhibit != NULL);
-
-	/* check we are not inhibited */
-	ret = pk_inhibit_locked (inhibit);
-	g_assert (!ret);
-
-	/* add 123 */
-	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	g_assert (ret);
-
-	/* check we are inhibited */
-	ret = pk_inhibit_locked (inhibit);
-	g_assert (ret);
-
-	/* add 123 (again) */
-	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	g_assert (!ret);
-
-	/* add 456 */
-	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (456));
-	g_assert (ret);
-
-	/* remove 123" */
-	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (123));
-	g_assert (ret);
-
-	/* check we are still inhibited */
-	ret = pk_inhibit_locked (inhibit);
-	g_assert (ret);
-
-	/* remove 456 */
-	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (456));
-	g_assert (ret);
-
-	/* check we are not inhibited */
-	ret = pk_inhibit_locked (inhibit);
-	g_assert (!ret);
-
-	g_object_unref (inhibit);
 }
 
 static void
@@ -1771,7 +1711,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
 	g_test_add_func ("/packagekit/cache", pk_test_conf_func);
 	g_test_add_func ("/packagekit/store", pk_test_store_func);
-	g_test_add_func ("/packagekit/inhibit", pk_test_inhibit_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);
