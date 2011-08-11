@@ -166,7 +166,7 @@ pk_lsof_refresh (PkLsof *lsof)
 	}
 
 	/* run lsof to get all data */
-	lsof_cmd = g_strconcat (lsof_name, " ", "-Fpfn", NULL);
+	lsof_cmd = g_strjoin (" ", lsof_name, "-Fpfn", "-n", NULL);
 	ret = g_spawn_command_line_sync (lsof_cmd, &stdout, &stderr, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to get pids: %s", error->message);
