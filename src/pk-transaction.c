@@ -858,6 +858,9 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
 
+	if (transaction->priv->plugins == NULL)
+		goto out;
+
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
@@ -899,6 +902,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 			 g_module_name (plugin->module));
 		plugin_func (plugin, transaction);
 	}
+out:
 	if (!ran_one)
 		g_debug ("no plugins provided %s", function);
 }
@@ -5889,7 +5893,8 @@ pk_transaction_finalize (GObject *object)
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
 #endif
-	g_ptr_array_unref (transaction->priv->plugins);
+	if (transaction->priv->plugins != NULL)
+		g_ptr_array_unref (transaction->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }

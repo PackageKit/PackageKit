@@ -468,8 +468,10 @@ pk_transaction_list_create (PkTransactionList *tlist,
 					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
 
 	/* set plugins */
-	pk_transaction_set_plugins (item->transaction,
-				    tlist->priv->plugins);
+	if (tlist->priv->plugins != NULL) {
+		pk_transaction_set_plugins (item->transaction,
+					    tlist->priv->plugins);
+	}
 
 	/* set transaction state */
 	ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
@@ -948,7 +950,8 @@ pk_transaction_list_finalize (GObject *object)
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
 	g_object_unref (tlist->priv->conf);
-	g_ptr_array_unref (tlist->priv->plugins);
+	if (tlist->priv->plugins != NULL)
+		g_ptr_array_unref (tlist->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }
