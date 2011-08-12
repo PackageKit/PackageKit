@@ -2684,8 +2684,10 @@ pk_transaction_dbus_return (GDBusMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
 	if (context == NULL) {
-		g_warning ("context null, and error: %s", error->message);
-		g_error_free (error);
+		if (error != NULL) {
+			g_warning ("context null, and error: %s", error->message);
+			g_error_free (error);
+		}
 		return;
 	}
 	if (error != NULL)
@@ -5829,14 +5831,16 @@ pk_transaction_dispose (GObject *object)
 	}
 
 	/* send signal to clients that we are about to be destroyed */
-	g_debug ("emitting destroy %s", transaction->priv->tid);
-	g_dbus_connection_emit_signal (transaction->priv->connection,
-				       NULL,
-				       transaction->priv->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "Destroy",
-				       NULL,
-				       NULL);
+	if (transaction->priv->connection != NULL) {
+		g_debug ("emitting destroy %s", transaction->priv->tid);
+		g_dbus_connection_emit_signal (transaction->priv->connection,
+					       NULL,
+					       transaction->priv->tid,
+					       PK_DBUS_INTERFACE_TRANSACTION,
+					       "Destroy",
+					       NULL,
+					       NULL);
+	}
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);
 }
