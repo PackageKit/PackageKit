@@ -38,6 +38,7 @@
 #include "pk-time.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
+#include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID	14
@@ -657,100 +658,6 @@ pk_test_engine_emit_repo_list_changed_cb (void)
 }
 
 static void
-pk_test_engine_func (void)
-{
-	gboolean ret;
-	PkEngine *engine;
-	PkBackend *backend;
-	guint idle;
-	gchar *state;
-	gdouble elapsed;
-
-	backend = pk_backend_new ();
-	g_assert (backend != NULL);
-
-	notify = pk_notify_new ();
-	g_assert (notify != NULL);
-
-	/* set the type, as we have no pk-main doing this for us */
-	/* set the backend name */
-	ret = pk_backend_set_name (backend, "dummy", NULL);
-	g_assert (ret);
-
-	/* get an engine instance */
-	engine = pk_engine_new ();
-	g_assert (engine != NULL);
-
-	/* connect up signals */
-	g_signal_connect (engine, "quit",
-			  G_CALLBACK (pk_test_engine_quit_cb), NULL);
-	g_signal_connect (engine, "changed",
-			  G_CALLBACK (pk_test_engine_changed_cb), NULL);
-	g_signal_connect (engine, "updates-changed",
-			  G_CALLBACK (pk_test_engine_updates_changed_cb), NULL);
-	g_signal_connect (engine, "repo-list-changed",
-			  G_CALLBACK (pk_test_engine_repo_list_changed_cb), NULL);
-	g_signal_connect (engine, "restart-schedule",
-			  G_CALLBACK (pk_test_engine_restart_schedule_cb), NULL);
-
-	/* get idle at startup */
-	idle = pk_engine_get_seconds_idle (engine);
-	g_assert_cmpint (idle, <, 1);
-
-	/* wait 5 seconds */
-	_g_test_loop_wait (5000);
-
-	/* get idle at idle */
-	idle = pk_engine_get_seconds_idle (engine);
-	g_assert_cmpint (idle, <, 6);
-	g_assert_cmpint (idle, >, 4);
-
-	/* get idle after method */
-	pk_engine_get_daemon_state (engine, &state, NULL);
-	g_free (state);
-	idle = pk_engine_get_seconds_idle (engine);
-	g_assert_cmpint (idle, <, 1);
-
-	/* force test notify updates-changed */
-	g_timeout_add (25, (GSourceFunc) pk_test_engine_emit_updates_changed_cb, NULL);
-	_g_test_loop_wait (50);
-
-	/* force test notify repo-list-changed */
-	g_timeout_add (25, (GSourceFunc) pk_test_engine_emit_repo_list_changed_cb, NULL);
-	_g_test_loop_wait (50);
-
-	/* force test notify wait updates-changed */
-	g_test_timer_start ();
-	pk_notify_wait_updates_changed (notify, 500);
-	_g_test_loop_run_with_timeout (1500);
-	elapsed = g_test_timer_elapsed ();
-	g_assert_cmpfloat (elapsed, >, 0.4);
-	g_assert_cmpfloat (elapsed, <, 0.6);
-
-	/* test not locked */
-	g_assert (!_locked);
-	g_assert (!_restart_schedule);
-
-	ret = g_file_set_contents (SBINDIR "/packagekitd", "overwrite", -1, NULL);
-	g_assert (ret);
-	_g_test_loop_wait (5000);
-
-	/* get idle after we touched the binary */
-	idle = pk_engine_get_seconds_idle (engine);
-	g_assert_cmpint (idle, ==, G_MAXUINT);
-	g_assert (_restart_schedule);
-	g_assert (!_quit);
-
-	/* suggest quit with no transactions (should get quit signal) */
-	pk_engine_suggest_daemon_quit (engine, NULL);
-	g_assert (_quit);
-
-	g_object_unref (backend);
-	g_object_unref (notify);
-	g_object_unref (engine);
-}
-
-static void
 pk_test_notify_func (void)
 {
 	PkNotify *notify;
@@ -1145,6 +1052,16 @@ pk_test_transaction_func (void)
 	PkTransaction *transaction = NULL;
 	gboolean ret;
 	GError *error = NULL;
+	PkBackend *backend;
+
+	backend = pk_backend_new ();
+	/* try to load a valid backend */
+	ret = pk_backend_set_name (backend, "dummy", NULL);
+	g_assert (ret);
+
+	/* lock an valid backend */
+	ret = pk_backend_lock (backend);
+	g_assert (ret);
 
 	/* get PkTransaction object */
 	transaction = pk_transaction_new ();
@@ -1224,6 +1141,7 @@ pk_test_transaction_func (void)
 	g_clear_error (&error);
 
 	g_object_unref (transaction);
+	g_object_unref (backend);
 }
 
 static void
@@ -1436,6 +1354,15 @@ pk_test_transaction_list_func (void)
 	cache = pk_cache_new ();
 	db = pk_transaction_db_new ();
 
+	/* try to load a valid backend */
+	backend = pk_backend_new ();
+	ret = pk_backend_set_name (backend, "dummy", NULL);
+	g_assert (ret);
+
+	/* lock an valid backend */
+	ret = pk_backend_lock (backend);
+	g_assert (ret);
+
 	/* get a transaction list object */
 	tlist = pk_transaction_list_new ();
 	g_assert (tlist != NULL);
@@ -1483,15 +1410,6 @@ pk_test_transaction_list_func (void)
 	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
 	g_assert (ret);
 
-	backend = pk_backend_new ();
-	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy", NULL);
-	g_assert (ret);
-
-	/* lock an valid backend */
-	ret = pk_backend_lock (backend);
-	g_assert (ret);
-
 	/* get from db */
 	transaction = pk_transaction_list_get_transaction (tlist, tid);
 	g_assert (transaction != NULL);
@@ -1499,7 +1417,7 @@ pk_test_transaction_list_func (void)
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
 
 	/* this tests the run-on-commit action */
-	pk_transaction_get_updates (transaction, "none", NULL);
+	pk_transaction_get_updates (transaction, g_variant_new ("(s)", "none"), NULL);
 
 	/* make sure transaction has correct flags */
 	transaction = pk_transaction_list_get_transaction (tlist, tid);
@@ -1577,19 +1495,25 @@ pk_test_transaction_list_func (void)
 	/* this starts one action */
 	array = g_strsplit ("dave", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
-	pk_transaction_search_details (transaction, "none", array, NULL);
+	pk_transaction_search_details (transaction,
+				       g_variant_new ("(s^as)", "none", array),
+				       NULL);
 	g_strfreev (array);
 
 	/* this should be chained after the first action completes */
 	array = g_strsplit ("power", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
-	pk_transaction_search_names (transaction, "none", array, NULL);
+	pk_transaction_search_names (transaction,
+				     g_variant_new ("(s^as)", "none", array),
+				     NULL);
 	g_strfreev (array);
 
 	/* this starts be chained after the second action completes */
 	array = g_strsplit ("paul", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
-	pk_transaction_search_details (transaction, "none", array, NULL);
+	pk_transaction_search_details (transaction,
+				       g_variant_new ("(s^as)", "none", array),
+				       NULL);
 	g_strfreev (array);
 
 	/* get transactions (committed, not finished) in progress (all) */
@@ -1719,9 +1643,6 @@ main (int argc, char **argv)
 	/* backend stuff */
 	g_test_add_func ("/packagekit/backend", pk_test_backend_func);
 	g_test_add_func ("/packagekit/backend_spawn", pk_test_backend_spawn_func);
-
-	/* system */
-	g_test_add_func ("/packagekit/engine", pk_test_engine_func);
 
 	return g_test_run ();
 }

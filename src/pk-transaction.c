@@ -60,6 +60,7 @@
 #include "pk-syslog.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
+#include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
@@ -3652,7 +3653,7 @@ out:
 /**
  * pk_transaction_get_updates:
  **/
-static void
+void
 pk_transaction_get_updates (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
@@ -4375,7 +4376,7 @@ out:
 /**
  * pk_transaction_search_details:
  **/
-static void
+void
 pk_transaction_search_details (PkTransaction *transaction,
 			       GVariant *params,
 			       GDBusMethodInvocation *context)
@@ -4583,7 +4584,7 @@ out:
 /**
  * pk_transaction_search_name:
  **/
-static void
+void
 pk_transaction_search_names (PkTransaction *transaction,
 			     GVariant *params,
 			     GDBusMethodInvocation *context)

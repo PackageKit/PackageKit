@@ -38,6 +38,8 @@
 #include <packagekit-glib2/pk-common.h>
 
 #include "pk-conf.h"
+#include "pk-transaction.h"
+#include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
 
 static void     pk_transaction_list_finalize	(GObject        *object);
