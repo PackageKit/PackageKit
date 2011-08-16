@@ -2614,10 +2614,6 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 		/* UpdatePackages */
 		if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 
-			/* TRANSLATORS: is not GPG signed */
-			g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
-			g_string_append (string, "\n");
-
 			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
 			text = g_dngettext (GETTEXT_PACKAGE,
 					    N_("Do not update this package unless you are sure it is safe to do so."),
