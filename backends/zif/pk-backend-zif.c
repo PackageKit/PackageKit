@@ -4477,9 +4477,9 @@ pk_backend_get_repo_list_thread (PkBackend *backend)
 			/* devel, name, enabled */
 			ret = zif_state_set_steps (state_loop,
 						   NULL,
-						   50, /* is store devel? */
-						   50, /* get name */
-						   50, /* get enabled */
+						   60, /* is store devel? */
+						   20, /* get name */
+						   20, /* get enabled */
 						   -1);
 			g_assert (ret);
 
