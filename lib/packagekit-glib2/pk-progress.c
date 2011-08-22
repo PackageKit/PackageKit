@@ -637,6 +637,9 @@ pk_progress_finalize (GObject *object)
 {
 	PkProgress *progress = PK_PROGRESS (object);
 
+	if (progress->priv->package != NULL)
+		g_object_unref (progress->priv->package);
+
 	g_free (progress->priv->package_id);
 	g_free (progress->priv->transaction_id);
 
