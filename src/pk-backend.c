@@ -1417,28 +1417,6 @@ out:
 }
 
 /**
- * pk_backend_get_progress:
- **/
-gboolean
-pk_backend_get_progress (PkBackend *backend,
-			 guint *percentage, guint *subpercentage,
-			 guint *elapsed, guint *remaining)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	*percentage = backend->priv->last_percentage;
-	/* have not ever set any value? */
-	if (*percentage == PK_BACKEND_PERCENTAGE_DEFAULT) {
-		*percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	}
-	*subpercentage = backend->priv->last_subpercentage;
-	*elapsed = pk_time_get_elapsed (backend->priv->time);
-	*remaining = backend->priv->last_remaining;
-	return TRUE;
-}
-
-/**
  * pk_backend_require_restart:
  **/
 gboolean
