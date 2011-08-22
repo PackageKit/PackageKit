@@ -211,6 +211,9 @@ gboolean	 pk_backend_set_allow_cancel		(PkBackend	*backend,
 							 gboolean	 allow_cancel);
 gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
+gboolean	 pk_backend_set_item_progress		(PkBackend	*backend,
+							 const gchar	*package_id,
+							 guint		 percentage);
 gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_speed			(PkBackend	*backend,

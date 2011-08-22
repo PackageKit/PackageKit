@@ -159,6 +159,7 @@ enum {
 	SIGNAL_REPO_DETAIL,
 	SIGNAL_CATEGORY,
 	SIGNAL_MEDIA_CHANGE_REQUIRED,
+	SIGNAL_ITEM_PROGRESS,
 	SIGNAL_LAST
 };
 
@@ -1006,6 +1007,35 @@ pk_backend_get_runtime (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
 	g_return_val_if_fail (backend->priv->locked != FALSE, 0);
 	return pk_time_get_elapsed (backend->priv->time);
+}
+
+/**
+ * pk_backend_set_item_progress:
+ **/
+gboolean
+pk_backend_set_item_progress (PkBackend *backend,
+			      const gchar *package_id,
+			      guint percentage)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		g_warning ("already set error, cannot process: item-percentage %i", percentage);
+		return FALSE;
+	}
+
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		g_debug ("invalid number %i", percentage);
+		return FALSE;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_ITEM_PROGRESS], 0,
+		       package_id, percentage);
+	return TRUE;
 }
 
 /**
@@ -3076,6 +3106,12 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_ITEM_PROGRESS] =
+		g_signal_new ("item-progress",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
+
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 

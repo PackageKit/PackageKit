@@ -158,6 +158,7 @@ struct PkTransactionPrivate
 	guint			 signal_update_detail;
 	guint			 signal_category;
 	guint			 signal_speed;
+	guint			 signal_item_progress;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
@@ -669,6 +670,31 @@ pk_transaction_category_cb (PkBackend *backend,
 }
 
 /**
+ * pk_transaction_item_progress_cb:
+ **/
+static void
+pk_transaction_item_progress_cb (PkBackend *backend,
+				 const gchar *package_id,
+				 guint percentage,
+				 PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* emit */
+	g_debug ("emitting item-progress %s, %u", package_id, percentage);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "ItemProgress",
+				       g_variant_new ("(su)",
+						      package_id,
+						      percentage),
+				       NULL);
+}
+
+/**
  * pk_transaction_distro_upgrade_cb:
  **/
 static void
@@ -1052,6 +1078,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				     transaction->priv->signal_progress_changed);
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_require_restart);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_item_progress);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -1964,6 +1992,10 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->signal_category =
 		g_signal_connect (priv->backend, "category",
 				  G_CALLBACK (pk_transaction_category_cb), transaction);
+	priv->signal_item_progress =
+		g_signal_connect (priv->backend, "item-progress",
+				  G_CALLBACK (pk_transaction_item_progress_cb),
+				  transaction);
 	priv->signal_speed =
 		g_signal_connect (priv->backend, "notify::speed",
 				  G_CALLBACK (pk_transaction_speed_cb), transaction);

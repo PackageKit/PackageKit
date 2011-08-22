@@ -312,6 +312,29 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		} else {
 			pk_backend_set_sub_percentage (priv->backend, percentage);
 		}
+	} else if (g_strcmp0 (command, "item-percentage") == 0) {
+		if (size != 2) {
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+		if (!pk_package_id_check (sections[1])) {
+			g_set_error (error, 1, 0, "invalid package_id");
+			ret = FALSE;
+			goto out;
+		}
+		ret = pk_strtoint (sections[2], &percentage);
+		if (!ret) {
+			g_set_error (error, 1, 0, "invalid item-percentage value %s", sections[1]);
+			ret = FALSE;
+		} else if (percentage < 0 || percentage > 100) {
+			g_set_error (error, 1, 0, "invalid item-percentage value %i", percentage);
+			ret = FALSE;
+		} else {
+			pk_backend_set_item_progress (priv->backend,
+							sections[1],
+							percentage);
+		}
 	} else if (g_strcmp0 (command, "error") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
