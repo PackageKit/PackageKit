@@ -73,7 +73,6 @@ static void     pk_transaction_dispose		(GObject	    *object);
 #define PK_TRANSACTION_UID_INVALID		G_MAXUINT
 
 static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
-static void pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage, guint elapsed, guint remaining, PkTransaction *transaction);
 
 struct PkTransactionPrivate
 {
@@ -148,7 +147,9 @@ struct PkTransactionPrivate
 	guint			 signal_finished;
 	guint			 signal_message;
 	guint			 signal_package;
-	guint			 signal_progress_changed;
+	guint			 signal_percentage;
+	guint			 signal_subpercentage;
+	guint			 signal_remaining;
 	guint			 signal_repo_detail;
 	guint			 signal_repo_signature_required;
 	guint			 signal_eula_required;
@@ -357,10 +358,10 @@ pk_transaction_emit_changed (PkTransaction *transaction)
  **/
 static void
 pk_transaction_progress_changed_emit (PkTransaction *transaction,
-				      guint percentage,
-				      guint subpercentage,
-				      guint elapsed,
-				      guint remaining)
+				     guint percentage,
+				     guint subpercentage,
+				     guint elapsed,
+				     guint remaining)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
@@ -1075,7 +1076,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_progress_changed);
+				     transaction->priv->signal_percentage);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_subpercentage);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_remaining);
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_require_restart);
 	g_signal_handler_disconnect (transaction->priv->backend,
@@ -1307,27 +1312,6 @@ pk_transaction_package_cb (PkBackend *backend,
 						      package_id,
 						      summary ? summary : ""),
 				       NULL);
-}
-
-/**
- * pk_transaction_progress_changed_cb:
- **/
-static void
-pk_transaction_progress_changed_cb (PkBackend *backend,
-				    guint percentage,
-				    guint subpercentage,
-				    guint elapsed,
-				    guint remaining,
-				    PkTransaction *transaction)
-{
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	pk_transaction_progress_changed_emit (transaction,
-					      percentage,
-					      subpercentage,
-					      elapsed,
-					      remaining);
 }
 
 /**
@@ -1867,6 +1851,51 @@ pk_transaction_speed_cb (GObject *object,
 }
 
 /**
+ * pk_transaction_percentage_cb:
+ **/
+static void
+pk_transaction_percentage_cb (GObject *object,
+			      GParamSpec *pspec,
+			      PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "percentage", &transaction->priv->percentage,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
+ * pk_transaction_subpercentage_cb:
+ **/
+static void
+pk_transaction_subpercentage_cb (GObject *object,
+			         GParamSpec *pspec,
+			         PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "subpercentage", &transaction->priv->subpercentage,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
+ * pk_transaction_remaining_cb:
+ **/
+static void
+pk_transaction_remaining_cb (GObject *object,
+			     GParamSpec *pspec,
+			     PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "remaining", &transaction->priv->remaining_time,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
  * pk_transaction_run:
  */
 gboolean
@@ -1965,9 +1994,15 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->signal_package =
 		g_signal_connect (priv->backend, "package",
 				  G_CALLBACK (pk_transaction_package_cb), transaction);
-	priv->signal_progress_changed =
-		g_signal_connect (priv->backend, "progress-changed",
-				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+	priv->signal_percentage =
+		g_signal_connect (priv->backend, "notify::percentage",
+				  G_CALLBACK (pk_transaction_percentage_cb), transaction);
+	priv->signal_subpercentage =
+		g_signal_connect (priv->backend, "notify::subpercentage",
+				  G_CALLBACK (pk_transaction_subpercentage_cb), transaction);
+	priv->signal_remaining =
+		g_signal_connect (priv->backend, "notify::remaining",
+				  G_CALLBACK (pk_transaction_remaining_cb), transaction);
 	priv->signal_repo_detail =
 		g_signal_connect (priv->backend, "repo-detail",
 				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
