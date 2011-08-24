@@ -26,10 +26,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-static int descrBufferSize = 4096;
-static char *descrBuffer = new char[descrBufferSize];
-
-static char *debParser(string descr);
+static string debParser(string descr);
 
 string get_default_short_description(const pkgCache::VerIterator &ver,
 				    pkgRecords *records)
@@ -113,7 +110,7 @@ string get_default_long_description(const pkgCache::VerIterator &ver,
 	}
 }
 
-static char *debParser(string descr)
+static string debParser(string descr)
 {
 	// Policy page on package descriptions
 	// http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Description
@@ -158,8 +155,8 @@ static char *debParser(string descr)
 		removedFullStop = false;
 		nlpos++;
 	}
-	strcpy(descrBuffer, descr.c_str());
-	return descrBuffer;
+
+	return descr;
 }
 
 PkGroupEnum
