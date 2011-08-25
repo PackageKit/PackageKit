@@ -360,7 +360,8 @@ static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_FONT,			"font"},
 	{PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,	"postscript-driver"},
 	{PK_PROVIDES_ENUM_PLASMA_SERVICE,	"plasma-service"},
-	{PK_PROVIDES_ENUM_LIBRARY,		"library"},
+	{PK_PROVIDES_ENUM_SHARED_LIB,		"shared-library"},
+	{PK_PROVIDES_ENUM_PYTHON,		"python-module"},
 	{0, NULL}
 };
 

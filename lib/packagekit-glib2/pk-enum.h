@@ -451,7 +451,7 @@ typedef enum {
 /**
  * PkProvidesEnum:
  *
- * The signature type type
+ * Some component types packages can provide
  **/
 typedef enum {
 	PK_PROVIDES_ENUM_UNKNOWN,
@@ -463,7 +463,8 @@ typedef enum {
 	PK_PROVIDES_ENUM_HARDWARE_DRIVER,
 	PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
 	PK_PROVIDES_ENUM_PLASMA_SERVICE,
-	PK_PROVIDES_ENUM_LIBRARY,
+	PK_PROVIDES_ENUM_SHARED_LIB,
+	PK_PROVIDES_ENUM_PYTHON,
 	PK_PROVIDES_ENUM_LAST
 } PkProvidesEnum;
 

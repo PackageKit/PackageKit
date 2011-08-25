@@ -1,0 +1,35 @@
+Package component provides naming
+=================================
+This document describes how the "provides"-strings for packages should
+be formatted for the given PK_PROVIDES types.
+This is needed to ensure cross-distro compatibility on package provides
+naming (the naming of components packages provide), which is used for
+example in pk_client_what_provides_async().
+Valid types of provided components are defined in PkProvidesEnum.
+
+In general, the component naming should be "type(component-name)".
+
+Component naming
+----------------
+
+MODALIAS:          /!\ Format nor defined (yet)
+
+CODEC:
+
+MIMETYPE:          Mimetypes are (valid) mimetypes strings,
+                                 for example "application/x-catalog" or "text/plain".
+
+FONT:              A font name, e.g. "Cantarell".
+
+HARDWARE_DRIVER:
+
+POSTSCRIPT_DRIVER:
+
+PLASMA_SERVICE:    Name of a Plasma service.
+
+SHARED_LIB:        Name of a shared library, e.g. "libpackagekit-glib2.so.14".
+
+PYTHON:            A string in the format of "python<version>(module-name)",
+                   e.g. "python2(packagekit)" or just the name of the Python module.
+                   If the Python-Version is omitted, the backend will choose the current
+                   default Python version.
