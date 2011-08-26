@@ -646,7 +646,7 @@ if test x$enable_aptcc = xyes; then
 			  AC_MSG_RESULT([yes]),
 			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
 
-	AC_MSG_CHECKING([whether apt supports ddtp]) 
+	AC_MSG_CHECKING([whether apt supports ddtp])
 
 	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
 					  [[pkgCache::DescIterator d;]]),
@@ -775,6 +775,8 @@ lib/packagekit-qt/test/Makefile
 lib/packagekit-qt/packagekit-qt.pc
 lib/packagekit-qt2/Makefile
 lib/packagekit-qt2/modules/Makefile
+lib/packagekit-qt2/modules/packagekit-qt2-config.cmake
+lib/packagekit-qt2/modules/packagekit-qt2-config-version.cmake
 lib/packagekit-qt2/packagekit-qt2.pc
 lib/python/Makefile
 lib/python/packagekit/Makefile
