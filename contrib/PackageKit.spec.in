@@ -444,7 +444,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 # qt2 new library
 %{_includedir}/PackageKit/packagekit-qt2/*
 %{_libdir}/pkgconfig/packagekit-qt2.pc
-%{_datadir}/cmake/Modules/FindPackageKitQt2.cmake
+%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)
