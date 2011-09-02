@@ -179,7 +179,11 @@ pk_main_create_window (PkPlugin *plugin)
 		}
 
 		/* get parent */
+#if GTK_CHECK_VERSION(2,24,0)
 		parent = gdk_x11_window_foreign_new_for_display (display, xwindow);
+#else
+		parent = gdk_window_foreign_new (xwindow);
+#endif
 		if (parent == NULL) {
 			g_debug ("invalid window given for setup (id %lu)\n", xwindow);
 			return;
