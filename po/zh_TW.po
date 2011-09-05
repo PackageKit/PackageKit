@@ -2,15 +2,16 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # 
-# Cheng-Chia Tseng <pswo10680@gmail.com>, 2011
-# Richard Hughes <richard@hughsie.com>, 2011
+# Terry Chuang <tchuang@redhat.com>, 2008, 2009.
+# Cheng-Chia Tseng <pswo10680@gmail.com>, 2011.
+# Richard Hughes <richard@hughsie.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 10:50+0100\n"
-"PO-Revision-Date: 2011-05-04 09:56+0000\n"
-"Last-Translator: hughsie <richard@hughsie.com>\n"
+"POT-Creation-Date: 2011-08-01 10:58+0100\n"
+"PO-Revision-Date: 2011-08-29 07:54+0000\n"
+"Last-Translator: zerng07 <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.net/projects/p/freedesktop/team/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -377,7 +378,7 @@ msgstr "幕後程式損壞了 mid-transaction！"
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1153
 msgid "PackageKit Console Interface"
-msgstr "PackageKit 主控台介面"
+msgstr "PackageKit 主控臺介面"
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1155
@@ -436,12 +437,12 @@ msgstr "最大的中介資料快取時限。使用 -1 代表「永遠」。"
 #. TRANSLATORS: command line argument, --help
 #: ../client/pk-console.c:1301
 msgid "Show help options."
-msgstr ""
+msgstr "顯示幫助選項。"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1331
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "無法解析指令列"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1341
@@ -805,66 +806,61 @@ msgstr "啟動失敗："
 msgid "Failed to install packages"
 msgstr "安裝套件失敗"
 
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:706
-msgid "PackageKit Command Not Found"
-msgstr "找不到 PackageKit 指令"
-
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:729
 msgid "command not found"
 msgstr "找不到指令"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:759
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Similar command is:"
 msgstr "相似指令為："
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:773
+#: ../contrib/command-not-found/pk-command-not-found.c:761
 msgid "Run similar command:"
 msgstr "執行相似指令："
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:787
-#: ../contrib/command-not-found/pk-command-not-found.c:796
+#: ../contrib/command-not-found/pk-command-not-found.c:775
+#: ../contrib/command-not-found/pk-command-not-found.c:784
 msgid "Similar commands are:"
 msgstr "相似指令有："
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:791
 msgid "Please choose a command to run"
 msgstr "請選擇一項指令來執行"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:821
+#: ../contrib/command-not-found/pk-command-not-found.c:809
 msgid "The package providing this file is:"
 msgstr "提供此檔案的套件為："
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:828
+#: ../contrib/command-not-found/pk-command-not-found.c:816
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "是否要安裝「%s」套件以提供「%s」指令？"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:855
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Packages providing this file are:"
 msgstr "提供此檔案的套件有："
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:865
+#: ../contrib/command-not-found/pk-command-not-found.c:853
 msgid "Suitable packages are:"
 msgstr "合適的套件有："
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:874
+#: ../contrib/command-not-found/pk-command-not-found.c:862
 msgid "Please choose a package to install"
 msgstr "請選擇欲安裝的套件"
 
@@ -1404,7 +1400,7 @@ msgstr "安全性"
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:442
 msgid "Bug fix "
-msgstr "錯誤修正"
+msgstr "臭蟲修正"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:446
@@ -1789,13 +1785,19 @@ msgstr "下列套件要被重新安裝："
 msgid "The following packages have to be downgraded:"
 msgstr "下列套件要被降級："
 
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: ../lib/packagekit-glib2/pk-task-text.c:325
+msgid "The following packages are untrusted:"
+msgstr "下列套件未受信任："
+
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:380
+#: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
 msgstr "要處理變更嗎？"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:385
+#: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
 msgstr "該處理事項沒有執行。"
 
@@ -2063,7 +2065,7 @@ msgstr "無法連接至系統匯流"
 
 #: ../src/pk-main.c:344
 msgid "Failed to load any of the specified backends:"
-msgstr ""
+msgstr "無法載入任一個指定的後端程式："
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
 #. follows

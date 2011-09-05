@@ -2,15 +2,16 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # 
-# mbouzada <mbouzada@gmail.com>, 2011
+# mbouzada <mbouzada@gmail.com>, 2011.
+# Fran Diéguez <frandieguez@ubuntu.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 10:50+0100\n"
-"PO-Revision-Date: 2011-05-04 09:56+0000\n"
-"Last-Translator: hughsie <richard@hughsie.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2011-08-01 10:58+0100\n"
+"PO-Revision-Date: 2011-09-05 12:45+0000\n"
+"Last-Translator: frandieguez <frandieguez@ubuntu.com>\n"
+"Language-Team: Galician <proxecto@trasno.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -445,12 +446,12 @@ msgstr "A idade máxima para a caché de metadatos. Usar -1 para «nunca»."
 #. TRANSLATORS: command line argument, --help
 #: ../client/pk-console.c:1301
 msgid "Show help options."
-msgstr ""
+msgstr "Mostrar as opcións de axuda."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1331
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Produciuse un fallo ao analizar a liña de orde"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1341
@@ -823,66 +824,61 @@ msgstr "Produciuse un fallo ao iniciar:"
 msgid "Failed to install packages"
 msgstr "Produciuse un fallo durante a instalación dos paquetes"
 
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:706
-msgid "PackageKit Command Not Found"
-msgstr "Non se atopou a orde PackageKit"
-
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:729
 msgid "command not found"
 msgstr "non se atopou a orde"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:759
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Similar command is:"
 msgstr "Unha orde similar é:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:773
+#: ../contrib/command-not-found/pk-command-not-found.c:761
 msgid "Run similar command:"
 msgstr "Executar unha orde similar:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:787
-#: ../contrib/command-not-found/pk-command-not-found.c:796
+#: ../contrib/command-not-found/pk-command-not-found.c:775
+#: ../contrib/command-not-found/pk-command-not-found.c:784
 msgid "Similar commands are:"
 msgstr "As ordes similares son:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:791
 msgid "Please choose a command to run"
 msgstr "Elixa unha orde para executar"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:821
+#: ../contrib/command-not-found/pk-command-not-found.c:809
 msgid "The package providing this file is:"
 msgstr "O paquete que fornece este ficheiro é:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:828
+#: ../contrib/command-not-found/pk-command-not-found.c:816
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Instalar o paquete «%s» para fornecer a orde «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:855
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Packages providing this file are:"
 msgstr "Os paquetes que fornecen este ficheiro son:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:865
+#: ../contrib/command-not-found/pk-command-not-found.c:853
 msgid "Suitable packages are:"
 msgstr "Os posíbeis paquetes son:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:874
+#: ../contrib/command-not-found/pk-command-not-found.c:862
 msgid "Please choose a package to install"
 msgstr "Elixa un paquete para instalar"
 
@@ -1808,13 +1804,19 @@ msgstr "Teñen de ser reinstalados os seguintes paquetes:"
 msgid "The following packages have to be downgraded:"
 msgstr "Teñen de ser revertidos os seguintes paquetes:"
 
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: ../lib/packagekit-glib2/pk-task-text.c:325
+msgid "The following packages are untrusted:"
+msgstr "Os seguintes paquetes non son confiábeis:"
+
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:380
+#: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
 msgstr "Proceder a facer as modificacións?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:385
+#: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
 msgstr "Non foi posíbel realizar a transacción."
 
@@ -2094,7 +2096,7 @@ msgstr "Non se pode conectar ao bus do sistema"
 
 #: ../src/pk-main.c:344
 msgid "Failed to load any of the specified backends:"
-msgstr ""
+msgstr "Produciuse un fallo ao cargar algún dos backends especificados:"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
 #. follows
