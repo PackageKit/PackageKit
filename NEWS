@@ -1,3 +1,28 @@
+Version 0.6.18
+~~~~~~~~~~~~~~
+Released: 2011-09-05
+
+Notes:
+ - This update is suitable for stable distros and does not introduce new
+   functionality.
+ - If you want your dose of insanity, PackageKit 0.7.0 contains lots of
+   exciting new code that needs testing.
+
+Libraries:
+ - glib: Fix a small memory leak (Garrett Regier)
+ - qt: Do not dist the moc files (Richard Hughes)
+
+Backends:
+ - aptcc: Fix the size by emitting installed and download size (Daniel Nicoletti)
+ - yum: Ignore missing obsoleted updates rather than failing the update (Richard Hughes)
+ - zif: Fix a fatal error when doing 'pkcon repo-list --filter=~devel' (Richard Hughes)
+
+Bugfixes:
+ - Fix the browser-plugin build with GTK+ < 2.24 (Frederic Crozat)
+ - Make the lsof plugin code support distros with /lib64 (Richard Hughes)
+ - Make the lsof plugin not lookup hostnames (Richard Hughes)
+ - Remove the duplicate 'The software is not from a trusted source' (Richard Hughes)
+
 Version 0.6.17
 ~~~~~~~~~~~~~~
 Released: 2011-08-01
