@@ -40,4 +40,4 @@ PYTHON:                 A string in the format of "python<version>(module-name)"
                         or just the name of the Python module.
                         If the Python-Version is omitted, the backend will
                         choose the current default Python version.
-                        Example: "python2(packagekit"
+                        Example: "python2(packagekit)"
