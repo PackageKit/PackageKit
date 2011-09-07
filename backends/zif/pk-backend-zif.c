@@ -1053,21 +1053,13 @@ pk_backend_what_provides_helper (GPtrArray *store_array,
 	g_assert (ret);
 
 	/* resolve all the depends */
-	state_local = zif_state_get_child (state);
-	zif_state_set_number_steps (state_local, g_strv_length (search));
 	depend_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	for (i=0; search[i] != NULL; i++) {
-		state_local = zif_state_get_child (state);
 
 		/* parse this depend */
 		depend = zif_depend_new ();
 		g_ptr_array_add (depend_array, depend);
 		ret = zif_depend_parse_description (depend, search[i], error);
-		if (!ret)
-			goto out;
-
-		/* this part done */
-		ret = zif_state_done (state_local, error);
 		if (!ret)
 			goto out;
 	}
