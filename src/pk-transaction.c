@@ -4998,8 +4998,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
+					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateInstallPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -5071,8 +5070,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
+					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateRemovePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -5142,8 +5140,7 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
+					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateUpdatePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
