@@ -69,7 +69,6 @@ libpackagekit_qt2_la_SOURCES =					\
 	bitfield.cpp						\
 	common.h						\
 	dbus_proxies.stamp					\
-	$(MOCFILES)						\
 	$(NULL)
 
 libpackagekit_qt2_la_LIBADD =					\
