@@ -31,7 +31,8 @@ POSTSCRIPT_DRIVER:
                         to underscores.
                         Example: "postscriptdriver(epson;stylus_d92;)"
 
-PLASMA_SERVICE:         Name of a Plasma service.
+PLASMA_SERVICE:         A string in the format of "servicetype-name",
+                        e.g. "plasma4(dataengine-weather)".
 
 SHARED_LIB:             Name of a shared library
                         Example: "libpackagekit-glib2.so.14"
