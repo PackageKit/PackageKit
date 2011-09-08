@@ -102,6 +102,12 @@ static PkBackend *_backend = NULL;
 static slapt_rc_config *_config = NULL;
 static const gchar *_config_file = "/etc/slapt-get/slapt-getrc";
 
+/* prototypes */
+static void _show_transaction(PkBackend *backend, slapt_transaction_t *transaction);
+static void _install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate);
+static void _update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate);
+static void _remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove, gboolean simulate);
+
 /* CURLOPT_PROGRESSFUNCTION */
 static int backend_progress_callback(void *clientp,
 double dltotal, double dlnow, double ultotal, double ulnow)
@@ -347,6 +353,42 @@ static const gchar *_get_pkg_description(slapt_pkg_info_t *pkg)
 	slapt_clean_description((char*) text, pkg->name);
 
 	return text;
+}
+
+static void _show_transaction(PkBackend *backend, slapt_transaction_t *tran)
+{
+	slapt_pkg_info_t *pkg;
+	const gchar *package_id;
+	PkInfoEnum state;
+	const char *summary;
+	unsigned int i;
+
+	for (i = 0; i < tran->queue->count; i++) {
+
+	    if (tran->queue->pkgs[i]->type == INSTALL) {
+		pkg = tran->queue->pkgs[i]->pkg.i;
+		state = PK_INFO_ENUM_INSTALLING;
+		package_id = _get_string_from_pkg(pkg);
+		summary = _get_pkg_summary(pkg);
+		pk_backend_package (backend, state, package_id, summary);
+	    } else if (tran->queue->pkgs[i]->type == UPGRADE) {
+		pkg = tran->queue->pkgs[i]->pkg.u->upgrade;
+		state = PK_INFO_ENUM_UPDATING;
+		package_id = _get_string_from_pkg(pkg);
+		summary = _get_pkg_summary(pkg);
+		pk_backend_package (backend, state, package_id, summary);
+	    }
+
+	}
+
+	for (i = 0; i < tran->remove_pkgs->pkg_count; i++) {
+	    pkg = tran->remove_pkgs->pkgs[i];
+	    state = PK_INFO_ENUM_REMOVING;
+	    package_id = _get_string_from_pkg(pkg);
+	    summary = _get_pkg_summary(pkg);
+	    pk_backend_package (backend, state, package_id, summary);
+	}
+
 }
 
 /**
@@ -690,6 +732,21 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 void
 pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
+	_install_packages (backend, only_trusted, package_ids, FALSE);
+}
+
+/**
+ * pk_backend_simulate_install_packages:
+ */
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	_install_packages (backend, FALSE, package_ids, TRUE);
+}
+
+static void
+_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate)
+{
 	guint i;
 	guint len;
 	gchar *pi;
@@ -734,9 +791,13 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 	    slapt_add_install_to_transaction(transaction, pkg);
 	}
 
-	ret = slapt_handle_transaction(_config, transaction);
-	if (ret != 0) {
-	    pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "install failed");
+	if (simulate) {
+	    _show_transaction(backend, transaction);
+	} else {
+	    ret = slapt_handle_transaction(_config, transaction);
+	    if (ret != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "install failed");
+	    }
 	}
 
 	slapt_free_transaction(transaction);
@@ -825,6 +886,21 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 void
 pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
+	_remove_packages (backend, package_ids, allow_deps, autoremove, FALSE);
+}
+
+/**
+ * pk_backend_simulate_remove_packages:
+ */
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
+{
+	_remove_packages (backend, package_ids, TRUE, autoremove, TRUE);
+}
+
+static void
+_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove, gboolean simulate)
+{
 	guint i;
 	guint len;
 	gchar *pi;
@@ -869,9 +945,13 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
 	    slapt_add_remove_to_transaction(transaction, pkg);
 	}
 
-	ret = slapt_handle_transaction(_config, transaction);
-	if (ret != 0) {
-	    pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "remove failed");
+	if (simulate) {
+	    _show_transaction(backend, transaction);
+	} else {
+	    ret = slapt_handle_transaction(_config, transaction);
+	    if (ret != 0) {
+	        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "remove failed");
+	    }
 	}
 
 	slapt_free_transaction(transaction);
@@ -1057,6 +1137,21 @@ out:
 void
 pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
+	_update_packages (backend, only_trusted, package_ids, FALSE);
+}
+
+/**
+ * pk_backend_simulate_update_packages:
+ */
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	_update_packages (backend, FALSE, package_ids, TRUE);
+}
+
+static void
+_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate)
+{
 	guint i;
 	guint len;
 	const gchar *package_id;
@@ -1101,9 +1196,13 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	    slapt_add_upgrade_to_transaction(transaction, oldpkg, pkg);
 	}
 
-	ret = slapt_handle_transaction(_config, transaction);
-	if (ret != 0) {
-	    pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "install failed");
+	if (simulate) {
+	    _show_transaction(backend, transaction);
+	} else {
+	    ret = slapt_handle_transaction(_config, transaction);
+	    if (ret != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "install failed");
+	    }
 	}
 
 	slapt_free_transaction(transaction);
