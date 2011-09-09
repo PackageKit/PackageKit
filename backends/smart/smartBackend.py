@@ -1099,7 +1099,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 status = INFO_INSTALLING
             elif op == smart.const.REINSTALL:
                 status = INFO_REINSTALLING
-            elif op == smart.const.UPDATE:
+            elif op == smart.const.UPGRADE:
                 status = INFO_UPDATING
             elif op == smart.const.REMOVE:
                 status = INFO_REMOVING
