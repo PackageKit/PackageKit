@@ -1054,6 +1054,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packagestring = self._string_packageid(packageid)
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
+        # make sure that we get the installed variant if there are two
+        idparts = packageid.split(';')
+        repoid = idparts[3]
+        if repoid.startswith('installed'):
+            for obj in results:
+                if isinstance(obj, smart.cache.Package):
+                    if not obj.installed:
+                        results.remove(obj)
+                else:
+                    results.remove(obj)
+                    for pkg in obj.packages:
+                        if pkg.installed:
+                            results.append(pkg)
+
         return (ratio, results, suggestions)
 
     def _channel_is_local(self, channel):
