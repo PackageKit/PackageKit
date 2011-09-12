@@ -392,7 +392,7 @@ GROUPS = {
         pkg = PkgInfo.new(port.pkgname)
         next if pkg.version != version
 
-        license = LICENSE_UNKNOWN
+        license = 'unknown'
         portgroup = port.category()
         group = GROUPS[portgroup] || GROUP_UNKNOWN
         descr_file = File.join($portsdb.ports_dir, port.descr_file)
