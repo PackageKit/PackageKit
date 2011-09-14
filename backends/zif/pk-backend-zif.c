@@ -1238,7 +1238,18 @@ pk_backend_search_thread (PkBackend *backend)
 				/* this is a group */
 				array = pk_backend_resolve_groups (store_array, search, state_local, &error);
 			} else {
-				array = zif_store_array_resolve (store_array, search, state_local, &error);
+#if ZIF_CHECK_VERSION(0,2,4)
+				array = zif_store_array_resolve_full (store_array,
+								      search,
+								      ZIF_STORE_RESOLVE_FLAG_USE_ALL,
+								      state_local,
+								      &error);
+#else
+				array = zif_store_array_resolve (store_array,
+								 search,
+								 state_local,
+								 &error);
+#endif
 			}
 		} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 			array = pk_backend_what_provides_helper (store_array, search, state_local, &error);
