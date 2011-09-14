@@ -1241,7 +1241,8 @@ pk_backend_search_thread (PkBackend *backend)
 #if ZIF_CHECK_VERSION(0,2,4)
 				array = zif_store_array_resolve_full (store_array,
 								      search,
-								      ZIF_STORE_RESOLVE_FLAG_USE_ALL,
+								      ZIF_STORE_RESOLVE_FLAG_USE_ALL |
+								      ZIF_STORE_RESOLVE_FLAG_PREFER_NATIVE,
 								      state_local,
 								      &error);
 #else
