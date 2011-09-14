@@ -251,7 +251,7 @@ user to restart the computer or remove and re-insert the device.
         --enable-smart \
         --enable-introspection \
 %endif
-        --with-default-backend=yum,zif \
+        --with-default-backend=auto \
         --disable-local \
         --disable-strict \
         --disable-tests
