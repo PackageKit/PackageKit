@@ -286,6 +286,10 @@ pk_backend_transaction_start (PkBackend *backend)
 	guint lock_delay;
 	guint lock_retries;
 	guint pid = 0;
+#if ZIF_CHECK_VERSION(0,2,4)
+	guint uid;
+	gchar *cmdline = NULL;
+#endif
 
 	/* only try a finite number of times */
 	lock_retries = zif_config_get_uint (priv->config, "lock_retries", NULL);
@@ -385,8 +389,21 @@ pk_backend_transaction_start (PkBackend *backend)
 	g_cancellable_reset (priv->cancellable);
 
 	/* start with a new transaction */
+#if ZIF_CHECK_VERSION(0,2,4)
+	g_object_get (backend,
+		      "uid", &uid,
+		      NULL);
+	zif_transaction_set_euid (priv->transaction, uid);
+	g_object_get (backend,
+		      "cmdline", &cmdline,
+		      NULL);
+	zif_transaction_set_cmdline (priv->transaction, cmdline);
+#endif
 	zif_transaction_reset (priv->transaction);
 out:
+#if ZIF_CHECK_VERSION(0,2,4)
+	g_free (cmdline);
+#endif
 	g_free (http_proxy);
 	return;
 }
