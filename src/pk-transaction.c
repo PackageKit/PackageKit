@@ -1773,6 +1773,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	gchar *no_proxy = NULL;
 	gchar *pac = NULL;
 	gchar *root = NULL;
+	gchar *cmdline = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	/* get session */
@@ -1824,7 +1825,14 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	}
 	g_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
 		   proxy_http, proxy_ftp, root, priv->uid, session);
+
+	/* try to set the new uid and cmdline */
+	cmdline = g_strdup_printf ("PackageKit: %s",
+				   pk_role_enum_to_string (priv->role));
+	pk_backend_set_uid (priv->backend, priv->uid);
+	pk_backend_set_cmdline (priv->backend, cmdline);
 out:
+	g_free (cmdline);
 	g_free (proxy_http);
 	g_free (proxy_https);
 	g_free (proxy_ftp);
