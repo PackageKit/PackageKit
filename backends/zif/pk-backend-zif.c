@@ -1242,7 +1242,8 @@ pk_backend_search_thread (PkBackend *backend)
 				array = zif_store_array_resolve_full (store_array,
 								      search,
 								      ZIF_STORE_RESOLVE_FLAG_USE_ALL |
-								      ZIF_STORE_RESOLVE_FLAG_PREFER_NATIVE,
+								      ZIF_STORE_RESOLVE_FLAG_PREFER_NATIVE |
+								      ZIF_STORE_RESOLVE_FLAG_USE_GLOB,
 								      state_local,
 								      &error);
 #else
