@@ -1528,8 +1528,24 @@ pk_backend_get_cache_age (PkBackend *backend)
 void
 pk_backend_set_cache_age (PkBackend *backend, guint cache_age)
 {
+	const guint cache_age_offset = 60 * 30;
+
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->locked != FALSE);
+
+	/* We offset the cache age by 30 minutes if possible to
+	 * account for the possible delay in running the transaction,
+	 * for example:
+	 *
+	 * Update check set to once per 3 days
+	 * GUI starts checking for updates on Monday at 12:00
+	 * Update check completes on Monday at 12:01
+	 * GUI starts checking for updates on Thursday at 12:00 (exactly 3 days later)
+	 * Cache is 2 days 23 hours 59 minutes old
+	 * Backend sees it's not 3 days old, does nothing
+	 */
+	if (cache_age > cache_age_offset)
+		cache_age -= cache_age_offset;
 
 	g_debug ("cache-age changed to %i", cache_age);
 	backend->priv->cache_age = cache_age;
