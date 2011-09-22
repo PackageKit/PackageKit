@@ -3541,13 +3541,16 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 		goto out;
 	}
 
-	/* mark any untrusted packages */
+	/* mark any explicitly-untrusted packages so that the
+	 * transaction skips straight to only_trusted=FALSE after
+	 * simulate */
 	install = zif_transaction_get_install (priv->transaction);
 	untrusted_array = g_ptr_array_new ();
 	for (i=0; i<install->len; i++) {
 		package = g_ptr_array_index (install, i);
 		trust_kind = zif_package_get_trust_kind (package);
-		if (trust_kind != ZIF_PACKAGE_TRUST_KIND_PUBKEY) {
+		if (trust_kind == ZIF_PACKAGE_TRUST_KIND_NONE ||
+		    trust_kind == ZIF_PACKAGE_TRUST_KIND_UNKNOWN) {
 			/* TODO: make a proper property */
 			g_object_set_data (G_OBJECT(package),
 					   "kind",
@@ -3558,8 +3561,9 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 			/* ignore the trusted auth step */
 			pk_backend_message (backend,
 					    PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,
-					    "The package %s is untrusted",
-					    zif_package_get_printable (package));
+					    "The package %s has trust %s",
+					    zif_package_get_printable (package),
+					    zif_package_trust_kind_to_string (trust_kind));
 		}
 	}
 	state_local = zif_state_get_child (state);
