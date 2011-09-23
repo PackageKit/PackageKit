@@ -3361,18 +3361,18 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 				switch (zif_update_info_get_kind (info)) {
 				case ZIF_UPDATE_INFO_KIND_CVE:
 					g_string_append_printf (string_cve, "%s;%s;",
-								zif_update_info_get_title (info),
-								zif_update_info_get_url (info));
+								zif_update_info_get_url (info),
+								zif_update_info_get_title (info));
 					break;
 				case ZIF_UPDATE_INFO_KIND_BUGZILLA:
 					g_string_append_printf (string_bugzilla, "%s;%s;",
-								zif_update_info_get_title (info),
-								zif_update_info_get_url (info));
+								zif_update_info_get_url (info),
+								zif_update_info_get_title (info));
 					break;
 				case ZIF_UPDATE_INFO_KIND_VENDOR:
 					g_string_append_printf (string_vendor, "%s;%s;",
-								zif_update_info_get_title (info),
-								zif_update_info_get_url (info));
+								zif_update_info_get_url (info),
+								zif_update_info_get_title (info));
 					break;
 				default:
 					break;
