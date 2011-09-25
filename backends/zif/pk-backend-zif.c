@@ -1481,6 +1481,9 @@ pk_backend_state_action_changed_cb (ZifState *state, ZifStateAction action, cons
 	/* general cache loading */
 	if (action == ZIF_STATE_ACTION_CHECKING ||
 	    action == ZIF_STATE_ACTION_LOADING_REPOS ||
+#if ZIF_CHECK_VERSION(0,2,4)
+	    action == ZIF_STATE_ACTION_LOADING_RPMDB ||
+#endif
 	    action == ZIF_STATE_ACTION_DECOMPRESSING) {
 		status = PK_STATUS_ENUM_LOADING_CACHE;
 		goto out;
@@ -1536,6 +1539,9 @@ pk_backend_state_action_changed_cb (ZifState *state, ZifStateAction action, cons
 	if (action == ZIF_STATE_ACTION_DEPSOLVING_CONFLICTS ||
 	    action == ZIF_STATE_ACTION_DEPSOLVING_INSTALL ||
 	    action == ZIF_STATE_ACTION_DEPSOLVING_REMOVE ||
+#if ZIF_CHECK_VERSION(0,2,4)
+	    action == ZIF_STATE_ACTION_CHECKING_UPDATES ||
+#endif
 	    action == ZIF_STATE_ACTION_DEPSOLVING_UPDATE) {
 		status = PK_STATUS_ENUM_DEP_RESOLVE;
 		goto out;
@@ -3473,6 +3479,13 @@ pk_backend_convert_transaction_reason_to_info_enum (ZifTransactionReason reason)
 	case ZIF_TRANSACTION_REASON_UPDATE_DEPEND:
 	case ZIF_TRANSACTION_REASON_UPDATE_FOR_CONFLICT:
 	case ZIF_TRANSACTION_REASON_UPDATE_USER_ACTION:
+#if ZIF_CHECK_VERSION(0,2,4)
+	case ZIF_TRANSACTION_REASON_UPDATE_SYSTEM:
+	case ZIF_TRANSACTION_REASON_DOWNGRADE_USER_ACTION:
+#endif
+#if ZIF_CHECK_VERSION(0,2,5)
+	case ZIF_TRANSACTION_REASON_DOWNGRADE_FOR_DEP:
+#endif
 		return PK_INFO_ENUM_UPDATING;
 	default:
 		return PK_INFO_ENUM_AVAILABLE;
