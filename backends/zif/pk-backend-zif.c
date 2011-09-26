@@ -217,27 +217,6 @@ pk_backend_convert_error (const GError *error)
 		default:
 			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
 		}
-	} else if (error->domain == ZIF_MD_ERROR) {
-		switch (error->code) {
-		case ZIF_MD_ERROR_NO_SUPPORT:
-			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
-			break;
-		case ZIF_MD_ERROR_FAILED_AS_OFFLINE:
-			error_code = PK_ERROR_ENUM_NO_NETWORK;
-			break;
-		case ZIF_MD_ERROR_FAILED_DOWNLOAD:
-			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
-			break;
-		case ZIF_MD_ERROR_BAD_SQL:
-		case ZIF_MD_ERROR_FAILED_TO_LOAD:
-		case ZIF_MD_ERROR_FILE_TOO_OLD:
-		case ZIF_MD_ERROR_FAILED:
-		case ZIF_MD_ERROR_NO_FILENAME:
-			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
-			break;
-		default:
-			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
-		}
 	} else if (error->domain == ZIF_RELEASE_ERROR) {
 		switch (error->code) {
 		case ZIF_RELEASE_ERROR_DOWNLOAD_FAILED:
