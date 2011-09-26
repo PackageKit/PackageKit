@@ -25,6 +25,9 @@
 #include <string.h>
 #include <packagekit-glib2/pk-debug.h>
 #include <zif.h>
+#if ZIF_CHECK_VERSION(0,2,5)
+#include <zif-private.h>
+#endif
 
 #define PACKAGE_MEDIA_REPO_FILENAME		"/etc/yum.repos.d/packagekit-media.repo"
 
