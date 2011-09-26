@@ -540,7 +540,7 @@ pk_backend_emit_package_array (PkBackend *backend,
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		installed = zif_package_is_installed (package);
-		package_id = zif_package_get_package_id (package);
+		package_id = zif_package_get_id (package);
 
 		/* should be quick as shouldn't be doing any action */
 		state_loop = zif_state_get_child (state_local);
