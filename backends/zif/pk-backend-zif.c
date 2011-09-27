@@ -3108,10 +3108,19 @@ pk_backend_get_updates_thread (PkBackend *backend)
 		state_local = zif_state_get_child (priv->state);
 		ret = zif_transaction_resolve (priv->transaction, state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-					       "cannot resolve transaction: %s",
-					       error->message);
+			if (g_error_matches (error,
+					     ZIF_TRANSACTION_ERROR,
+					     ZIF_TRANSACTION_ERROR_NOTHING_TO_DO)) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
+						       "No transaction to process: %s",
+						       error->message);
+			} else {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+						       "Cannot resolve transaction: %s",
+						       error->message);
+			}
 			g_error_free (error);
 			goto out;
 		}
