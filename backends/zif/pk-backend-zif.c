@@ -3484,6 +3484,9 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	ZifPackage *package;
 	ZifPackageTrustKind trust_kind;
 	ZifState *state_local;
+#if ZIF_CHECK_VERSION(0,2,5)
+	ZifTransactionFlags flags;
+#endif
 
 	/* set steps */
 	simulate = pk_backend_get_bool (backend, "hint:simulate");
@@ -3640,9 +3643,17 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 
 	/* commit the transaction */
 	state_local = zif_state_get_child (state);
+#if ZIF_CHECK_VERSION(0,2,5)
+	flags = only_trusted ? 0 : ZIF_TRANSACTION_FLAG_ALLOW_UNTRUSTED;
+	ret = zif_transaction_commit_full (priv->transaction,
+					   flags,
+					   state_local,
+					   &error);
+#else
 	ret = zif_transaction_commit (priv->transaction,
 				      state_local,
 				      &error);
+#endif
 	if (!ret) {
 		pk_backend_error_code (backend,
 				       pk_backend_convert_error (error),
