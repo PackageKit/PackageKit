@@ -1,13 +1,19 @@
 ## We require new-style dependency handling.
 AUTOMAKE_OPTIONS = 1.7
 
+if HAVE_INTROSPECTION
+-include $(INTROSPECTION_MAKEFILE)
+INTROSPECTION_GIRS =
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+endif
+
 SUBDIRS = plugins
 
 NULL =
 
-PK_GLIB2_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(NULL)
+PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+		$(NULL)
 
 INCLUDES =						\
 	$(GIO_CFLAGS)					\
@@ -48,6 +54,17 @@ plugininclude_HEADERS =					\
 	pk-conf.h					\
 	pk-plugin.h					\
 	pk-transaction.h
+
+plugininclude_GIRSOURCES =				\
+	packagekit-plugin.h				\
+	pk-plugin.h					\
+	pk-backend.c					\
+	pk-backend.h					\
+	pk-transaction.c				\
+	pk-transaction.h				\
+	pk-conf.c					\
+	pk-conf.h					\
+	$(NULL)
 
 shared_SOURCES =					\
 	pk-marshal.c					\
@@ -198,5 +215,31 @@ CLEANFILES =						\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	transactions.db
+
+if HAVE_INTROSPECTION
+PackageKitPlugin-1.0.gir: $(plugininclude_GIRSOURCES)
+PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0 PackageKitGlib-1.0
+PackageKitPlugin_1_0_gir_CFLAGS = $(INCLUDES)						\
+				-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
+				-DI_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
+PackageKitPlugin_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
+					--symbol-prefix=pk_ \
+					--warn-all \
+					--add-include-path=$(srcdir) \
+					--add-include-path=$(top_builddir)/lib/packagekit-glib2 \
+					--library-path=$(top_builddir)/lib/packagekit-glib2 \
+					--c-include="plugin/packagekit-plugin.h"
+PackageKitPlugin_1_0_gir_LIBS = $(PK_GLIB2_LIBS)
+PackageKitPlugin_1_0_gir_FILES = $(plugininclude_GIRSOURCES)
+INTROSPECTION_GIRS += PackageKitPlugin-1.0.gir
+
+girdir = $(datadir)/gir-1.0
+gir_DATA = $(INTROSPECTION_GIRS)
+
+typelibdir = $(libdir)/girepository-1.0
+typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+
+CLEANFILES += $(gir_DATA) $(typelib_DATA)
+endif
 
 -include $(top_srcdir)/git.mk

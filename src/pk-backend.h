@@ -241,7 +241,6 @@ gchar		*pk_backend_get_proxy_https		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_socks		(PkBackend	*backend);
 gchar		*pk_backend_get_no_proxy		(PkBackend	*backend);
 gchar		*pk_backend_get_pac			(PkBackend	*backend);
-gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 const gchar	*pk_backend_get_root			(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
 gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
