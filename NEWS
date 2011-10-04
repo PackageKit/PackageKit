@@ -1,3 +1,30 @@
+Version 0.6.19
+~~~~~~~~~~~~~~
+Released: 2011-10-04
+
+Backends:
+ - aptcc: Fix crash when packages have long descriptions and fix some mem leaks (Daniel Nicoletti)
+ - entropy: Properly account package size when "extra" downloads are available (Fabio Erculiani)
+ - zif: Add support for the latest status and transaction enum values (Richard Hughes)
+ - zif: Do not always ask for untrusted authentication for trusted repos (Richard Hughes)
+ - zif: Don't try to map error domains that are no longer exported (Richard Hughes)
+ - zif: Don't use zif_package_get_package_id() (Richard Hughes)
+ - zif: Emit Package(Untrusted) for each package that is untrusted in the transaction (Richard Hughes)
+ - zif: Enable globbing for Resolve() (Richard Hughes)
+ - zif: Fix a critical warning when using WhatProvides (Richard Hughes)
+ - zif: Include zif-private.h for very new versions of zif (Richard Hughes)
+ - zif: Prefer native packages when resolving user input (Richard Hughes)
+ - zif: Use zif_store_array_resolve_full() when possible (Richard Hughes)
+ - zif: Use zif_transaction_commit_full() to be able to install untrusted packages (Richard Hughes)
+ - zif: When the transaction has no thing to do, use the correct PK error code enum (Richard Hughes)
+
+New Features:
+ - Offset the cache age by 30 minutes (Richard Hughes)
+
+Bugfixes:
+ - Use g_unix_signal_add_full() which has been renamed GLib (Denis Washington)
+ - Use the newest filter when resolving for new packages to install (Richard Hughes)
+
 Version 0.6.18
 ~~~~~~~~~~~~~~
 Released: 2011-09-05
