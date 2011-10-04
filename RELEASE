@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_6_18.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_6_19.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.6.19
+Version 0.6.20
 ~~~~~~~~~~~~~~
 Released: 2011-xx-xx
 
@@ -26,8 +26,8 @@ Bugfixes:
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.6.19"
-git tag -s -f -m "Release 0.6.19" PACKAGEKIT_0_6_19
+git commit -a -m "Release version 0.6.20"
+git tag -s -f -m "Release 0.6.20" PACKAGEKIT_0_6_20
 <gpg password>
 git push --tags
 git push
@@ -46,14 +46,13 @@ scp *.tar.* packagekit.org:/srv/www/html/releases/
 
 git commit -a -m "trivial: post release version bump"
 git push
-tx push --source
 
 9. Upload new html sources
 
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 0.6.19 released!
+PackageKit 0.6.20 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
