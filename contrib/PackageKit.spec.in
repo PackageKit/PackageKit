@@ -48,7 +48,7 @@ BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: gobject-introspection-devel
-BuildRequires: zif-devel >= 0.1.3
+BuildRequires: zif-devel >= 0.2.5
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -74,7 +74,7 @@ A backend for PackageKit to enable yum functionality.
 %package zif
 Summary: PackageKit Zif backend
 Group: System Environment/Libraries
-Requires: zif >= 0.1.3
+Requires: zif >= 0.2.5
 Requires: %{name} = %{version}-%{release}
 Provides: PackageKit-backend
 
