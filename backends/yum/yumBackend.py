@@ -3454,6 +3454,10 @@ class PackageKitYumBase(yum.YumBase):
     def __init__(self, backend):
         yum.YumBase.__init__(self)
 
+        # YumBase.run_with_package_names is used to record which packages are
+        # involved in executing a transaction
+        self.run_with_package_names.add('PackageKit-yum')
+
         # load the config file
         config = ConfigParser.ConfigParser()
         try:
