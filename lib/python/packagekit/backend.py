@@ -64,34 +64,34 @@ class PackageKitBaseBackend:
         # try to get LANG
         try:
             self.lang = os.environ['LANG']
-        except KeyError, e:
+        except KeyError as e:
             print "Error: No LANG envp"
 
         # try to get NETWORK state
         try:
             if os.environ['NETWORK'] == 'TRUE':
                 self.has_network = True
-        except KeyError, e:
+        except KeyError as e:
             print "Error: No NETWORK envp"
 
         # try to get BACKGROUND state
         try:
             if os.environ['BACKGROUND'] == 'TRUE':
                 self.background = True
-        except KeyError, e:
+        except KeyError as e:
             print "Error: No BACKGROUND envp"
 
         # try to get INTERACTIVE state
         try:
             if os.environ['INTERACTIVE'] == 'TRUE':
                 self.interactive = True
-        except KeyError, e:
+        except KeyError as e:
             print "Error: No INTERACTIVE envp"
 
         # try to get CACHE_AGE state
         try:
             self.cache_age = int(os.environ['CACHE_AGE'])
-        except KeyError, e:
+        except KeyError as e:
             pass
 
     def doLock(self):
@@ -749,9 +749,9 @@ class PackageKitBaseBackend:
         while True:
             try:
                 line = sys.stdin.readline().strip('\n')
-            except IOError, e:
+            except IOError as e:
                 self.error(ERROR_TRANSACTION_CANCELLED, 'could not read from stdin: %s' % str(e))
-            except KeyboardInterrupt, e:
+            except KeyboardInterrupt as e:
                 self.error(ERROR_PROCESS_KILL, 'process was killed by ctrl-c: %s' % str(e))
             if not line or line == 'exit':
                 break
