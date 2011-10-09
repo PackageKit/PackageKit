@@ -4386,19 +4386,13 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
 				   NULL,
-				   50, /* get stores */
-				   50, /* refresh them */
+				   5, /* get stores */
+				   95, /* refresh them */
 				   -1);
 	g_assert (ret);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
-
-	/* don't nuke the metadata */
-	if (!force) {
-		g_debug ("not supported yet");
-		goto out;
-	}
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
@@ -4426,17 +4420,29 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 		goto out;
 	}
 
-	/* clean all the repos */
+	/* refresh all the repos */
 	state_local = zif_state_get_child (priv->state);
 	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
-	ret = zif_store_array_clean (store_array, state_local, &error);
+	ret = zif_store_array_refresh (store_array, force, state_local, &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
 				       pk_backend_convert_error (error),
-				       "failed to clean: %s", error->message);
+				       "failed to refresh: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
