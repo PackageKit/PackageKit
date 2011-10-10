@@ -3457,7 +3457,8 @@ class PackageKitYumBase(yum.YumBase):
 
         # YumBase.run_with_package_names is used to record which packages are
         # involved in executing a transaction
-        self.run_with_package_names.add('PackageKit-yum')
+        if hasattr(self, 'run_with_package_names'):
+            self.run_with_package_names.add('PackageKit-yum')
 
         # load the config file
         config = ConfigParser.ConfigParser()
