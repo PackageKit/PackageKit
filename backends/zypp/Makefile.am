@@ -14,7 +14,8 @@ libpk_backend_zypp_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(ZYPP_CFLAGS) -Wno-depreca
 
 EXTRA_DIST =		\
 	zypp-utils.h	\
-	zypp-events.h
+	zypp-events.h \
+	pk-backend-zypp-private.h
 
 
 -include $(top_srcdir)/git.mk

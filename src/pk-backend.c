@@ -135,6 +135,8 @@ struct PkBackendPrivate
 	PkStatusEnum		 status; /* this changes */
 	PkStore			*store;
 	PkTime			*time;
+	guint			 uid;
+	gchar			*cmdline;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -173,6 +175,8 @@ enum {
 	PROP_PERCENTAGE,
 	PROP_SUBPERCENTAGE,
 	PROP_REMAINING,
+	PROP_UID,
+	PROP_CMDLINE,
 	PROP_LAST
 };
 
@@ -807,6 +811,33 @@ pk_backend_set_root (PkBackend	*backend, const gchar *root)
 	g_free (backend->priv->root);
 	backend->priv->root = g_strdup (root);
 	g_debug ("install root now %s", backend->priv->root);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_cmdline:
+ **/
+gboolean
+pk_backend_set_cmdline (PkBackend *backend, const gchar *cmdline)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	g_free (backend->priv->cmdline);
+	backend->priv->cmdline = g_strdup (cmdline);
+	g_debug ("install cmdline now %s", backend->priv->cmdline);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_uid:
+ **/
+gboolean
+pk_backend_set_uid (PkBackend *backend, guint uid)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	backend->priv->uid = uid;
+	g_debug ("install uid now %i", backend->priv->uid);
 	return TRUE;
 }
 
@@ -1590,8 +1621,24 @@ pk_backend_get_cache_age (PkBackend *backend)
 void
 pk_backend_set_cache_age (PkBackend *backend, guint cache_age)
 {
+	const guint cache_age_offset = 60 * 30;
+
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->locked != FALSE);
+
+	/* We offset the cache age by 30 minutes if possible to
+	 * account for the possible delay in running the transaction,
+	 * for example:
+	 *
+	 * Update check set to once per 3 days
+	 * GUI starts checking for updates on Monday at 12:00
+	 * Update check completes on Monday at 12:01
+	 * GUI starts checking for updates on Thursday at 12:00 (exactly 3 days later)
+	 * Cache is 2 days 23 hours 59 minutes old
+	 * Backend sees it's not 3 days old, does nothing
+	 */
+	if (cache_age > cache_age_offset)
+		cache_age -= cache_age_offset;
 
 	g_debug ("cache-age changed to %i", cache_age);
 	backend->priv->cache_age = cache_age;
@@ -2837,6 +2884,12 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_REMAINING:
 		g_value_set_uint (value, priv->remaining);
 		break;
+	case PROP_UID:
+		g_value_set_uint (value, priv->uid);
+		break;
+	case PROP_CMDLINE:
+		g_value_set_string (value, priv->cmdline);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2906,6 +2959,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->no_proxy);
 	g_free (backend->priv->pac);
 	g_free (backend->priv->root);
+	g_free (backend->priv->cmdline);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
 	g_free (backend->priv->frontend_socket);
@@ -3006,6 +3060,22 @@ pk_backend_class_init (PkBackendClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_REMAINING, pspec);
+
+	/**
+	 * PkBackend:uid:
+	 */
+	pspec = g_param_spec_uint ("uid", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_UID, pspec);
+
+	/**
+	 * PkBackend:cmdline:
+	 */
+	pspec = g_param_spec_string ("cmdline", NULL, NULL,
+				     NULL,
+				     G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =

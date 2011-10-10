@@ -60,11 +60,6 @@ typedef enum {
         UPDATE
 } PerformType;
 
-/**
-  * A map to store the signatures which were accepted for each backend
-  */
-extern std::map<PkBackend *, std::vector<std::string> *> _signatures;
-
 /** Used to show/install only an update to ourself. This way if we find a critical bug
   * in the way we update packages we will install the fix before any other updates.
   */
