@@ -937,6 +937,8 @@ out:
 
 /**
  * pk_transaction_get_conf:
+ *
+ * Returns: (transfer none): PkConf of this transaction
  **/
 PkConf *
 pk_transaction_get_conf (PkTransaction *transaction)
@@ -947,6 +949,8 @@ pk_transaction_get_conf (PkTransaction *transaction)
 
 /**
  * pk_transaction_get_results:
+ *
+ * Returns: (transfer none): Results of the transaction
  **/
 PkResults *
 pk_transaction_get_results (PkTransaction *transaction)
@@ -957,6 +961,8 @@ pk_transaction_get_results (PkTransaction *transaction)
 
 /**
  * pk_transaction_get_package_ids:
+ *
+ * Returns: (transfer none): Cached package-ids
  **/
 gchar **
 pk_transaction_get_package_ids (PkTransaction *transaction)
@@ -979,6 +985,8 @@ pk_transaction_set_package_ids (PkTransaction *transaction,
 
 /**
  * pk_transaction_get_values:
+ *
+ * Returns: (transfer none): Cached values
  **/
 gchar **
 pk_transaction_get_values (PkTransaction *transaction)
@@ -989,6 +997,8 @@ pk_transaction_get_values (PkTransaction *transaction)
 
 /**
  * pk_transaction_get_full_paths:
+ *
+ * Returns: (transfer none): Cached paths
  **/
 gchar **
 pk_transaction_get_full_paths (PkTransaction *transaction)

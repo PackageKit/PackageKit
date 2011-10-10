@@ -427,6 +427,8 @@ pk_backend_get_string (PkBackend *backend, const gchar *key)
 
 /**
  * pk_backend_get_strv:
+ *
+ * Returns: (transfer none):
  **/
 gchar **
 pk_backend_get_strv (PkBackend *backend, const gchar *key)
@@ -467,6 +469,8 @@ pk_backend_get_bool (PkBackend *backend, const gchar *key)
 
 /**
  * pk_backend_get_pointer:
+ *
+ * Returns: (transfer none):
  **/
 gpointer
 pk_backend_get_pointer (PkBackend *backend, const gchar *key)
@@ -2642,6 +2646,8 @@ pk_backend_thread_setup (gpointer thread_data)
 
 /**
  * pk_backend_thread_create:
+ *
+ * @func: (scope call):
  **/
 gboolean
 pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
@@ -2801,6 +2807,8 @@ pk_backend_file_monitor_changed_cb (GFileMonitor *monitor,
 
 /**
  * pk_backend_watch_file:
+ *
+ * @func: (scope call):
  */
 gboolean
 pk_backend_watch_file (PkBackend *backend,

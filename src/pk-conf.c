@@ -68,6 +68,8 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 
 /**
  * pk_conf_get_strv:
+ *
+ * Returns: (transfer none):
  **/
 gchar **
 pk_conf_get_strv (PkConf *conf, const gchar *key)
