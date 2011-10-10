@@ -1,3 +1,94 @@
+Version 0.7.0
+~~~~~~~~~~~~~
+Released: 2011-09-05
+
+Notes:
+ - This is the first release of the unstable 0.7.x series.
+ - This code removes a lot of deprecated code and compatibility shims
+   compared to the previous branch.
+ - Highlights of this release is the new transaction plugin interface
+   that allows external projects to add modules for interfacing with
+   PackageKit. This allows projects such as Listaller to interface with
+   PackageKit to install self contained software blobs.
+   See http://listaller.tenstral.net/ for more information.
+ - The daemon code is now using GDBus rather than dbus-glib, but the
+   libpackagekit-glib library is still using the latter. It'll be
+   converted hopefully in time for 0.7.1.
+ - It's probably not a good idea to use releases from this branch for
+   stable distros or enterprise products!
+
+Libraries:
+ - glib: Free the PkProgress' package (Garrett Regier)
+ - glib: Remove the foo_from_text() compatibility defines (Richard Hughes)
+ - python: Remove the native python library (Richard Hughes)
+ - qt2: Use cmake package config instead of Find* module (Matthias Klumpp)
+ - qt: Do not dist the moc files (Richard Hughes)
+
+Backends:
+ - aptcc: Fix crash when long description blow char buffer (Daniel Nicoletti)
+ - aptcc: Fix the size by emitting installed and download size (Daniel Nicoletti)
+ - aptcc: Implement provides-library (Matthias Klumpp)
+ - apt: Remove the python apt backend (Richard Hughes)
+ - dummy: Implement SimulateUpdatePackages and SimulateRemovePackages (Richard Hughes)
+ - entropy: properly account package size when "extra" downloads are available (Fabio Erculiani)
+ - razor: Remove the razor backend, upstream razor is dead (Richard Hughes)
+ - yum: Add a document detailing the yum API we're using (Richard Hughes)
+ - yum: Emit Package(Untrusted) for each package that is untrusted in the transaction (Richard Hughes)
+ - yum: Ignore missing obsoleted updates rather than failing the update (Richard Hughes)
+ - yum: Manually convert the results of GetDetails to unicode. Fixes rh#719916 (Richard Hughes)
+ - yum: Parse the new style .discinfo files for F15 (Chris Lumens)
+ - zif: Emit Message(UntrustedPackage) to sometimes skip the trusted authentication (Richard Hughes)
+ - zif: Emit Package(Untrusted) for each package that is untrusted in the transaction (Richard Hughes)
+ - zif: Fix a fatal error when doing 'pkcon repo-list --filter=~devel' (Richard Hughes)
+ - zif: Use the shared version for newest filtering (Richard Hughes)
+ - zypp: do not install locked (taboo) patches (Ladislav Slezak)
+ - zypp: Do not rebuild the pool on every call causing slowness (bnc#679650) (Duncan Mac-Vicar P)
+ - zypp: Just use the iterator instead of so many temps (Duncan Mac-Vicar P)
+
+New Features:
+ - Add an 'auto' string for the --with-default-backend= configure option (Richard Hughes)
+ - Add an example plugin that saves private state (Richard Hughes)
+ - Add an example to contrib to show how to build an out-of-tree plugin (Richard Hughes)
+ - Add an ItemProgress signal designed to eventually replace SubPercentage (Richard Hughes)
+ - Add an untrusted section header when using console applications (Richard Hughes)
+ - Add a PK_PROVIDES_ENUM_LIBRARY entry (Matthias Klumpp)
+ - Add a "Python" type to PkProvidesEnum and document how the provided components should be named (Matthias Klumpp)
+ - Add a transaction plugin infrastructure to packagekitd (Richard Hughes)
+ - Port the browser-plugin from dbus-glib to GDBus (Richard Hughes)
+ - Convert the daemon to use GDBus rather than dbus-glib (Richard Hughes)
+ - Do not do the compatibility method fallbacks anymore (Richard Hughes)
+ - Don't ship all the valid licences as enums anymore (Richard Hughes)
+ - Install a pkgconfig file so external projects can build plugins (Richard Hughes)
+ - Move the check for libraries in use for security updates functionality to a plugin (Richard Hughes)
+ - Move the checking for running processes before update to a plugin (Richard Hughes)
+ - Move the clearing firmware functionality into a plugin (Richard Hughes)
+ - Move the desktop database rescan functionality into a plugin (Richard Hughes)
+ - Move the pre-transaction.d and post-transaction.d functionality into a plugin (Richard Hughes)
+ - Move the update check for running processes into a plugin (Richard Hughes)
+ - Move the updating of the package list into a plugin (Richard Hughes)
+ - Raise the PolicyKit required version to 0.98 and drop the compat code (Richard Hughes)
+ - Remove PkFileMonitor, we can now use GFileMonitor (Richard Hughes)
+ - Remove the deprecated PK_BACKEND_OPTIONS (Richard Hughes)
+ - Remove the GTK+2 pango module and only support GTK+3 (Richard Hughes)
+ - Remove the HAL integration code (Richard Hughes)
+ - Require a new version of automake, and make configure.in sane again (Richard Hughes)
+ - Use g_bus_watch_name() and remove the homegrown EggDbusMonitor (Richard Hughes)
+
+Bugfixes:
+ - Actually use the value from /etc/login.defs (Richard Hughes)
+ - Fix the browser-plugin build with GTK+ < 2.24 (Frederic Crozat)
+ - Port the gstreamer-plugin from dbus-glib to GDBus (Richard Hughes)
+ - gtk-module: Port from dbus-glib to GDBus (Richard Hughes)
+ - Ignore local packages when calculating the simulate list (Richard Hughes)
+ - Ignore untrusted packages when calculating the simulate list (Richard Hughes)
+ - Make percentage, subpercentage and remaining proper GObject properties on the PkBackend object (Richard Hughes)
+ - Make the lsof plugin code support distros such as Fedora with /lib64 (Richard Hughes)
+ - pk-command-not-found: An ellipsis has three dots, not two (Adam Jackson)
+ - Make lsof use the '-n' option to avoid looking up hostnames (Richard Hughes)
+ - Remove cppunit check as packagekit-qt2 does not use it (Daniel Nicoletti)
+ - Remove the duplicate 'The software is not from a trusted source' (Richard Hughes)
+ - Use g_unix_signal_add_full() which has been renamed in  GLib (Denis Washington)
+
 Version 0.6.16
 ~~~~~~~~~~~~~~
 Released: 2011-07-04

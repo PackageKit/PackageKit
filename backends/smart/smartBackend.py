@@ -178,8 +178,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def reset(self):
         self._package_list = []
 
-    @needs_cache
     def install_packages(self, only_trusted, packageids):
+        self._install_packages(only_trusted, packageids)
+
+    def simulate_install_packages(self, packageids):
+        self._install_packages(False, packageids, True)
+
+    @needs_cache
+    def _install_packages(self, only_trusted, packageids, simulate=False):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
@@ -210,12 +216,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        self.status(STATUS_INSTALL)
-        self._packagesdict = trans.getChangeSet()
-        self.ctrl.commitTransaction(trans, confirm=False)
+        if simulate:
+            self._show_changeset(trans.getChangeSet())
+        else:
+            self.status(STATUS_INSTALL)
+            self._packagesdict = trans.getChangeSet()
+            self.ctrl.commitTransaction(trans, confirm=False)
+
+    def install_files(self, only_trusted, paths):
+        self._install_files(only_trusted, paths)
+
+    def simulate_install_files(self, paths):
+        self._install_files(False, paths, True)
 
     @needs_cache
-    def install_files(self, only_trusted, paths):
+    def _install_files(self, only_trusted, paths, simulate=False):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
@@ -236,12 +251,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        self.status(STATUS_INSTALL)
-        self._packagesdict = trans.getChangeSet()
-        self.ctrl.commitTransaction(trans, confirm=False)
+        if simulate:
+            self._show_changeset(trans.getChangeSet())
+        else:
+            self.status(STATUS_INSTALL)
+            self._packagesdict = trans.getChangeSet()
+            self.ctrl.commitTransaction(trans, confirm=False)
+
+    def remove_packages(self, allow_deps, autoremove, packageids):
+        self._remove_packages(allow_deps, autoremove, packageids)
+
+    def simulate_remove_packages(self, packageids):
+        self._remove_packages(True, False, packageids, True)
 
     @needs_cache
-    def remove_packages(self, allow_deps, autoremove, packageids):
+    def _remove_packages(self, allow_deps, autoremove, packageids, simulate=False):
         # TODO: use autoremove
         packages = []
         for packageid in packageids:
@@ -273,12 +297,21 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        self.status(STATUS_REMOVE)
-        self._packagesdict = trans.getChangeSet()
-        self.ctrl.commitTransaction(trans, confirm=False)
+        if simulate:
+            self._show_changeset(trans.getChangeSet())
+        else:
+            self.status(STATUS_REMOVE)
+            self._packagesdict = trans.getChangeSet()
+            self.ctrl.commitTransaction(trans, confirm=False)
+
+    def update_packages(self, only_trusted, packageids):
+        self._update_packages(only_trusted, packageids)
+
+    def simulate_update_packages(self, packageids):
+        self._update_packages(False, packageids, True)
 
     @needs_cache
-    def update_packages(self, only_trusted, packageids):
+    def _update_packages(self, only_trusted, packageids, simulate=False):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
@@ -302,9 +335,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        self.status(STATUS_UPDATE)
-        self._packagesdict = trans.getChangeSet()
-        self.ctrl.commitTransaction(trans, confirm=False)
+        if simulate:
+            self._show_changeset(trans.getChangeSet())
+        else:
+            self.status(STATUS_UPDATE)
+            self._packagesdict = trans.getChangeSet()
+            self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
     def download_packages(self, directory, packageids):
@@ -1018,6 +1054,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packagestring = self._string_packageid(packageid)
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
+        # make sure that we get the installed variant if there are two
+        idparts = packageid.split(';')
+        repoid = idparts[3]
+        if repoid.startswith('installed'):
+            for obj in results:
+                if isinstance(obj, smart.cache.Package):
+                    if not obj.installed:
+                        results.remove(obj)
+                else:
+                    results.remove(obj)
+                    for pkg in obj.packages:
+                        if pkg.installed:
+                            results.append(pkg)
+
         return (ratio, results, suggestions)
 
     def _channel_is_local(self, channel):
@@ -1056,6 +1106,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 else:
                     status = INFO_AVAILABLE
         self._package_list.append((package, status))
+
+    def _show_changeset(self, changeset):
+        for (package, op) in changeset.items():
+            if op == smart.const.INSTALL:
+                status = INFO_INSTALLING
+            elif op == smart.const.REINSTALL:
+                status = INFO_REINSTALLING
+            elif op == smart.const.UPGRADE:
+                status = INFO_UPDATING
+            elif op == smart.const.REMOVE:
+                status = INFO_REMOVING
+            else:
+                status = INFO_UNKNOWN
+            self._show_package(package, status)
 
     def _show_package_list(self):
         for package, status in self._package_list:

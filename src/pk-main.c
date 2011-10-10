@@ -31,7 +31,7 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-debug.h>
 
-#if GLIB_CHECK_VERSION(2,29,4)
+#if GLIB_CHECK_VERSION(2,29,19)
  #include <glib-unix.h>
 #endif
 
@@ -86,7 +86,7 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 	g_main_loop_quit (mainloop);
 }
 
-#if GLIB_CHECK_VERSION(2,29,4)
+#if GLIB_CHECK_VERSION(2,29,19)
 
 /**
  * pk_main_sigint_cb:
@@ -185,13 +185,13 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-#if GLIB_CHECK_VERSION(2,29,4)
+#if GLIB_CHECK_VERSION(2,29,19)
 	/* do stuff on ctrl-c */
-	g_unix_signal_add_watch_full (SIGINT,
-				      G_PRIORITY_DEFAULT,
-				      pk_main_sigint_cb,
-				      loop,
-				      NULL);
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
+				SIGINT,
+				pk_main_sigint_cb,
+				loop,
+				NULL);
 #else
 	signal (SIGINT, pk_main_sigint_handler);
 #endif

@@ -85,6 +85,10 @@ gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*pac);
 gboolean	 pk_backend_set_root			(PkBackend	*backend,
 							 const gchar	*root);
+gboolean	 pk_backend_set_uid			(PkBackend	*backend,
+							 guint		 uid);
+gboolean	 pk_backend_set_cmdline			(PkBackend	*backend,
+							 const gchar	*cmdline);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_get_is_finished		(PkBackend	*backend);
@@ -211,6 +215,9 @@ gboolean	 pk_backend_set_allow_cancel		(PkBackend	*backend,
 							 gboolean	 allow_cancel);
 gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
+gboolean	 pk_backend_set_item_progress		(PkBackend	*backend,
+							 const gchar	*package_id,
+							 guint		 percentage);
 gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_speed			(PkBackend	*backend,
@@ -231,11 +238,6 @@ void		 pk_backend_set_cache_age		(PkBackend	*backend,
 /* get the state */
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
 gboolean         pk_backend_get_is_error_set		(PkBackend	*backend);
-gboolean	 pk_backend_get_progress		(PkBackend	*backend,
-							 guint		*percentage,
-							 guint		*subpercentage,
-							 guint		*elapsed,
-							 guint		*remaining);
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);

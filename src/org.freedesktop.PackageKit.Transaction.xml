@@ -2508,6 +2508,40 @@
     </signal>
 
     <!--*****************************************************************************************-->
+    <signal name="ItemProgress">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal allows the backend to send infomation about
+            package or repository progress when using Simultanous mode.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="id" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A valid package_id, e.g. <doc:tt>hal;0.1.0;i386;fedora</doc:tt>
+              or a repo_id.
+            </doc:para>
+            <doc:para>
+              A repo_id may only be used when running RefreshCache.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="percentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The percentage of this package action is completed.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
     <signal name="Changed">
       <doc:doc>
         <doc:description>

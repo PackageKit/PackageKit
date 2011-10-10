@@ -2184,6 +2184,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
                     return
                 self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
+                self._show_package(po, INFO_UNTRUSTED)
             except exceptions.IOError, e:
                 self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
@@ -2343,9 +2344,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not txmbr:
-                        self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
-                        return
-                    txmbrs.extend(txmbr)
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg))
+                    else:
+                        txmbrs.extend(txmbr)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
         except Exception, e:
@@ -3453,6 +3454,11 @@ class PackageKitYumBase(yum.YumBase):
 
     def __init__(self, backend):
         yum.YumBase.__init__(self)
+
+        # YumBase.run_with_package_names is used to record which packages are
+        # involved in executing a transaction
+        if hasattr(self, 'run_with_package_names'):
+            self.run_with_package_names.add('PackageKit-yum')
 
         # load the config file
         config = ConfigParser.ConfigParser()

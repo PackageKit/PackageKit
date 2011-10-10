@@ -95,15 +95,6 @@ void		 pk_transaction_add_supported_content_type	(PkTransaction	*transaction,
 void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
 
-gboolean	 pk_transaction_set_sender			(PkTransaction	*transaction,
-								 const gchar	*sender);
-gboolean	 pk_transaction_filter_check			(const gchar	*filter,
-								 GError		**error);
-gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
-								 GError		**error);
-gboolean	 pk_transaction_set_tid				(PkTransaction	*transaction,
-								 const gchar	*tid);
-
 G_END_DECLS
 
 #endif /* __PK_TRANSACTION_H */

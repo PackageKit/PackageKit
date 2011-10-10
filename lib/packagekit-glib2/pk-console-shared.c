@@ -24,6 +24,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-client.h>
@@ -66,33 +67,64 @@ pk_console_get_number (const gchar *question, guint maxnum)
 	return answer;
 }
 
+
 /**
- * pk_console_getchar_unbuffered:
+ * pk_readline_unbuffered:
  **/
-static gchar
-pk_console_getchar_unbuffered (void)
+static GString *
+pk_readline_unbuffered (const gchar *prompt)
 {
-	gchar c = '\0';
-	struct termios org_opts, new_opts;
-	gint res = 0;
+	const gchar *tty_name;
+	FILE *tty;
+	GString *str = NULL;
+	struct termios ts, ots;
 
-	/* store old settings */
-	res = tcgetattr (STDIN_FILENO, &org_opts);
-	if (res != 0)
-		g_warning ("failed to set terminal");
+	tty_name = ctermid (NULL);
+	if (tty_name == NULL) {
+		g_warning ("Cannot get terminal: %s",
+			   strerror (errno));
+		goto out;
+	}
 
-	/* set new terminal parms */
-	memcpy (&new_opts, &org_opts, sizeof(new_opts));
-	new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
-	tcsetattr (STDIN_FILENO, TCSANOW, &new_opts);
-	c = getc (stdin);
+	tty = fopen (tty_name, "r+");
+	if (tty == NULL) {
+		g_warning ("Error opening terminal for the process (`%s'): %s",
+			   tty_name, strerror (errno));
+		goto out;
+	}
 
-	/* restore old settings */
-	res = tcsetattr (STDIN_FILENO, TCSANOW, &org_opts);
-	if (res != 0)
-		g_warning ("failed to set terminal");
-	return c;
+	fprintf (tty, "%s", prompt);
+	fflush (tty);
+	setbuf (tty, NULL);
+
+	/* taken from polkitagenttextlistener.c */
+	tcgetattr (fileno (tty), &ts);
+	ots = ts;
+	ts.c_lflag &= ~(ECHONL);
+	tcsetattr (fileno (tty), TCSAFLUSH, &ts);
+
+	str = g_string_new (NULL);
+	while (TRUE) {
+		gint c;
+		c = getc (tty);
+		if (c == '\n') {
+			/* ok, done */
+			break;
+		} else if (c == EOF) {
+			g_warning ("Got unexpected EOF.");
+			break;
+		} else {
+			g_string_append_len (str, (const gchar *) &c, 1);
+		}
+	}
+	tcsetattr (fileno (tty), TCSAFLUSH, &ots);
+	putc ('\n', tty);
+
+	fclose (tty);
+out:
+	return str;
 }
+
 
 /**
  * pk_console_get_prompt:
@@ -100,37 +132,40 @@ pk_console_getchar_unbuffered (void)
 gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
-	gchar answer;
 	gboolean ret = FALSE;
+	gboolean valid = FALSE;
+	gchar *prompt;
+	GString *string;
 
-	/* pretty print */
-	g_print ("%s", question);
-	if (defaultyes)
-		g_print (" [Y/n] ");
-	else
-		g_print (" [N/y] ");
-
-	do {
-		/* get the unbuffered char */
-		answer = pk_console_getchar_unbuffered ();
-
-		/* positive */
-		if (answer == 'y' || answer == 'Y') {
-			ret = TRUE;
+	prompt = g_strdup_printf ("%s %s ",
+				  question,
+				  defaultyes ? "[Y/n]" : "[N/y]");
+	while (!valid) {
+		string = pk_readline_unbuffered (prompt);
+		if (string == NULL)
 			break;
+		if (string->len == 0) {
+			if (defaultyes) {
+				valid = TRUE;
+				ret = TRUE;
+			} else {
+				valid = TRUE;
+				ret = FALSE;
+			}
 		}
-		/* negative */
-		if (answer == 'n' || answer == 'N')
-			break;
-
-		/* default choice */
-		if (answer == '\n' && defaultyes) {
+		if (strcasecmp (string->str, "y") == 0 ||
+		    strcasecmp (string->str, "yes") == 0) {
+			valid = TRUE;
 			ret = TRUE;
-			break;
 		}
-		if (answer == '\n' && !defaultyes)
-			break;
-	} while (TRUE);
+		if (strcasecmp (string->str, "n") == 0 ||
+		    strcasecmp (string->str, "no") == 0) {
+			valid = TRUE;
+			ret = FALSE;
+		}
+		g_string_free (string, TRUE);
+	}
+	g_free (prompt);
 	return ret;
 }
 

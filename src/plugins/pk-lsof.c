@@ -193,7 +193,7 @@ pk_lsof_refresh (PkLsof *lsof)
 	}
 
 	/* run lsof to get all data */
-	lsof_cmd = g_strconcat (lsof_name, " ", "-Fpfn", NULL);
+	lsof_cmd = g_strjoin (" ", lsof_name, "-Fpfn", "-n", NULL);
 	ret = g_spawn_command_line_sync (lsof_cmd, &stdout, &stderr, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to get pids: %s", error->message);
@@ -237,7 +237,7 @@ pk_lsof_refresh (PkLsof *lsof)
 					break;
 
 				/* not a system library */
-				if (strstr (value, "/lib/") == NULL)
+				if (strstr (value, "/lib") == NULL)
 					break;
 
 				/* not a shared object */
@@ -293,8 +293,8 @@ pk_lsof_get_pids_for_filenames (PkLsof *lsof, gchar **filenames)
 	for (i=0; filenames[i] != NULL; i++) {
 		for (j=0; j < list_data->len; j++) {
 			data = g_ptr_array_index (list_data, j);
-			g_debug ("got %s", data->filename);
-			if (g_strcmp0 (filenames[i], data->filename) == 0) {
+			if (g_str_has_prefix (filenames[i], data->filename) == 0 ||
+			    g_str_has_prefix (data->filename, filenames[i]) == 0) {
 				pk_lsof_add_pid (pids, data->pid);
 			}
 		}

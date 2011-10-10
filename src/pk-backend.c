@@ -109,9 +109,9 @@ struct PkBackendPrivate
 	gchar			*root;
 	gpointer		 file_changed_data;
 	guint			 download_files;
-	guint			 last_percentage;
-	guint			 last_remaining;
-	guint			 last_subpercentage;
+	guint			 percentage;
+	guint			 remaining;
+	guint			 subpercentage;
 	guint			 signal_error_timeout;
 	guint			 signal_finished;
 	guint			 speed;
@@ -135,6 +135,8 @@ struct PkBackendPrivate
 	PkStatusEnum		 status; /* this changes */
 	PkStore			*store;
 	PkTime			*time;
+	guint			 uid;
+	gchar			*cmdline;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -142,7 +144,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_PROGRESS_CHANGED,
 	SIGNAL_DETAILS,
 	SIGNAL_FILES,
 	SIGNAL_DISTRO_UPGRADE,
@@ -159,6 +160,7 @@ enum {
 	SIGNAL_REPO_DETAIL,
 	SIGNAL_CATEGORY,
 	SIGNAL_MEDIA_CHANGE_REQUIRED,
+	SIGNAL_ITEM_PROGRESS,
 	SIGNAL_LAST
 };
 
@@ -170,6 +172,11 @@ enum {
 	PROP_ROLE,
 	PROP_TRANSACTION_ID,
 	PROP_SPEED,
+	PROP_PERCENTAGE,
+	PROP_SUBPERCENTAGE,
+	PROP_REMAINING,
+	PROP_UID,
+	PROP_CMDLINE,
 	PROP_LAST
 };
 
@@ -506,6 +513,57 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 }
 
 /**
+ * pk_backend_sort_backends_cb:
+ **/
+static gint
+pk_backend_sort_backends_cb (const gchar **store1,
+			     const gchar **store2)
+{
+	return g_strcmp0 (*store2, *store1);
+}
+
+/**
+ * pk_backend_get_auto_array:
+ **/
+static GPtrArray *
+pk_backend_get_auto_array (GError **error)
+{
+	const gchar *tmp;
+	GDir *dir = NULL;
+	GPtrArray *array = NULL;
+
+	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
+	if (dir == NULL)
+		goto out;
+	array = g_ptr_array_new_with_free_func (g_free);
+	do {
+		tmp = g_dir_read_name (dir);
+		if (tmp == NULL)
+			break;
+		if (!g_str_has_suffix (tmp, G_MODULE_SUFFIX))
+			continue;
+		if (g_strstr_len (tmp, -1, "pk_backend_dummy"))
+			continue;
+		if (g_strstr_len (tmp, -1, "pk_backend_test"))
+			continue;
+		g_ptr_array_add (array,
+				 g_build_filename (LIBDIR,
+						   "packagekit-backend",
+						   tmp,
+						   NULL));
+	} while (1);
+
+	/* need to sort by id predictably */
+	g_ptr_array_sort (array,
+			  (GCompareFunc) pk_backend_sort_backends_cb);
+
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	return array;
+}
+
+/**
  * pk_backend_set_name:
  **/
 gboolean
@@ -515,6 +573,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 	gchar *path = NULL;
 	gboolean ret = FALSE;
 	gpointer func = NULL;
+	GPtrArray *auto_backends = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend_name != NULL, FALSE);
@@ -525,9 +584,26 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 		goto out;
 	}
 
-	/* can we load it? */
+	/* deal with auto */
 	g_debug ("Trying to load : %s", backend_name);
-	path = pk_backend_build_library_path (backend, backend_name);
+	if (g_strcmp0 (backend_name, "auto")  == 0) {
+		auto_backends = pk_backend_get_auto_array (error);
+		if (auto_backends == NULL)
+			goto out;
+		if (auto_backends->len == 0) {
+			g_set_error (error, 1, 0,
+				     "failed to find any files in %s",
+				     LIBDIR "/packagekit-backend");
+			goto out;
+		}
+		/* just pick the last to avoid 'dummy' */
+		path = g_strdup (g_ptr_array_index (auto_backends, 0));
+		g_debug ("using backend 'auto'=>'%s'", path);
+	} else {
+		path = pk_backend_build_library_path (backend, backend_name);
+	}
+
+	/* can we load it? */
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		g_set_error (error, 1, 0, "opening module %s failed : %s",
@@ -614,6 +690,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
 out:
+	if (auto_backends != NULL)
+		g_ptr_array_unref (auto_backends);
 	g_free (path);
 	return ret;
 }
@@ -737,6 +815,33 @@ pk_backend_set_root (PkBackend	*backend, const gchar *root)
 }
 
 /**
+ * pk_backend_set_cmdline:
+ **/
+gboolean
+pk_backend_set_cmdline (PkBackend *backend, const gchar *cmdline)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	g_free (backend->priv->cmdline);
+	backend->priv->cmdline = g_strdup (cmdline);
+	g_debug ("install cmdline now %s", backend->priv->cmdline);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_uid:
+ **/
+gboolean
+pk_backend_set_uid (PkBackend *backend, guint uid)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	backend->priv->uid = uid;
+	g_debug ("install uid now %i", backend->priv->uid);
+	return TRUE;
+}
+
+/**
  * pk_backend_get_root:
  *
  * Return value: root to use for installing, or %NULL
@@ -808,34 +913,6 @@ pk_backend_unlock (PkBackend *backend)
 }
 
 /**
- * pk_backend_emit_progress_changed:
- **/
-static gboolean
-pk_backend_emit_progress_changed (PkBackend *backend)
-{
-	guint percentage;
-	guint subpercentage;
-	guint elapsed;
-	guint remaining;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	percentage = backend->priv->last_percentage;
-
-	/* have not ever set any value? */
-	if (percentage == PK_BACKEND_PERCENTAGE_DEFAULT)
-		percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	subpercentage = backend->priv->last_subpercentage;
-	elapsed = pk_time_get_elapsed (backend->priv->time);
-	remaining = backend->priv->last_remaining;
-
-	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_PROGRESS_CHANGED], 0,
-		       percentage, subpercentage, elapsed, remaining);
-	return TRUE;
-}
-
-/**
  * pk_backend_set_percentage:
  **/
 gboolean
@@ -853,7 +930,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 	}
 
 	/* set the same twice? */
-	if (backend->priv->last_percentage == percentage) {
+	if (backend->priv->percentage == percentage) {
 		g_debug ("duplicate set of %i", percentage);
 		return FALSE;
 	}
@@ -867,16 +944,17 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 	/* check under */
 	if (percentage < 100 &&
-	    backend->priv->last_percentage < 100 &&
-	    percentage < backend->priv->last_percentage) {
+	    backend->priv->percentage < 100 &&
+	    percentage < backend->priv->percentage) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "percentage value is going down to %i from %i",
-				    percentage, backend->priv->last_percentage);
+				    percentage, backend->priv->percentage);
 		return FALSE;
 	}
 
 	/* save in case we need this from coldplug */
-	backend->priv->last_percentage = percentage;
+	backend->priv->percentage = percentage;
+	g_object_notify (G_OBJECT (backend), "percentage");
 
 	/* only compute time if we have data */
 	if (percentage != PK_BACKEND_PERCENTAGE_INVALID) {
@@ -889,11 +967,10 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 		/* value cached from config file */
 		if (backend->priv->use_time)
-			backend->priv->last_remaining = remaining;
+			backend->priv->remaining = remaining;
+		g_object_notify (G_OBJECT (backend), "remaining");
 	}
 
-	/* emit the progress changed signal */
-	pk_backend_emit_progress_changed (backend);
 	return TRUE;
 }
 
@@ -938,6 +1015,35 @@ pk_backend_get_runtime (PkBackend *backend)
 }
 
 /**
+ * pk_backend_set_item_progress:
+ **/
+gboolean
+pk_backend_set_item_progress (PkBackend *backend,
+			      const gchar *package_id,
+			      guint percentage)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		g_warning ("already set error, cannot process: item-percentage %i", percentage);
+		return FALSE;
+	}
+
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		g_debug ("invalid number %i", percentage);
+		return FALSE;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_ITEM_PROGRESS], 0,
+		       package_id, percentage);
+	return TRUE;
+}
+
+/**
  * pk_backend_set_sub_percentage:
  **/
 gboolean
@@ -953,7 +1059,7 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 	}
 
 	/* set the same twice? */
-	if (backend->priv->last_subpercentage == percentage) {
+	if (backend->priv->subpercentage == percentage) {
 		g_debug ("duplicate set of %i", percentage);
 		return FALSE;
 	}
@@ -965,10 +1071,10 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 	}
 
 	/* save in case we need this from coldplug */
-	backend->priv->last_subpercentage = percentage;
+	backend->priv->subpercentage = percentage;
 
 	/* emit the progress changed signal */
-	pk_backend_emit_progress_changed (backend);
+	g_object_notify (G_OBJECT (backend), "subpercentage");
 	return TRUE;
 }
 
@@ -1316,28 +1422,6 @@ out:
 }
 
 /**
- * pk_backend_get_progress:
- **/
-gboolean
-pk_backend_get_progress (PkBackend *backend,
-			 guint *percentage, guint *subpercentage,
-			 guint *elapsed, guint *remaining)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	*percentage = backend->priv->last_percentage;
-	/* have not ever set any value? */
-	if (*percentage == PK_BACKEND_PERCENTAGE_DEFAULT) {
-		*percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	}
-	*subpercentage = backend->priv->last_subpercentage;
-	*elapsed = pk_time_get_elapsed (backend->priv->time);
-	*remaining = backend->priv->last_remaining;
-	return TRUE;
-}
-
-/**
  * pk_backend_require_restart:
  **/
 gboolean
@@ -1537,8 +1621,24 @@ pk_backend_get_cache_age (PkBackend *backend)
 void
 pk_backend_set_cache_age (PkBackend *backend, guint cache_age)
 {
+	const guint cache_age_offset = 60 * 30;
+
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->locked != FALSE);
+
+	/* We offset the cache age by 30 minutes if possible to
+	 * account for the possible delay in running the transaction,
+	 * for example:
+	 *
+	 * Update check set to once per 3 days
+	 * GUI starts checking for updates on Monday at 12:00
+	 * Update check completes on Monday at 12:01
+	 * GUI starts checking for updates on Thursday at 12:00 (exactly 3 days later)
+	 * Cache is 2 days 23 hours 59 minutes old
+	 * Backend sees it's not 3 days old, does nothing
+	 */
+	if (cache_age > cache_age_offset)
+		cache_age -= cache_age_offset;
 
 	g_debug ("cache-age changed to %i", cache_age);
 	backend->priv->cache_age = cache_age;
@@ -2775,6 +2875,21 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_SPEED:
 		g_value_set_uint (value, priv->speed);
 		break;
+	case PROP_PERCENTAGE:
+		g_value_set_uint (value, priv->percentage);
+		break;
+	case PROP_SUBPERCENTAGE:
+		g_value_set_uint (value, priv->subpercentage);
+		break;
+	case PROP_REMAINING:
+		g_value_set_uint (value, priv->remaining);
+		break;
+	case PROP_UID:
+		g_value_set_uint (value, priv->uid);
+		break;
+	case PROP_CMDLINE:
+		g_value_set_string (value, priv->cmdline);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2811,6 +2926,15 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_SPEED:
 		priv->speed = g_value_get_uint (value);
 		break;
+	case PROP_PERCENTAGE:
+		priv->percentage = g_value_get_uint (value);
+		break;
+	case PROP_SUBPERCENTAGE:
+		priv->subpercentage = g_value_get_uint (value);
+		break;
+	case PROP_REMAINING:
+		priv->remaining = g_value_get_uint (value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2835,6 +2959,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->no_proxy);
 	g_free (backend->priv->pac);
 	g_free (backend->priv->root);
+	g_free (backend->priv->cmdline);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
 	g_free (backend->priv->frontend_socket);
@@ -2908,9 +3033,49 @@ pk_backend_class_init (PkBackendClass *klass)
 	 * PkBackend:speed:
 	 */
 	pspec = g_param_spec_uint ("speed", NULL, NULL,
-				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
+				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SPEED, pspec);
+
+	/**
+	 * PkBackend:percentage:
+	 */
+	pspec = g_param_spec_uint ("percentage", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
+
+	/**
+	 * PkBackend:subpercentage:
+	 */
+	pspec = g_param_spec_uint ("subpercentage", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, pspec);
+
+	/**
+	 * PkBackend:remaining:
+	 */
+	pspec = g_param_spec_uint ("remaining", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_REMAINING, pspec);
+
+	/**
+	 * PkBackend:uid:
+	 */
+	pspec = g_param_spec_uint ("uid", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_UID, pspec);
+
+	/**
+	 * PkBackend:cmdline:
+	 */
+	pspec = g_param_spec_string ("cmdline", NULL, NULL,
+				     NULL,
+				     G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =
@@ -2918,11 +3083,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals[SIGNAL_PROGRESS_CHANGED] =
-		g_signal_new ("progress-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	signals[SIGNAL_CHANGE_TRANSACTION_DATA] =
 		g_signal_new ("change-transaction-data",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3005,6 +3165,12 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_ITEM_PROGRESS] =
+		g_signal_new ("item-progress",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
+
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 
@@ -3052,9 +3218,9 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->transaction_role = PK_ROLE_ENUM_UNKNOWN;
-	backend->priv->last_remaining = 0;
-	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
-	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->remaining = 0;
+	backend->priv->percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
+	backend->priv->subpercentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->speed = 0;
 	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);

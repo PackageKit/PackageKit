@@ -2,7 +2,7 @@
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [7])
-m4_define([pk_micro_version], [0])
+m4_define([pk_micro_version], [1])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -45,7 +45,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=14
-LT_REVISION=8
+LT_REVISION=9
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -335,17 +335,6 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
-
-	# packagekit-qt needs cppunit and QtGui for tests
-	if test x$build_qt = xyes; then
-		PKG_CHECK_MODULES(CPPUNIT, cppunit)
-		AC_SUBST(CPPUNIT_CFLAGS)
-		AC_SUBST(CPPUNIT_LIBS)
-
-		PKG_CHECK_MODULES(QTGUI, QtGui >= 4.4.0)
-		AC_SUBST(QTGUI_CFLAGS)
-		AC_SUBST(QTGUI_LIBS)
-	fi
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -571,7 +560,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,slapt,smart,urpmi,yum,zif,zypp (dummy)]))
+                           auto,alpm,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,slapt,smart,urpmi,yum,zif,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -657,7 +646,7 @@ if test x$enable_aptcc = xyes; then
 			  AC_MSG_RESULT([yes]),
 			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
 
-	AC_MSG_CHECKING([whether apt supports ddtp]) 
+	AC_MSG_CHECKING([whether apt supports ddtp])
 
 	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
 					  [[pkgCache::DescIterator d;]]),
@@ -786,6 +775,8 @@ lib/packagekit-qt/test/Makefile
 lib/packagekit-qt/packagekit-qt.pc
 lib/packagekit-qt2/Makefile
 lib/packagekit-qt2/modules/Makefile
+lib/packagekit-qt2/modules/packagekit-qt2-config.cmake
+lib/packagekit-qt2/modules/packagekit-qt2-config-version.cmake
 lib/packagekit-qt2/packagekit-qt2.pc
 lib/python/Makefile
 lib/python/packagekit/Makefile

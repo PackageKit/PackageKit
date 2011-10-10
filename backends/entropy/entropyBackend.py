@@ -64,7 +64,8 @@ from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.cache import EntropyCacher
-from entropy.exceptions import SystemDatabaseError
+from entropy.exceptions import SystemDatabaseError, DependenciesNotFound, \
+    DependenciesCollision
 from entropy.db.exceptions import Error as EntropyRepositoryError
 try:
     from entropy.exceptions import DependenciesNotRemovable
@@ -244,10 +245,28 @@ class PackageKitEntropyMixin(object):
         packages, the on-disk size is returned instead.
         """
         pkg_id, c_repo = pkg_match
+        size = 0
         if c_repo is self._entropy.installed_repository():
-            return c_repo.retrieveOnDiskSize(pkg_id)
+            size += c_repo.retrieveOnDiskSize(pkg_id)
         else:
-            return c_repo.retrieveSize(pkg_id)
+            size += c_repo.retrieveSize(pkg_id)
+
+        supports_extra_download = hasattr(c_repo, "retrieveExtraDownload")
+        if not supports_extra_download:
+            return size
+
+        cl_id = etpConst['system_settings_plugins_ids']['client_plugin']
+        debug = self._settings[cl_id]['misc']['splitdebug']
+        extra_downloads = c_repo.retrieveExtraDownload(pkg_id)
+        for extra_download in extra_downloads:
+            if (not debug) and (extra_download['type'] == "debug") and \
+                (c_repo is not self._entropy.installed_repository()):
+                continue
+            if c_repo is self._entropy.installed_repository():
+                size += extra_download['disksize']
+            else:
+                size += extra_download['size']
+        return size
 
     def _pk_feed_sorted_pkgs(self, pkgs):
         """
@@ -571,18 +590,32 @@ class PackageKitEntropyMixin(object):
         if calculate_deps:
             self.status(STATUS_DEP_RESOLVE)
             empty_deps, deep_deps = False, False
-            run_queue, removal_queue, status = self._entropy.get_install_queue(
-                matches, empty_deps, deep_deps)
+            try:
+                queue_obj = self._entropy.get_install_queue(
+                    matches, empty_deps, deep_deps)
+                if len(queue_obj) == 2:
+                    # new api
+                    run_queue, removal_queue = queue_obj
+                else:
+                    # old api
+                    run_queue, removal_queue, status = queue_obj
+                    if status == -2:
+                        raise DependenciesNotFound(run_queue)
+                    elif status == -3:
+                        raise DependenciesCollision(run_queue)
+            except DependenciesNotFound as exc:
+                self.error(ERROR_DEP_RESOLUTION_FAILED,
+                    "Cannot find the following dependencies: %s" % (
+                    ', '.join(sorted(exc.value)),))
+                return
+            except DependenciesCollision:
+                self.error(ERROR_DEP_RESOLUTION_FAILED,
+                           "Dependencies collisions, cannot continue")
+                return
+
         else:
             run_queue = matches
             removal_queue = []
-            status = 0
-
-        if status == -2:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Cannot find the following dependencies: %s" % (
-                    ', '.join(run_queue),))
-            return
 
         self.percentage(0)
         self.status(STATUS_DOWNLOAD)
@@ -916,12 +949,26 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         empty = False
         deep = False
-        install, removal, deps_not_f = self._entropy.get_install_queue(matches,
-            empty, deep, recursive = recursive)
-
-        if deps_not_f == -2:
+        try:
+            queue_obj = self._entropy.get_install_queue(matches,
+                empty, deep, recursive = recursive)
+            if len(queue_obj) == 2:
+                # new api
+                install, removal = queue_obj
+            else:
+                # old api
+                install, removal, status = queue_obj
+                if status == -2:
+                    raise DependenciesNotFound(install)
+                elif status == -3:
+                    raise DependenciesCollision(install)
+        except DependenciesNotFound as exc:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Dependencies not found: %s" % (sorted(install),))
+                "Dependencies not found: %s" % (sorted(exc.value),))
+            return
+        except DependenciesCollision:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                "Dependencies collisions, cannot continue")
             return
 
         # transform install into (repo, pkg_id, c_repo) list

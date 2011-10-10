@@ -352,6 +352,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 			   state,
 			   package_id,
 			   get_short_description(ver, packageRecords).c_str());
+        g_free(package_id);
 }
 
 void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
@@ -539,33 +540,44 @@ void aptcc::providesLibrary(vector<pair<pkgCache::PkgIterator, pkgCache::VerIter
 // used to emit packages it collects all the needed info
 void aptcc::emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
 {
-	pkgCache::VerIterator ver;
+    pkgCache::VerIterator ver;
     if (version.end() == false) {
         ver = version;
     } else {
         ver = find_ver(pkg);
     }
-	std::string section = ver.Section() == NULL ? "" : ver.Section();
+    std::string section = ver.Section() == NULL ? "" : ver.Section();
 
-	size_t found;
-	found = section.find_last_of("/");
-	section = section.substr(found + 1);
+    size_t found;
+    found = section.find_last_of("/");
+    section = section.substr(found + 1);
 
-	pkgCache::VerFileIterator vf = ver.FileList();
-	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
+    pkgCache::VerFileIterator vf = ver.FileList();
+    pkgRecords::Parser &rec = packageRecords->Lookup(vf);
 
-	gchar *package_id;
-	package_id = pk_package_id_build(pkg.Name(),
-					 ver.VerStr(),
-					 ver.Arch(),
-					 vf.File().Archive() == NULL ? "" : vf.File().Archive());
-	pk_backend_details(m_backend,
-			   package_id,
-			   "unknown",
-			   get_enum_group(section),
-			   get_long_description_parsed(ver, packageRecords).c_str(),
-			   rec.Homepage().c_str(),
-			   ver->Size);
+    long size;
+    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
+        // if the package is installed emit the installed size
+        size = ver->InstalledSize;
+    } else {
+        size = ver->Size;
+    }
+
+    gchar *package_id;
+    package_id = pk_package_id_build(pkg.Name(),
+                                     ver.VerStr(),
+                                     ver.Arch(),
+                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
+
+    pk_backend_details(m_backend,
+                       package_id,
+                       "unknown",
+                       get_enum_group(section),
+                       get_long_description_parsed(ver, packageRecords).c_str(),
+                       rec.Homepage().c_str(),
+                       size);
+
+    g_free(package_id);
 }
 
 // used to emit packages it collects all the needed info
@@ -768,9 +780,9 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache:
     string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
     gchar *package_id;
     package_id = pk_package_id_build(pkg.Name(),
-                    candver.VerStr(),
-                    candver.Arch(),
-                    archive.c_str());
+                                     candver.VerStr(),
+                                     candver.Arch(),
+                                     archive.c_str());
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
     if (archive.compare("stable") == 0) {
@@ -805,6 +817,8 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache:
                              issued.c_str(), //const gchar *issued_text
                              updated.c_str() //const gchar *updated_text
                              );
+    g_free(current_package_id);
+    g_free(package_id);
 }
 
 void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,

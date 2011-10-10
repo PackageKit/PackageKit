@@ -79,6 +79,7 @@ typedef enum {
 	PK_PROGRESS_TYPE_SPEED,
 	PK_PROGRESS_TYPE_UID,
 	PK_PROGRESS_TYPE_PACKAGE,
+	PK_PROGRESS_TYPE_ITEM_PROGRESS,
 	PK_PROGRESS_TYPE_INVALID
 } PkProgressType;
 
@@ -88,6 +89,9 @@ typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 
 gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
 							 const gchar		*package_id);
+gboolean	 pk_progress_set_item_progress		(PkProgress		*progress,
+							 const gchar		*package_id,
+							 guint			 percentage);
 gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
 							 const gchar		*package_id);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,

@@ -26,11 +26,11 @@ static PkBackendSpawn *spawn = 0;
 static const gchar* BACKEND_FILE = "entropyBackend.py";
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
@@ -40,21 +40,21 @@ backend_initialize (PkBackend *backend)
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
-static PkBitfield
-backend_get_groups (PkBackend *backend)
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 			PK_GROUP_ENUM_ACCESSIBILITY,
@@ -96,10 +96,10 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 			PK_FILTER_ENUM_INSTALLED,
@@ -117,10 +117,10 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_roles:
+ * pk_backend_get_roles:
  */
-static PkBitfield
-backend_get_roles (PkBackend *backend)
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
 {
 	PkBitfield roles;
 	roles = pk_bitfield_from_enums (
@@ -160,29 +160,29 @@ backend_get_roles (PkBackend *backend)
 }
 
 /**
- * backend_get_mime_types:
+ * pk_backend_get_mime_types:
  */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
 {
     return g_strdup ("application/entropy-package;application/entropy-webinstall");
 }
 
 /**
- * backend_cancel:
+ * pk_backend_cancel:
  */
-static void
-backend_cancel (PkBackend *backend)
+void
+pk_backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
 }
 
 /**
- * backend_download_packages:
+ * pk_backend_download_packages:
  */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	gchar *package_ids_temp;
 
@@ -193,10 +193,10 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 }
 
 /**
- * backend_what_provides:
+ * pk_backend_what_provides:
  */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **search)
 {
 	gchar *filters_text;
 	const gchar *provides_text;
@@ -209,17 +209,17 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 /**
  * pk_backend_get_categories:
  */
-static void
-backend_get_categories (PkBackend *backend)
+void
+pk_backend_get_categories (PkBackend *backend)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-categories", NULL);
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -232,10 +232,10 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -245,19 +245,19 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_distro_upgrades:
+ * pk_backend_get_distro_upgrades:
  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-distro-upgrades", NULL);
 }
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -267,10 +267,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_update_detail:
+ * pk_backend_get_update_detail:
  */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -280,10 +280,10 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 
@@ -293,10 +293,10 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -307,10 +307,10 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 }
 
 /**
- * backend_install_files:
+ * pk_backend_install_files:
  */
-static void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
     gchar *package_ids_temp;
 
@@ -321,10 +321,10 @@ backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_p
 }
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 { 
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -337,10 +337,10 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_packages:
+ * pk_backend_remove_packages:
  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
@@ -352,8 +352,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 /**
  * pk_backend_repo_enable:
  */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "repo-enable", rid, pk_backend_bool_to_string (enabled), NULL);
 }
@@ -361,8 +361,8 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 /**
  * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -377,8 +377,8 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 /**
  * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -390,10 +390,10 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_files:
+ * pk_backend_search_files:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -407,8 +407,8 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 /**
  * pk_backend_search_groups:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 { 
 	gchar *filters_text;
 	gchar *search;
@@ -420,10 +420,10 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_names:
+ * pk_backend_search_names:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -435,10 +435,10 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_update_packages:
+ * pk_backend_update_packages:
  */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -449,10 +449,10 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 }
 
 /**
- * backend_get_packages:
+ * pk_backend_get_packages:
  */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 
@@ -464,8 +464,8 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 /**
  * pk_backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 
@@ -475,10 +475,10 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 { 
 	gchar *package_ids_temp;
 	gchar *filters_text;
@@ -491,19 +491,19 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_update_system:
+ * pk_backend_update_system:
  */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 /**
- * backend_simulate_remove_packages:
+ * pk_backend_simulate_remove_packages:
  */
-static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
     gchar *package_ids_temp;
 
@@ -514,10 +514,10 @@ backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gbool
 }
 
 /**
- * backend_simulate_update_packages:
+ * pk_backend_simulate_update_packages:
  */
-static void
-backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
     gchar *package_ids_temp;
 
@@ -528,10 +528,10 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_simulate_install_packages:
+ * pk_backend_simulate_install_packages:
  */
-static void
-backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
     gchar *package_ids_temp;
 
@@ -542,10 +542,10 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_simulate_install_files:
+ * pk_backend_simulate_install_files:
  */
-static void
-backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+void
+pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 {
     gchar *package_ids_temp;
 
@@ -555,50 +555,20 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
     g_free (package_ids_temp);
 }
 
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-PK_BACKEND_OPTIONS (
-	"Entropy",				/* description */
-	"Fabio Erculiani (lxnay) <lxnay@sabayon.org>",	/* author */
-	backend_initialize,					/* initalize */
-	backend_destroy,					/* destroy */
-	backend_get_groups,					/* get_groups */
-	backend_get_filters,				/* get_filters */
-	backend_get_roles,					/* get_roles */
-	backend_get_mime_types,				/* get_mime_types */
-	backend_cancel,						/* cancel */
-	backend_download_packages,			/* download_packages */
-	backend_get_categories,				/* get_categories */
-	backend_get_depends,				/* get_depends */
-	backend_get_details,				/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
-	backend_get_files,					/* get_files */
-	backend_get_packages,				/* get_packages */
-	backend_get_repo_list,				/* get_repo_list */
-	backend_get_requires,				/* get_requires */
-	backend_get_update_detail,			/* get_update_detail */
-	backend_get_updates,				/* get_updates */
-	backend_install_files,				/* install_files */
-	backend_install_packages,			/* install_packages */
-	NULL,								/* install_signature */
-	backend_refresh_cache,				/* refresh_cache */
-	backend_remove_packages,			/* remove_packages */
-	backend_repo_enable,				/* repo_enable */
-	NULL,								/* repo_set_data */
-	backend_resolve,					/* resolve */
-	NULL,								/* rollback */
-	backend_search_details,				/* search_details */
-	backend_search_files,				/* search_file */
-	backend_search_groups,				/* search_group */
-	backend_search_names,				/* search_name */
-	backend_update_packages,			/* update_packages */
-	backend_update_system,				/* update_system */
-	backend_what_provides,				/* what_provides */
-	backend_simulate_install_files,	    /* simulate_install_files */
-	backend_simulate_install_packages,  /* simulate_install_packages */
-	backend_simulate_remove_packages,   /* simulate_remove_packages */
-	backend_simulate_update_packages,   /* simulate_update_packages */
-	NULL,						/* upgrade_system */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
+/**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+    return g_strdup ("Entropy");
+}
 
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+    return g_strdup ("Fabio Erculiani (lxnay) <lxnay@sabayon.org>");
+}

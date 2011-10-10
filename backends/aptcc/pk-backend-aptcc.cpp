@@ -525,7 +525,7 @@ backend_what_provides_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// We can handle libraries, mimetypes and codecs
-	if (provides == PK_PROVIDES_ENUM_LIBRARY ||
+	if (provides == PK_PROVIDES_ENUM_SHARED_LIB ||
 	    provides == PK_PROVIDES_ENUM_MIMETYPE ||
 	    provides == PK_PROVIDES_ENUM_CODEC ||
 	    provides == PK_PROVIDES_ENUM_ANY) {
@@ -543,7 +543,7 @@ backend_what_provides_thread (PkBackend *backend)
 		vector<string> packages;
 		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 
-		if (provides == PK_PROVIDES_ENUM_LIBRARY) {
+		if (provides == PK_PROVIDES_ENUM_SHARED_LIB) {
 			m_apt->providesLibrary (output, values);
 		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			packages = searchMimeType (backend, values, error, _cancel);

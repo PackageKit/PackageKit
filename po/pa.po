@@ -2,14 +2,17 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # 
-# A S Alam <apreet.alam@gmail.com>, 2011
-# Richard Hughes <richard@hughsie.com>, 2011
+# A S Alam <aalam@users.sf.net>, 2009.
+# Amanpreet Singh Alam <aalam@users.sf.net>, 2008, 2009.
+# Jaswinder Singh <jsingh@redhat.com>, 2009.
+# A S Alam <apreet.alam@gmail.com>, 2011.
+# Richard Hughes <richard@hughsie.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 10:50+0100\n"
-"PO-Revision-Date: 2011-05-19 02:30+0000\n"
+"POT-Creation-Date: 2011-08-01 10:58+0100\n"
+"PO-Revision-Date: 2011-08-18 01:32+0000\n"
 "Last-Translator: aalam <apreet.alam@gmail.com>\n"
 "Language-Team: Panjabi (Punjabi) (http://www.transifex.net/projects/p/freedesktop/team/pa/)\n"
 "MIME-Version: 1.0\n"
@@ -816,66 +819,61 @@ msgstr "ਚਲਾਉਣ ਲਈ ਫੇਲ੍ਹ:"
 msgid "Failed to install packages"
 msgstr "ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਫੇਲ੍ਹ"
 
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:706
-msgid "PackageKit Command Not Found"
-msgstr "ਪੈਕੇਜਕਿੱਟ ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
-
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:729
 msgid "command not found"
 msgstr "ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:759
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Similar command is:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਹੈ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:773
+#: ../contrib/command-not-found/pk-command-not-found.c:761
 msgid "Run similar command:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਚਲਾਓ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:787
-#: ../contrib/command-not-found/pk-command-not-found.c:796
+#: ../contrib/command-not-found/pk-command-not-found.c:775
+#: ../contrib/command-not-found/pk-command-not-found.c:784
 msgid "Similar commands are:"
 msgstr "ਰਲਦੀਆਂ ਕਮਾਂਡਾਂ ਹਨ:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:791
 msgid "Please choose a command to run"
 msgstr "ਚਲਾਉਣ ਲਈ ਕਮਾਂਡ ਦੀ ਚੋਣ ਕਰੋ ਜੀ"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:821
+#: ../contrib/command-not-found/pk-command-not-found.c:809
 msgid "The package providing this file is:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:828
+#: ../contrib/command-not-found/pk-command-not-found.c:816
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "ਕਮਾਂਡ '%2$s' ਦੇਣ ਲਈ ਪੈਕੇਜ '%1$s' ਇੰਸਟਾਲ ਕਰਨਾ ਹੈ?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:855
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Packages providing this file are:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:865
+#: ../contrib/command-not-found/pk-command-not-found.c:853
 msgid "Suitable packages are:"
 msgstr "ਢੁੱਕਵੇਂ ਪੈਕੇਜ ਹਨ:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:874
+#: ../contrib/command-not-found/pk-command-not-found.c:862
 msgid "Please choose a package to install"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਚੁਣੋ ਜੀ"
 
@@ -1801,13 +1799,19 @@ msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਮੁੜ-�
 msgid "The following packages have to be downgraded:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਡਾਊਨਗਰੇਡ ਕੀਤਾ ਜਾਵੇਗਾ:"
 
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: ../lib/packagekit-glib2/pk-task-text.c:325
+msgid "The following packages are untrusted:"
+msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹਨ:"
+
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:380
+#: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
 msgstr "ਬਦਲਾਅ ਜਾਰੀ ਰੱਖਣੇ ਹਨ?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:385
+#: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਪੂਰੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।"
 

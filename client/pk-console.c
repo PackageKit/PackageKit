@@ -860,7 +860,12 @@ pk_console_install_packages (gchar **packages, GError **error)
 		}
 	}
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task),
+						   pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
+									   PK_FILTER_ENUM_NEWEST,
+									   -1),
+						   packages,
+						   &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find any available package: %s"), error_local->message);

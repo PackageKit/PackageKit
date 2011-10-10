@@ -1391,6 +1391,15 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 }
 
 /**
+ * pk_client_item_progress_cb:
+ */
+static void
+pk_client_item_progress_cb (DBusGProxy  *proxy, const gchar *id, guint value, PkClientState *state)
+{
+	pk_progress_set_item_progress (state->progress, id, value);
+}
+
+/**
  * pk_client_connect_proxy:
  **/
 static void
@@ -1439,6 +1448,7 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 	dbus_g_proxy_add_signal (proxy, "MediaChangeRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Changed", G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "ItemProgress", G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	/* connect up the signals */
 	dbus_g_proxy_connect_signal (proxy, "Finished",
@@ -1471,6 +1481,8 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_message_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "ItemProgress",
+				     G_CALLBACK (pk_client_item_progress_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Changed",
 				     G_CALLBACK (pk_client_changed_cb), state, NULL);
 
@@ -4947,6 +4959,9 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	/* ItemProgress */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	/* cache locale */
 	client->priv->locale = 	g_strdup (setlocale (LC_MESSAGES, NULL));

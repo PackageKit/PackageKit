@@ -69,7 +69,6 @@ libpackagekit_qt2_la_SOURCES =					\
 	bitfield.cpp						\
 	common.h						\
 	dbus_proxies.stamp					\
-	$(MOCFILES)						\
 	$(NULL)
 
 libpackagekit_qt2_la_LIBADD =					\
@@ -95,7 +94,6 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	$(MOCFILES)						\
 	dbus_proxies.stamp					\
 	daemonproxy.h						\
 	daemonproxy.cpp						\

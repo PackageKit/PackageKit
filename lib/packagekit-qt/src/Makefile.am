@@ -62,7 +62,6 @@ libpackagekit_qt_la_SOURCES =					\
 	enum.h							\
 	enum.cpp						\
 	dbus_proxies.stamp					\
-	$(MOCFILES)						\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
@@ -88,12 +87,11 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	$(MOCFILES)							\
-	dbus_proxies.stamp                  \
+	dbus_proxies.stamp					\
 	daemonproxy.h						\
 	daemonproxy.cpp						\
 	transactionproxy.h					\
-	transactionproxy.cpp				\
+	transactionproxy.cpp					\
 	$(NULL)
 
 MAINTAINERCLEANFILES =						\

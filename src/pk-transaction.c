@@ -60,6 +60,7 @@
 #include "pk-syslog.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
+#include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
@@ -72,7 +73,6 @@ static void     pk_transaction_dispose		(GObject	    *object);
 #define PK_TRANSACTION_UID_INVALID		G_MAXUINT
 
 static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
-static void pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage, guint elapsed, guint remaining, PkTransaction *transaction);
 
 struct PkTransactionPrivate
 {
@@ -147,7 +147,9 @@ struct PkTransactionPrivate
 	guint			 signal_finished;
 	guint			 signal_message;
 	guint			 signal_package;
-	guint			 signal_progress_changed;
+	guint			 signal_percentage;
+	guint			 signal_subpercentage;
+	guint			 signal_remaining;
 	guint			 signal_repo_detail;
 	guint			 signal_repo_signature_required;
 	guint			 signal_eula_required;
@@ -157,6 +159,7 @@ struct PkTransactionPrivate
 	guint			 signal_update_detail;
 	guint			 signal_category;
 	guint			 signal_speed;
+	guint			 signal_item_progress;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
@@ -355,10 +358,10 @@ pk_transaction_emit_changed (PkTransaction *transaction)
  **/
 static void
 pk_transaction_progress_changed_emit (PkTransaction *transaction,
-				      guint percentage,
-				      guint subpercentage,
-				      guint elapsed,
-				      guint remaining)
+				     guint percentage,
+				     guint subpercentage,
+				     guint elapsed,
+				     guint remaining)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
@@ -515,10 +518,10 @@ pk_transaction_details_cb (PkBackend *backend,
 				       "Details",
 				       g_variant_new ("(ssssst)",
 						      package_id,
-						      license,
+						      license != NULL ? license : "",
 						      group_text,
-						      description,
-						      url,
+						      description != NULL ? description : "",
+						      url != NULL ? url : "",
 						      size),
 				       NULL);
 
@@ -658,13 +661,38 @@ pk_transaction_category_cb (PkBackend *backend,
 						      cat_id,
 						      name,
 						      summary,
-						      icon),
+						      icon != NULL ? icon : ""),
 				       NULL);
 	g_free (parent_id);
 	g_free (cat_id);
 	g_free (name);
 	g_free (summary);
 	g_free (icon);
+}
+
+/**
+ * pk_transaction_item_progress_cb:
+ **/
+static void
+pk_transaction_item_progress_cb (PkBackend *backend,
+				 const gchar *package_id,
+				 guint percentage,
+				 PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* emit */
+	g_debug ("emitting item-progress %s, %u", package_id, percentage);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "ItemProgress",
+				       g_variant_new ("(su)",
+						      package_id,
+						      percentage),
+				       NULL);
 }
 
 /**
@@ -705,7 +733,7 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend,
 				       g_variant_new ("(sss)",
 						      type_text,
 						      name,
-						      summary),
+						      summary != NULL ? summary : ""),
 				       NULL);
 
 	g_free (name);
@@ -858,6 +886,9 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
 
+	if (transaction->priv->plugins == NULL)
+		goto out;
+
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
@@ -899,6 +930,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 			 g_module_name (plugin->module));
 		plugin_func (plugin, transaction);
 	}
+out:
 	if (!ran_one)
 		g_debug ("no plugins provided %s", function);
 }
@@ -1044,9 +1076,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_progress_changed);
+				     transaction->priv->signal_percentage);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_subpercentage);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_remaining);
 	g_signal_handler_disconnect (transaction->priv->backend,
 				     transaction->priv->signal_require_restart);
+	g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_item_progress);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -1277,27 +1315,6 @@ pk_transaction_package_cb (PkBackend *backend,
 }
 
 /**
- * pk_transaction_progress_changed_cb:
- **/
-static void
-pk_transaction_progress_changed_cb (PkBackend *backend,
-				    guint percentage,
-				    guint subpercentage,
-				    guint elapsed,
-				    guint remaining,
-				    PkTransaction *transaction)
-{
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	pk_transaction_progress_changed_emit (transaction,
-					      percentage,
-					      subpercentage,
-					      elapsed,
-					      remaining);
-}
-
-/**
  * pk_transaction_repo_detail_cb:
  **/
 static void
@@ -1331,7 +1348,7 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 				       "RepoDetail",
 				       g_variant_new ("(ssb)",
 						      repo_id,
-						      description,
+						      description != NULL ? description : "",
 						      enabled),
 				       NULL);
 	g_free (repo_id);
@@ -1387,11 +1404,11 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 				       g_variant_new ("(ssssssss)",
 						      package_id,
 						      repository_name,
-						      key_url,
-						      key_userid,
-						      key_id,
-						      key_fingerprint,
-						      key_timestamp,
+						      key_url != NULL ? key_url : "",
+						      key_userid != NULL ? key_userid : "",
+						      key_id != NULL ? key_id : "",
+						      key_fingerprint != NULL ? key_fingerprint : "",
+						      key_timestamp != NULL ? key_timestamp : "",
 						      type_text),
 				       NULL);
 
@@ -1445,8 +1462,8 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 				       g_variant_new ("(ssss)",
 						      eula_id,
 						      package_id,
-						      vendor_name,
-						      license_agreement),
+						      vendor_name != NULL ? vendor_name : "",
+						      license_agreement != NULL ? license_agreement : ""),
 				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
@@ -1496,7 +1513,7 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 				       g_variant_new ("(sss)",
 						      media_type_text,
 						      media_id,
-						      media_text),
+						      media_text != NULL ? media_text : ""),
 				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */
@@ -1649,9 +1666,9 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb,
 						      succeeded,
 						      role_text,
 						      duration,
-						      data,
+						      data != NULL ? data : "",
 						      uid,
-						      cmdline),
+						      cmdline != NULL ? cmdline : ""),
 				       NULL);
 	g_free (tid);
 	g_free (timespec);
@@ -1715,17 +1732,17 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       "UpdateDetail",
 				       g_variant_new ("(ssssssssssss)",
 						      package_id,
-						      updates,
-						      obsoletes,
-						      vendor_url,
-						      bugzilla_url,
-						      cve_url,
+						      updates != NULL ? updates : "",
+						      obsoletes != NULL ? obsoletes : "",
+						      vendor_url != NULL ? vendor_url : "",
+						      bugzilla_url != NULL ? bugzilla_url : "",
+						      cve_url != NULL ? cve_url : "",
 						      restart_text,
-						      update_text,
-						      changelog,
+						      update_text != NULL ? update_text : "",
+						      changelog != NULL ? changelog : "",
 						      state_text,
-						      issued,
-						      updated),
+						      issued != NULL ? issued : "",
+						      updated != NULL ? updated : ""),
 				       NULL);
 
 	g_free (package_id);
@@ -1756,6 +1773,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	gchar *no_proxy = NULL;
 	gchar *pac = NULL;
 	gchar *root = NULL;
+	gchar *cmdline = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	/* get session */
@@ -1807,7 +1825,14 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	}
 	g_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
 		   proxy_http, proxy_ftp, root, priv->uid, session);
+
+	/* try to set the new uid and cmdline */
+	cmdline = g_strdup_printf ("PackageKit: %s",
+				   pk_role_enum_to_string (priv->role));
+	pk_backend_set_uid (priv->backend, priv->uid);
+	pk_backend_set_cmdline (priv->backend, cmdline);
 out:
+	g_free (cmdline);
 	g_free (proxy_http);
 	g_free (proxy_https);
 	g_free (proxy_ftp);
@@ -1828,6 +1853,51 @@ pk_transaction_speed_cb (GObject *object,
 {
 	g_object_get (object,
 		      "speed", &transaction->priv->speed,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
+ * pk_transaction_percentage_cb:
+ **/
+static void
+pk_transaction_percentage_cb (GObject *object,
+			      GParamSpec *pspec,
+			      PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "percentage", &transaction->priv->percentage,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
+ * pk_transaction_subpercentage_cb:
+ **/
+static void
+pk_transaction_subpercentage_cb (GObject *object,
+			         GParamSpec *pspec,
+			         PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "subpercentage", &transaction->priv->subpercentage,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
+ * pk_transaction_remaining_cb:
+ **/
+static void
+pk_transaction_remaining_cb (GObject *object,
+			     GParamSpec *pspec,
+			     PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "remaining", &transaction->priv->remaining_time,
 		      NULL);
 	/* emit */
 	pk_transaction_emit_changed (transaction);
@@ -1932,9 +2002,15 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->signal_package =
 		g_signal_connect (priv->backend, "package",
 				  G_CALLBACK (pk_transaction_package_cb), transaction);
-	priv->signal_progress_changed =
-		g_signal_connect (priv->backend, "progress-changed",
-				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+	priv->signal_percentage =
+		g_signal_connect (priv->backend, "notify::percentage",
+				  G_CALLBACK (pk_transaction_percentage_cb), transaction);
+	priv->signal_subpercentage =
+		g_signal_connect (priv->backend, "notify::subpercentage",
+				  G_CALLBACK (pk_transaction_subpercentage_cb), transaction);
+	priv->signal_remaining =
+		g_signal_connect (priv->backend, "notify::remaining",
+				  G_CALLBACK (pk_transaction_remaining_cb), transaction);
 	priv->signal_repo_detail =
 		g_signal_connect (priv->backend, "repo-detail",
 				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
@@ -1959,6 +2035,10 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->signal_category =
 		g_signal_connect (priv->backend, "category",
 				  G_CALLBACK (pk_transaction_category_cb), transaction);
+	priv->signal_item_progress =
+		g_signal_connect (priv->backend, "item-progress",
+				  G_CALLBACK (pk_transaction_item_progress_cb),
+				  transaction);
 	priv->signal_speed =
 		g_signal_connect (priv->backend, "notify::speed",
 				  G_CALLBACK (pk_transaction_speed_cb), transaction);
@@ -2590,10 +2670,6 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 		/* UpdatePackages */
 		if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 
-			/* TRANSLATORS: is not GPG signed */
-			g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
-			g_string_append (string, "\n");
-
 			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
 			text = g_dngettext (GETTEXT_PACKAGE,
 					    N_("Do not update this package unless you are sure it is safe to do so."),
@@ -2680,8 +2756,10 @@ pk_transaction_dbus_return (GDBusMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
 	if (context == NULL) {
-		g_warning ("context null, and error: %s", error->message);
-		g_error_free (error);
+		if (error != NULL) {
+			g_warning ("context null, and error: %s", error->message);
+			g_error_free (error);
+		}
 		return;
 	}
 	if (error != NULL)
@@ -3646,7 +3724,7 @@ out:
 /**
  * pk_transaction_get_updates:
  **/
-static void
+void
 pk_transaction_get_updates (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
@@ -4369,7 +4447,7 @@ out:
 /**
  * pk_transaction_search_details:
  **/
-static void
+void
 pk_transaction_search_details (PkTransaction *transaction,
 			       GVariant *params,
 			       GDBusMethodInvocation *context)
@@ -4577,7 +4655,7 @@ out:
 /**
  * pk_transaction_search_name:
  **/
-static void
+void
 pk_transaction_search_names (PkTransaction *transaction,
 			     GVariant *params,
 			     GDBusMethodInvocation *context)
@@ -4928,8 +5006,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
+					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateInstallPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -5001,8 +5078,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
+					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateRemovePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -5072,8 +5148,7 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction,
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
-	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
+					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateUpdatePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -5825,14 +5900,16 @@ pk_transaction_dispose (GObject *object)
 	}
 
 	/* send signal to clients that we are about to be destroyed */
-	g_debug ("emitting destroy %s", transaction->priv->tid);
-	g_dbus_connection_emit_signal (transaction->priv->connection,
-				       NULL,
-				       transaction->priv->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "Destroy",
-				       NULL,
-				       NULL);
+	if (transaction->priv->connection != NULL) {
+		g_debug ("emitting destroy %s", transaction->priv->tid);
+		g_dbus_connection_emit_signal (transaction->priv->connection,
+					       NULL,
+					       transaction->priv->tid,
+					       PK_DBUS_INTERFACE_TRANSACTION,
+					       "Destroy",
+					       NULL,
+					       NULL);
+	}
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);
 }
@@ -5889,7 +5966,8 @@ pk_transaction_finalize (GObject *object)
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
 #endif
-	g_ptr_array_unref (transaction->priv->plugins);
+	if (transaction->priv->plugins != NULL)
+		g_ptr_array_unref (transaction->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }
