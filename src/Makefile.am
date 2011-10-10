@@ -56,7 +56,6 @@ plugininclude_HEADERS =					\
 	pk-transaction.h
 
 plugininclude_GIRSOURCES =				\
-	packagekit-plugin.h				\
 	pk-plugin.h					\
 	pk-backend.c					\
 	pk-backend.h					\
@@ -217,6 +216,7 @@ CLEANFILES =						\
 	transactions.db
 
 if HAVE_INTROSPECTION
+
 # Build dummy library for g-ir-scanner to parse
 noinst_LTLIBRARIES = libpkplugins.la
 
@@ -241,7 +241,7 @@ libpkplugins_la_CFLAGS =				\
 	$(NULL)
 
 PackageKitPlugin-1.0.gir: $(plugininclude_GIRSOURCES)
-PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0 PackageKitGlib-1.0 Polkit-1.0
+PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0 PackageKitGlib-1.0
 PackageKitPlugin_1_0_gir_CFLAGS = $(INCLUDES)						\
 				-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 				-DI_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
@@ -252,7 +252,7 @@ PackageKitPlugin_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
 					--add-include-path=$(top_builddir)/lib/packagekit-glib2 \
 					--library-path=$(top_builddir)/lib/packagekit-glib2 \
 					--c-include="plugin/packagekit-plugin.h"
-PackageKitPlugin_1_0_gir_LIBS = libpkplugin.la
+PackageKitPlugin_1_0_gir_LIBS = libpkplugins.la
 PackageKitPlugin_1_0_gir_FILES = $(plugininclude_GIRSOURCES)
 INTROSPECTION_GIRS += PackageKitPlugin-1.0.gir
 
