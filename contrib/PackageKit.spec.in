@@ -340,6 +340,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
 %{_libdir}/packagekit-plugins/*.so
+%{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
 
 %files docs
@@ -430,6 +431,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit/packagekit-glib2
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
+%{_datadir}/gir-1.0/PackageKitPlugin-1.0.gir
 
 %files qt-devel
 %defattr(-,root,root,-)
