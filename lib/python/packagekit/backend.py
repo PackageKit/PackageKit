@@ -19,6 +19,7 @@
 #
 # This file contain the base classes to implement a PackageKit python backend
 #
+from __future__ import print_function
 
 # imports
 import sys
@@ -26,7 +27,7 @@ import codecs
 import traceback
 import os.path
 
-from enums import *
+from .enums import *
 
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
