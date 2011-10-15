@@ -19,8 +19,8 @@
 #    Richard Hughes <richard@hughsie.com>
 
 # imports
-from enums import *
-from package import PackagekitPackage
+from .enums import *
+from .package import PackagekitPackage
 
 class PackagekitFilter(object, PackagekitPackage):
 
