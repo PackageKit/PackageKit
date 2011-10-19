@@ -411,6 +411,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files gtk3-module
 %defattr(-,root,root,-)
 %{_libdir}/gtk-3.0/modules/*.so
+%{_libdir}/gnome-settings-daemon-3.0/gtk-modules/*.desktop
+%{_datadir}/glib-2.0/schemas/*.gschema.xml
 
 %files command-not-found
 %defattr(-,root,root,-)

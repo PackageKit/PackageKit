@@ -1,0 +1,4 @@
+[GTK Module]
+Name=PackageKit
+Description=PackageKit Font Installer
+X-GTK-Module-Name=pk-gtk-module

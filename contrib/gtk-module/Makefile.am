@@ -8,6 +8,12 @@ libpk_gtk_module_la_LIBADD = $(PK_GTK_MODULE_LIBS)
 libpk_gtk_module_la_LDFLAGS = -module -avoid-version
 libpk_gtk_module_la_CFLAGS = $(PK_GTK_MODULE_CFLAGS) $(WARNINGFLAGS_C)
 
+gtkmoduledir = $(libdir)/gnome-settings-daemon-3.0/gtk-modules
+dist_gtkmodule_DATA = pk-gtk-module.desktop
+
+@GSETTINGS_RULES@
+gsettings_SCHEMAS = org.gnome.setttings-daemon.gtk-modules-packagekit.gschema.xml
+
 clean-local:
 	rm -f *~
 
@@ -16,6 +22,7 @@ local: all
 endif
 
 EXTRA_DIST =						\
+	$(gsettings_SCHEMAS)				\
 	README						\
 	GLASS.txt
 
