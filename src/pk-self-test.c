@@ -1619,8 +1619,6 @@ pk_test_transaction_list_func (void)
 int
 main (int argc, char **argv)
 {
-	if (! g_thread_supported ())
-		g_thread_init (NULL);
 	g_type_init ();
 	g_test_init (&argc, &argv, NULL);
 
