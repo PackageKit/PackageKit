@@ -31,5 +31,5 @@ else
 fi
 export G_DEBUG=fatal_criticals
 killall packagekitd
-./packagekitd --verbose --disable-timer --backend=$BACKEND
+./packagekitd --verbose --disable-timer --keep-environment --backend=$BACKEND
 
