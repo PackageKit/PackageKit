@@ -4,8 +4,10 @@ AUTOMAKE_OPTIONS = 1.7
 if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
-INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
-INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) \
+							 --add-include-path=$(top_builddir)/lib/packagekit-glib2
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) \
+							  --includedir=$(top_builddir)/lib/packagekit-glib2
 endif
 
 SUBDIRS = plugins
