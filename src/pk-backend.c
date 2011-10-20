@@ -2676,7 +2676,16 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 	helper->func = func;
 
 	/* create a thread */
-	backend->priv->thread = g_thread_create (pk_backend_thread_setup, helper, FALSE, NULL);
+#if GLIB_CHECK_VERSION(2,31,0)
+	backend->priv->thread = g_thread_new ("PK-Backend",
+					      pk_backend_thread_setup,
+					      helper);
+#else
+	backend->priv->thread = g_thread_create (pk_backend_thread_setup,
+						 helper,
+						 FALSE,
+						 NULL);
+#endif
 	if (backend->priv->thread == NULL) {
 		g_warning ("failed to create thread");
 		ret = FALSE;
