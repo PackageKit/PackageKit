@@ -184,6 +184,7 @@ main (int argc, char *argv[])
 	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
+	gboolean keep_environment = FALSE;
 	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
 	PkEngine *engine = NULL;
@@ -212,7 +213,10 @@ main (int argc, char *argv[])
 		{ "immediate-exit", '\0', 0, G_OPTION_ARG_NONE, &immediate_exit,
 		  /* TRANSLATORS: exit straight away, used for automatic profiling */
 		  _("Exit after the engine has loaded"), NULL },
-		{ NULL}
+		{ "keep-environment", '\0', 0, G_OPTION_ARG_NONE, &keep_environment,
+		  /* TRANSLATORS: don't unset environment variables, used for debugging */
+		  _("Don't clear environment on startup"), NULL },
+		{ NULL }
 	};
 
 	setlocale (LC_ALL, "");
@@ -271,7 +275,9 @@ main (int argc, char *argv[])
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
 #ifdef HAVE_CLEARENV
-	clearenv ();
+	g_debug ("keep_environment: %i\n", keep_environment);
+	if (!keep_environment)
+		clearenv ();
 #endif
 
 	/* get values from the config file */
@@ -304,6 +310,8 @@ main (int argc, char *argv[])
 	/* all okay? */
 	if (!ret)
 		egg_error ("cannot continue, backend invalid");
+
+	pk_backend_set_keep_environment (backend, keep_environment);
 
 	loop = g_main_loop_new (NULL, FALSE);
 

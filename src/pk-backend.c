@@ -89,6 +89,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 simultaneous;
 	gboolean		 use_time;
+	gboolean		 keep_environment;
 	gchar			*transaction_id;
 	gchar			*locale;
 	PkTristate		 background;
@@ -1872,6 +1873,29 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 }
 
 /**
+ * pk_backend_set_keep_environment:
+ **/
+gboolean
+pk_backend_set_keep_environment (PkBackend *backend, gboolean keep_environment)
+{
+	g_return_val_if_fail (PK_IS_BACKEND(backend), FALSE);
+
+	backend->priv->keep_environment = keep_environment;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_keep_environment:
+ **/
+gboolean
+pk_backend_get_keep_environment (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND(backend), FALSE);
+
+	return backend->priv->keep_environment;
+}
+
+/**
  * pk_backend_set_role:
  **/
 gboolean
@@ -2964,6 +2988,9 @@ pk_backend_init (PkBackend *backend)
 	conf = pk_conf_new ();
 	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
 	g_object_unref (conf);
+
+	/* initialize keep_environment once */
+	backend->priv->keep_environment = FALSE;
 
 	pk_backend_reset (backend);
 }

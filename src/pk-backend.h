@@ -46,6 +46,10 @@ G_BEGIN_DECLS
 
 typedef struct _PkBackend PkBackend;
 
+gboolean	 pk_backend_set_keep_environment (PkBackend	*backend,
+							 gboolean keep_environment);
+gboolean	 pk_backend_get_keep_environment (PkBackend	*backend);
+
 /* set the state */
 gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
 							 const gchar	*eula_id);

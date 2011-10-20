@@ -53,6 +53,8 @@
 #include "pk-inhibit.h"
 #include "pk-conf.h"
 
+extern char **environ;
+
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
 
@@ -622,22 +624,42 @@ static gchar **
 pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 {
 	gchar **envp;
+	gchar **env_item;
+	gchar **env_item_split;
 	gchar *value;
-	gchar *line;
 	gchar *uri;
-	GPtrArray *array;
+	guint i;
+	GHashTable *env_table;
+	GHashTableIter env_iter;
+	gchar *env_key;
+	gchar *env_value;
 	gboolean ret;
 
-	array = g_ptr_array_new_with_free_func (g_free);
+	gboolean keep_environment =
+		pk_backend_get_keep_environment (backend_spawn->priv->backend);
+
+	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+	egg_debug ("keep_environment: %i", keep_environment);
+
+	if (keep_environment) {
+		/* copy environment if so specified (for debugging) */
+		for (env_item = environ; env_item && *env_item; env_item++) {
+			env_item_split = g_strsplit (*env_item, "=", 2);
+
+			if (env_item_split && (g_strv_length (env_item_split) == 2))
+				g_hash_table_replace (env_table, g_strdup (env_item_split[0]),
+						g_strdup (env_item_split[1]));
+
+			g_strfreev (env_item_split);
+		}
+	}
 
 	/* http_proxy */
 	value = pk_backend_get_proxy_http (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
 		uri = pk_backend_spawn_convert_uri (value);
-		line = g_strdup_printf ("%s=%s", "http_proxy", uri);
-		egg_debug ("setting evp '%s'", line);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("http_proxy"), uri);
 	}
 	g_free (value);
 
@@ -645,36 +667,47 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	value = pk_backend_get_proxy_ftp (backend_spawn->priv->backend);
 	if (!egg_strzero (value)) {
 		uri = pk_backend_spawn_convert_uri (value);
-		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
-		egg_debug ("setting evp '%s'", line);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("ftp_proxy"), uri);
 	}
 	g_free (value);
 
 	/* LANG */
 	value = pk_backend_get_locale (backend_spawn->priv->backend);
-	if (!egg_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "LANG", value);
-		egg_debug ("setting evp '%s'", line);
-		g_ptr_array_add (array, line);
-	}
-	g_free (value);
+	if (!egg_strzero (value))
+		g_hash_table_replace (env_table, g_strdup ("LANG"), value);
+	else
+		g_free (value);
 
 	/* NETWORK */
 	ret = pk_backend_is_online (backend_spawn->priv->backend);
-	line = g_strdup_printf ("%s=%s", "NETWORK", ret ? "TRUE" : "FALSE");
-	egg_debug ("setting evp '%s'", line);
-	g_ptr_array_add (array, line);
+	g_hash_table_replace (env_table, g_strdup ("NETWORK"), g_strdup(ret ? "TRUE" : "FALSE"));
 
 	/* IDLE */
 	ret = pk_backend_use_idle_bandwidth (backend_spawn->priv->backend);
-	line = g_strdup_printf ("%s=%s", "IDLE", ret ? "TRUE" : "FALSE");
-	egg_debug ("setting evp '%s'", line);
-	g_ptr_array_add (array, line);
+	g_hash_table_replace (env_table, g_strdup ("IDLE"), g_strdup(ret ? "TRUE" : "FALSE"));
 
-	envp = pk_ptr_array_to_strv (array);
-	g_ptr_array_unref (array);
+	/* copy hashed environment key/value pairs to envp */
+	envp = g_new0 (gchar *, g_hash_table_size (env_table) + 1);
+	g_hash_table_iter_init (&env_iter, env_table);
+	i = 0;
+	while (g_hash_table_iter_next (&env_iter, (void**)&env_key, (void**)&env_value)) {
+		env_key = g_strdup (env_key);
+		env_value = g_strdup (env_value);
+		if (!keep_environment) {
+			/* ensure malicious users can't inject anything from the session,
+			 * unless keeping the environment is specified (used for debugging) */
+			g_strdelimit (env_key, "\\;{}[]()*?%\n\r\t", '_');
+			g_strdelimit (env_value, "\\;{}[]()*?%\n\r\t", '_');
+		}
+		envp[i] = g_strdup_printf ("%s=%s", env_key, env_value);
+		egg_debug ("setting envp '%s'", envp[i]);
+		g_free (env_key);
+		g_free (env_value);
+		i++;
+	}
+
+	g_hash_table_destroy (env_table);
+
 	return envp;
 }
 
