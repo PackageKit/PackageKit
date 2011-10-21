@@ -1450,12 +1450,10 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_DOWNLOADING:
 		/* try to map the ZifStateAction to a PkStatusEnum */
 		if (zif_package_id_check (action_hint)) {
-			status = PK_STATUS_ENUM_DOWNLOAD;
 			pk_backend_package (backend,
 					    PK_INFO_ENUM_DOWNLOADING,
 					    action_hint,
 					    "");
-			break;
 		}
 		if (g_strrstr (action_hint, "repomd") != NULL)
 			status = PK_STATUS_ENUM_DOWNLOAD_REPOSITORY;
@@ -1469,6 +1467,8 @@ pk_backend_state_action_changed_cb (ZifState *state,
 			status = PK_STATUS_ENUM_DOWNLOAD_GROUP;
 		else if (g_strrstr (action_hint, "updatinfo") != NULL)
 			status = PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO;
+		else
+			status = PK_STATUS_ENUM_DOWNLOAD;
 		break;
 	case ZIF_STATE_ACTION_CHECKING:
 	case ZIF_STATE_ACTION_LOADING_REPOS:
