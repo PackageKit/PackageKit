@@ -3217,6 +3217,16 @@ pk_backend_get_changelog_text (GPtrArray *changesets)
 }
 
 /**
+ * pk_backend_sort_stores_cb:
+ **/
+static gint
+pk_backend_sort_stores_cb (ZifStore **a, ZifStore **b)
+{
+	return g_strcmp0 (zif_store_get_id (*b),
+			  zif_store_get_id (*a));
+}
+
+/**
  * pk_backend_get_update_detail_thread:
  */
 static gboolean
@@ -3257,6 +3267,12 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
+
+	/* sort the store array so updates repos are listed first, for
+	 * when the exact same package version is present in 'updates'
+	 * -and- 'fedora' */
+	g_ptr_array_sort (store_array,
+			  (GCompareFunc) pk_backend_sort_stores_cb);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
