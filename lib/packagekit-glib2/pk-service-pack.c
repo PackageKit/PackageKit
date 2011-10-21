@@ -38,6 +38,7 @@
 #include <archive_entry.h>
 #endif /* HAVE_ARCHIVE_H */
 #include <string.h>
+#include <stdlib.h>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -211,12 +212,11 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	struct archive_entry *entry;
 	int r;
 	int retval;
-	gchar *retcwd;
-	gchar buf[PATH_MAX];
 
 	/* save the PWD as we chdir to extract */
-	retcwd = getcwd (buf, PATH_MAX);
-	if (retcwd == NULL) {
+	gchar *buf = getcwd (NULL, 0);
+
+	if (buf == NULL) {
 		g_set_error_literal (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
 				      "failed to get cwd");
 		goto out;
@@ -273,6 +273,7 @@ out:
 	retval = chdir (buf);
 	if (retval != 0)
 		g_warning ("cannot chdir back!");
+	free (buf);
 
 	return ret;
 }
@@ -320,7 +321,7 @@ static gchar *
 pk_service_pack_create_temporary_directory (const gchar *prefix)
 {
 	gboolean ret;
-	gchar *random;
+	gchar *random_str;
 	gchar *directory = NULL;
 
 	/* ensure path does not already exist */
@@ -329,11 +330,11 @@ pk_service_pack_create_temporary_directory (const gchar *prefix)
 		g_free (directory);
 
 		/* get a random path */
-		random = pk_service_pack_get_random (prefix, 8);
+		random_str = pk_service_pack_get_random (prefix, 8);
 
 		/* ITS4: ignore, the user has no control over the daemon envp  */
-		directory = g_build_filename (g_get_tmp_dir (), random, NULL);
-		g_free (random);
+		directory = g_build_filename (g_get_tmp_dir (), random_str, NULL);
+		g_free (random_str);
 		ret = g_file_test (directory, G_FILE_TEST_IS_DIR);
 	} while (ret);
 
