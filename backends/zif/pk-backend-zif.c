@@ -1449,23 +1449,30 @@ pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer 
  * pk_backend_state_action_changed_cb:
  **/
 static void
-pk_backend_state_action_changed_cb (ZifState *state, ZifStateAction action, const gchar *action_hint, PkBackend *backend)
+pk_backend_state_action_changed_cb (ZifState *state,
+				    ZifStateAction action,
+				    const gchar *action_hint,
+				    PkBackend *backend)
 {
 	PkStatusEnum status = PK_STATUS_ENUM_UNKNOWN;
 
-	/* ignore this */
-	if (action == ZIF_STATE_ACTION_UNKNOWN)
-		goto out;
+	g_debug ("got state %s with hint %s",
+		 zif_state_action_to_string (action),
+		 action_hint);
 
-	/* try to map the ZifStateAction to a PkStatusEnum */
-	if (action == ZIF_STATE_ACTION_DOWNLOADING) {
+	switch (action) {
+	case ZIF_STATE_ACTION_UNKNOWN:
+		/* ignore this */
+		break;
+	case ZIF_STATE_ACTION_DOWNLOADING:
+		/* try to map the ZifStateAction to a PkStatusEnum */
 		if (zif_package_id_check (action_hint)) {
 			status = PK_STATUS_ENUM_DOWNLOAD;
 			pk_backend_package (backend,
 					    PK_INFO_ENUM_DOWNLOADING,
 					    action_hint,
 					    "");
-			goto out;
+			break;
 		}
 		if (g_strrstr (action_hint, "repomd") != NULL)
 			status = PK_STATUS_ENUM_DOWNLOAD_REPOSITORY;
@@ -1479,79 +1486,62 @@ pk_backend_state_action_changed_cb (ZifState *state, ZifStateAction action, cons
 			status = PK_STATUS_ENUM_DOWNLOAD_GROUP;
 		else if (g_strrstr (action_hint, "updatinfo") != NULL)
 			status = PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO;
-		goto out;
-	}
-
-	/* general cache loading */
-	if (action == ZIF_STATE_ACTION_CHECKING ||
-	    action == ZIF_STATE_ACTION_LOADING_REPOS ||
+		break;
+	case ZIF_STATE_ACTION_CHECKING:
+	case ZIF_STATE_ACTION_LOADING_REPOS:
+	case ZIF_STATE_ACTION_DECOMPRESSING:
 #if ZIF_CHECK_VERSION(0,2,4)
-	    action == ZIF_STATE_ACTION_LOADING_RPMDB ||
+	case ZIF_STATE_ACTION_LOADING_RPMDB:
 #endif
-	    action == ZIF_STATE_ACTION_DECOMPRESSING) {
+		/* general cache loading */
 		status = PK_STATUS_ENUM_LOADING_CACHE;
-		goto out;
-	}
-
-	/* package install */
-	if (action == ZIF_STATE_ACTION_INSTALLING) {
+		break;
+	case ZIF_STATE_ACTION_INSTALLING:
+		/* package install */
 		status = PK_STATUS_ENUM_INSTALL;
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_INSTALLING,
 				    action_hint,
 				    "");
-		goto out;
-	}
-
-	/* package remove */
-	if (action == ZIF_STATE_ACTION_REMOVING) {
+		break;
+	case ZIF_STATE_ACTION_REMOVING:
 		status = PK_STATUS_ENUM_REMOVE;
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_REMOVING,
 				    action_hint,
 				    "");
-		goto out;
-	}
-
-	/* package update */
-	if (action == ZIF_STATE_ACTION_UPDATING) {
+		break;
+	case ZIF_STATE_ACTION_UPDATING:
 		status = PK_STATUS_ENUM_UPDATE;
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_UPDATING,
 				    action_hint,
 				    "");
-		goto out;
-	}
-
-	/* package update */
-	if (action == ZIF_STATE_ACTION_CLEANING) {
+		break;
+	case ZIF_STATE_ACTION_CLEANING:
 		status = PK_STATUS_ENUM_CLEANUP;
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_CLEANUP,
 				    action_hint,
 				    "");
-		goto out;
-	}
-
-	/* rpm test commit */
-	if (action == ZIF_STATE_ACTION_TEST_COMMIT) {
+		break;
+	case ZIF_STATE_ACTION_TEST_COMMIT:
 		status = PK_STATUS_ENUM_TEST_COMMIT;
-		goto out;
-	}
-
-	/* depsolving */
-	if (action == ZIF_STATE_ACTION_DEPSOLVING_CONFLICTS ||
-	    action == ZIF_STATE_ACTION_DEPSOLVING_INSTALL ||
-	    action == ZIF_STATE_ACTION_DEPSOLVING_REMOVE ||
+		break;
+	case ZIF_STATE_ACTION_DEPSOLVING_CONFLICTS:
+	case ZIF_STATE_ACTION_DEPSOLVING_INSTALL:
+	case ZIF_STATE_ACTION_DEPSOLVING_REMOVE:
+	case ZIF_STATE_ACTION_DEPSOLVING_UPDATE:
 #if ZIF_CHECK_VERSION(0,2,4)
-	    action == ZIF_STATE_ACTION_CHECKING_UPDATES ||
+	case ZIF_STATE_ACTION_CHECKING_UPDATES:
 #endif
-	    action == ZIF_STATE_ACTION_DEPSOLVING_UPDATE) {
 		status = PK_STATUS_ENUM_DEP_RESOLVE;
-		goto out;
+		break;
+	case ZIF_STATE_ACTION_PREPARING:
+		status = PK_STATUS_ENUM_TEST_COMMIT;
+	/* deliberately no "default:" as we want to be notified of
+	 * unhandled enums by the compiler */
 	}
-
-out:
 	if (status != PK_STATUS_ENUM_UNKNOWN)
 		pk_backend_set_status (backend, status);
 }
