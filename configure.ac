@@ -415,6 +415,9 @@ if test x$enable_gtk_module = xyes; then
 else
 	build_gtk_module=no
 fi
+if test x$build_gtk_module = xyes; then
+	GLIB_GSETTINGS
+fi
 AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
 
 dnl ---------------------------------------------------------------------------

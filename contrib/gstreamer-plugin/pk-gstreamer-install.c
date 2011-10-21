@@ -236,7 +236,7 @@ pk_gst_get_arch_suffix (void)
 	retval = uname (&buf);
 
 	/* did we get valid value? */
-	if (retval != 0 || buf.machine == NULL) {
+	if (retval != 0 || buf.machine[0] == '\0') {
 		g_warning ("PackageKit: cannot get machine type");
 		goto out;
 	}

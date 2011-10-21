@@ -95,6 +95,7 @@ struct PkBackendPrivate
 	gboolean		 simultaneous;
 	gboolean		 use_time;
 	gboolean		 use_threads;
+	gboolean		 keep_environment;
 	gchar			*transaction_id;
 	gchar			*locale;
 	gchar			*frontend_socket;
@@ -2256,6 +2257,29 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 }
 
 /**
+ * pk_backend_set_keep_environment:
+ **/
+gboolean
+pk_backend_set_keep_environment (PkBackend *backend, gboolean keep_environment)
+{
+	g_return_val_if_fail (PK_IS_BACKEND(backend), FALSE);
+
+	backend->priv->keep_environment = keep_environment;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_keep_environment:
+ **/
+gboolean
+pk_backend_get_keep_environment (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND(backend), FALSE);
+
+	return backend->priv->keep_environment;
+}
+
+/**
  * pk_backend_set_role_internal:
  **/
 static gboolean
@@ -2676,7 +2700,16 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 	helper->func = func;
 
 	/* create a thread */
-	backend->priv->thread = g_thread_create (pk_backend_thread_setup, helper, FALSE, NULL);
+#if GLIB_CHECK_VERSION(2,31,0)
+	backend->priv->thread = g_thread_new ("PK-Backend",
+					      pk_backend_thread_setup,
+					      helper);
+#else
+	backend->priv->thread = g_thread_create (pk_backend_thread_setup,
+						 helper,
+						 FALSE,
+						 NULL);
+#endif
 	if (backend->priv->thread == NULL) {
 		g_warning ("failed to create thread");
 		ret = FALSE;
@@ -3726,6 +3759,9 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
 	backend->priv->use_threads = pk_conf_get_bool (conf, "UseThreadsInBackend");
 	g_object_unref (conf);
+
+	/* initialize keep_environment once */
+	backend->priv->keep_environment = FALSE;
 
 	pk_backend_reset (backend);
 }

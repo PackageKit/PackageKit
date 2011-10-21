@@ -717,6 +717,9 @@ static gchar **
 pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 {
 	gchar **envp;
+	gchar **environ;
+	gchar **env_item;
+	gchar **env_item_split;
 	gchar *proxy_http;
 	gchar *proxy_https;
 	gchar *proxy_ftp;
@@ -724,19 +727,41 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *no_proxy;
 	gchar *pac;
 	gchar *locale;
-	gchar *line;
 	gchar *uri;
 	gchar *eulas;
 	gchar *transaction_id = NULL;
 	const gchar *value;
 	guint i;
 	guint cache_age;
-	GPtrArray *array;
+	GHashTable *env_table;
+	GHashTableIter env_iter;
+	gchar *env_key;
+	gchar *env_value;
 	gboolean ret;
 	PkHintEnum interactive;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 
-	array = g_ptr_array_new_with_free_func (g_free);
+	gboolean keep_environment =
+		pk_backend_get_keep_environment (backend_spawn->priv->backend);
+
+	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+	g_debug ("keep_environment: %i", keep_environment);
+
+	if (keep_environment) {
+		/* copy environment if so specified (for debugging) */
+		environ = g_get_environ ();
+		for (env_item = environ; env_item && *env_item; env_item++) {
+			env_item_split = g_strsplit (*env_item, "=", 2);
+
+			if (env_item_split && (g_strv_length (env_item_split) == 2))
+				g_hash_table_replace (env_table, g_strdup (env_item_split[0]),
+						g_strdup (env_item_split[1]));
+
+			g_strfreev (env_item_split);
+		}
+		g_strfreev (environ);
+	}
 
 	/* don't do this for all backends as it's a performance penalty */
 	if (FALSE) {
@@ -744,118 +769,107 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		g_object_get (priv->backend,
 			      "transaction-id", &transaction_id,
 			      NULL);
-		line = g_strdup_printf ("%s=%s", "transaction_id", transaction_id);
-		g_ptr_array_add (array, line);
+		g_hash_table_replace (env_table, g_strdup ("transaction_id"),
+				g_strdup (transaction_id));
 	}
 
 	/* accepted eulas */
 	eulas = pk_backend_get_accepted_eula_string (priv->backend);
-	if (eulas != NULL){
-		line = g_strdup_printf ("%s=%s", "accepted_eulas", eulas);
-		g_ptr_array_add (array, line);
-	}
+	if (eulas != NULL)
+		g_hash_table_replace (env_table, g_strdup ("accepted_eulas"), g_strdup (eulas));
 
 	/* http_proxy */
 	proxy_http = pk_backend_get_proxy_http (priv->backend);
 	if (!pk_strzero (proxy_http)) {
 		uri = pk_backend_spawn_convert_uri (proxy_http);
-		line = g_strdup_printf ("%s=%s", "http_proxy", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("http_proxy"), uri);
 	}
 
 	/* https_proxy */
 	proxy_https = pk_backend_get_proxy_https (priv->backend);
 	if (!pk_strzero (proxy_https)) {
 		uri = pk_backend_spawn_convert_uri (proxy_https);
-		line = g_strdup_printf ("%s=%s", "https_proxy", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("https_proxy"), uri);
 	}
 
 	/* ftp_proxy */
 	proxy_ftp = pk_backend_get_proxy_ftp (priv->backend);
 	if (!pk_strzero (proxy_ftp)) {
 		uri = pk_backend_spawn_convert_uri (proxy_ftp);
-		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("ftp_proxy"), uri);
 	}
 
 	/* socks_proxy */
 	proxy_socks = pk_backend_get_proxy_socks (priv->backend);
 	if (!pk_strzero (proxy_socks)) {
 		uri = pk_backend_spawn_convert_uri (proxy_socks);
-		line = g_strdup_printf ("%s=%s", "socks_proxy", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("socks_proxy"), uri);
 	}
 
 	/* no_proxy */
 	no_proxy = pk_backend_get_no_proxy (priv->backend);
 	if (!pk_strzero (no_proxy)) {
 		uri = pk_backend_spawn_convert_uri (no_proxy);
-		line = g_strdup_printf ("%s=%s", "no_proxy", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("no_proxy"), uri);
 	}
 
 	/* pac */
 	pac = pk_backend_get_pac (priv->backend);
 	if (!pk_strzero (pac)) {
 		uri = pk_backend_spawn_convert_uri (pac);
-		line = g_strdup_printf ("%s=%s", "pac", uri);
-		g_ptr_array_add (array, line);
-		g_free (uri);
+		g_hash_table_replace (env_table, g_strdup ("pac"), uri);
 	}
 
 	/* LANG */
 	locale = pk_backend_get_locale (priv->backend);
-	if (!pk_strzero (locale)) {
-		line = g_strdup_printf ("%s=%s", "LANG", locale);
-		g_ptr_array_add (array, line);
-	}
+	if (!pk_strzero (locale))
+		g_hash_table_replace (env_table, g_strdup ("LANG"), g_strdup (locale));
 
 	/* ROOT */
 	value = pk_backend_get_root (priv->backend);
-	if (!pk_strzero (value)) {
-		line = g_strdup_printf ("%s=%s", "ROOT", value);
-		g_ptr_array_add (array, line);
-	}
+	if (!pk_strzero (value))
+		g_hash_table_replace (env_table, g_strdup ("ROOT"), g_strdup (value));
 
 	/* NETWORK */
 	ret = pk_backend_is_online (priv->backend);
-	line = g_strdup_printf ("%s=%s", "NETWORK", ret ? "TRUE" : "FALSE");
-	g_ptr_array_add (array, line);
+	g_hash_table_replace (env_table, g_strdup ("NETWORK"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* BACKGROUND */
 	ret = pk_backend_use_background (priv->backend);
-	line = g_strdup_printf ("%s=%s", "BACKGROUND", ret ? "TRUE" : "FALSE");
-	g_ptr_array_add (array, line);
+	g_hash_table_replace (env_table, g_strdup ("BACKGROUND"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* INTERACTIVE */
 	g_object_get (priv->backend,
 		      "interactive", &interactive,
 		      NULL);
-	line = g_strdup_printf ("%s=%s", "INTERACTIVE", interactive ? "TRUE" : "FALSE");
-	g_ptr_array_add (array, line);
+	g_hash_table_replace (env_table, g_strdup ("INTERACTIVE"), g_strdup (interactive ? "TRUE" : "FALSE"));
 
 	/* CACHE_AGE */
 	cache_age = pk_backend_get_cache_age (priv->backend);
-	if (cache_age > 0) {
-		line = g_strdup_printf ("%s=%i", "CACHE_AGE", cache_age);
-		g_ptr_array_add (array, line);
+	if (cache_age > 0)
+		g_hash_table_replace (env_table, g_strdup ("CACHE_AGE"), g_strdup_printf ("%i", cache_age));
+
+	/* copy hashed environment key/value pairs to envp */
+	envp = g_new0 (gchar *, g_hash_table_size (env_table) + 1);
+	g_hash_table_iter_init (&env_iter, env_table);
+	i = 0;
+	while (g_hash_table_iter_next (&env_iter, (void**)&env_key, (void**)&env_value)) {
+		env_key = g_strdup (env_key);
+		env_value = g_strdup (env_value);
+		if (!keep_environment) {
+			/* ensure malicious users can't inject anything from the session,
+			 * unless keeping the environment is specified (used for debugging) */
+			g_strdelimit (env_key, "\\;{}[]()*?%\n\r\t", '_');
+			g_strdelimit (env_value, "\\;{}[]()*?%\n\r\t", '_');
+		}
+		envp[i] = g_strdup_printf ("%s=%s", env_key, env_value);
+		g_debug ("setting envp '%s'", envp[i]);
+		g_free (env_key);
+		g_free (env_value);
+		i++;
 	}
 
-	/* ensure the malicious user can't inject anthing from the session */
-	for (i=0; i<array->len; i++) {
-		line = g_ptr_array_index (array, i);
-		g_strdelimit (line, "\\;{}[]()*?%\n\r\t", '_');
-		g_debug ("setting evp '%s'", line);
-	}
-
-	envp = pk_ptr_array_to_strv (array);
-	g_ptr_array_unref (array);
+	g_hash_table_destroy (env_table);
 
 	g_free (proxy_http);
 	g_free (proxy_https);
