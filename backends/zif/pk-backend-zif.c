@@ -416,15 +416,36 @@ out:
 static GPtrArray *
 pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 {
+	GHashTable *hash_installed;
+	gpointer found;
 	GPtrArray *result = NULL;
 	guint i;
 	ZifPackage *package;
 
+	hash_installed = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
 	result = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+	/* do not show a remote package if the same version is installed */
+	for (i=0;i<array->len;i++) {
+		package = g_ptr_array_index (array, i);
+		if (!zif_package_is_installed (package))
+			continue;
+		g_hash_table_insert (hash_installed,
+				     (gpointer) zif_package_get_name_version_arch (package),
+				     GINT_TO_POINTER (1));
+	}
 
 	/* pre-result */
 	for (i=0;i<array->len;i++) {
 		package = g_ptr_array_index (array, i);
+
+		/* is installed package existing? */
+		if (!zif_package_is_installed (package)) {
+			found = g_hash_table_lookup (hash_installed,
+						     zif_package_get_name_version_arch (package));
+			if (found != NULL)
+				continue;
+		}
 
 		/* installed */
 		if (pk_bitfield_contain (filters,
@@ -489,6 +510,7 @@ pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
 		zif_package_array_filter_newest (result);
 
+	g_hash_table_destroy (hash_installed);
 	return result;
 }
 
