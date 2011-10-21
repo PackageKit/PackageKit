@@ -56,6 +56,7 @@ from packagekit.backend import PackageKitBaseBackend, get_package_id, \
 from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
+sys.path.insert(0, '/usr/lib/entropy/lib')
 from entropy.output import decolorize
 from entropy.i18n import _, _LOCALE
 from entropy.const import etpConst, const_convert_to_rawstring, \
