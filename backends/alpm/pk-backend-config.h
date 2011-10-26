@@ -21,6 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <alpm.h>
 #include <glib.h>
 
-gboolean	 pk_backend_configure	(const gchar *filename, GError **error);
+alpm_handle_t	*pk_backend_configure	(const gchar *filename, GError **error);
