@@ -61,8 +61,9 @@ pk_backend_transaction_add_targets (PkBackend *self, GError **error)
 
 	for (; *paths != NULL; ++paths) {
 		if (alpm_add_file (*paths) < 0) {
-			g_set_error (error, ALPM_ERROR, pm_errno, "%s: %s",
-				     *paths, alpm_strerrorlast ());
+			enum _alpm_errno_t errno = alpm_errno (alpm);
+			g_set_error (error, ALPM_ERROR, errno, "%s: %s",
+				     *paths, alpm_strerror (errno));
 			return FALSE;
 		}
 	}

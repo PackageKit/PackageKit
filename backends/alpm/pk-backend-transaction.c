@@ -602,8 +602,9 @@ pk_backend_transaction_initialize (PkBackend *self, pmtransflag_t flags,
 	if (alpm_trans_init (flags, pk_backend_transaction_event_cb,
 			     pk_backend_transaction_conv_cb,
 			     pk_backend_transaction_progress_cb) < 0) {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error_literal (error, ALPM_ERROR, errno,
+				     alpm_strerror (errno));
 		return FALSE;
 	}
 
@@ -775,7 +776,7 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 		return TRUE;
 	}
 
-	switch (pm_errno) {
+	switch (alpm_errno (alpm)) {
 		case PM_ERR_PKG_INVALID_ARCH:
 			prefix = alpm_pkg_build_list (data);
 			alpm_list_free (data);
@@ -802,18 +803,21 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 		default:
 			prefix = NULL;
 			if (data != NULL) {
-				g_warning ("unhandled error %d", pm_errno);
+				g_warning ("unhandled error %d",
+					   alpm_errno (alpm));
 			}
 			break;
 	}
 
 	if (prefix != NULL) {
-		g_set_error (error, ALPM_ERROR, pm_errno, "%s: %s", prefix,
-			     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error (error, ALPM_ERROR, errno, "%s: %s", prefix,
+			     alpm_strerror (errno));
 		g_free (prefix);
 	} else {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error_literal (error, ALPM_ERROR, errno,
+				     alpm_strerror (errno));
 	}
 
 	return FALSE;
@@ -901,7 +905,7 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 		return TRUE;
 	}
 
-	switch (pm_errno) {
+	switch (alpm_errno (alpm)) {
 		case PM_ERR_FILE_CONFLICTS:
 			prefix = alpm_fileconflict_build_list (data);
 			alpm_list_free_inner (data, alpm_fileconflict_free);
@@ -917,18 +921,21 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 		default:
 			prefix = NULL;
 			if (data != NULL) {
-				g_warning ("unhandled error %d", pm_errno);
+				g_warning ("unhandled error %d",
+					   alpm_errno (alpm));
 			}
 			break;
 	}
 
 	if (prefix != NULL) {
-		g_set_error (error, ALPM_ERROR, pm_errno, "%s: %s", prefix,
-			     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error (error, ALPM_ERROR, errno, "%s: %s", prefix,
+			     alpm_strerror (errno));
 		g_free (prefix);
 	} else {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error_literal (error, ALPM_ERROR, errno,
+				     alpm_strerror (errno));
 	}
 
 	return FALSE;
@@ -950,8 +957,9 @@ pk_backend_transaction_end (PkBackend *self, GError **error)
 	}
 
 	if (alpm_trans_release () < 0) {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error_literal (error, ALPM_ERROR, errno,
+				     alpm_strerror (errno));
 		return FALSE;
 	}
 

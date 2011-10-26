@@ -341,9 +341,10 @@ pk_backend_repo_disable_thread (PkBackend *self)
 
 		if (g_strcmp0 (repo, name) == 0) {
 			if (alpm_db_unregister (db) < 0) {
-				g_set_error (&error, ALPM_ERROR, pm_errno,
+				enum _alpm_errno_t errno = alpm_errno (alpm);
+				g_set_error (&error, ALPM_ERROR, errno,
 					     "[%s]: %s", repo,
-					     alpm_strerrorlast ());
+					     alpm_strerror (errno));
 			} else {
 				g_hash_table_insert (disabled, g_strdup (repo),
 						     GINT_TO_POINTER (1));

@@ -224,8 +224,9 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 
 	localdb = alpm_option_get_localdb (alpm);
 	if (localdb == NULL) {
-		g_set_error (error, ALPM_ERROR, pm_errno, "[%s]: %s", "local",
-			     alpm_strerrorlast ());
+		enum _alpm_errno_t errno = alpm_errno (alpm);
+		g_set_error (error, ALPM_ERROR, errno, "[%s]: %s", "local",
+			     alpm_strerror (errno));
 	}
 
 	return TRUE;
