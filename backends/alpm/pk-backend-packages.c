@@ -77,6 +77,7 @@ pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
+	g_return_val_if_fail (alpm != NULL, NULL);
 	g_return_val_if_fail (localdb != NULL, NULL);
 
 	package = pk_package_id_split (package_id);
@@ -86,8 +87,8 @@ pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 	if (g_strcmp0 (repo_id, "installed") == 0) {
 		db = localdb;
 	} else {
-		const alpm_list_t *i;
-		for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
+		for (; i != NULL; i = i->next) {
 			const gchar *repo = alpm_db_get_name (i->data);
 
 			if (g_strcmp0 (repo, repo_id) == 0) {
@@ -166,6 +167,7 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	filters = pk_backend_get_uint (self, "filters");
@@ -180,8 +182,8 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 			return TRUE;
 		}
 	} else if (!skip_remote) {
-		const alpm_list_t *i;
-		for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
+		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
 			if (pkg != NULL) {
 				pk_backend_pkg (self, pkg,
@@ -317,6 +319,7 @@ pk_backend_get_files_thread (PkBackend *self)
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	packages = pk_backend_get_strv (self, "package_ids");
 
@@ -324,10 +327,11 @@ pk_backend_get_files_thread (PkBackend *self)
 
 	for (; *packages != NULL; ++packages) {
 		pmpkg_t *pkg;
-		const alpm_list_t *i;
+		const gchar *root;
 
 		GString *files;
-		const gchar *root;
+		alpm_filelist_t *filelist;
+		gsize i;
 
 		if (pk_backend_cancelled (self)) {
 			break;
@@ -338,11 +342,13 @@ pk_backend_get_files_thread (PkBackend *self)
 			break;
 		}
 
+		root = alpm_option_get_root (alpm);
 		files = g_string_new ("");
-		root = alpm_option_get_root ();
-		for (i = alpm_pkg_get_files (pkg); i != NULL; i = i->next) {
-			g_string_append_printf (files, ";%s%s", root,
-						(const gchar *) i->data);
+
+		filelist = alpm_pkg_get_files (pkg);
+		for (i = 0; i < filelist->count; ++i) {
+			const gchar *file = filelist->files[i].name;
+			g_string_append_printf (files, ";%s%s", root, file);
 		}
 
 		pk_backend_files (self, *packages, files->str + 1);

@@ -39,7 +39,7 @@ typedef struct
 	 gchar		*arch, *cleanmethod, *dbpath, *gpgdir, *logfile, *root,
 			*xfercmd;
 
-	 alpm_list_t	*cachedirs, *holdpkgs, *ignoregrps, *ignorepkgs,
+	 alpm_list_t	*cachedirs, *holdpkgs, *ignoregroups, *ignorepkgs,
 			*noextracts, *noupgrades, *syncfirsts;
 
 	 alpm_list_t	*repos;
@@ -87,7 +87,7 @@ pk_backend_config_free (PkBackendConfig *config)
 
 	FREELIST (config->cachedirs);
 	FREELIST (config->holdpkgs);
-	FREELIST (config->ignoregrps);
+	FREELIST (config->ignoregroups);
 	FREELIST (config->ignorepkgs);
 	FREELIST (config->noextracts);
 	FREELIST (config->noupgrades);
@@ -332,12 +332,12 @@ pk_backend_config_add_holdpkg (PkBackendConfig *config, gchar *package)
 }
 
 static void
-pk_backend_config_add_ignoregrp (PkBackendConfig *config, gchar *group)
+pk_backend_config_add_ignoregroup (PkBackendConfig *config, gchar *group)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (group != NULL);
 
-	config->ignoregrps = alpm_list_add (config->ignoregrps, group);
+	config->ignoregroups = alpm_list_add (config->ignoregroups, group);
 }
 
 static void
@@ -385,7 +385,7 @@ typedef struct
 /* keep this in alphabetical order */
 static const PkBackendConfigList pk_backend_config_list_options[] = {
 	{ "HoldPkg", pk_backend_config_add_holdpkg },
-	{ "IgnoreGroup", pk_backend_config_add_ignoregrp },
+	{ "IgnoreGroup", pk_backend_config_add_ignoregroup },
 	{ "IgnorePkg", pk_backend_config_add_ignorepkg },
 	{ "NoExtract", pk_backend_config_add_noextract },
 	{ "NoUpgrade", pk_backend_config_add_noupgrade },
@@ -744,8 +744,8 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 	config->syncfirsts = NULL;
 
 	/* alpm takes ownership */
-	alpm_option_set_ignoregrps (handle, config->ignoregrps);
-	config->ignoregrps = NULL;
+	alpm_option_set_ignoregroups (handle, config->ignoregroups);
+	config->ignoregroups = NULL;
 
 	/* alpm takes ownership */
 	alpm_option_set_ignorepkgs (handle, config->ignorepkgs);
