@@ -26,6 +26,7 @@
 #include <sys/utsname.h>
 
 #include "pk-backend-alpm.h"
+#include "pk-backend-config.h"
 #include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-groups.h"
@@ -35,6 +36,7 @@ PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;
 static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
+alpm_handle_t *alpm = NULL;
 pmdb_t *localdb = NULL;
 
 gchar *xfercmd = NULL;
@@ -212,26 +214,19 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 	g_setenv ("HTTP_USER_AGENT", user_agent, FALSE);
 	g_free (user_agent);
 
-	g_debug ("initializing");
-	if (alpm_initialize () < 0) {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
+	alpm = pk_backend_configure (PK_BACKEND_CONFIG_FILE, error);
+	if (alpm == NULL) {
 		return FALSE;
 	}
 
 	backend = self;
-	localdb = alpm_option_get_localdb ();
+	alpm_option_set_logcb (alpm, pk_backend_logcb);
+
+	localdb = alpm_option_get_localdb (alpm);
 	if (localdb == NULL) {
 		g_set_error (error, ALPM_ERROR, pm_errno, "[%s]: %s", "local",
 			     alpm_strerrorlast ());
 	}
-
-	/* set some sane defaults */
-	alpm_option_set_logcb (pk_backend_logcb);
-	alpm_option_set_root (PK_BACKEND_DEFAULT_ROOT);
-	alpm_option_set_dbpath (PK_BACKEND_DEFAULT_DBPATH);
-	alpm_option_set_signaturedir (PK_BACKEND_DEFAULT_GPGDIR);
-	alpm_option_set_logfile (PK_BACKEND_DEFAULT_LOGFILE);
 
 	return TRUE;
 }
@@ -241,17 +236,20 @@ pk_backend_destroy_alpm (PkBackend *self)
 {
 	g_return_if_fail (self != NULL);
 
-	if (backend != NULL) {
-		if (alpm_trans_get_flags () != -1) {
-			alpm_trans_release ();
+	if (alpm != NULL) {
+		if (alpm_trans_get_flags (alpm) != -1) {
+			alpm_trans_release (alpm);
 		}
-		alpm_release ();
+		alpm_release (alpm);
+
+		alpm = NULL;
 		backend = NULL;
 	}
 
 	FREELIST (syncfirsts);
 	FREELIST (holdpkgs);
 	g_free (xfercmd);
+	xfercmd = NULL;
 }
 
 void
