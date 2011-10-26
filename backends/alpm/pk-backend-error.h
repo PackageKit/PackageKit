@@ -26,8 +26,8 @@
 #define	 ALPM_ERROR		(alpm_error_quark ())
 
 enum {
-	PM_ERR_CONFIG_INVALID = 0x10000,
-	PM_ERR_PKG_HELD
+	ALPM_ERR_CONFIG_INVALID = 0x10000,
+	ALPM_ERR_PKG_HELD
 };
 
 void	 pk_backend_error	(PkBackend *self, GError *error);

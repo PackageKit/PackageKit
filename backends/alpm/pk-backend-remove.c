@@ -72,7 +72,7 @@ pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
 	for (i = alpm_trans_get_remove (); i != NULL; i = i->next) {
 		const gchar *name = alpm_pkg_get_name (i->data);
 		if (alpm_list_find_str (holdpkgs, name)) {
-			g_set_error (error, ALPM_ERROR, PM_ERR_PKG_HELD,
+			g_set_error (error, ALPM_ERROR, ALPM_ERR_PKG_HELD,
 				     "%s: %s", name,
 				     "could not remove HoldPkg");
 			return FALSE;
@@ -85,14 +85,14 @@ pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
 static gboolean
 pk_backend_simulate_remove_packages_thread (PkBackend *self)
 {
-	pmtransflag_t flags = PM_TRANS_FLAG_CASCADE;
+	pmtransflag_t flags = ALPM_TRANS_FLAG_CASCADE;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
 
 	/* remove unneeded packages that were required by those to be removed */
 	if (pk_backend_get_bool (self, "autoremove")) {
-		flags |= PM_TRANS_FLAG_RECURSE;
+		flags |= ALPM_TRANS_FLAG_RECURSE;
 	}
 
 	if (pk_backend_transaction_initialize (self, flags, &error) &&
@@ -114,11 +114,11 @@ pk_backend_remove_packages_thread (PkBackend *self)
 
 	/* remove packages that depend on those to be removed */
 	if (pk_backend_get_bool (self, "allow_deps")) {
-		flags |= PM_TRANS_FLAG_CASCADE;
+		flags |= ALPM_TRANS_FLAG_CASCADE;
 	}
 	/* remove unneeded packages that were required by those to be removed */
 	if (pk_backend_get_bool (self, "autoremove")) {
-		flags |= PM_TRANS_FLAG_RECURSE;
+		flags |= ALPM_TRANS_FLAG_RECURSE;
 	}
 
 	if (pk_backend_transaction_initialize (self, flags, &error) &&

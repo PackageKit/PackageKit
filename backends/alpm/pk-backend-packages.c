@@ -111,7 +111,7 @@ pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 	}
 
 	if (pkg == NULL) {
-		int code = PM_ERR_PKG_NOT_FOUND;
+		int code = ALPM_ERR_PKG_NOT_FOUND;
 		g_set_error (error, ALPM_ERROR, code, "%s: %s", package_id,
 			     alpm_strerror (code));
 	}
@@ -191,7 +191,7 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 		}
 	}
 
-	code = PM_ERR_PKG_NOT_FOUND;
+	code = ALPM_ERR_PKG_NOT_FOUND;
 	g_set_error (error, ALPM_ERROR, code, "%s: %s", name,
 		     alpm_strerror (code));
 	return FALSE;

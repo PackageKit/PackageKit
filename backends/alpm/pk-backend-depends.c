@@ -96,7 +96,7 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 			pkgs = alpm_list_add (pkgs, provider);
 		}
 	} else {
-		int code = PM_ERR_UNSATISFIED_DEPS;
+		int code = ALPM_ERR_UNSATISFIED_DEPS;
 		g_set_error (error, ALPM_ERROR, code, "%s: %s", depend,
 			     alpm_strerror (code));
 	}
@@ -127,7 +127,7 @@ pk_backend_find_requirer (PkBackend *self, alpm_list_t *pkgs, const gchar *name,
 			pkgs = alpm_list_add (pkgs, requirer);
 		}
 	} else {
-		int code = PM_ERR_PKG_NOT_FOUND;
+		int code = ALPM_ERR_PKG_NOT_FOUND;
 		g_set_error (error, ALPM_ERROR, code, "%s: %s", name,
 			     alpm_strerror (code));
 	}

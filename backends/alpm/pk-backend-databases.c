@@ -306,7 +306,7 @@ pk_backend_repo_enable_thread (PkBackend *self)
 			pk_backend_repo_list_changed (self);
 		}
 	} else {
-		int code = PM_ERR_DB_NOT_NULL;
+		int code = ALPM_ERR_DB_NOT_NULL;
 		g_set_error (&error, ALPM_ERROR, code, "[%s]: %s",
 			     repo, alpm_strerror (code));
 	}
@@ -354,7 +354,7 @@ pk_backend_repo_disable_thread (PkBackend *self)
 	}
 
 	if (i == NULL) {
-		int code = PM_ERR_DB_NULL;
+		int code = ALPM_ERR_DB_NULL;
 		g_set_error (&error, ALPM_ERROR, code, "[%s]: %s", repo,
 			     alpm_strerror (code));
 	}
