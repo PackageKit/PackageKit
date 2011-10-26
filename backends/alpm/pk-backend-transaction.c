@@ -57,12 +57,13 @@ alpm_pkg_has_basename (pmpkg_t *pkg, const gchar *basename)
 
 	g_return_val_if_fail (pkg != NULL, FALSE);
 	g_return_val_if_fail (basename != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	if (g_strcmp0 (alpm_pkg_get_filename (pkg), basename) == 0) {
 		return TRUE;
 	}
 
-	if (alpm_option_get_usedelta () == 0) {
+	if (alpm_option_get_usedelta (alpm) == 0) {
 		return FALSE;
 	}
 
@@ -109,6 +110,7 @@ pk_backend_transaction_download_start (PkBackend *self, const gchar *basename)
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (basename != NULL);
+	g_return_if_fail (alpm != NULL);
 
 	/* continue or finish downloading the current package */
 	if (dpkg != NULL) {
@@ -127,7 +129,7 @@ pk_backend_transaction_download_start (PkBackend *self, const gchar *basename)
 	}
 
 	/* figure out what the next package is */
-	for (i = alpm_trans_get_add (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
 		pmpkg_t *pkg = (pmpkg_t *) i->data;
 
 		if (alpm_pkg_has_basename (pkg, basename)) {
@@ -416,11 +418,12 @@ pk_backend_transaction_add_done (PkBackend *self, pmpkg_t *pkg)
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
+	g_return_if_fail (alpm != NULL);
 
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ("installed %s (%s)\n", name, version);
+	alpm_logaction (alpm, "installed %s (%s)\n", name, version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_pkg_get_optdepends (pkg);
@@ -455,11 +458,12 @@ pk_backend_transaction_remove_done (PkBackend *self, pmpkg_t *pkg)
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
+	g_return_if_fail (alpm != NULL);
 
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ("removed %s (%s)\n", name, version);
+	alpm_logaction (alpm, "removed %s (%s)\n", name, version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 	pk_backend_output_end (self);
 }
@@ -501,12 +505,13 @@ pk_backend_transaction_upgrade_done (PkBackend *self, pmpkg_t *pkg,
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
 	g_return_if_fail (old != NULL);
+	g_return_if_fail (alpm != NULL);
 
 	name = alpm_pkg_get_name (pkg);
 	pre = alpm_pkg_get_version (old);
 	post = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ("upgraded %s (%s -> %s)\n", name, pre, post);
+	alpm_logaction (alpm, "upgraded %s (%s -> %s)\n", name, pre, post);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_list_diff (alpm_pkg_get_optdepends (pkg),
@@ -588,8 +593,9 @@ static void
 transaction_cancelled_cb (GCancellable *object, gpointer data)
 {
 	g_return_if_fail (data != NULL);
+	g_return_if_fail (alpm != NULL);
 
-	alpm_trans_interrupt ();
+	alpm_trans_interrupt (alpm);
 }
 
 gboolean
@@ -597,19 +603,22 @@ pk_backend_transaction_initialize (PkBackend *self, pmtransflag_t flags,
 				   GError **error)
 {
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (cancellable != NULL, FALSE);
 
-	if (alpm_trans_init (flags, pk_backend_transaction_event_cb,
-			     pk_backend_transaction_conv_cb,
-			     pk_backend_transaction_progress_cb) < 0) {
+	if (alpm_trans_init (alpm, flags) < 0) {
 		enum _alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 		return FALSE;
 	}
 
-	alpm_option_set_dlcb (pk_backend_transaction_dlcb);
-	alpm_option_set_totaldlcb (pk_backend_transaction_totaldlcb);
+	alpm_option_set_eventcb (alpm, pk_backend_transaction_event_cb);
+	alpm_option_set_questioncb (alpm, pk_backend_transaction_conv_cb);
+	alpm_option_set_progresscb (alpm, pk_backend_transaction_progress_cb);
+
+	alpm_option_set_dlcb (alpm, pk_backend_transaction_dlcb);
+	alpm_option_set_totaldlcb (alpm, pk_backend_transaction_totaldlcb);
 
 	g_cancellable_connect (cancellable,
 			       G_CALLBACK (transaction_cancelled_cb),
@@ -772,7 +781,10 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 	alpm_list_t *data = NULL;
 	gchar *prefix;
 
-	if (alpm_trans_prepare (&data) >= 0) {
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
+
+	if (alpm_trans_prepare (alpm, &data) >= 0) {
 		return TRUE;
 	}
 
@@ -830,10 +842,11 @@ pk_backend_transaction_packages (PkBackend *self)
 	PkInfoEnum info;
 
 	g_return_if_fail (self != NULL);
+	g_return_if_fail (alpm != NULL);
 	g_return_if_fail (localdb != NULL);
 
 	/* emit packages that would have been installed */
-	for (i = alpm_trans_get_add (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
 		if (pk_backend_cancelled (self)) {
 			break;
 		} else {
@@ -860,7 +873,7 @@ pk_backend_transaction_packages (PkBackend *self)
 	}
 
 	/* emit packages that would have been removed */
-	for (i = alpm_trans_get_remove (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
 		if (pk_backend_cancelled (self)) {
 			break;
 		} else {
@@ -894,6 +907,9 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 	alpm_list_t *data = NULL;
 	gchar *prefix;
 
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
+
 	if (pk_backend_cancelled (self)) {
 		return TRUE;
 	}
@@ -901,7 +917,7 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 	pk_backend_set_allow_cancel (self, FALSE);
 	pk_backend_set_status (self, PK_STATUS_ENUM_RUNNING);
 
-	if (alpm_trans_commit (&data) >= 0) {
+	if (alpm_trans_commit (alpm, &data) >= 0) {
 		return TRUE;
 	}
 
@@ -945,9 +961,14 @@ gboolean
 pk_backend_transaction_end (PkBackend *self, GError **error)
 {
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	alpm_option_set_dlcb (NULL);
-	alpm_option_set_totaldlcb (NULL);
+	alpm_option_set_eventcb (alpm, NULL);
+	alpm_option_set_questioncb (alpm, NULL);
+	alpm_option_set_progresscb (alpm, NULL);
+
+	alpm_option_set_dlcb (alpm, NULL);
+	alpm_option_set_totaldlcb (alpm, NULL);
 
 	if (dpkg != NULL) {
 		pk_backend_transaction_download_end (self);
@@ -956,7 +977,7 @@ pk_backend_transaction_end (PkBackend *self, GError **error)
 		pk_backend_output_end (self);
 	}
 
-	if (alpm_trans_release () < 0) {
+	if (alpm_trans_release (alpm) < 0) {
 		enum _alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));

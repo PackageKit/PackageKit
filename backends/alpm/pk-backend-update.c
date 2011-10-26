@@ -245,18 +245,19 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 	const alpm_list_t *i;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	if (!pk_backend_transaction_initialize (self, 0, error)) {
 		return FALSE;
 	}
 
-	alpm_logaction ("synchronizing package lists\n");
+	alpm_logaction (alpm, "synchronizing package lists\n");
 
-	dlcb = alpm_option_get_dlcb ();
-	totaldlcb = alpm_option_get_totaldlcb ();
+	dlcb = alpm_option_get_dlcb (alpm);
+	totaldlcb = alpm_option_get_totaldlcb (alpm);
 
 	/* set total size to minus the number of databases */
-	i = alpm_option_get_syncdbs ();
+	i = alpm_option_get_syncdbs (alpm);
 	totaldlcb (-alpm_list_count (i));
 
 	for (; i != NULL; i = i->next) {
@@ -295,18 +296,19 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 static gboolean
 alpm_pkg_is_ignorepkg (pmpkg_t *pkg)
 {
-	const alpm_list_t *ignorepkgs, *ignoregrps, *i;
+	const alpm_list_t *ignorepkgs, *ignoregroups, *i;
 
 	g_return_val_if_fail (pkg != NULL, TRUE);
+	g_return_val_if_fail (alpm != NULL, TRUE);
 
-	ignorepkgs = alpm_option_get_ignorepkgs ();
+	ignorepkgs = alpm_option_get_ignorepkgs (alpm);
 	if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL) {
 		return TRUE;
 	}
 
-	ignoregrps = alpm_option_get_ignoregrps ();
+	ignoregroups = alpm_option_get_ignoregroups (alpm);
 	for (i = alpm_pkg_get_groups (pkg); i != NULL; i = i->next) {
-		if (alpm_list_find_str (ignoregrps, i->data) != NULL) {
+		if (alpm_list_find_str (ignoregroups, i->data) != NULL) {
 			return TRUE;
 		}
 	}
@@ -325,6 +327,16 @@ alpm_pkg_is_syncfirst (pmpkg_t *pkg)
 
 	return FALSE;
 }
+
+static gboolean
+alpm_pkg_replaces (pmpkg_t *pkg, const gchar *name)
+{
+	g_return_val_if_fail (pkg != NULL, FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
+
+	return alpm_list_find_str (alpm_pkg_get_replaces (pkg), name) != NULL;
+}
+
 
 static pmpkg_t *
 alpm_pkg_find_update (pmpkg_t *pkg, const alpm_list_t *dbs)
@@ -350,8 +362,7 @@ alpm_pkg_find_update (pmpkg_t *pkg, const alpm_list_t *dbs)
 
 		i = alpm_db_get_pkgcache (dbs->data);
 		for (; i != NULL; i = i->next) {
-			if (alpm_list_find_str (alpm_pkg_get_replaces (i->data),
-						name) != NULL) {
+			if (alpm_pkg_replaces (i->data, name)) {
 				return i->data;
 			}
 		}
@@ -368,6 +379,7 @@ pk_backend_get_updates_thread (PkBackend *self)
 	const alpm_list_t *i, *syncdbs;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	time (&one_hour_ago);
@@ -386,7 +398,7 @@ pk_backend_get_updates_thread (PkBackend *self)
 	}
 
 	/* find outdated and replacement packages */
-	syncdbs = alpm_option_get_syncdbs ();
+	syncdbs = alpm_option_get_syncdbs (alpm);
 	for (i = alpm_db_get_pkgcache (localdb); i != NULL; i = i->next) {
 		pmpkg_t *upgrade = alpm_pkg_find_update (i->data, syncdbs);
 

@@ -36,6 +36,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 	gchar **packages;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	packages = pk_backend_get_strv (self, "package_ids");
 
@@ -46,10 +47,10 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		const alpm_list_t *i;
+		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
 		pmpkg_t *pkg;
 
-		for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+		for (; i != NULL; i = i->next) {
 			if (g_strcmp0 (alpm_db_get_name (i->data), repo) == 0) {
 				break;
 			}
@@ -64,7 +65,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
-		if (pkg == NULL || alpm_add_pkg (pkg) < 0) {
+		if (pkg == NULL || alpm_add_pkg (alpm, pkg) < 0) {
 			enum _alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
@@ -87,14 +88,18 @@ pk_backend_download_packages_thread (PkBackend *self)
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	directory = pk_backend_get_string (self, "directory");
 
 	if (directory != NULL) {
 		/* download files to a PackageKit directory */
 		gchar *cachedir = strdup (directory);
-		cachedirs = alpm_list_strdup (alpm_option_get_cachedirs ());
-		alpm_option_set_cachedirs (alpm_list_add (NULL, cachedir));
+		const alpm_list_t *old = alpm_option_get_cachedirs (alpm);
+		alpm_list_t *new = alpm_list_add (NULL, cachedir);
+
+		cachedirs = alpm_list_strdup (old);
+		alpm_option_set_cachedirs (alpm, new);
 	}
 
 	flags |= ALPM_TRANS_FLAG_NODEPS;
@@ -108,7 +113,7 @@ pk_backend_download_packages_thread (PkBackend *self)
 	}
 
 	if (directory != NULL) {
-		alpm_option_set_cachedirs (cachedirs);
+		alpm_option_set_cachedirs (alpm, cachedirs);
 	}
 
 	return pk_backend_transaction_finish (self, error);
@@ -186,9 +191,10 @@ pk_backend_replaces_dependencies (PkBackend *self, pmpkg_t *pkg)
 
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (pkg != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	replaces = alpm_pkg_get_replaces (pkg);
-	for (i = alpm_trans_get_remove (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
 		pmpkg_t *rpkg = (pmpkg_t *) i->data;
 		const gchar *rname = alpm_pkg_get_name (rpkg);
 
@@ -214,6 +220,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	if (!pk_backend_transaction_initialize (self, 0, &error) ||
@@ -223,7 +230,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 	}
 
 	/* change the install reason of packages that replace dependencies */
-	for (i = alpm_trans_get_add (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
 		pmpkg_t *pkg = (pmpkg_t *) i->data;
 		const gchar *name = alpm_pkg_get_name (pkg);
 
@@ -244,7 +251,8 @@ pk_backend_update_packages_thread (PkBackend *self)
 
 	for (i = asdeps; i != NULL; i = i->next) {
 		const gchar *name = (const gchar *) i->data;
-		alpm_db_set_pkgreason (localdb, name, ALPM_PKG_REASON_DEPEND);
+		pmpkg_t *pkg = alpm_db_get_pkg (localdb, name);
+		alpm_db_set_pkgreason (alpm, pkg, ALPM_PKG_REASON_DEPEND);
 	}
 
 out:

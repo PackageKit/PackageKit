@@ -35,12 +35,13 @@ alpm_add_file (const gchar *filename)
 	pmpkg_t *pkg;
 
 	g_return_val_if_fail (filename != NULL, -1);
+	g_return_val_if_fail (alpm != NULL, -1);
 
-	if (alpm_pkg_load (filename, 1, &pkg) < 0) {
+	if (alpm_pkg_load (alpm, filename, 1, &pkg) < 0) {
 		return -1;
 	}
 
-	if (alpm_add_pkg (pkg) < 0) {
+	if (alpm_add_pkg (alpm, pkg) < 0) {
 		alpm_pkg_free (pkg);
 		return -1;
 	}

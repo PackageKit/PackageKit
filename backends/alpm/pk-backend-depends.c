@@ -55,6 +55,7 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 
 	g_return_val_if_fail (self != NULL, pkgs);
 	g_return_val_if_fail (depend != NULL, pkgs);
+	g_return_val_if_fail (alpm != NULL, pkgs);
 	g_return_val_if_fail (localdb != NULL, pkgs);
 
 	recursive = pk_backend_get_bool (self, "recursive");
@@ -84,8 +85,8 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 	}
 
 	/* look for remote dependencies */
-	syncdbs = alpm_option_get_syncdbs ();
-	provider = alpm_find_dbs_satisfier (syncdbs, depend);
+	syncdbs = alpm_option_get_syncdbs (alpm);
+	provider = alpm_find_dbs_satisfier (alpm, syncdbs, depend);
 
 	if (provider != NULL) {
 		if (!skip_remote) {
