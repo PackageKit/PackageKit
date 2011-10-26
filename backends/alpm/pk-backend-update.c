@@ -274,9 +274,10 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 			/* fake the download when already up to date */
 			dlcb ("", 1, 1);
 		} else if (result < 0) {
-			g_set_error (error, ALPM_ERROR, pm_errno, "[%s]: %s",
+			enum _alpm_errno_t errno = alpm_errno (alpm);
+			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
 				     alpm_db_get_name (i->data),
-				     alpm_strerrorlast ());
+				     alpm_strerror (errno));
 			break;
 		}
 	}
