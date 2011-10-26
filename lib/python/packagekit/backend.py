@@ -37,7 +37,48 @@ def _to_unicode(txt, encoding='utf-8'):
             txt = unicode(txt, encoding, errors='replace')
     return txt
 
+def _to_utf8(txt, errors='replace'):
+    '''convert practically anything to a utf-8-encoded byte string'''
+
+    # convert to unicode object
+    if isinstance(txt, str):
+        txt = txt.decode('utf-8', errors=errors)
+    if not isinstance(txt, basestring):
+        # try to convert non-string objects like exceptions
+        try:
+            # if txt.__unicode__() exists, or txt.__str__() returns ASCII
+            txt = unicode(txt)
+        except UnicodeDecodeError:
+            # if txt.__str__() exists
+            txt = str(txt).decode('utf-8', errors=errors)
+        except:
+            # no __str__(), __unicode__() methods, use representation
+            txt = unicode(repr(txt))
+
+    # return encoded as UTF-8
+    return txt.encode('utf-8', errors=errors)
+
 # Classes
+
+class _UTF8Writer(codecs.StreamWriter):
+
+    encoding = 'utf-8'
+
+    def __init__(self, stream, errors='replace'):
+        codecs.StreamWriter.__init__(self, stream, errors)
+
+    def encode(self, inp, errors='strict'):
+        try:
+            l = len(inp)
+        except TypeError:
+            try:
+                l = len(unicode(inp))
+            except:
+                try:
+                    l = len(str(inp))
+                except:
+                    l = 1
+        return (_to_utf8(inp, errors=errors), l)
 
 class PkError(Exception):
     def __init__(self, code, details):
@@ -49,6 +90,10 @@ class PkError(Exception):
 class PackageKitBaseBackend:
 
     def __init__(self, cmds):
+        # Make sys.stdout/stderr cope with UTF-8
+        sys.stdout = _UTF8Writer(sys.stdout)
+        sys.stderr = _UTF8Writer(sys.stderr)
+
         # Setup a custom exception handler
         installExceptionHandler(self)
         self.cmds = cmds
