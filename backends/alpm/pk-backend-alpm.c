@@ -230,6 +230,7 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 	alpm_option_set_logcb (pk_backend_logcb);
 	alpm_option_set_root (PK_BACKEND_DEFAULT_ROOT);
 	alpm_option_set_dbpath (PK_BACKEND_DEFAULT_DBPATH);
+	alpm_option_set_signaturedir (PK_BACKEND_DEFAULT_GPGDIR);
 	alpm_option_set_logfile (PK_BACKEND_DEFAULT_LOGFILE);
 
 	return TRUE;
