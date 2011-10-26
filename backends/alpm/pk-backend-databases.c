@@ -247,10 +247,11 @@ pk_backend_get_repo_list_thread (PkBackend *self)
 	gpointer key, value;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (disabled != NULL, FALSE);
 
 	/* emit enabled repos */
-	for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
 		pmdb_t *db = (pmdb_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
 
@@ -329,13 +330,14 @@ pk_backend_repo_disable_thread (PkBackend *self)
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (disabled != NULL, FALSE);
 
 	repo = pk_backend_get_string (self, "repo_id");
 
 	g_return_val_if_fail (repo != NULL, FALSE);
 
-	for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
 		pmdb_t *db = (pmdb_t *) i->data;
 		const gchar *name = alpm_db_get_name (db);
 

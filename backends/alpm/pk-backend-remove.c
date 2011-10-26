@@ -35,6 +35,7 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 	gchar **packages;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	packages = pk_backend_get_strv (self, "package_ids");
@@ -46,7 +47,7 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
 		pmpkg_t *pkg = alpm_db_get_pkg (localdb, name);
-		if (pkg == NULL || alpm_remove_pkg (pkg) < 0) {
+		if (pkg == NULL || alpm_remove_pkg (alpm, pkg) < 0) {
 			enum _alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s: %s", name,
 				     alpm_strerror (errno));
@@ -65,11 +66,14 @@ pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
 {
 	const alpm_list_t *i;
 
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (alpm != NULL, FALSE);
+
 	if (!pk_backend_transaction_simulate (self, error)) {
 		return FALSE;
 	}
 
-	for (i = alpm_trans_get_remove (); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
 		const gchar *name = alpm_pkg_get_name (i->data);
 		if (alpm_list_find_str (holdpkgs, name)) {
 			g_set_error (error, ALPM_ERROR, ALPM_ERR_PKG_HELD,
