@@ -47,10 +47,6 @@ try:
 except locale.Error:
     pklog.debug("Failed to unset LC_ALL")
 
-# Allows to write unicode to stdout
-import codecs
-sys.stdout = codecs.getwriter(DEFAULT_ENCODING)(sys.stdout)
-
 # Required to parse RFC822 time stamps
 try:
     locale.setlocale(locale.LC_TIME, "C")
