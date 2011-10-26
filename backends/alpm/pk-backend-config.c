@@ -33,7 +33,7 @@
 typedef struct {
 	gboolean checkspace, ilovecandy, showsize, totaldl, usedelta, usesyslog;
 
-	gchar *arch, *cleanmethod, *dbpath, *logfile, *root, *xfercmd;
+	gchar *arch, *cleanmethod, *dbpath, *gpgdir, *logfile, *root, *xfercmd;
 
 	alpm_list_t *cachedirs, *holdpkgs, *ignoregrps, *ignorepkgs,
 		    *noextracts, *noupgrades, *syncfirsts;
@@ -76,6 +76,7 @@ pk_backend_config_free (PkBackendConfig *config)
 	g_free (config->arch);
 	g_free (config->cleanmethod);
 	g_free (config->dbpath);
+	g_free (config->gpgdir);
 	g_free (config->logfile);
 	g_free (config->root);
 	g_free (config->xfercmd);
@@ -234,6 +235,17 @@ pk_backend_config_set_dbpath (PkBackendConfig *config, const gchar *path)
 }
 
 static void
+pk_backend_config_set_gpgdir (PkBackendConfig *config, const gchar *path)
+{
+	g_return_if_fail (config != NULL);
+	g_return_if_fail (path != NULL);
+
+	g_free (config->gpgdir);
+	config->gpgdir = g_strdup (path);
+}
+
+
+static void
 pk_backend_config_set_logfile (PkBackendConfig *config, const gchar *filename)
 {
 	g_return_if_fail (config != NULL);
@@ -274,6 +286,7 @@ static const PkBackendConfigString pk_backend_config_string_options[] = {
 	{ "CacheDir", pk_backend_config_add_cachedir },
 	{ "CleanMethod", pk_backend_config_set_cleanmethod },
 	{ "DBPath", pk_backend_config_set_dbpath },
+	{ "GPGDir", pk_backend_config_set_gpgdir },
 	{ "LogFile", pk_backend_config_set_logfile },
 	{ "RootDir", pk_backend_config_set_root },
 	{ "XferCommand", pk_backend_config_set_xfercmd },
@@ -634,6 +647,18 @@ pk_backend_config_configure_paths (PkBackendConfig *config, GError **error)
 
 	if (alpm_option_set_dbpath (config->dbpath) < 0) {
 		g_set_error (error, ALPM_ERROR, pm_errno, "DBPath: %s",
+			     alpm_strerrorlast ());
+		return FALSE;
+	}
+
+	if (config->gpgdir == NULL) {
+		config->gpgdir = g_strconcat (alpm_option_get_root (),
+					      PK_BACKEND_DEFAULT_GPGDIR + 1,
+					      NULL);
+	}
+
+	if (alpm_option_set_signaturedir (config->gpgdir) < 0) {
+		g_set_error (error, ALPM_ERROR, pm_errno, "GPGDir: %s",
 			     alpm_strerrorlast ());
 		return FALSE;
 	}
