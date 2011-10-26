@@ -56,7 +56,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		}
 
 		if (i == NULL) {
-			enum _alpm_errno_t errno = PM_ERR_DB_NOT_FOUND;
+			enum _alpm_errno_t errno = ALPM_ERR_DB_NOT_FOUND;
 			g_set_error (error, ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
 			g_strfreev (package);
@@ -97,9 +97,9 @@ pk_backend_download_packages_thread (PkBackend *self)
 		alpm_option_set_cachedirs (alpm_list_add (NULL, cachedir));
 	}
 
-	flags |= PM_TRANS_FLAG_NODEPS;
-	flags |= PM_TRANS_FLAG_NOCONFLICTS;
-	flags |= PM_TRANS_FLAG_DOWNLOADONLY;
+	flags |= ALPM_TRANS_FLAG_NODEPS;
+	flags |= ALPM_TRANS_FLAG_NOCONFLICTS;
+	flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
 	if (pk_backend_transaction_initialize (self, flags, &error) &&
 	    pk_backend_transaction_sync_targets (self, &error) &&
@@ -198,7 +198,7 @@ pk_backend_replaces_dependencies (PkBackend *self, pmpkg_t *pkg)
 			continue;
 		}
 
-		if (alpm_pkg_get_reason (rpkg) == PM_PKG_REASON_EXPLICIT) {
+		if (alpm_pkg_get_reason (rpkg) == ALPM_PKG_REASON_EXPLICIT) {
 			return FALSE;
 		}
 	}
@@ -244,7 +244,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 
 	for (i = asdeps; i != NULL; i = i->next) {
 		const gchar *name = (const gchar *) i->data;
-		alpm_db_set_pkgreason (localdb, name, PM_PKG_REASON_DEPEND);
+		alpm_db_set_pkgreason (localdb, name, ALPM_PKG_REASON_DEPEND);
 	}
 
 out:

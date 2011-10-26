@@ -471,7 +471,7 @@ pk_backend_config_repo_add_server (PkBackendConfig *config, const gchar *repo,
 			return FALSE;
 		}
 	} else if (strstr (url, "$arch") != NULL) {
-		g_set_error (e, ALPM_ERROR, PM_ERR_CONFIG_INVALID,
+		g_set_error (e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
 			     "url contained $arch, which is not set");
 	}
 
@@ -535,7 +535,7 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 
 			if (*str == '\0') {
 				g_set_error (&e, ALPM_ERROR,
-					     PM_ERR_CONFIG_INVALID,
+					     ALPM_ERR_CONFIG_INVALID,
 					     "empty section name");
 				break;
 			}
@@ -552,7 +552,7 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 
 		/* parse a directive */
 		if (section == NULL) {
-			g_set_error (&e, ALPM_ERROR, PM_ERR_CONFIG_INVALID,
+			g_set_error (&e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
 				     "directive must belong to a section");
 			break;
 		}
@@ -612,7 +612,7 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 		}
 
 		/* report errors from above */
-		g_set_error (&e, ALPM_ERROR, PM_ERR_CONFIG_INVALID,
+		g_set_error (&e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
 			     "unrecognised directive '%s'", key);
 		break;
 	}

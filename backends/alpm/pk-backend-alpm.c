@@ -178,12 +178,12 @@ pk_backend_logcb (pmloglevel_t level, const gchar *format, va_list args)
 
 	/* report important output to PackageKit */
 	switch (level) {
-		case PM_LOG_DEBUG:
-		case PM_LOG_FUNCTION:
+		case ALPM_LOG_DEBUG:
+		case ALPM_LOG_FUNCTION:
 			g_debug ("%s", output);
 			break;
 
-		case PM_LOG_WARNING:
+		case ALPM_LOG_WARNING:
 			g_warning ("%s", output);
 			pk_backend_output (backend, output);
 			break;
