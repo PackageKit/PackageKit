@@ -29,29 +29,13 @@
 #include "pk-backend-remove.h"
 #include "pk-backend-transaction.h"
 
-static gint
-alpm_remove_local (const gchar *name)
-{
-	pmpkg_t *pkg;
-
-	g_return_val_if_fail (name != NULL, -1);
-	g_return_val_if_fail (localdb != NULL, -1);
-
-	pkg = alpm_db_get_pkg (localdb, name);
-	if (pkg == NULL) {
-		pm_errno = PM_ERR_PKG_NOT_FOUND;
-		return -1;
-	}
-
-	return alpm_remove_pkg (pkg);
-}
-
 static gboolean
 pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 {
 	gchar **packages;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	packages = pk_backend_get_strv (self, "package_ids");
 
@@ -61,9 +45,11 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 		gchar **package = pk_package_id_split (*packages);
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		if (alpm_remove_local (name) < 0) {
-			g_set_error (error, ALPM_ERROR, pm_errno, "%s: %s",
-				     name, alpm_strerrorlast ());
+		pmpkg_t *pkg = alpm_db_get_pkg (localdb, name);
+		if (pkg == NULL || alpm_remove_pkg (pkg) < 0) {
+			enum _alpm_errno_t errno = alpm_errno (alpm);
+			g_set_error (error, ALPM_ERROR, errno, "%s: %s", name,
+				     alpm_strerror (errno));
 			g_strfreev (package);
 			return FALSE;
 		}
