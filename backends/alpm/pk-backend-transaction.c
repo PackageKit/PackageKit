@@ -209,9 +209,9 @@ pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
 	gsize overall = percent + (current - 1) * 100;
 
 	/* TODO: revert when fixed upstream */
-	if (type == PM_TRANS_PROGRESS_CONFLICTS_START ||
-	    type == PM_TRANS_PROGRESS_DISKSPACE_START ||
-	    type == PM_TRANS_PROGRESS_INTEGRITY_START) {
+	if (type == ALPM_PROGRESS_CONFLICTS_START ||
+	    type == ALPM_PROGRESS_DISKSPACE_START ||
+	    type == ALPM_PROGRESS_INTEGRITY_START) {
 		if (current < targets) {
 			overall = percent + current++ * 100;
 		}
@@ -228,12 +228,12 @@ pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
 
 	/* update transaction progress */
 	switch (type) {
-		case PM_TRANS_PROGRESS_ADD_START:
-		case PM_TRANS_PROGRESS_UPGRADE_START:
-		case PM_TRANS_PROGRESS_REMOVE_START:
-		case PM_TRANS_PROGRESS_CONFLICTS_START:
-		case PM_TRANS_PROGRESS_DISKSPACE_START:
-		case PM_TRANS_PROGRESS_INTEGRITY_START:
+		case ALPM_PROGRESS_ADD_START:
+		case ALPM_PROGRESS_UPGRADE_START:
+		case ALPM_PROGRESS_REMOVE_START:
+		case ALPM_PROGRESS_CONFLICTS_START:
+		case ALPM_PROGRESS_DISKSPACE_START:
+		case ALPM_PROGRESS_INTEGRITY_START:
 			if (percent == recent) {
 				break;
 			}
@@ -305,25 +305,25 @@ pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
 	g_return_if_fail (backend != NULL);
 
 	switch (question) {
-		case PM_TRANS_CONV_INSTALL_IGNOREPKG:
+		case ALPM_QUESTION_INSTALL_IGNOREPKG:
 			pk_backend_install_ignorepkg (backend, data1, result);
 			break;
 
-		case PM_TRANS_CONV_REPLACE_PKG:
-		case PM_TRANS_CONV_CONFLICT_PKG:
-		case PM_TRANS_CONV_CORRUPTED_PKG:
-		case PM_TRANS_CONV_LOCAL_NEWER:
+		case ALPM_QUESTION_REPLACE_PKG:
+		case ALPM_QUESTION_CONFLICT_PKG:
+		case ALPM_QUESTION_CORRUPTED_PKG:
+		case ALPM_QUESTION_LOCAL_NEWER:
 			/* these actions are mostly harmless */
 			g_debug ("safe question %d", question);
 			*result = 1;
 			break;
 
-		case PM_TRANS_CONV_REMOVE_PKGS:
+		case ALPM_QUESTION_REMOVE_PKGS:
 			g_debug ("unsafe question %d", question);
 			*result = 0;
 			break;
 
-		case PM_TRANS_CONV_SELECT_PROVIDER:
+		case ALPM_QUESTION_SELECT_PROVIDER:
 			pk_backend_select_provider (backend, data1, data2);
 			*result = 0;
 			break;
@@ -535,46 +535,46 @@ pk_backend_transaction_event_cb (pmtransevt_t event, gpointer data,
 
 	/* figure out the backend status and package info */
 	switch (event) {
-		case PM_TRANS_EVT_CHECKDEPS_START:
-		case PM_TRANS_EVT_RESOLVEDEPS_START:
+		case ALPM_EVENT_CHECKDEPS_START:
+		case ALPM_EVENT_RESOLVEDEPS_START:
 			pk_backend_transaction_dep_resolve (backend);
 			break;
 
-		case PM_TRANS_EVT_FILECONFLICTS_START:
-		case PM_TRANS_EVT_INTERCONFLICTS_START:
-		case PM_TRANS_EVT_INTEGRITY_START:
-		case PM_TRANS_EVT_DELTA_INTEGRITY_START:
-		case PM_TRANS_EVT_DISKSPACE_START:
+		case ALPM_EVENT_FILECONFLICTS_START:
+		case ALPM_EVENT_INTERCONFLICTS_START:
+		case ALPM_EVENT_INTEGRITY_START:
+		case ALPM_EVENT_DELTA_INTEGRITY_START:
+		case ALPM_EVENT_DISKSPACE_START:
 			pk_backend_transaction_test_commit (backend);
 			break;
 
-		case PM_TRANS_EVT_ADD_START:
+		case ALPM_EVENT_ADD_START:
 			pk_backend_transaction_add_start (backend, data);
 			break;
 
-		case PM_TRANS_EVT_ADD_DONE:
+		case ALPM_EVENT_ADD_DONE:
 			pk_backend_transaction_add_done (backend, data);
 			break;
 
-		case PM_TRANS_EVT_REMOVE_START:
+		case ALPM_EVENT_REMOVE_START:
 			pk_backend_transaction_remove_start (backend, data);
 			break;
 
-		case PM_TRANS_EVT_REMOVE_DONE:
+		case ALPM_EVENT_REMOVE_DONE:
 			pk_backend_transaction_remove_done (backend, data);
 			break;
 
-		case PM_TRANS_EVT_UPGRADE_START:
+		case ALPM_EVENT_UPGRADE_START:
 			pk_backend_transaction_upgrade_start (backend, data,
 							      old);
 			break;
 
-		case PM_TRANS_EVT_UPGRADE_DONE:
+		case ALPM_EVENT_UPGRADE_DONE:
 			pk_backend_transaction_upgrade_done (backend, data,
 							     old);
 			break;
 
-		case PM_TRANS_EVT_SCRIPTLET_INFO:
+		case ALPM_EVENT_SCRIPTLET_INFO:
 			pk_backend_output (backend, data);
 			break;
 
@@ -777,24 +777,24 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 	}
 
 	switch (alpm_errno (alpm)) {
-		case PM_ERR_PKG_INVALID_ARCH:
+		case ALPM_ERR_PKG_INVALID_ARCH:
 			prefix = alpm_pkg_build_list (data);
 			alpm_list_free (data);
 			break;
 
-		case PM_ERR_UNSATISFIED_DEPS:
+		case ALPM_ERR_UNSATISFIED_DEPS:
 			prefix = alpm_miss_build_list (data);
 			alpm_list_free_inner (data, alpm_miss_free);
 			alpm_list_free (data);
 			break;
 
-		case PM_ERR_CONFLICTING_DEPS:
+		case ALPM_ERR_CONFLICTING_DEPS:
 			prefix = alpm_conflict_build_list (data);
 			alpm_list_free_inner (data, alpm_conflict_free);
 			alpm_list_free (data);
 			break;
 
-		case PM_ERR_FILE_CONFLICTS:
+		case ALPM_ERR_FILE_CONFLICTS:
 			prefix = alpm_fileconflict_build_list (data);
 			alpm_list_free_inner (data, alpm_fileconflict_free);
 			alpm_list_free (data);
@@ -906,14 +906,14 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 	}
 
 	switch (alpm_errno (alpm)) {
-		case PM_ERR_FILE_CONFLICTS:
+		case ALPM_ERR_FILE_CONFLICTS:
 			prefix = alpm_fileconflict_build_list (data);
 			alpm_list_free_inner (data, alpm_fileconflict_free);
 			alpm_list_free (data);
 			break;
 
-		case PM_ERR_PKG_INVALID:
-		case PM_ERR_DLT_INVALID:
+		case ALPM_ERR_PKG_INVALID:
+		case ALPM_ERR_DLT_INVALID:
 			prefix = alpm_string_build_list (data);
 			alpm_list_free (data);
 			break;
