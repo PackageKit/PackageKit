@@ -39,11 +39,6 @@ import locale
 pkprogress = PackagekitProgress()
 pkpackage = PackagekitPackage()
 
-try:
-    ENCODING = locale.getpreferredencoding()
-except locale.Error:
-    ENCODING = "ascii"
-
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
     def cache_wrap(obj, *args, **kwargs):
@@ -155,9 +150,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
         self._cacheloaded = False
-
-        writer = codecs.getwriter(ENCODING)
-        sys.stdout = writer(sys.stdout, errors="replace")
 
         self.ctrl = smart.init()
         smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
