@@ -147,7 +147,7 @@ disabled_repos_configure (GHashTable *table, GError **error)
 
 	for (i = configured; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
-		pmdb_t *db;
+		alpm_db_t *db;
 
 		if (g_hash_table_lookup (table, repo->name) != NULL) {
 			/* repo is disabled */
@@ -252,7 +252,7 @@ pk_backend_get_repo_list_thread (PkBackend *self)
 
 	/* emit enabled repos */
 	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
-		pmdb_t *db = (pmdb_t *) i->data;
+		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
 
 		if (pk_backend_cancelled (self)) {
@@ -338,7 +338,7 @@ pk_backend_repo_disable_thread (PkBackend *self)
 	g_return_val_if_fail (repo != NULL, FALSE);
 
 	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
-		pmdb_t *db = (pmdb_t *) i->data;
+		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *name = alpm_db_get_name (db);
 
 		if (g_strcmp0 (repo, name) == 0) {

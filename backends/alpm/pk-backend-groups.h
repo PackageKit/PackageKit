@@ -29,4 +29,4 @@ gboolean	 pk_backend_initialize_groups	(PkBackend *self,
 
 void		 pk_backend_destroy_groups	(PkBackend *self);
 
-const gchar	*alpm_pkg_get_group		(pmpkg_t *pkg);
+const gchar	*alpm_pkg_get_group		(alpm_pkg_t *pkg);

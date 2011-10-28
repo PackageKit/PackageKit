@@ -29,7 +29,7 @@
 #include "pk-backend-error.h"
 #include "pk-backend-packages.h"
 
-static pmpkg_t *
+static alpm_pkg_t *
 alpm_list_find_pkg (const alpm_list_t *pkgs, const gchar *name)
 {
 	g_return_val_if_fail (name != NULL, NULL);
@@ -50,7 +50,7 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 	PkBitfield filters;
 	gboolean recursive, skip_local, skip_remote;
 
-	pmpkg_t *provider;
+	alpm_pkg_t *provider;
 	alpm_list_t *pkgcache, *syncdbs;
 
 	g_return_val_if_fail (self != NULL, pkgs);
@@ -109,7 +109,7 @@ static alpm_list_t *
 pk_backend_find_requirer (PkBackend *self, alpm_list_t *pkgs, const gchar *name,
 			  GError **error)
 {
-	pmpkg_t *requirer;
+	alpm_pkg_t *requirer;
 
 	g_return_val_if_fail (self != NULL, pkgs);
 	g_return_val_if_fail (name != NULL, pkgs);
@@ -151,7 +151,7 @@ pk_backend_get_depends_thread (PkBackend *self)
 
 	/* construct an initial package list */
 	for (; *packages != NULL; ++packages) {
-		pmpkg_t *pkg;
+		alpm_pkg_t *pkg;
 
 		if (pk_backend_cancelled (self)) {
 			break;
@@ -207,7 +207,7 @@ pk_backend_get_requires_thread (PkBackend *self)
 
 	/* construct an initial package list */
 	for (; *packages != NULL; ++packages) {
-		pmpkg_t *pkg;
+		alpm_pkg_t *pkg;
 
 		if (pk_backend_cancelled (self)) {
 			break;

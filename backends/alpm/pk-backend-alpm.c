@@ -37,7 +37,7 @@ GCancellable *cancellable = NULL;
 static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
 alpm_handle_t *alpm = NULL;
-pmdb_t *localdb = NULL;
+alpm_db_t *localdb = NULL;
 
 gchar *xfercmd = NULL;
 alpm_list_t *holdpkgs = NULL;
@@ -164,7 +164,7 @@ out:
 }
 
 static void
-pk_backend_logcb (pmloglevel_t level, const gchar *format, va_list args)
+pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 {
 	gchar *output;
 
