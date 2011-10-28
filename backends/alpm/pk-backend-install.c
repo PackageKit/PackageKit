@@ -32,7 +32,7 @@
 static gint
 alpm_add_file (const gchar *filename)
 {
-	pmpkg_t *pkg;
+	alpm_pkg_t *pkg;
 
 	g_return_val_if_fail (filename != NULL, -1);
 	g_return_val_if_fail (alpm != NULL, -1);
