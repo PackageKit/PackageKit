@@ -46,7 +46,7 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 		gchar **package = pk_package_id_split (*packages);
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		pmpkg_t *pkg = alpm_db_get_pkg (localdb, name);
+		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
 		if (pkg == NULL || alpm_remove_pkg (alpm, pkg) < 0) {
 			enum _alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s: %s", name,
@@ -89,7 +89,7 @@ pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
 static gboolean
 pk_backend_simulate_remove_packages_thread (PkBackend *self)
 {
-	pmtransflag_t flags = ALPM_TRANS_FLAG_CASCADE;
+	alpm_transflag_t flags = ALPM_TRANS_FLAG_CASCADE;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -111,7 +111,7 @@ pk_backend_simulate_remove_packages_thread (PkBackend *self)
 static gboolean
 pk_backend_remove_packages_thread (PkBackend *self)
 {
-	pmtransflag_t flags = 0;
+	alpm_transflag_t flags = 0;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);

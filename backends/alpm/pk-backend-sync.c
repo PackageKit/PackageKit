@@ -48,7 +48,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
 		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
-		pmpkg_t *pkg;
+		alpm_pkg_t *pkg;
 
 		for (; i != NULL; i = i->next) {
 			if (g_strcmp0 (alpm_db_get_name (i->data), repo) == 0) {
@@ -84,7 +84,7 @@ pk_backend_download_packages_thread (PkBackend *self)
 {
 	alpm_list_t *cachedirs;
 	const gchar *directory;
-	pmtransflag_t flags = 0;
+	alpm_transflag_t flags = 0;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -185,7 +185,7 @@ pk_backend_install_packages (PkBackend *self, gboolean only_trusted,
 }
 
 static gboolean
-pk_backend_replaces_dependencies (PkBackend *self, pmpkg_t *pkg)
+pk_backend_replaces_dependencies (PkBackend *self, alpm_pkg_t *pkg)
 {
 	const alpm_list_t *i, *replaces;
 
@@ -195,7 +195,7 @@ pk_backend_replaces_dependencies (PkBackend *self, pmpkg_t *pkg)
 
 	replaces = alpm_pkg_get_replaces (pkg);
 	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
-		pmpkg_t *rpkg = (pmpkg_t *) i->data;
+		alpm_pkg_t *rpkg = (alpm_pkg_t *) i->data;
 		const gchar *rname = alpm_pkg_get_name (rpkg);
 
 		if (pk_backend_cancelled (self)) {
@@ -231,7 +231,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 
 	/* change the install reason of packages that replace dependencies */
 	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
-		pmpkg_t *pkg = (pmpkg_t *) i->data;
+		alpm_pkg_t *pkg = (alpm_pkg_t *) i->data;
 		const gchar *name = alpm_pkg_get_name (pkg);
 
 		if (pk_backend_cancelled (self)) {
@@ -251,7 +251,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 
 	for (i = asdeps; i != NULL; i = i->next) {
 		const gchar *name = (const gchar *) i->data;
-		pmpkg_t *pkg = alpm_db_get_pkg (localdb, name);
+		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
 		alpm_db_set_pkgreason (alpm, pkg, ALPM_PKG_REASON_DEPEND);
 	}
 

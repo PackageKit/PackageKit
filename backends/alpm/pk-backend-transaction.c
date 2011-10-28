@@ -29,10 +29,10 @@
 static off_t dcomplete = 0;
 static off_t dtotal = 0;
 
-static pmpkg_t *dpkg = NULL;
+static alpm_pkg_t *dpkg = NULL;
 static GString *dfiles = NULL;
 
-static pmpkg_t *tpkg = NULL;
+static alpm_pkg_t *tpkg = NULL;
 static GString *toutput = NULL;
 
 static gchar *
@@ -51,7 +51,7 @@ pk_backend_resolve_path (PkBackend *self, const gchar *basename)
 }
 
 static gboolean
-alpm_pkg_has_basename (pmpkg_t *pkg, const gchar *basename)
+alpm_pkg_has_basename (alpm_pkg_t *pkg, const gchar *basename)
 {
 	const alpm_list_t *i;
 
@@ -130,7 +130,7 @@ pk_backend_transaction_download_start (PkBackend *self, const gchar *basename)
 
 	/* figure out what the next package is */
 	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
-		pmpkg_t *pkg = (pmpkg_t *) i->data;
+		alpm_pkg_t *pkg = (alpm_pkg_t *) i->data;
 
 		if (alpm_pkg_has_basename (pkg, basename)) {
 			dpkg = pkg;
@@ -204,7 +204,7 @@ pk_backend_transaction_dlcb (const gchar *basename, off_t complete, off_t total)
 }
 
 static void
-pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
+pk_backend_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 				    gint percent, gsize targets, gsize current)
 {
 	static gint recent = 101;
@@ -255,7 +255,7 @@ pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
 }
 
 static void
-pk_backend_install_ignorepkg (PkBackend *self, pmpkg_t *pkg, gint *result)
+pk_backend_install_ignorepkg (PkBackend *self, alpm_pkg_t *pkg, gint *result)
 {
 	gchar *output;
 
@@ -282,7 +282,7 @@ pk_backend_install_ignorepkg (PkBackend *self, pmpkg_t *pkg, gint *result)
 }
 
 static void
-pk_backend_select_provider (PkBackend *self, pmdepend_t *dep,
+pk_backend_select_provider (PkBackend *self, alpm_depend_t *dep,
 			    const alpm_list_t *providers)
 {
 	gchar *output;
@@ -300,7 +300,7 @@ pk_backend_select_provider (PkBackend *self, pmdepend_t *dep,
 }
 
 static void
-pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
+pk_backend_transaction_conv_cb (alpm_question_t question, gpointer data1,
 				gpointer data2, gpointer data3, gint *result)
 {
 	g_return_if_fail (result != NULL);
@@ -351,7 +351,7 @@ pk_backend_output_end (PkBackend *self)
 }
 
 static void
-pk_backend_output_start (PkBackend *self, pmpkg_t *pkg)
+pk_backend_output_start (PkBackend *self, alpm_pkg_t *pkg)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
@@ -400,7 +400,7 @@ pk_backend_transaction_test_commit (PkBackend *self)
 }
 
 static void
-pk_backend_transaction_add_start (PkBackend *self, pmpkg_t *pkg)
+pk_backend_transaction_add_start (PkBackend *self, alpm_pkg_t *pkg)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
@@ -411,7 +411,7 @@ pk_backend_transaction_add_start (PkBackend *self, pmpkg_t *pkg)
 }
 
 static void
-pk_backend_transaction_add_done (PkBackend *self, pmpkg_t *pkg)
+pk_backend_transaction_add_done (PkBackend *self, alpm_pkg_t *pkg)
 {
 	const gchar *name, *version;
 	const alpm_list_t *i, *optdepends;
@@ -441,7 +441,7 @@ pk_backend_transaction_add_done (PkBackend *self, pmpkg_t *pkg)
 }
 
 static void
-pk_backend_transaction_remove_start (PkBackend *self, pmpkg_t *pkg)
+pk_backend_transaction_remove_start (PkBackend *self, alpm_pkg_t *pkg)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
@@ -452,7 +452,7 @@ pk_backend_transaction_remove_start (PkBackend *self, pmpkg_t *pkg)
 }
 
 static void
-pk_backend_transaction_remove_done (PkBackend *self, pmpkg_t *pkg)
+pk_backend_transaction_remove_done (PkBackend *self, alpm_pkg_t *pkg)
 {
 	const gchar *name, *version;
 
@@ -469,8 +469,8 @@ pk_backend_transaction_remove_done (PkBackend *self, pmpkg_t *pkg)
 }
 
 static void
-pk_backend_transaction_upgrade_start (PkBackend *self, pmpkg_t *pkg,
-				      pmpkg_t *old)
+pk_backend_transaction_upgrade_start (PkBackend *self, alpm_pkg_t *pkg,
+				      alpm_pkg_t *old)
 {
 	PkRoleEnum role;
 	PkStatusEnum state;
@@ -495,8 +495,8 @@ pk_backend_transaction_upgrade_start (PkBackend *self, pmpkg_t *pkg,
 }
 
 static void
-pk_backend_transaction_upgrade_done (PkBackend *self, pmpkg_t *pkg,
-				     pmpkg_t *old)
+pk_backend_transaction_upgrade_done (PkBackend *self, alpm_pkg_t *pkg,
+				     alpm_pkg_t *old)
 {
 	const gchar *name, *pre, *post;
 	const alpm_list_t *i;
@@ -533,7 +533,7 @@ pk_backend_transaction_upgrade_done (PkBackend *self, pmpkg_t *pkg,
 }
 
 static void
-pk_backend_transaction_event_cb (pmtransevt_t event, gpointer data,
+pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 				 gpointer old)
 {
 	g_return_if_fail (backend != NULL);
@@ -599,7 +599,7 @@ transaction_cancelled_cb (GCancellable *object, gpointer data)
 }
 
 gboolean
-pk_backend_transaction_initialize (PkBackend *self, pmtransflag_t flags,
+pk_backend_transaction_initialize (PkBackend *self, alpm_transflag_t flags,
 				   GError **error)
 {
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -659,7 +659,7 @@ alpm_miss_build_list (const alpm_list_t *i)
 	}
 
 	for (; i != NULL; i = i->next) {
-		pmdepend_t *dep = alpm_miss_get_dep (i->data);
+		alpm_depend_t *dep = alpm_miss_get_dep (i->data);
 		gchar *depend = alpm_dep_compute_string (dep);
 		g_string_append_printf (list, "%s <- %s, ", depend,
 					alpm_miss_get_target (i->data));

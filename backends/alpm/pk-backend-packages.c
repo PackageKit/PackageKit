@@ -27,10 +27,10 @@
 #include "pk-backend-packages.h"
 
 gchar *
-alpm_pkg_build_id (pmpkg_t *pkg)
+alpm_pkg_build_id (alpm_pkg_t *pkg)
 {
 	const gchar *name, *version, *arch, *repo;
-	pmdb_t *db;
+	alpm_db_t *db;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 	g_return_val_if_fail (localdb != NULL, NULL);
@@ -55,7 +55,7 @@ alpm_pkg_build_id (pmpkg_t *pkg)
 }
 
 void
-pk_backend_pkg (PkBackend *self, pmpkg_t *pkg, PkInfoEnum info)
+pk_backend_pkg (PkBackend *self, alpm_pkg_t *pkg, PkInfoEnum info)
 {
 	gchar *package;
 
@@ -67,13 +67,13 @@ pk_backend_pkg (PkBackend *self, pmpkg_t *pkg, PkInfoEnum info)
 	g_free (package);
 }
 
-pmpkg_t *
+alpm_pkg_t *
 pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 {
 	gchar **package;
 	const gchar *repo_id;
-	pmdb_t *db = NULL;
-	pmpkg_t *pkg;
+	alpm_db_t *db = NULL;
+	alpm_pkg_t *pkg;
 
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
@@ -124,7 +124,7 @@ static gboolean
 pk_backend_resolve_package (PkBackend *self, const gchar *package,
 			    GError **error)
 {
-	pmpkg_t *pkg;
+	alpm_pkg_t *pkg;
 	
 	PkBitfield filters;
 	gboolean skip_local, skip_remote;
@@ -159,7 +159,7 @@ pk_backend_resolve_package (PkBackend *self, const gchar *package,
 static gboolean
 pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 {
-	pmpkg_t *pkg;
+	alpm_pkg_t *pkg;
 	int code;
 	
 	PkBitfield filters;
@@ -256,7 +256,7 @@ pk_backend_get_details_thread (PkBackend *self)
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
-		pmpkg_t *pkg;
+		alpm_pkg_t *pkg;
 		const alpm_list_t *i;
 
 		GString *licenses;
@@ -326,7 +326,7 @@ pk_backend_get_files_thread (PkBackend *self)
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
-		pmpkg_t *pkg;
+		alpm_pkg_t *pkg;
 		const gchar *root;
 
 		GString *files;
