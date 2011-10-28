@@ -68,9 +68,9 @@ alpm_pkg_has_basename (alpm_pkg_t *pkg, const gchar *basename)
 	}
 
 	for (i = alpm_pkg_get_deltas (pkg); i != NULL; i = i->next) {
-		const gchar *patch = alpm_delta_get_filename (i->data);
+		alpm_delta_t *delta = (alpm_delta_t *) i->data;
 
-		if (g_strcmp0 (patch, basename) == 0) {
+		if (g_strcmp0 (delta->delta, basename) == 0) {
 			return TRUE;
 		}
 	}
@@ -282,19 +282,19 @@ pk_backend_install_ignorepkg (PkBackend *self, alpm_pkg_t *pkg, gint *result)
 }
 
 static void
-pk_backend_select_provider (PkBackend *self, alpm_depend_t *dep,
+pk_backend_select_provider (PkBackend *self, alpm_depend_t *depend,
 			    const alpm_list_t *providers)
 {
 	gchar *output;
 
 	g_return_if_fail (self != NULL);
-	g_return_if_fail (dep != NULL);
+	g_return_if_fail (depend != NULL);
 	g_return_if_fail (providers != NULL);
 
 	output = g_strdup_printf ("provider package was selected "
 				  "(%s provides %s)\n",
 				  alpm_pkg_get_name (providers->data),
-				  alpm_dep_get_name (dep));
+				  depend->name);
 	pk_backend_output (self, output);
 	g_free (output);
 }
@@ -659,10 +659,11 @@ alpm_miss_build_list (const alpm_list_t *i)
 	}
 
 	for (; i != NULL; i = i->next) {
-		alpm_depend_t *dep = alpm_miss_get_dep (i->data);
-		gchar *depend = alpm_dep_compute_string (dep);
+		alpm_depmissing_t *miss = (alpm_depmissing_t *) i->data;
+		gchar *depend = alpm_dep_compute_string (miss->depend);
+
 		g_string_append_printf (list, "%s <- %s, ", depend,
-					alpm_miss_get_target (i->data));
+					miss->target);
 		free (depend);
 	}
 
@@ -671,25 +672,21 @@ alpm_miss_build_list (const alpm_list_t *i)
 }
 
 static void
-alpm_dep_free (gpointer dep)
+alpm_depend_free (alpm_depend_t *depend)
 {
-	/* TODO: remove when implemented in libalpm */
-	free ((gpointer) alpm_dep_get_name (dep));
-	free ((gpointer) alpm_dep_get_version (dep));
-	free (dep);
+	free (depend->name);
+	free (depend->version);
+	free (depend);
 }
 
 static void
-alpm_miss_free (gpointer miss)
+alpm_depmissing_free (gpointer miss)
 {
-	/* TODO: remove when implemented in libalpm */
-	const gchar *temp = alpm_miss_get_causingpkg (miss);
-	if (temp != NULL) {
-		free ((gpointer) temp);
-	}
+	alpm_depmissing_t *self = (alpm_depmissing_t *) miss;
 
-	free ((gpointer) alpm_miss_get_target (miss));
-	alpm_dep_free (alpm_miss_get_dep (miss));
+	free (self->target);
+	alpm_depend_free (self->depend);
+	free (self->causingpkg);
 	free (miss);
 }
 
@@ -705,17 +702,20 @@ alpm_conflict_build_list (const alpm_list_t *i)
 	}
 
 	for (; i != NULL; i = i->next) {
-		const gchar *first = alpm_conflict_get_package1 (i->data);
-		const gchar *second = alpm_conflict_get_package2 (i->data);
-		const gchar *reason = alpm_conflict_get_reason (i->data);
+		alpm_conflict_t *conflict = (alpm_conflict_t *) i->data;
+		alpm_depend_t *depend = conflict->reason;
 
-		if (g_strcmp0 (first, reason) == 0 ||
-		    g_strcmp0 (second, reason) == 0) {
-			g_string_append_printf (list, "%s <-> %s, ", first,
-						second);
+		if (g_strcmp0 (conflict->package1, depend->name) == 0 ||
+		    g_strcmp0 (conflict->package2, depend->name) == 0) {
+			g_string_append_printf (list, "%s <-> %s, ",
+						conflict->package1,
+						conflict->package2);
 		} else {
-			g_string_append_printf (list, "%s <-> %s (%s), ", first,
-						second, reason);
+			gchar *reason = alpm_dep_compute_string (depend);
+			g_string_append_printf (list, "%s <-> %s (%s), ",
+						conflict->package1,
+						conflict->package2, reason);
+			g_free (reason);
 		}
 	}
 
@@ -726,10 +726,10 @@ alpm_conflict_build_list (const alpm_list_t *i)
 static void
 alpm_conflict_free (gpointer conflict)
 {
-	/* TODO: remove when implemented in libalpm */
-	free ((gpointer) alpm_conflict_get_package1 (conflict));
-	free ((gpointer) alpm_conflict_get_package2 (conflict));
-	free ((gpointer) alpm_conflict_get_reason (conflict));
+	alpm_conflict_t *self = (alpm_conflict_t *) conflict;
+
+	free (self->package1);
+	free (self->package2);
 	free (conflict);
 }
 
@@ -745,15 +745,17 @@ alpm_fileconflict_build_list (const alpm_list_t *i)
 	}
 
 	for (; i != NULL; i = i->next) {
-		const gchar *target = alpm_fileconflict_get_target (i->data);
-		const gchar *file = alpm_fileconflict_get_file (i->data);
-		const gchar *ctarget = alpm_fileconflict_get_ctarget (i->data);
-		if (*ctarget != '\0') {
+		alpm_fileconflict_t *conflict = (alpm_fileconflict_t *) i->data;
+
+		if (*conflict->ctarget != '\0') {
 			g_string_append_printf (list, "%s <-> %s (%s), ",
-						target, ctarget, file);
+						conflict->target,
+						conflict->ctarget,
+						conflict->file);
 		} else {
-			g_string_append_printf (list, "%s (%s), ", target,
-						file);
+			g_string_append_printf (list, "%s (%s), ",
+						conflict->target,
+						conflict->file);
 		}
 	}
 
@@ -764,14 +766,11 @@ alpm_fileconflict_build_list (const alpm_list_t *i)
 static void
 alpm_fileconflict_free (gpointer conflict)
 {
-	/* TODO: remove when implemented in libalpm */
-	const gchar *temp = alpm_fileconflict_get_ctarget (conflict);
-	if (*temp != '\0') {
-		free ((gpointer) temp);
-	}
+	alpm_fileconflict_t *self = (alpm_fileconflict_t *) conflict;
 
-	free ((gpointer) alpm_fileconflict_get_target (conflict));
-	free ((gpointer) alpm_fileconflict_get_file (conflict));
+	free (self->target);
+	free (self->file);
+	free (self->ctarget);
 	free (conflict);
 }
 
@@ -796,7 +795,7 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 
 		case ALPM_ERR_UNSATISFIED_DEPS:
 			prefix = alpm_miss_build_list (data);
-			alpm_list_free_inner (data, alpm_miss_free);
+			alpm_list_free_inner (data, alpm_depmissing_free);
 			alpm_list_free (data);
 			break;
 
