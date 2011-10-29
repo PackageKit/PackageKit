@@ -30,6 +30,7 @@ typedef struct
 {
 	gchar *name;
 	alpm_list_t *servers;
+	alpm_siglevel_t level;
 } PkBackendRepo;
 
 static GHashTable *disabled = NULL;
@@ -154,7 +155,7 @@ disabled_repos_configure (GHashTable *table, GError **error)
 			continue;
 		}
 
-		db = alpm_db_register_sync (alpm, repo->name);
+		db = alpm_db_register_sync (alpm, repo->name, repo->level);
 		if (db == NULL) {
 			enum _alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
@@ -169,7 +170,8 @@ disabled_repos_configure (GHashTable *table, GError **error)
 }
 
 void
-pk_backend_configure_repos (alpm_list_t *repos, GHashTable *servers)
+pk_backend_configure_repos (alpm_list_t *repos, GHashTable *servers,
+			    GHashTable *levels)
 {
 	alpm_list_t *i;
 
@@ -181,6 +183,13 @@ pk_backend_configure_repos (alpm_list_t *repos, GHashTable *servers)
 
 		repo->name = g_strdup ((const gchar *) i->data);
 		repo->servers = alpm_list_strdup ((alpm_list_t *) value);
+
+		value = g_hash_table_lookup (levels, i->data);
+		if (value != NULL) {
+			repo->level = *(alpm_siglevel_t *)value;
+		} else {
+			repo->level = ALPM_SIG_USE_DEFAULT;
+		}
 
 		configured = alpm_list_add (configured, repo);
 	}

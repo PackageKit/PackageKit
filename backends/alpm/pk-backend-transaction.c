@@ -323,6 +323,8 @@ pk_backend_transaction_conv_cb (alpm_question_t question, gpointer data1,
 			break;
 
 		case ALPM_QUESTION_REMOVE_PKGS:
+		/* TODO: handle keys better */
+		case ALPM_QUESTION_IMPORT_KEY:
 			g_debug ("unsafe question %d", question);
 			*result = 0;
 			break;
