@@ -33,8 +33,8 @@
 
 typedef struct
 {
-	 gboolean	 checkspace, ilovecandy, showsize, totaldl, usedelta,
-			 usesyslog;
+	 gboolean	 checkspace, ilovecandy, totaldl, usedelta, usesyslog,
+			 verbosepkglists;
 
 	 gchar		*arch, *cleanmethod, *dbpath, *gpgdir, *logfile, *root,
 			*xfercmd;
@@ -131,14 +131,6 @@ pk_backend_config_set_ilovecandy (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_showsize (PkBackendConfig *config)
-{
-	g_return_if_fail (config != NULL);
-
-	config->showsize = TRUE;
-}
-
-static void
 pk_backend_config_set_totaldl (PkBackendConfig *config)
 {
 	g_return_if_fail (config != NULL);
@@ -162,6 +154,14 @@ pk_backend_config_set_usesyslog (PkBackendConfig *config)
 	config->usesyslog = TRUE;
 }
 
+static void
+pk_backend_config_set_verbosepkglists (PkBackendConfig *config)
+{
+	g_return_if_fail (config != NULL);
+
+	config->verbosepkglists = TRUE;
+}
+
 typedef struct
 {
 	 const gchar	*name;
@@ -172,10 +172,10 @@ typedef struct
 static const PkBackendConfigBoolean pk_backend_config_boolean_options[] = {
 	{ "CheckSpace", pk_backend_config_set_checkspace },
 	{ "ILoveCandy", pk_backend_config_set_ilovecandy },
-	{ "ShowSize", pk_backend_config_set_showsize },
 	{ "TotalDownload", pk_backend_config_set_totaldl },
 	{ "UseDelta", pk_backend_config_set_usedelta },
 	{ "UseSyslog", pk_backend_config_set_usesyslog },
+	{ "VerbosePkgLists", pk_backend_config_set_verbosepkglists },
 	{ NULL, NULL }
 };
 
