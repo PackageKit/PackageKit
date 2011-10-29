@@ -213,7 +213,8 @@ pk_backend_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	/* TODO: revert when fixed upstream */
 	if (type == ALPM_PROGRESS_CONFLICTS_START ||
 	    type == ALPM_PROGRESS_DISKSPACE_START ||
-	    type == ALPM_PROGRESS_INTEGRITY_START) {
+	    type == ALPM_PROGRESS_INTEGRITY_START ||
+	    type == ALPM_PROGRESS_LOAD_START) {
 		if (current < targets) {
 			overall = percent + current++ * 100;
 		}
@@ -236,6 +237,7 @@ pk_backend_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 		case ALPM_PROGRESS_CONFLICTS_START:
 		case ALPM_PROGRESS_DISKSPACE_START:
 		case ALPM_PROGRESS_INTEGRITY_START:
+		case ALPM_PROGRESS_LOAD_START:
 			if (percent == recent) {
 				break;
 			}
@@ -533,6 +535,14 @@ pk_backend_transaction_upgrade_done (PkBackend *self, alpm_pkg_t *pkg,
 }
 
 static void
+pk_backend_transaction_setup (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	pk_backend_set_status (self, PK_STATUS_ENUM_SETUP);
+}
+
+static void
 pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 				 gpointer old)
 {
@@ -577,6 +587,10 @@ pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 		case ALPM_EVENT_UPGRADE_DONE:
 			pk_backend_transaction_upgrade_done (backend, data,
 							     old);
+			break;
+
+		case ALPM_EVENT_LOAD_START:
+			pk_backend_transaction_setup (backend);
 			break;
 
 		case ALPM_EVENT_SCRIPTLET_INFO:
