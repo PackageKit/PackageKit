@@ -44,6 +44,7 @@ typedef struct
 
 	 alpm_list_t	*repos;
 	 GHashTable	*servers;
+	 GHashTable	*levels;
 	 GRegex		*xrepo, *xarch;
 } PkBackendConfig;
 
@@ -51,10 +52,20 @@ static PkBackendConfig *
 pk_backend_config_new (void)
 {
 	PkBackendConfig *config = g_new0 (PkBackendConfig, 1);
+	alpm_siglevel_t *level = g_new0 (alpm_siglevel_t, 1);
+
 	config->servers = g_hash_table_new_full (g_str_hash, g_str_equal,
 						 g_free, NULL);
+	config->levels = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+						g_free);
+
+	*level |= ALPM_SIG_PACKAGE | ALPM_SIG_PACKAGE_OPTIONAL;
+	*level |= ALPM_SIG_DATABASE | ALPM_SIG_DATABASE_OPTIONAL;
+	g_hash_table_insert (config->levels, g_strdup ("options"), level);
+
 	config->xrepo = g_regex_new ("\\$repo", 0, 0, NULL);
 	config->xarch = g_regex_new ("\\$arch", 0, 0, NULL);
+
 	return config;
 }
 
@@ -97,6 +108,8 @@ pk_backend_config_free (PkBackendConfig *config)
 	g_hash_table_foreach_remove (config->servers,
 				     pk_backend_config_servers_free, NULL);
 	g_hash_table_unref (config->servers);
+	g_hash_table_unref (config->levels);
+
 	g_regex_unref (config->xrepo);
 	g_regex_unref (config->xarch);
 }
@@ -483,6 +496,95 @@ pk_backend_config_repo_add_server (PkBackendConfig *config, const gchar *repo,
 }
 
 static gboolean
+pk_backend_config_set_siglevel (PkBackendConfig *config, const gchar *section,
+				const gchar *list, GError **error)
+{
+	alpm_siglevel_t *level;
+
+	g_return_val_if_fail (config != NULL, FALSE);
+	g_return_val_if_fail (section != NULL, FALSE);
+	g_return_val_if_fail (list != NULL, FALSE);
+
+	level = g_hash_table_lookup (config->levels, section);
+	if (level == NULL) {
+		level = g_hash_table_lookup (config->levels, "options");
+		level = g_memdup (level, sizeof (alpm_siglevel_t));
+		g_hash_table_insert (config->levels, g_strdup (section), level);
+	}
+
+	while (TRUE) {
+		gboolean package = TRUE, database = TRUE;
+
+		if (g_str_has_prefix (list, "Package")) {
+			database = FALSE;
+			list += 7;
+		} else if (g_str_has_prefix (list, "Database")) {
+			package = FALSE;
+			list += 8;
+		}
+
+		/* this also allows e.g. NeverEver, so put prefixes last */
+		if (g_str_has_prefix (list, "Never") == 0) {
+			if (package) {
+				*level &= ~ALPM_SIG_PACKAGE;
+			}
+			if (database) {
+				*level &= ~ALPM_SIG_DATABASE;
+			}
+		} else if (g_str_has_prefix (list, "Optional") == 0) {
+			if (package) {
+				*level |= ALPM_SIG_PACKAGE;
+				*level |= ALPM_SIG_PACKAGE_OPTIONAL;
+			}
+			if (database) {
+				*level |= ALPM_SIG_DATABASE;
+				*level |= ALPM_SIG_DATABASE_OPTIONAL;
+			}
+		} else if (g_str_has_prefix (list, "Required") == 0) {
+			if (package) {
+				*level |= ALPM_SIG_PACKAGE;
+				*level &= ~ALPM_SIG_PACKAGE_OPTIONAL;
+			}
+			if (database) {
+				*level |= ALPM_SIG_DATABASE;
+				*level &= ~ALPM_SIG_DATABASE_OPTIONAL;
+			}
+		} else if (g_str_has_prefix (list, "TrustedOnly") == 0) {
+			if (package) {
+				*level &= ~ALPM_SIG_PACKAGE_MARGINAL_OK;
+				*level &= ~ALPM_SIG_PACKAGE_UNKNOWN_OK;
+			}
+			if (database) {
+				*level &= ~ALPM_SIG_DATABASE_MARGINAL_OK;
+				*level &= ~ALPM_SIG_DATABASE_UNKNOWN_OK;
+			}
+		} else if (g_str_has_prefix (list, "TrustAll") == 0) {
+			if (package) {
+				*level |= ALPM_SIG_PACKAGE_MARGINAL_OK;
+				*level |= ALPM_SIG_PACKAGE_UNKNOWN_OK;
+			}
+			if (database) {
+				*level |= ALPM_SIG_DATABASE_MARGINAL_OK;
+				*level |= ALPM_SIG_DATABASE_UNKNOWN_OK;
+			}
+		} else {
+			g_set_error (error, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
+				     "invalid SigLevel value: %s", list);
+			return FALSE;
+		}
+
+		list = strchr (list, ' ');
+		if (list == NULL) {
+			break;
+		} else {
+			++list;
+		}
+	}
+
+	return TRUE;
+}
+
+static gboolean
 pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 			 gchar *section, GError **error)
 {
@@ -610,6 +712,15 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 				continue;
 			}
 		}
+	
+		if (g_strcmp0 (key, "SigLevel") == 0 && str != NULL) {
+			if (!pk_backend_config_set_siglevel (config, section,
+							     str, &e)) {
+				break;
+			} else {
+				continue;
+			}
+		}
 
 		/* report errors from above */
 		g_set_error (&e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
@@ -709,6 +820,7 @@ static alpm_handle_t *
 pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 {
 	alpm_handle_t *handle;
+	alpm_siglevel_t *level;
 
 	g_return_val_if_fail (config != NULL, FALSE);
 
@@ -721,6 +833,9 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 	alpm_option_set_usedelta (handle, config->usedelta);
 	alpm_option_set_usesyslog (handle, config->usesyslog);
 	alpm_option_set_arch (handle, config->arch);
+
+	level = g_hash_table_lookup (config->levels, "options");
+	alpm_option_set_default_siglevel (handle, *level);
 
 	/* backend takes ownership */
 	g_free (xfercmd);
@@ -759,7 +874,8 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 	alpm_option_set_noupgrades (handle, config->noupgrades);
 	config->noupgrades = NULL;
 
-	pk_backend_configure_repos (config->repos, config->servers);
+	pk_backend_configure_repos (config->repos, config->servers,
+				    config->levels);
 
 	return handle;
 }
