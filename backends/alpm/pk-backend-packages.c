@@ -30,10 +30,8 @@ gchar *
 alpm_pkg_build_id (alpm_pkg_t *pkg)
 {
 	const gchar *name, *version, *arch, *repo;
-	alpm_db_t *db;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
-	g_return_val_if_fail (localdb != NULL, NULL);
 
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
@@ -43,12 +41,11 @@ alpm_pkg_build_id (alpm_pkg_t *pkg)
 		arch = "any";
 	}
 
-	db = alpm_pkg_get_db (pkg);
-	/* TODO: check */
-	if (db == NULL || db == localdb) {
-		repo = "installed";
+	/* TODO: check correctness */
+	if (alpm_pkg_get_origin (pkg) == PKG_FROM_SYNCDB) {
+		repo = alpm_db_get_name (alpm_pkg_get_db (pkg));
 	} else {
-		repo = alpm_db_get_name (db);
+		repo = "installed";
 	}
 
 	return pk_package_id_build (name, version, arch, repo);
@@ -143,7 +140,7 @@ pk_backend_resolve_package (PkBackend *self, const gchar *package,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
-	if (alpm_pkg_get_db (pkg) == localdb) {
+	if (alpm_pkg_get_origin (pkg) == PKG_FROM_LOCALDB) {
 		if (!skip_local) {
 			pk_backend_pkg (self, pkg, PK_INFO_ENUM_INSTALLED);
 		}
@@ -288,7 +285,7 @@ pk_backend_get_details_thread (PkBackend *self)
 		desc = alpm_pkg_get_desc (pkg);
 		url = alpm_pkg_get_url (pkg);
 
-		if (alpm_pkg_get_db (pkg) == localdb) {
+		if (alpm_pkg_get_origin (pkg) == PKG_FROM_LOCALDB) {
 			size = alpm_pkg_get_isize (pkg);
 		} else {
 			size = alpm_pkg_download_size (pkg);
