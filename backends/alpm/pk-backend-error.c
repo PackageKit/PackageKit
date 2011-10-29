@@ -88,11 +88,17 @@ pk_backend_error (PkBackend *self, GError *error)
 			code = PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG;
 			break;
 
+		case ALPM_ERR_DB_INVALID:
 		case ALPM_ERR_DB_VERSION:
 		case ALPM_ERR_DB_REMOVE:
 		case ALPM_ERR_SERVER_BAD_URL:
-		case ALPM_ERR_SIG_MISSINGDIR:
 			code = PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR;
+			break;
+
+		case ALPM_ERR_DB_INVALID_SIG:
+		case ALPM_ERR_PKG_INVALID_SIG:
+		case ALPM_ERR_SIG_INVALID:
+			code = PK_ERROR_ENUM_BAD_GPG_SIGNATURE;
 			break;
 
 		case ALPM_ERR_DB_WRITE:
@@ -127,6 +133,10 @@ pk_backend_error (PkBackend *self, GError *error)
 			code = PK_ERROR_ENUM_INVALID_PACKAGE_FILE;
 			break;
 
+		case ALPM_ERR_PKG_INVALID_CHECKSUM:
+			code = PK_ERROR_ENUM_PACKAGE_CORRUPT;
+			break;
+
 		case ALPM_ERR_PKG_CANT_REMOVE:
 			code = PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE;
 			break;
@@ -135,11 +145,7 @@ pk_backend_error (PkBackend *self, GError *error)
 			code = PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE;
 			break;
 
-		case ALPM_ERR_SIG_INVALID:
-			code = PK_ERROR_ENUM_BAD_GPG_SIGNATURE;
-			break;
-
-		case ALPM_ERR_SIG_UNKNOWN:
+		case ALPM_ERR_SIG_MISSING:
 			code = PK_ERROR_ENUM_MISSING_GPG_SIGNATURE;
 			break;
 
