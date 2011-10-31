@@ -238,7 +238,7 @@ pk_backend_destroy_alpm (PkBackend *self)
 	g_return_if_fail (self != NULL);
 
 	if (alpm != NULL) {
-		if (alpm_trans_get_flags (alpm) != -1) {
+		if (alpm_trans_get_flags (alpm) < 0) {
 			alpm_trans_release (alpm);
 		}
 		alpm_release (alpm);
