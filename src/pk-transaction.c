@@ -2795,6 +2795,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ACCEPT_EULA);
 
 	g_variant_get (params, "(&s)",
 		       &eula_id);

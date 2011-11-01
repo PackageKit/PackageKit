@@ -2764,6 +2764,7 @@ pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
+	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_ACCEPT_EULA);
 
 	g_debug ("eula_id %s", eula_id);
 	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
