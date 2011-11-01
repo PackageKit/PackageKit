@@ -1596,8 +1596,10 @@ pk_backend_initialize (PkBackend *backend)
 	g_list_foreach (mounts, (GFunc) g_object_unref, NULL);
 	g_list_free (mounts);
 
+#if !ZIF_CHECK_VERSION(0,2,6)
 	/* init rpm */
 	zif_init ();
+#endif
 
 	/* TODO: hook up errors */
 	priv->cancellable = g_cancellable_new ();
