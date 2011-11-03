@@ -1978,6 +1978,15 @@ pk_transaction_run (PkTransaction *transaction)
 		goto out;
 	}
 
+	/* check if we should skip this transaction */
+	if (pk_backend_get_exit_code (priv->backend) == PK_EXIT_ENUM_SKIP_TRANSACTION) {
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SKIP_TRANSACTION, 0);
+
+		/* do not fail the tranaction */
+		ret = TRUE;
+		goto out;
+	}
+
 	/* might have to reset again if we used the backend */
 	pk_backend_reset (priv->backend);
 

@@ -45,6 +45,7 @@ static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{PK_EXIT_ENUM_NEED_UNTRUSTED,		"need-untrusted"},
 	{PK_EXIT_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
+	{PK_EXIT_ENUM_SKIP_TRANSACTION,		"skip-transaction"},
 	{0, NULL}
 };
 
