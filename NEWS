@@ -1,3 +1,24 @@
+Version 0.6.20
+~~~~~~~~~~~~~~
+Released: 2011-11-07
+
+Libraries:
+ - python: Implement and use utf8 stream writer for stdout, stderr (Nils Philippsen)
+
+Backends:
+ - entropy: Add forward compatibility with upcoming API changes (Fabio Erculiani)
+ - entropy: Update entropy library path (Fabio Erculiani)
+ - yum: Add ourselves to YumBase.run_with_package_names (Nils Philippsen)
+ - yum: Don't let yum.misc.setup_locale() override stdout codec (Nils Philippsen)
+ - zif: Always show the update metadata if available by using the correct repo (Richard Hughes)
+ - zif: Do not report packages as installable if they are already installed (Richard Hughes)
+ - zif: Refresh the cache rather than just cleaning it for RefreshCache (Richard Hughes)
+ - zypp: Dont call build pool inside the loop (Duncan Mac-Vicar P)
+ - zypp: Only load repositories once (Duncan Mac-Vicar P)
+
+New Features:
+ - Add command line option to keep environment (Nils Philippsen)
+
 Version 0.6.19
 ~~~~~~~~~~~~~~
 Released: 2011-10-04
