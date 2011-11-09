@@ -1973,7 +1973,16 @@ pk_transaction_run (PkTransaction *transaction)
 	if (pk_backend_get_is_error_set (priv->backend)) {
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
-		/* do not fail the tranaction */
+		/* do not fail the transaction */
+		ret = TRUE;
+		goto out;
+	}
+
+	/* check if we should skip this transaction */
+	if (pk_backend_get_exit_code (priv->backend) == PK_EXIT_ENUM_SKIP_TRANSACTION) {
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
+
+		/* do not fail the transaction */
 		ret = TRUE;
 		goto out;
 	}
