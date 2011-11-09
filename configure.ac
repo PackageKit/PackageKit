@@ -771,11 +771,6 @@ lib/Makefile
 lib/packagekit-glib2/pk-version.h
 lib/packagekit-glib2/Makefile
 lib/packagekit-glib2/packagekit-glib2.pc
-lib/packagekit-qt/Makefile
-lib/packagekit-qt/modules/Makefile
-lib/packagekit-qt/src/Makefile
-lib/packagekit-qt/test/Makefile
-lib/packagekit-qt/packagekit-qt.pc
 lib/packagekit-qt2/Makefile
 lib/packagekit-qt2/modules/Makefile
 lib/packagekit-qt2/modules/packagekit-qt2-config.cmake
