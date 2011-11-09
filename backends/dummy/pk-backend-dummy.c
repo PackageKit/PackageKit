@@ -911,8 +911,8 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	gboolean has_eula;
 
 	/* FIXME: support only_trusted */
-
-	if (_use_gpg && !_has_signature) {
+        PkRoleEnum role = pk_backend_get_role (backend);
+        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && _use_gpg && !_has_signature) {
 		pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 						    "http://example.com/gpgkey",
 						    "Test Key (Fedora) fedora@example.com",
@@ -926,7 +926,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	}
 	eula_id = "eula_hughsie_dot_com";
 	has_eula = pk_backend_is_eula_valid (backend, eula_id);
-	if (_use_eula && !has_eula) {
+        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && _use_eula && !has_eula) {
 		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
 				    "Captain: What happen ?\n"
 				    "Mechanic: Somebody set up us the bomb.\n\n"
