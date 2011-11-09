@@ -1971,7 +1971,8 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* is an error code set? */
 	if (pk_backend_get_is_error_set (priv->backend)) {
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+		exit_status = pk_backend_get_exit_code (priv->backend);
+		pk_transaction_finished_emit (transaction, exit_status, 0);
 
 		/* do not fail the transaction */
 		ret = TRUE;
@@ -2066,8 +2067,17 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
 
-	/* did the plugin finish or abort the transaction */
+	/* check again if we should skip this transaction */
 	exit_status = pk_backend_get_exit_code (priv->backend);
+	if (exit_status == PK_EXIT_ENUM_SKIP_TRANSACTION) {
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
+
+		/* do not fail the transaction */
+		ret = TRUE;
+		goto out;
+	}
+
+	/* did the plugin finish or abort the transaction? */
 	if (exit_status != PK_EXIT_ENUM_UNKNOWN)  {
 		pk_transaction_finished_emit (transaction, exit_status, 0);
 		ret = TRUE;
