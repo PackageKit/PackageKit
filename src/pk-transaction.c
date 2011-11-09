@@ -2763,6 +2763,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ACCEPT_EULA);
 
 	/* check if the sender is the same */
 	ret = pk_transaction_verify_sender (transaction, context, &error);
