@@ -2,14 +2,16 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # 
-# Richard Hughes <richard@hughsie.com>, 2011
-# Andika Triwidada <andika@gmail.com>, 2011
+# Translators:
+# Andika Triwidada <andika@gmail.com>, 2011.
+# Dichi Al Faridi <dichi@alfaridi.info>, 2010.
+# Richard Hughes <richard@hughsie.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 10:50+0100\n"
-"PO-Revision-Date: 2011-05-15 14:47+0000\n"
+"POT-Creation-Date: 2011-09-05 16:58+0100\n"
+"PO-Revision-Date: 2011-10-11 04:56+0000\n"
 "Last-Translator: andika <andika@gmail.com>\n"
 "Language-Team: Indonesian (http://www.transifex.net/projects/p/freedesktop/team/id/)\n"
 "MIME-Version: 1.0\n"
@@ -286,7 +288,7 @@ msgstr "Tak ada paket untuk dimutakhirkan."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:704
-#: ../contrib/command-not-found/pk-command-not-found.c:639
+#: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr "Transaksi gagal"
 
@@ -727,159 +729,154 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit Monitor"
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:499
+#: ../contrib/browser-plugin/pk-plugin-install.c:503
 msgid "Getting package information..."
 msgstr "Mengambil informasi paket..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:505
+#: ../contrib/browser-plugin/pk-plugin-install.c:509
 #, c-format
 msgid "Run %s"
 msgstr "Jalankan %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:511
+#: ../contrib/browser-plugin/pk-plugin-install.c:515
 msgid "Installed version"
 msgstr "Versi terpasang"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:519
+#: ../contrib/browser-plugin/pk-plugin-install.c:523
 #, c-format
 msgid "Run version %s now"
 msgstr "Jalankan versi %s sekarang"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:525
+#: ../contrib/browser-plugin/pk-plugin-install.c:529
 msgid "Run now"
 msgstr "Jalankan sekarang"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:531
+#: ../contrib/browser-plugin/pk-plugin-install.c:535
 #, c-format
 msgid "Update to version %s"
 msgstr "Mutakhirkan ke versi %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:537
+#: ../contrib/browser-plugin/pk-plugin-install.c:541
 #, c-format
 msgid "Install %s now"
 msgstr "Pasang %s sekarang"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:540
+#: ../contrib/browser-plugin/pk-plugin-install.c:544
 msgid "Version"
 msgstr "Versi"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:545
+#: ../contrib/browser-plugin/pk-plugin-install.c:549
 msgid "No packages found for your system"
 msgstr "Tak ditemukan paket pada sistem Anda"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:550
+#: ../contrib/browser-plugin/pk-plugin-install.c:554
 msgid "Installing..."
 msgstr "Memasang..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:366
+#: ../contrib/command-not-found/pk-command-not-found.c:363
 msgid "Downloading details about the software sources."
 msgstr "Mengunduh rincian tentang sumber perangkat lunak."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:370
+#: ../contrib/command-not-found/pk-command-not-found.c:367
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Mengunduh filelist (mungkin ini makan waktu)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:374
+#: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Waiting for package manager lock."
 msgstr "Menunggu kunci manajer paket."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:378
+#: ../contrib/command-not-found/pk-command-not-found.c:375
 msgid "Loading list of packages."
 msgstr "Memuat daftar paket."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:444
+#: ../contrib/command-not-found/pk-command-not-found.c:439
 msgid "Failed to search for file"
 msgstr "Gagal mencari berkas"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:456
+#: ../contrib/command-not-found/pk-command-not-found.c:451
 msgid "Getting the list of files failed"
 msgstr "Gagal mendapat daftar berkas"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:602
+#: ../contrib/command-not-found/pk-command-not-found.c:597
 msgid "Failed to launch:"
 msgstr "Gagal meluncurkan:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:630
+#: ../contrib/command-not-found/pk-command-not-found.c:625
 msgid "Failed to install packages"
 msgstr "Gagal memasang paket"
-
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:706
-msgid "PackageKit Command Not Found"
-msgstr "Perintah PackageKit Tak Ditemukan"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:723
 msgid "command not found"
 msgstr "perintah tak ditemukan"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:759
+#: ../contrib/command-not-found/pk-command-not-found.c:741
 msgid "Similar command is:"
 msgstr "Perintah serupa adalah:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:773
+#: ../contrib/command-not-found/pk-command-not-found.c:755
 msgid "Run similar command:"
 msgstr "Jalankan perintah serupa:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:787
-#: ../contrib/command-not-found/pk-command-not-found.c:796
+#: ../contrib/command-not-found/pk-command-not-found.c:769
+#: ../contrib/command-not-found/pk-command-not-found.c:778
 msgid "Similar commands are:"
 msgstr "Perintah serupa adalah:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "Please choose a command to run"
 msgstr "Silakan pilih suatu perintah untuk dijalankan"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:821
+#: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "The package providing this file is:"
 msgstr "Paket yang menyediakan berkas ini adalah:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:828
+#: ../contrib/command-not-found/pk-command-not-found.c:810
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Pasang paket '%s' untuk menyediakan perintah '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:855
+#: ../contrib/command-not-found/pk-command-not-found.c:837
 msgid "Packages providing this file are:"
 msgstr "Paket-paket yang menyediakan berkas ini adalah:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:865
+#: ../contrib/command-not-found/pk-command-not-found.c:847
 msgid "Suitable packages are:"
 msgstr "Paket-paket yang cocok adalah:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:874
+#: ../contrib/command-not-found/pk-command-not-found.c:856
 msgid "Please choose a package to install"
 msgstr "Silakan pilih suatu paket untuk dipasang"
 
@@ -1808,13 +1805,19 @@ msgstr "Paket berikut mesti dipasang ulang:"
 msgid "The following packages have to be downgraded:"
 msgstr "Paket berikut mesti diturunkan versinya:"
 
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: ../lib/packagekit-glib2/pk-task-text.c:325
+msgid "The following packages are untrusted:"
+msgstr "Paket berikut tak terpercaya:"
+
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:380
+#: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
 msgstr "Lanjut terapkan perubahan?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:385
+#: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
 msgstr "Transaksi tak dilanjutkan."
 
@@ -2026,99 +2029,65 @@ msgstr "Memutakhirkan paket"
 msgid "Upgrade System"
 msgstr "Tingkatkan Sistem"
 
-#. TRANSLATORS: failed due to DBus security
-#: ../src/pk-main.c:91
-msgid "Startup failed due to security policies on this machine."
-msgstr "Startup gagal karena kebijakan keamanan pada mesin ini."
-
-#. TRANSLATORS: only two ways this can fail...
-#: ../src/pk-main.c:93
-msgid "This can happen for two reasons:"
-msgstr "Ini dapat terjadi karena dua alasan:"
-
-#. TRANSLATORS: only allowed to be owned by root
-#: ../src/pk-main.c:95
-msgid "The correct user is not launching the executable (usually root)"
-msgstr "Yang meluncurkan executable bukan pengguna yang benar (biasanya root)"
-
-#. TRANSLATORS: or we are installed in a prefix
-#: ../src/pk-main.c:97
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"Berkas org.freedesktop.PackageKit.conf tak terpasang di direktori sistem:"
-
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:223
+#: ../src/pk-main.c:148
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Backend pemaketan yang dipakai, mis. dummy"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:151
 msgid "Daemonize and detach from the terminal"
 msgstr "Daemonkan dan lepas dari terminal"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:229
+#: ../src/pk-main.c:154
 msgid "Disable the idle timer"
 msgstr "Matikan pewaktu menganggur"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:232
+#: ../src/pk-main.c:157
 msgid "Show version and exit"
 msgstr "Tampilkan versi dan keluar"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:235
+#: ../src/pk-main.c:160
 msgid "Exit after a small delay"
 msgstr "Keluar setelah suatu jeda singkat"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:238
+#: ../src/pk-main.c:163
 msgid "Exit after the engine has loaded"
 msgstr "Keluar setelah mesin dimuat"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:253
+#: ../src/pk-main.c:177
 msgid "PackageKit service"
 msgstr "Layanan PackageKit"
 
-#. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:298
-msgid "Cannot connect to the system bus"
-msgstr "Tak bisa menyambung ke bus sistem"
-
-#: ../src/pk-main.c:344
+#: ../src/pk-main.c:249
 msgid "Failed to load any of the specified backends:"
 msgstr "Gagal memuat sebarang backend yang dinyatakan:"
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
-#. follows
-#: ../src/pk-main.c:358
-msgid "Error trying to start:"
-msgstr "Galat mencoba memulai:"
-
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2611 ../src/pk-transaction.c:2618
+#: ../src/pk-transaction.c:2659
 msgid "The software is not from a trusted source."
 msgstr "Perangkat lunak bukan dari sumber yang terpercaya."
 
-#: ../src/pk-transaction.c:2623
+#: ../src/pk-transaction.c:2667
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Jangan mutakhirkan paket ini kecuali Anda yakin aman untuk dilakukan."
 
-#: ../src/pk-transaction.c:2624
+#: ../src/pk-transaction.c:2668
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr ""
 "Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk "
 "melakukannya."
 
-#: ../src/pk-transaction.c:2634
+#: ../src/pk-transaction.c:2678
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Jangan pasang paket ini kecuali Anda yakin aman untuk dilakukan."
 
-#: ../src/pk-transaction.c:2635
+#: ../src/pk-transaction.c:2679
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr ""
 "Jangan pasang paket-paket ini kecuali Anda yakin aman untuk melakukannya."
