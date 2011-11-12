@@ -85,7 +85,7 @@ pk_get_package_name_from_nevra (const gchar *nevra)
 	/* join up name elements */
 	name = g_strjoinv ("-", split);
 out:
-	g_strfreev (split); 
+	g_strfreev (split);
 	return name;
 }
 
@@ -390,7 +390,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		goto out;
 	}
 
-	/* add dependant packages */
+	/* add dependent packages */
 	list = pk_results_get_package_array (results);
 	for (i=0; i<list->len; i++) {
 		item = g_ptr_array_index (list, i);
@@ -803,7 +803,7 @@ not_found:
 				g_print ("%s ", _("FAILED."));
 			}
 			/* TRANSLATORS: could not install, detailed error follows */
-			g_print (_("Could not find dependant packages: %s"), error->message);
+			g_print (_("Could not find dependent packages: %s"), error->message);
 			g_print ("\n");
 			g_error_free (error);
 

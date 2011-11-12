@@ -1,3 +1,79 @@
+Version 0.7.1
+~~~~~~~~~~~~~
+Released: 2011-11-10
+
+Libraries:
+ - qt2: Remove old Find* macro (Matthias Klumpp)
+ - qt2: Really do not distribute moc files (Vincent Untz)
+ - qt: Drop packagekit-qt1 which is obsolete in favor of packagekit-qt2 (Daniel Nicoletti)
+
+Backends:
+ - aptcc: Don't wrap sys.stdout with codecs.getwriter(...) (Nils Philippsen)
+ - dummy: Make sure we don't ask for eula or repo signatures while simulating (Daniel Nicoletti)
+ - entropy: Add forward compatibility with upcoming API changes (Fabio Erculiani)
+ - entropy: Drop PK_BACKEND_OPTIONS macro usage (Fabio Erculiani)
+ - entropy: Update entropy library path (Fabio Erculiani)
+ - portage: Drop PK_BACKEND_OPTIONS macro usage (Fabio Erculiani)
+ - ports: Remove the vfuncs table (Anders F Bjorklund)
+ - python: Add initial Python3 compatibility (keeping Python2.7 support) (Fabio Erculiani)
+ - python: Implement and use utf8 stream writer for stdout, stderr (Nils Philippsen)
+ - python: Require at least Python 2.7 (in configure.ac) (Fabio Erculiani)
+ - python: Update exception code syntax, make it work with both Python2 and Python3 (Fabio Erculiani)
+ - python: Use print() as function (Fabio Erculiani)
+ - slapt: Implement the simulate methods (Anders F Bjorklund)
+ - slapt: Remove the vfuncs table (Anders F Bjorklund)
+ - smart: Don't wrap sys.stdout with codecs.getwriter(...) (Nils Philippsen)
+ - smart: Implement the simulate methods (Anders F Bjorklund)
+ - smart: Make sure that data=installed is honored (Anders F Bjorklund)
+ - smart: Remove the vfuncs table (Anders F Bjorklund)
+ - yum: Add ourselves to YumBase.run_with_package_names (Nils Philippsen)
+ - yum: Cope with missing YumBase.run_with_package_names (Nils Philippsen)
+ - yum: Don't let yum.misc.setup_locale() override stdout codec (Nils Philippsen)
+ - zif: Add an unhandled ZifStateAction mapping (Richard Hughes)
+ - zif: Add support for the latest status and transaction enum values (Richard Hughes)
+ - zif: Always show the update metadata if available by using the correct repo (Richard Hughes)
+ - zif: Do not always ask for untrusted authentication for trusted repos (Richard Hughes)
+ - zif: Do not report packages as installable if they are already installed (Richard Hughes)
+ - zif: Don't call zif_init() in newer versions of the library (Richard Hughes)
+ - zif: Don't try to map error domains that are no longer exported (Richard Hughes)
+ - zif: Don't use zif_package_get_package_id() (Richard Hughes)
+ - zif: Enable globbing for Resolve() (Richard Hughes)
+ - zif: Ensure the downloading status is set correctly (Richard Hughes)
+ - zif: Fix a critical warning when using WhatProvides (Richard Hughes)
+ - zif: Include zif-private.h for very new versions of zif (Richard Hughes)
+ - zif: Prefer native packages when resolving user input (Richard Hughes)
+ - zif: Refresh the cache rather than just cleaning it for RefreshCache (Richard Hughes)
+ - zif: Save the effective user ID and command line (Richard Hughes)
+ - zif: Use zif_store_array_resolve_full() when possible (Richard Hughes)
+ - zif: Use zif_transaction_commit_full() to be able to install untrusted packages (Richard Hughes)
+ - zif: When the transaction has no thing to do, use the correct PK error code enum (Richard Hughes)
+ - zypp: Dont call build pool inside the loop (Duncan Mac-Vicar P)
+ - zypp: Only load repositories once (Duncan Mac-Vicar P)
+ - zypp: Refactor the private static data into one structure (Duncan Mac-Vicar P)
+
+New Features:
+ - Add command line option to keep environment (Nils Philippsen)
+ - Add Introspection support for PK-Plugins (Matthias Klumpp)
+ - Add possibility for backends/plugins to skip transactions (Matthias Klumpp)
+ - Add 'uid' and 'cmdline' properties to PkBackend (Richard Hughes)
+ - Use the new g_thread_new() for new versions of GLib (Richard Hughes)
+
+Bugfixes:
+ - Check if a transaction should be skipped after it has started too (Matthias Klumpp)
+ - Don't use the deprecated g_thread_supported() in the dameon code (Richard Hughes)
+ - Finalize PackageKitPlugin GIR file (Matthias Klumpp)
+ - Find uninstalled PackageKitGlib-1.0.gir when building (Nils Philippsen)
+ - Fix the role of the EULA transaction (Daniel Nicoletti)
+ - Make PK compile on GNU Hurd (Matthias Klumpp)
+ - Move the gtk-module extra files to the PK tarball (Richard Hughes)
+ - Offset the cache age by 30 minutes (Richard Hughes)
+ - plugin: Add a few GIR annotations (Matthias Klumpp)
+ - Remove the implemented checks for the simulate methods (Richard Hughes)
+ - Require exactly 'y<enter>' or 'yes<enter>' before running a transaction (Richard Hughes)
+ - Use the newest filter when resolving for new packages to install (Richard Hughes)
+ - website: Fix broken link to gdb docs (Milan Bouchet-Valat)
+ - website: Improve links to bug trackers (Milan Bouchet-Valat)
+
 Version 0.7.0
 ~~~~~~~~~~~~~
 Released: 2011-09-05

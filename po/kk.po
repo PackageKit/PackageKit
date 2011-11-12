@@ -2,12 +2,13 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # 
+# Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-01 10:58+0100\n"
-"PO-Revision-Date: 2011-09-05 15:42+0000\n"
+"POT-Creation-Date: 2011-09-05 16:58+0100\n"
+"PO-Revision-Date: 2010-12-13 12:37+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Kazakh (http://www.transifex.net/projects/p/freedesktop/team/kk/)\n"
 "MIME-Version: 1.0\n"
@@ -284,7 +285,7 @@ msgstr ""
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:704
-#: ../contrib/command-not-found/pk-command-not-found.c:639
+#: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr ""
 
@@ -710,154 +711,154 @@ msgid "PackageKit Monitor"
 msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:499
+#: ../contrib/browser-plugin/pk-plugin-install.c:503
 msgid "Getting package information..."
 msgstr ""
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:505
+#: ../contrib/browser-plugin/pk-plugin-install.c:509
 #, c-format
 msgid "Run %s"
 msgstr ""
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:511
+#: ../contrib/browser-plugin/pk-plugin-install.c:515
 msgid "Installed version"
 msgstr ""
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:519
+#: ../contrib/browser-plugin/pk-plugin-install.c:523
 #, c-format
 msgid "Run version %s now"
 msgstr ""
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:525
+#: ../contrib/browser-plugin/pk-plugin-install.c:529
 msgid "Run now"
 msgstr ""
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:531
+#: ../contrib/browser-plugin/pk-plugin-install.c:535
 #, c-format
 msgid "Update to version %s"
 msgstr ""
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:537
+#: ../contrib/browser-plugin/pk-plugin-install.c:541
 #, c-format
 msgid "Install %s now"
 msgstr ""
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:540
+#: ../contrib/browser-plugin/pk-plugin-install.c:544
 msgid "Version"
 msgstr ""
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:545
+#: ../contrib/browser-plugin/pk-plugin-install.c:549
 msgid "No packages found for your system"
 msgstr ""
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:550
+#: ../contrib/browser-plugin/pk-plugin-install.c:554
 msgid "Installing..."
 msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:366
+#: ../contrib/command-not-found/pk-command-not-found.c:363
 msgid "Downloading details about the software sources."
 msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:370
+#: ../contrib/command-not-found/pk-command-not-found.c:367
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr ""
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:374
+#: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Waiting for package manager lock."
 msgstr ""
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:378
+#: ../contrib/command-not-found/pk-command-not-found.c:375
 msgid "Loading list of packages."
 msgstr ""
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:444
+#: ../contrib/command-not-found/pk-command-not-found.c:439
 msgid "Failed to search for file"
 msgstr ""
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:456
+#: ../contrib/command-not-found/pk-command-not-found.c:451
 msgid "Getting the list of files failed"
 msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:602
+#: ../contrib/command-not-found/pk-command-not-found.c:597
 msgid "Failed to launch:"
 msgstr ""
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:630
+#: ../contrib/command-not-found/pk-command-not-found.c:625
 msgid "Failed to install packages"
 msgstr ""
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:729
+#: ../contrib/command-not-found/pk-command-not-found.c:723
 msgid "command not found"
 msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:741
 msgid "Similar command is:"
 msgstr ""
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:761
+#: ../contrib/command-not-found/pk-command-not-found.c:755
 msgid "Run similar command:"
 msgstr ""
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:775
-#: ../contrib/command-not-found/pk-command-not-found.c:784
+#: ../contrib/command-not-found/pk-command-not-found.c:769
+#: ../contrib/command-not-found/pk-command-not-found.c:778
 msgid "Similar commands are:"
 msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:791
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "Please choose a command to run"
 msgstr ""
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:809
+#: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "The package providing this file is:"
 msgstr ""
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:816
+#: ../contrib/command-not-found/pk-command-not-found.c:810
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:843
+#: ../contrib/command-not-found/pk-command-not-found.c:837
 msgid "Packages providing this file are:"
 msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:853
+#: ../contrib/command-not-found/pk-command-not-found.c:847
 msgid "Suitable packages are:"
 msgstr ""
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:862
+#: ../contrib/command-not-found/pk-command-not-found.c:856
 msgid "Please choose a package to install"
 msgstr ""
 
@@ -1998,96 +1999,63 @@ msgstr ""
 msgid "Upgrade System"
 msgstr ""
 
-#. TRANSLATORS: failed due to DBus security
-#: ../src/pk-main.c:91
-msgid "Startup failed due to security policies on this machine."
-msgstr ""
-
-#. TRANSLATORS: only two ways this can fail...
-#: ../src/pk-main.c:93
-msgid "This can happen for two reasons:"
-msgstr ""
-
-#. TRANSLATORS: only allowed to be owned by root
-#: ../src/pk-main.c:95
-msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
-
-#. TRANSLATORS: or we are installed in a prefix
-#: ../src/pk-main.c:97
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:223
+#: ../src/pk-main.c:148
 msgid "Packaging backend to use, e.g. dummy"
 msgstr ""
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:226
+#: ../src/pk-main.c:151
 msgid "Daemonize and detach from the terminal"
 msgstr ""
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:229
+#: ../src/pk-main.c:154
 msgid "Disable the idle timer"
 msgstr ""
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:232
+#: ../src/pk-main.c:157
 msgid "Show version and exit"
 msgstr ""
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:235
+#: ../src/pk-main.c:160
 msgid "Exit after a small delay"
 msgstr ""
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:238
+#: ../src/pk-main.c:163
 msgid "Exit after the engine has loaded"
 msgstr ""
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:253
+#: ../src/pk-main.c:177
 msgid "PackageKit service"
 msgstr ""
 
-#. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:298
-msgid "Cannot connect to the system bus"
-msgstr ""
-
-#: ../src/pk-main.c:344
+#: ../src/pk-main.c:249
 msgid "Failed to load any of the specified backends:"
 msgstr ""
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
-#. follows
-#: ../src/pk-main.c:358
-msgid "Error trying to start:"
-msgstr ""
-
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2611 ../src/pk-transaction.c:2618
+#: ../src/pk-transaction.c:2659
 msgid "The software is not from a trusted source."
 msgstr ""
 
-#: ../src/pk-transaction.c:2623
+#: ../src/pk-transaction.c:2667
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-transaction.c:2624
+#: ../src/pk-transaction.c:2668
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-transaction.c:2634
+#: ../src/pk-transaction.c:2678
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-transaction.c:2635
+#: ../src/pk-transaction.c:2679
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr ""
 

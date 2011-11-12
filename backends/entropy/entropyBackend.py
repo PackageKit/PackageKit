@@ -440,7 +440,7 @@ class PackageKitEntropyMixin(object):
         @type pkgs: list
         @param allowdep: Either true or false. If true allow other packages
             to be removed with the package, but false should cause the script
-            to abort if other packages are dependant on the package.
+            to abort if other packages are dependent on the package.
         @type allowdep: bool
         @param autoremove: Either true or false. This option is only really
             interesting on embedded devices with a limited amount of flash
@@ -818,7 +818,7 @@ class PkUrlFetcher(UrlFetcher):
             myavg = abs(int(round(float(self.__average), 1)))
             cur_prog = int(float(self.__average)/100)
             PkUrlFetcher._pk_progress(cur_prog)
-            PkUrlFetcher._last_t = time.time()    
+            PkUrlFetcher._last_t = time.time()
 
     def output(self):
         """ backward compatibility """
