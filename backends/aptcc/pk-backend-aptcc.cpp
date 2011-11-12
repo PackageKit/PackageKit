@@ -325,7 +325,8 @@ backend_get_details_thread (PkBackend *backend)
 	gchar **package_ids;
 	gchar *pi;
 
-	bool updateDetail = pk_backend_get_bool (backend, "updateDetail");
+    PkRoleEnum role = pk_backend_get_role (backend);
+	bool updateDetail = role == PK_ROLE_ENUM_GET_UPDATE_DETAIL ? true : false;
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (package_ids == NULL) {
 		pk_backend_error_code (backend,
@@ -350,38 +351,14 @@ backend_get_details_thread (PkBackend *backend)
         pkgInitSystem(*_config, _system);
     }
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		pi = package_ids[i];
-		if (pk_package_id_check(pi) == false) {
-			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
-					       pi);
-			delete m_apt;
-			pk_backend_finished (backend);
-			return false;
-		}
+    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+    PkgList pkgs = m_apt->resolvePI(package_ids);
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-        bool found;
-		pkg_ver = m_apt->find_package_id(pi, found);
-		if (!found)
-		{
-			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					       "couldn't find package");
-
-			delete m_apt;
-			pk_backend_finished (backend);
-			return false;
-		}
-
-		if (updateDetail) {
-			m_apt->emit_update_detail(pkg_ver.first, pkg_ver.second);
-		} else {
-			m_apt->emit_details(pkg_ver.first, pkg_ver.second);
-		}
-	}
+    if (updateDetail) {
+        m_apt->emitUpdateDetails(pkgs);
+    } else {
+        m_apt->emitDetails(pkgs);
+    }
 
 	delete m_apt;
 	pk_backend_finished (backend);
@@ -394,8 +371,7 @@ backend_get_details_thread (PkBackend *backend)
 void
 pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_set_bool (backend, "updateDetail", true);
-	pk_backend_thread_create (backend, backend_get_details_thread);
+    pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -404,8 +380,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 void
 pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_set_bool (backend, "updateDetail", false);
-	pk_backend_thread_create (backend, backend_get_details_thread);
+    pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 static gboolean
@@ -459,8 +434,8 @@ backend_get_or_update_system_thread (PkBackend *backend)
 
 	bool res = true;
 	if (getUpdates) {
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > update,
-									    kept;
+		PkgList update;
+		PkgList kept;
 
 		for(pkgCache::PkgIterator pkg=m_apt->packageCache->PkgBegin();
 		    !pkg.end();
@@ -469,12 +444,12 @@ backend_get_or_update_system_thread (PkBackend *backend)
 			if((*Cache)[pkg].Upgrade()    == true &&
 			(*Cache)[pkg].NewInstall() == false) {
 				update.push_back(
-					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
+					PkgPair(pkg, m_apt->find_candidate_ver(pkg)));
 			} else if ((*Cache)[pkg].Upgradable() == true &&
 				pkg->CurrentVer != 0 &&
 				(*Cache)[pkg].Delete() == false) {
 				kept.push_back(
-					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
+					PkgPair(pkg, m_apt->find_candidate_ver(pkg)));
 			}
 		}
 
@@ -813,7 +788,6 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_thread_create (backend, pk_backend_refresh_cache_thread);
 }
 
-
 static gboolean
 pk_backend_resolve_thread (PkBackend *backend)
 {
@@ -833,50 +807,10 @@ pk_backend_resolve_thread (PkBackend *backend)
 		return false;
 	}
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	gchar *pi;
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		if (_cancel) {
-			break;
-		}
+    PkgList pkgs = m_apt->resolvePI(package_ids);
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-		pi = package_ids[i];
-		if (pk_package_id_check(pi) == false) {
-			pkg_ver.first = m_apt->packageCache->FindPkg(pi);
-			// Ignore packages that could not be found or that exist only due to dependencies.
-			if (pkg_ver.first.end() == true ||
-			    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
-			{
-				continue;
-			}
-
-			pkg_ver.second = m_apt->find_ver(pkg_ver.first);
-			// check to see if the provided package isn't virtual too
-			if (pkg_ver.second.end() == false)
-			{
-				output.push_back(pkg_ver);
-			}
-
-			pkg_ver.second = m_apt->find_candidate_ver(pkg_ver.first);
-			// check to see if the provided package isn't virtual too
-			if (pkg_ver.second.end() == false)
-			{
-				output.push_back(pkg_ver);
-			}
-		} else {
-            bool found;
-			pkg_ver = m_apt->find_package_id(pi, found);
-			// check to see if we found the package
-			if (found)
-			{
-				output.push_back(pkg_ver);
-			}
-		}
-	}
-	// It's faster to emmit the packages here rather than in the matching part
-	m_apt->emit_packages(output, filters);
+    // It's faster to emmit the packages here rather than in the matching part
+    m_apt->emit_packages(pkgs, filters);
 
 	delete m_apt;
 
@@ -1184,15 +1118,26 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 static gboolean
 backend_manage_packages_thread (PkBackend *backend)
 {
-	gchar **package_ids;
-	gchar *pi;
-	bool simulate;
-	bool remove;
+    bool simulate = false;
+    bool remove = false;
+    bool fileInstall = false;
 
-	package_ids = pk_backend_get_strv (backend, "package_ids");
-	simulate = pk_backend_get_bool (backend, "simulate");
-	remove = pk_backend_get_bool (backend, "remove");
-
+    PkRoleEnum role = pk_backend_get_role (backend);
+    if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
+        role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
+        role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES ||
+        role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
+        simulate = true;
+    }
+    if (role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
+        role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+        remove = true;
+    }
+    if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
+        role == PK_ROLE_ENUM_INSTALL_FILES) {
+        fileInstall = true;
+    }
+cout << "FILE INSTALL: " << fileInstall << endl;
 	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc(backend, _cancel);
@@ -1205,73 +1150,70 @@ backend_manage_packages_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > pkgs;
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		if (_cancel) {
-			break;
-		}
+	PkgList pkgs;
+    
+    if (fileInstall ==  false) { 
+        // Resolve the given packages
+        gchar *pi;
+        gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+        for (uint i = 0; i < g_strv_length(package_ids); i++) {
+            if (_cancel) {
+                break;
+            }
 
-		pi = package_ids[i];
-		if (pk_package_id_check(pi) == false) {
-			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
-					       pi);
-			delete m_apt;
-			pk_backend_finished (backend);
-			return false;
-		}
+            pi = package_ids[i];
+            if (pk_package_id_check(pi) == false) {
+                pk_backend_error_code (backend,
+                            PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                            pi);
+                delete m_apt;
+                pk_backend_finished (backend);
+                return false;
+            }
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-        bool found;
-		pkg_ver = m_apt->find_package_id(pi, found);
-		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (!found)
-		{
-			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					       "couldn't find package");
+            pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+            bool found;
+            pkg_ver = m_apt->find_package_id(pi, found);
+            // Ignore packages that could not be found or that exist only due to dependencies.
+            if (!found)
+            {
+                pk_backend_error_code (backend,
+                            PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                            "couldn't find package");
 
-			delete m_apt;
-			pk_backend_finished (backend);
-			return false;
-		} else {
-			pkgs.push_back(pkg_ver);
-		}
-	}
+                delete m_apt;
+                pk_backend_finished (backend);
+                return false;
+            } else {
+                pkgs.push_back(pkg_ver);
+            }
+        }
 
-	if (!m_apt->runTransaction(pkgs, simulate, remove)) {
-		// Print transaction errors
-		cout << "runTransaction failed" << endl;
-		delete m_apt;
-		pk_backend_finished (backend);
-		return false;
-	}
+        // TODO verify if some package was found
+        if (!m_apt->runTransaction(pkgs, simulate, remove)) {
+            // Print transaction errors
+            cout << "runTransaction failed" << endl;
+            delete m_apt;
+            pk_backend_finished (backend);
+            return false;
+        }
+    } else {
+        // File installation EXPERIMENTAL
+        gchar *path;
+        gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
+        for (uint i = 0; i < g_strv_length(full_paths); i++) {
+            if (_cancel) {
+                break;
+            }
+            
+            path = full_paths[i];
+            cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
+        }
+    }
 
 	delete m_apt;
 	pk_backend_finished (backend);
 	return true;
-}
-
-/**
- * pk_backend_install_packages:
- */
-void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-	pk_backend_set_bool(backend, "simulate", false);
-	pk_backend_set_bool(backend, "remove", false);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
-}
-
-/**
- * pk_backend_update_packages:
- */
-void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-	pk_backend_set_bool(backend, "simulate", false);
-	pk_backend_set_bool(backend, "remove", false);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 /**
@@ -1280,9 +1222,16 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 void
 pk_backend_simulate_install_packages (PkBackend *backend, gchar **packages)
 {
-	pk_backend_set_bool(backend, "simulate", true);
-	pk_backend_set_bool(backend, "remove", false);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_install_packages:
+ */
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 /**
@@ -1291,20 +1240,34 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **packages)
 void
 pk_backend_simulate_update_packages (PkBackend *backend, gchar **packages)
 {
-	pk_backend_set_bool(backend, "simulate", true);
-	pk_backend_set_bool(backend, "remove", false);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 /**
- * pk_backend_remove_packages:
+ * pk_backend_update_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
-	pk_backend_set_bool(backend, "simulate", false);
-	pk_backend_set_bool(backend, "remove", true);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_simulate_install_files:
+ */
+void
+pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_install_files:
+ */
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+{
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 /**
@@ -1313,9 +1276,16 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
 void
 pk_backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
-	pk_backend_set_bool(backend, "simulate", true);
-	pk_backend_set_bool(backend, "remove", true);
-	pk_backend_thread_create (backend, backend_manage_packages_thread);
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_remove_packages:
+ */
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+    pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 static gboolean

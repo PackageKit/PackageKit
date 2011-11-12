@@ -636,6 +636,10 @@ if test x$enable_aptcc = xyes; then
 
 	AC_SUBST(APTCC_CFLAGS)
 	AC_SUBST(APTCC_LIBS)
+	
+    AC_CHECK_LIB(apt-inst, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
+    AC_SUBST(APTCC_CFLAGS)
+    AC_SUBST(APTCC_LIBS)
 
 	PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 gstreamer-base-0.10 gstreamer-plugins-base-0.10,,
 					[AC_MSG_ERROR([Can't find the gstreamer libraries -- please install libgstreamermm-0.10-dev])])

@@ -27,6 +27,7 @@
 #include "acqprogress.h"
 #include "pkg_acqfile.h"
 #include "aptcc_show_error.h"
+#include "deb-file.h"
 
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
@@ -355,7 +356,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
         g_free(package_id);
 }
 
-void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+void aptcc::emit_packages(PkgList &output,
 			  PkBitfield filters,
 			  PkInfoEnum state)
 {
@@ -377,8 +378,7 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 	}
 }
 
-void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			 PkBitfield filters)
+void aptcc::emitUpdates(PkgList &output, PkBitfield filters)
 {
 	PkInfoEnum state;
 	// Sort so we can remove the duplicated entries
@@ -424,8 +424,7 @@ void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 }
 
 // search packages which provide a codec (specified in "values")
-void aptcc::providesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-                         gchar **values)
+void aptcc::providesCodec(PkgList &output, gchar **values)
 {
     GstMatcher *matcher = new GstMatcher(values);
     if (!matcher->hasMatches()) {
@@ -467,8 +466,7 @@ void aptcc::providesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 }
 
 // search packages which provide the libraries specified in "values"
-void aptcc::providesLibrary(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-                         gchar **values)
+void aptcc::providesLibrary(PkgList &output, gchar **values)
 {
 	bool ret = false;
 	// Quick-check for library names
@@ -538,7 +536,7 @@ void aptcc::providesLibrary(vector<pair<pkgCache::PkgIterator, pkgCache::VerIter
 }
 
 // used to emit packages it collects all the needed info
-void aptcc::emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
+void aptcc::emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
 {
     pkgCache::VerIterator ver;
     if (version.end() == false) {
@@ -580,8 +578,20 @@ void aptcc::emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIt
     g_free(package_id);
 }
 
+void aptcc::emitDetails(PkgList &pkgs)
+{
+    for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i)
+    {
+        if (_cancel) {
+            break;
+        }
+
+        emitDetails(i->first, i->second);
+    }
+}
+
 // used to emit packages it collects all the needed info
-void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
+void aptcc::emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &version)
 {
     // Get the version of the current package
     pkgCache::VerIterator currver = find_ver(pkg);
@@ -821,7 +831,19 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache:
     g_free(package_id);
 }
 
-void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+void aptcc::emitUpdateDetails(PkgList &pkgs)
+{
+    for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i)
+    {
+        if (_cancel) {
+            break;
+        }
+
+        emitUpdateDetails(i->first, i->second);
+    }
+}
+
+void aptcc::get_depends(PkgList &output,
 			pkgCache::PkgIterator pkg,
 			bool recursive)
 {
@@ -849,7 +871,7 @@ void aptcc::get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 	}
 }
 
-void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+void aptcc::get_requires(PkgList &output,
 			pkgCache::PkgIterator pkg,
 			bool recursive)
 {
@@ -1621,7 +1643,130 @@ bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 	return true;
 }
 
-bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+PkgList aptcc::resolvePI(gchar **package_ids)
+{
+    gchar *pi;
+    PkgList ret;
+
+    pk_backend_set_status (m_backend, PK_STATUS_ENUM_QUERY);
+    for (uint i = 0; i < g_strv_length(package_ids); i++) {
+        if (_cancel) {
+            break;
+        }
+
+        PkgPair pair;
+        pi = package_ids[i];
+
+        if (pk_package_id_check(pi) == false) {
+            pair.first = packageCache->FindPkg(pi);
+            // Ignore packages that could not be found or that exist only due to dependencies.
+            if (pair.first.end() == true ||
+                (pair.first.VersionList().end() && pair.first.ProvidesList().end())) {
+                continue;
+            }
+
+            pair.second = find_ver(pair.first);
+            // check to see if the provided package isn't virtual too
+            if (pair.second.end() == false) {
+                ret.push_back(pair);
+            }
+
+            pair.second = find_candidate_ver(pair.first);
+            // check to see if the provided package isn't virtual too
+            if (pair.second.end() == false) {
+                ret.push_back(pair);
+            }
+        } else {
+            bool found;
+            pair = find_package_id(pi, found);
+            // check to see if we found the package
+            if (found) {
+                ret.push_back(pair);
+            }
+        }
+    }
+    return ret;
+}
+
+bool aptcc::installDebFiles(const gchar *path, bool simulate)
+{
+    DebFile deb(path);
+    std::string errorMsg;
+    cout << "Name: " << deb.name() << endl;
+    cout << "Version: " << deb.version() << endl;
+    cout << "Architecture: " << deb.architecture() << endl;
+    cout << "Conflicts: " << deb.conflicts() << endl;
+
+//             m_apt->installPackageFiles();
+    cout << "FULL_PATH: " << path << endl;  
+
+    // check architecture
+    if (deb.architecture().empty()) {
+        errorMsg = "No Architecture field in the package";
+        return false;
+    }
+
+    if (deb.architecture().compare("all") != 0 &&
+        deb.architecture().compare(_config->Find("APT::Architecture")) != 0) 
+    {
+        errorMsg = "Wrong architecture ";
+        errorMsg.append(deb.architecture());
+        return false;
+    }
+    
+    // check version
+    pkgCache::PkgIterator pkg = packageCache->FindPkg(deb.name());
+    pkgCache::VerIterator currver = find_ver(pkg);
+    if (currver.end() == false &&
+        currver.VerStr() != NULL &&
+        pkg->CurrentState == pkgCache::State::Installed) {
+        // If the package is already installed compare the versions
+        if (_system != 0) {
+            int ret =
+            _system->VS->DoCmpVersion(currver.VerStr(), currver.VerStr() + strlen(currver.VerStr()),
+                                      deb.version().c_str(), deb.version().c_str() + strlen(deb.version().c_str()));
+            // Don't let the user install older versions
+            errorMsg = "A newer version of ";
+            errorMsg.append(deb.name());
+            errorMsg.append(" is already installed.");
+            cout << "DoCmpVersion" << ret << endl;
+            return false;
+        }
+    }
+  
+    
+// 
+//     // FIXME: this sort of error handling sux
+//     self._failure_string = ""
+// 
+//     // check conflicts
+//     if not self.check_conflicts():
+//         return False
+// 
+//     // check if installing it would break anything on the 
+//     // current system
+//     if not self.check_breaks_existing_packages():
+//         return False
+// 
+//     // try to satisfy the dependencies
+//     if not self._satisfy_depends(self.depends):
+//         return False
+// 
+//     // check for conflicts again (this time with the packages that are
+//     // makeed for install)
+//     if not self.check_conflicts():
+//         return False
+// 
+//     if self._cache._depcache.broken_count > 0:
+//         self._failure_string = _("Failed to satisfy all dependencies "
+//                                     "(broken cache)")
+//         // clean the cache again
+//         self._cache.clear()
+//         return False
+    return true;  
+}
+
+bool aptcc::runTransaction(PkgList &pkgs,
 			   bool simulate,
 			   bool remove)
 {

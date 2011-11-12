@@ -9,12 +9,13 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 aptcc_show_error.cpp \
 				 apt-utils.cpp \
 				 acqprogress.cpp \
+				 deb-file.cpp \
 				 matcher.cpp \
 				 gstMatcher.cpp \
 				 rsources.cpp \
 				 apt.cpp \
 				 pk-backend-aptcc.cpp
-libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg $(PK_PLUGIN_LIBS)
+libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg -lapt-inst $(PK_PLUGIN_LIBS)
 libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GSTREAMER_LIBS)
 libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
 libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(APTCC_CFLAGS) $(GSTREAMER_CFLAGS)
@@ -27,6 +28,7 @@ EXTRA_DIST = 20packagekit \
 	     apt-utils.h \
 	     gstMatcher.h \
 	     matcher.h \
+	     deb-file.h \
 	     aptcc_show_broken.h \
 	     acqprogress.h \
 	     aptcc_show_error.h \

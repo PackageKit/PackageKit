@@ -48,6 +48,9 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
 */
 vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
 
+typedef pair<pkgCache::PkgIterator, pkgCache::VerIterator> PkgPair;
+typedef vector<PkgPair> PkgList;
+
 class pkgProblemResolver;
 class aptcc
 {
@@ -66,6 +69,9 @@ public:
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
+    PkgList resolvePI(gchar **package_ids);
+    bool installDebFiles(const gchar *path, bool simulate);
+
 	/**
 	 *  runs a transaction to install/remove/update packages
 	 *  - for install and update, \p remove should be set to false
@@ -74,21 +80,21 @@ public:
 	 *    \p simulate should be true, in this case packages with
 	 *    what's going to happen will be emitted.
 	 */
-	bool runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+	bool runTransaction(PkgList &pkgs,
 			    bool simulate,
 			    bool remove);
 
 	/**
 	 *  Get depends
 	 */
-	void get_depends(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+	void get_depends(PkgList &output,
 			 pkgCache::PkgIterator pkg,
 			 bool recursive);
 
 	/**
 	 *  Get requires
 	 */
-	void get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+	void get_requires(PkgList &output,
 			  pkgCache::PkgIterator pkg,
 			  bool recursive);
 
@@ -100,22 +106,23 @@ public:
 			  PkBitfield filters = PK_FILTER_ENUM_NONE,
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-	void emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+	void emit_packages(PkgList &output,
 			   PkBitfield filters = PK_FILTER_ENUM_NONE,
 			   PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-	void emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			 PkBitfield filters = PK_FILTER_ENUM_NONE);
+	void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
 	/**
 	 *  Emits details
 	 */
-	void emit_details(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+	void emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitDetails(PkgList &pkgs);
 
 	/**
 	 *  Emits update detail
 	 */
-	void emit_update_detail(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+	void emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitUpdateDetails(PkgList &pkgs);
 
 	/**
 	 *  seems to install packages
@@ -125,14 +132,12 @@ public:
 	/**
 	 *  check which package provides the codec
 	 */
-	void providesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			  gchar **values);
+	void providesCodec(PkgList &output, gchar **values);
 
 	/**
 	 *  check which package provides a shared library
 	 */
-	void providesLibrary(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			  gchar **values);
+	void providesLibrary(PkgList &output, gchar **values);
 
 	pkgRecords    *packageRecords;
 	pkgCache      *packageCache;
@@ -161,7 +166,7 @@ private:
 	void emitChangedPackages(pkgCacheFile &Cache);
 	bool removingEssentialPackages(pkgCacheFile &Cache);
 
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
+	PkgList m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);
 	void emitTransactionPackage(string name, PkInfoEnum state);
 	time_t     m_lastTermAction;
