@@ -63,7 +63,8 @@ public:
 			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
 	{
 		return strcmp(a.first.Name(), b.first.Name()) == 0 &&
-		       strcmp(a.second.VerStr(), b.second.VerStr()) == 0;
+		       strcmp(a.second.VerStr(), b.second.VerStr()) == 0 &&
+		       strcmp(a.second.Arch(), b.second.Arch()) == 0;
 	}
 };
 

@@ -34,11 +34,6 @@
 using namespace std;
 
 /**
-*  Emits files of packages
-*/
-void emit_files (PkBackend *backend, const gchar *pi);
-
-/**
 *  returns a list of packages names
 */
 vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
@@ -123,6 +118,11 @@ public:
 	 */
 	void emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
     void emitUpdateDetails(PkgList &pkgs);
+    
+    /**
+     *  Emits files of packages
+     */
+    void emitFiles(PkBackend *backend, const gchar *pi);
 
 	/**
 	 *  seems to install packages
@@ -166,6 +166,7 @@ private:
 	void emitChangedPackages(pkgCacheFile &Cache);
 	bool removingEssentialPackages(pkgCacheFile &Cache);
 
+    bool m_isMultiArch;
 	PkgList m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);
 	void emitTransactionPackage(string name, PkInfoEnum state);

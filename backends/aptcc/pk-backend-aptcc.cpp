@@ -302,7 +302,7 @@ backend_get_files_thread (PkBackend *backend)
 			return false;
 		}
 
-		emit_files (backend, pi);
+		m_apt->emitFiles(backend, pi);
 	}
 
 	delete m_apt;
@@ -858,6 +858,7 @@ pk_backend_search_files_thread (PkBackend *backend)
 			if (_cancel) {
 			    break;
 			}
+			std::cout << "filename" << i->c_str() << std::endl;
 			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
             if (pkg.end() == true) {
                 continue;

@@ -36,6 +36,7 @@
 #include <apt-pkg/sptr.h>
 #include <apt-pkg/pkgsystem.h>
 #include <apt-pkg/version.h>
+#include <apt-pkg/aptconfiguration.h>
 
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
@@ -71,6 +72,8 @@ bool aptcc::init()
 	gchar *locale;
 	gchar *http_proxy;
 	gchar *ftp_proxy;
+
+    m_isMultiArch = APT::Configuration::getArchitectures(false).size() > 1;
 
 	// Set PackageKit status
 	pk_backend_set_status(m_backend, PK_STATUS_ENUM_LOADING_CACHE);
@@ -191,7 +194,10 @@ pair<pkgCache::PkgIterator, pkgCache::VerIterator>
     found = true;
 
 	parts = pk_package_id_split (package_id);
-	pkg_ver.first = packageCache->FindPkg(parts[PK_PACKAGE_ID_NAME]);
+    gchar *pkgNameArch;
+    pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
+    pkg_ver.first = packageCache->FindPkg(pkgNameArch);
+    g_free(pkgNameArch);
 
 	// Ignore packages that could not be found or that exist only due to dependencies.
 	if (pkg_ver.first.end() == true ||
@@ -265,6 +271,18 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 			state = PK_INFO_ENUM_AVAILABLE;
 		}
 	}
+
+    // Verify if the package supports multiArch
+    // if so we might need to emit
+    bool multiArch;
+    const char *start, *stop;
+    pkgTagSection sec;
+    pkgRecords::Parser &rec = packageRecords->Lookup(ver.FileList());
+    rec.GetRec(start, stop);
+    // add +1 to ensure we have the double lineline in the buffer
+    if (start && sec.Scan(start, stop - start + 1)) {
+        multiArch = sec.FindS("Multi-Arch").empty() ? false : true;
+    }
 
 	if (filters != 0) {
 		std::string str = ver.Section() == NULL ? "" : ver.Section();
@@ -580,6 +598,12 @@ void aptcc::emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIte
 
 void aptcc::emitDetails(PkgList &pkgs)
 {
+    // Sort so we can remove the duplicated entries
+    sort(pkgs.begin(), pkgs.end(), compare());
+    // Remove the duplicated entries
+    pkgs.erase(unique(pkgs.begin(), pkgs.end(), result_equality()),
+               pkgs.end());
+
     for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i)
     {
         if (_cancel) {
@@ -1027,7 +1051,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 }
 
 // used to emit files it reads the info directly from the files
-void emit_files (PkBackend *backend, const gchar *pi)
+void aptcc::emitFiles(PkBackend *backend, const gchar *pi)
 {
 	static string filelist;
 	string line;
@@ -1036,13 +1060,22 @@ void emit_files (PkBackend *backend, const gchar *pi)
 	parts = pk_package_id_split (pi);
 	filelist.erase(filelist.begin(), filelist.end());
 
-	string f = "/var/lib/dpkg/info/" +
-		   string(parts[PK_PACKAGE_ID_NAME]) +
-		   ".list";
-	g_strfreev (parts);
+    string fName;
+    if (m_isMultiArch) {
+         fName = "/var/lib/dpkg/info/" +
+                 string(parts[PK_PACKAGE_ID_NAME]) +
+                 ":" +
+                 string(parts[PK_PACKAGE_ID_ARCH]) +
+                 ".list";
+    } else {
+        fName = "/var/lib/dpkg/info/" +
+                string(parts[PK_PACKAGE_ID_NAME]) +
+                ".list";
+    }
+    g_strfreev (parts);
 
-	if (FileExists(f)) {
-		ifstream in(f.c_str());
+	if (FileExists(fName)) {
+		ifstream in(fName.c_str());
 		if (!in != 0) {
 			return;
 		}
@@ -1714,8 +1747,12 @@ bool aptcc::installDebFiles(const gchar *path, bool simulate)
         return false;
     }
     
+    gchar *pkgNameArch;
+    pkgNameArch = g_strdup_printf("%s:%s", deb.name().c_str(), deb.architecture().c_str());    
+    
     // check version
-    pkgCache::PkgIterator pkg = packageCache->FindPkg(deb.name());
+    pkgCache::PkgIterator pkg = packageCache->FindPkg(pkgNameArch);
+    g_free(pkgNameArch);
     pkgCache::VerIterator currver = find_ver(pkg);
     if (currver.end() == false &&
         currver.VerStr() != NULL &&
