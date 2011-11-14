@@ -570,7 +570,7 @@ backend_get_details_thread (PkBackend *backend)
 						    package.lookupStrAttribute (sat::SolvAttr::license).c_str (),
 						    group,
 						    package.lookupStrAttribute (sat::SolvAttr::description).c_str (),
-						    "TODO", // pkg->url ().c_str (),
+						    package.lookupStrAttribute (sat::SolvAttr::url).c_str (),
 						    size * 1024);
 			}
 
