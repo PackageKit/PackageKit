@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/algorithms.h>
+#include <apt-pkg/aptconfiguration.h>
 
 #include "apt.h"
 #include "apt-utils.h"
@@ -126,12 +127,20 @@ pk_backend_get_groups (PkBackend *backend)
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_FILTER_ENUM_GUI,
-		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_DEVELOPMENT,
-		PK_FILTER_ENUM_FREE,
-		-1);
+    PkBitfield filters;
+    filters = pk_bitfield_from_enums (
+        PK_FILTER_ENUM_GUI,
+        PK_FILTER_ENUM_INSTALLED,
+        PK_FILTER_ENUM_DEVELOPMENT,
+        PK_FILTER_ENUM_FREE,
+        -1);
+
+    // if we have multiArch support we add the native filter
+    if (APT::Configuration::getArchitectures(false).size() > 1) {
+        pk_bitfield_add(filters, PK_FILTER_ENUM_ARCH);
+    }
+
+    return filters;
 }
 
 /**
@@ -919,7 +928,6 @@ pk_backend_search_files_thread (PkBackend *backend)
 			if (_cancel) {
 			    break;
 			}
-			std::cout << "filename" << i->c_str() << std::endl;
 			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
             if (pkg.end() == true) {
                 continue;

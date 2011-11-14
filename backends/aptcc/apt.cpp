@@ -270,16 +270,15 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 		}
 	}
 
-    // Verify if the package supports multiArch
-    // if so we might need to emit
-    bool multiArch;
-    const char *start, *stop;
-    pkgTagSection sec;
-    pkgRecords::Parser &rec = packageRecords->Lookup(ver.FileList());
-    rec.GetRec(start, stop);
-    // add +1 to ensure we have the double lineline in the buffer
-    if (start && sec.Scan(start, stop - start + 1)) {
-        multiArch = sec.FindS("Multi-Arch").empty() ? false : true;
+    if (m_isMultiArch &&
+        (pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH) &&
+         state == PK_INFO_ENUM_AVAILABLE)) {
+        // don't emit the package if it does not match
+        // the native architecture
+        if (strcmp(ver.Arch(), "all") != 0 &&
+            strcmp(ver.Arch(), _config->Find("APT::Architecture").c_str()) != 0) {
+            return;
+        }
     }
 
 	if (filters != 0) {
