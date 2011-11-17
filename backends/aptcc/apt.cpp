@@ -1753,7 +1753,7 @@ bool aptcc::markDebFileForInstall(const gchar *file, PkgList &install, PkgList &
                     &status,
                     &gerror);
     int exit_code = WEXITSTATUS(status);
-    cout << "DebStatus " << exit_code << " WEXITSTATUS " << WEXITSTATUS(status) << " ret: "<< ret << endl;
+//     cout << "DebStatus " << exit_code << " WEXITSTATUS " << WEXITSTATUS(status) << " ret: "<< ret << endl;
     cout << "std_out " << strlen(std_out) << std_out << endl;
     cout << "std_err " << strlen(std_err) << std_err << endl;
 
@@ -1766,17 +1766,26 @@ bool aptcc::markDebFileForInstall(const gchar *file, PkgList &install, PkgList &
         }
         return false;
     } else {
-        // TODO parse lines
-        gchar **packages = g_strsplit(std_out, "\n", 2);
-        cout << "install: " << packages[0] << endl;
-        gchar **installPkgs = g_strsplit(packages[0], " ", 0);
-        gchar **removePkgs = g_strsplit(packages[1], " ", 0);
+        // GDebi outputs two lines
+        gchar **lines = g_strsplit(std_out, "\n", 3);
+
+        // The first line contains the packages to install
+        gchar **installPkgs = g_strsplit(lines[0], " ", 0);
+
+        // The second line contains the packages to remove with '-' appended to
+        // the end of the package name
+        gchar *removeStr = g_strndup(lines[1], strlen(lines[1]) - 1);
+        gchar **removePkgs = g_strsplit(removeStr, "- ", 0);
+
+        // Store the changes
         install = resolvePI(installPkgs);
+        remove = resolvePI(removePkgs);
         m_localDebFile = file;
         
-         g_strfreev(packages);
-         g_strfreev(installPkgs);
-         g_strfreev(removePkgs);
+        g_free(removeStr);
+        g_strfreev(lines);
+        g_strfreev(installPkgs);
+        g_strfreev(removePkgs);
     }
 
     return true;
