@@ -1323,7 +1323,6 @@ void aptcc::updateInterface(int fd, int writeFd)
 
                 gchar *filename;
                 filename = g_build_filename(DATADIR, "PackageKit", "helpers", "aptcc", "pkconffile", NULL);
-                gint exit_code;
                 gchar **argv;
                 gchar **envp;
                 GError *error = NULL;
@@ -1348,6 +1347,7 @@ void aptcc::updateInterface(int fd, int writeFd)
                 }
 
                 gboolean ret;
+                gint exitStatus;
                 ret = g_spawn_sync(NULL, // working dir
                              argv, // argv
                              envp, // envp
@@ -1356,9 +1356,10 @@ void aptcc::updateInterface(int fd, int writeFd)
                              NULL, // user_data
                              NULL, // standard_output
                              NULL, // standard_error
-                             &exit_code,
+                             &exitStatus,
                              &error);
 
+                int exit_code = WEXITSTATUS(exitStatus);
                 cout << filename << " " << exit_code << " ret: "<< ret << endl;
 
                 if (exit_code == 10) {
