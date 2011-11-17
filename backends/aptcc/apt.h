@@ -65,7 +65,7 @@ public:
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
     PkgList resolvePI(gchar **package_ids);
-    bool installDebFiles(const gchar *path, bool simulate);
+    bool markDebFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
 	/**
 	 *  runs a transaction to install/remove/update packages
@@ -75,9 +75,7 @@ public:
 	 *    \p simulate should be true, in this case packages with
 	 *    what's going to happen will be emitted.
 	 */
-	bool runTransaction(PkgList &pkgs,
-			    bool simulate,
-			    bool remove);
+    bool runTransaction(PkgList &install, PkgList &remove, bool simulate);
 
 	/**
 	 *  Get depends
@@ -168,6 +166,7 @@ private:
 
     bool m_isMultiArch;
 	PkgList m_pkgs;
+    string m_localDebFile;
 	void populateInternalPackages(pkgCacheFile &Cache);
 	void emitTransactionPackage(string name, PkInfoEnum state);
 	time_t     m_lastTermAction;

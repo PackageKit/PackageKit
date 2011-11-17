@@ -183,7 +183,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -201,7 +200,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 					       pi);
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -214,7 +212,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "Couldn't find package");
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -229,7 +226,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -284,7 +280,6 @@ backend_get_files_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -296,7 +291,6 @@ backend_get_files_thread (PkBackend *backend)
 					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 					       pi);
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -307,7 +301,6 @@ backend_get_files_thread (PkBackend *backend)
 		{
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -315,7 +308,6 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	delete m_apt;
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -350,7 +342,6 @@ backend_get_details_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -370,7 +361,6 @@ backend_get_details_thread (PkBackend *backend)
     }
 
 	delete m_apt;
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -406,7 +396,6 @@ backend_get_or_update_system_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -437,7 +426,6 @@ backend_get_or_update_system_thread (PkBackend *backend)
 		show_broken(backend, Cache, false);
 		g_debug ("Internal error, DistUpgrade broke stuff");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -469,7 +457,6 @@ backend_get_or_update_system_thread (PkBackend *backend)
 	}
 
 	delete m_apt;
-	pk_backend_finished (backend);
 	return res;
 }
 
@@ -519,7 +506,6 @@ backend_what_provides_thread (PkBackend *backend)
 			g_debug ("Failed to create apt cache");
 			g_strfreev (values);
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -581,9 +567,9 @@ backend_what_provides_thread (PkBackend *backend)
 				       PK_ERROR_ENUM_NOT_SUPPORTED,
 				       "Provides %s not supported",
 				       provides_text);
+        pk_backend_finished (backend);
 	}
 
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -617,7 +603,6 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -658,7 +643,6 @@ pk_backend_download_packages_thread (PkBackend *backend)
 					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 					       pi);
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -707,7 +691,6 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	{
 		show_errors(backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
 		delete m_apt;
-		pk_backend_finished (backend);
 		return _cancel;
 	}
 
@@ -715,7 +698,6 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	pk_backend_files(backend, NULL, filelist.c_str());
 
 	delete m_apt;
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -741,7 +723,6 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -754,7 +735,6 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 		if (_error->PendingError() == true) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "Unable to lock the list directory");
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 	// 	 return _error->Error(_("Unable to lock the list directory"));
 		}
@@ -773,7 +753,6 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 			show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES);
 		}
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -783,7 +762,6 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 		show_warnings(backend, PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE);
 	}
 
-	pk_backend_finished (backend);
 	delete m_apt;
 	return true;
 }
@@ -812,7 +790,6 @@ pk_backend_resolve_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -822,8 +799,6 @@ pk_backend_resolve_thread (PkBackend *backend)
     m_apt->emit_packages(pkgs, filters);
 
 	delete m_apt;
-
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -854,7 +829,6 @@ pk_backend_search_files_thread (PkBackend *backend)
 		if (m_apt->init()) {
 			g_debug ("Failed to create apt cache");
 			delete m_apt;
-			pk_backend_finished (backend);
 			return false;
 		}
 
@@ -882,9 +856,10 @@ pk_backend_search_files_thread (PkBackend *backend)
 		m_apt->emit_packages(output, filters);
 
 		delete m_apt;
-	}
+    } else {
+        pk_backend_finished (backend);
+    }
 
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -926,7 +901,6 @@ backend_search_groups_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -965,10 +939,8 @@ backend_search_groups_thread (PkBackend *backend)
 	// It's faster to emmit the packages here rather than in the matching part
 	m_apt->emit_packages(output, filters);
 
+    pk_backend_set_percentage (backend, 100);
 	delete m_apt;
-
-	pk_backend_set_percentage (backend, 100);
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -1010,7 +982,6 @@ backend_search_package_thread (PkBackend *backend)
 		g_debug ("Failed to create apt cache");
 		delete m_matcher;
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1018,7 +989,6 @@ backend_search_package_thread (PkBackend *backend)
 	{
 		delete m_matcher;
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1097,10 +1067,8 @@ backend_search_package_thread (PkBackend *backend)
 	m_apt->emit_packages(output, filters);
 
 	delete m_matcher;
+    pk_backend_set_percentage (backend, 100);
 	delete m_apt;
-
-	pk_backend_set_percentage (backend, 100);
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -1130,6 +1098,7 @@ backend_manage_packages_thread (PkBackend *backend)
     bool simulate = false;
     bool remove = false;
     bool fileInstall = false;
+    gchar **full_paths = NULL;
 
     PkRoleEnum role = pk_backend_get_role (backend);
     if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
@@ -1144,6 +1113,7 @@ backend_manage_packages_thread (PkBackend *backend)
     }
     if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
         role == PK_ROLE_ENUM_INSTALL_FILES) {
+        full_paths = pk_backend_get_strv (backend, "full_paths");
         fileInstall = true;
     }
 cout << "FILE INSTALL: " << fileInstall << endl;
@@ -1154,74 +1124,69 @@ cout << "FILE INSTALL: " << fileInstall << endl;
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	PkgList pkgs;
-    
-    if (fileInstall ==  false) { 
-        // Resolve the given packages
-        gchar *pi;
-        gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
-        for (uint i = 0; i < g_strv_length(package_ids); i++) {
-            if (_cancel) {
-                break;
-            }
-
-            pi = package_ids[i];
-            if (pk_package_id_check(pi) == false) {
-                pk_backend_error_code (backend,
-                            PK_ERROR_ENUM_PACKAGE_ID_INVALID,
-                            pi);
-                delete m_apt;
-                pk_backend_finished (backend);
-                return false;
-            }
-
-            pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-            bool found;
-            pkg_ver = m_apt->find_package_id(pi, found);
-            // Ignore packages that could not be found or that exist only due to dependencies.
-            if (!found)
-            {
-                pk_backend_error_code (backend,
-                            PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-                            "couldn't find package");
-
-                delete m_apt;
-                pk_backend_finished (backend);
-                return false;
-            } else {
-                pkgs.push_back(pkg_ver);
-            }
-        }
-
-        // TODO verify if some package was found
-        if (!m_apt->runTransaction(pkgs, simulate, remove)) {
-            // Print transaction errors
-            cout << "runTransaction failed" << endl;
+    PkgList installPkgs, removePkgs;
+    if (fileInstall) {
+        // GDebi can not install more than one package at time
+        if (g_strv_length(full_paths) > 1) {
+            pk_backend_error_code(backend,
+                                  PK_ERROR_ENUM_NOT_SUPPORTED,
+                                  "The backend can only proccess one file at time.");
             delete m_apt;
-            pk_backend_finished (backend);
             return false;
         }
+
+        // get the list of packages to install
+        if (!m_apt->markDebFileForInstall(full_paths[0], installPkgs, removePkgs)) {
+            delete m_apt;
+            return false;
+        }
+        cout << "installPkgs.size: " << installPkgs.size() << endl;
+        cout << "removePkgs.size: " << removePkgs.size() << endl;
     } else {
-        // File installation EXPERIMENTAL
-        gchar *path;
-        gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
-        for (uint i = 0; i < g_strv_length(full_paths); i++) {
-            if (_cancel) {
-                break;
-            }
-            
-            path = full_paths[i];
-            cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
+        // Resolve the given packages
+        gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
+        if (remove) {
+            removePkgs = m_apt->resolvePI(package_ids);
+        } else {
+            installPkgs = m_apt->resolvePI(package_ids);
+        }
+
+        if (removePkgs.size() == 0 && installPkgs.size() == 0) {
+            pk_backend_error_code(backend,
+                                  PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                                  "Could not find package(s)");
+            delete m_apt;
+            return false;
         }
     }
 
+    // Install/Update/Remove packages, or just simulate
+    if (!m_apt->runTransaction(installPkgs, removePkgs, simulate)) {
+        // Print transaction errors
+        cout << "runTransaction failed" << endl;
+        delete m_apt;
+        return false;
+    }
+    
+    if (fileInstall) {
+        // File installation EXPERIMENTAL
+//         gchar *path;
+// 
+//         for (uint i = 0; i < g_strv_length(full_paths); i++) {
+//             if (_cancel) {
+//                 break;
+//             }
+//             
+//             path = full_paths[i];
+//             cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
+//         }
+    }
+
 	delete m_apt;
-	pk_backend_finished (backend);
 	return true;
 }
 
@@ -1433,7 +1398,6 @@ backend_get_packages_thread (PkBackend *backend)
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
 		delete m_apt;
-		pk_backend_finished (backend);
 		return false;
 	}
 
@@ -1461,8 +1425,6 @@ backend_get_packages_thread (PkBackend *backend)
 	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
-
-	pk_backend_finished (backend);
 	return true;
 }
 

@@ -10,6 +10,7 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 apt-utils.cpp \
 				 acqprogress.cpp \
 				 deb-file.cpp \
+				 dpkgpm.cpp \
 				 matcher.cpp \
 				 gstMatcher.cpp \
 				 rsources.cpp \
@@ -29,6 +30,7 @@ EXTRA_DIST = 20packagekit \
 	     gstMatcher.h \
 	     matcher.h \
 	     deb-file.h \
+	     dpkgpm.h \
 	     aptcc_show_broken.h \
 	     acqprogress.h \
 	     aptcc_show_error.h \

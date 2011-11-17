@@ -28,6 +28,7 @@
 #include "pkg_acqfile.h"
 #include "aptcc_show_error.h"
 #include "deb-file.h"
+#include "dpkgpm.h"
 
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
@@ -169,6 +170,8 @@ aptcc::~aptcc()
 	{
 		delete packageSourceList;
 	}
+
+    pk_backend_finished(m_backend);
 
 	delete Map;
 }
@@ -1424,7 +1427,6 @@ void aptcc::updateInterface(int fd, int writeFd)
 
                 gchar *filename;
                 filename = g_build_filename(DATADIR, "PackageKit", "helpers", "aptcc", "pkconffile", NULL);
-                gint exit_code;
                 gchar **argv;
                 gchar **envp;
                 GError *error = NULL;
@@ -1449,6 +1451,7 @@ void aptcc::updateInterface(int fd, int writeFd)
                 }
 
                 gboolean ret;
+                gint exitStatus;
                 ret = g_spawn_sync(NULL, // working dir
                              argv, // argv
                              envp, // envp
@@ -1457,9 +1460,10 @@ void aptcc::updateInterface(int fd, int writeFd)
                              NULL, // user_data
                              NULL, // standard_output
                              NULL, // standard_error
-                             &exit_code,
+                             &exitStatus,
                              &error);
 
+                int exit_code = WEXITSTATUS(exitStatus);
                 cout << filename << " " << exit_code << " ret: "<< ret << endl;
 
                 if (exit_code == 10) {
@@ -1720,91 +1724,65 @@ PkgList aptcc::resolvePI(gchar **package_ids)
     return ret;
 }
 
-bool aptcc::installDebFiles(const gchar *path, bool simulate)
+bool aptcc::markDebFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
 {
-    DebFile deb(path);
-    std::string errorMsg;
-    cout << "Name: " << deb.name() << endl;
-    cout << "Version: " << deb.version() << endl;
-    cout << "Architecture: " << deb.architecture() << endl;
-    cout << "Conflicts: " << deb.conflicts() << endl;
+    // We call gdebi to tell us what do we need to install/remove
+    // in order to be able to install this package
+    gint status;
+    gchar **argv;
+    gchar **envp;
+    gchar *std_out;
+    gchar *std_err;
+    GError *gerror = NULL;
+    argv = (gchar **) g_malloc(5 * sizeof(gchar *));
+    argv[0] = g_strdup("/usr/bin/gdebi");
+    argv[1] = g_strdup("-q");
+    argv[2] = g_strdup("--apt-line");
+    argv[3] = g_strdup(file);
+    argv[4] = NULL;
 
-//             m_apt->installPackageFiles();
-    cout << "FULL_PATH: " << path << endl;  
+    gboolean ret;
+    ret = g_spawn_sync(NULL, // working dir
+                    argv, // argv
+                    envp, // envp
+                    G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
+                    NULL, // child_setup
+                    NULL, // user_data
+                    &std_out, // standard_output
+                    &std_err, // standard_error
+                    &status,
+                    &gerror);
+    int exit_code = WEXITSTATUS(status);
+    cout << "DebStatus " << exit_code << " WEXITSTATUS " << WEXITSTATUS(status) << " ret: "<< ret << endl;
+    cout << "std_out " << strlen(std_out) << std_out << endl;
+    cout << "std_err " << strlen(std_err) << std_err << endl;
 
-    // check architecture
-    if (deb.architecture().empty()) {
-        errorMsg = "No Architecture field in the package";
-        return false;
-    }
-
-    if (deb.architecture().compare("all") != 0 &&
-        deb.architecture().compare(_config->Find("APT::Architecture")) != 0) 
-    {
-        errorMsg = "Wrong architecture ";
-        errorMsg.append(deb.architecture());
-        return false;
-    }
-    
-    gchar *pkgNameArch;
-    pkgNameArch = g_strdup_printf("%s:%s", deb.name().c_str(), deb.architecture().c_str());    
-    
-    // check version
-    pkgCache::PkgIterator pkg = packageCache->FindPkg(pkgNameArch);
-    g_free(pkgNameArch);
-    pkgCache::VerIterator currver = find_ver(pkg);
-    if (currver.end() == false &&
-        currver.VerStr() != NULL &&
-        pkg->CurrentState == pkgCache::State::Installed) {
-        // If the package is already installed compare the versions
-        if (_system != 0) {
-            int ret =
-            _system->VS->DoCmpVersion(currver.VerStr(), currver.VerStr() + strlen(currver.VerStr()),
-                                      deb.version().c_str(), deb.version().c_str() + strlen(deb.version().c_str()));
-            // Don't let the user install older versions
-            errorMsg = "A newer version of ";
-            errorMsg.append(deb.name());
-            errorMsg.append(" is already installed.");
-            cout << "DoCmpVersion" << ret << endl;
-            return false;
+    PkgList pkgs;
+    if (exit_code == 1) {
+        if (strlen(std_out) == 0) {
+            pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, std_err);
+        } else {
+            pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, std_out);
         }
+        return false;
+    } else {
+        // TODO parse lines
+        gchar **packages = g_strsplit(std_out, "\n", 2);
+        cout << "install: " << packages[0] << endl;
+        gchar **installPkgs = g_strsplit(packages[0], " ", 0);
+        gchar **removePkgs = g_strsplit(packages[1], " ", 0);
+        install = resolvePI(installPkgs);
+        m_localDebFile = file;
+        
+         g_strfreev(packages);
+         g_strfreev(installPkgs);
+         g_strfreev(removePkgs);
     }
-  
-    
-// 
-//     // FIXME: this sort of error handling sux
-//     self._failure_string = ""
-// 
-//     // check conflicts
-//     if not self.check_conflicts():
-//         return False
-// 
-//     // check if installing it would break anything on the 
-//     // current system
-//     if not self.check_breaks_existing_packages():
-//         return False
-// 
-//     // try to satisfy the dependencies
-//     if not self._satisfy_depends(self.depends):
-//         return False
-// 
-//     // check for conflicts again (this time with the packages that are
-//     // makeed for install)
-//     if not self.check_conflicts():
-//         return False
-// 
-//     if self._cache._depcache.broken_count > 0:
-//         self._failure_string = _("Failed to satisfy all dependencies "
-//                                     "(broken cache)")
-//         // clean the cache again
-//         self._cache.clear()
-//         return False
-    return true;  
+
+    return true;
 }
 
-bool aptcc::runTransaction(PkgList &pkgs,
-			   bool simulate,
-			   bool remove)
+bool aptcc::runTransaction(PkgList &install, PkgList &remove, bool simulate)
 {
 	//cout << "runTransaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
@@ -1841,24 +1819,37 @@ bool aptcc::runTransaction(PkgList &pkgs,
 	// new scope for the ActionGroup
 	{
 		pkgDepCache::ActionGroup group(Cache);
-		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
-		    i != pkgs.end();
-		    ++i)
-		{
-			pkgCache::PkgIterator Pkg = i->first;
-			if (_cancel) {
-				break;
-			}
+        for(PkgList::iterator i = install.begin(); i != install.end(); ++i) {
+            pkgCache::PkgIterator Pkg = i->first;
+            if (_cancel) {
+                break;
+            }
 
-			if (TryToInstall(Pkg,
-					 Cache,
-					 Fix,
-					 remove,
-					 BrokenFix,
-					 ExpectedInst) == false) {
-				return false;
-			}
-		}
+            if (TryToInstall(Pkg,
+                     Cache,
+                     Fix,
+                     false, // remove
+                     BrokenFix,
+                     ExpectedInst) == false) {
+                return false;
+            }
+        }
+        
+        for(PkgList::iterator i = remove.begin(); i != remove.end(); ++i) {
+            pkgCache::PkgIterator Pkg = i->first;
+            if (_cancel) {
+                break;
+            }
+
+            if (TryToInstall(Pkg,
+                     Cache,
+                     Fix,
+                     true, // remove
+                     BrokenFix,
+                     ExpectedInst) == false) {
+                return false;
+            }
+        }
 
 		// Call the scored problem resolver
 		Fix.InstallProtect();
@@ -1969,7 +1960,8 @@ bool aptcc::installPackages(pkgCacheFile &Cache)
 	fetcher.Setup(&Stat);
 
 	// Create the package manager and prepare to download
-	SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
+//     SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
+    SPtr<pkgPackageManager> PM = new pkgDebDPkgPM(Cache);
 	if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
 	    _error->PendingError() == true) {
 		return false;
@@ -2090,6 +2082,12 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	// we could try to see if this is the case
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 	_system->UnLock();
+
+    if (!m_localDebFile.empty()) {
+        // add the local file name to be proccessed by the PM queue
+        pkgDebDPkgPM *pm = static_cast<pkgDebDPkgPM*>(&*PM);
+        pm->addDebFile(m_localDebFile);
+    }
 
 	pkgPackageManager::OrderResult res;
 	res = PM->DoInstallPreFork();
