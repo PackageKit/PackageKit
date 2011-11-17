@@ -903,6 +903,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
             return [ "postscriptdriver(%s)" % value ]
         if provides_type == PROVIDES_PLASMA_SERVICE:
+            # We need to allow the Plasma version to be specified.
+            if value.startswith("plasma"):
+                return [ value ]
+            # For compatibility, we default to plasma4.
             return [ "plasma4(%s)" % value ]
         if provides_type == PROVIDES_ANY:
             provides = []
