@@ -546,9 +546,8 @@ NP_Shutdown ()
 const char *
 NP_GetMIMEDescription (void)
 {
-	pk_debug ("NP_GetMIMEDescription");
-
-	return (gchar*) "application/x-packagekit-plugin:bsc:PackageKit Plugin";
+	g_debug ("NP_GetMIMEDescription");
+	return (const gchar*) "application/x-packagekit-plugin:bsc:PackageKit Plugin";
 }
 
 /**

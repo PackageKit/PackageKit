@@ -355,9 +355,9 @@ AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build br
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
-			  mozilla-plugin	\
+			  mozilla-plugin >= 8.0	\
 			  gio-unix-2.0		\
-			  nspr \
+			  nspr >= 4.8		\
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0	\
@@ -661,7 +661,7 @@ if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
 		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
-			       "Meta release is available"), 
+			       "Meta release is available"),
 		     AC_MSG_WARN([Distro upgrade notification not supported]))
 	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
 		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
@@ -697,7 +697,7 @@ if test x$enable_aptcc = xyes; then
 			  AC_MSG_RESULT([yes]),
 			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
 
-	AC_MSG_CHECKING([whether apt supports ddtp]) 
+	AC_MSG_CHECKING([whether apt supports ddtp])
 
 	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
 					  [[pkgCache::DescIterator d;]]),
