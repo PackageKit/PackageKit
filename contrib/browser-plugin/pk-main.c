@@ -503,11 +503,11 @@ NP_Shutdown ()
 /**
  * NP_GetMIMEDescription:
  **/
-char *
+const char *
 NP_GetMIMEDescription (void)
 {
 	g_debug ("NP_GetMIMEDescription");
-	return (gchar*) "application/x-packagekit-plugin:bsc:PackageKit Plugin";
+	return (const gchar*) "application/x-packagekit-plugin:bsc:PackageKit Plugin";
 }
 
 /**

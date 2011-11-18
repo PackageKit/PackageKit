@@ -354,9 +354,9 @@ AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build br
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
-			  mozilla-plugin	\
+			  mozilla-plugin >= 8.0	\
 			  gio-unix-2.0		\
-			  nspr \
+			  nspr >= 4.8		\
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0,
@@ -636,7 +636,7 @@ if test x$enable_aptcc = xyes; then
 
 	AC_SUBST(APTCC_CFLAGS)
 	AC_SUBST(APTCC_LIBS)
-	
+
     AC_CHECK_LIB(apt-inst, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
     AC_SUBST(APTCC_CFLAGS)
     AC_SUBST(APTCC_LIBS)
