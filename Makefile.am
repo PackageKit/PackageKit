@@ -16,6 +16,9 @@ SUBDIRS = 						\
 	docs						\
 	$(NULL)
 
+GITIGNOREFILES =				\
+	.moc.version
+
 clean-local :
 	rm -f *~
 
