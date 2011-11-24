@@ -1706,10 +1706,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         signed = False
         try:
             repo = self.yumbase.repos.getRepo(pkg.repoid)
-            if hasattr(repo, "gpgcheck"):
-                signed = repo.gpgcheck
-            else:
+            if hasattr(repo, "_override_sigchecks"):
+                # yum >= 3.2.29
                 signed = not repo._override_sigchecks
+            else:
+                # yum < 3.2.29
+                signed = repo.gpgcheck
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
