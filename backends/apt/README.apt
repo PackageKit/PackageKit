@@ -1,0 +1,23 @@
+The name of this backend is apt
+
+It supports the Advanced Packaging Tool used by Debian and its derivates. The
+implementation was done in Python. The communication between the daemon and
+the backend process happens via stdin and stdout, it is a so called spawned
+backend using a dispatcher to allow the execution of several commands in a row.
+
+To provide a tremendously fast search function a Xapian database is used.
+It is provided by Enrico Zini's apt-xapian-index. Debtags will be used to 
+enhance the quality of the search results further.
+
+A list of implemented functions are listed in the PackageKit FAQ:
+
+http://www.packagekit.org/pk-faq.html
+
+You can find packages for Ubuntu here:
+
+https://www.launchpad.net/~packagekit/+ppa
+
+Packages for Debian Unstable will be provided soon.
+
+Feel free to send comments or bug reports to the PackageKit mailing list
+or to the author.

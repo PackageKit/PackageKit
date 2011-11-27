@@ -1,0 +1,27 @@
+ISSUES:
+
+ * Support delayed or hidden debconf questions
+
+Unresolved issues can be discussed at the following wiki page:
+http://wiki.debian.org/PackageKit
+
+
+TODO:
+
+ * Implement all open backend methods. A list of implemented backend methods 
+   can be found in PackageKit FAQ or in pk-backend-apt.c.
+
+ * Blacklist packages requiring input on the terminal and try to change
+   the Debian policy in the long run. Way of automation?
+ 
+ * Allow to reinject debtags into the search results to get 
+   similar software which not matches on the search terms
+
+ * Index file list and add properties for package name and section to
+   the xapian database to also make use of it in search group and 
+   search name (do we want this?)
+
+ * Test and think about packages from cdroms
+
+ * Talk to Sebastian Dröge about his new codec search implementation using
+   debtags
