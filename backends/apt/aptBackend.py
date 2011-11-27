@@ -21,6 +21,8 @@ import datetime
 import errno
 import fcntl
 import gdbm
+import glob
+import gzip
 import httplib
 import locale
 import logging
@@ -45,6 +47,7 @@ from packagekit.backend import *
 from packagekit.progress import *
 from packagekit.package import *
 from packagekit.enums import *
+from packagekit import enums
 
 logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
@@ -521,9 +524,9 @@ if REPOS_SUPPORT == True:
 
 
 class PackageKitAptBackend(PackageKitBaseBackend):
-    """
-    PackageKit backend for apt
-    """
+
+    """PackageKit backend for APT"""
+
     def __init__(self, args):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, self._sigquit)
@@ -540,10 +543,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def search_file(self, filters, filenames):
         """Search for files in packages.
 
-        Works only for installed file if apt-file isn't installed.
+        Works only for installed files if apt-file isn't installed.
         """
         pklog.info("Searching for file: %s" % filenames)
-        self.status(STATUS_QUERY)
+        self.status(enums.STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
@@ -552,8 +555,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Optionally make use of apt-file's Contents cache to search for not
         # installed files. But still search for installed files additionally
         # to make sure that we provide up-to-date results
-        if os.path.exists("/usr/bin/apt-file") and \
-           FILTER_INSTALLED not in filters:
+        if (os.path.exists("/usr/bin/apt-file") and
+            enums.FILTER_INSTALLED not in filters):
             #FIXME: Make use of rapt-file on Debian if the network is available
             #FIXME: Show a warning to the user if the apt-file cache is several
             #       weeks old
@@ -579,7 +582,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 result_names.update(stdout.split())
                 self._emit_visible_packages_by_name(filters, result_names)
             else:
-                self.error(ERROR_INTERNAL_ERROR,
+                self.error(enums.ERROR_INTERNAL_ERROR,
                            format_string("%s %s" % (stdout, stderr)))
         # Search for installed files
         filenames_regex = []
@@ -599,11 +602,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     break
 
     def search_group(self, filters, groups):
-        """
-        Implement the apt2-search-group functionality
-        """
+        """Search packages by their group."""
         pklog.info("Searching for groups: %s" % groups)
-        self.status(STATUS_QUERY)
+        self.status(enums.STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
@@ -613,16 +614,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_visible_package(filters, pkg)
 
     def search_name(self, filters, values):
-        """
-        Implement the apt2-search-name functionality
-        """
+        """Search packages by name."""
         def matches(searches, text):
             for search in searches:
                 if not search in text:
                     return False
             return True
         pklog.info("Searching for package name: %s" % values)
-        self.status(STATUS_QUERY)
+        self.status(enums.STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
@@ -633,11 +632,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                     self._cache[pkg_name])
 
     def search_details(self, filters, values):
-        """
-        Implement the apt2-search-details functionality
-        """
+        """Search packages by details."""
         pklog.info("Searching for package details: %s" % values)
-        self.status(STATUS_QUERY)
+        self.status(enums.STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
@@ -656,8 +653,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             enquire = xapian.Enquire(db)
             enquire.set_query(query)
             matches = enquire.get_mset(0, 1000)
-            for pkg_name in (match[xapian.MSET_DOCUMENT].get_data() \
-                             for match in enquire.get_mset(0,1000)):
+            for pkg_name in (match.document.get_data()
+                             for match in enquire.get_mset(0, 1000)):
                 if pkg_name in self._cache:
                     self._emit_visible_package(filters, self._cache[pkg_name])
         else:
@@ -683,7 +680,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-get-distro-upgrades functionality
         """
         pklog.info("Get distro upgrades")
-        self.status(STATUS_INFO)
+        self.status(enums.STATUS_INFO)
         self.allow_cancel(False)
         self.percentage(None)
 
@@ -706,19 +703,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             time.sleep(1)
         #FIXME: Add support for description
         if meta_release.new_dist != None:
-            self.distro_upgrade("stable", 
+            self.distro_upgrade("stable",
                                 "%s %s" % (meta_release.new_dist.name,
                                            meta_release.new_dist.version),
                                 "The latest stable release")
 
     def get_updates(self, filters):
-        """
-        Implement the {backend}-get-update functionality.
-
-        Only report updates which can be installed safely: Which can depend
-        on the installation of additional packages but which don't require
-        the removal of already installed packages or block any other update.
-        """
+        """Get available package updates."""
         def succeeds_security_update(pkg):
             """
             Return True if an update succeeds a previous security update
@@ -729,11 +720,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             """
             for version in pkg.versions:
                 # Only check versions between the installed and the candidate
-                if pkg.installed and \
-                   apt_pkg.VersionCompare(version.version,
-                                          pkg.installed.version) <= 0 and \
-                   apt_pkg.VersionCompare(version.version,
-                                          pkg.candidate.version) > 0:
+                if (pkg.installed and
+                    apt_pkg.version_compare(version.version,
+                                            pkg.installed.version) <= 0 and
+                    apt_pkg.version_compare(version.version,
+                                            pkg.candidate.version) > 0):
                     continue
                 for origin in version.origins:
                     if origin.origin in ["Debian", "Ubuntu"] and \
@@ -744,17 +735,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
-        self.status(STATUS_QUERY)
+        self.status(enums.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
         # Start with a safe upgrade
-        self._cache.upgrade()
-        upgrades_safe = self._cache.getChanges()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for upgrade in upgrades_safe:
-            resolver.clear(upgrade)
-            resolver.protect(upgrade)
+        self._cache.upgrade(dist_upgrade=True)
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
         for pkg in self._cache:
@@ -762,48 +748,33 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 continue
             # This may occur on pinned packages which have been updated to
             # later version than the pinned one
-            if not pkg.candidateOrigin:
+            if not pkg.candidate.origins:
                 continue
-            pklog.debug("Checking upgrade of %s" % pkg.name)
-            if not pkg in upgrades_safe:
-                # Check if the upgrade would require the removal of an already
-                # installed package. If this is the case it will be skipped
-                resolver.clear(pkg)
-                resolver.protect(pkg)
-                resolver.install_protect()
-                try:
-                    resolver.resolve()
-                except:
-                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    resolver.clear(pkg)
-                    self._cache.clear()
-                    continue
-                if self._cache.delete_count:
-                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    resolver.clear(pkg)
-                    self._cache.clear()
-                    continue
+            if not pkg.marked_upgrade:
+                #FIXME: Would be nice to have a reason here why
+                self._emit_package(pkg, enums.INFO_BLOCKED,
+                                   force_candidate=True)
             # The update can be safely installed
-            info = INFO_NORMAL
+            info = enums.INFO_NORMAL
             # Detect the nature of the upgrade (e.g. security, enhancement)
-            archive = pkg.candidateOrigin[0].archive
-            origin = pkg.candidateOrigin[0].origin
-            trusted = pkg.candidateOrigin[0].trusted
-            label = pkg.candidateOrigin[0].label
+            candidate_origin = pkg.candidate.origins[0]
+            archive = candidate_origin.archive
+            origin = candidate_origin.origin
+            trusted =candidate_origin.trusted
+            label = candidate_origin.label
             if origin in ["Debian", "Ubuntu"] and trusted == True:
-                if archive.endswith("-security") or \
-                    label == "Debian-Security":
-                    info = INFO_SECURITY
+                if archive.endswith("-security") or label == "Debian-Security":
+                    info = enums.INFO_SECURITY
                 elif succeeds_security_update(pkg):
                     pklog.debug("Update of %s succeeds a security update. "
                                 "Raising its priority." % pkg.name)
-                    info = INFO_SECURITY
+                    info = enums.INFO_SECURITY
                 elif archive.endswith("-backports"):
-                    info = INFO_ENHANCEMENT
+                    info = enums.INFO_ENHANCEMENT
                 elif archive.endswith("-updates"):
-                    info = INFO_BUGFIX
+                    info = enums.INFO_BUGFIX
             if origin in ["Backports.org archive"] and trusted == True:
-                info = INFO_ENHANCEMENT
+                info = enums.INFO_ENHANCEMENT
             self._emit_package(pkg, info, force_candidate=True)
         self._cache.clear()
 
@@ -812,8 +783,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-get-update-details functionality
         """
         def get_bug_urls(changelog):
-            """
-            Create a list of urls pointing to closed bugs in the changelog
+            """Return a list of urls pointing to closed bugs in the
+            changelog.
             """
             urls = []
             for r in re.findall(MATCH_BUG_CLOSES_DEBIAN, changelog,
@@ -827,22 +798,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return urls
 
         def get_cve_urls(changelog):
-            """
-            Create a list of urls pointing to cves referred in the changelog
+            """Return a list of urls pointing to CVEs reports referred to in
+            the changelog.
             """
             return map(lambda c: HREF_CVE % c,
                        re.findall(MATCH_CVE, changelog, re.MULTILINE))
 
         pklog.info("Get update details of %s" % pkg_ids)
-        self.status(STATUS_DOWNLOAD_CHANGELOG)
+        self.status(enums.STATUS_DOWNLOAD_CHANGELOG)
         self.percentage(0)
         self.allow_cancel(True)
         self._check_init(None)
         total = len(pkg_ids)
-        count = 1
-        for pkg_id in pkg_ids:
+        for count, pkg_id in enumerate(pkg_ids):
             self.percentage(count * 100 / total)
-            count += 1
             pkg = self._get_package_by_id(pkg_id)
             # FIXME add some real data
             if pkg.installed.origins:
@@ -862,13 +831,42 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             #FIXME: make this more configurable. E.g. a dbus update requires
             #       a reboot on Ubuntu but not on Debian
             if pkg.name.startswith("linux-image-") or \
-               pkg.name in ["libc6", "dbus"]:
-                restart == RESTART_SYSTEM
-            changelog_raw = pkg.getChangelog()
-            # The internal download error string of python-apt ist not
-            # provided as unicode object
-            if not isinstance(changelog_raw, unicode):
-                changelog_raw = changelog_raw.decode("UTF-8")
+               pkg.name in ["libc6"]:
+                restart == enums.RESTART_SYSTEM
+            #FIXME: Should be part of python-apt
+            changelog_dir = apt_pkg.config.find_dir("Dir::Cache::Changelogs")
+            if changelog_dir == "/":
+                changelog_dir = os.path.join(apt_pkg.config.find_dir("Dir::"
+                                                                     "Cache"),
+                                             "Changelogs")
+            filename = os.path.join(changelog_dir,
+                                    "%s_%s.gz" % (pkg.name,
+                                                  pkg.candidate.version))
+            changelog_raw = ""
+            if os.path.exists(filename):
+                pklog.debug("Reading changelog from cache")
+                changelog_file = gzip.open(filename, "rb")
+                try:
+                    changelog_raw = changelog_file.read().decode("UTF-8")
+                finally:
+                    changelog_file.close()
+            if not changelog_raw:
+                pklog.debug("Downloading changelog")
+                changelog_raw = pkg.get_changelog()
+                # The internal download error string of python-apt ist not
+                # provided as unicode object
+                if not isinstance(changelog_raw, unicode):
+                    changelog_raw = changelog_raw.decode("UTF-8")
+                else:
+                    # Write the changelog to the cache
+                    if not os.path.exists(changelog_dir):
+                        os.makedirs(changelog_dir)
+                    # Remove obsolete cached changelogs
+                    pattern = os.path.join(changelog_dir, "%s_*.gz" % pkg.name)
+                    for old_changelog in glob.glob(pattern):
+                        os.rm(os.path.join(changelog_dir, old_changelog))
+                    with gzip.open(filename, mode="wb") as changelog_file:
+                        changelog_file.write(changelog_raw.encode("UTF-8"))
             # Convert the changelog to markdown syntax
             changelog = u""
             for line in changelog_raw.split("\n"):
@@ -908,15 +906,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                state, issued, updated)
 
     def get_details(self, pkg_ids):
-        """
-        Implement the {backend}-get-details functionality
-        """
+        """Emit details about packages."""
         pklog.info("Get details of %s" % pkg_ids)
-        self.status(STATUS_INFO)
+        self.status(enums.STATUS_INFO)
         self.percentage(None)
         self.allow_cancel(True)
         self._check_init(progress=False)
-        for pkg_id in pkg_ids:
+        total = len(pkg_ids)
+        for count, pkg_id in enumerate(pkg_ids):
+            self.percentage(count * 100 / total)
             pkg = self._get_package_by_id(pkg_id)
             #FIXME: We need more fine grained license information!
             candidate = pkg.candidateOrigin
@@ -934,80 +932,42 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @lock_cache
     def update_system(self, only_trusted):
-        """
-        Implement the {backend}-update-system functionality
-        """
+        """Upgrade the system."""
         pklog.info("Upgrading system")
-        self.status(STATUS_UPDATE)
+        self.status(enums.STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,5))
         # Start with protecting all safe upgrades
         self._cache.upgrade()
-        upgrades_safe = self._cache.getChanges()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for upgrade in upgrades_safe:
-            resolver.clear(upgrade)
-            resolver.protect(upgrade)
-        # Search for upgrades which are not already part of the safe upgrade
-        # but would only require the installation of additional packages
-        for pkg in self._cache:
-            if not pkg.isUpgradable or pkg in upgrades_safe:
-                continue
-            pklog.debug("Checking upgrade of %s" % pkg.name)
-            resolver.clear(pkg)
-            resolver.protect(pkg)
-            resolver.install_protect()
-            try:
-                resolver.resolve()
-            except:
-                resolver.clear(pkg)
-                self._cache.clear()
-                continue
-            if self._cache.delete_count:
-                resolver.clear(pkg)
-                self._cache.clear()
-                continue
-        resolver.install_protect()
-        resolver.resolve()
+        #FIXME: Emit message about skipped updates
+#        for pkg in self._cache:
+#            if pkg.is_upgradable and pkg.marked_upgrade:
+#                continue
         self._check_trusted(only_trusted)
         self._commit_changes()
 
     @lock_cache
     def remove_packages(self, allow_deps, auto_remove, ids):
-        """
-        Implement the {backend}-remove functionality
-        """
+        """Remove packages."""
         pklog.info("Removing package(s): id %s" % ids)
-        self.status(STATUS_REMOVE)
+        self.status(enums.STATUS_REMOVE)
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
         if auto_remove:
             auto_removables = [pkg.name for pkg in self._cache \
-                               if pkg.isAutoRemovable]
+                               if pkg.is_auto_removable]
         pkgs = self._mark_for_removal(ids)
-        # Error out if the installation would the installation or upgrade of
-        # other packages
-        if self._cache.install_count:
-            installed = [pkg.name for pkg in self._cache.getChanges() if \
-                         pkg.markedInstall or pkg.markedUpgrade]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages would have to upgraded or "
-                       "installed and so block the removal: "
-                       "%s" % " ".join(installed))
         # Check if the removal would remove further packages
         if not allow_deps and self._cache.delete_count != len(ids):
-            dependencies = [pkg.name for pkg in self._cache.getChanges() \
+            dependencies = [pkg.name for pkg in self._cache.get_changes() \
                             if pkg.name not in pkgs]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
+            self.error(enums.ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would have also to be removed: "
                        "%s" % " ".join(dependencies))
-        # Check for no longer required dependencies which should be removed too
         if auto_remove:
-            for pkg in self._cache:
-                if pkg.isAutoRemovable and pkg.name not in auto_removables:
-                    pkg.markDelete(False)
+            self._check_obsoleted_dependencies()
         #FIXME: Should support only_trusted
         self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
@@ -1017,10 +977,49 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "%s is still installed" % p)
         self.percentage(100)
 
+    def _check_obsoleted_dependencies(self):
+        """Check for no longer required dependencies which should be removed
+        too.
+        """
+        installed_deps = set()
+        with self._cache.actiongroup():
+            for pkg in self._cache:
+                if pkg.marked_delete:
+                    installed_deps = self._installed_dependencies(pkg_names,
+                                                                 installed_deps)
+            for dep_name in installed_deps:
+                if dep_name in self._cache:
+                    pkg = self._cache[dep_name]
+                    if pkg.is_installed and pkg.is_auto_removeable:
+                        pkg.mark_delete(False)
+
+    def _installed_depencencies(self, pkg_name, all_deps=None):
+        """Recursivly return all installed dependencies of a given package."""
+        #FIXME: Should be part of python-apt
+        #       apt.packagek.Version.get_dependencies(recursive=True)
+        if not all_deps:
+            all_deps = set()
+        if not pkg_name in self._cache:
+            return all_deps
+        cur = self._cache[pkg_name]._pkg.current_ver
+        if not cur:
+            return all_deps
+        for sec in ("PreDepends", "Depends", "Recommends"):
+            try:
+                for dep in cur.depends_list[sec]:
+                    dep_name = dep[0].target_pkg.name
+                    if not dep_name in all_deps:
+                        all_deps.add(dep_name)
+                        all_deps |= self._installed_dependencies(dep_name,
+                                                                 all_deps)
+            except KeyError:
+                pass
+        return all_deps
+
     def simulate_remove_packages(self, ids):
         """Emit the change required for the removal of the given packages."""
         pklog.info("Simulating removal of package with id %s" % ids)
-        self.status(STATUS_DEP_RESOLVE)
+        self.status(enums.STATUS_DEP_RESOLVE)
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
@@ -1030,34 +1029,33 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def _mark_for_removal(self, ids):
         """Resolve the given package ids and mark the packages for removal."""
         pkgs = []
-        action_group = self._cache.actiongroup()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for id in ids:
-            version = self._get_version_by_id(id)
-            pkg = version.package
-            if not pkg.isInstalled:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                           "Package %s isn't installed" % pkg.name)
-            if pkg.installed != version:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                           "Version %s of %s isn't installed" % \
-                           (version.version, pkg.name))
-            if pkg.essential == True:
-                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
-                           "Package %s cannot be removed." % pkg.name)
-            pkgs.append(pkg.name[:])
-            pkg.markDelete(False, False)
-            resolver.clear(pkg)
-            resolver.protect(pkg)
-            resolver.remove(pkg)
-        try:
-            resolver.resolve()
-        except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages would break and so block the "
-                       "removal: %s" % " ".join(broken))
-        action_group.release()
+        with self._cache.actiongroup():
+            resolver = apt.cache.ProblemResolver(self._cache)
+            for id in ids:
+                version = self._get_version_by_id(id)
+                pkg = version.package
+                if not pkg.isInstalled:
+                    self.error(enums.ERROR_PACKAGE_NOT_INSTALLED,
+                               "Package %s isn't installed" % pkg.name)
+                if pkg.installed != version:
+                    self.error(enums.ERROR_PACKAGE_NOT_INSTALLED,
+                               "Version %s of %s isn't installed" % \
+                               (version.version, pkg.name))
+                if pkg.essential == True:
+                    self.error(enums.ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                               "Package %s cannot be removed." % pkg.name)
+                pkgs.append(pkg.name[:])
+                pkg.markDelete(False, False)
+                resolver.clear(pkg)
+                resolver.protect(pkg)
+                resolver.remove(pkg)
+            try:
+                resolver.resolve()
+            except SystemError, error:
+                broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
+                self.error(enums.ERROR_DEP_RESOLUTION_FAILED,
+                           "The following packages would break and so block"
+                           "the removal: %s" % " ".join(broken))
         return pkgs
 
     def get_repo_list(self, filters):
@@ -1068,17 +1066,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                low level access using pure aptsources?
         """
         pklog.info("Getting repository list: %s" % filters)
-        self.status(STATUS_INFO)
+        self.status(enums.STATUS_INFO)
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
             if self._cache.has_key("python-software-properties") and \
                self._cache["python-software-properties"].isInstalled == False:
-                self.error(ERROR_INTERNAL_ERROR,
+                self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please install the package "
                            "python-software-properties to handle repositories")
             else:
-                self.error(ERROR_INTERNAL_ERROR,
+                self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please make sure that python-software-properties is"
                            "correctly installed.")
         repos = PackageKitSoftwareProperties()
@@ -1091,7 +1089,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                comp.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_download_state(comp)[0]
-            if not FILTER_DEVELOPMENT in filters:
+            if not enums.FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
                                  description,
                                  enabled)
@@ -1104,13 +1102,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                template.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_child_state(template)[0]
-            if not FILTER_DEVELOPMENT in filters:
+            if not enums.FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
                                  description,
                                  enabled)
         # Emit distro's cdrom sources
         for source in repos.get_cdrom_sources():
-            if FILTER_NOT_DEVELOPMENT in filters and \
+            if enums.FILTER_NOT_DEVELOPMENT in filters and \
                source.type in ("deb-src", "rpm-src"):
                 continue
             enabled = not source.disabled
@@ -1121,7 +1119,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.repo_detail(repo_id, description,
                              enabled)
         # Emit distro's virtual source code repositoriy
-        if not FILTER_NOT_DEVELOPMENT in filters:
+        if not enums.FILTER_NOT_DEVELOPMENT in filters:
             repo_id = "%s_source" % repos.distro.id
             enabled = repos.get_source_code_state() or False
             #FIXME: no translation :(
@@ -1131,7 +1129,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                              enabled)
         # Emit third party repositories
         for source in repos.get_isv_sources():
-            if FILTER_NOT_DEVELOPMENT in filters and \
+            if enums.FILTER_NOT_DEVELOPMENT in filters and \
                source.type in ("deb-src", "rpm-src"):
                 continue
             enabled = not source.disabled
@@ -1150,17 +1148,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                low level access using pure aptsources?
         """
         pklog.info("Enabling repository: %s %s" % (repo_id, enable))
-        self.status(STATUS_RUNNING)
+        self.status(enums.STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
             if self._cache.has_key("python-software-properties") and \
                self._cache["python-software-properties"].isInstalled == False:
-                self.error(ERROR_INTERNAL_ERROR,
+                self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please install the package "
                            "python-software-properties to handle repositories")
             else:
-                self.error(ERROR_INTERNAL_ERROR,
+                self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please make sure that python-software-properties is"
                            "correctly installed.")
             return
@@ -1180,7 +1178,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         repos.disable_component(comp.name)
                     found = True
                     break
-        # Check if the repo_id matches a distro child repository, e.g. hardy-updates
+        # Check if the repo_id matches a distro child repository, e.g.
+        # hardy-updates
         elif repo_id.startswith("%s_child_" % repos.distro.id):
             for template in repos.distro.source_template.children:
                 if repo_id == "%s_child_%s" % (repos.distro.id, template.name):
@@ -1220,7 +1219,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     found = True
                     break
         if found == False:
-            self.error(ERROR_REPO_NOT_AVAILABLE,
+            self.error(enums.ERROR_REPO_NOT_AVAILABLE,
                        "The repository of the id %s isn't available" % repo_id)
 
     @lock_cache
@@ -1229,19 +1228,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-update functionality
         """
         pklog.info("Updating package with id %s" % ids)
-        self.status(STATUS_UPDATE)
+        self.status(enums.STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
         pkgs = self._mark_for_upgrade(ids)
-        # Error out if the updates would require the removal of already
-        # installed packages
-        if self._cache.delete_count:
-            deleted = [pkg.name for pkg in self._cache.getChanges() if \
-                       pkg.markedDelete]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages block the update: "
-                       "%s" % " ".join(deleted))
         self._check_trusted(only_trusted)
         self._commit_changes()
         self._open_cache(prange=(90,100))
@@ -1250,7 +1241,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for p in pkgs:
             if not self._cache.has_key(p) or not self._cache[p].isInstalled \
                or self._cache[p].isUpgradable:
-                self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
+                self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
                            "%s was not updated" % p)
         pklog.debug("Sending success signal")
 
@@ -1267,36 +1258,33 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def _mark_for_upgrade(self, ids):
         """Resolve the given package ids and mark the packages for upgrade."""
         pkgs = []
-        ac = self._cache.actiongroup()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for id in ids:
-            version = self._get_version_by_id(id)
-            pkg = version.package
-            if not pkg.isInstalled:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                           "%s isn't installed" % pkg.name)
-            # Check if the specified version is an update
-            if apt_pkg.VersionCompare(pkg.installed.version,
-                                      version.version) >= 0:
-                self.error(ERROR_UPDATE_NOT_FOUND,
-                           "The version %s of %s isn't an update to the "
-                           "current %s" % (version.version, pkg.name,
-                                           pkg.installed.version))
-            pkg.candidate = version
-            pkgs.append(pkg.name[:])
-            # Actually should be fixed in python-apt
-            auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
-            pkg.markInstall(False, True, auto)
-            resolver.clear(pkg)
-            resolver.protect(pkg)
-        try:
-            resolver.resolve()
-        except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages block the installation: "
-                       "%s" % " ".join(broken))
-        ac.release()
+        with self._cache.actiongroup():
+            resolver = apt.cache.ProblemResolver(self._cache)
+            for id in ids:
+                version = self._get_version_by_id(id)
+                pkg = version.package
+                if not pkg.is_installed:
+                    self.error(enums.ERROR_PACKAGE_NOT_INSTALLED,
+                               "%s isn't installed" % pkg.name)
+                # Check if the specified version is an update
+                if apt_pkg.version_compare(pkg.installed.version,
+                                           version.version) >= 0:
+                    self.error(enums.ERROR_UPDATE_NOT_FOUND,
+                               "The version %s of %s isn't an update to the "
+                               "current %s" % (version.version, pkg.name,
+                                               pkg.installed.version))
+                pkg.candidate = version
+                pkgs.append(pkg.name[:])
+                pkg.mark_install(False, True)
+                resolver.clear(pkg)
+                resolver.protect(pkg)
+            try:
+                resolver.resolve()
+            except SystemError, error:
+                broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
+                self.error(enums.ERROR_DEP_RESOLUTION_FAILED,
+                           "The following packages block the installation: "
+                           "%s" % " ".join(broken))
         return pkgs
 
     def download_packages(self, dest, ids):
