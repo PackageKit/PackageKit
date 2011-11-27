@@ -158,17 +158,11 @@ HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
 
-DEFAULT_ENCODING = "UTF-8"
-
 # Required to get translated descriptions
 try:
     locale.setlocale(locale.LC_ALL, "")
 except locale.Error:
     pklog.debug("Failed to unset LC_ALL")
-
-# Allows to write unicode to stdout
-import codecs
-sys.stdout = codecs.getwriter(DEFAULT_ENCODING)(sys.stdout)
 
 # Required to parse RFC822 time stamps
 try:
@@ -681,7 +675,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     txt += pkg.candidate._translated_records.long_desc.lower()
                 except AttributeError:
                     pass
-                if matches(values, txt.decode(DEFAULT_ENCODING, "replace")):
+                if matches(values, txt):
                     self._emit_visible_package(filters, pkg)
 
     def get_distro_upgrades(self):
@@ -874,7 +868,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # The internal download error string of python-apt ist not
             # provided as unicode object
             if not isinstance(changelog_raw, unicode):
-                changelog_raw = changelog_raw.decode(DEFAULT_ENCODING)
+                changelog_raw = changelog_raw.decode("UTF-8")
             # Convert the changelog to markdown syntax
             changelog = u""
             for line in changelog_raw.split("\n"):
@@ -935,7 +929,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             group = self._get_package_group(pkg)
             self.details(pkg_id, license, group,
                          format_string(pkg.description),
-                         pkg.homepage.decode(DEFAULT_ENCODING),
+                         pkg.homepage,
                          pkg.packageSize)
 
     @lock_cache
@@ -1099,7 +1093,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             enabled = repos.get_comp_download_state(comp)[0]
             if not FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
-                                 description.decode(DEFAULT_ENCODING),
+                                 description,
                                  enabled)
         # Emit distro's virtual update repositories
         for template in repos.distro.source_template.children:
@@ -1112,7 +1106,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             enabled = repos.get_comp_child_state(template)[0]
             if not FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
-                                 description.decode(DEFAULT_ENCODING),
+                                 description,
                                  enabled)
         # Emit distro's cdrom sources
         for source in repos.get_cdrom_sources():
@@ -1124,7 +1118,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "cdrom_%s_%s" % (source.uri, source.dist)
             repo_id.join(map(lambda c: "_%s" % c, source.comps))
-            self.repo_detail(repo_id, description.decode(DEFAULT_ENCODING),
+            self.repo_detail(repo_id, description,
                              enabled)
         # Emit distro's virtual source code repositoriy
         if not FILTER_NOT_DEVELOPMENT in filters:
@@ -1133,7 +1127,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             #FIXME: no translation :(
             description = "%s %s - Source code" % (repos.distro.id,
                                                    repos.distro.release)
-            self.repo_detail(repo_id, description.decode(DEFAULT_ENCODING),
+            self.repo_detail(repo_id, description,
                              enabled)
         # Emit third party repositories
         for source in repos.get_isv_sources():
@@ -1145,7 +1139,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "isv_%s_%s" % (source.uri, source.dist)
             repo_id.join(map(lambda c: "_%s" % c, source.comps))
-            self.repo_detail(repo_id, description.decode(DEFAULT_ENCODING),
+            self.repo_detail(repo_id, description.decode,
                              enabled)
 
     def repo_enable(self, repo_id, enable):
@@ -1462,7 +1456,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
-            d.install([inst.encode(DEFAULT_ENCODING) for inst in inst_files])
+            d.install(inst_files)
             d.finishUpdate()
         except InstallTimeOutPKError, e:
             self._recover()
@@ -1586,7 +1580,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 version = base_dependency.version
             self.package("%s;%s;;" % (base_dependency.name, version),
-                         INFO_BLOCKED, unicode(summary, DEFAULT_ENCODING))
+                         INFO_BLOCKED, summary)
 
         def check_dependency(pkg, base_dep):
             """Check if the given apt.package.Package can satisfy the
@@ -1957,7 +1951,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     info = INFO_COLLECTION_AVAILABLE
                 else:
                     info = INFO_AVAILABLE
-        self.package(id, info, unicode(version.summary, DEFAULT_ENCODING))
+        self.package(id, info, version.summary)
 
     def _emit_all_visible_pkg_versions(self, filters, pkg):
         """Emit all available versions of a package."""
