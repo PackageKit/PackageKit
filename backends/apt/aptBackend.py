@@ -235,7 +235,7 @@ class DpkgInstallProgress(apt.progress.base.InstallProgress):
         cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
                "--status-fd", str(self.writefd), 
                "--root", apt_pkg.config["Dir"], "-i"]
-        cmd.extend(map(lambda f: str(f), filenames))
+        cmd.extend([str(f) for f in filenames])
         self.run(cmd)
 
     def run(self, cmd):
@@ -421,7 +421,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
             self._backend.percentage(int(progress))
             self.pprev = progress
         # Emit a Package signal for the currently processed package
-        if pkg_name != self.last_pkg and self._backend._cache.has_key(pkg_name):
+        if pkg_name != self.last_pkg and pkg_name in self._backend._cache:
             pkg = self._backend._cache[pkg_name]
             if pkg.markedInstall or pkg.markedReinstall:
                 self._backend._emit_package(pkg, enums.INFO_INSTALLING, True)
@@ -681,7 +681,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         if META_RELEASE_SUPPORT == False:
-            if self._cache.has_key("update-manager-core") and \
+            if "update-manager-core" in self._cache and \
                self._cache["update-manager-core"].isInstalled == False:
                 self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please install the package update-manager-core to "
@@ -795,8 +795,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             """Return a list of urls pointing to CVEs reports referred to in
             the changelog.
             """
-            return map(lambda c: HREF_CVE % c,
-                       re.findall(MATCH_CVE, changelog, re.MULTILINE))
+            return [HREF_CVE % c for c in re.findall(MATCH_CVE, changelog,
+                                                     re.MULTILINE)]
 
         pklog.info("Get update details of %s" % pkg_ids)
         self.status(enums.STATUS_DOWNLOAD_CHANGELOG)
@@ -849,7 +849,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 changelog_raw = pkg.get_changelog()
                 # The internal download error string of python-apt ist not
                 # provided as unicode object
-                if not isinstance(changelog_raw, unicode):
+                if not isinstance(changelog_raw, str):
                     changelog_raw = changelog_raw.decode("UTF-8")
                 else:
                     # Write the changelog to the cache
@@ -964,10 +964,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Should support only_trusted
         self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
-        for p in pkgs:
-            if self._cache.has_key(p) and self._cache[p].isInstalled:
+        for pkg_name in pkgs:
+            if pkg_name in self._cache and self._cache[pkg_name].is_installed:
                 self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
-                           "%s is still installed" % p)
+                           "%s is still installed" % pkg_name)
         self.percentage(100)
 
     def _check_obsoleted_dependencies(self):
@@ -1063,7 +1063,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
-            if self._cache.has_key("python-software-properties") and \
+            if "python-software-properties" in self._cache and \
                self._cache["python-software-properties"].isInstalled == False:
                 self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please install the package "
@@ -1108,7 +1108,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Remove markups from the description
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "cdrom_%s_%s" % (source.uri, source.dist)
-            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            repo_id.join(["_%s" % c for c in source.comps])
             self.repo_detail(repo_id, description,
                              enabled)
         # Emit distro's virtual source code repositoriy
@@ -1129,7 +1129,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # Remove markups from the description
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "isv_%s_%s" % (source.uri, source.dist)
-            repo_id.join(map(lambda c: "_%s" % c, source.comps))
+            repo_id.join(["_%s" % c for c in source.comps])
             self.repo_detail(repo_id, description.decode,
                              enabled)
 
@@ -1145,7 +1145,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
-            if self._cache.has_key("python-software-properties") and \
+            if "python-software-properties" in self._cache and \
                self._cache["python-software-properties"].isInstalled == False:
                 self.error(enums.ERROR_INTERNAL_ERROR,
                            "Please install the package "
@@ -1189,7 +1189,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif repo_id.startswith("cdrom_"):
             for source in repos.get_isv_sources():
                 source_id = "cdrom_%s_%s" % (source.uri, source.dist)
-                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                source_id.join(["_%s" % c for c in source.comps])
                 if repo_id == source_id:
                     if source.disabled == enable:
                         source.disabled = not enable
@@ -1202,7 +1202,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         elif repo_id.startswith("isv_"):
             for source in repos.get_isv_sources():
                 source_id = "isv_%s_%s" % (source.uri, source.dist)
-                source_id.join(map(lambda c: "_%s" % c, source.comps))
+                source_id.join(["_%s" % c for c in source.comps])
                 if repo_id == source_id:
                     if source.disabled == enable:
                         source.disabled = not enable
@@ -1229,9 +1229,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._open_cache(prange=(90,100))
         self.percentage(100)
         pklog.debug("Checking success of operation")
-        for p in pkgs:
-            if not self._cache.has_key(p) or not self._cache[p].isInstalled \
-               or self._cache[p].isUpgradable:
+        for pkg_name in pkgs:
+            if (pkg_name not in self._cache or
+                not self._cache[pkg_name].is_installed or
+                self._cache[pkg_name].is_upgradable):
                 self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
                            "%s was not updated" % p)
         pklog.debug("Sending success signal")
@@ -1340,7 +1341,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
         pklog.debug("Checking success of operation")
         for p in pkgs:
-            if not self._cache.has_key(p) or not self._cache[p].is_installed:
+            if p not in self._cache or not self._cache[p].is_installed:
                 self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
                            "%s was not installed" % p)
 
@@ -1638,7 +1639,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             appropriate error message
             """
             if not os.access(path, os.R_OK):
-                if (self._cache.has_key("app-install-data") and
+                if ("app-install-data" in self._cache and
                     not self._cache["app-install-data"].is_installed):
                     self.error(enums.ERROR_INTERNAL_ERROR,
                                "Please install the package "
@@ -1728,15 +1729,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             db = get_mapping_db("/var/lib/PackageKit/mime-map.gdbm")
             if db == None:
                 return
-            if db.has_key(search):
+            if search in db:
                 pklog.debug("Mime type is registered: %s" % db[search])
                 # The mime type handler db stores the packages as a string
                 # separated by spaces. Each package has its section
                 # prefixed and separated by a slash
                 # FIXME: Should make use of the section and emit a 
                 #        RepositoryRequired signal if the package does not exist
-                handlers = map(lambda s: s.split("/")[1],
-                               db[search].split(" "))
+                handlers = [s.split("/")[1] for s in db[search].split(" ")]
                 self._emit_visible_packages_by_name(filters, handlers)
         else:
             self.error(enums.ERROR_NOT_SUPPORTED,
@@ -2088,7 +2088,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Return the packagekit group corresponding to the package's section
         """
         section = pkg.section.split("/")[-1]
-        if SECTION_GROUP_MAP.has_key(section):
+        if section in SECTION_GROUP_MAP:
             return SECTION_GROUP_MAP[section]
         else:
             pklog.debug("Unkown package section %s of %s" % (pkg.section,
@@ -2111,7 +2111,7 @@ def debug_exception(type, value, tb):
     else:
         import traceback, pdb
         traceback.print_exception(type, value, tb)
-        print
+        print()
         pdb.pm()
 
 def run(args, single=False):
