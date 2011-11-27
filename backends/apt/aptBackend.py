@@ -285,14 +285,14 @@ class PackageKitOpProgress(apt.progress.base.OpProgress):
 
     """Handle the cache opening progress."""
 
-    def __init__(self, backend, prange=(0,100), progress=True):
+    def __init__(self, backend, start=0, end=100, progress=True):
         self._backend = backend
         apt.progress.base.OpProgress.__init__(self)
         self.steps = []
-        for v in [0.12, 0.25, 0.50, 0.75, 1.00]:
-            s = prange[0] + (prange[1] - prange[0]) * v
-            self.steps.append(s)
-        self.pstart = float(prange[0])
+        for val in [0.12, 0.25, 0.50, 0.75, 1.00]:
+            step = start + (end - start) * val
+            self.steps.append(step)
+        self.pstart = float(start)
         self.pend = self.steps.pop(0)
         self.pprev = None
         self.show_progress = progress
@@ -318,11 +318,11 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
     TODO: Add a progress for Updating the cache.
     """
 
-    def __init__(self, backend, prange=(0,100), status=enums.STATUS_DOWNLOAD):
+    def __init__(self, backend, start=0, end=100, status=enums.STATUS_DOWNLOAD):
         self._backend = backend
         apt.progress.base.AcquireProgress.__init__(self)
-        self.start_progress = prange[0]
-        self.end_progress = prange[1]
+        self.start_progress = start
+        self.end_progress = end
         self.last_progress = None
         self.last_sub_progress = None
         self.status = status
@@ -398,11 +398,11 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
     """
-    def __init__(self, backend, prange=(0,100)):
+    def __init__(self, backend, start=0, end=100):
         apt.progress.base.InstallProgress.__init__(self)
         self._backend = backend
-        self.pstart = prange[0]
-        self.pend = prange[1]
+        self.pstart = start
+        self.pend = end
         self.pprev = None
         self.last_activity = None
         self.conffile_prompts = set()
@@ -802,7 +802,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_DOWNLOAD_CHANGELOG)
         self.percentage(0)
         self.allow_cancel(True)
-        self._check_init(None)
+        self._check_init(progress=False)
         total = len(pkg_ids)
         for count, pkg_id in enumerate(pkg_ids):
             self.percentage(count * 100 / total)
@@ -931,7 +931,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
-        self._check_init(prange=(0,5))
+        self._check_init()
         self._cache.upgrade()
         #FIXME: Emit message about skipped updates
 #        for pkg in self._cache:
@@ -947,7 +947,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_REMOVE)
         self.allow_cancel(False)
         self.percentage(0)
-        self._check_init(prange=(0,10))
+        self._check_init()
         if auto_remove:
             auto_removables = [pkg.name for pkg in self._cache \
                                if pkg.is_auto_removable]
@@ -962,8 +962,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if auto_remove:
             self._check_obsoleted_dependencies()
         #FIXME: Should support only_trusted
-        self._commit_changes(fetch_range=(10,10), install_range=(10,90))
-        self._open_cache(prange=(90,99))
+        self._commit_changes(install_start=10, install_end=90)
+        self._open_cache(start=90, end=99)
         for pkg_name in pkgs:
             if pkg_name in self._cache and self._cache[pkg_name].is_installed:
                 self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
@@ -1222,11 +1222,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
-        self._check_init(prange=(0,10))
+        self._check_init()
         pkgs = self._mark_for_upgrade(ids)
         self._check_trusted(only_trusted)
         self._commit_changes()
-        self._open_cache(prange=(90,100))
+        self._open_cache(start=90, end=100)
         self.percentage(100)
         pklog.debug("Checking success of operation")
         for pkg_name in pkgs:
@@ -1234,7 +1234,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 not self._cache[pkg_name].is_installed or
                 self._cache[pkg_name].is_upgradable):
                 self.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
-                           "%s was not updated" % p)
+                           "%s was not updated" % pkg_name)
         pklog.debug("Sending success signal")
 
     def simulate_update_packages(self, ids):
@@ -1310,10 +1310,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(enums.ERROR_INTERNAL_ERROR,
                        "The directory '%s' is not writable" % dest)
         # Setup the fetcher
-        self._check_init(prange=(0,10))
+        self._check_init()
         # Start the download
         for id, ver, start, end in get_download_details(ids):
-            progress = PackageKitAcquireProgress(self, prange=(start, end))
+            progress = PackageKitAcquireProgress(self, start, end)
             self._emit_pkg_version(ver, enums.INFO_DOWNLOADING)
             try:
                 ver.fetch_binary(dest, progress)
@@ -1333,11 +1333,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_INSTALL)
         self.allow_cancel(False)
         self.percentage(0)
-        self._check_init(prange=(0,10))
+        self._check_init()
         pkgs = self._mark_for_installation(ids)
         self._check_trusted(only_trusted)
         self._commit_changes()
-        self._open_cache(prange=(90,100))
+        self._open_cache(start=90, end=100)
         self.percentage(100)
         pklog.debug("Checking success of operation")
         for p in pkgs:
@@ -1391,7 +1391,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(enums.STATUS_INSTALL)
         self.allow_cancel(False)
         self.percentage(0)
-        self._check_init(prange=(0,10))
+        self._check_init()
         packages = []
         # Collect all dependencies which need to be installed
         self.status(enums.STATUS_DEP_RESOLVE)
@@ -1415,9 +1415,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                              "available in the repositories." % deb.pkgname)
         if self._cache.get_changes():
             self._check_trusted(only_trusted)
-            self._commit_changes((10,25), (25,50))
+            self._commit_changes(fetch_start=10, fetch_end=25,
+                                 install_start=25, install_end=50)
         # Install the Debian package files
-        progress = PackageKitDpkgInstallProgress(self)
+        progress = PackageKitDpkgInstallProgress(self, start=50, end=90)
         try:
             progress.start_update()
             progress.install(inst_files)
@@ -1467,8 +1468,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.last_action_time = time.time()
         self.allow_cancel(False);
         self.percentage(0)
-        self._check_init((0,10))
-        progress = PackageKitAcquireProgress(self, prange=(10,95),
+        self._check_init()
+        progress = PackageKitAcquireProgress(self, start=10, end=95,
                                         status=enums.STATUS_DOWNLOAD_REPOSITORY)
         try:
             ret = self._cache.update(progress)
@@ -1478,7 +1479,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # FIXME: Doesn't detect if all downloads failed - bug in python-apt
             self.message(enums.MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
                          format_string(error))
-        self._open_cache(prange=(95,100))
+        self._open_cache(start=95, end=100)
         self.percentage(100)
 
     def get_packages(self, filters):
@@ -1764,16 +1765,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         return True
 
-    def _open_cache(self, prange=(0,100), progress=True):
+    def _open_cache(self, start=0, end=100, progress=True):
         """(Re)Open the APT cache."""
         pklog.debug("Open APT cache")
         self.status(enums.STATUS_LOADING_CACHE)
         try:
-            self._cache = apt.Cache(PackageKitOpProgress(self, prange,
+            self._cache = apt.Cache(PackageKitOpProgress(self, start, end,
                                                          progress))
-        except:
+        except Exception as error:
             self.error(enums.ERROR_NO_CACHE,
-                       "Package cache could not be opened")
+                       "Package cache could not be opened:%s" % error)
         if self._cache.broken_count > 0:
             self.error(enums.ERROR_DEP_RESOLUTION_FAILED,
                        "There are broken dependecies on your system. "
@@ -1781,7 +1782,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "Synaptic or aptitude to resolve this situation.")
         self._last_cache_refresh = time.time()
 
-    def _recover(self, prange=(95,100)):
+    def _recover(self, start=95, end=100):
         """Try to recover from a package manager failure."""
         self.status(enums.STATUS_CLEANUP)
         self.percentage(None)
@@ -1792,7 +1793,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             d.finish_update()
         except:
             pass
-        self._open_cache(prange)
+        self._open_cache(start=95, end=100)
 
     def _check_trusted(self, only_trusted):
         """Check if only trusted packages are allowed and fail if
@@ -1812,21 +1813,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(enums.ERROR_MISSING_GPG_SIGNATURE,
                            " ".join(untrusted))
 
-    def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
+    def _commit_changes(self, fetch_start=10, fetch_end=50,
+                        install_start=50, install_end=90):
         """Commit changes to the system."""
         try:
-            self._cache.commit(PackageKitAcquireProgress(self, fetch_range),
-                               PackageKitInstallProgress(self, install_range))
+            self._cache.commit(PackageKitAcquireProgress(self, fetch_start,
+                                                         fetch_end),
+                               PackageKitInstallProgress(self, install_start,
+                                                         install_end))
         except apt.cache.FetchFailedException as err:
-            self._open_cache(prange=(95,100))
+            self._open_cache(start=95, end=100)
             pklog.critical(format_string(err))
             self.error(enums.ERROR_PACKAGE_DOWNLOAD_FAILED,
                        format_string(err.message))
         except apt.cache.FetchCancelledException:
-            self._open_cache(prange=(95,100))
+            self._open_cache(start=95, end=100)
         except InstallTimeOutPKError as err:
             self._recover()
-            self._open_cache(prange=(95,100))
+            self._open_cache(start=95, end=100)
             #FIXME: should provide more information
             msg = "Transaction was cancelled since the installation " \
                   "of a package hung.\n" \
@@ -1851,7 +1855,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                               version.architecture, origin)
         return id
  
-    def _check_init(self, prange=(0,10), progress=True):
+    def _check_init(self, start=0, end=10, progress=True):
         """Check if the backend was initialized well and try to recover from
         a broken setup.
         """
@@ -1872,7 +1876,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
            (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
            (os.stat(src_cache)[stat.ST_MTIME] > self._last_cache_refresh):
             pklog.debug("Reloading the cache is required")
-            self._open_cache(prange, progress)
+            self._open_cache(start, end, progress)
         else:
             pass
         # Read the pin file of Synaptic if available
