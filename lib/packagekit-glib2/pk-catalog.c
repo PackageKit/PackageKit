@@ -169,7 +169,8 @@ pk_catalog_process_type_part (PkCatalogState *state, PkCatalogMode mode, const g
 	/* split using any of the delimiters and add to correct array*/
 	list = g_strsplit_set (data, ";, ", 0);
 	for (i=0; list[i] != NULL; i++)
-		g_ptr_array_add (array, g_strdup (list[i]));
+		if (list[i][0] != '\0')
+			g_ptr_array_add (array, g_strdup (list[i]));
 out:
 	g_strfreev (list);
 	g_free (key);
