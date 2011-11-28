@@ -922,7 +922,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 changelog_raw = pkg.get_changelog()
                 # The internal download error string of python-apt ist not
                 # provided as unicode object
-                if not isinstance(changelog_raw, str):
+                if not isinstance(changelog_raw, unicode):
                     changelog_raw = changelog_raw.decode("UTF-8")
                 else:
                     # Write the changelog to the cache
