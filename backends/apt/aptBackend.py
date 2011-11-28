@@ -98,6 +98,9 @@ os.putenv("PATH",
 # Avoid questions from the maintainer scripts as far as possible
 os.putenv("DEBIAN_FRONTEND", "noninteractive")
 os.putenv("APT_LISTCHANGES_FRONTEND", "none")
+# Force terminal messages in dpkg to be untranslated, status-fd or debconf
+# prompts won't be affected
+os.putenv("DPKG_UNTRANSLATED_MESSAGES", "1")
 
 # Map Debian sections to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -221,9 +224,7 @@ class DpkgInstallProgress(apt.progress.base.InstallProgress):
 
     #FIXME: Use the merged DpkgInstallProgress of python-apt
     def recover(self):
-        """
-        Run "dpkg --configure -a"
-        """
+        """Run 'dpkg --configure -a'."""
         cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd),
                "--root", apt_pkg.config["Dir"],
                "--force-confdef", "--force-confold", 
@@ -247,38 +248,6 @@ class DpkgInstallProgress(apt.progress.base.InstallProgress):
         self.child_pid = p.pid
         res = self.wait_child()
         return res
-
-    def update_interface(self):
-        """Process status messages from dpkg."""
-        if self.statusfd == None:
-            return
-        try:
-            while not self.read.endswith("\n"):
-                self.read += os.read(self.statusfd.fileno(), 1)
-        except OSError as error:
-            # resource temporarly unavailable is ignored
-            if error.errno not in [errno.EAGAIN, errno.EWOULDBLOCK]:
-                pklog.warn(error)
-        if self.read.endswith("\n"):
-            statusl = string.split(self.read, ":")
-            if len(statusl) < 3:
-                pklog.warn("got garbage from dpkg: '%s'" % self.read)
-                self.read = ""
-            status = statusl[2].strip()
-            pkg = statusl[1].strip()
-            #print status
-            if status == "error":
-                self.error(pkg, format_string(status))
-            elif status == "conffile-prompt":
-                # we get a string like this:
-                # 'current-conffile' 'new-conffile' useredited distedited
-                match = re.search(".+conffile-prompt : '(.+)' '(.+)'",
-                                  self.read)
-                self.conffile(match.group(1), match.group(2))
-            else:
-                pklog.debug("Dpkg status: %s" % status)
-                self.status = status
-            self.read = ""
 
 
 class PackageKitOpProgress(apt.progress.base.OpProgress):
@@ -318,20 +287,19 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
     TODO: Add a progress for Updating the cache.
     """
 
-    def __init__(self, backend, start=0, end=100, status=enums.STATUS_DOWNLOAD):
+    def __init__(self, backend, start=0, end=100):
         self._backend = backend
         apt.progress.base.AcquireProgress.__init__(self)
         self.start_progress = start
         self.end_progress = end
         self.last_progress = None
         self.last_sub_progress = None
-        self.status = status
         self.package_states = {}
 
-    def pulse_items(self, items):
-        #FIXME: port to pulse(owner)
-        apt.progress.base.AcquireProgress.pulse(self)
-        progress = int(self.start_progress + self.percent/100 * \
+    def pulse(self, owner):
+        #TODO: port to pulse(owner)
+        percent = self.current_bytes * 100.0 / self.total_bytes
+        progress = int(self.start_progress + percent / 100 *
                        (self.end_progress - self.start_progress))
         # A backwards running progress is reported as a not available progress
         if self.last_progress > progress:
@@ -339,39 +307,25 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
         else:
             self._backend.percentage(progress)
             self.last_progress = progress
-        for item in items:
-            uri, desc, shortdesc, file_size, partial_size = item
-            try:
-                pkg = self._backend._cache[shortdesc]
-            except KeyError:
-                pass
-            else:
-                self._backend._emit_package(pkg, enums.INFO_DOWNLOADING, True)
-                sub_progress = partial_size * 100 / file_size
-                if sub_progress > self.last_sub_progress:
-                    self._last_sub_progress = sub_progress
-                    self._backend.sub_percentage(sub_progress)
+        for worker in owner.workers:
+            if not worker.current_item or not worker.total_size:
+                continue
+            item_id = "%s;;;" % worker.current_item.shortdesc
+            item_percent = worker.current_size * 100 / worker.total_size
+            self._backend.item_percentage(item_id, item_percent)
         return True
 
-    def updateStatus(self, uri, descr, pkg_name, status):
-        """Callback for a fetcher status update."""
-        # Emit a Package signal for the currently processed package
+    def fetch(self, item):
+        info = enums.INFO_DOWNLOADING
         try:
-            pkg = self._backend._cache[pkg_name]
-        except KeyError:
-            pass
+            pkg = self._backend._cache[item.shortdesc]
+        except:
+            self._backend.package("%s;;;" % item.shortdesc, info, "")
         else:
-            if not pkg_name in self.package_states or \
-               self.package_states[pkg_name] != status:
-                if status == 0:
-                    info = enums.INFO_FINISHED
-                else:
-                    info = enums.INFO_DOWNLOADING
-                self.package_states[pkg_name] = status
-                self._backend._emit_package(pkg, info, True)
+            self._backend._emit_package(pkg, info)
 
     def start(self):
-        self._backend.status(self.status)
+        self._backend.status(enum.STATUS_DOWNLOAD)
         self._backend.allow_cancel(True)
 
     def stop(self):
@@ -393,11 +347,33 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
         return False
 
 
+class PackageKitAcquireRepoProgress(PackageKitAcquireProgress):
+
+    """Handle the download of of repository information."""
+
+    def pulse(self, owner):
+        self._backend.percentage(None)
+        #TODO: Emit repositories here
+        #for worker in owner.workers:
+        #    if not worker.current_item or not worker.total_size:
+        #        continue
+        #    item_id = "%s;;;" % worker.current_item.shortdesc
+        #    item_percent = worker.current_size * 100 / worker.total_size
+        #    self._backend.item_percentage(item_id, item_percent)
+        return True
+
+    def fetch(self, item):
+        pass
+
+    def start(self):
+        self._backend.status(enums.STATUS_DOWNLOAD_REPOSITORY)
+        self._backend.allow_cancel(True)
+
+
 class PackageKitInstallProgress(apt.progress.base.InstallProgress):
-    """
-    Handle the installation and removal process. Bits taken from
-    DistUpgradeViewNonInteractive.
-    """
+
+    """Handle the installation and removal process."""
+
     def __init__(self, backend, start=0, end=100):
         apt.progress.base.InstallProgress.__init__(self)
         self._backend = backend
@@ -413,28 +389,124 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         self.master_fd = None
         self.child_pid = None
         self.last_pkg = None
+        self.last_item_percentage = None
 
-    def statusChange(self, pkg_name, percent, status):
+    def status_change(self, pkg_name, percent, status):
+        """Callback for APT status updates."""
         self.last_activity = time.time()
-        progress = self.pstart + percent/100 * (self.pend - self.pstart)
+        progress = self.pstart + percent / 100 * (self.pend - self.pstart)
         if self.pprev < progress:
             self._backend.percentage(int(progress))
             self.pprev = progress
+        # INSTALL/UPDATE lifecycle (taken from aptcc)
+        # - Starts:
+        #   - "Running dpkg"
+        # - Loops:
+        #   - "Installing pkg" (0%)
+        #   - "Preparing pkg" (25%)
+        #   - "Unpacking pkg" (50%)
+        #   - "Preparing to configure pkg" (75%)
+        # - Some packages have:
+        #   - "Runnung post-installation"
+        #   - "Running dpkg"
+        # - Loops:
+        #   - "Configuring pkg" (0%)
+        #   - Sometimes "Configuring pkg" (+25%)
+        #   - "Installed pkg"
+        # - Afterwards:
+        #   - "Running post-installation"
+        #
+        # REMOVING lifecylce
+        # - Starts:
+        #   - "Running dpkg"
+        # - loops:
+        #   - "Removing pkg" (25%)
+        #   - "Preparing for removal" (50%)
+        #   - "Removing pkg" (75%)
+        #   - "Removed pkg" (100%)
+        # - Afterwards:
+        #   - "Running post-installation"
         # Emit a Package signal for the currently processed package
-        if pkg_name != self.last_pkg and pkg_name in self._backend._cache:
-            pkg = self._backend._cache[pkg_name]
-            if pkg.markedInstall or pkg.markedReinstall:
-                self._backend._emit_package(pkg, enums.INFO_INSTALLING, True)
-            elif pkg.markedDelete:
-                self._backend._emit_package(pkg, enums.INFO_REMOVING, False)
-            elif pkg.markedUpgrade:
-                self._backend._emit_package(pkg, enums.INFO_UPDATING, True)
-            elif pkg.markedDowngrade:
-                self._backend._emit_package(pkg, enums.INFO_DOWNGRADING, True)
-            self.last_pkg = pkg_name
-        pklog.debug("APT status: %s" % status)
+        elif status.startswith("Preparing"):
+            item_percentage = self.last_item_percentage + 25
+            info = enums.INFO_PREPARING
+        elif status.startswith("Installing"):
+            item_percentage = 0
+            info = enums.INFO_INSTALLING
+        elif status.startswith("Installed"):
+            item_percentage = 100
+            info = enums.INFO_FINISHED
+        elif status.startswith("Configuring"):
+            if self.last_item_percentage >= 100:
+                item_percentage = 0
+            item_percentage = self.last_item_percentage + 25
+            info = enums.INFO_INSTALLING
+        elif status.startswith("Removing"):
+            item_percentage = self.last_item_percentage + 25
+            info = enums.INFO_REMOVING
+        elif status.startswith("Removed"):
+            item_percentage = 100
+            info = enums.INFO_FINISHED
+        elif status.startswith("Completely removing"):
+            item_percentage = self.last_item_percentage + 25
+            info = enums.INFO_REMOVING
+        elif status.startswith("Completely removed"):
+            item_percentage = 100
+            info = enums.INFO_FINISHED
+        elif status.startswith("Unpacking"):
+            item_percentage = 50
+            info = enums.INFO_DECOMPRESSING
+        elif status.startswith("Noting disappearance of"):
+            item_percentage = self.last_item_percentage
+            info = enums.INFO_UNKNOWN
+        elif status.startswith("Running"):
+            item_percentage = self.last_item_percentage
+            info = enums.INFO_CLEANUP
+        else:
+            item_percentage = self.last_item_percentage
+            info = enums.INFO_UNKNOWN
 
-    def startUpdate(self):
+        try:
+            pkg = self._backend._cache[pkg_name]
+        except KeyError:
+            # Emit a fake package
+            id = "%s;;;" % pkg_name
+            self._backend.package(id, info, "")
+            self._backend.item_percentage(id, item_percentage)
+        else:
+            # Always use the candidate - except for removals
+            self._backend._emit_package(pkg, info, not pkg.marked_delete)
+            if pkg.marked_delete:
+                version = pkg.installed
+            else:
+                version = pkg.candidate
+            id = self._backend._get_id_from_version(version)
+            self._backend.item_percentage(id, item_percentage)
+
+        self.last_pkg = pkg_name
+        self.last_item_percentage = item_percentage
+
+    def dpkg_status_changed(self, pkg_name, status):
+        """Callback for dpkg status updates."""
+        if status == "install":
+            info = enums.INFO_INSTALLING
+        elif status == "configure":
+            info = enums.INFO_INSTALLING
+        elif status == "remove":
+            info = enums.INFO_REMOVING
+        elif status == "purge":
+            info = enums.INFO_PURGING
+        elif status == "disappear":
+            info = enums.INFO_CLEANINGUP
+        elif status == "upgrade":
+            info = enums.INFO_UPDATING
+        elif status == "trigproc":
+            info = enums.INFO_CLEANINGUP
+        else:
+            info = enums.INFO_UNKNOWN
+        self._backend.package("%s;;;" % pkg_name, info, "")
+
+    def start_update(self):
         # The apt system lock was set by _lock_cache() before
         self._backend._unlock_cache()
         self._backend.status(enums.STATUS_COMMIT)
@@ -473,7 +545,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
     def error(self, pkg, msg):
         raise PackageManagerFailedPKError(pkg, msg, self.output)
 
-    def finishUpdate(self):
+    def finish_update(self):
         pklog.debug("finishUpdate()")
         if self.conffile_prompts:
             self._backend.message(enums.MESSAGE_CONFIG_FILES_CHANGED,
@@ -1319,7 +1391,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 ver.fetch_binary(dest, progress)
             except Exception as error:
                 self.error(enums.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                           format_string(error))
+                           format_string(str(error)))
             else:
                 self.files(id, os.path.join(dest,
                                             os.path.basename(ver.filename)))
@@ -1429,7 +1501,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             msg = "Transaction was cancelled since the installation " \
                   "of a package hung.\n" \
                   "This can be caused by maintainer scripts which " \
-                  "require input on the terminal:\n%s" % error.message
+                  "require input on the terminal:\n%s" % str(error)
             self.error(enums.ERROR_INTERNAL_ERROR, format_string(msg))
         except PackageManagerFailedPKError as error:
             self._recover()
@@ -1437,7 +1509,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        format_string("%s\n%s" % (error.message, error.output)))
         except Exception as error:
             self._recover()
-            self.error(enums.ERROR_INTERNAL_ERROR, format_string(error.message))
+            self.error(enums.ERROR_INTERNAL_ERROR, format_string(str(error)))
         self.percentage(100)
 
     def simulate_install_files(self, inst_files):
@@ -1469,8 +1541,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False);
         self.percentage(0)
         self._check_init()
-        progress = PackageKitAcquireProgress(self, start=10, end=95,
-                                        status=enums.STATUS_DOWNLOAD_REPOSITORY)
+        progress = PackageKitAcquireRepoProgress(self, start=10, end=95)
         try:
             ret = self._cache.update(progress)
         except Exception as error:
@@ -1478,7 +1549,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             #        reporting. We only receive a failure string.
             # FIXME: Doesn't detect if all downloads failed - bug in python-apt
             self.message(enums.MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
-                         format_string(error))
+                         format_string(str(error)))
         self._open_cache(start=95, end=100)
         self.percentage(100)
 
@@ -1823,7 +1894,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                          install_end))
         except apt.cache.FetchFailedException as err:
             self._open_cache(start=95, end=100)
-            pklog.critical(format_string(err))
+            pklog.critical(format_string(err.message))
             self.error(enums.ERROR_PACKAGE_DOWNLOAD_FAILED,
                        format_string(err.message))
         except apt.cache.FetchCancelledException:
