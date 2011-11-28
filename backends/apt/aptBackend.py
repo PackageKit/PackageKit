@@ -98,6 +98,7 @@ os.putenv("PATH",
 # Avoid questions from the maintainer scripts as far as possible
 os.putenv("DEBIAN_FRONTEND", "noninteractive")
 os.putenv("APT_LISTCHANGES_FRONTEND", "none")
+os.putenv("APT_LISTBUGS_FRONTEND", "none")
 # Force terminal messages in dpkg to be untranslated, status-fd or debconf
 # prompts won't be affected
 os.putenv("DPKG_UNTRANSLATED_MESSAGES", "1")
