@@ -1151,26 +1151,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             repo_id = "%s_comp_%s" % (repos.distro.id, comp.name)
             description = "%s %s - %s (%s)" % (repos.distro.id,
                                                repos.distro.release,
-                                               comp.get_description(),
+                                               comp.get_description().decode("UTF-8"),
                                                comp.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_download_state(comp)[0]
             if not enums.FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
-                                 description,
+                                 format_string(description),
                                  enabled)
         # Emit distro's virtual update repositories
         for template in repos.distro.source_template.children:
             repo_id = "%s_child_%s" % (repos.distro.id, template.name)
             description = "%s %s - %s (%s)" % (repos.distro.id,
                                                repos.distro.release,
-                                               template.description,
+                                               template.description.decode("UTF-8"),
                                                template.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_child_state(template)[0]
             if not enums.FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
-                                 description,
+                                 format_string(description),
                                  enabled)
         # Emit distro's cdrom sources
         for source in repos.get_cdrom_sources():
@@ -1182,8 +1182,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "cdrom_%s_%s" % (source.uri, source.dist)
             repo_id.join(["_%s" % c for c in source.comps])
-            self.repo_detail(repo_id, description,
-                             enabled)
+            self.repo_detail(repo_id, format_string(description), enabled)
         # Emit distro's virtual source code repositoriy
         if not enums.FILTER_NOT_DEVELOPMENT in filters:
             repo_id = "%s_source" % repos.distro.id
@@ -1191,8 +1190,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             #FIXME: no translation :(
             description = "%s %s - Source code" % (repos.distro.id,
                                                    repos.distro.release)
-            self.repo_detail(repo_id, description,
-                             enabled)
+            self.repo_detail(repo_id, format_string(description), enabled)
         # Emit third party repositories
         for source in repos.get_isv_sources():
             if enums.FILTER_NOT_DEVELOPMENT in filters and \
@@ -1203,7 +1201,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             description = re.sub(r"</?b>", "", repos.render_source(source))
             repo_id = "isv_%s_%s" % (source.uri, source.dist)
             repo_id.join(["_%s" % c for c in source.comps])
-            self.repo_detail(repo_id, description.decode,
+            self.repo_detail(repo_id,
+                             format_string(description.decode("UTF-8")),
                              enabled)
 
     def repo_enable(self, repo_id, enable):
