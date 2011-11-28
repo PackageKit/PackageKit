@@ -1840,9 +1840,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """(Re)Open the APT cache."""
         pklog.debug("Open APT cache")
         self.status(enums.STATUS_LOADING_CACHE)
+        rootdir = os.getenv("ROOT", "/")
+        if rootdir == "/":
+            rootdir = None
         try:
             self._cache = apt.Cache(PackageKitOpProgress(self, start, end,
-                                                         progress))
+                                                         progress),
+                                    rootdir=rootdir)
         except Exception as error:
             self.error(enums.ERROR_NO_CACHE,
                        "Package cache could not be opened:%s" % error)
@@ -2199,10 +2203,6 @@ def run(args, single=False):
 
 def main():
     parser = optparse.OptionParser(description="APT backend for PackageKit")
-    parser.add_option("-r", "--root",
-                      action="store", type="string", dest="root",
-                      help="Use the given directory as the system root "
-                           "(Only needed by developers)")
     parser.add_option("-p", "--profile",
                       action="store", type="string", dest="profile",
                       help="Store profiling stats in the given file "
@@ -2220,12 +2220,6 @@ def main():
     if options.debug:
         pklog.setLevel(logging.DEBUG)
         sys.excepthook = debug_exception
-
-    if options.root:
-        config = apt_pkg.config
-        config.set("Dir", options.root)
-        config.set("Dir::State::status",
-                   os.path.join(options.root, "/var/lib/dpkg/status"))
 
     if options.profile:
         import hotshot
