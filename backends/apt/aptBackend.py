@@ -25,7 +25,6 @@ import gzip
 import locale
 import logging
 import logging.handlers
-import optparse
 import os
 import pty
 import re
@@ -631,7 +630,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     """PackageKit backend for APT"""
 
-    def __init__(self, args):
+    def __init__(self, cmds=""):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, self._sigquit)
         self._cache = None
@@ -639,7 +638,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         apt_pkg.init_config()
         apt_pkg.config.set("DPkg::Options::", '--force-confdef')
         apt_pkg.config.set("DPkg::Options::", '--force-confold')
-        PackageKitBaseBackend.__init__(self, args)
+        PackageKitBaseBackend.__init__(self, cmds)
         self._open_cache(progress=False)
 
     # Methods ( client -> engine -> backend )
@@ -2230,56 +2229,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         sys.exit(1)
 
 
-def debug_exception(type, value, tb):
-    """Provides an interactive debugging session on unhandled exceptions
-    See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65287
-    """
-    if hasattr(sys, 'ps1') or not sys.stderr.isatty() or \
-       not sys.stdin.isatty() or not sys.stdout.isatty() or type==SyntaxError:
-        # Calls the default handler in interactive mode, if output is·
-        # redirected or on syntax errors
-        sys.__excepthook__(type, value, tb)
-    else:
-        import traceback, pdb
-        traceback.print_exception(type, value, tb)
-        print()
-        pdb.pm()
-
-def run(args, single=False):
-    """Start the apt backend."""
-    backend = PackageKitAptBackend("")
-    if single == True:
-        backend.dispatch_command(args[0], args[1:])
-    else:
-        backend.dispatcher(args)
-
 def main():
-    parser = optparse.OptionParser(description="APT backend for PackageKit")
-    parser.add_option("-p", "--profile",
-                      action="store", type="string", dest="profile",
-                      help="Store profiling stats in the given file "
-                           "(Only needed by developers)")
-    parser.add_option("-d", "--debug",
-                      action="store_true", dest="debug",
-                      help="Show a lot of additional information and drop to "
-                           "a debugging console on unhandled exceptions "
-                           "(Only needed by developers)")
-    parser.add_option("-s", "--single",
-                      action="store_true", dest="single",
-                      help="Only perform one command and don't listen on stdin "
-                           "(Only needed by developers)")
-    (options, args) = parser.parse_args()
-    if options.debug:
-        pklog.setLevel(logging.DEBUG)
-        sys.excepthook = debug_exception
-
-    if options.profile:
-        import hotshot
-        prof = hotshot.Profile(options.profile)
-        prof.runcall(run, args, options.single)
-        prof.close()
-    else:
-        run(args, options.single)
+    backend = PackageKitAptBackend()
+    backend.dispatcher(sys.argv[1:])
 
 if __name__ == '__main__':
     main()
