@@ -1,5 +1,0 @@
-The backend can be tested by running it as root from the source code and using
-
-  sudo python aptBackend.py --debug
-
-Use the --help command line switch for more details.
