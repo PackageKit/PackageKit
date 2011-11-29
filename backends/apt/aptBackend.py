@@ -326,7 +326,7 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
             self._backend._emit_package(pkg, info)
 
     def start(self):
-        self._backend.status(enum.STATUS_DOWNLOAD)
+        self._backend.status(enums.STATUS_DOWNLOAD)
         self._backend.allow_cancel(True)
 
     def stop(self):
@@ -390,7 +390,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         self.master_fd = None
         self.child_pid = None
         self.last_pkg = None
-        self.last_item_percentage = None
+        self.last_item_percentage = 0
 
     def status_change(self, pkg_name, percent, status):
         """Callback for APT status updates."""
@@ -428,7 +428,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         # - Afterwards:
         #   - "Running post-installation"
         # Emit a Package signal for the currently processed package
-        elif status.startswith("Preparing"):
+        if status.startswith("Preparing"):
             item_percentage = self.last_item_percentage + 25
             info = enums.INFO_PREPARING
         elif status.startswith("Installing"):
@@ -1855,6 +1855,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "There are broken dependecies on your system. "
                        "Please use an advanced package manage e.g. "
                        "Synaptic or aptitude to resolve this situation.")
+        if rootdir:
+            apt_pkg.config.clear("DPkg::Post-Invoke")
+            apt_pkg.config.clear("DPkg::Options")
+            apt_pkg.config["DPkg::Options::"] = "--root=%s" % rootdir
+            dpkg_log = "--log=%s/var/log/dpkg.log" % rootdir
+            apt_pkg.config["DPkg::Options::"] = dpkg_log
         self._last_cache_refresh = time.time()
 
     def _recover(self, start=95, end=100):
@@ -1891,11 +1897,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def _commit_changes(self, fetch_start=10, fetch_end=50,
                         install_start=50, install_end=90):
         """Commit changes to the system."""
+        acquire_prog = PackageKitAcquireProgress(self, fetch_start, fetch_end)
+        inst_prog = PackageKitInstallProgress(self, install_start, install_end)
         try:
-            self._cache.commit(PackageKitAcquireProgress(self, fetch_start,
-                                                         fetch_end),
-                               PackageKitInstallProgress(self, install_start,
-                                                         install_end))
+            self._cache.commit(acquire_prog, inst_prog)
         except apt.cache.FetchFailedException as err:
             self._open_cache(start=95, end=100)
             pklog.critical(format_string(err.message))
@@ -1912,6 +1917,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                   "This can be caused by maintainer scripts which " \
                   "require input on the terminal:\n%s" % err.message
             self.error(enums.ERROR_INTERNAL_ERROR, format_string(msg))
+        except SystemError as err:
+            self._recover()
+            self.error(enums.ERROR_INTERNAL_ERROR,
+                       format_string("%s\n%s" % (err.message,
+                                                 inst_prog.output)))
         except PackageManagerFailedPKError as err:
             self._recover()
             self.error(enums.ERROR_INTERNAL_ERROR,
