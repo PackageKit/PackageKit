@@ -236,17 +236,22 @@ class DpkgInstallProgress(apt.progress.base.InstallProgress):
     #FIXME: Use the merged DpkgInstallProgress of python-apt
     def recover(self):
         """Run 'dpkg --configure -a'."""
-        cmd = ["/usr/bin/dpkg", "--status-fd", str(self.writefd),
+        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
+                "--status-fd", str(self.writefd),
                "--root", apt_pkg.config["Dir"],
-               "--force-confdef", "--force-confold", 
-               "--configure", "-a"]
+               "--force-confdef", "--force-confold"]
+        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
+        cmd.extend(("--configure", "-a"))
         self.run(cmd)
 
     def install(self, filenames):
         """Install the given package using a dpkg command line call."""
-        cmd = ["/usr/bin/dpkg", "--force-confdef", "--force-confold",
+        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
+               "--force-confdef", "--force-confold",
                "--status-fd", str(self.writefd), 
-               "--root", apt_pkg.config["Dir"], "-i"]
+               "--root", apt_pkg.config["Dir"]]
+        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
+        cmd.append("-i")
         cmd.extend([str(f) for f in filenames])
         self.run(cmd)
 
