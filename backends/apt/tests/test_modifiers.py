@@ -245,6 +245,23 @@ Auto-Installed: 1""")
         self.assertEqual(self.backend._cache["silly-depend-base"].is_installed,
                          True)
 
+    def test_media_change_fail(self):
+        """Test correct failure in the case of missing medium."""
+        self._catch_callbacks()
+        self.backend.error(enums.ERROR_MEDIA_CHANGE_REQUIRED, mox.IsA(unicode),
+                           True)
+        self.backend.finished()
+        # Setup environment
+        self.mox.ReplayAll()
+        self.chroot.add_trusted_key()
+        self.chroot.add_cdrom_repository()
+        self.backend._cache.open()
+        # Install the package
+        self.backend.dispatch_command("install-packages",
+                                      ["True", "silly-base;0.1-0;all;"])
+        self.backend._cache.open()
+        self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
+
 
 if __name__ == "__main__":
     unittest.main()

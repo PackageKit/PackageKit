@@ -310,6 +310,7 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
         self.last_progress = None
         self.last_sub_progress = None
         self.package_states = {}
+        self.media_change_required = None
 
     def pulse(self, owner):
         #TODO: port to pulse(owner)
@@ -348,17 +349,10 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
         self._backend.allow_cancel(False)
 
     def media_change(self, medium, drive):
-        #FIXME: Perhaps use hal to show a nicer drive name
+        #FIXME: Perhaps use gudev to show a nicer drive name
         self._backend.media_change_required(enums.MEDIA_TYPE_DISC, medium,
                                             drive)
-        # FIXME: We cannot call sys.exit() here. APT module would procduce
-        #        a backend error message otherwise. This way the backend
-        #        sends another error message in the FetchFailedError handling
-        #        later, but this one will be skipped by the daemon
-        self._backend.error(enums.ERROR_MEDIA_CHANGE_REQUIRED,
-                            "Insert the CDROM or DVD labeled '%s' "
-                            "into drive '%s'" % (medium, drive),
-                            exit=False)
+        self.media_change_required = medium, drive
         return False
 
 
@@ -1956,9 +1950,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             self._cache.commit(acquire_prog, inst_prog)
         except apt.cache.FetchFailedException as err:
-            pklog.critical(format_string(err.message))
-            raise PKError(enums.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                          format_string(err.message))
+            if acquire_prog.media_change_required:
+                raise PKError(enums.ERROR_MEDIA_CHANGE_REQUIRED,
+                              format_string(err.message))
+            else:
+                pklog.critical(format_string(err.message))
+                raise PKError(enums.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                              format_string(err.message))
         except apt.cache.FetchCancelledException:
             raise PKError(enums.TRANSACTION_CANCELLED)
         except PKError as error:
