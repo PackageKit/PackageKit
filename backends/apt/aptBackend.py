@@ -1097,7 +1097,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             for dep_name in installed_deps:
                 if dep_name in self._cache:
                     pkg = self._cache[dep_name]
-                    if pkg.is_installed and pkg.is_auto_removeable:
+                    if pkg.is_installed and pkg.is_auto_removable:
                         pkg.mark_delete(False)
 
     def _installed_dependencies(self, pkg_name, all_deps=None):
