@@ -171,6 +171,15 @@ class PackageKitBaseBackend:
         print("speed\t%i" % (bps))
         sys.stdout.flush()
 
+    def item_percentage(self, package_id, percent=None):
+        '''
+        send 'itemprogress' signal
+        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param percent: percentage of the current item (int preferred)
+        '''
+        print("item-percentage\t%s\t%i" % (package_id, percent))
+        sys.stdout.flush()
+
     def sub_percentage(self, percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
