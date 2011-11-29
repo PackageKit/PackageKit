@@ -13,11 +13,5 @@ A list of implemented functions are listed in the PackageKit FAQ:
 
 http://www.packagekit.org/pk-faq.html
 
-You can find packages for Ubuntu here:
-
-https://www.launchpad.net/~packagekit/+ppa
-
-Packages for Debian Unstable will be provided soon.
-
 Feel free to send comments or bug reports to the PackageKit mailing list
-or to the author.
+or to the author directly.
