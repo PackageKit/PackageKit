@@ -667,6 +667,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_simulate_update_packages", (gpointer *)&desc->simulate_update_packages);
 			g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
 			g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
+			g_module_symbol (handle, "pk_backend_transaction_reset", (gpointer *)&desc->transaction_reset);
 			g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 			g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
@@ -2362,6 +2363,7 @@ pk_backend_get_exit_code (PkBackend *backend)
  *
  * >>> desc->transaction_start(backend)
  *     (locked backend)
+ * >>> desc->transaction_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::Package(PK_INFO_ENUM_INSTALLING,"hal;0.1.1;i386;fedora","Hardware Stuff")
  * >>> desc->transaction_stop(backend)
@@ -2371,6 +2373,7 @@ pk_backend_get_exit_code (PkBackend *backend)
  * or in the case of backend_method_we_want_to_run() failure:
  * >>> desc->transaction_start(backend)
  *     (locked backend)
+ * >>> desc->transaction_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_FIND,"no package")
  * >>> desc->transaction_stop(backend)
@@ -2399,6 +2402,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	}
 
 	/* run the transaction setup */
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->transaction_start (backend);
 }
 
@@ -2423,7 +2427,28 @@ pk_backend_transaction_stop (PkBackend *backend)
 	}
 
 	/* run the transaction setup */
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->transaction_stop (backend);
+out:
+	return;
+}
+
+/**
+ * pk_backend_transaction_reset:
+ */
+void
+pk_backend_transaction_reset (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* no transaction setup is perfectly fine */
+	if (backend->priv->desc->transaction_reset == NULL) {
+		g_debug ("no transaction reset vfunc");
+		goto out;
+	}
+
+	/* run the transaction setup */
+	backend->priv->desc->transaction_reset (backend);
 out:
 	return;
 }
@@ -3304,6 +3329,7 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_string (backend->priv->store, "directory", directory);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->download_packages (backend, package_ids, directory);
 }
 
@@ -3316,6 +3342,7 @@ pk_backend_get_categories (PkBackend *backend)
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_categories != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_CATEGORIES);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_categories (backend);
 }
 
@@ -3331,6 +3358,7 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "recursive", recursive);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_depends (backend, filters, package_ids, recursive);
 }
 
@@ -3344,6 +3372,7 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_details != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DETAILS);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_details (backend, package_ids);
 }
 
@@ -3356,6 +3385,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend)
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_distro_upgrades != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_distro_upgrades (backend);
 }
 
@@ -3369,6 +3399,7 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_FILES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_files (backend, package_ids);
 }
 
@@ -3384,6 +3415,7 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "recursive", recursive);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_requires (backend, filters, package_ids, recursive);
 }
 
@@ -3397,6 +3429,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_update_detail != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_update_detail (backend, package_ids);
 }
 
@@ -3410,6 +3443,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_updates != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_updates (backend, filters);
 }
 
@@ -3425,6 +3459,7 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->install_packages (backend, only_trusted, package_ids);
 }
 
@@ -3439,6 +3474,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	pk_store_set_string (backend->priv->store, "key_id", key_id);
 	pk_store_set_string (backend->priv->store, "package_id", package_id);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->install_signature (backend, type, key_id, package_id);
 }
 
@@ -3454,6 +3490,7 @@ pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **ful
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->install_files (backend, only_trusted, full_paths);
 }
 
@@ -3467,6 +3504,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend->priv->desc->refresh_cache != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_store_set_bool (backend->priv->store, "force", force);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->refresh_cache (backend, force);
 }
 
@@ -3483,6 +3521,7 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
 	pk_store_set_bool (backend->priv->store, "allow_deps", allow_deps);
 	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->remove_packages (backend, package_ids, allow_deps, autoremove);
 }
 
@@ -3497,6 +3536,7 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_RESOLVE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->resolve (backend, filters, package_ids);
 }
 
@@ -3510,6 +3550,7 @@ pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
 	g_return_if_fail (backend->priv->desc->rollback != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_ROLLBACK);
 	pk_store_set_string (backend->priv->store, "transaction_id", transaction_id);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->rollback (backend, transaction_id);
 }
 
@@ -3524,6 +3565,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_DETAILS);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->search_details (backend, filters, values);
 }
 
@@ -3538,6 +3580,7 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_FILE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->search_files (backend, filters, values);
 }
 
@@ -3552,6 +3595,7 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_GROUP);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->search_groups (backend, filters, values);
 }
 
@@ -3566,6 +3610,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_NAME);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->search_names (backend, filters, values);
 }
 
@@ -3581,6 +3626,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->update_packages (backend, only_trusted, package_ids);
 }
 
@@ -3595,6 +3641,7 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->update_system (backend, only_trusted);
 }
 
@@ -3608,6 +3655,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_repo_list != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REPO_LIST);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_repo_list (backend, filters);
 }
 
@@ -3622,6 +3670,7 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabl
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_ENABLE);
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_bool (backend->priv->store, "enabled", enabled);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->repo_enable (backend, repo_id, enabled);
 }
 
@@ -3637,6 +3686,7 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_string (backend->priv->store, "parameter", parameter);
 	pk_store_set_string (backend->priv->store, "value", value);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->repo_set_data (backend, repo_id, parameter, value);
 }
 
@@ -3652,6 +3702,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_uint (backend->priv->store, "provides", provides);
 	pk_store_set_strv (backend->priv->store, "search", values);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->what_provides (backend, filters, provides, values);
 }
 
@@ -3665,6 +3716,7 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_PACKAGES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->get_packages (backend, filters);
 }
 
@@ -3679,6 +3731,7 @@ pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->simulate_install_files (backend, full_paths);
 }
 
@@ -3693,6 +3746,7 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->simulate_install_packages (backend, package_ids);
 }
 
@@ -3708,6 +3762,7 @@ pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gb
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->simulate_remove_packages (backend, package_ids, autoremove);
 }
 
@@ -3722,6 +3777,7 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->simulate_update_packages (backend, package_ids);
 }
 
@@ -3736,6 +3792,7 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
 	pk_store_set_uint (backend->priv->store, "upgrade_kind", upgrade_kind);
+	pk_backend_transaction_reset (backend);
 	backend->priv->desc->upgrade_system (backend, distro_id, upgrade_kind);
 }
 
