@@ -438,14 +438,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files qt-devel
 %defattr(-,root,root,-)
 %{_libdir}/libpackagekit-qt*.so
-%{_libdir}/pkgconfig/packagekit-qt.pc
-%dir %{_includedir}/PackageKit
-%dir %{_includedir}/PackageKit/packagekit-qt
-%{_includedir}/PackageKit/packagekit-qt/QPackageKit
-%{_includedir}/PackageKit/packagekit-qt/*.h
-%{_datadir}/cmake/Modules/FindQPackageKit.cmake
-
-# qt2 new library
 %{_includedir}/PackageKit/packagekit-qt2/*
 %{_libdir}/pkgconfig/packagekit-qt2.pc
 %{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
