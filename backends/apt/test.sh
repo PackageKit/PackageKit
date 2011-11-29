@@ -1,2 +1,2 @@
 #!/bin/sh
-nosetests $@ --with-coverage --cover-package=aptDBUSBackend --pdb tests.py
+nosetests $@ --with-coverage --cover-package=aptBackend --pdb tests
