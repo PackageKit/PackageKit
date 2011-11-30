@@ -70,6 +70,8 @@ class FilterTests(mox.MoxTestBase):
         self._catch_callbacks("package")
         self.backend.package("silly-depend-base;0.1-0;all;",
                              enums.INFO_AVAILABLE, mox.IsA(str))
+        self.backend.package("silly-depend-base-lintian-broken;0.1-0;all;",
+                             enums.INFO_AVAILABLE, mox.IsA(str))
         self.backend.finished()
         self.mox.ReplayAll()
         self.backend._cache.open()
