@@ -364,12 +364,6 @@ pk_backend_transaction_start (PkBackend *backend)
 	zif_config_set_boolean (priv->config, "background",
 				pk_backend_use_background (backend), NULL);
 
-	/* setup state */
-	zif_state_reset (priv->state);
-
-	/* allow cancelling again */
-	g_cancellable_reset (priv->cancellable);
-
 	/* start with a new transaction */
 #if ZIF_CHECK_VERSION(0,2,4)
 	g_object_get (backend,
@@ -388,6 +382,19 @@ out:
 #endif
 	g_free (http_proxy);
 	return;
+}
+
+/**
+ * pk_backend_transaction_reset:
+ */
+void
+pk_backend_transaction_reset (PkBackend *backend)
+{
+	/* setup state */
+	zif_state_reset (priv->state);
+
+	/* allow cancelling again */
+	g_cancellable_reset (priv->cancellable);
 }
 
 /**

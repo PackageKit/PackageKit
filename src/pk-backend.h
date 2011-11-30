@@ -120,6 +120,7 @@ void		pk_backend_initialize			(PkBackend	*backend);
 void		pk_backend_destroy			(PkBackend	*backend);
 void		pk_backend_transaction_start		(PkBackend	*backend);
 void		pk_backend_transaction_stop		(PkBackend	*backend);
+void		pk_backend_transaction_reset		(PkBackend	*backend);
 void		pk_backend_get_categories		(PkBackend	*backend);
 void		pk_backend_get_depends			(PkBackend	*backend,
 							 PkBitfield	 filters,
@@ -481,7 +482,8 @@ typedef struct {
 	void		(*upgrade_system)		(PkBackend	*backend,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
-	gpointer	padding[7];
+	void		(*transaction_reset)		(PkBackend	*backend);
+	gpointer	padding[6];
 } PkBackendDesc;
 
 G_END_DECLS
