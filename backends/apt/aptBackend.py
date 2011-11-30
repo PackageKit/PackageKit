@@ -492,10 +492,16 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
             # Restore the exception handler to avoid catches by apport
             sys.excepthook = sys.__excepthook__
             signal.signal(signal.SIGINT, interrupt_handler)
-            # Avoid questions from the maintainer scripts as far as possible
-            os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+            # Avoid questions as far as possible
             os.environ["APT_LISTCHANGES_FRONTEND"] = "none"
             os.environ["APT_LISTBUGS_FRONTEND"] = "none"
+            # Check if debconf communication can be piped to the client
+            frontend_socket = os.getenv("FRONTEND_SOCKET", None)
+            if frontend_socket:
+                os.environ["DEBCONF_PIPE"] = frontend_socket
+                os.environ["DEBIAN_FRONTEND"] = "passthrough"
+            else:
+                os.environ["DEBIAN_FRONTEND"] = "noninteractive"
             # Force terminal messages in dpkg to be untranslated, status-fd or
             # debconf prompts won't be affected
             os.environ["DPKG_UNTRANSLATED_MESSAGES"] = "1"
