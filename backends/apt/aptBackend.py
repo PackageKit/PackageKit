@@ -94,13 +94,6 @@ socket.setdefaulttimeout(2)
 # Required for daemon mode
 os.putenv("PATH",
           "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
-# Avoid questions from the maintainer scripts as far as possible
-os.putenv("DEBIAN_FRONTEND", "noninteractive")
-os.putenv("APT_LISTCHANGES_FRONTEND", "none")
-os.putenv("APT_LISTBUGS_FRONTEND", "none")
-# Force terminal messages in dpkg to be untranslated, status-fd or debconf
-# prompts won't be affected
-os.putenv("DPKG_UNTRANSLATED_MESSAGES", "1")
 
 # Map Debian sections to the PackageKit group name space
 SECTION_GROUP_MAP = {
@@ -491,6 +484,23 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         (pid, self.master_fd) = pty.fork()
         if pid != 0:
             fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
+        else:
+            def interrupt_handler(signum, frame):
+                # Exit the child immediately if we receive the interrupt signal
+                # or a Ctrl+C - to avoid that atexit would be called
+                os._exit(apt_pkg.PackageManager.RESULT_FAILED)
+            # Restore the exception handler to avoid catches by apport
+            sys.excepthook = sys.__excepthook__
+            signal.signal(signal.SIGINT, interrupt_handler)
+            # Avoid questions from the maintainer scripts as far as possible
+            os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+            os.environ["APT_LISTCHANGES_FRONTEND"] = "none"
+            os.environ["APT_LISTBUGS_FRONTEND"] = "none"
+            # Force terminal messages in dpkg to be untranslated, status-fd or
+            # debconf prompts won't be affected
+            os.environ["DPKG_UNTRANSLATED_MESSAGES"] = "1"
+            # We also want untranslated status messages from apt on status-fd
+            locale.setlocale(locale.LC_ALL, "C")
         return pid
 
     def update_interface(self):
