@@ -24,7 +24,6 @@ EXTRA_DIST =						\
 	20packagekit					\
 	update-packagekit-app-data			\
 	README.apt					\
-	TODO.apt					\
 	$(NULL)
 
 install-data-hook:
