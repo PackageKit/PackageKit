@@ -825,6 +825,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	if (!pk_strzero (locale))
 		g_hash_table_replace (env_table, g_strdup ("LANG"), g_strdup (locale));
 
+	/* FRONTEND SOCKET */
+	value = pk_backend_get_frontend_socket (priv->backend);
+	if (!pk_strzero (value))
+		g_hash_table_replace (env_table, g_strdup ("FRONTEND_SOCKET"), g_strdup (value));
+
 	/* ROOT */
 	value = pk_backend_get_root (priv->backend);
 	if (!pk_strzero (value))
