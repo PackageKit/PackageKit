@@ -160,6 +160,10 @@ HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
 
+# After the given amount of seconds without any updates on the console or
+# progress kill the installation
+TIMEOUT_IDLE_INSTALLATION = 10 * 60 * 10000
+
 # Required to get translated descriptions
 try:
     locale.setlocale(locale.LC_ALL, "")
@@ -224,45 +228,6 @@ class PKError(Exception):
 
     def __str__(self):
         return "%s: %s" % (self.enum, self.msg)
-
-
-class DpkgInstallProgress(apt.progress.base.InstallProgress):
-
-    """Class to initiate and monitor installation of local package
-    files with dpkg.
-    """
-
-    #FIXME: Use the merged DpkgInstallProgress of python-apt
-    def recover(self):
-        """Run 'dpkg --configure -a'."""
-        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
-                "--status-fd", str(self.writefd),
-               "--root", apt_pkg.config["Dir"],
-               "--force-confdef", "--force-confold"]
-        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
-        cmd.extend(("--configure", "-a"))
-        self.run(cmd)
-
-    def install(self, filenames):
-        """Install the given package using a dpkg command line call."""
-        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
-               "--force-confdef", "--force-confold",
-               "--status-fd", str(self.writefd), 
-               "--root", apt_pkg.config["Dir"]]
-        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
-        cmd.append("-i")
-        cmd.extend([str(f) for f in filenames])
-        self.run(cmd)
-
-    def run(self, cmd):
-        """Run and monitor a dpkg command line call."""
-        pklog.debug("Executing: %s" % cmd)
-        (self.master_fd, slave) = pty.openpty()
-        fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
-        p = subprocess.Popen(cmd, stdout=slave, stdin=slave)
-        self.child_pid = p.pid
-        res = self.wait_child()
-        return res
 
 
 class PackageKitOpProgress(apt.progress.base.OpProgress):
@@ -392,7 +357,6 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         self.last_activity = None
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
-        self.timeout = 10 * 60
         self.start_time = None
         self.output = ""
         self.master_fd = None
@@ -495,7 +459,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         self.last_pkg = pkg_name
         self.last_item_percentage = item_percentage
 
-    def dpkg_status_changed(self, pkg_name, status):
+    def processing(self, pkg_name, status):
         """Callback for dpkg status updates."""
         if status == "install":
             info = enums.INFO_INSTALLING
@@ -539,9 +503,9 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         except OSError:
             pass
         # catch a time out by sending crtl+c
-        if self.last_activity + self.timeout < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" \
-                           % self.timeout)
+        if self.last_activity + TIMEOUT_IDLE_INSTALLATION < time.time():
+            pklog.critical("no activity for %s seconds sending ctrl-c" \
+                           % TIMEOUT_IDLE_INSTALLATION)
             os.write(self.master_fd, chr(3))
             msg = "Transaction was cancelled since the installation " \
                   "of a package hung.\n" \
@@ -582,35 +546,44 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
             self._backend.require_restart(enums.RESTART_SYSTEM, "")
 
 
-class PackageKitDpkgInstallProgress(DpkgInstallProgress,
-                                    PackageKitInstallProgress):
+class PackageKitDpkgInstallProgress(PackageKitInstallProgress):
+
+    """Class to initiate and monitor installation of local package
+    files with dpkg.
     """
-    Class to integrate the progress of core dpkg operations into PackageKit
-    """
-    def run(self, filenames):
-        return DpkgInstallProgress.run(self, filenames)
 
-    def update_interface(self):
-        DpkgInstallProgress.update_interface(self)
-        try:
-            out = os.read(self.master_fd, 512)
-            self.output += out
-            if out != "": pklog.debug("Dpkg out: %s" % out)
-        except OSError:
-            pass
-        # we timed out, send ctrl-c
-        if self.last_activity + self.timeout < time.time():
-            pklog.critical("no activity for %s time sending "
-                           "ctrl-c" % self.timeout)
-            os.write(self.master_fd, chr(3))
-            msg = "Transaction was cancelled since the installation " \
-                  "of a package hung.\n" \
-                  "This can be caused by maintainer scripts which " \
-                  "require input on the terminal:\n%s" % self.output
-            raise PKError(enums.ERROR_PACKAGE_FAILED_TO_CONFIGURE,
-                          format_string(msg))
+    def recover(self):
+        """Run 'dpkg --configure -a'."""
+        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
+                "--status-fd", str(self.writefd),
+               "--root", apt_pkg.config["Dir"],
+               "--force-confdef", "--force-confold"]
+        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
+        cmd.extend(("--configure", "-a"))
+        self.run(cmd)
 
+    def install(self, filenames):
+        """Install the given package using a dpkg command line call."""
+        cmd = [apt_pkg.config.find_file("Dir::Bin::Dpkg"),
+               "--force-confdef", "--force-confold",
+               "--status-fd", str(self.writefd), 
+               "--root", apt_pkg.config["Dir"]]
+        cmd.extend(apt_pkg.config.value_list("Dpkg::Options"))
+        cmd.append("-i")
+        cmd.extend([str(f) for f in filenames])
+        self.run(cmd)
 
+    def run(self, cmd):
+        """Run and monitor a dpkg command line call."""
+        pklog.debug("Executing: %s" % cmd)
+        (self.master_fd, slave) = pty.openpty()
+        fcntl.fcntl(self.master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
+        p = subprocess.Popen(cmd, stdout=slave, stdin=slave)
+        self.child_pid = p.pid
+        res = self.wait_child()
+        return res
+
+ 
 if REPOS_SUPPORT == True:
     class PackageKitSoftwareProperties(softwareproperties.SoftwareProperties.SoftwareProperties):
         """

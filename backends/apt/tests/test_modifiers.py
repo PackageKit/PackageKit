@@ -22,7 +22,9 @@
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import glob
 import os
+import shutil
 import unittest
 
 import apt_pkg
@@ -30,7 +32,7 @@ import mox
 
 from core import get_tests_dir, Chroot
 from packagekit import enums
-from aptBackend import PackageKitAptBackend
+import aptBackend
 
 REPO_PATH = os.path.join(get_tests_dir(), "repo")
 
@@ -48,7 +50,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         self.chroot = Chroot()
         self.chroot.setup()
         self.addCleanup(self.chroot.remove)
-        self.backend = PackageKitAptBackend([])
+        self.backend = aptBackend.PackageKitAptBackend([])
 
     def _catch_callbacks(self, *args):
         methods = list(args)
@@ -123,6 +125,43 @@ class CacheModifiersTests(mox.MoxTestBase):
                                       ["True", "silly-base;0.1-0update1;all;"])
         self.backend._cache.open()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, True)
+
+    def test_install_fail(self):
+        """Test handling the installation of failing packages."""
+        self._catch_callbacks()
+        self.backend.error(enums.ERROR_PACKAGE_FAILED_TO_INSTALL,
+                           mox.IsA(str), True)
+        self.backend.finished()
+        # Setup environment
+        self.mox.ReplayAll()
+        self.chroot.add_test_repository()
+        self.backend._cache.open()
+        # Install the package
+        self.backend.dispatch_command("install-packages",
+                                      ["True", "silly-fail;0.1-0;all;"])
+        self.backend._cache.open()
+        self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
+
+    def test_install_timeout(self):
+        """Test installation of hanging package."""
+        if os.getuid() != 0:
+            self.skipTest("The test requires root privileges")
+        self._catch_callbacks()
+        self.backend.error(enums.ERROR_PACKAGE_FAILED_TO_CONFIGURE,
+                           mox.IsA(u""), True)
+        self.backend.finished()
+        # Setup environment
+        self.mox.ReplayAll()
+        self.chroot.add_test_repository()
+        # Copy the files for a small execution environment to execute dash
+        os.system("dpkg -L dash libc6 |"
+                  "xargs -i cp --parents '{}' %s" % self.chroot.path)
+        self.backend._cache.open()
+        aptBackend.TIMEOUT_IDLE_INSTALLATION = 5
+        # Install the package
+        self.backend.dispatch_command("install-packages",
+                                      ["True",
+                                       "silly-postinst-input;0.1-0;all;"])
 
     def test_install_only_trusted(self):
         """Test if the installation of a not trusted package fails."""

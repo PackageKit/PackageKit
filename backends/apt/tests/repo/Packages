@@ -1,21 +1,23 @@
-Package: silly-fail
+Package: gstreamer0.10-silly
 Priority: extra
 Section: admin
-Installed-Size: 36
+Installed-Size: 168
 Maintainer: Sebastian Heinlein <devel@glatzor.de>
 Architecture: all
 Source: silly-packages
 Version: 0.1-0
-Filename: ./silly-fail_0.1-0_all.deb
-Size: 1874
-MD5sum: 623a67e49bb7a1351a9bf1ae72fc6cfb
-SHA1: 76417770f2b788b680ef18be66b5a6c4ec51bc62
-SHA256: 45fea3eb64a427a288a90b12f42cc3a6abea8e8387efd4879b319db736890ebd
-Description: installation fails
+Depends: libc6 (>= 2.7-1), libglib2.0-0 (>= 2.16.0), libgstreamer-plugins-base0.10-0 (>= 0.10.0), libgstreamer0.10-0 (>= 0.10.14), libogg0 (>= 1.0rc3)
+Filename: ./gstreamer0.10-silly_0.1-0_all.deb
+Size: 51932
+MD5sum: c78ae695b2385f3f0e8df5c44b3e6759
+SHA1: 65a73c0059d8642986da2b34aae89bfa39202bac
+SHA256: b51b33092eedc4ef5c9461c730f50f107b4dd6958b6f7a7bfe548d002be181d7
+SHA512: a61d5114990f9277d2343ff83273091690a695b2ef4c720bddab8cc2120ec9740d570781a528cc3dffaa65774a44ec9b112af13fb1e0dd2bfad5dce1c528e8cc
+Description: gstreamer plugin test package
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
- This installation of this package will always fail.
+ This package is a GStreamer test plugin package.
 
 Package: silly-depend-base
 Priority: extra
@@ -31,49 +33,12 @@ Size: 1812
 MD5sum: 3ee7181283e4926558d2afdf7b2657f1
 SHA1: 8294794b1727e22b123866f9124431a2c7b79380
 SHA256: 5fa74f7bdc0d207188790419130330becb0cf7484a972762ed512090885016f9
+SHA512: f027e670ebd22b90fafb9b0a487a403a840c7b1abccf3a11709466b27d111cfd5afe66ad4e49a56ca4d52c8829e8e00c705bac34e7a7eedc2eac8831540a126b
 Description: package depending on silly-base
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
  This package depends on silly-base.
-
-Package: silly-config
-Priority: extra
-Section: admin
-Installed-Size: 44
-Maintainer: Sebastian Heinlein <devel@glatzor.de>
-Architecture: all
-Source: silly-packages
-Version: 0.1-0
-Filename: ./silly-config_0.1-0_all.deb
-Size: 1928
-MD5sum: 565698b052640ed3d514f6b38ad457c7
-SHA1: e7169cc58f10e8ff9481cf31b2ffb947bc99f617
-SHA256: 255f025bae5b24a91158e7daa986f9bf59146ab1895f39452104eb97c412d190
-Description: wants to update a locally changed config file
- Silly packages is a set of packages which will break your package
- management tool. They are created only for debugging purposes.
- .
- This package will install a configuration file.
-
-Package: silly-postinst-input
-Priority: extra
-Section: admin
-Installed-Size: 36
-Maintainer: Sebastian Heinlein <devel@glatzor.de>
-Architecture: all
-Source: silly-packages
-Version: 0.1-0
-Filename: ./silly-postinst-input_0.1-0_all.deb
-Size: 1906
-MD5sum: 99eecdacbcdf95b9e7b3b0c50f812a8d
-SHA1: c066b13414faa9931ff688c29f6dbcf4809861a9
-SHA256: ce6e4f7f59c3d1da45ff0b3e8e54ebdcf9a5b44edeccf9fc04c96daec5cfa020
-Description: breaks your non-interactive package manager
- Silly packages is a set of packages which will break your package
- management tool. They are created only for debugging purposes.
- .
- This package will wait for user input in the postinst script.
 
 Package: silly-base
 Priority: extra
@@ -88,50 +53,12 @@ Size: 1934
 MD5sum: 8e20af56a63a1e0cf40db3b0d07e7989
 SHA1: 7ce87423d9c7a734478c464021994944d07fbf1b
 SHA256: d3693c0e3e7a9519b2833fdf1301c7e03e0620edf15b95b4c7329d9eb0bee553
+SHA512: e9eded74e2449a98b02828539c55a83de85a762d2361cd8c929292eb9c5a6e5a9b8eb9b64c26c45d7b73280e12a280cd799a9b831126e484bcf55b56456d559f
 Description: working package
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
  This package doesn't contain any files and should always be installable.
-
-Package: silly-base
-Priority: extra
-Section: admin
-Installed-Size: 32
-Maintainer: Sebastian Heinlein <devel@glatzor.de>
-Architecture: all
-Source: silly-packages
-Version: 0.1-0
-Filename: ./silly-base_0.1-0_all.deb
-Size: 1824
-MD5sum: 81ba1cf86142c466f35a36a11b5b7b52
-SHA1: f949c8e5962a43fbcd4f7d67df0ebe741052c497
-SHA256: a7c2a30abdb6488d5c3d2894db398f5dfafbc6be098da1135822be4e3ac94b32
-Description: working package
- Silly packages is a set of packages which will break your package
- management tool. They are created only for debugging purposes.
- .
- This package doesn't contain any files and should always be installable.
-
-Package: gstreamer0.10-silly
-Priority: extra
-Section: admin
-Installed-Size: 168
-Maintainer: Sebastian Heinlein <devel@glatzor.de>
-Architecture: all
-Source: silly-packages
-Version: 0.1-0
-Depends: libc6 (>= 2.7-1), libglib2.0-0 (>= 2.16.0), libgstreamer-plugins-base0.10-0 (>= 0.10.0), libgstreamer0.10-0 (>= 0.10.14), libogg0 (>= 1.0rc3)
-Filename: ./gstreamer0.10-silly_0.1-0_all.deb
-Size: 51932
-MD5sum: c78ae695b2385f3f0e8df5c44b3e6759
-SHA1: 65a73c0059d8642986da2b34aae89bfa39202bac
-SHA256: b51b33092eedc4ef5c9461c730f50f107b4dd6958b6f7a7bfe548d002be181d7
-Description: gstreamer plugin test package
- Silly packages is a set of packages which will break your package
- management tool. They are created only for debugging purposes.
- .
- This package is a GStreamer test plugin package.
 
 Package: silly-essential
 Essential: yes
@@ -147,30 +74,32 @@ Size: 1800
 MD5sum: 492c977ce9b2f1b6a51d7c475aad058b
 SHA1: 06fb9a5efb07f72edbd297d2a21cffd1787a2388
 SHA256: e516159e99bd40d860515e4c9af251ab056eaabae58ea3f5ee11eecc4f3bee50
+SHA512: 37ea6868c65f9e54a06572731fc2c1c3ce19d330c76e4c34b747a7e286f501c94abfa1a31b328c2be106e55c3f75f570811642cc33fa68def7c69c2bd7a6d2fa
 Description: an essential package
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
  This package is an essential one.
 
-Package: silly-important
-Priority: important
+Package: silly-config
+Priority: extra
 Section: admin
-Installed-Size: 32
+Installed-Size: 44
 Maintainer: Sebastian Heinlein <devel@glatzor.de>
 Architecture: all
 Source: silly-packages
 Version: 0.1-0
-Filename: ./silly-important_0.1-0_all.deb
-Size: 1792
-MD5sum: ef9a1eefd088a375ef58773831256205
-SHA1: 4075517d20fdd81d8642ab0febe7ad8c5fcde4f0
-SHA256: 3003723f0f2686a6ed700f364b0c13c966026c5e5f3b383969d87b5dba411d5e
-Description: an essential package
+Filename: ./silly-config_0.1-0_all.deb
+Size: 1928
+MD5sum: 565698b052640ed3d514f6b38ad457c7
+SHA1: e7169cc58f10e8ff9481cf31b2ffb947bc99f617
+SHA256: 255f025bae5b24a91158e7daa986f9bf59146ab1895f39452104eb97c412d190
+SHA512: 093e3ba825b0af7daa8df936fcd08fd32fa11288f40869a54b53af8c6b7e89c2e1bab4fb45346c6396ae50663beca46c7b62dda88e488130fc519a6217ba7d0d
+Description: wants to update a locally changed config file
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
- This package is an essential one.
+ This package will install a configuration file.
 
 Package: silly-broken
 Priority: extra
@@ -186,9 +115,111 @@ Size: 1840
 MD5sum: 78bbe306af637c18f5df9dc47bfbf41f
 SHA1: bb63cdbde699fe2100349b0418af095e6d9f80fe
 SHA256: a816e61369de433e261b5ad041e913ee3c140637825ce6613a5c99efbfd4c21b
+SHA512: 9979a0b4c8e8945311ebfc29459731650b6f636ed6b1f56e7e219d0c86c0d67dcfe273cad98c144ba30a3adcd8af1ddbe2b2eb388758b3d42ff9beec3c948d1f
 Description: package with broken dependencies
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
  This package cannot be installed because of a missing dependency.
+
+Package: silly-important
+Priority: important
+Section: admin
+Installed-Size: 32
+Maintainer: Sebastian Heinlein <devel@glatzor.de>
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Filename: ./silly-important_0.1-0_all.deb
+Size: 1792
+MD5sum: ef9a1eefd088a375ef58773831256205
+SHA1: 4075517d20fdd81d8642ab0febe7ad8c5fcde4f0
+SHA256: 3003723f0f2686a6ed700f364b0c13c966026c5e5f3b383969d87b5dba411d5e
+SHA512: 08d953b1caaf6b3407818b4b09dad148b7d9a733b034cb1f89cd20b791f8d6cc192a0ad8d7a085b680637412003599b7b298756a983e4fd46cae1e5927ee5416
+Description: an essential package
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This package is an essential one.
+
+Package: silly-postinst-input
+Priority: extra
+Section: admin
+Installed-Size: 40
+Maintainer: Sebastian Heinlein <devel@glatzor.de>
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Filename: ./silly-postinst-input_0.1-0_all.deb
+Size: 3904
+MD5sum: ecfcbacc7057f5dd7ba020d36f501f25
+SHA1: 998be954cc9d878a07d995ef41364b0087957078
+SHA256: e35f87b47f124e1d44622f466ba1ef9f421eb038b01b0aa4195de2dd6103d4ad
+SHA512: 318b5814873a5841b7c21182bfb7f4bdb37da6cadad0db3979170c4059274bbb6b7131021cf6a7081e9b1a0730a3d789b24394cb383915b8cfb98cf58b7bae75
+Description: breaks your non-interactive package manager
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This package will wait for user input in the postinst script.
+
+Package: silly-fail
+Priority: extra
+Section: admin
+Installed-Size: 36
+Maintainer: Sebastian Heinlein <devel@glatzor.de>
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Filename: ./silly-fail_0.1-0_all.deb
+Size: 1874
+MD5sum: 623a67e49bb7a1351a9bf1ae72fc6cfb
+SHA1: 76417770f2b788b680ef18be66b5a6c4ec51bc62
+SHA256: 45fea3eb64a427a288a90b12f42cc3a6abea8e8387efd4879b319db736890ebd
+SHA512: ea3978b7e3d94902915ef657835a9ca4b1f400dc7bf6c83e84e5c3c60eb9c8096811b02bb4cd3c5de637a702061cc0d37a1f72834136231953f928a8914a69b1
+Description: installation fails
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This installation of this package will always fail.
+
+Package: silly-base
+Priority: extra
+Section: admin
+Installed-Size: 32
+Maintainer: Sebastian Heinlein <devel@glatzor.de>
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Filename: ./silly-base_0.1-0_all.deb
+Size: 1824
+MD5sum: 81ba1cf86142c466f35a36a11b5b7b52
+SHA1: f949c8e5962a43fbcd4f7d67df0ebe741052c497
+SHA256: a7c2a30abdb6488d5c3d2894db398f5dfafbc6be098da1135822be4e3ac94b32
+SHA512: a4b01d2407fbe5afcd71ce041ebb76bb63c375cdf0fe457b6932d32a9c2815b3b9d369432e3e0a91fceb846bd9399fcb28ab64efbe7edb003ae9dc03191c363e
+Description: working package
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This package doesn't contain any files and should always be installable.
+
+Package: silly-depend-base-lintian-broken
+Priority: extra
+Section: admin
+Installed-Size: 32
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Depends: silly-base
+Filename: ./silly-depend-base-lintian-broken_0.1-0_all.deb
+Size: 1758
+MD5sum: ba9e0b746b08fae8f8a8fbb4cf9ba41e
+SHA1: 8bcaf6034b09383e461f0e366762e6b6683e69e2
+SHA256: ff1302170d232c21ab66f332e38c51b2af9b6d06d8f377ae5944465be9467c22
+SHA512: 514435fbd32a5b478a3a749b30f0b248e651e9145a239ad6ad621305d030e670bc6d4d2d8a08e87955f1dc1b88ef23eb12b0aa1b5fbb077a6105e4a2b63c1697
+Description: package depending on silly-base (but lintian broken)
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This package depends on silly-base and has no "Maintainer" set
+ and the file owner is totally wrong so lintian complains about it.
 
