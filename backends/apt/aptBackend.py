@@ -160,6 +160,10 @@ HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
 
+# After the given amount of seconds without any updates on the console or
+# progress kill the installation
+TIMEOUT_IDLE_INSTALLATION = 10 * 60 * 10000
+
 # Required to get translated descriptions
 try:
     locale.setlocale(locale.LC_ALL, "")
@@ -353,7 +357,6 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         self.last_activity = None
         self.conffile_prompts = set()
         # insanly long timeout to be able to kill hanging maintainer scripts
-        self.timeout = 10 * 60
         self.start_time = None
         self.output = ""
         self.master_fd = None
@@ -500,9 +503,9 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
         except OSError:
             pass
         # catch a time out by sending crtl+c
-        if self.last_activity + self.timeout < time.time():
-            pklog.critical("no activity for %s time sending ctrl-c" \
-                           % self.timeout)
+        if self.last_activity + TIMEOUT_IDLE_INSTALLATION < time.time():
+            pklog.critical("no activity for %s seconds sending ctrl-c" \
+                           % TIMEOUT_IDLE_INSTALLATION)
             os.write(self.master_fd, chr(3))
             msg = "Transaction was cancelled since the installation " \
                   "of a package hung.\n" \
