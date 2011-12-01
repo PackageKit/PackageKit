@@ -95,7 +95,77 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
 		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_SUPPORTED,
+		PK_FILTER_ENUM_FREE,
 		-1);
+}
+
+/**
+ * pk_backend_get_roles:
+ */
+static PkBitfield
+backend_get_roles (PkBackend *backend)
+{
+	PkBitfield roles;
+	roles = pk_bitfield_from_enums (
+		PK_ROLE_ENUM_CANCEL,
+		PK_ROLE_ENUM_GET_DEPENDS,
+		PK_ROLE_ENUM_GET_DETAILS,
+		PK_ROLE_ENUM_GET_FILES,
+		PK_ROLE_ENUM_GET_REQUIRES,
+		PK_ROLE_ENUM_GET_PACKAGES,
+		PK_ROLE_ENUM_WHAT_PROVIDES,
+		PK_ROLE_ENUM_GET_UPDATES,
+		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+		PK_ROLE_ENUM_INSTALL_PACKAGES,
+		// PK_ROLE_ENUM_INSTALL_FILES,
+		// PK_ROLE_ENUM_INSTALL_SIGNATURE,
+		PK_ROLE_ENUM_REFRESH_CACHE,
+		PK_ROLE_ENUM_REMOVE_PACKAGES,
+		// PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+		PK_ROLE_ENUM_RESOLVE,
+		PK_ROLE_ENUM_SEARCH_DETAILS,
+		PK_ROLE_ENUM_SEARCH_FILE,
+		PK_ROLE_ENUM_SEARCH_GROUP,
+		PK_ROLE_ENUM_SEARCH_NAME,
+		PK_ROLE_ENUM_UPDATE_PACKAGES,
+		PK_ROLE_ENUM_UPDATE_SYSTEM,
+		PK_ROLE_ENUM_GET_REPO_LIST,
+		PK_ROLE_ENUM_REPO_ENABLE,
+		// PK_ROLE_ENUM_ROLLBACK,
+		// PK_ROLE_ENUM_ACCEPT_EULA,
+		// PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+		// PK_ROLE_ENUM_GET_CATEGORIES,
+		// PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
+		// PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
+		// PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
+		// PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+		// PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+		// PK_ROLE_ENUM_UPGRADE_SYSTEM
+		-1);
+
+	return roles;
+}
+/**
+ * pk_backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup (
+		"application/x-rpm;"
+		"application/x-urpmi"
+		);
+}
+
+/**
+ * pk_backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	/* this feels bad... */
+	pk_backend_spawn_kill (spawn);
 }
 
 /**
@@ -359,17 +429,35 @@ backend_get_distro_upgrades (PkBackend *backend)
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-distro-upgrades", NULL);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+{
+	gchar *search_tmp;
+	gchar *filters_text;
+	const gchar *provides_text;
+
+	provides_text = pk_provides_enum_to_string (provides);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	search_tmp = g_strjoinv ("&", values);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "what-provides", filters_text, provides_text, search_tmp, NULL);
+	g_free (filters_text);
+	g_free (search_tmp);
+}
+
 /* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
-	"Aurelien Lefebvre <alkh@mandriva.org>",	/* author */
+	"Aurelien Lefebvre <alkh@mandriva.org>, Per Oyvind Karlsen <peroyvind@mandriva.org>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	NULL,					/* cancel */
+	backend_get_roles,			/* get_roles */
+	backend_get_mime_types,			/* get_mime_types */
+	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
@@ -396,7 +484,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL,					/* what_provides */
+	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */

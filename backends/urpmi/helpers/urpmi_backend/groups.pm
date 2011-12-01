@@ -122,7 +122,7 @@ sub get_mdv_groups {
   my ($pk_group) = @_;
   my @groups = ();
   foreach(keys %{(MDV_GROUPS)}) {
-    if(%{(MDV_GROUPS)}->{$_} eq $pk_group) {
+    if((MDV_GROUPS)->{$_} eq $pk_group) {
       push @groups, $_;
     }
   }
@@ -131,10 +131,10 @@ sub get_mdv_groups {
 
 sub get_pk_group {
   my ($mdv_group) = @_;
-  if(%{(MDV_GROUPS)}->{$mdv_group} eq "") {
+  if((MDV_GROUPS)->{$mdv_group} eq "") {
     return GROUP_UNKNOWN;
   }
-  return %{(MDV_GROUPS)}->{$mdv_group};
+  return (MDV_GROUPS)->{$mdv_group};
 }
 
 sub package_belongs_to_pk_group {

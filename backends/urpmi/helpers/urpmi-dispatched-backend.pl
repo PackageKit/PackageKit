@@ -120,6 +120,9 @@ sub dispatch_command {
     update_system($urpm, $args);
     urpm::media::configure($urpm);
   }
+  elsif($command eq "what-provides") {
+    what_provides($urpm, $args);
+  }
   elsif($command eq "exit") {
     exit 0;
   }
@@ -261,7 +264,7 @@ sub get_packages {
   if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if(filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       });
@@ -271,7 +274,7 @@ sub get_packages {
   if(not grep(/^${\FILTER_INSTALLED}$/, @filterstab)) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
-        if(filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       }  
@@ -308,8 +311,8 @@ sub get_requires {
   my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
   foreach(@requires) {
-    if(filter($_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1 })) {
-      if(package_version_is_installed($_)) {
+    if(filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+      if(is_package_installed($_)) {
         grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
       else {
@@ -407,7 +410,7 @@ sub search_name {
   if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if(filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           if( (!$basename_option && $pkg->name =~ /$search_term/)
             || $pkg->name =~ /^$search_term$/ ) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -422,7 +425,7 @@ sub search_name {
     and return;
   
   foreach my $pkg(@{$urpm->{depslist}}) {
-    if($pkg->flag_upgrade && filter($pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+    if($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
       if( (!$basename_option && $pkg->name =~ /$search_term/)
         || $pkg->name =~ /^$search_term$/ ) {
         pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -562,9 +565,9 @@ sub resolve {
     ($_ && $pkg) or next;
 
     # We exit the script if found package does not match with specified filters
-    filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1}) or next;
+    filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1}) or next;
 
-    if($pkg->version."-".$pkg->release eq find_installed_version($pkg)) {
+    if(is_package_installed($pkg)) {
       grep(/^${\FILTER_NOT_INSTALLED}$/, @filters) and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
@@ -590,7 +593,7 @@ sub search_details {
   if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           if($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -601,7 +604,7 @@ sub search_details {
   if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
-        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           if($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -626,9 +629,9 @@ sub search_file {
 
   foreach(keys %requested) {
     my $p = @{$urpm->{depslist}}[$_];
-    if(filter($p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1})) {
-      my $version = find_installed_version($p);
-      if($version eq $p->version."-".$p->release) {
+    if(filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+      my $version = find_installed_fullname($p);
+      if(is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
       else {
@@ -653,7 +656,7 @@ sub search_group {
   if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           if(package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -664,7 +667,7 @@ sub search_group {
   if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
-        if(filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1})) {
+        if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
           if(package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -721,6 +724,57 @@ sub update_system {
   _finished();
 }
 
+sub what_provides {
+
+  my ($urpm, $args) = @_;
+  
+  my @filterstab = split(/;/, @{$args}[0]);
+  my $providestype = @{$args}[1];
+  my @packageidstab = split(/&/, @{$args}[2]);
+  my @pkgnames;
+  my @prov;
+
+  pk_print_status(PK_STATUS_ENUM_REQUEST);
+
+  foreach (@packageidstab) {
+    my @pkgid = split(/;/, $_);
+    # skip if old standard
+    if (not grep(/^gstreamer0.10\(/, $pkgid[0])) {
+	# new standard
+	my $namespace = undef;
+	if ($providestype eq "codec") {
+	    $namespace = "gstreamer0.10";
+	} elsif ($providestype ne "any") {
+	    $namespace = $providestype;
+	}
+	if ($namespace) {
+	    $pkgid[0] = sprintf("%s(%s)", $namespace, $pkgid[0]);
+	}
+    }
+
+    push(@pkgnames, $pkgid[0]);
+    my @res = $urpm->packages_providing($pkgid[0]);
+    foreach(@res) {
+	push (@prov, $_);
+    }
+  }
+
+  @prov 
+      or (_finished() and return);
+  
+  foreach(@prov) {
+    my $pkg = $_;
+    if(is_package_installed($pkg)) {
+      grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
+      pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
+    }
+    else {
+      grep(/^${\FILTER_INSTALLED}$/, @filterstab) and next;
+      pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
+    }
+  }
+  _finished();
+}
 sub _finished {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
 }
@@ -800,7 +854,7 @@ sub _print_package_update_details {
   
   my @to_upgrade_pkids;
   foreach(@to_install) {
-    my $pkid = get_installed_version_pkid($_);
+    my $pkid = get_installed_fullname_pkid($_);
     push @to_upgrade_pkids, $pkid if $pkid;
   }
   
