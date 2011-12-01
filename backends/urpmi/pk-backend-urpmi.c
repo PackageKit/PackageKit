@@ -25,11 +25,30 @@
 static PkBackendSpawn *spawn;
 
 /**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("URPMI");
+}
+
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return g_strdup ("Aurelien Lefebvre <alkh@mandriva.org>, "
+			"Per Oyvind Karlsen <peroyvind@mandriva.org>");
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
@@ -40,8 +59,8 @@ backend_initialize (PkBackend *backend)
  * backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("backend: destroy");
 	g_object_unref (spawn);
@@ -50,8 +69,8 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static PkBitfield
-backend_get_groups (PkBackend *backend)
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_GROUP_ENUM_ACCESSIBILITY,
@@ -88,8 +107,8 @@ backend_get_groups (PkBackend *backend)
 /**
  * backend_get_filters:
  */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_GUI,
@@ -103,8 +122,8 @@ backend_get_filters (PkBackend *backend)
 /**
  * pk_backend_get_roles:
  */
-static PkBitfield
-backend_get_roles (PkBackend *backend)
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
 {
 	PkBitfield roles;
 	roles = pk_bitfield_from_enums (
@@ -149,8 +168,8 @@ backend_get_roles (PkBackend *backend)
 /**
  * pk_backend_get_mime_types:
  */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup (
 		"application/x-rpm;"
@@ -161,8 +180,8 @@ backend_get_mime_types (PkBackend *backend)
 /**
  * pk_backend_cancel:
  */
-static void
-backend_cancel (PkBackend *backend)
+void
+pk_backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
@@ -171,8 +190,8 @@ backend_cancel (PkBackend *backend)
 /**
  * pk_backend_search_name:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -183,8 +202,8 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
 /**
  * backend_get_details:
  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -195,8 +214,8 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 /**
  * backend_get_files:
  */
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -207,8 +226,8 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 /**
  * backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -222,8 +241,8 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 /**
  * backend_get_updates:
  */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -234,8 +253,8 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 /**
  * backend_get_update_detail:
  */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -246,8 +265,8 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 /**
  * backend_refresh_cache:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -262,8 +281,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 /**
  * backend_install_packages:
  */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -283,8 +302,8 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 /**
  * pk_backend_remove_packages:
  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
@@ -297,8 +316,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 /**
  * pk_backend_repo_enable:
  */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "repo-enable", rid, pk_backend_bool_to_string (enabled), NULL);
 }
@@ -306,8 +325,8 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 /**
  * pk_backend_search_groups:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -318,8 +337,8 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search)
 /**
  * backend_get_packages:
  */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -329,8 +348,8 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 /**
  * backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-repo-list", NULL);
 }
@@ -338,8 +357,8 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 /**
  * backend_get_requires:
  */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
 	gchar *filters_text;
@@ -353,8 +372,8 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 /**
  * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **search)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -365,8 +384,8 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **search)
 /**
  * pk_backend_search_files:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -377,8 +396,8 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
 /**
  * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -392,8 +411,8 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 /**
  * pk_backend_update_packages:
  */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -414,8 +433,8 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 /**
  * pk_backend_update_system:
  */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
@@ -423,8 +442,8 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 /**
  * backend_get_distro_upgrades:
  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-distro-upgrades", NULL);
 }
@@ -432,8 +451,8 @@ backend_get_distro_upgrades (PkBackend *backend)
 /**
  * backend_what_provides:
  */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	gchar *search_tmp;
 	gchar *filters_text;
@@ -446,51 +465,4 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	g_free (filters_text);
 	g_free (search_tmp);
 }
-
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-PK_BACKEND_OPTIONS (
-	"URPMI",					/* description */
-	"Aurelien Lefebvre <alkh@mandriva.org>, Per Oyvind Karlsen <peroyvind@mandriva.org>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	backend_get_roles,			/* get_roles */
-	backend_get_mime_types,			/* get_mime_types */
-	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	backend_get_depends,			/* get_depends */
-	backend_get_details,			/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
-	backend_get_files,			/* get_files */
-	backend_get_packages,			/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	NULL,					/* install_files */
-	backend_install_packages,		/* install_packages */
-	NULL,					/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	backend_repo_enable,			/* repo_enable */
-	NULL,					/* repo_set_data */
-	backend_resolve,			/* resolve */
-	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_files,			/* search_files */
-	backend_search_groups,			/* search_groups */
-	backend_search_names,			/* search_names */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	backend_what_provides,			/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* upgrade_system */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
 
