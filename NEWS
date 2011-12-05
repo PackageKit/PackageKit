@@ -1,3 +1,21 @@
+Version 0.6.21
+~~~~~~~~~~~~~~
+Released: 2011-12-05
+
+Backends:
+ - aptcc: Add Multi-Arch support (Daniel Nicoletti)
+ - aptcc: Add native filter so we do not show i386 packages on amd64 (Daniel Nicoletti)
+ - aptcc: Fix conffile handling by using WEXITSTATUS to know the exit status (Daniel Nicoletti)
+ - yum: Consistently use same logic to determine GPG checking (Nils Philippsen)
+ - yum: Use current yum API for installing untrusted packages (Nils Philippsen)
+ - zypp: Retrieve url for packages instead of returning "TODO". (Duncan Mac-Vicar P)
+
+Bugfixes:
+ - Automatically rebuild moc files with different moc version (Nils Philippsen)
+ - Make the browser plugin compile with newer versions of xulrunner (Richard Hughes)
+ - Set the right role on accept-eula (Daniel Nicoletti)
+ - Skip empty catalog entries (Christian Persch)
+
 Version 0.6.20
 ~~~~~~~~~~~~~~
 Released: 2011-11-07
