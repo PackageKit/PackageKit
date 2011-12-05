@@ -543,7 +543,7 @@ NP_Shutdown ()
 /**
  * NP_GetMIMEDescription:
  **/
-char *
+const char *
 NP_GetMIMEDescription (void)
 {
 	pk_debug ("NP_GetMIMEDescription");
