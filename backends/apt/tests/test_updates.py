@@ -34,15 +34,18 @@ import aptBackend
 
 REPO_PATH = os.path.join(get_tests_dir(), "repo")
 
-chroot = Chroot()
 
+class GetUpdatesTests(mox.MoxTestBase):
 
-class QueryTests(mox.MoxTestBase):
-
-    """Test cases for non-destructive methods."""
+    """Test cases for detecting available updates."""
 
     def setUp(self):
         mox.MoxTestBase.setUp(self)
+        self.chroot = Chroot()
+        self.chroot.setup()
+        self.chroot.install_debfile(os.path.join(REPO_PATH,
+                                                 "silly-base_0.1-0_all.deb"))
+        self.addCleanup(self.chroot.remove)
         self.backend = aptBackend.PackageKitAptBackend([])
 
     def _catch_callbacks(self, *args):
@@ -51,62 +54,46 @@ class QueryTests(mox.MoxTestBase):
         for meth in methods:
             self.mox.StubOutWithMock(self.backend, meth)
 
-    def test_resolve(self):
-        """Test resolving the name of package."""
-        self._catch_callbacks("package")
-        self.backend.package("silly-base;0.1-0;all;",
-                             enums.INFO_INSTALLED,
-                             "working package")
-        self.backend.finished()
-        self.mox.ReplayAll()
-        self.backend._cache.open()
-        # Install the package
-        self.backend.dispatch_command("resolve",
-                                      ["None", "silly-base"])
-
-    def test_search_name(self):
-        """Test searching for package names."""
+    def test_get_updates(self):
+        """Test checking for updates."""
         self._catch_callbacks("package")
         self.backend.package("silly-base;0.1-0update1;all;",
-                             enums.INFO_AVAILABLE,
-                             "working package")
-        self.backend.package("silly-base;0.1-0;all;",
-                             enums.INFO_INSTALLED,
-                             "working package")
-        self.backend.finished()
-        self.mox.ReplayAll()
-        self.backend._cache.open()
-
-        self.backend.dispatch_command("search-name",
-                                      ["None", "silly-base"])
-
-    def test_search_details(self):
-        """Test searching for package descriptions."""
-        self._catch_callbacks("package")
-        self.backend.package("silly-fail;0.1-0;all;",
-                             enums.INFO_AVAILABLE,
+                             enums.INFO_NORMAL,
                              mox.IsA(str))
         self.backend.finished()
         self.mox.ReplayAll()
+        self.chroot.add_test_repository()
         self.backend._cache.open()
-        # Install the package
-        aptBackend.XAPIAN_SUPPORT = False
-        self.backend.dispatch_command("search-details",
-                                      ["None", "always fail"])
+        self.backend.dispatch_command("get-updates", ["None"])
 
+    def test_get_security_updates(self):
+        """Test checking for security updates."""
+        self._catch_callbacks("package")
+        self.backend.package("silly-base;0.1-0update1;all;Debian-Security",
+                             enums.INFO_SECURITY,
+                             "working package")
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.chroot.add_repository(os.path.join(get_tests_dir(),
+                                                "repo/security"))
+        self.backend._cache.open()
+        self.backend.dispatch_command("get-updates", ["None"])
 
-def setUp():
-    chroot.setup()
-    chroot.add_test_repository()
-    chroot.install_debfile(os.path.join(REPO_PATH, "silly-base_0.1-0_all.deb"))
-
-def tearDown():
-    chroot.remove()
+    def test_get_backports(self):
+        """Test checking for backports."""
+        self._catch_callbacks("package")
+        self.backend.package("silly-base;0.1-0update1;all;",
+                             enums.INFO_ENHANCEMENT,
+                             "working package")
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.chroot.add_repository(os.path.join(get_tests_dir(),
+                                                "repo/backports"))
+        self.backend._cache.open()
+        self.backend.dispatch_command("get-updates", ["None"])
 
 
 if __name__ == "__main__":
-    setUp()
     unittest.main()
-    tearDown()
 
 # vim: ts=4 et sts=4
