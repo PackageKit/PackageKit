@@ -289,6 +289,19 @@ PkResults	*pk_client_upgrade_system		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults	*pk_client_repair_system		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
+PkResults	*pk_client_simulate_repair_system	(PkClient		*client,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
 PkResults	*pk_client_adopt 			(PkClient		*client,
 							 const gchar		*transaction_id,
 							 GCancellable		*cancellable,

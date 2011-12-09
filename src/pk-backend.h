@@ -204,6 +204,9 @@ void		pk_backend_simulate_update_packages	(PkBackend	*backend,
 void		pk_backend_upgrade_system		(PkBackend	*backend,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
+void		pk_backend_repair_system		(PkBackend	*backend,
+							 gboolean	 only_trusted);
+void		pk_backend_simulate_repair_system	(PkBackend	*backend);
 
 /* set the state */
 gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
@@ -483,7 +486,10 @@ typedef struct {
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
 	void		(*transaction_reset)		(PkBackend	*backend);
-	gpointer	padding[6];
+	void		(*repair_system)		(PkBackend	*backend,
+							 gboolean	 only_trusted);
+	void		(*simulate_repair_system)	(PkBackend	*backend);
+	gpointer	padding[4];
 } PkBackendDesc;
 
 G_END_DECLS

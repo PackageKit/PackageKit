@@ -1220,6 +1220,8 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_CATEGORIES))
 		g_string_append_printf (string, "  %s\n", "get-categories");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
+		g_string_append_printf (string, "  %s\n", "repair");
 	return g_string_free (string, FALSE);
 }
 
@@ -1784,6 +1786,11 @@ main (int argc, char *argv[])
 		pk_task_refresh_cache_async (PK_TASK (task), force, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+
+	} else if (strcmp (mode, "repair") == 0) {
+		pk_task_repair_system_async (PK_TASK(task), cancellable,
+		                             (PkProgressCallback) pk_console_progress_cb, NULL,
+		                             (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */

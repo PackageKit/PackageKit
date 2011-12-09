@@ -272,6 +272,10 @@ pk_task_do_async_action (PkTaskState *state)
 		pk_client_repo_enable_async (PK_CLIENT(state->task), state->repo_id, state->enabled,
 					     state->cancellable, state->progress_callback, state->progress_user_data,
 					     (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+		pk_client_repair_system_async (PK_CLIENT(state->task), state->only_trusted,
+		                               state->cancellable, state->progress_callback, state->progress_user_data,
+		                               (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else {
 		g_assert_not_reached ();
 	}
@@ -430,6 +434,12 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 		pk_client_simulate_install_files_async (PK_CLIENT(state->task), state->files,
 						        state->cancellable, state->progress_callback, state->progress_user_data,
 						        (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+		/* simulate repair system async */
+		g_debug ("doing repair system");
+		pk_client_simulate_repair_system_async (PK_CLIENT(state->task),
+		                                        state->cancellable, state->progress_callback, state->progress_user_data,
+		                                        (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else {
 		g_assert_not_reached ();
 	}
@@ -2136,6 +2146,58 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_task_repair_system_async:
+ * @task: a valid #PkTask instance
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Recover the system from broken dependencies and aborted installations.
+ *
+ * Since: 0.7.2
+ **/
+void
+pk_task_repair_system_async (PkTask *task, GCancellable *cancellable,
+                             PkProgressCallback progress_callback, gpointer progress_user_data,
+                             GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkTaskState *state;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_repair_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_REPAIR_SYSTEM;
+	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->only_trusted = TRUE;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->request = pk_task_generate_request_id ();
+
+	g_debug ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted repair system async */
+	if (task->priv->simulate && klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }

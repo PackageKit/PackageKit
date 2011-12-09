@@ -46,6 +46,7 @@ __pkcon_commandlist="
     search
     update
     upgrade-system
+    repair
     "
 
 __pkconcomp ()

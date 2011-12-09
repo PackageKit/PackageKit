@@ -402,6 +402,22 @@ void		 pk_client_upgrade_system_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_repair_system_async		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+
+void		 pk_client_simulate_repair_system_async	(PkClient		*client,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 void		 pk_client_adopt_async 			(PkClient		*client,
 							 const gchar		*transaction_id,
 							 GCancellable		*cancellable,

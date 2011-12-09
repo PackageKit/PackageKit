@@ -736,6 +736,8 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
 	NULL,					/* upgrade_system */
+	NULL,					/* repair_system */
+	NULL,					/* simulate_repair_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

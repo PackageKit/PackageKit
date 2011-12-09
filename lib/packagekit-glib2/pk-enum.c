@@ -127,6 +127,8 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,		"simulate-remove-packages"},
 	{PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,		"simulate-update-packages"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
+	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
+	{PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM,		"simulate-repair-system"},
 	{0, NULL}
 };
 

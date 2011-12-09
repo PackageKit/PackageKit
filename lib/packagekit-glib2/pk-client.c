@@ -1803,6 +1803,15 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_STRING, state->distro_id,
 						       G_TYPE_STRING, pk_upgrade_kind_enum_to_string (state->upgrade_kind),
 						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "RepairSystem",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->only_trusted,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateRepairSystem",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_INVALID);
 	} else {
 		g_assert_not_reached ();
 	}
@@ -4238,7 +4247,6 @@ out:
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_upgrade_system_async:
  * @client: a valid #PkClient instance
@@ -4285,6 +4293,139 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	}
 	state->distro_id = g_strdup (distro_id);
 	state->upgrade_kind = upgrade_kind;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* identify */
+	pk_client_set_role (state, state->role);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+out:
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_repair_system_async:
+ * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * This transaction will try to recover from a broken package management system:
+ * e.g. the installation of a package with unsatisfied dependencies has
+ * been forced by the user using a low level tool (rpm or dpkg) or the
+ * system was shutdown during processing an installation.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Since: 0.7.2
+ **/
+void
+pk_client_repair_system_async (PkClient *client,
+                               gboolean only_trusted,
+                               GCancellable *cancellable,
+                               PkProgressCallback progress_callback,
+                               gpointer progress_user_data,
+                               GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repair_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_REPAIR_SYSTEM;
+	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+	}
+	state->only_trusted = only_trusted;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* identify */
+	pk_client_set_role (state, state->role);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+out:
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_simulate_repair_system_async:
+ * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * This transaction simulates a recovery from a broken package management system:
+ * e.g. the installation of a package with unsatisfied dependencies has
+ * been forced by the user using a low level tool (rpm or dpkg) or the
+ * system was shutdown during processing an installation.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Since: 0.7.2
+ **/
+void
+pk_client_simulate_repair_system_async (PkClient *client,
+                                        GCancellable *cancellable,
+                                        PkProgressCallback progress_callback,
+                                        gpointer progress_user_data,
+                                        GAsyncReadyCallback callback_ready,
+                                        gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repair_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM;
+	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+	}
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();

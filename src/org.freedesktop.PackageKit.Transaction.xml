@@ -1640,6 +1640,64 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="SimulateRepairSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method simulates recovering the package management system from e.g.
+            unsatisfied dependencies of installed packages emitting packages required to be
+            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
+            The latter is used to present the user untrusted packages that are about to be installed.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="RepairSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method recovers the package management system from e.g.
+            unsatisfied dependencies of installed packages.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="only_trusted" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the transaction is only allowed to install trusted packages.
+              Unsigned packages should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
+            </doc:para>
+            <doc:para>
+              If this method is can only install trusted packages, and the packages are unsigned, then
+              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
+              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
+              after gaining further authentication.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <signal name="Category">
       <doc:doc>
         <doc:description>

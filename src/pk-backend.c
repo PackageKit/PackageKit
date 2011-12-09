@@ -328,6 +328,10 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	if (desc->upgrade_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+	if (desc->repair_system != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
+	if (desc->simulate_repair_system != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
 	backend->priv->roles = roles;
 out:
 	return backend->priv->roles;
@@ -672,6 +676,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
 			g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
+			g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
+			g_module_symbol (handle, "pk_backend_simulate_repair_system", (gpointer *)&desc->simulate_repair_system);
 
 			/* get old static string data */
 			ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
@@ -3794,6 +3800,34 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
 	pk_store_set_uint (backend->priv->store, "upgrade_kind", upgrade_kind);
 	pk_backend_transaction_reset (backend);
 	backend->priv->desc->upgrade_system (backend, distro_id, upgrade_kind);
+}
+
+/**
+ * pk_backend_repair_system:
+ */
+void
+pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->repair_system != NULL);
+	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPAIR_SYSTEM);
+	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
+	pk_backend_transaction_reset (backend);
+	backend->priv->desc->repair_system (backend, only_trusted);
+}
+
+/**
+ * pk_backend_simulate_repair_system:
+ */
+void
+pk_backend_simulate_repair_system (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->repair_system != NULL);
+	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
+	pk_backend_set_bool (backend, "hint:simulate", TRUE);
+	pk_backend_transaction_reset (backend);
+	backend->priv->desc->simulate_repair_system (backend);
 }
 
 /**

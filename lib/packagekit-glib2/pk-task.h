@@ -268,6 +268,12 @@ void		 pk_task_repo_enable_async		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
+void		 pk_task_repair_system_async		(PkTask			*task,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
 
 gboolean	 pk_task_user_accepted			(PkTask			*task,
 							 guint			 request);

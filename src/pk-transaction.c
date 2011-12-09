@@ -2155,6 +2155,10 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		pk_backend_upgrade_system (priv->backend, priv->cached_value, priv->cached_provides);
+	} else if (priv->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+		pk_backend_repair_system (priv->backend, priv->cached_only_trusted);
+	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM) {
+		pk_backend_simulate_repair_system (priv->backend);
 	} else {
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
@@ -2590,6 +2594,9 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 			break;
 		case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 			policy = "org.freedesktop.packagekit.upgrade-system";
+			break;
+		case PK_ROLE_ENUM_REPAIR_SYSTEM:
+			policy = "org.freedesktop.packagekit.package-install";
 			break;
 		default:
 			break;
@@ -5475,6 +5482,91 @@ out:
 }
 
 /**
+ * pk_transaction_simulate_repair_system:
+ **/
+static void
+pk_transaction_simulate_repair_system (PkTransaction *transaction,
+                                       GVariant *params,
+                                       GDBusMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_debug ("SimulateRepairSystem method called");
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+	                                PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM)) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+		                     "SimulateRepairSystem not supported by backend");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* save so we can run later */
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+		                     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+
+/**
+ * pk_transaction_repair_system:
+ **/
+static void
+pk_transaction_repair_system (PkTransaction *transaction,
+                              GVariant *params,
+                              GDBusMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gboolean only_trusted;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(b)", &only_trusted);
+
+	g_debug ("RepairSystem method called (only trusted %i)", only_trusted);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+	                                PK_ROLE_ENUM_REPAIR_SYSTEM)) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+		                     "RepairSystem not supported by backend");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_only_trusted = only_trusted;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPAIR_SYSTEM);
+
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction,
+	                                           only_trusted,
+	                                           PK_ROLE_ENUM_REPAIR_SYSTEM, &error);
+	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+/**
  * _g_variant_new_maybe_string:
  **/
 static GVariant *
@@ -5749,6 +5841,16 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "UpgradeSystem") == 0) {
 		pk_transaction_upgrade_system (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RepairSystem") == 0) {
+		pk_transaction_repair_system (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "SimulateRepairSystem") == 0) {
+		pk_transaction_simulate_repair_system (transaction, parameters, invocation);
 		goto out;
 	}
 out:

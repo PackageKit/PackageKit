@@ -621,6 +621,22 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def repair_system(self, only_trusted):
+        '''
+        Implement the {backend}-repair-system functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend",
+                   exit=False)
+
+    def simulate_repair_system(self):
+        '''
+        Implement the {backend}-simulate-repair-system functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend",
+                   exit=False)
+
     def customTracebackHandler(self, tb):
         '''
         Custom Traceback Handler
@@ -792,6 +808,12 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'upgrade-system':
             self.upgrade_system(args[0])
+            self.finished()
+        elif cmd == 'repair-system':
+            self.repair_system(args[0])
+            self.finished()
+        elif cmd == 'simulate-repair-system':
+            self.simulate_repair_system()
             self.finished()
         else:
             errmsg = "command '%s' is not known" % cmd
