@@ -485,6 +485,24 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 }
 
 /**
+ * pk_backend_repair_system:
+ */
+void
+pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
+{
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "repair-system", pk_backend_bool_to_string (only_trusted), NULL);
+}
+
+/**
+ * pk_backend_simulate_repair_system:
+ */
+void
+pk_backend_simulate_repair_system (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-repair-system", NULL);
+}
+
+/**
  * pk_backend_get_categories:
  *
 FIXME: Not implemented

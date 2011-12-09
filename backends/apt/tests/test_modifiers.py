@@ -301,6 +301,39 @@ Auto-Installed: 1""")
         self.backend._cache.open()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
 
+    def test_repair_system(self):
+        """Test the recovery of broken dependencies."""
+        self._catch_callbacks()
+        self.backend.finished()
+        # Setup environment
+        self.mox.ReplayAll()
+        self.chroot.add_test_repository()
+        for pkg in ("silly-depend-base_0.1-0_all.deb", "silly-broken_0.1-0_all.deb"):
+            self.chroot.install_debfile(os.path.join(REPO_PATH, pkg), True)
+        self.backend._cache.open()
+        # Install the package
+        self.backend.dispatch_command("repair-system", [True])
+        self.backend._cache.open()
+        self.assertEqual(self.backend._cache["silly-base"].is_installed, True)
+        self.assertEqual(self.backend._cache["silly-depend-base"].is_installed, True)
+        self.assertEqual(self.backend._cache["silly-broken"].is_installed, False)
+
+    def test_simulate_repair_system(self):
+        """Test simulation a system recovery."""
+        self._catch_callbacks("package")
+        self.backend.package("silly-base;0.1-0update1;all;",
+                             enums.INFO_INSTALLING, mox.IsA(str))
+        self.backend.package("silly-broken;0.1-0;all;", enums.INFO_REMOVING, mox.IsA(str))
+        self.backend.finished()
+        # Setup environment
+        self.mox.ReplayAll()
+        self.chroot.add_test_repository()
+        for pkg in ("silly-depend-base_0.1-0_all.deb", "silly-broken_0.1-0_all.deb"):
+            self.chroot.install_debfile(os.path.join(REPO_PATH, pkg), True)
+        self.backend._cache.open()
+        # Install the package
+        self.backend.dispatch_command("simulate-repair-system", [])
+
 
 if __name__ == "__main__":
     unittest.main()

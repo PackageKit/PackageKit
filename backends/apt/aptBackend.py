@@ -1042,6 +1042,42 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @catch_pkerror
     @lock_cache
+    def repair_system(self, only_trusted):
+        """Recover from broken dependencies."""
+        pklog.info("Repairing system")
+        self.status(enums.STATUS_DEP_RESOLVE)
+        self.allow_cancel(False)
+        self.percentage(0)
+        self._check_init(fail_broken=False)
+        try:
+            self._cache._depcache.fix_broken()
+        except SystemError:
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
+            raise PKError(enums.ERROR_DEP_RESOLUTION_FAILED,
+                          "The following packages would break and so block"
+                          "the removal: %s" % " ".join(broken))
+        self._check_trusted(only_trusted)
+        self._commit_changes()
+
+    @catch_pkerror
+    def simulate_repair_system(self):
+        """Simulate recovery from broken dependencies."""
+        pklog.info("Simulating system repair")
+        self.status(enums.STATUS_DEP_RESOLVE)
+        self.allow_cancel(False)
+        self.percentage(0)
+        self._check_init(fail_broken=False)
+        try:
+            self._cache._depcache.fix_broken()
+        except SystemError:
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
+            raise PKError(enums.ERROR_DEP_RESOLUTION_FAILED,
+                          "The following packages would break and so block"
+                          "the removal: %s" % " ".join(broken))
+        self._emit_changes()
+
+    @catch_pkerror
+    @lock_cache
     def remove_packages(self, allow_deps, auto_remove, ids):
         """Remove packages."""
         pklog.info("Removing package(s): id %s" % ids)
@@ -1873,7 +1909,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         return True
 
-    def _open_cache(self, start=0, end=100, progress=True):
+    def _open_cache(self, start=0, end=100, progress=True, fail_broken=True):
         """(Re)Open the APT cache."""
         pklog.debug("Open APT cache")
         self.status(enums.STATUS_LOADING_CACHE)
@@ -1887,7 +1923,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except Exception as error:
             raise PKError(enums.ERROR_NO_CACHE,
                           "Package cache could not be opened:%s" % error)
-        if self._cache.broken_count > 0:
+        if self._cache.broken_count > 0 and fail_broken:
             raise PKError(enums.ERROR_DEP_RESOLUTION_FAILED,
                           "There are broken dependecies on your system. "
                           "Please use an advanced package manage e.g. "
@@ -1967,7 +2003,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                               version.architecture, origin)
         return id
  
-    def _check_init(self, start=0, end=10, progress=True):
+    def _check_init(self, start=0, end=10, progress=True, fail_broken=True):
         """Check if the backend was initialized well and try to recover from
         a broken setup.
         """
@@ -1988,7 +2024,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
            (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
            (os.stat(src_cache)[stat.ST_MTIME] > self._last_cache_refresh):
             pklog.debug("Reloading the cache is required")
-            self._open_cache(start, end, progress)
+            self._open_cache(start, end, progress, fail_broken)
         else:
             pass
         # Read the pin file of Synaptic if available
