@@ -59,7 +59,7 @@ class QueryTests(mox.MoxTestBase):
                              "working package")
         self.backend.finished()
         self.mox.ReplayAll()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("resolve",
                                       ["None", "silly-base"])
@@ -75,7 +75,7 @@ class QueryTests(mox.MoxTestBase):
                              "working package")
         self.backend.finished()
         self.mox.ReplayAll()
-        self.backend._cache.open()
+        self.backend._open_cache()
 
         self.backend.dispatch_command("search-name",
                                       ["None", "silly-base"])
@@ -88,7 +88,7 @@ class QueryTests(mox.MoxTestBase):
                              mox.IsA(str))
         self.backend.finished()
         self.mox.ReplayAll()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         aptBackend.XAPIAN_SUPPORT = False
         self.backend.dispatch_command("search-details",
