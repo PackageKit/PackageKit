@@ -1174,16 +1174,16 @@ cout << "FILE INSTALL: " << fileInstall << endl;
         delete m_apt;
         return false;
     }
-    
+
     if (fileInstall) {
         // File installation EXPERIMENTAL
 //         gchar *path;
-// 
+//
 //         for (uint i = 0; i < g_strv_length(full_paths); i++) {
 //             if (_cancel) {
 //                 break;
 //             }
-//             
+//
 //             path = full_paths[i];
 //             cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
 //         }
@@ -1440,6 +1440,18 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filter)
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
 
+
+/**
+ * pk_backend_get_categories:
+ */
+/* TODO
+void
+pk_backend_get_categories (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, pk_backend_get_categories_thread);
+}
+*/
+
 /**
  * pk_backend_get_roles:
  */
@@ -1471,7 +1483,6 @@ pk_backend_get_roles (PkBackend *backend)
         PK_ROLE_ENUM_UPDATE_SYSTEM,
         PK_ROLE_ENUM_GET_REPO_LIST,
         PK_ROLE_ENUM_REPO_ENABLE,
-        PK_ROLE_ENUM_GET_CATEGORIES,
         PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
         PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
         PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
@@ -1481,7 +1492,7 @@ pk_backend_get_roles (PkBackend *backend)
     if (g_file_test (PREUPGRADE_BINARY, G_FILE_TEST_EXISTS)) {
         pk_bitfield_add(roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
     }
-    
+
     // only add GetDistroUpgrades if the binary is present
     if (g_file_test (GDEBI_BINARY, G_FILE_TEST_EXISTS)) {
         pk_bitfield_add(roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
