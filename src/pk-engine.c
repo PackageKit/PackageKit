@@ -201,6 +201,40 @@ pk_engine_emit_changed (PkEngine *engine)
 				       NULL);
 }
 
+/**
+ * pk_engine_emit_property_changed:
+ **/
+static void
+pk_engine_emit_property_changed (PkEngine *engine,
+				 const gchar *property_name,
+				 GVariant *property_value)
+{
+	GVariantBuilder builder;
+	GVariantBuilder invalidated_builder;
+
+	/* not yet connected */
+	if (engine->priv->connection == NULL)
+		return;
+
+	/* build the dict */
+	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	g_variant_builder_add (&builder,
+			       "{sv}",
+			       property_name,
+			       property_value);
+	g_dbus_connection_emit_signal (engine->priv->connection,
+				       NULL,
+				       PK_DBUS_PATH,
+				       "org.freedesktop.DBus.Properties",
+				       "PropertiesChanged",
+				       g_variant_new ("(sa{sv}as)",
+				       PK_DBUS_INTERFACE,
+				       &builder,
+				       &invalidated_builder),
+				       NULL);
+}
+
 #if 0
 /**
  * pk_engine_inhibit_locked_cb:
@@ -217,6 +251,9 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 	engine->priv->locked = is_locked;
 
 	/* emit */
+	pk_engine_emit_property_changed (engine,
+					 "Locked",
+					 g_variant_new_boolean (is_locked));
 	pk_engine_emit_changed (engine);
 }
 #endif
@@ -1086,6 +1123,9 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	engine->priv->network_state = network_state;
 
 	/* emit */
+	pk_engine_emit_property_changed (engine,
+					 "NetworkState",
+					 g_variant_new_string (pk_network_enum_to_string (network_state)));
 	pk_engine_emit_changed (engine);
 }
 
