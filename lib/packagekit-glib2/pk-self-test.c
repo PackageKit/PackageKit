@@ -1379,7 +1379,7 @@ static void
 pk_test_package_ids_func (void)
 {
 	gboolean ret;
-	gchar *package_ids_blank[] = {};
+	gchar *package_ids_blank[] = {NULL};
 	gchar **package_ids;
 
 	/* parse va_list */
