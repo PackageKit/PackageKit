@@ -2596,7 +2596,7 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 			policy = "org.freedesktop.packagekit.upgrade-system";
 			break;
 		case PK_ROLE_ENUM_REPAIR_SYSTEM:
-			policy = "org.freedesktop.packagekit.package-install";
+			policy = "org.freedesktop.packagekit.repair-system";
 			break;
 		default:
 			break;

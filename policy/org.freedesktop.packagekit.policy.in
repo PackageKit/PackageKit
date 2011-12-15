@@ -249,5 +249,21 @@
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.repiar-system">
+    <!-- SECURITY:
+          - Normal users require admin authentication to repair the system
+            since this can make the system unbootable or stop other
+            applications from working.
+     -->
+    <_description>Repair System</_description>
+    <_message>Authentication is required to repair the installed software</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
 </policyconfig>
 
