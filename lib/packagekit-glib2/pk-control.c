@@ -325,7 +325,7 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		      GVariant *parameters,
 		      gpointer user_data)
 {
-	const gchar **ids_tmp;
+	const gchar **ids_tmp = NULL;
 	gchar **ids = NULL;
 	PkControl *control = PK_CONTROL (user_data);
 
@@ -361,6 +361,7 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		goto out;
 	}
 out:
+	g_free (ids_tmp);
 	g_strfreev (ids);
 }
 
@@ -1541,7 +1542,7 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 {
 	GError *error = NULL;
 	GVariant *value;
-	const gchar **tlist_tmp;
+	const gchar **tlist_tmp = NULL;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkControlState *state = (PkControlState *) user_data;
 
@@ -1567,6 +1568,7 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 	/* we're done */
 	pk_control_get_transaction_list_state_finish (state, NULL);
 out:
+	g_free (tlist_tmp);
 	if (value != NULL)
 		g_variant_unref (value);
 }
