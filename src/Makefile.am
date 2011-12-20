@@ -14,9 +14,6 @@ SUBDIRS = plugins
 
 NULL =
 
-GITIGNOREFILES = *.la \
-		 .directory
-
 PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 		$(NULL)
 
@@ -132,8 +129,6 @@ libexec_PROGRAMS =					\
 
 packagekitd_SOURCES =					\
 	pk-main.c					\
-	plugins/pk-proc.c				\
-	plugins/pk-proc.h				\
 	$(shared_SOURCES)				\
 	$(NULL)
 

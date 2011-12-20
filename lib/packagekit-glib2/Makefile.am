@@ -9,7 +9,6 @@ endif
 
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
-	$(DBUS_CFLAGS)						\
 	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
@@ -154,7 +153,6 @@ libpackagekit_glib2_la_SOURCES =				\
 libpackagekit_glib2_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(GIO_LIBS)						\
-	$(DBUS_LIBS)						\
 	$(ARCHIVE_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
@@ -206,7 +204,6 @@ pk_self_test_LDADD =						\
 	libpackagekit-glib2.la					\
 	libpackagekitprivate.a					\
 	$(GLIB_LIBS)						\
-	$(DBUS_LIBS)						\
 	$(SELFTEST_LIBS)					\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\

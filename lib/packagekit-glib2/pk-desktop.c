@@ -83,8 +83,10 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
 
 	/* add the filename data to the array */
 	for (i=0; i<argc; i++) {
-		if (g_strcmp0 (col_name[i], "package") == 0 && argv[i] != NULL)
+		if (g_strcmp0 (col_name[i], "package") == 0 && argv[i] != NULL) {
 			*package = g_strdup (argv[i]);
+			break;
+		}
 	}
 
 	return 0;

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <dbus/dbus-glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <locale.h>
@@ -60,7 +59,7 @@ static void     pk_client_finalize	(GObject     *object);
  **/
 struct _PkClientPrivate
 {
-	DBusGConnection		*connection;
+	GDBusConnection		*connection;
 	GPtrArray		*calls;
 	PkControl		*control;
 	gchar			*locale;
@@ -107,11 +106,10 @@ typedef struct {
 	gpointer			 user_data;
 	guint				 number;
 	gulong				 cancellable_id;
-	DBusGProxyCall			*call;
-	DBusGProxyCall			*call_interface_changed;
-	DBusGProxy			*proxy;
-	DBusGProxy			*proxy_props;
+	GDBusProxy			*proxy;
+	GDBusProxy			*proxy_props;
 	GCancellable			*cancellable;
+	GCancellable			*cancellable_client;
 	GSimpleAsyncResult		*res;
 	PkBitfield			 filters;
 	PkClient			*client;
@@ -123,12 +121,20 @@ typedef struct {
 	PkSigTypeEnum			 type;
 	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 refcount;
-	gboolean			 signals_connected;
 	PkClientHelper			*client_helper;
 } PkClientState;
 
-static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
-static void pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state);
+static void
+pk_client_properties_changed_cb (GDBusProxy *proxy,
+				 GVariant *changed_properties,
+				 const gchar* const  *invalidated_properties,
+				 gpointer user_data);
+static void
+pk_client_signal_cb (GDBusProxy *proxy,
+		     const gchar *sender_name,
+		     const gchar *signal_name,
+		     GVariant *parameters,
+		     gpointer user_data);
 
 /**
  * pk_client_error_quark:
@@ -225,48 +231,40 @@ pk_client_fixup_dbus_error (GError *error)
 		goto out;
 	}
 
-	/* find a better failure code */
-	if (error->domain == DBUS_GERROR &&
-	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+	/* fall back to generic */
+	name = error->message;
+	error->code = PK_CLIENT_ERROR_FAILED;
 
-		/* use one of our local codes */
-		name = dbus_g_error_get_name (error);
+	/* trim common prefix */
+	if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
+		name = &error->message[39];
 
-		/* fall back to generic */
-		error->code = PK_CLIENT_ERROR_FAILED;
-
-		/* trim common prefix */
-		if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
-			name = &name[39];
-
-		/* try to get a better error */
-		if (g_str_has_prefix (name, "PermissionDenied") ||
-		    g_str_has_prefix (name, "RefusedByPolicy")) {
-			error->code = PK_CLIENT_ERROR_FAILED_AUTH;
-			goto out;
-		}
-		if (g_str_has_prefix (name, "PackageIdInvalid") ||
-			 g_str_has_prefix (name, "SearchInvalid") ||
-			 g_str_has_prefix (name, "FilterInvalid") ||
-			 g_str_has_prefix (name, "InvalidProvide") ||
-			 g_str_has_prefix (name, "InputInvalid")) {
-			error->code = PK_CLIENT_ERROR_INVALID_INPUT;
-			goto out;
-		}
-		if (g_str_has_prefix (name, "PackInvalid") ||
-		    g_str_has_prefix (name, "NoSuchFile") ||
-		    g_str_has_prefix (name, "MimeTypeNotSupported") ||
-		    g_str_has_prefix (name, "NoSuchDirectory")) {
-			error->code = PK_CLIENT_ERROR_INVALID_FILE;
-			goto out;
-		}
-		if (g_str_has_prefix (name, "NotSupported")) {
-			error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
-			goto out;
-		}
-		g_warning ("couldn't parse execption '%s', please report", name);
+	/* try to get a better error */
+	if (g_str_has_prefix (name, "PermissionDenied") ||
+	    g_str_has_prefix (name, "RefusedByPolicy")) {
+		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+		goto out;
 	}
-
+	if (g_str_has_prefix (name, "PackageIdInvalid") ||
+		 g_str_has_prefix (name, "SearchInvalid") ||
+		 g_str_has_prefix (name, "FilterInvalid") ||
+		 g_str_has_prefix (name, "InvalidProvide") ||
+		 g_str_has_prefix (name, "InputInvalid")) {
+		error->code = PK_CLIENT_ERROR_INVALID_INPUT;
+		goto out;
+	}
+	if (g_str_has_prefix (name, "PackInvalid") ||
+	    g_str_has_prefix (name, "NoSuchFile") ||
+	    g_str_has_prefix (name, "MimeTypeNotSupported") ||
+	    g_str_has_prefix (name, "NoSuchDirectory")) {
+		error->code = PK_CLIENT_ERROR_INVALID_FILE;
+		goto out;
+	}
+	if (g_str_has_prefix (name, "NotSupported")) {
+		error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
+		goto out;
+	}
+	g_warning ("couldn't parse execption '%s', please report", name);
 out:
 	/* hardcode domain */
 	error->domain = PK_CLIENT_ERROR;
@@ -339,17 +337,6 @@ out:
 }
 
 /**
- * pk_client_percentage_to_signed:
- */
-static gint
-pk_client_percentage_to_signed (guint percentage)
-{
-	if (percentage == 101)
-		return -1;
-	return (gint) percentage;
-}
-
-/**
  * pk_client_get_user_temp:
  *
  * Return (and create if does not exist) a temporary directory
@@ -410,104 +397,161 @@ out:
 }
 
 /**
- * pk_client_get_properties_collect_cb:
+ * pk_client_percentage_to_signed:
+ */
+static gint
+pk_client_percentage_to_signed (guint percentage)
+{
+	if (percentage == 101)
+		return -1;
+	return (gint) percentage;
+}
+
+/**
+ * pk_client_set_property_value:
  **/
 static void
-pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkClientState *state)
+pk_client_set_property_value (PkClientState *state,
+			      const char *key,
+			      GVariant *value)
 {
 	gboolean ret;
 	const gchar *package_id;
 
 	/* role */
 	if (g_strcmp0 (key, "Role") == 0) {
-		ret = pk_progress_set_role (state->progress, pk_role_enum_from_string (g_value_get_string (value)));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
+		ret = pk_progress_set_role (state->progress,
+						  pk_role_enum_from_string (g_variant_get_string (value, NULL)));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_ROLE,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* status */
 	if (g_strcmp0 (key, "Status") == 0) {
-		ret = pk_progress_set_status (state->progress, pk_status_enum_from_string (g_value_get_string (value)));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+		ret = pk_progress_set_status (state->progress,
+						  pk_status_enum_from_string (g_variant_get_string (value, NULL)));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_STATUS,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* last-package */
 	if (g_strcmp0 (key, "LastPackage") == 0) {
-		package_id = g_value_get_string (value);
+		package_id = g_variant_get_string (value, NULL);
 		/* check to see if it's been set yet */
 		ret = pk_package_id_check (package_id);
 		if (!ret)
 			return;
-		ret = pk_progress_set_package_id (state->progress, package_id);
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
+		ret = pk_progress_set_package_id (state->progress,
+						  package_id);
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_PACKAGE_ID,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* percentage */
 	if (g_strcmp0 (key, "Percentage") == 0) {
-		ret = pk_progress_set_percentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+		ret = pk_progress_set_percentage (state->progress,
+						  pk_client_percentage_to_signed (g_variant_get_uint32 (value)));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_PERCENTAGE,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* subpercentage */
 	if (g_strcmp0 (key, "Subpercentage") == 0) {
-		ret = pk_progress_set_subpercentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
+		ret = pk_progress_set_subpercentage (state->progress,
+						  pk_client_percentage_to_signed (g_variant_get_uint32 (value)));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_SUBPERCENTAGE,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* allow-cancel */
 	if (g_strcmp0 (key, "AllowCancel") == 0) {
-		ret = pk_progress_set_allow_cancel (state->progress, g_value_get_boolean (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
+		ret = pk_progress_set_allow_cancel (state->progress,
+						  g_variant_get_boolean (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_ALLOW_CANCEL,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* caller-active */
 	if (g_strcmp0 (key, "CallerActive") == 0) {
-		ret = pk_progress_set_caller_active (state->progress, g_value_get_boolean (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
+		ret = pk_progress_set_caller_active (state->progress,
+						  g_variant_get_boolean (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_CALLER_ACTIVE,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* elapsed-time */
 	if (g_strcmp0 (key, "ElapsedTime") == 0) {
-		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ELAPSED_TIME, state->progress_user_data);
+		ret = pk_progress_set_elapsed_time (state->progress,
+						  g_variant_get_uint32 (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_ELAPSED_TIME,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* remaining-time */
 	if (g_strcmp0 (key, "RemainingTime") == 0) {
-		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_REMAINING_TIME, state->progress_user_data);
+		ret = pk_progress_set_elapsed_time (state->progress,
+						  g_variant_get_uint32 (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_REMAINING_TIME,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* speed */
 	if (g_strcmp0 (key, "Speed") == 0) {
-		ret = pk_progress_set_speed (state->progress, g_value_get_uint (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SPEED, state->progress_user_data);
+		ret = pk_progress_set_speed (state->progress,
+						  g_variant_get_uint32 (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_SPEED,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
 	/* uid */
 	if (g_strcmp0 (key, "Uid") == 0) {
-		ret = pk_progress_set_uid (state->progress, g_value_get_uint (value));
-		if (ret && state->progress_callback != NULL)
-			state->progress_callback (state->progress, PK_PROGRESS_TYPE_UID, state->progress_user_data);
+		ret = pk_progress_set_uid (state->progress,
+						  g_variant_get_uint32 (value));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_UID,
+						  state->progress_user_data);
+		}
 		return;
 	}
 
@@ -518,23 +562,29 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
  * pk_client_cancel_cb:
  **/
 static void
-pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_cancel_cb (GObject *source_object,
+		     GAsyncResult *res,
+		     gpointer user_data)
 {
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	GError *error = NULL;
-	gboolean ret;
+	GVariant *value;
+	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_INVALID);
-	if (!ret) {
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
 		/* there's not really a lot we can do here */
 		g_warning ("failed to cancel: %s", error->message);
 		g_error_free (error);
+		goto out;
 	}
 
 	/* finished this call */
 	g_debug ("cancelled %s", state->tid);
-	state->call = NULL;
+out:
+	if (value != NULL)
+		g_variant_unref (value);
 }
 
 /**
@@ -549,26 +599,14 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 		return;
 	}
 
-	/* dbus method is pending now, just cancel */
-	if (state->call != NULL) {
-		dbus_g_proxy_cancel_call (state->proxy, state->call);
-		g_debug ("cancelling %s", state->tid);
-		state->call = NULL;
-		return;
-	}
-	if (state->call_interface_changed != NULL) {
-		dbus_g_proxy_cancel_call (state->proxy, state->call_interface_changed);
-		g_debug ("cancelling %s", state->tid);
-		state->call_interface_changed = NULL;
-	}
-
 	/* takeover the call with the cancel method */
-	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
-					       (DBusGProxyCallNotify) pk_client_cancel_cb, state,
-					       NULL, G_TYPE_INVALID);
-	if (state->call == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
 	g_debug ("cancelling %s", state->tid);
+	g_dbus_proxy_call (state->proxy, "Cancel",
+			   NULL,
+			   G_DBUS_CALL_FLAGS_NONE,
+			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+			   NULL,
+			   pk_client_cancel_cb, state);
 }
 
 /**
@@ -617,16 +655,26 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 
 	/* force finished (if not already set) so clients can update the UI's */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
-	if (ret && state->progress_callback != NULL)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
-
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
-		g_object_unref (state->cancellable);
+	if (ret && state->progress_callback != NULL) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_STATUS,
+					  state->progress_user_data);
 	}
 
+	if (state->cancellable_id > 0) {
+		g_cancellable_disconnect (state->cancellable_client,
+					  state->cancellable_id);
+	}
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
+
 	if (state->proxy != NULL) {
-		pk_client_disconnect_proxy (state->proxy, state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_properties_changed_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_signal_cb),
+						      state);
 		g_object_unref (G_OBJECT (state->proxy));
 	}
 
@@ -634,7 +682,9 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		g_object_unref (G_OBJECT (state->proxy_props));
 
 	if (state->ret) {
-		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
+		g_simple_async_result_set_op_res_gpointer (state->res,
+							   g_object_ref (state->results),
+							   g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
 	}
@@ -676,6 +726,81 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	g_object_unref (state->res);
 	g_object_unref (state->client);
 	g_slice_free (PkClientState, state);
+}
+
+/**
+ * pk_client_properties_changed_cb:
+ **/
+static void
+pk_client_properties_changed_cb (GDBusProxy *proxy,
+				 GVariant *changed_properties,
+				 const gchar* const  *invalidated_properties,
+				 gpointer user_data)
+{
+	const gchar *key;
+	GVariantIter *iter;
+	GVariant *value;
+	PkClientState *state = (PkClientState *) user_data;
+
+	if (g_variant_n_children (changed_properties) > 0) {
+		g_variant_get (changed_properties,
+				"a{sv}",
+				&iter);
+		while (g_variant_iter_loop (iter, "{&sv}", &key, &value))
+			pk_client_set_property_value (state, key, value);
+		g_variant_iter_free (iter);
+	}
+}
+
+/**
+ * pk_client_signal_package:
+ */
+static void
+pk_client_signal_package (PkClientState *state,
+			  PkInfoEnum info_enum,
+			  const gchar *package_id,
+			  const gchar *summary)
+{
+	gboolean ret;
+	GError *error = NULL;
+	PkPackage *package;
+
+	/* create virtual package */
+	package = pk_package_new ();
+	ret = pk_package_set_id (package, package_id, &error);
+	if (!ret) {
+		g_warning ("failed to set package id for %s", package_id);
+		g_error_free (error);
+		goto out;
+	}
+	g_object_set (package,
+		      "info", info_enum,
+		      "summary", summary,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
+		      NULL);
+
+	/* add to results */
+	if (state->results != NULL && info_enum != PK_INFO_ENUM_FINISHED)
+		pk_results_add_package (state->results, package);
+
+	/* save package-id */
+	ret = pk_progress_set_package_id (state->progress, package_id);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PACKAGE_ID,
+					  state->progress_user_data);
+	}
+
+	/* save package object */
+	ret = pk_progress_set_package (state->progress, package);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PACKAGE,
+					  state->progress_user_data);
+	}
+out:
+	g_object_unref (package);
 }
 
 /**
@@ -742,6 +867,7 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 	/* no more copies pending? */
 	if (--state->refcount == 0) {
 		pk_client_copy_finished_remove_old_files (state);
+		state->ret = TRUE;
 		pk_client_state_finish (state, NULL);
 	}
 out:
@@ -759,8 +885,11 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 
 	/* save status */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_COPY_FILES);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_STATUS,
+					  state->progress_user_data);
+	}
 
 	/* calculate percentage */
 	if (total_num_bytes > 0)
@@ -768,8 +897,11 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 
 	/* save percentage */
 	ret = pk_progress_set_percentage (state->progress, percentage);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PERCENTAGE,
+					  state->progress_user_data);
+	}
 }
 
 /**
@@ -858,8 +990,11 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* save percentage */
 	ret = pk_progress_set_percentage (state->progress, -1);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PERCENTAGE,
+					  state->progress_user_data);
+	}
 
 	/* do the copies pipelined */
 	for (i=0; i < len; i++) {
@@ -879,17 +1014,17 @@ out:
 }
 
 /**
- * pk_client_finished_cb:
+ * pk_client_signal_finished:
  */
 static void
-pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state)
+pk_client_signal_finished (PkClientState *state,
+			   PkExitEnum exit_enum,
+			   guint runtime)
 {
 	GError *error = NULL;
-	PkExitEnum exit_enum;
 	PkError *error_code = NULL;
 
 	/* yay */
-	exit_enum = pk_exit_enum_from_string (exit_text);
 	pk_results_set_exit_code (state->results, exit_enum);
 
 	/* failed */
@@ -899,10 +1034,16 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 		error_code = pk_results_get_error_code (state->results);
 		if (error_code != NULL) {
 			/* should only ever have one ErrorCode */
-			error = g_error_new (PK_CLIENT_ERROR, 0xFF + pk_error_get_code (error_code), "%s", pk_error_get_details (error_code));
+			error = g_error_new (PK_CLIENT_ERROR,
+					     0xFF + pk_error_get_code (error_code),
+					     "%s",
+					     pk_error_get_details (error_code));
 		} else {
 			/* fallback where the daemon didn't sent ErrorCode */
-			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
+			error = g_error_new (PK_CLIENT_ERROR,
+					     PK_CLIENT_ERROR_FAILED,
+					     "Failed: %s",
+					     pk_exit_enum_to_string (exit_enum));
 		}
 		pk_client_state_finish (state, error);
 		g_error_free (error);
@@ -917,6 +1058,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	}
 
 	/* we're done */
+	state->ret = TRUE;
 	pk_client_state_finish (state, NULL);
 out:
 	if (error_code != NULL)
@@ -924,615 +1066,413 @@ out:
 }
 
 /**
+ * pk_client_signal_cb:
+ **/
+static void
+pk_client_signal_cb (GDBusProxy *proxy,
+		     const gchar *sender_name,
+		     const gchar *signal_name,
+		     GVariant *parameters,
+		     gpointer user_data)
+{
+	PkClientState *state = (PkClientState *) user_data;
+	gchar *tmp_str[12];
+	gboolean tmp_bool;
+	guint tmp_uint;
+	guint tmp_uint2;
+	guint64 tmp_uint64;
+
+	/* connect up the signals */
+	if (g_strcmp0 (signal_name, "Message") == 0) {
+		PkMessage *item;
+		g_variant_get (parameters,
+			       "(&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1]);
+		item = pk_message_new ();
+		g_object_set (item,
+			      "type", pk_message_enum_from_string (tmp_str[0]),
+			      "details", tmp_str[1],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_message (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Finished") == 0) {
+		g_variant_get (parameters,
+			       "(&su)",
+			       &tmp_str[0],
+			       &tmp_uint);
+		pk_client_signal_finished (state,
+					   pk_exit_enum_from_string (tmp_str[0]),
+					   tmp_uint);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Package") == 0) {
+		g_variant_get (parameters,
+			       "(&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2]);
+		pk_client_signal_package (state,
+					  pk_info_enum_from_string (tmp_str[0]),
+					  tmp_str[1],
+					  tmp_str[2]);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Details") == 0) {
+		PkDetails *item;
+		g_variant_get (parameters,
+			       "(&s&s&s&s&st)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2],
+			       &tmp_str[3],
+			       &tmp_str[4],
+			       &tmp_uint64);
+		item = pk_details_new ();
+		g_object_set (item,
+			      "package-id", tmp_str[0],
+			      "license", tmp_str[1],
+			      "group", pk_group_enum_from_string (tmp_str[2]),
+			      "description", tmp_str[3],
+			      "url", tmp_str[4],
+			      "size", tmp_uint64,
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_details (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
+		PkUpdateDetail *item;
+		g_variant_get (parameters,
+			       "(&s&s&s&s&s&s&s&s&s&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2],
+			       &tmp_str[3],
+			       &tmp_str[4],
+			       &tmp_str[5],
+			       &tmp_str[6],
+			       &tmp_str[7],
+			       &tmp_str[8],
+			       &tmp_str[9],
+			       &tmp_str[10],
+			       &tmp_str[11]);
+		item = pk_update_detail_new ();
+		g_object_set (item,
+			      "package-id", tmp_str[0],
+			      "updates", tmp_str[1],
+			      "obsoletes", tmp_str[2],
+			      "vendor-url", tmp_str[3],
+			      "bugzilla-url", tmp_str[4],
+			      "cve-url", tmp_str[5],
+			      "restart", pk_restart_enum_from_string (tmp_str[6]),
+			      "update-text", tmp_str[7],
+			      "changelog", tmp_str[8],
+			      "state", pk_update_state_enum_from_string (tmp_str[9]),
+			      "issued", tmp_str[10],
+			      "updated", tmp_str[11],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_update_detail (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Transaction") == 0) {
+		PkTransactionPast *item;
+		g_variant_get (parameters,
+			       "(&s&sb&su&su&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_bool,
+			       &tmp_str[2],
+			       &tmp_uint,
+			       &tmp_str[3],
+			       &tmp_uint2,
+			       &tmp_str[4]);
+		item = pk_transaction_past_new ();
+		g_object_set (item,
+			      "tid", tmp_str[0],
+			      "timespec", tmp_str[1],
+			      "succeeded", tmp_bool,
+			      "role", pk_role_enum_from_string (tmp_str[2]),
+			      "duration", tmp_uint,
+			      "data", tmp_str[3],
+			      "uid", tmp_uint2,
+			      "cmdline", tmp_str[4],
+			      "PkSource::role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_transaction (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {
+		PkDistroUpgrade *item;
+		g_variant_get (parameters,
+			       "(&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2]);
+		item = pk_distro_upgrade_new ();
+		g_object_set (item,
+			      "state", pk_update_state_enum_from_string (tmp_str[0]),
+			      "name", tmp_str[1],
+			      "summary", tmp_str[2],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_distro_upgrade (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
+		PkRequireRestart *item;
+		g_variant_get (parameters,
+			       "(&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1]);
+		item = pk_require_restart_new ();
+		g_object_set (item,
+			      "restart", pk_restart_enum_from_string (tmp_str[0]),
+			      "package-id", tmp_str[1],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_require_restart (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Category") == 0) {
+		PkCategory *item;
+		g_variant_get (parameters,
+			       "(&s&s&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2],
+			       &tmp_str[3],
+			       &tmp_str[4]);
+		item = pk_category_new ();
+		g_object_set (item,
+			      "parent-id", tmp_str[0],
+			      "cat-id", tmp_str[1],
+			      "name", tmp_str[2],
+			      "summary", tmp_str[3],
+			      "icon", tmp_str[4],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_category (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Files") == 0) {
+		gchar **files;
+		PkFiles *item;
+		g_variant_get (parameters,
+			       "(&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1]);
+		files = g_strsplit (tmp_str[1], ";", -1);
+		item = pk_files_new ();
+		g_object_set (item,
+			      "package-id", tmp_str[0],
+			      "files", files,
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_files (state->results, item);
+		g_object_unref (item);
+		g_strfreev (files);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "RepoSignatureRequired") == 0) {
+		PkRepoSignatureRequired *item;
+		g_variant_get (parameters,
+			       "(&s&s&s&s&s&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2],
+			       &tmp_str[3],
+			       &tmp_str[4],
+			       &tmp_str[5],
+			       &tmp_str[6],
+			       &tmp_str[7]);
+		item = pk_repo_signature_required_new ();
+		g_object_set (item,
+			      "package-id", tmp_str[0],
+			      "repository-name", tmp_str[1],
+			      "key-url", tmp_str[2],
+			      "key-userid", tmp_str[2],
+			      "key-id", tmp_str[3],
+			      "key-fingerprint", tmp_str[4],
+			      "key-timestamp", tmp_str[5],
+			      "type", pk_sig_type_enum_from_string (tmp_str[6]),
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_repo_signature_required (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "EulaRequired") == 0) {
+		PkEulaRequired *item;
+		g_variant_get (parameters,
+			       "(&s&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2],
+			       &tmp_str[3]);
+		item = pk_eula_required_new ();
+		g_object_set (item,
+			      "eula-id", tmp_str[0],
+			      "package-id", tmp_str[1],
+			      "vendor-name", tmp_str[2],
+			      "license-agreement", tmp_str[3],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_eula_required (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "RepoDetail") == 0) {
+		PkRepoDetail *item;
+		g_variant_get (parameters,
+			       "(&s&sb)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_bool);
+		item = pk_repo_detail_new ();
+		g_object_set (item,
+			      "repo-id", tmp_str[0],
+			      "description", tmp_str[1],
+			      "enabled", tmp_bool,
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_repo_detail (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "ErrorCode") == 0) {
+		PkError *item;
+		g_variant_get (parameters,
+			       "(&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1]);
+		item = pk_error_new ();
+		g_object_set (item,
+			      "code", pk_error_enum_from_string (tmp_str[0]),
+			      "details", tmp_str[1],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_set_error_code (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "MediaChangeRequired") == 0) {
+		PkMediaChangeRequired *item;
+		g_variant_get (parameters,
+			       "(&s&s&s)",
+			       &tmp_str[0],
+			       &tmp_str[1],
+			       &tmp_str[2]);
+		item = pk_media_change_required_new ();
+		g_object_set (item,
+			      "media-type", pk_media_type_enum_from_string (tmp_str[0]),
+			      "media-id", tmp_str[1],
+			      "media-text", tmp_str[2],
+			      "role", state->role,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		pk_results_add_media_change_required (state->results, item);
+		g_object_unref (item);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
+		g_variant_get (parameters,
+			       "(&su)",
+			       &tmp_str[0],
+			       &tmp_uint);
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Changed") == 0) {
+		return;
+	}
+	if (g_strcmp0 (signal_name, "Destroy") == 0) {
+		return;
+	}
+
+	g_warning ("Unknown signal: %s", signal_name);
+}
+
+/**
+ * pk_client_proxy_connect:
+ **/
+static void
+pk_client_proxy_connect (PkClientState *state)
+{
+	gchar **props = NULL;
+	guint i;
+	GVariant *value_tmp;
+
+	/* coldplug properties */
+	props = g_dbus_proxy_get_cached_property_names (state->proxy);
+	for (i = 0; props[i] != NULL; i++) {
+		value_tmp = g_dbus_proxy_get_cached_property (state->proxy,
+							      props[i]);
+		pk_client_set_property_value (state,
+					      props[i],
+					      value_tmp);
+		g_variant_unref (value_tmp);
+	}
+
+	/* connect up signals */
+	g_signal_connect (state->proxy, "g-properties-changed",
+			  G_CALLBACK (pk_client_properties_changed_cb),
+			  state);
+	g_signal_connect (state->proxy, "g-signal",
+			  G_CALLBACK (pk_client_signal_cb),
+			  state);
+
+	g_strfreev (props);
+}
+
+/**
  * pk_client_method_cb:
  **/
 static void
-pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_method_cb (GObject *source_object,
+		     GAsyncResult *res,
+		     gpointer user_data)
 {
 	GError *error = NULL;
-
-	/* finished this call */
-	state->call = NULL;
+	GVariant *value;
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
+	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
-	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
-					    G_TYPE_INVALID);
-	if (!state->ret) {
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* wait for ::Finished() */
-}
-
-/**
- * pk_client_package_cb:
- */
-static void
-pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *package_id, const gchar *summary, PkClientState *state)
-{
-	gboolean ret;
-	GError *error = NULL;
-	PkInfoEnum info_enum;
-	PkPackage *package;
-	g_return_if_fail (PK_IS_CLIENT (state->client));
-
-	/* create virtual package */
-	package = pk_package_new ();
-	ret = pk_package_set_id (package, package_id, &error);
-	if (!ret) {
-		g_warning ("failed to set package id for %s", package_id);
-		g_error_free (error);
-		goto out;
-	}
-	info_enum = pk_info_enum_from_string (info_text);
-	g_object_set (package,
-		      "info", info_enum,
-		      "summary", summary,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-
-	/* add to results */
-	if (info_enum != PK_INFO_ENUM_FINISHED)
-		pk_results_add_package (state->results, package);
-
-	/* save package-id */
-	ret = pk_progress_set_package_id (state->progress, package_id);
-	if (state->progress_callback != NULL && ret) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_PACKAGE_ID,
-					  state->progress_user_data);
-	}
-
-	/* save package object */
-	ret = pk_progress_set_package (state->progress, package);
-	if (state->progress_callback != NULL && ret) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_PACKAGE,
-					  state->progress_user_data);
-	}
 out:
-	g_object_unref (package);
-}
-
-/**
- * pk_client_get_properties_cb:
- **/
-static void
-pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
-{
-	GError *error = NULL;
-	GHashTable *hash;
-	gboolean ret;
-
-	state->call_interface_changed = NULL;
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		g_warning ("failed to get properties: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* process results */
-	if (hash != NULL) {
-		g_hash_table_foreach (hash, (GHFunc) pk_client_get_properties_collect_cb, state);
-		g_hash_table_unref (hash);
-	}
-
-out:
-	/* finished this call */
-	state->call = NULL;
-}
-
-/**
- * pk_client_changed_cb:
- */
-static void
-pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
-{
-	/* successive quick Changed events */
-	if (state->call_interface_changed != NULL) {
-		g_debug ("already processing request %p, so ignoring", state->call_interface_changed);
-		return;
-	}
-
-	/* call D-Bus get_properties async */
-	state->call_interface_changed =
-		dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
-				         (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
-				         G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
-				         G_TYPE_INVALID);
-	if (state->call_interface_changed == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
-
-	/* we've sent this async */
-}
-
-/**
- * pk_client_details_cb:
- */
-static void
-pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *license,
-		      const gchar *group_text, const gchar *description, const gchar *url,
-		      guint64 size, PkClientState *state)
-{
-	PkGroupEnum group_enum;
-	PkDetails *item;
-	group_enum = pk_group_enum_from_string (group_text);
-
-	/* add to results */
-	item = pk_details_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "license", license,
-		      "group", group_enum,
-		      "description", description,
-		      "url", url,
-		      "size", size,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_details (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_update_detail_cb:
- */
-static void
-pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *updates,
-			    const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
-			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text,
-			    const gchar *changelog, const gchar *state_text, const gchar *issued_text,
-			    const gchar *updated_text, PkClientState *state)
-{
-	PkUpdateStateEnum state_enum;
-	PkRestartEnum restart_enum;
-	PkUpdateDetail *item;
-
-	restart_enum = pk_restart_enum_from_string (restart_text);
-	state_enum = pk_update_state_enum_from_string (state_text);
-
-	/* add to results */
-	item = pk_update_detail_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "updates", updates,
-		      "obsoletes", obsoletes,
-		      "vendor-url", vendor_url,
-		      "bugzilla-url", bugzilla_url,
-		      "cve-url", cve_url,
-		      "restart", restart_enum,
-		      "update-text", update_text,
-		      "changelog", changelog,
-		      "state", state_enum,
-		      "issued", issued_text,
-		      "updated", updated_text,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_update_detail (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_transaction_cb:
- */
-static void
-pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *timespec,
-			  gboolean succeeded, const gchar *role_text, guint duration,
-			  const gchar *data, guint uid, const gchar *cmdline, PkClientState *state)
-{
-	PkRoleEnum role_enum;
-	PkTransactionPast *item;
-	role_enum = pk_role_enum_from_string (role_text);
-
-	/* add to results */
-	item = pk_transaction_past_new ();
-	g_object_set (item,
-		      "tid", tid,
-		      "timespec", timespec,
-		      "succeeded", succeeded,
-		      "role", role_enum,
-		      "duration", duration,
-		      "data", data,
-		      "uid", uid,
-		      "cmdline", cmdline,
-		      "PkSource::role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_transaction (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_distro_upgrade_cb:
- */
-static void
-pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *state_text, const gchar *name,
-			     const gchar *summary, PkClientState *state)
-{
-	PkUpdateStateEnum state_enum;
-	PkDistroUpgrade *item;
-	state_enum = pk_update_state_enum_from_string (state_text);
-
-	/* add to results */
-	item = pk_distro_upgrade_new ();
-	g_object_set (item,
-		      "state", state_enum,
-		      "name", name,
-		      "summary", summary,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_distro_upgrade (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_require_restart_cb:
- */
-static void
-pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, const gchar *package_id, PkClientState *state)
-{
-	PkRestartEnum restart_enum;
-	PkRequireRestart *item;
-	restart_enum = pk_restart_enum_from_string (restart_text);
-
-	/* add to results */
-	item = pk_require_restart_new ();
-	g_object_set (item,
-		      "restart", restart_enum,
-		      "package-id", package_id,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_require_restart (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_category_cb:
- */
-static void
-pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *cat_id,
-		       const gchar *name, const gchar *summary, const gchar *icon, PkClientState *state)
-{
-	PkCategory *item;
-
-	/* add to results */
-	item = pk_category_new ();
-	g_object_set (item,
-		      "parent-id", parent_id,
-		      "cat-id", cat_id,
-		      "name", name,
-		      "summary", summary,
-		      "icon", icon,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_category (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_files_cb:
- */
-static void
-pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClientState *state)
-{
-	gchar **files;
-	PkFiles *item;
-	files = g_strsplit (filelist, ";", -1);
-
-	/* add to results */
-	item = pk_files_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "files", files,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_files (state->results, item);
-	g_object_unref (item);
-	g_strfreev (files);
-}
-
-/**
- * pk_client_repo_signature_required_cb:
- **/
-static void
-pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *repository_name,
-				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
-				      const gchar *key_fingerprint, const gchar *key_timestamp,
-				      const gchar *type_text, PkClientState *state)
-{
-	PkSigTypeEnum type_enum;
-	PkRepoSignatureRequired *item;
-	type_enum = pk_sig_type_enum_from_string (type_text);
-
-	/* add to results */
-	item = pk_repo_signature_required_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "repository-name", repository_name,
-		      "key-url", key_url,
-		      "key-userid", key_userid,
-		      "key-id", key_id,
-		      "key-fingerprint", key_fingerprint,
-		      "key-timestamp", key_timestamp,
-		      "type", type_enum,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_repo_signature_required (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_eula_required_cb:
- **/
-static void
-pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
-			    const gchar *vendor_name, const gchar *license_agreement, PkClientState *state)
-{
-	PkEulaRequired *item;
-
-	/* add to results */
-	item = pk_eula_required_new ();
-	g_object_set (item,
-		      "eula-id", eula_id,
-		      "package-id", package_id,
-		      "vendor-name", vendor_name,
-		      "license-agreement", license_agreement,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_eula_required (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_media_change_required_cb:
- **/
-static void
-pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_text,
-				    const gchar *media_id, const gchar *media_text, PkClientState *state)
-{
-	PkMediaTypeEnum media_type_enum;
-	PkMediaChangeRequired *item;
-	media_type_enum = pk_media_type_enum_from_string (media_type_text);
-
-	/* add to results */
-	item = pk_media_change_required_new ();
-	g_object_set (item,
-		      "media-type", media_type_enum,
-		      "media-id", media_id,
-		      "media-text", media_text,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_media_change_required (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_repo_detail_cb:
- **/
-static void
-pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
-			  const gchar *description, gboolean enabled, PkClientState *state)
-{
-	PkRepoDetail *item;
-
-	/* add to results */
-	item = pk_repo_detail_new ();
-	g_object_set (item,
-		      "repo-id", repo_id,
-		      "description", description,
-		      "enabled", enabled,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_repo_detail (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_error_code_cb:
- */
-static void
-pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar *details, PkClientState *state)
-{
-	PkErrorEnum code_enum;
-	PkError *item;
-	code_enum = pk_error_enum_from_string (code_text);
-
-	/* add to results */
-	item = pk_error_new ();
-	g_object_set (item,
-		      "code", code_enum,
-		      "details", details,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_set_error_code (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_message_cb:
- */
-static void
-pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar *details, PkClientState *state)
-{
-	PkMessageEnum message_enum;
-	PkMessage *item;
-	message_enum = pk_message_enum_from_string (message_text);
-
-	/* add to results */
-	item = pk_message_new ();
-	g_object_set (item,
-		      "type", message_enum,
-		      "details", details,
-		      "role", state->role,
-		      "transaction-id", state->transaction_id,
-		      NULL);
-	pk_results_add_message (state->results, item);
-	g_object_unref (item);
-}
-
-/**
- * pk_client_item_progress_cb:
- */
-static void
-pk_client_item_progress_cb (DBusGProxy  *proxy, const gchar *id, guint value, PkClientState *state)
-{
-	pk_progress_set_item_progress (state->progress, id, value);
-}
-
-/**
- * pk_client_connect_proxy:
- **/
-static void
-pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
-{
-	/* sanity check */
-	if (state->signals_connected) {
-		g_warning ("not connecting as already connected");
-		return;
-	}
-
-	/* add the signal types */
-	dbus_g_proxy_add_signal (proxy, "Finished",
-				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Transaction",
-				 G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "DistroUpgrade",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Details",
-				 G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
-				 G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Files", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "EulaRequired",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "RepoDetail", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Message", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Category", G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "MediaChangeRequired",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Changed", G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "ItemProgress", G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-
-	/* connect up the signals */
-	dbus_g_proxy_connect_signal (proxy, "Finished",
-				     G_CALLBACK (pk_client_finished_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Package",
-				     G_CALLBACK (pk_client_package_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Details",
-				     G_CALLBACK (pk_client_details_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
-				     G_CALLBACK (pk_client_update_detail_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Transaction",
-				     G_CALLBACK (pk_client_transaction_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
-				     G_CALLBACK (pk_client_distro_upgrade_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
-				     G_CALLBACK (pk_client_require_restart_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Category",
-				     G_CALLBACK (pk_client_category_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Files",
-				     G_CALLBACK (pk_client_files_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
-				     G_CALLBACK (pk_client_repo_signature_required_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
-				     G_CALLBACK (pk_client_eula_required_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
-				     G_CALLBACK (pk_client_repo_detail_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
-				     G_CALLBACK (pk_client_error_code_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Message",
-				     G_CALLBACK (pk_client_message_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
-				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "ItemProgress",
-				     G_CALLBACK (pk_client_item_progress_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Changed",
-				     G_CALLBACK (pk_client_changed_cb), state, NULL);
-
-	/* save for sanity check */
-	state->signals_connected = TRUE;
-}
-
-/**
- * pk_client_disconnect_proxy:
- **/
-static void
-pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
-{
-	/* sanity check */
-	if (!state->signals_connected) {
-		g_debug ("not disconnecting as never connected");
-		return;
-	}
-
-	dbus_g_proxy_disconnect_signal (proxy, "Finished",
-					G_CALLBACK (pk_client_finished_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Package",
-					G_CALLBACK (pk_client_package_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Details",
-					G_CALLBACK (pk_client_details_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
-					G_CALLBACK (pk_client_update_detail_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Transaction",
-					G_CALLBACK (pk_client_transaction_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
-					G_CALLBACK (pk_client_distro_upgrade_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
-					G_CALLBACK (pk_client_require_restart_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Files",
-					G_CALLBACK (pk_client_files_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
-					G_CALLBACK (pk_client_repo_signature_required_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
-					G_CALLBACK (pk_client_eula_required_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "ErrorCode",
-					G_CALLBACK (pk_client_error_code_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Message",
-					G_CALLBACK (pk_client_message_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
-					G_CALLBACK (pk_client_media_change_required_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Changed",
-					G_CALLBACK (pk_client_changed_cb), state);
-
-	/* save for sanity check */
-	state->signals_connected = FALSE;
+	if (value != NULL)
+		g_variant_unref (value);
 }
 
 /**
@@ -1543,8 +1483,11 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
 {
 	gboolean ret;
 	ret = pk_progress_set_role (state->progress, role);
-	if (ret && state->progress_callback != NULL)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
+	if (ret && state->progress_callback != NULL) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_ROLE,
+					  state->progress_user_data);
+	}
 	return;
 }
 
@@ -1552,26 +1495,26 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
  * pk_client_set_hints_cb:
  **/
 static void
-pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_set_hints_cb (GObject *source_object,
+			GAsyncResult *res,
+			gpointer user_data)
 {
-	gchar *filters_text = NULL;
 	const gchar *enum_text;
+	gchar *filters_text = NULL;
 	GError *error = NULL;
-	gboolean ret;
+	GVariant *value;
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
+	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_INVALID);
-	if (!ret) {
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -1580,239 +1523,398 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 		      "progress", state->progress,
 		      NULL);
 
-	/* setup the proxies ready for use */
-	pk_client_connect_proxy (state->proxy, state);
-
 	/* do this async, although this should be pretty fast anyway */
 	if (state->role == PK_ROLE_ENUM_RESOLVE) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "Resolve",
+				   g_variant_new ("(s^a&s)",
+						  filters_text,
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchNames",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->search,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "SearchNames",
+				   g_variant_new ("(s^a&s)",
+						  filters_text,
+						  state->search),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchDetails",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->search,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "SearchDetails",
+				   g_variant_new ("(s^a&s)",
+						  filters_text,
+						  state->search),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchGroups",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->search,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "SearchGroups",
+				   g_variant_new ("(s^a&s)",
+						  filters_text,
+						  state->search),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_FILE) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchFiles",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->search,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "SearchFiles",
+				   g_variant_new ("(s^a&s)",
+						  filters_text,
+						  state->search),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_DETAILS) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDetails",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "GetDetails",
+				   g_variant_new ("(^a&s)",
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdateDetail",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "GetUpdateDetail",
+				   g_variant_new ("(^a&s)",
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_UINT, state->number,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetOldTransactions",
+				   g_variant_new ("(u)",
+						  state->number),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, (state->directory == NULL),
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "DownloadPackages",
+				   g_variant_new ("(b^a&s)",
+						  (state->directory == NULL),
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdates",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetUpdates",
+				   g_variant_new ("(s)",
+						  filters_text),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "UpdateSystem",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, state->only_trusted,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "UpdateSystem",
+				   g_variant_new ("(b)",
+						  state->only_trusted),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDepends",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_BOOLEAN, state->recursive,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "GetDepends",
+				   g_variant_new ("(s^a&sb)",
+						  filters_text,
+						  state->package_ids,
+						  state->recursive),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetPackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetPackages",
+				   g_variant_new ("(s)",
+						  filters_text),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRequires",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_BOOLEAN, state->recursive,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "GetRequires",
+				   g_variant_new ("(s^a&sb)",
+						  filters_text,
+						  state->package_ids,
+						  state->recursive),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
 		enum_text = pk_provides_enum_to_string (state->provides);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "WhatProvides",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRING, enum_text,
-						       G_TYPE_STRV, state->search,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "WhatProvides",
+				   g_variant_new ("(ss^a&s)",
+						  filters_text,
+						  enum_text,
+						  state->search),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDistroUpgrades",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetDistroUpgrades",
+				   NULL,
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_FILES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetFiles",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "GetFiles",
+				   g_variant_new ("(^a&s)",
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetCategories",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetCategories",
+				   NULL,
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "RemovePackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_BOOLEAN, state->allow_deps,
-						       G_TYPE_BOOLEAN, state->autoremove,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "RemovePackages",
+				   g_variant_new ("(^a&sbb)",
+						  state->package_ids,
+						  state->allow_deps,
+						  state->autoremove),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "RefreshCache",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, state->force,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "RefreshCache",
+				   g_variant_new ("(b)",
+						  state->force),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallPackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, state->only_trusted,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "InstallPackages",
+				   g_variant_new ("(b^a&s)",
+						  state->only_trusted,
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		enum_text = pk_sig_type_enum_to_string (state->type);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallSignature",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, enum_text,
-						       G_TYPE_STRING, state->key_id,
-						       G_TYPE_STRING, state->package_id,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "InstallSignature",
+				   g_variant_new ("(sss)",
+						  enum_text,
+						  state->key_id,
+						  state->package_id),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "UpdatePackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, state->only_trusted,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "UpdatePackages",
+				   g_variant_new ("(b^a&s)",
+						  state->only_trusted,
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallFiles",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_BOOLEAN, state->only_trusted,
-						       G_TYPE_STRV, state->files,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
+		g_dbus_proxy_call (state->proxy, "InstallFiles",
+				   g_variant_new ("(b^a&s)",
+						  state->only_trusted,
+						  state->files),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->files),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_ACCEPT_EULA) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "AcceptEula",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, state->eula_id,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "AcceptEula",
+				   g_variant_new ("(s)",
+						  state->eula_id),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_ROLLBACK) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "Rollback",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, state->transaction_id,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "Rollback",
+				   g_variant_new ("(s)",
+						  state->transaction_id),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
 		filters_text = pk_filter_bitfield_to_string (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRepoList",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, filters_text,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "GetRepoList",
+				   g_variant_new ("(s)",
+						  filters_text),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_REPO_ENABLE) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "RepoEnable",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, state->repo_id,
-						       G_TYPE_BOOLEAN, state->enabled,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "RepoEnable",
+				   g_variant_new ("(sb)",
+						  state->repo_id,
+						  state->enabled),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "RepoSetData",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, state->repo_id,
-						       G_TYPE_STRING, state->parameter,
-						       G_TYPE_STRING, state->value,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "RepoSetData",
+				   g_variant_new ("(sss)",
+						  state->repo_id,
+						  state->parameter,
+						  state->value),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallFiles",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->files,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
+		g_dbus_proxy_call (state->proxy, "SimulateInstallFiles",
+				   g_variant_new ("(^a&s)",
+						  state->files),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->files),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallPackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "SimulateInstallPackages",
+				   g_variant_new ("(^a&s)",
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateRemovePackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_BOOLEAN, state->autoremove,
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "SimulateRemovePackages",
+				   g_variant_new ("(^a&sb)",
+						  state->package_ids,
+						  state->autoremove),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateUpdatePackages",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_dbus_proxy_call (state->proxy, "SimulateUpdatePackages",
+				   g_variant_new ("(^a&s)",
+						  state->package_ids),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		state->call = dbus_g_proxy_begin_call (state->proxy, "UpgradeSystem",
-						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRING, state->distro_id,
-						       G_TYPE_STRING, pk_upgrade_kind_enum_to_string (state->upgrade_kind),
-						       G_TYPE_INVALID);
+		g_dbus_proxy_call (state->proxy, "UpgradeSystem",
+				   g_variant_new ("(ss)",
+						  state->distro_id,
+						  pk_upgrade_kind_enum_to_string (state->upgrade_kind)),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else {
 		g_assert_not_reached ();
 	}
 
-	/* check we called okay */
-	if (state->call == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
-
 	/* we've sent this async */
 out:
+	if (value != NULL)
+		g_variant_unref (value);
 	g_free (filters_text);
 	return;
 }
@@ -1971,41 +2073,24 @@ out:
 }
 
 /**
- * pk_client_get_tid_cb:
+ * pk_client_get_proxy_cb:
  **/
 static void
-pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+pk_client_get_proxy_cb (GObject *object,
+			GAsyncResult *res,
+			gpointer user_data)
 {
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
 	gchar *hint;
-	gchar **hints;
+	GError *error = NULL;
 	GPtrArray *array;
+	PkClientState *state = (PkClientState *) user_data;
 
-	state->tid = pk_control_get_tid_finish (control, res, &error);
-	if (state->tid == NULL) {
-		pk_client_state_finish (state, error);
-		g_error_free (error);
-		return;
-	}
-
-	pk_progress_set_transaction_id (state->progress, state->tid);
-
-	/* get a connection to the transaction interface */
-	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
+	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL)
 		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
-
-	/* get a connection to the properties interface */
-	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
-							PK_DBUS_SERVICE, state->tid,
-							"org.freedesktop.DBus.Properties");
-	if (state->proxy_props == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
+	/* connect */
+	pk_client_proxy_connect (state);
 
 	/* get hints */
 	array = g_ptr_array_new_with_free_func (g_free);
@@ -2017,16 +2102,19 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	}
 
 	/* background */
-	hint = g_strdup_printf ("background=%s", pk_client_bool_to_string (state->client->priv->background));
+	hint = g_strdup_printf ("background=%s",
+				pk_client_bool_to_string (state->client->priv->background));
 	g_ptr_array_add (array, hint);
 
 	/* interactive */
-	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_string (state->client->priv->interactive));
+	hint = g_strdup_printf ("interactive=%s",
+				pk_client_bool_to_string (state->client->priv->interactive));
 	g_ptr_array_add (array, hint);
 
 	/* cache-age */
 	if (state->client->priv->cache_age > 0) {
-		hint = g_strdup_printf ("cache-age=%u", state->client->priv->cache_age);
+		hint = g_strdup_printf ("cache-age=%u",
+					state->client->priv->cache_age);
 		g_ptr_array_add (array, hint);
 	}
 
@@ -2042,20 +2130,51 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	}
 
 	/* set hints */
-	hints = pk_ptr_array_to_strv (array);
-	state->call = dbus_g_proxy_begin_call (state->proxy, "SetHints",
-					       (DBusGProxyCallNotify) pk_client_set_hints_cb, state, NULL,
-					       G_TYPE_STRV, hints,
-					       G_TYPE_INVALID);
-	if (state->call == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
+	g_ptr_array_add (array, NULL);
+	g_dbus_proxy_call (state->proxy, "SetHints",
+			   g_variant_new ("(^a&s)",
+					  array->pdata),
+			   G_DBUS_CALL_FLAGS_NONE,
+			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+			   state->cancellable,
+			   pk_client_set_hints_cb,
+			   state);
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
 
 	/* we've sent this async */
 	g_ptr_array_unref (array);
-	g_strfreev (hints);
+}
+
+/**
+ * pk_client_get_tid_cb:
+ **/
+static void
+pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+{
+	GError *error = NULL;
+	PkControl *control = PK_CONTROL (object);
+
+	state->tid = pk_control_get_tid_finish (control, res, &error);
+	if (state->tid == NULL) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	pk_progress_set_transaction_id (state->progress, state->tid);
+
+	/* get a connection to the transaction interface */
+	g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
+				  G_DBUS_PROXY_FLAGS_NONE,
+				  NULL,
+				  PK_DBUS_SERVICE,
+				  state->tid,
+				  PK_DBUS_INTERFACE_TRANSACTION,
+				  state->cancellable,
+				  pk_client_get_proxy_cb,
+				  state);
 }
 
 /**
@@ -2123,9 +2242,13 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->role = PK_ROLE_ENUM_RESOLVE;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->package_ids = g_strdupv (packages);
@@ -2134,7 +2257,8 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2144,7 +2268,10 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2185,9 +2312,13 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->role = PK_ROLE_ENUM_SEARCH_NAME;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->search = g_strdupv (values);
@@ -2196,7 +2327,8 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2206,7 +2338,10 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2248,9 +2383,13 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	state->role = PK_ROLE_ENUM_SEARCH_DETAILS;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->search = g_strdupv (values);
@@ -2259,7 +2398,8 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2269,7 +2409,10 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2309,9 +2452,13 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 	state->role = PK_ROLE_ENUM_SEARCH_GROUP;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->search = g_strdupv (values);
@@ -2320,7 +2467,8 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2330,7 +2478,10 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2370,9 +2521,13 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->role = PK_ROLE_ENUM_SEARCH_FILE;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->search = g_strdupv (values);
@@ -2381,7 +2536,8 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2391,7 +2547,10 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2432,9 +2591,13 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state->role = PK_ROLE_ENUM_GET_DETAILS;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -2442,7 +2605,8 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2452,7 +2616,10 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2493,9 +2660,13 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -2503,7 +2674,8 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2513,7 +2685,10 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2554,9 +2729,13 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->directory = g_strdup (directory);
@@ -2565,7 +2744,8 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2575,7 +2755,10 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2614,9 +2797,13 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->role = PK_ROLE_ENUM_GET_UPDATES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->progress_callback = progress_callback;
@@ -2624,7 +2811,8 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2634,7 +2822,10 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2673,9 +2864,13 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	state->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->number = number;
 	state->progress_callback = progress_callback;
@@ -2683,7 +2878,8 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2693,7 +2889,10 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2737,9 +2936,13 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->only_trusted = only_trusted;
 	state->progress_callback = progress_callback;
@@ -2747,7 +2950,8 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2757,7 +2961,10 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2799,9 +3006,13 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->role = PK_ROLE_ENUM_GET_DEPENDS;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->recursive = recursive;
@@ -2811,7 +3022,8 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2821,7 +3033,10 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2860,9 +3075,13 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state->role = PK_ROLE_ENUM_GET_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->progress_callback = progress_callback;
@@ -2870,7 +3089,8 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2880,7 +3100,10 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2922,9 +3145,13 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state->role = PK_ROLE_ENUM_GET_REQUIRES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->recursive = recursive;
 	state->filters = filters;
@@ -2934,7 +3161,8 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -2944,7 +3172,10 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -2987,9 +3218,13 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->role = PK_ROLE_ENUM_WHAT_PROVIDES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->provides = provides;
@@ -2999,7 +3234,8 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3009,7 +3245,10 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3048,16 +3287,21 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	state->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3067,7 +3311,10 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3107,9 +3354,13 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state->role = PK_ROLE_ENUM_GET_FILES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -3117,7 +3368,8 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3127,7 +3379,10 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3165,16 +3420,21 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	state->role = PK_ROLE_ENUM_GET_CATEGORIES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3184,7 +3444,10 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3228,9 +3491,13 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	state->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->allow_deps = allow_deps;
 	state->autoremove = autoremove;
@@ -3240,7 +3507,8 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3250,7 +3518,10 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3292,9 +3563,13 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state->role = PK_ROLE_ENUM_REFRESH_CACHE;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->force = force;
 	state->progress_callback = progress_callback;
@@ -3302,7 +3577,8 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3312,7 +3588,10 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3353,9 +3632,13 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	state->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
@@ -3364,7 +3647,8 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3374,7 +3658,10 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3415,9 +3702,13 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->type = type;
 	state->key_id = g_strdup (key_id);
@@ -3427,7 +3718,8 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3437,7 +3729,10 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3478,9 +3773,13 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	state->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
@@ -3489,7 +3788,8 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3499,7 +3799,10 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3524,7 +3827,10 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState
 	/* no more copies pending? */
 	if (--state->refcount == 0) {
 		/* now get tid and continue on our merry way */
-		pk_control_get_tid_async (state->client->priv->control, state->cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (state->client->priv->control,
+					  state->cancellable,
+					  (GAsyncReadyCallback) pk_client_get_tid_cb,
+					  state);
 	}
 out:
 	return;
@@ -3551,8 +3857,11 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 
 	/* save percentage */
 	ret = pk_progress_set_percentage (state->progress, -1);
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+	if (state->progress_callback != NULL && ret) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_PERCENTAGE,
+					  state->progress_user_data);
+	}
 
 	/* copy each file that is non-native */
 	for (i=0; state->files[i] != NULL; i++) {
@@ -3621,9 +3930,13 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	state->role = PK_ROLE_ENUM_INSTALL_FILES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->only_trusted = only_trusted;
 	state->progress_callback = progress_callback;
@@ -3631,7 +3944,8 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3659,7 +3973,10 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	/* nothing to copy, common case */
 	if (state->refcount == 0) {
 		/* just get tid */
-		pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (client->priv->control,
+					  cancellable,
+					  (GAsyncReadyCallback) pk_client_get_tid_cb,
+					  state);
 		goto out;
 	}
 
@@ -3703,9 +4020,13 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state->role = PK_ROLE_ENUM_ACCEPT_EULA;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->eula_id = g_strdup (eula_id);
 	state->progress_callback = progress_callback;
@@ -3713,7 +4034,8 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3723,7 +4045,10 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3762,9 +4087,13 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	state->role = PK_ROLE_ENUM_ROLLBACK;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->transaction_id = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
@@ -3772,7 +4101,8 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3782,7 +4112,10 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3821,9 +4154,13 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state->role = PK_ROLE_ENUM_GET_REPO_LIST;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->filters = filters;
 	state->progress_callback = progress_callback;
@@ -3831,7 +4168,8 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3841,7 +4179,10 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3881,9 +4222,13 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state->role = PK_ROLE_ENUM_REPO_ENABLE;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->enabled = enabled;
 	state->repo_id = g_strdup (repo_id);
@@ -3892,7 +4237,8 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3902,7 +4248,10 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -3944,9 +4293,13 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->role = PK_ROLE_ENUM_REPO_SET_DATA;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->repo_id = g_strdup (repo_id);
 	state->parameter = g_strdup (parameter);
@@ -3956,7 +4309,8 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -3966,7 +4320,10 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -4008,9 +4365,13 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	state->role = PK_ROLE_ENUM_SIMULATE_INSTALL_FILES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 
 	state->progress_callback = progress_callback;
@@ -4018,7 +4379,8 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4046,7 +4408,10 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	/* nothing to copy, common case */
 	if (state->refcount == 0) {
 		/* just get tid */
-		pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 		goto out;
 	}
 
@@ -4091,9 +4456,13 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	state->role = PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -4101,7 +4470,8 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4111,7 +4481,10 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -4152,9 +4525,13 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	state->role = PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->autoremove = autoremove;
@@ -4163,7 +4540,8 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4173,7 +4551,10 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
@@ -4213,9 +4594,13 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	state->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -4223,7 +4608,8 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4233,11 +4619,13 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_upgrade_system_async:
@@ -4279,9 +4667,13 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->distro_id = g_strdup (distro_id);
 	state->upgrade_kind = upgrade_kind;
@@ -4290,7 +4682,8 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4300,56 +4693,39 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	pk_client_set_role (state, state->role);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
 out:
 	g_object_unref (res);
 }
 
-/***************************************************************************************************/
+/**********************************************************************/
 
 /**
- * pk_client_adopt_get_properties_cb:
+ * pk_client_adopt_get_proxy_cb:
  **/
 static void
-pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_adopt_get_proxy_cb (GObject *object,
+			      GAsyncResult *res,
+			      gpointer user_data)
 {
 	GError *error = NULL;
-	GHashTable *hash;
+	PkClientState *state = (PkClientState *) user_data;
 
-	/* get the result */
-	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
-					    dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
-					    G_TYPE_INVALID);
-	if (!state->ret) {
+	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (state->proxy == NULL) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		return;
 	}
 
-	/* finished this call */
-	state->call = NULL;
+	/* connect */
+	pk_client_proxy_connect (state);
 
-	/* setup the proxies ready for use */
-	pk_client_connect_proxy (state->proxy, state);
-
-	/* process results */
-	if (hash != NULL) {
-		g_hash_table_foreach (hash, (GHFunc) pk_client_get_properties_collect_cb, state);
-		g_hash_table_unref (hash);
-	}
-
-	/* this is the first time we'll know the actual role */
-	if (state->role == PK_ROLE_ENUM_UNKNOWN) {
-		g_object_get (state->progress,
-			      "role", &state->role,
-			      NULL);
-		/* proxy this */
-		g_object_set (state->results,
-			      "role", state->role,
-			      NULL);
-	}
-
-	/* we're waiting for finished */
+	state->ret = TRUE;
+	pk_client_state_finish (state, NULL);
 }
 
 /**
@@ -4367,9 +4743,13 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
  * Since: 0.5.2
  **/
 void
-pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
-		       PkProgressCallback progress_callback, gpointer progress_user_data,
-		       GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_adopt_async (PkClient *client,
+		       const gchar *transaction_id,
+		       GCancellable *cancellable,
+		       PkProgressCallback progress_callback,
+		       gpointer progress_user_data,
+		       GAsyncReadyCallback callback_ready,
+		       gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -4386,17 +4766,27 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state->role = PK_ROLE_ENUM_UNKNOWN;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->tid = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
+	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      "progress", state->progress,
+		      NULL);
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4407,35 +4797,15 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */
-	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
-	if (state->proxy == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
-
-	/* get a connection to the properties interface */
-	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
-							PK_DBUS_SERVICE, state->tid,
-							"org.freedesktop.DBus.Properties");
-	if (state->proxy_props == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
-
-	/* call D-Bus get_properties async */
-	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
-					       (DBusGProxyCallNotify) pk_client_adopt_get_properties_cb, state, NULL,
-					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
-					       G_TYPE_INVALID);
-	if (state->call == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
-
-	/* we'll have results from now on */
-	state->results = pk_results_new ();
-	g_object_set (state->results,
-		      "role", state->role,
-		      "progress", state->progress,
-		      NULL);
+	g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
+				  G_DBUS_PROXY_FLAGS_NONE,
+				  NULL,
+				  PK_DBUS_SERVICE,
+				  state->tid,
+				  PK_DBUS_INTERFACE_TRANSACTION,
+				  state->cancellable,
+				  pk_client_adopt_get_proxy_cb,
+				  state);
 
 	/* track state */
 	pk_client_state_add (client, state);
@@ -4443,7 +4813,7 @@ out:
 	g_object_unref (res);
 }
 
-/***************************************************************************************************/
+/**********************************************************************/
 
 /**
  * pk_client_get_progress_finish:
@@ -4477,15 +4847,22 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
  * pk_client_get_progress_state_finish:
  **/
 static void
-pk_client_get_progress_state_finish (PkClientState *state, GError *error)
+pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 {
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
-		g_object_unref (state->cancellable);
+	if (state->cancellable_id > 0) {
+		g_cancellable_disconnect (state->cancellable_client,
+					  state->cancellable_id);
 	}
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 
 	if (state->proxy != NULL) {
-		pk_client_disconnect_proxy (state->proxy, state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_properties_changed_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_signal_cb),
+						      state);
 		g_object_unref (G_OBJECT (state->proxy));
 	}
 
@@ -4493,10 +4870,11 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 		g_object_unref (G_OBJECT (state->proxy_props));
 
 	if (state->ret) {
-		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->progress), g_object_unref);
+		g_simple_async_result_set_op_res_gpointer (state->res,
+							   g_object_ref (state->progress),
+							   g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -4517,30 +4895,24 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
  * pk_client_get_progress_cb:
  **/
 static void
-pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_get_progress_cb (GObject *source_object,
+			   GAsyncResult *res,
+			   gpointer user_data)
 {
 	GError *error = NULL;
-	GHashTable *hash;
+	PkClientState *state = (PkClientState *) user_data;
 
-	/* get the result */
-	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
-					    dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
-					    G_TYPE_INVALID);
-	if (!state->ret) {
+	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (state->proxy == NULL) {
 		pk_client_get_progress_state_finish (state, error);
+		g_error_free (error);
 		return;
 	}
 
-	/* finished this call */
-	state->call = NULL;
+	/* connect */
+	pk_client_proxy_connect (state);
 
-	/* process results */
-	if (hash != NULL) {
-		g_hash_table_foreach (hash, (GHFunc) pk_client_get_properties_collect_cb, state);
-		g_hash_table_unref (hash);
-	}
-
-	/* we're done */
+	state->ret = TRUE;
 	pk_client_get_progress_state_finish (state, NULL);
 }
 
@@ -4557,8 +4929,11 @@ pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientStat
  * Since: 0.5.2
  **/
 void
-pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
-			      GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_get_progress_async (PkClient *client,
+			      const gchar *transaction_id,
+			      GCancellable *cancellable,
+			      GAsyncReadyCallback callback_ready,
+			      gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -4574,15 +4949,20 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	state = g_slice_new0 (PkClientState);
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
 	}
 	state->tid = g_strdup (transaction_id);
 	state->progress = pk_progress_new ();
 
 	/* check not already cancelled */
-	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -4592,31 +4972,15 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */
-	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
-	if (state->proxy == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
-
-	/* get a connection to the properties interface */
-	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
-							PK_DBUS_SERVICE, state->tid,
-							"org.freedesktop.DBus.Properties");
-	if (state->proxy_props == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
-
-	/* timeout if we fail to get properties */
-	dbus_g_proxy_set_default_timeout (state->proxy_props, PK_CLIENT_DBUS_METHOD_TIMEOUT);
-
-	/* call D-Bus get_properties async */
-	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
-					       (DBusGProxyCallNotify) pk_client_get_progress_cb, state, NULL,
-					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
-					       G_TYPE_INVALID);
-	if (state->call == NULL)
-		g_error ("failed to setup call, maybe OOM or no connection");
+	g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
+				  G_DBUS_PROXY_FLAGS_NONE,
+				  NULL,
+				  PK_DBUS_SERVICE,
+				  state->tid,
+				  PK_DBUS_INTERFACE_TRANSACTION,
+				  state->cancellable,
+				  pk_client_get_progress_cb,
+				  state);
 
 	/* track state */
 	pk_client_state_add (client, state);
@@ -4624,7 +4988,7 @@ out:
 	g_object_unref (res);
 }
 
-/***************************************************************************************************/
+/**********************************************************************/
 
 /**
  * pk_client_cancel_all_dbus_methods:
@@ -4640,10 +5004,10 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 	array = client->priv->calls;
 	for (i=0; i<array->len; i++) {
 		state = g_ptr_array_index (array, i);
-		if (state->call == NULL)
+		if (state->proxy == NULL)
 			continue;
 		g_debug ("cancel in flight call");
-		dbus_g_proxy_cancel_call (state->proxy, state->call);
+		g_cancellable_cancel (state->cancellable);
 	}
 
 	return TRUE;
@@ -4877,7 +5241,6 @@ pk_client_class_init (PkClientClass *klass)
 static void
 pk_client_init (PkClient *client)
 {
-	GError *error = NULL;
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->calls = g_ptr_array_new ();
 	client->priv->background = FALSE;
@@ -4885,83 +5248,8 @@ pk_client_init (PkClient *client)
 	client->priv->idle = TRUE;
 	client->priv->cache_age = 0;
 
-	/* check dbus connections, exit if not valid */
-	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error != NULL) {
-		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
-	}
-
 	/* use a control object */
 	client->priv->control = pk_control_new ();
-
-	/* DistroUpgrade, MediaChangeRequired */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* ProgressChanged */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
-					   G_TYPE_NONE, G_TYPE_UINT,
-					   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
-
-	/* Finished */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-
-	/* ErrorCode, RequireRestart, Message */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* Details */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
-					   G_TYPE_INVALID);
-
-	/* EulaRequired */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* Files */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* RepoSignatureRequired */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* Package */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* RepoDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_BOOLEAN, G_TYPE_INVALID);
-
-	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	/* Transaction */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING_UINT_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
-					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-					   G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
-	/* Category */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	/* ItemProgress */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	/* cache locale */
 	client->priv->locale = 	g_strdup (setlocale (LC_MESSAGES, NULL));

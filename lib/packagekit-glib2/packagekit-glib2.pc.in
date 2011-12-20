@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: packagekit-glib2
 Description: PackageKit is a system daemon for installing stuff.
 Version: @VERSION@
-Requires.private: dbus-1, gthread-2.0
+Requires.private: gthread-2.0
 Requires: glib-2.0, gobject-2.0, sqlite3
 Libs: -L${libdir} -lpackagekit-glib2
 Cflags: -I${includedir}/PackageKit
