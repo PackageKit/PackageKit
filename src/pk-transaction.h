@@ -94,6 +94,8 @@ void		 pk_transaction_add_supported_content_type	(PkTransaction	*transaction,
 								 const gchar	*mime_type);
 void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
+void		 pk_transaction_connect_backend_signals		(PkTransaction *transaction, PkBitfield actions);
+void 		 pk_transaction_disconnect_backend_signals	(PkTransaction *transaction, PkBitfield actions);
 
 G_END_DECLS
 

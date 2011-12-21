@@ -1079,6 +1079,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	PkPackage *item;
 	gchar *package_id;
 	PkInfoEnum info;
+	PkBitfield backend_connections;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1094,54 +1095,39 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START);
 
 	/* disconnect these straight away */
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_details);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_error_code);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_files);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_distro_upgrade);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_finished);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_package);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_repo_detail);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_repo_signature_required);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_eula_required);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_media_change_required);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_update_detail);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_category);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_speed);
+	backend_connections = pk_bitfield_from_enums (
+		PK_BACKEND_SIGNAL_DETAILS,
+		PK_BACKEND_SIGNAL_ERROR_CODE,
+		PK_BACKEND_SIGNAL_FILES,
+		PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+		PK_BACKEND_SIGNAL_FINISHED,
+		PK_BACKEND_SIGNAL_PACKAGE,
+		PK_BACKEND_SIGNAL_REPO_DETAIL,
+		PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+		PK_BACKEND_SIGNAL_EULA_REQUIRED,
+		PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
+		PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+		PK_BACKEND_SIGNAL_CATEGORY,
+		PK_BACKEND_SIGNAL_NOTIFY_SPEED,
+		-1);
+	pk_transaction_disconnect_backend_signals (transaction, backend_connections);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS);
 
 	/* signals we are not allowed to send from the second phase post transaction */
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_percentage);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_subpercentage);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_remaining);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_require_restart);
-	g_signal_handler_disconnect (transaction->priv->backend,
-				     transaction->priv->signal_item_progress);
+	backend_connections = pk_bitfield_from_enums (
+		PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+		PK_BACKEND_SIGNAL_MESSAGE,
+		PK_BACKEND_SIGNAL_STATUS_CHANGED,
+		PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
+		PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
+		PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
+		PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+		PK_BACKEND_SIGNAL_ITEM_PROGRESS
+		-1);
+	pk_transaction_disconnect_backend_signals (transaction, backend_connections);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -1973,6 +1959,214 @@ pk_transaction_remaining_cb (GObject *object,
 }
 
 /**
+ * pk_transaction_connect_backend_signals:
+ **/
+void
+pk_transaction_connect_backend_signals (PkTransaction *transaction, PkBitfield backend_signals)
+{
+	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
+
+	/* connect up selected signals */
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL))
+		priv->signal_allow_cancel =
+			g_signal_connect (priv->backend, "allow-cancel",
+					G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS))
+		priv->signal_details =
+			g_signal_connect (priv->backend, "details",
+					G_CALLBACK (pk_transaction_details_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ERROR_CODE))
+		priv->signal_error_code =
+			g_signal_connect (priv->backend, "error-code",
+					G_CALLBACK (pk_transaction_error_code_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FILES))
+		priv->signal_files =
+			g_signal_connect (priv->backend, "files",
+					G_CALLBACK (pk_transaction_files_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DISTRO_UPGRADE))
+		priv->signal_distro_upgrade =
+			g_signal_connect (priv->backend, "distro-upgrade",
+					G_CALLBACK (pk_transaction_distro_upgrade_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED))
+		priv->signal_finished =
+			g_signal_connect (priv->backend, "finished",
+					G_CALLBACK (pk_transaction_finished_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE))
+		priv->signal_message =
+			g_signal_connect (priv->backend, "message",
+					G_CALLBACK (pk_transaction_message_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE))
+		priv->signal_package =
+			g_signal_connect (priv->backend, "package",
+					G_CALLBACK (pk_transaction_package_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE))
+		priv->signal_percentage =
+			g_signal_connect (priv->backend, "notify::percentage",
+					G_CALLBACK (pk_transaction_percentage_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE))
+		priv->signal_subpercentage =
+			g_signal_connect (priv->backend, "notify::subpercentage",
+					G_CALLBACK (pk_transaction_subpercentage_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_REMAINING))
+		priv->signal_remaining =
+			g_signal_connect (priv->backend, "notify::remaining",
+					G_CALLBACK (pk_transaction_remaining_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL))
+		priv->signal_repo_detail =
+			g_signal_connect (priv->backend, "repo-detail",
+					G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED))
+		priv->signal_repo_signature_required =
+			g_signal_connect (priv->backend, "repo-signature-required",
+					G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED))
+		priv->signal_eula_required =
+			g_signal_connect (priv->backend, "eula-required",
+					G_CALLBACK (pk_transaction_eula_required_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED))
+		priv->signal_media_change_required =
+			g_signal_connect (priv->backend, "media-change-required",
+					G_CALLBACK (pk_transaction_media_change_required_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REQUIRE_RESTART))
+		priv->signal_require_restart =
+			g_signal_connect (priv->backend, "require-restart",
+					G_CALLBACK (pk_transaction_require_restart_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED))
+		priv->signal_status_changed =
+			g_signal_connect (priv->backend, "status-changed",
+					G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL))
+		priv->signal_update_detail =
+			g_signal_connect (priv->backend, "update-detail",
+					G_CALLBACK (pk_transaction_update_detail_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY))
+		priv->signal_category =
+			g_signal_connect (priv->backend, "category",
+					G_CALLBACK (pk_transaction_category_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS))
+		priv->signal_item_progress =
+			g_signal_connect (priv->backend, "item-progress",
+					G_CALLBACK (pk_transaction_item_progress_cb), transaction);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SPEED))
+		priv->signal_speed =
+			g_signal_connect (priv->backend, "notify::speed",
+					G_CALLBACK (pk_transaction_speed_cb), transaction);
+}
+
+/**
+ * pk_transaction_disconnect_backend_signals:
+ **/
+void
+pk_transaction_disconnect_backend_signals (PkTransaction *transaction, PkBitfield backend_signals)
+{
+	/* disconnect all selected signals */
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_allow_cancel);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_details);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ERROR_CODE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_error_code);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FILES))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_files);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DISTRO_UPGRADE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_distro_upgrade);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_finished);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_message);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_package);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_percentage);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_subpercentage);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_REMAINING))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_remaining);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_repo_detail);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_repo_signature_required);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_eula_required);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_media_change_required);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REQUIRE_RESTART))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_require_restart);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_status_changed);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_update_detail);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_category);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_item_progress);
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SPEED))
+		g_signal_handler_disconnect (transaction->priv->backend,
+				     transaction->priv->signal_speed);
+
+}
+
+/**
  * pk_transaction_run:
  */
 gboolean
@@ -1981,6 +2175,7 @@ pk_transaction_run (PkTransaction *transaction)
 	gboolean ret;
 	GError *error = NULL;
 	PkExitEnum exit_status;
+	PkBitfield backend_connections;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -2056,71 +2251,31 @@ pk_transaction_run (PkTransaction *transaction)
 		 priv->tid,
 		 pk_role_enum_to_string (priv->role));
 
-	/* connect up the signals */
-	priv->signal_allow_cancel =
-		g_signal_connect (priv->backend, "allow-cancel",
-				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
-	priv->signal_details =
-		g_signal_connect (priv->backend, "details",
-				  G_CALLBACK (pk_transaction_details_cb), transaction);
-	priv->signal_error_code =
-		g_signal_connect (priv->backend, "error-code",
-				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
-	priv->signal_files =
-		g_signal_connect (priv->backend, "files",
-				  G_CALLBACK (pk_transaction_files_cb), transaction);
-	priv->signal_distro_upgrade =
-		g_signal_connect (priv->backend, "distro-upgrade",
-				  G_CALLBACK (pk_transaction_distro_upgrade_cb), transaction);
-	priv->signal_finished =
-		g_signal_connect (priv->backend, "finished",
-				  G_CALLBACK (pk_transaction_finished_cb), transaction);
-	priv->signal_message =
-		g_signal_connect (priv->backend, "message",
-				  G_CALLBACK (pk_transaction_message_cb), transaction);
-	priv->signal_package =
-		g_signal_connect (priv->backend, "package",
-				  G_CALLBACK (pk_transaction_package_cb), transaction);
-	priv->signal_percentage =
-		g_signal_connect (priv->backend, "notify::percentage",
-				  G_CALLBACK (pk_transaction_percentage_cb), transaction);
-	priv->signal_subpercentage =
-		g_signal_connect (priv->backend, "notify::subpercentage",
-				  G_CALLBACK (pk_transaction_subpercentage_cb), transaction);
-	priv->signal_remaining =
-		g_signal_connect (priv->backend, "notify::remaining",
-				  G_CALLBACK (pk_transaction_remaining_cb), transaction);
-	priv->signal_repo_detail =
-		g_signal_connect (priv->backend, "repo-detail",
-				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
-	priv->signal_repo_signature_required =
-		g_signal_connect (priv->backend, "repo-signature-required",
-				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
-	priv->signal_eula_required =
-		g_signal_connect (priv->backend, "eula-required",
-				  G_CALLBACK (pk_transaction_eula_required_cb), transaction);
-	priv->signal_media_change_required =
-		g_signal_connect (priv->backend, "media-change-required",
-				  G_CALLBACK (pk_transaction_media_change_required_cb), transaction);
-	priv->signal_require_restart =
-		g_signal_connect (priv->backend, "require-restart",
-				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
-	priv->signal_status_changed =
-		g_signal_connect (priv->backend, "status-changed",
-				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	priv->signal_update_detail =
-		g_signal_connect (priv->backend, "update-detail",
-				  G_CALLBACK (pk_transaction_update_detail_cb), transaction);
-	priv->signal_category =
-		g_signal_connect (priv->backend, "category",
-				  G_CALLBACK (pk_transaction_category_cb), transaction);
-	priv->signal_item_progress =
-		g_signal_connect (priv->backend, "item-progress",
-				  G_CALLBACK (pk_transaction_item_progress_cb),
-				  transaction);
-	priv->signal_speed =
-		g_signal_connect (priv->backend, "notify::speed",
-				  G_CALLBACK (pk_transaction_speed_cb), transaction);
+	/* connect the backend */
+	backend_connections = pk_bitfield_from_enums (
+		PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+		PK_BACKEND_SIGNAL_DETAILS,
+		PK_BACKEND_SIGNAL_ERROR_CODE,
+		PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+		PK_BACKEND_SIGNAL_FINISHED,
+		PK_BACKEND_SIGNAL_MESSAGE,
+		PK_BACKEND_SIGNAL_PACKAGE,
+		PK_BACKEND_SIGNAL_FILES,
+		PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
+		PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
+		PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
+		PK_BACKEND_SIGNAL_NOTIFY_SPEED,
+		PK_BACKEND_SIGNAL_REPO_DETAIL,
+		PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+		PK_BACKEND_SIGNAL_EULA_REQUIRED,
+		PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
+		PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+		PK_BACKEND_SIGNAL_STATUS_CHANGED,
+		PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+		PK_BACKEND_SIGNAL_CATEGORY,
+		PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+		-1);
+	pk_transaction_connect_backend_signals (transaction, backend_connections);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -3507,7 +3662,7 @@ out:
 }
 
 /**
- * pk_transaction_get_old_transactions:
+ * pk_transaction_get_old_transaction:
  **/
 static void
 pk_transaction_get_old_transactions (PkTransaction *transaction,
