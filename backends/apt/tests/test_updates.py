@@ -63,7 +63,7 @@ class GetUpdatesTests(mox.MoxTestBase):
         self.backend.finished()
         self.mox.ReplayAll()
         self.chroot.add_test_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.backend.dispatch_command("get-updates", ["None"])
 
     def test_get_security_updates(self):
@@ -76,7 +76,7 @@ class GetUpdatesTests(mox.MoxTestBase):
         self.mox.ReplayAll()
         self.chroot.add_repository(os.path.join(get_tests_dir(),
                                                 "repo/security"))
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.backend.dispatch_command("get-updates", ["None"])
 
     def test_get_backports(self):
@@ -89,7 +89,7 @@ class GetUpdatesTests(mox.MoxTestBase):
         self.mox.ReplayAll()
         self.chroot.add_repository(os.path.join(get_tests_dir(),
                                                 "repo/backports"))
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.backend.dispatch_command("get-updates", ["None"])
 
 

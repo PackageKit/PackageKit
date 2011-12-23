@@ -60,7 +60,7 @@ class FilterTests(mox.MoxTestBase):
                              "working package")
         self.backend.finished()
         self.mox.ReplayAll()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("search-name",
                                       ["installed", "silly-base"])
@@ -74,7 +74,7 @@ class FilterTests(mox.MoxTestBase):
                              enums.INFO_AVAILABLE, mox.IsA(str))
         self.backend.finished()
         self.mox.ReplayAll()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("search-name",
                                       ["~installed", "silly-depend-base"])

@@ -69,11 +69,11 @@ class CacheModifiersTests(mox.MoxTestBase):
                             "etc/apt/sources.list.d/test.list")
         with open(path, "w") as part_file:
             part_file.write("deb file://%s ./" % REPO_PATH)
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("refresh-cache", ["true"])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         pkg = self.backend._cache["silly-base"]
         self.assertTrue(pkg.candidate.origins[0].trusted)
 
@@ -86,11 +86,11 @@ class CacheModifiersTests(mox.MoxTestBase):
         self.chroot.add_test_repository()
         self.chroot.install_debfile(os.path.join(REPO_PATH,
                                                  "silly-base_0.1-0_all.deb"))
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("update-system", ["true"])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].installed.version,
                          "0.1-0update1")
 
@@ -103,12 +103,12 @@ class CacheModifiersTests(mox.MoxTestBase):
         self.chroot.add_test_repository()
         self.chroot.install_debfile(os.path.join(REPO_PATH,
                                                  "silly-base_0.1-0_all.deb"))
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("update-packages",
                                       ["true", "silly-base;0.1-0update1;all;"])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].installed.version,
                          "0.1-0update1")
 
@@ -119,11 +119,11 @@ class CacheModifiersTests(mox.MoxTestBase):
         # Setup environment
         self.mox.ReplayAll()
         self.chroot.add_test_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("install-packages",
                                       ["True", "silly-base;0.1-0update1;all;"])
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, True)
 
     def test_install_fail(self):
@@ -135,11 +135,11 @@ class CacheModifiersTests(mox.MoxTestBase):
         # Setup environment
         self.mox.ReplayAll()
         self.chroot.add_test_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("install-packages",
                                       ["True", "silly-fail;0.1-0;all;"])
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
 
     def test_install_timeout(self):
@@ -156,7 +156,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         # Copy the files for a small execution environment to execute dash
         os.system("dpkg -L dash libc6 |"
                   "xargs -i cp --parents '{}' %s" % self.chroot.path)
-        self.backend._cache.open()
+        self.backend._open_cache()
         aptBackend.TIMEOUT_IDLE_INSTALLATION = 5
         # Install the package
         self.backend.dispatch_command("install-packages",
@@ -172,11 +172,11 @@ class CacheModifiersTests(mox.MoxTestBase):
         # Setup environment
         self.mox.ReplayAll()
         self.chroot.add_test_repository(copy_sig=False)
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("install-packages",
                                       ["true", "silly-base;0.1-0update1;all;"])
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
 
     def test_simulate_install(self):
@@ -189,7 +189,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         # Setup environment
         self.mox.ReplayAll()
         self.chroot.add_test_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Run the command
         self.backend.dispatch_command("simulate-install-packages",
                                       ["silly-depend-base;0.1-0;all;"])
@@ -198,7 +198,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         """Test if we forbid to remove essential packages."""
         self.chroot.install_debfile(os.path.join(REPO_PATH,
                                                "silly-essential_0.1-0_all.deb"))
-        self.backend._cache.open()
+        self.backend._open_cache()
 
         self._catch_callbacks()
         self.backend.error(enums.ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
@@ -210,7 +210,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         self.backend.dispatch_command("remove-packages",
                                       ["true", "true",
                                        "silly-essential;0.1-0;all;"])
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertTrue(self.backend._cache["silly-essential"].is_installed)
 
     def test_remove_disallow_deps(self):
@@ -218,7 +218,7 @@ class CacheModifiersTests(mox.MoxTestBase):
         for pkg in ["silly-base_0.1-0_all.deb",
                     "silly-depend-base_0.1-0_all.deb"]:
             self.chroot.install_debfile(os.path.join(REPO_PATH, pkg))
-        self.backend._cache.open()
+        self.backend._open_cache()
 
         self._catch_callbacks()
         self.backend.error(enums.ERROR_DEP_RESOLUTION_FAILED,
@@ -231,13 +231,14 @@ class CacheModifiersTests(mox.MoxTestBase):
                                       ["false", "true",
                                        "silly-base;0.1-0;all;"])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, True)
         self.assertEqual(self.backend._cache["silly-depend-base"].is_installed,
                          True)
 
     def test_remove(self):
         """Test the removal of packages."""
+        self.backend._open_cache()
         for pkg in ["silly-base_0.1-0_all.deb",
                     "silly-depend-base_0.1-0_all.deb"]:
             self.chroot.install_debfile(os.path.join(REPO_PATH, pkg))
@@ -246,8 +247,7 @@ class CacheModifiersTests(mox.MoxTestBase):
             ext_states_file.write("""Package: silly-base
 Architecture: all
 Auto-Installed: 1""")
-        self.backend._cache.open()
-
+        self.backend._open_cache()
         self._catch_callbacks()
         self.backend.finished()
         self.mox.ReplayAll()
@@ -257,7 +257,7 @@ Auto-Installed: 1""")
                                       ["true", "true",
                                        "silly-depend-base;0.1-0;all;"])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertRaises(KeyError,
                           lambda: self.backend._cache["silly-depend-base"])
         self.assertRaises(KeyError, lambda: self.backend._cache["silly-base"])
@@ -272,12 +272,12 @@ Auto-Installed: 1""")
         # Setup environment
         self.mox.ReplayAll()
         self.chroot.add_test_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package files
         self.backend.dispatch_command("install-files",
                                       ["true", "|".join((debfile, debfile2))])
 
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, True)
         self.assertEqual(self.backend._cache["silly-essential"].is_installed,
                          True)
@@ -294,11 +294,11 @@ Auto-Installed: 1""")
         self.mox.ReplayAll()
         self.chroot.add_trusted_key()
         self.chroot.add_cdrom_repository()
-        self.backend._cache.open()
+        self.backend._open_cache()
         # Install the package
         self.backend.dispatch_command("install-packages",
                                       ["True", "silly-base;0.1-0;all;"])
-        self.backend._cache.open()
+        self.backend._open_cache()
         self.assertEqual(self.backend._cache["silly-base"].is_installed, False)
 
     def test_repair_system(self):

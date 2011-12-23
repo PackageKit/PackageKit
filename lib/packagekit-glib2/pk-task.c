@@ -152,8 +152,10 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	/* deallocate */
 	if (state->cancellable != NULL)
 		g_object_unref (state->cancellable);
-	if (state->results != NULL)
+	if (state->results != NULL) {
 		g_object_unref (state->results);
+		state->results = NULL;
+	}
 	g_free (state->directory);
 	g_free (state->repo_id);
 	g_free (state->transaction_id);
@@ -315,8 +317,10 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkMessageEnum message_type;
 
 	/* old results no longer valid */
-	if (state->results != NULL)
+	if (state->results != NULL) {
 		g_object_unref (state->results);
+		state->results = NULL;
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(state->task), res, &error);
@@ -457,8 +461,10 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	PkError *error_code;
 
 	/* old results no longer valid */
-	if (state->results != NULL)
+	if (state->results != NULL) {
 		g_object_unref (state->results);
+		state->results = NULL;
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
@@ -555,8 +561,10 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	PkError *error_code;
 
 	/* old results no longer valid */
-	if (state->results != NULL)
+	if (state->results != NULL) {
 		g_object_unref (state->results);
+		state->results = NULL;
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
@@ -750,8 +758,10 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	PkResults *results;
 
 	/* old results no longer valid */
-	if (state->results != NULL)
+	if (state->results != NULL) {
 		g_object_unref (state->results);
+		state->results = NULL;
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);

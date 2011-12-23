@@ -797,7 +797,7 @@ pk_test_client_func (void)
 	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
 		     (GAsyncReadyCallback) pk_test_client_search_name_cb, NULL);
-	g_timeout_add (1000, (GSourceFunc) pk_test_client_cancel_cb, cancellable);
+	g_timeout_add (500, (GSourceFunc) pk_test_client_cancel_cb, cancellable);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("cancelled in %f", g_test_timer_elapsed ());
 
@@ -1370,7 +1370,7 @@ static void
 pk_test_package_ids_func (void)
 {
 	gboolean ret;
-	gchar *package_ids_blank[] = {};
+	gchar *package_ids_blank[] = {NULL};
 	gchar **package_ids;
 
 	/* parse va_list */
@@ -1977,10 +1977,22 @@ pk_test_transaction_list_func (void)
 	/* resolve package */
 	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
 	_refcount = 2;
-	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL, NULL, NULL,
-		 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb, NULL);
-	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package_ids, NULL, NULL, NULL,
-		 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb, NULL);
+	pk_client_resolve_async (client,
+				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+				 package_ids,
+				 NULL,
+				 NULL,
+				 NULL,
+				 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb,
+				 NULL);
+	pk_client_resolve_async (client,
+				 pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+				 package_ids,
+				 NULL,
+				 NULL,
+				 NULL,
+				 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb,
+				 NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("resolved in %f", g_test_timer_elapsed ());

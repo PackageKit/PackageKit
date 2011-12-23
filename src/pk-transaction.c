@@ -336,6 +336,35 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	return TRUE;
 }
 
+/**
+ * pk_transaction_emit_property_changed:
+ **/
+static void
+pk_transaction_emit_property_changed (PkTransaction *transaction,
+				      const gchar *property_name,
+				      GVariant *property_value)
+{
+	GVariantBuilder builder;
+	GVariantBuilder invalidated_builder;
+
+	/* build the dict */
+	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	g_variant_builder_add (&builder,
+			       "{sv}",
+			       property_name,
+			       property_value);
+	g_dbus_connection_emit_signal (transaction->priv->connection,
+				       NULL,
+				       transaction->priv->tid,
+				       "org.freedesktop.DBus.Properties",
+				       "PropertiesChanged",
+				       g_variant_new ("(sa{sv}as)",
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       &builder,
+				       &invalidated_builder),
+				       NULL);
+}
 
 /**
  * pk_transaction_emit_changed:
@@ -372,6 +401,18 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 	transaction->priv->remaining_time = remaining;
 
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "Percentage",
+					      g_variant_new_uint32 (percentage));
+	pk_transaction_emit_property_changed (transaction,
+					      "Subpercentage",
+					      g_variant_new_uint32 (subpercentage));
+	pk_transaction_emit_property_changed (transaction,
+					      "ElapsedTime",
+					      g_variant_new_uint32 (elapsed));
+	pk_transaction_emit_property_changed (transaction,
+					      "RemainingTime",
+					      g_variant_new_uint32 (remaining));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -392,6 +433,9 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 	/* TODO: have master property on main interface */
 
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "AllowCancel",
+					      g_variant_new_boolean (allow_cancel));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -411,6 +455,9 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	transaction->priv->status = status;
 
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "Status",
+					      g_variant_new_string (pk_status_enum_to_string (status)));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1591,7 +1638,7 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "MediaChangeRequired",
+				       "RequireRestart",
 				       g_variant_new ("(ss)",
 						      restart_text,
 						      package_id),
@@ -1865,6 +1912,9 @@ pk_transaction_speed_cb (GObject *object,
 		      "speed", &transaction->priv->speed,
 		      NULL);
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "Speed",
+					      g_variant_new_byte (transaction->priv->speed));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1880,6 +1930,9 @@ pk_transaction_percentage_cb (GObject *object,
 		      "percentage", &transaction->priv->percentage,
 		      NULL);
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "Percentage",
+					      g_variant_new_uint32 (transaction->priv->percentage));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1895,6 +1948,9 @@ pk_transaction_subpercentage_cb (GObject *object,
 		      "subpercentage", &transaction->priv->subpercentage,
 		      NULL);
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "Subpercentage",
+					      g_variant_new_uint32 (transaction->priv->subpercentage));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1910,6 +1966,9 @@ pk_transaction_remaining_cb (GObject *object,
 		      "remaining", &transaction->priv->remaining_time,
 		      NULL);
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "RemainingTime",
+					      g_variant_new_uint32 (transaction->priv->remaining_time));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -2194,6 +2253,9 @@ pk_transaction_vanished_cb (GDBusConnection *connection,
 	transaction->priv->caller_active = FALSE;
 
 	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "CallerActive",
+					      g_variant_new_boolean (transaction->priv->caller_active));
 	pk_transaction_emit_changed (transaction);
 }
 

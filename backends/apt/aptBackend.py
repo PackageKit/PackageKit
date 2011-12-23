@@ -622,7 +622,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         apt_pkg.config.set("DPkg::Options::", '--force-confdef')
         apt_pkg.config.set("DPkg::Options::", '--force-confold')
         PackageKitBaseBackend.__init__(self, cmds)
-        self._open_cache(progress=False)
 
     # Methods ( client -> engine -> backend )
 
@@ -1893,6 +1892,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         self.status(enums.STATUS_INFO)
         total = len(package_ids)
+        self._check_init(progress=False)
         for count, id in enumerate(package_ids):
             self.percentage(count / 100 * total)
             pkg = self._get_package_by_id(id)
