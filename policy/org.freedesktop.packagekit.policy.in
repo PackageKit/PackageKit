@@ -249,7 +249,7 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.repiar-system">
+  <action id="org.freedesktop.packagekit.repair-system">
     <!-- SECURITY:
           - Normal users require admin authentication to repair the system
             since this can make the system unbootable or stop other
