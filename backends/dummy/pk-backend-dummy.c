@@ -1455,6 +1455,24 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
 }
 
 /**
+ * pk_backend_repair_system:
+ */
+void
+pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * pk_backend_simulate_repair_system:
+ */
+void
+pk_backend_simulate_repair_system (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+}
+
+/**
  * pk_backend_transaction_start:
  */
 void
