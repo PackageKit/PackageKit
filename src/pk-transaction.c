@@ -1112,10 +1112,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS);
 
 	/* we don't allow to send signals from the second phase post transaction */
-	backend_signals = pk_bitfield_from_enums (
-		PK_BACKEND_SIGNAL_NONE,
-		-1);
-	pk_transaction_set_signals (transaction, backend_signals);
+	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -1125,7 +1122,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
 
 	/* make sure that everything is disconnected (plugin might have changed something) */
-	pk_transaction_set_signals (transaction, backend_signals);
+	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
