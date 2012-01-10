@@ -26,7 +26,6 @@
 #include <glib/gstdio.h>
 
 #include "pk-lsof.h"
-#include "pk-proc.h"
 
 static void
 pk_test_lsof_get_files_for_directory (GPtrArray *files, const gchar *dirname)

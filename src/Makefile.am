@@ -89,6 +89,8 @@ shared_SOURCES =					\
 	pk-network-stack-unix.h				\
 	pk-network-stack-nm.h				\
 	pk-network-stack-connman.h			\
+	pk-proc.c					\
+	pk-proc.h					\
 	pk-syslog.h					\
 	pk-syslog.c					\
 	pk-conf.c					\

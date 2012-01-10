@@ -31,9 +31,7 @@ check_PROGRAMS =					\
 pk_self_test_SOURCES =					\
 	pk-self-test.c					\
 	pk-lsof.h					\
-	pk-lsof.c					\
-	pk-proc.c					\
-	pk-proc.h
+	pk-lsof.c
 
 pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
@@ -85,9 +83,7 @@ libpk_plugin_update_package_list_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_package_list_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_no_update_process_la_SOURCES =		\
-	pk-plugin-no-update-process.c			\
-	pk-proc.c					\
-	pk-proc.h
+	pk-plugin-no-update-process.c
 libpk_plugin_no_update_process_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_no_update_process_la_LDFLAGS = -module -avoid-version
 libpk_plugin_no_update_process_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
@@ -98,9 +94,7 @@ libpk_plugin_scan_desktop_files_la_LDFLAGS = -module -avoid-version
 libpk_plugin_scan_desktop_files_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_update_check_processes_la_SOURCES =	\
-	pk-plugin-update-check-processes.c		\
-	pk-proc.c					\
-	pk-proc.h
+	pk-plugin-update-check-processes.c
 libpk_plugin_update_check_processes_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_check_processes_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_check_processes_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
