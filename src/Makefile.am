@@ -32,6 +32,7 @@ INCLUDES =						\
 	-DPK_COMPILATION				\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit\"			\
+	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
