@@ -14,6 +14,7 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 

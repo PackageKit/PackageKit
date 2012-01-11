@@ -45,6 +45,7 @@ INCLUDES =						\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DPK_COMPILATION				\
 	-DG_LOG_DOMAIN=\"PackageKit\"			\
+	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 

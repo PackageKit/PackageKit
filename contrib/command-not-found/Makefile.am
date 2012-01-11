@@ -10,6 +10,7 @@ INCLUDES =						\
 	-DPK_COMPILATION				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
+	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib
 
 libexec_PROGRAMS = pk-command-not-found
