@@ -284,8 +284,8 @@ pk_backend_install_ignorepkg (PkBackend *self, alpm_pkg_t *pkg, gint *result)
 }
 
 static void
-pk_backend_select_provider (PkBackend *self, alpm_depend_t *depend,
-			    const alpm_list_t *providers)
+pk_backend_select_provider (PkBackend *self, const alpm_list_t *providers,
+		            alpm_depend_t *depend)
 {
 	gchar *output;
 
