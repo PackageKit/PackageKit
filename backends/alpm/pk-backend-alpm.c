@@ -22,8 +22,10 @@
  */
 
 #include <config.h>
+#include <locale.h>
 #include <glib/gstdio.h>
 #include <sys/utsname.h>
+#include <pk-backend-spawn.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-backend-config.h"
@@ -196,23 +198,83 @@ pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 	g_free (output);
 }
 
-static gboolean
-pk_backend_initialize_alpm (PkBackend *self, GError **error)
+static void
+pk_backend_configure_environment (PkBackend *self)
 {
 	struct utsname un;
-	gchar *user_agent;
+	gchar *value;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_if_fail (self != NULL);
 
 	/* PATH might have been nuked by D-Bus */
 	g_setenv ("PATH", PK_BACKEND_DEFAULT_PATH, FALSE);
 
 	uname (&un);
-	user_agent = g_strdup_printf ("%s/%s (%s %s) libalpm/%s",
-				      PACKAGE_TARNAME, PACKAGE_VERSION,
-				      un.sysname, un.machine, alpm_version ());
-	g_setenv ("HTTP_USER_AGENT", user_agent, FALSE);
-	g_free (user_agent);
+	value = g_strdup_printf ("%s/%s (%s %s) libalpm/%s", PACKAGE_TARNAME,
+				 PACKAGE_VERSION, un.sysname, un.machine,
+				 alpm_version ());
+	g_setenv ("HTTP_USER_AGENT", value, FALSE);
+	g_free (value);
+
+	value = pk_backend_get_locale (self);
+	if (value != NULL) {
+		setlocale (LC_ALL, value);
+		g_free (value);
+	}
+
+	value = pk_backend_get_proxy_http (self);
+	if (value != NULL) {
+		gchar *uri = pk_backend_spawn_convert_uri (value);
+		g_setenv ("http_proxy", uri, TRUE);
+		g_free (uri);
+		g_free (value);
+	}
+
+	value = pk_backend_get_proxy_https (self);
+	if (value != NULL) {
+		gchar *uri = pk_backend_spawn_convert_uri (value);
+		g_setenv ("https_proxy", uri, TRUE);
+		g_free (uri);
+		g_free (value);
+	}
+
+	value = pk_backend_get_proxy_ftp (self);
+	if (value != NULL) {
+		gchar *uri = pk_backend_spawn_convert_uri (value);
+		g_setenv ("ftp_proxy", uri, TRUE);
+		g_free (uri);
+		g_free (value);
+	}
+
+	value = pk_backend_get_proxy_socks (self);
+	if (value != NULL) {
+		gchar *uri = pk_backend_spawn_convert_uri (value);
+		g_setenv ("socks_proxy", uri, TRUE);
+		g_free (uri);
+		g_free (value);
+	}
+
+	value = pk_backend_get_no_proxy (self);
+	if (value != NULL) {
+		g_setenv ("no_proxy", value, TRUE);
+		g_free (value);
+	}
+
+	value = pk_backend_get_pac (self);
+	if (value != NULL) {
+		gchar *uri = pk_backend_spawn_convert_uri (value);
+		g_setenv ("pac", uri, TRUE);
+		g_free (uri);
+		g_free (value);
+	}
+}
+
+static gboolean
+pk_backend_initialize_alpm (PkBackend *self, GError **error)
+{
+	g_return_val_if_fail (self != NULL, FALSE);
+
+	pk_backend_configure_environment (self);
 
 	alpm = pk_backend_configure (PK_BACKEND_CONFIG_FILE, error);
 	if (alpm == NULL) {
@@ -379,4 +441,12 @@ pk_backend_finish (PkBackend *self, GError *error)
 
 	pk_backend_thread_finished (self);
 	return (error == NULL);
+}
+
+void
+pk_backend_transaction_start (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	pk_backend_configure_environment (self);
 }
