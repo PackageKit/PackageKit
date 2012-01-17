@@ -245,14 +245,15 @@ libpkplugins_la_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
-PackageKitPlugin-1.0.gir: $(plugininclude_GIRSOURCES)
-PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0 PackageKitGlib-1.0
+PackageKitPlugin-1.0.gir: libpkplugins.la $(plugininclude_GIRSOURCES)
+PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 PackageKitPlugin_1_0_gir_CFLAGS = $(INCLUDES)						\
 				-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 				-DI_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
 PackageKitPlugin_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
 					--symbol-prefix=pk_ \
 					--warn-all \
+					--include-uninstalled=$(top_builddir)/lib/packagekit-glib2/PackageKitGlib-1.0.gir \
 					--add-include-path=$(srcdir) \
 					--add-include-path=$(top_builddir)/lib/packagekit-glib2 \
 					--library-path=$(top_builddir)/lib/packagekit-glib2 \
