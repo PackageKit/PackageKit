@@ -3,111 +3,108 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Hyu_gabaru Ryu_ichi <hyu_gabaru@yahoo.co.jp>, 2009.
-# Kiyoto Hashida <khashida@redhat.com>, 2009.
-# Richard Hughes <richard@hughsie.com>, 2011.
-# Tomoyuki KATO <tomo@dream.daynight.jp>, 2011.
+# Kristjan SCHMIDT <kristjan.schmidt@googlemail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-11-10 19:50+0000\n"
-"PO-Revision-Date: 2011-11-19 09:39+0000\n"
-"Last-Translator: Tomoyuki KATO <tomo@dream.daynight.jp>\n"
-"Language-Team: Japanese (http://www.transifex.net/projects/p/freedesktop/team/ja/)\n"
+"PO-Revision-Date: 2011-11-10 19:50+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"Language-Team: Esperanto (http://www.transifex.net/projects/p/freedesktop/team/eo/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Language: eo\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
 #: ../client/pk-console.c:174 ../client/pk-console.c:596
 msgid "Transaction"
-msgstr "トランザクション"
+msgstr "Transakcio"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
 #: ../client/pk-console.c:176
 msgid "System time"
-msgstr "システム時刻"
+msgstr "Sistema horo"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:178
 msgid "Succeeded"
-msgstr "成功"
+msgstr ""
 
 #: ../client/pk-console.c:178
 msgid "True"
-msgstr "真"
+msgstr "Vera"
 
 #: ../client/pk-console.c:178
 msgid "False"
-msgstr "偽"
+msgstr "Falsa"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #: ../client/pk-console.c:180
 msgid "Role"
-msgstr "ロール"
+msgstr ""
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:185
 msgid "Duration"
-msgstr "期間"
+msgstr "Daŭro"
 
 #: ../client/pk-console.c:185
 msgid "(seconds)"
-msgstr "(秒)"
+msgstr "(sekundoj)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: ../client/pk-console.c:189
 msgid "Command line"
-msgstr "コマンドライン"
+msgstr "Komandlinio"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:191
 msgid "User ID"
-msgstr "利用者 ID"
+msgstr "Uzanto-ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:198
 msgid "Username"
-msgstr "ユーザー名"
+msgstr "Uzantonomo"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:202
 msgid "Real name"
-msgstr "本名"
+msgstr "Vera nomo"
 
 #: ../client/pk-console.c:210
 msgid "Affected packages:"
-msgstr "影響されたパッケージ:"
+msgstr ""
 
 #: ../client/pk-console.c:212
 msgid "Affected packages: None"
-msgstr "影響されたパッケージ: なし"
+msgstr ""
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:247
 msgid "Distribution"
-msgstr "ディストリビューション"
+msgstr "Distribuo"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:249
 msgid "Type"
-msgstr "タイプ"
+msgstr "Tipo"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: ../client/pk-console.c:251 ../client/pk-console.c:290
 msgid "Summary"
-msgstr "概要"
+msgstr "Resumo"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:279
 msgid "Category"
-msgstr "区分"
+msgstr "Kategorio"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:281
@@ -117,22 +114,22 @@ msgstr "ID"
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:284
 msgid "Parent"
-msgstr "親"
+msgstr "Gepatro"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:287
 msgid "Name"
-msgstr "名前"
+msgstr "Nomo"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:293
 msgid "Icon"
-msgstr "アイコン"
+msgstr "Piktogramo"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:339
 msgid "Details about the update:"
-msgstr "更新の詳細:"
+msgstr "Detaloj pri la ĝisdatigo:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -142,189 +139,189 @@ msgstr "更新の詳細:"
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
-msgstr "パッケージ"
+msgstr "Pakaĵo"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
 #: ../client/pk-console.c:348
 msgid "Updates"
-msgstr "更新"
+msgstr "Ĝisdatigoj"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. obsoletes
 #: ../client/pk-console.c:352
 msgid "Obsoletes"
-msgstr "旧版"
+msgstr "Arkaikaĵoj"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 #: ../client/pk-console.c:356 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
-msgstr "供給元"
+msgstr "Vendisto"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:360
 msgid "Bugzilla"
-msgstr "Bugzilla"
+msgstr ""
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: ../client/pk-console.c:364
 msgid "CVE"
-msgstr "CVE"
+msgstr ""
 
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:368
 msgid "Restart"
-msgstr "再スタート"
+msgstr "Restarti"
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:372
 msgid "Update text"
-msgstr "更新テキスト"
+msgstr ""
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:376
 msgid "Changes"
-msgstr "変更"
+msgstr "Ŝanĝoj"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:380
 msgid "State"
-msgstr "状態"
+msgstr "Stato"
 
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:384
 msgid "Issued"
-msgstr "発行済"
+msgstr ""
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
 #: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:559
 msgid "Updated"
-msgstr "更新済"
+msgstr "Ĝisdatigite"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:424
 msgid "Enabled"
-msgstr "有効"
+msgstr "Enŝaltite"
 
 #. TRANSLATORS: if the repo is disabled
 #: ../client/pk-console.c:427
 msgid "Disabled"
-msgstr "無効"
+msgstr "Elŝaltite"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:459
 msgid "System restart required by:"
-msgstr "以下によりシステムの再起動が必要です:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:462
 msgid "Session restart required:"
-msgstr "セッションの再起動が必要です:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the system to be restarted due to a
 #. security update
 #: ../client/pk-console.c:465
 msgid "System restart (security) required by:"
-msgstr "以下によりシステム再起動 (セキュリティー) が必要です:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the session to be restarted due to a
 #. security update
 #: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
-msgstr "セッション再起動 (セキュリティー) が必要:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:471
 msgid "Application restart required by:"
-msgstr "以下によりアプリケーションの再起動が必要:"
+msgstr ""
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:506
 msgid "Package description"
-msgstr "パッケージの説明"
+msgstr ""
 
 #. TRANSLATORS: This a message (like a little note that may be of interest)
 #. from the transaction
 #: ../client/pk-console.c:537
 msgid "Message:"
-msgstr "メッセージ:"
+msgstr "Mesaĝo:"
 
 #. TRANSLATORS: This where the package has no files
 #: ../client/pk-console.c:558
 msgid "No files"
-msgstr "ファイルなし"
+msgstr "neniu dosiero"
 
 #. TRANSLATORS: This a list files contained in the package
 #: ../client/pk-console.c:563
 msgid "Package files"
-msgstr "パッケージファイル"
+msgstr ""
 
 #. TRANSLATORS: the percentage complete of the transaction
 #: ../client/pk-console.c:631
 msgid "Percentage"
-msgstr "パーセンテージ"
+msgstr "Elcento"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 #: ../client/pk-console.c:649
 msgid "Status"
-msgstr "状態"
+msgstr "Stato"
 
 #. TRANSLATORS: the results from the transaction
 #: ../client/pk-console.c:678
 msgid "Results:"
-msgstr "結果:"
+msgstr ""
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
 #: ../client/pk-console.c:685
 msgid "Fatal error"
-msgstr "重大なエラー"
+msgstr ""
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
 #: ../client/pk-console.c:701
 msgid "There are no packages to update."
-msgstr "更新が必要なパッケージはありません。"
+msgstr "Neniu pakaĵo nun estas ĝisdatigebla."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:704
 #: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
-msgstr "トランザクションが失敗しました"
+msgstr ""
 
 #. TRANSLATORS: print a message when there are no updates
 #: ../client/pk-console.c:733
 msgid "There are no updates available at this time."
-msgstr "現時点では利用可能な更新はありません。"
+msgstr "Neniu ĝisdatigo nun estas disponebla."
 
 #: ../client/pk-console.c:756
 msgid "There are no upgrades available at this time."
-msgstr "現時点では利用可能なアップグレードはありません。"
+msgstr "Neniu promocio nun estas disponebla."
 
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:823
 msgid "Please restart the computer to complete the update."
-msgstr "更新を完了するためにコンピューターを再起動してください。"
+msgstr "Bonvole restarti la komputilon por kompletigi la ĝisdatigon."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
-msgstr "更新を完了するためにログアウトし、ログインしてください。"
+msgstr "Bonvole elsaluti kaj ensaluti por kompletigi la ĝisdatigon."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにコンピューターを再起動してください。"
+msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにログアウトとログインを行って下さい。"
+msgstr ""
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
@@ -333,28 +330,28 @@ msgstr "重大なセキュリティー更新がインストールされたので
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "予期されるパッケージ名は実際にはファイルを持ちます。代わりに 'pkcon install-local %s' を 試して下さい。"
+msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
 #: ../client/pk-console.c:871
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
+msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
 #: ../client/pk-console.c:899
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "このツールではインストールされたパッケージを見つけられません: %s"
+msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
 #: ../client/pk-console.c:927 ../client/pk-console.c:955
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "このツールではパッケージを見つけられません: %s"
+msgstr "Tiu ilo ne povis trovi la pakaĵon: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -369,184 +366,184 @@ msgstr "このツールではパッケージを見つけられません: %s"
 #: ../client/pk-console.c:1095
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "このツールでは全パッケージを見つけられません: %s"
+msgstr ""
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
 #: ../client/pk-console.c:1124
 msgid "The daemon crashed mid-transaction!"
-msgstr "トランザクション中にデーモンがクラッシュしました!"
+msgstr ""
 
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1158
 msgid "PackageKit Console Interface"
-msgstr "PackageKit コンソールインターフェース"
+msgstr ""
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1160
 msgid "Subcommands:"
-msgstr "サブコマンド:"
+msgstr ""
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
 #: ../client/pk-console.c:1240
 msgid "Failed to get the time since this action was last completed"
-msgstr "このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
+msgstr ""
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1282 ../client/pk-monitor.c:371
 msgid "Show the program version and exit"
-msgstr "プログラムのバージョンを表示して終了"
+msgstr "Montri la program-version kaj eliri"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1285
 msgid "Set the filter, e.g. installed"
-msgstr "インストール済などのフィルターを設定"
+msgstr ""
 
 #. TRANSLATORS: command line argument, use a non-standard install prefix
 #: ../client/pk-console.c:1288
 msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
-msgstr "インストール root をセットします。例、'/' 又は '/mnt/ltsp'"
+msgstr ""
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1291
 msgid "Exit without waiting for actions to complete"
-msgstr "アクションが完了するのを待たずに終了"
+msgstr ""
 
 #. command line argument, do we ask questions
 #: ../client/pk-console.c:1294
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
-msgstr "確認を要求せずにパッケージをインストール"
+msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1297
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "遊休のネットワークバンド幅とより少ない電力を使用してコマンドを実行"
+msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1300
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "動画のウィジェットの使用ではなく、マシン可読の出力を画面に表示"
+msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1303
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "メタデータの最大キャッシュ世代です。「なし」にするには 1 を使用します。"
+msgstr ""
 
 #. TRANSLATORS: command line argument, --help
 #: ../client/pk-console.c:1306
 msgid "Show help options."
-msgstr "ヘルプのオプションを表示します。"
+msgstr "Vidigi helpopciojn."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1336
 msgid "Failed to parse command line"
-msgstr "コマンドラインの構文解析に"
+msgstr "Fiaskis analizi komanlinion"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1346
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit への接触に失敗"
+msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1399
 msgid "The proxy could not be set"
-msgstr "プロキシをセット出来ませんでした"
+msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1411
 msgid "The install root could not be set"
-msgstr "インストール root をセット出来ませんでした"
+msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1423
 msgid "The filter specified was invalid"
-msgstr "指定されたフィルターは無効です"
+msgstr ""
 
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:1442
 msgid "A search type is required, e.g. name"
-msgstr "名前のような、検索タイプが必要です"
+msgstr ""
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:1449 ../client/pk-console.c:1461
 #: ../client/pk-console.c:1473 ../client/pk-console.c:1485
 msgid "A search term is required"
-msgstr "検索語が必要です"
+msgstr ""
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:1495
 msgid "Invalid search type"
-msgstr "不当な検索タイプ"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1501
 msgid "A package name to install is required"
-msgstr "インストールするパッケージ名が必要です"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:1510
 msgid "A filename to install is required"
-msgstr "インストールするファイル名が必要です"
+msgstr ""
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1521
 msgid "A type, key_id and package_id are required"
-msgstr "タイプと、キー id、パッケージ id が必要です"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1532
 msgid "A package name to remove is required"
-msgstr "削除するパッケージ名が必要です"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
 #: ../client/pk-console.c:1541
 msgid "A destination directory and the package names to download are required"
-msgstr "ダウンロードする宛先ディレクトリーとパッケージ名が必要です"
+msgstr ""
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1548
 msgid "Directory not found"
-msgstr "ディレクトリーが見つかりません"
+msgstr "Ne trovis dosierujon"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1557
 msgid "A licence identifier (eula-id) is required"
-msgstr "ライセンス ID (eula-id) が必要です"
+msgstr ""
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1568
 msgid "A transaction identifier (tid) is required"
-msgstr "トランザクション ID (tid) が必要です "
+msgstr ""
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:1589
 msgid "A package name to resolve is required"
-msgstr "削除するパッケージ名が必要です"
+msgstr ""
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:1600 ../client/pk-console.c:1611
 msgid "A repository name is required"
-msgstr "リポジトリー名が必要です"
+msgstr ""
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:1622
 msgid "A repo name, parameter and value are required"
-msgstr "リポジトリー名と、パラメーター、値が必要です"
+msgstr ""
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:1639
 msgid "An action, e.g. 'update-system' is required"
-msgstr "'update-system' のようなアクションが必要です"
+msgstr ""
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:1646
 msgid "A correct role is required"
-msgstr "正しいロールが必要です"
+msgstr ""
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -554,78 +551,78 @@ msgstr "正しいロールが必要です"
 #: ../client/pk-console.c:1679 ../client/pk-console.c:1699
 #: ../client/pk-console.c:1708 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
-msgstr "パッケージ名が必要です"
+msgstr ""
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1688
 msgid "A package provide string is required"
-msgstr "パッケージの提供する文字列が必要です"
+msgstr ""
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:1732
 msgid "A distribution name is required"
-msgstr "ディストリビューション名が必要です"
+msgstr ""
 
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1738
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr "更新の形式が必要です、たとえば、「最小」、「デフォルト」や「完全」です"
+msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
 #: ../client/pk-console.c:1788
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "オプション '%s' はサポートされていません"
+msgstr ""
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:1798
 msgid "Command failed"
-msgstr "コマンド失敗"
+msgstr ""
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
 #. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
-msgstr "依存のあるファイル名は除かれるように設定する"
+msgstr ""
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
 msgid ""
 "The output file or directory (the current directory is used if omitted)"
-msgstr "出力ファイルか、ディレクトリー (省略すると現在のディレクトリーを使用)"
+msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
 msgid "The package to be put into the service pack"
-msgstr "サービスパックに入れられるパッケージ"
+msgstr ""
 
 #. TRANSLATORS: put all pending updates in the pack
 #: ../client/pk-generate-pack.c:262
 msgid "Put all updates available in the service pack"
-msgstr "利用可能な全ての更新をサービスパックに入れる"
+msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
 #: ../client/pk-generate-pack.c:298
 msgid "Neither --package or --updates option selected."
-msgstr "--package オプションも --updates オプションも選択されていません。"
+msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
 #: ../client/pk-generate-pack.c:306
 msgid "Both options selected."
-msgstr "両方のオプションが選択されました。"
+msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:322
 msgid "A output directory or file name is required"
-msgstr "出力ディレクトリーかファイル名が必要です"
+msgstr ""
 
 #. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
 #. startup
 #: ../client/pk-generate-pack.c:340
 msgid "The daemon failed to startup"
-msgstr "デーモンの起動に失敗しました"
+msgstr ""
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-
 #. depends
@@ -633,7 +630,7 @@ msgstr "デーモンの起動に失敗しました"
 #. download
 #: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
-msgstr "パッケージマネージャーはこの種の操作はできません。"
+msgstr ""
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
@@ -641,277 +638,277 @@ msgstr "パッケージマネージャーはこの種の操作はできません
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr "PackageKit が libarchive 付きでビルドされていないのでサービスパックを生成できません。"
+msgstr ""
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "ファイルを指定するのなら、サービスパック名がそれで終わる必要があります"
+msgstr ""
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "同一名のパックが既にありますが、上書きしますか?"
+msgstr ""
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
 msgid "The pack was not overwritten."
-msgstr "パックは上書きされませんでした。"
+msgstr ""
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the
 #. directory name follows
 #: ../client/pk-generate-pack.c:407
 msgid "Failed to create directory:"
-msgstr "ディレクトリーの作成に失敗しました:"
+msgstr ""
 
 #. TRANSLATORS: This is when the list of packages from the remote computer
 #. cannot be opened
 #: ../client/pk-generate-pack.c:419
 msgid "Failed to open package list."
-msgstr "パッケージ一覧を開くのに失敗しました。"
+msgstr ""
 
 #. TRANSLATORS: The package name is being matched up to available packages
 #: ../client/pk-generate-pack.c:428
 msgid "Finding package name."
-msgstr "パッケージ名を探しています。"
+msgstr ""
 
 #. TRANSLATORS: This is when the package cannot be found in any software
 #. source. The detailed error follows
 #: ../client/pk-generate-pack.c:432
 #, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "パッケージ '%s' の捜索に失敗しました: %s"
+msgstr ""
 
 #. TRANSLATORS: This is telling the user we are in the process of making the
 #. pack
 #: ../client/pk-generate-pack.c:440
 msgid "Creating service pack..."
-msgstr "サービスパックを作成中..."
+msgstr ""
 
 #. TRANSLATORS: we succeeded in making the file
 #: ../client/pk-generate-pack.c:455
 #, c-format
 msgid "Service pack created '%s'"
-msgstr "サービスパック '%s' が作成されました。"
+msgstr ""
 
 #. TRANSLATORS: we failed to make te file
 #: ../client/pk-generate-pack.c:460
 #, c-format
 msgid "Failed to create '%s': %s"
-msgstr "'%s' の作成に失敗しました: %s"
+msgstr "Fiaskis krei '%s': %s"
 
 #: ../client/pk-monitor.c:284
 msgid "Failed to get daemon state"
-msgstr "デーモンの状態を得るのに失敗しました"
+msgstr ""
 
 #: ../client/pk-monitor.c:349
 msgid "Failed to get properties"
-msgstr "プロパティの取得に失敗しました"
+msgstr ""
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:387
 msgid "PackageKit Monitor"
-msgstr "PackageKit モニター"
+msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/pk-plugin-install.c:503
 msgid "Getting package information..."
-msgstr "パッケージの情報を獲得中..."
+msgstr ""
 
 #. TRANSLATORS: run an applicaiton
 #: ../contrib/browser-plugin/pk-plugin-install.c:509
 #, c-format
 msgid "Run %s"
-msgstr "%s 実行"
+msgstr "Ruli %s"
 
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/browser-plugin/pk-plugin-install.c:515
 msgid "Installed version"
-msgstr "インストールされたバージョン"
+msgstr ""
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/pk-plugin-install.c:523
 #, c-format
 msgid "Run version %s now"
-msgstr "バージョン %s をすぐに実行"
+msgstr ""
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/pk-plugin-install.c:529
 msgid "Run now"
-msgstr "すぐに実行"
+msgstr "Ruli nun"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/browser-plugin/pk-plugin-install.c:535
 #, c-format
 msgid "Update to version %s"
-msgstr "バージョン %s に更新"
+msgstr "Ĝisdatigi al versio %s"
 
 #. TRANSLATORS: To install a package
 #: ../contrib/browser-plugin/pk-plugin-install.c:541
 #, c-format
 msgid "Install %s now"
-msgstr "%s をすぐにインストール"
+msgstr ""
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/browser-plugin/pk-plugin-install.c:544
 msgid "Version"
-msgstr "バージョン"
+msgstr "Versio"
 
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/pk-plugin-install.c:549
 msgid "No packages found for your system"
-msgstr "ユーザーのシステム用のパッケージが見つかりません"
+msgstr ""
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/pk-plugin-install.c:554
 msgid "Installing..."
-msgstr "インストール中..."
+msgstr "Instalante..."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:363
 msgid "Downloading details about the software sources."
-msgstr "ソフトウェアソースについての詳細をダウンロード中。"
+msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:367
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "ファイル一覧をダウンロード中 (完了まで時間がかかるかもしれません)。"
+msgstr ""
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:371
 msgid "Waiting for package manager lock."
-msgstr "パッケージマネージャーのロックを待っています。"
+msgstr ""
 
 #. TRANSLATORS: loading package cache so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:375
 msgid "Loading list of packages."
-msgstr "パッケージの一覧をロード中。"
+msgstr ""
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:439
 msgid "Failed to search for file"
-msgstr "ファイルの探索に失敗しました"
+msgstr ""
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../contrib/command-not-found/pk-command-not-found.c:451
 msgid "Getting the list of files failed"
-msgstr "ファイルの一覧の取得に失敗しました"
+msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:597
 msgid "Failed to launch:"
-msgstr "起動に失敗:"
+msgstr ""
 
 #. TRANSLATORS: we failed to install the package
 #: ../contrib/command-not-found/pk-command-not-found.c:625
 msgid "Failed to install packages"
-msgstr "パッケージをインストールできません"
+msgstr ""
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 #: ../contrib/command-not-found/pk-command-not-found.c:723
 msgid "command not found"
-msgstr "コマンドが見つかりませんでした"
+msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:741
 msgid "Similar command is:"
-msgstr "よく似たコマンドは:"
+msgstr ""
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:755
 msgid "Run similar command:"
-msgstr "よく似たコマンドを実行:"
+msgstr ""
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 #: ../contrib/command-not-found/pk-command-not-found.c:769
 #: ../contrib/command-not-found/pk-command-not-found.c:778
 msgid "Similar commands are:"
-msgstr "よく似たコマンドは:"
+msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "Please choose a command to run"
-msgstr "実行するコマンドを選んでください"
+msgstr ""
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "The package providing this file is:"
-msgstr "このファイルを提供しているパッケージは:"
+msgstr ""
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #: ../contrib/command-not-found/pk-command-not-found.c:810
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:837
 msgid "Packages providing this file are:"
-msgstr "このファイルを提供しているパッケージは:"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:847
 msgid "Suitable packages are:"
-msgstr "適切なパッケージは:"
+msgstr ""
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:856
 msgid "Please choose a package to install"
-msgstr "インストールするパッケージを選んでください"
+msgstr ""
 
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
 msgid "Starting install"
-msgstr "インストールを開始します"
+msgstr ""
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "パッケージ %s の探索に失敗しました、または既にインストールされています: %s"
+msgstr ""
 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
-msgstr "どのパッケージも実際にはインストールせず、何がインストールされるかシミュレートだけします"
+msgstr ""
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
 msgid "Do not install dependencies of the core packages"
-msgstr "コアパッケージが依存するパッケージはインストールしない"
+msgstr ""
 
 #. command line argument, do we operate quietly
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
 msgid "Do not display information or progress"
-msgstr "情報や進行を表示しない"
+msgstr ""
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit Debuginfo インストーラー"
+msgstr ""
 
 #. TRANSLATORS: the use needs to specify a list of package names on the
 #. command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
-msgstr "エラー: インストールするパッケージ名を指定してください。"
+msgstr ""
 
 #. TRANSLATORS: we are getting the list of repositories
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
 #, c-format
 msgid "Getting sources list"
-msgstr "ソースリストを獲得中"
+msgstr ""
 
 #. TRANSLATORS: operation was not successful
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
@@ -921,7 +918,7 @@ msgstr "ソースリストを獲得中"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 msgid "FAILED."
-msgstr "失敗"
+msgstr "FIASKIS."
 
 #. TRANSLATORS: all completed 100%
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
@@ -933,105 +930,105 @@ msgstr "失敗"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
-msgstr "成功"
+msgstr "Bone."
 
 #. TRANSLATORS: tell the user what we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr "%i 個の有効なソースと %i 個の無効なソースが見つかりました。"
+msgstr ""
 
 #. TRANSLATORS: we're finding repositories that match out pattern
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
-msgstr "デバッグソースを探しています"
+msgstr ""
 
 #. TRANSLATORS: tell the user what we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
-msgstr "%i 個の無効化された debuginfo リポジトリーが見つかりました。"
+msgstr ""
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
-msgstr "デバッグソースを有効化しています"
+msgstr ""
 
 #. TRANSLATORS: tell the user how many we enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
-msgstr "%i 個のデバッグソースを有効化しました。"
+msgstr ""
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
-msgstr "デバッグパッケージを探しています"
+msgstr ""
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
 #, c-format
 msgid "Failed to find the package %s: %s"
-msgstr "パッケージ %s を探すのに失敗しました: %s"
+msgstr ""
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
-msgstr "debuginfo パッケージ %s を探すのに失敗しました: %s"
+msgstr ""
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
 #, c-format
 msgid "Found no packages to install."
-msgstr "インストールするパッケージが見つかりません。"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
-msgstr "%i 個のパッケージが見つかりました:"
+msgstr ""
 
 #. TRANSLATORS: tell the user we are searching for deps
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
-msgstr "これらのパッケージが依存するパッケージを探しています"
+msgstr ""
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
 #, c-format
 msgid "Could not find dependant packages: %s"
-msgstr "依存パッケージを見つけられません: %s"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
-msgstr "%i 個の追加のパッケージが見つかりました。"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
-msgstr "追加のパッケージは不要です。"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list
 #. them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
-msgstr "インストールすべきパッケージが %i 個見つかりました:"
+msgstr ""
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the
 #. action
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
-msgstr "シミュレートモードではパッケージをインストールしません"
+msgstr ""
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
@@ -1039,769 +1036,769 @@ msgstr "シミュレートモードではパッケージをインストールし
 #: ../lib/packagekit-glib2/pk-console-shared.c:331
 #, c-format
 msgid "Installing packages"
-msgstr "パッケージのインストール中"
+msgstr "Instalaante pakaĵojn"
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Could not install packages: %s"
-msgstr "パッケージをインストールできません: %s"
+msgstr ""
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
-msgstr "以前有効化されたソースを無効化します"
+msgstr ""
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
 #. error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
-msgstr "デバッグソースを無効化できません: %s"
+msgstr ""
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
-msgstr "%i 個のデバッグソースを無効化しました"
+msgstr ""
 
 #. TRANSLATORS: couldn't open device to write
 #: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
-msgstr "ファイルを開くのに失敗しました"
+msgstr "Fiaskis malfermi dosieron"
 
 #. TRANSLATORS: could not write to the device
 #: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
-msgstr "ファイルへ書き込むのに失敗しました"
+msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:111
 #: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
-msgstr "装置へ書き込むのに失敗しました"
+msgstr ""
 
 #. TRANSLATORS: the device could not be found in sysfs
 #: ../contrib/device-rebind/pk-device-rebind.c:176
 msgid "Device could not be found"
-msgstr "装置を見つけられません"
+msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:203
 msgid "Failed to unregister driver"
-msgstr "ドライバーを登録解除できませんでした"
+msgstr ""
 
 #. TRANSLATORS: we failed to bind the old driver
 #: ../contrib/device-rebind/pk-device-rebind.c:212
 msgid "Failed to register driver"
-msgstr "ドライバーを登録できませんでした"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
 #: ../contrib/device-rebind/pk-device-rebind.c:261
 msgid "Device path not found"
-msgstr "装置へのパスが見つかりません"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:269
 msgid "Incorrect device path specified"
-msgstr "指定された装置へのパスが正しくありません"
+msgstr ""
 
 #: ../contrib/device-rebind/pk-device-rebind.c:294
 msgid "Show extra debugging information"
-msgstr "追加のデバッグ情報を表示"
+msgstr "Montri ekstran sencimigan informon"
 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "ハードウェアに実際に触らないで、実行されることを模倣して下さい"
+msgstr ""
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
-msgstr "デバイスパス"
+msgstr ""
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after
 #. installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
-msgstr "PackageKit デバイスリローダー"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:323
 msgid "You need to specify at least one valid device path"
-msgstr "有効なデバイスを少なくとも１つ指定する必要があります"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:333
 msgid "This script can only be used by the root user"
-msgstr "このスクリプトは root ユーザーでのみ使用可能です"
+msgstr ""
 
 #. TRANSLATORS: we're going to verify the path first
 #: ../contrib/device-rebind/pk-device-rebind.c:342
 msgid "Verifying device path"
-msgstr "デバイスパスを確証します"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
 #: ../contrib/device-rebind/pk-device-rebind.c:347
 msgid "Failed to verify device path"
-msgstr "デバイスパスの確証に失敗しました"
+msgstr ""
 
 #. TRANSLATORS: we're going to try
 #: ../contrib/device-rebind/pk-device-rebind.c:361
 msgid "Attempting to rebind device"
-msgstr "デバイスの再バインドを試みます"
+msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:366
 msgid "Failed to rebind device"
-msgstr "デバイスの再バインドに失敗"
+msgstr ""
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "PackageKit カタログ"
+msgstr ""
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
-msgstr "PackageKit パッケージリスト"
+msgstr ""
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit サービスパック"
+msgstr ""
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:65
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "1 から %i までの数字を１つ入力して下さい: "
+msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched, to follow
 #. is a list of possible packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:233
 msgid "More than one package matches:"
-msgstr "複数のパッケージが一致しています:"
+msgstr ""
 
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../lib/packagekit-glib2/pk-console-shared.c:244
 msgid "Please choose the correct package: "
-msgstr "現在のパッケージを選択して下さい: "
+msgstr ""
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: ../lib/packagekit-glib2/pk-console-shared.c:299
 msgid "Unknown state"
-msgstr "不明な状態"
+msgstr "Nekonata stato"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: ../lib/packagekit-glib2/pk-console-shared.c:303
 msgid "Starting"
-msgstr "開始中"
+msgstr "Startante"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 #: ../lib/packagekit-glib2/pk-console-shared.c:307
 msgid "Waiting in queue"
-msgstr "キューで待機中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, just started
 #: ../lib/packagekit-glib2/pk-console-shared.c:311
 msgid "Running"
-msgstr "実行中"
+msgstr "Ruliĝante"
 
 #. TRANSLATORS: transaction state, is querying data
 #: ../lib/packagekit-glib2/pk-console-shared.c:315
 msgid "Querying"
-msgstr "クエリ中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, getting data from a server
 #: ../lib/packagekit-glib2/pk-console-shared.c:319
 msgid "Getting information"
-msgstr "情報を取得中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, removing packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:323
 msgid "Removing packages"
-msgstr "パッケージを削除中"
+msgstr "Forigante pakaĵojn"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:327
 #: ../lib/packagekit-glib2/pk-console-shared.c:705
 msgid "Downloading packages"
-msgstr "パッケージをダウンロード中"
+msgstr "Elŝutante pakaĵojn"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: ../lib/packagekit-glib2/pk-console-shared.c:335
 msgid "Refreshing software list"
-msgstr "ソフトウェアリストをリフレッシュ中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, installing updates
 #: ../lib/packagekit-glib2/pk-console-shared.c:339
 msgid "Installing updates"
-msgstr "更新をインストール中"
+msgstr "Instalante ĝisdatigojn"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 #: ../lib/packagekit-glib2/pk-console-shared.c:343
 msgid "Cleaning up packages"
-msgstr "パッケージをクリーンアップ中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:347
 msgid "Obsoleting packages"
-msgstr "旧パッケージを区分中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: ../lib/packagekit-glib2/pk-console-shared.c:351
 msgid "Resolving dependencies"
-msgstr "依存関係を解決中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 #: ../lib/packagekit-glib2/pk-console-shared.c:355
 msgid "Checking signatures"
-msgstr "署名をチェック中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:359
 #: ../lib/packagekit-glib2/pk-console-shared.c:665
 msgid "Rolling back"
-msgstr "元に戻り中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:363
 msgid "Testing changes"
-msgstr "変更をテスト中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 #: ../lib/packagekit-glib2/pk-console-shared.c:367
 msgid "Committing changes"
-msgstr "変更をコミット中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: ../lib/packagekit-glib2/pk-console-shared.c:371
 msgid "Requesting data"
-msgstr "データを要求中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, all done!
 #: ../lib/packagekit-glib2/pk-console-shared.c:375
 msgid "Finished"
-msgstr "終了"
+msgstr ""
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: ../lib/packagekit-glib2/pk-console-shared.c:379
 msgid "Cancelling"
-msgstr "キャンセル中"
+msgstr "Nuligante"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:383
 msgid "Downloading repository information"
-msgstr "レポジトリ情報をダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:387
 msgid "Downloading list of packages"
-msgstr "パッケージリストをダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:391
 msgid "Downloading file lists"
-msgstr "ファイルリストをダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:395
 msgid "Downloading lists of changes"
-msgstr "変更のリストをダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:399
 msgid "Downloading groups"
-msgstr "グループをダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:403
 msgid "Downloading update information"
-msgstr "更新情報をダウンロード中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, repackaging delta files
 #: ../lib/packagekit-glib2/pk-console-shared.c:407
 msgid "Repackaging files"
-msgstr "ファイルを再パッケージ中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, loading databases
 #: ../lib/packagekit-glib2/pk-console-shared.c:411
 msgid "Loading cache"
-msgstr "キャッシュをロード中"
+msgstr "Ŝargante kaŝmemoron"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 #: ../lib/packagekit-glib2/pk-console-shared.c:415
 msgid "Scanning applications"
-msgstr "アプリケーションをスキャン中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 #: ../lib/packagekit-glib2/pk-console-shared.c:419
 msgid "Generating package lists"
-msgstr "パッケージリストを生成中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 #: ../lib/packagekit-glib2/pk-console-shared.c:423
 msgid "Waiting for package manager lock"
-msgstr "パッケージマネージャロックを待ち受け中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 #: ../lib/packagekit-glib2/pk-console-shared.c:427
 msgid "Waiting for authentication"
-msgstr "認証を待ち受け中"
+msgstr "Atendas aŭtentigon"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 #: ../lib/packagekit-glib2/pk-console-shared.c:431
 msgid "Updating running applications"
-msgstr "実行アプリケーションの更新中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 #: ../lib/packagekit-glib2/pk-console-shared.c:435
 msgid "Checking applications in use"
-msgstr "使用中アプリケーションをチェック中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 #: ../lib/packagekit-glib2/pk-console-shared.c:439
 msgid "Checking libraries in use"
-msgstr "使用中ライブラリをチェック中"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:443
 msgid "Copying files"
-msgstr "ファイル複写中"
+msgstr "Kopiante dosierojn"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:461
 msgid "Trivial"
-msgstr "些細な"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:465
 msgid "Normal"
-msgstr "通常"
+msgstr "Normale"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:469
 msgid "Important"
-msgstr "重要"
+msgstr "Grave"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:473
 msgid "Security"
-msgstr "セキュリティー"
+msgstr "Sekureco"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:477
 msgid "Bug fix "
-msgstr "バグ修正"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:481
 msgid "Enhancement"
-msgstr "機能追加"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:485
 msgid "Blocked"
-msgstr "ブロックされています"
+msgstr "Blokite"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:490
 #: ../lib/packagekit-glib2/pk-console-shared.c:563
 msgid "Installed"
-msgstr "インストール済み"
+msgstr "Instalite"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: ../lib/packagekit-glib2/pk-console-shared.c:495
 msgid "Available"
-msgstr "利用可能"
+msgstr "Disponeble"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:513
 msgid "Downloading"
-msgstr "ダウンロード中"
+msgstr "Elŝutante"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:517
 msgid "Updating"
-msgstr "更新中"
+msgstr "Ĝisdatigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:521
 #: ../lib/packagekit-glib2/pk-console-shared.c:641
 msgid "Installing"
-msgstr "インストール中"
+msgstr "Instalante"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:525
 #: ../lib/packagekit-glib2/pk-console-shared.c:637
 msgid "Removing"
-msgstr "削除中"
+msgstr "Forigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:529
 msgid "Cleaning up"
-msgstr "クリーンアップ中"
+msgstr "Vakigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:533
 msgid "Obsoleting"
-msgstr "旧ファイル区分中"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:537
 msgid "Reinstalling"
-msgstr "再インストール中"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:555
 msgid "Downloaded"
-msgstr "ダウンロード済み"
+msgstr "Elŝutite"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:567
 msgid "Removed"
-msgstr "削除済み"
+msgstr "Forigite"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:571
 msgid "Cleaned up"
-msgstr "クリーンアップ済み"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:575
 msgid "Obsoleted"
-msgstr "旧ファイル分類済み"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:579
 msgid "Reinstalled"
-msgstr "再インストール済み"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:597
 msgid "Unknown role type"
-msgstr "不明なロールタイプ"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:601
 msgid "Getting dependencies"
-msgstr "依存関係を取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:605
 msgid "Getting update details"
-msgstr "更新の詳細を取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:609
 msgid "Getting details"
-msgstr "詳細を取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:613
 msgid "Getting requires"
-msgstr "要求を取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:617
 msgid "Getting updates"
-msgstr "更新を取得中"
+msgstr "Akirante ĝisdatigojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:621
 msgid "Searching by details"
-msgstr "詳細で検索中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:625
 msgid "Searching by file"
-msgstr "ファイルで検索中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:629
 msgid "Searching groups"
-msgstr "グループ検索中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:633
 msgid "Searching by name"
-msgstr "名前で検索中"
+msgstr "Serĉo laŭ nomo"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:645
 msgid "Installing files"
-msgstr "ファイルをインストール中"
+msgstr "Instalante dosierojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:649
 msgid "Refreshing cache"
-msgstr "キャッシュをリフレッシュ中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:653
 msgid "Updating packages"
-msgstr "パッケージを更新中"
+msgstr "Ĝisdatigante pakaĵojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:657
 msgid "Updating system"
-msgstr "システムを更新中"
+msgstr "Ĝisdatigante sistemon"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:661
 msgid "Canceling"
-msgstr "キャンセル中"
+msgstr "Nuligante"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:669
 msgid "Getting repositories"
-msgstr "レポジトリを取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:673
 msgid "Enabling repository"
-msgstr "レポジトリを有効化中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:677
 msgid "Setting data"
-msgstr "データを設定中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:681
 msgid "Resolving"
-msgstr "解除中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:685
 msgid "Getting file list"
-msgstr "ファイルリストを取得中"
+msgstr "Ricevante la dosierliston"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:689
 msgid "Getting provides"
-msgstr "provide を取得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:693
 msgid "Installing signature"
-msgstr "署名をインストール中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:697
 msgid "Getting packages"
-msgstr "パッケージを獲得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:701
 msgid "Accepting EULA"
-msgstr "EULA を受入れ中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:709
 msgid "Getting upgrades"
-msgstr "更新を獲得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:713
 msgid "Getting categories"
-msgstr "区分を獲得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:717
 msgid "Getting transactions"
-msgstr "トランザクションを獲得中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:721
 #: ../lib/packagekit-glib2/pk-console-shared.c:725
 msgid "Simulating install"
-msgstr "インストールをシミュレート中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:729
 msgid "Simulating remove"
-msgstr "削除をシミュレート中"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:733
 msgid "Simulating update"
-msgstr "更新をシミュレート中"
+msgstr ""
 
 #. TRANSLATORS: turn on all debugging
 #: ../lib/packagekit-glib2/pk-debug.c:133
 msgid "Show debugging information for all files"
-msgstr "全てのファイル用にデバッグ情報を表示"
+msgstr "Montri sencimigan informojn de ĉiuj dosieroj"
 
 #: ../lib/packagekit-glib2/pk-debug.c:201
 msgid "Debugging Options"
-msgstr "デバッギングオプション"
+msgstr "Sencimigaj agordoj"
 
 #: ../lib/packagekit-glib2/pk-debug.c:201
 msgid "Show debugging options"
-msgstr "デバッグオプションを表示"
+msgstr "Montri sencimigajn agordojn"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 #: ../lib/packagekit-glib2/pk-task-text.c:67
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "署名無しのソフトウェアのインストールを許可しますか？"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:72
 msgid "The unsigned software will not be installed."
-msgstr "署名無しのソフトウェアはインストールされません。"
+msgstr ""
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 #: ../lib/packagekit-glib2/pk-task-text.c:121
 msgid "Software source signature required"
-msgstr "ソフトウェアソースの署名が必要です"
+msgstr ""
 
 #. TRANSLATORS: the package repository name
 #: ../lib/packagekit-glib2/pk-task-text.c:127
 msgid "Software source name"
-msgstr "ソフトウェアソース名"
+msgstr ""
 
 #. TRANSLATORS: the key URL
 #: ../lib/packagekit-glib2/pk-task-text.c:130
 msgid "Key URL"
-msgstr "キーの URL"
+msgstr ""
 
 #. TRANSLATORS: the username of the key
 #: ../lib/packagekit-glib2/pk-task-text.c:133
 msgid "Key user"
-msgstr "キーのユーザー"
+msgstr ""
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: ../lib/packagekit-glib2/pk-task-text.c:136
 msgid "Key ID"
-msgstr "キー ID"
+msgstr "Ŝlosil-ID"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 #: ../lib/packagekit-glib2/pk-task-text.c:139
 msgid "Key fingerprint"
-msgstr "キーのフィンガープリント"
+msgstr ""
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: ../lib/packagekit-glib2/pk-task-text.c:142
 msgid "Key Timestamp"
-msgstr "キーのタイムスタンプ"
+msgstr ""
 
 #. TRANSLATORS: ask the user if they want to import
 #: ../lib/packagekit-glib2/pk-task-text.c:155
 msgid "Do you accept this signature?"
-msgstr "この署名を承認しますか？"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:160
 msgid "The signature was not accepted."
-msgstr "署名は承認されませんでした。"
+msgstr ""
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:203
 msgid "End user licence agreement required"
-msgstr "エンドユーザーライセンス同意書が必要です"
+msgstr ""
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: ../lib/packagekit-glib2/pk-task-text.c:212
 msgid "Agreement"
-msgstr "同意書"
+msgstr "Permesilo"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: ../lib/packagekit-glib2/pk-task-text.c:221
 msgid "Do you accept this agreement?"
-msgstr "この同意書を承認しますか？"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:226
 msgid "The agreement was not accepted."
-msgstr "同意書は承認されませんでした。"
+msgstr ""
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 #: ../lib/packagekit-glib2/pk-task-text.c:265
 msgid "Media change required"
-msgstr "メディアの変更が必要です"
+msgstr ""
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 #: ../lib/packagekit-glib2/pk-task-text.c:268
 msgid "Media type"
-msgstr "メディアタイプ"
+msgstr ""
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 #: ../lib/packagekit-glib2/pk-task-text.c:271
 msgid "Media label"
-msgstr "メディアラベル"
+msgstr ""
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "Text"
-msgstr "テキスト"
+msgstr "Teksto"
 
 #. TRANSLATORS: ask the user to insert the media
 #: ../lib/packagekit-glib2/pk-task-text.c:280
 msgid "Please insert the correct media"
-msgstr "適切なメディアを挿入して下さい"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: ../lib/packagekit-glib2/pk-task-text.c:285
 msgid "The correct media was not inserted."
-msgstr "適切なメディアが挿入されていません。"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:300
 msgid "The following packages have to be removed:"
-msgstr "以下のパッケージは削除されるべきものです:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:305
 msgid "The following packages have to be installed:"
-msgstr "以下のパッケージはインストールされるべきものです:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:310
 msgid "The following packages have to be updated:"
-msgstr "以下のパッケージは更新されるべきものです:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:315
 msgid "The following packages have to be reinstalled:"
-msgstr "以下のパッケージは再インストールされるべきものです:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:320
 msgid "The following packages have to be downgraded:"
-msgstr "以下のパッケージはダウングレードされるべきものです:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 #: ../lib/packagekit-glib2/pk-task-text.c:325
 msgid "The following packages are untrusted:"
-msgstr "以下のパッケージは信頼できません:"
+msgstr ""
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
-msgstr "変更したまま継続しますか？"
+msgstr ""
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
-msgstr "トランザクションは進展しませんでした。"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1811,70 +1808,70 @@ msgstr "トランザクションは進展しませんでした。"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
-msgstr "EULA を承認"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to accept a EULA"
-msgstr "EULA を承認するには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "ユーザー自身が開始していないタスクをキャンセルするには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "ソフトウェアのソースパラメータを変更するには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
 "Authentication is required to change the location used to decompress "
 "packages"
-msgstr "パッケージの展開に使用される場所を変更するには 認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr "パッケージ署名に使用されたキーを信頼できると判定するには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
-msgstr "署名付きのパッケージをインストールするには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
-msgstr "信頼できないパッケージをインストールするには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
-msgstr "システムソースをリフレッシュするには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "新規ドライバーでデバイスを再ロードするには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
-msgstr "パッケージを削除するには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
-msgstr "トランザクションを元に戻すには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
-msgstr "パッケージのダウンロードに使用されるネットワークプロキシをセットするには 認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
-msgstr "パッケージを更新するには認証が必要です"
+msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:21
 msgid "Authentication is required to upgrade the operating system"
-msgstr "オペレーティングシステムを更新するには認証が必要です"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1883,7 +1880,7 @@ msgstr "オペレーティングシステムを更新するには認証が必要
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
-msgstr "他人のタスクをキャンセル"
+msgstr ""
 
 #. SECURITY:
 #. - This is used when users want to install to a different prefix, for
@@ -1893,7 +1890,7 @@ msgstr "他人のタスクをキャンセル"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:34
 msgid "Change location that packages are installed"
-msgstr "パッケージがインストールされる場所を変更する"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1902,7 +1899,7 @@ msgstr "パッケージがインストールされる場所を変更する"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
-msgstr "ソフトウェアのソースパラメータを変更"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1912,7 +1909,7 @@ msgstr "ソフトウェアのソースパラメータを変更"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
-msgstr "署名付きのパッケージをインストール"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1922,7 +1919,7 @@ msgstr "署名付きのパッケージをインストール"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
-msgstr "信頼できないローカルファイルをインストール"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1930,7 +1927,7 @@ msgstr "信頼できないローカルファイルをインストール"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
-msgstr "システムソースをリフレッシュ"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1941,7 +1938,7 @@ msgstr "システムソースをリフレッシュ"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
-msgstr "デバイスを再ロード"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1954,7 +1951,7 @@ msgstr "デバイスを再ロード"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
-msgstr "パッケージを削除"
+msgstr "Forigi pakaĵon"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rollback system state
@@ -1963,7 +1960,7 @@ msgstr "パッケージを削除"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
-msgstr "以前のトランザクションに戻る"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1971,7 +1968,7 @@ msgstr "以前のトランザクションに戻る"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
-msgstr "ネットワークプロキシをセット"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1981,7 +1978,7 @@ msgstr "ネットワークプロキシをセット"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
-msgstr "パッケージの署名に使用されたキーを信頼"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1992,7 +1989,7 @@ msgstr "パッケージの署名に使用されたキーを信頼"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
-msgstr "パッケージを更新"
+msgstr "Ĝisdatigi pakaĵojn"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2001,71 +1998,71 @@ msgstr "パッケージを更新"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Upgrade System"
-msgstr "システムを更新"
+msgstr "Promocii la sistemon"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:149
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "使用するパッケージバックエンド、例、ダミー"
+msgstr ""
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:152
 msgid "Daemonize and detach from the terminal"
-msgstr "ターミナルからデーモン化して隔離"
+msgstr ""
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:155
 msgid "Disable the idle timer"
-msgstr "遊休タイマーを無効にする"
+msgstr ""
 
 #. TRANSLATORS: show version
 #: ../src/pk-main.c:158
 msgid "Show version and exit"
-msgstr "バージョンを表示して終了"
+msgstr "Montri la version kaj eliri"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: ../src/pk-main.c:161
 msgid "Exit after a small delay"
-msgstr "少し遅れて終了"
+msgstr ""
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:164
 msgid "Exit after the engine has loaded"
-msgstr "エンジンがロードされてから終了"
+msgstr ""
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: ../src/pk-main.c:167
 msgid "Don't clear environment on startup"
-msgstr "起動時に環境を消去しません"
+msgstr ""
 
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:179
 msgid "PackageKit service"
-msgstr "PackageKit サービス"
+msgstr ""
 
 #: ../src/pk-main.c:253
 msgid "Failed to load any of the specified backends:"
-msgstr "すべての指定されたバックエンドの読み込みに失敗しました:"
+msgstr ""
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-transaction.c:2696
 msgid "The software is not from a trusted source."
-msgstr "ソフトウェアは信頼できるソースのものではありません。"
+msgstr ""
 
 #: ../src/pk-transaction.c:2704
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージを更新しないで下さい。"
+msgstr ""
 
 #: ../src/pk-transaction.c:2705
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群を更新しないで下さい。"
+msgstr ""
 
 #: ../src/pk-transaction.c:2715
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージをインストールしないで下さい。"
+msgstr ""
 
 #: ../src/pk-transaction.c:2716
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群をインストールしないで下さい。"
+msgstr ""
 
 

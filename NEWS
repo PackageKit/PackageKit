@@ -1,3 +1,99 @@
+Version 0.7.2
+~~~~~~~~~~~~~
+Released: 2011-01-17
+
+Notes:
+ - Lots of new features, bugfixes and bugs, so please test this release
+   carefully if you're uploading into a stable distribution. If you want
+   stability, you're probably better off with a release from the
+   0.6.x series until all the new stuff has settled down.
+
+Libraries:
+ - glib: Convert libpackagekit-glib2 from dbus-glib to GDBus (Richard Hughes)
+ - glib: Skip empty catalog entries (Christian Persch)
+ - qt: automatically rebuild moc files with different moc version (Nils Philippsen)
+
+Backends:
+ - apt: Adapt progress reporting to the latest PackageKit and python-apt API (Sebastian Heinlein)
+ - apt: Add a test suite covering already most of the methods (Sebastian Heinlein)
+ - apt: Add support for piping the debconf communication to the client (Sebastian Heinlein)
+ - apt: Add support for repair-system and simulate-repair-system including correpsonding test cases (Sebastian Heinlein)
+ - apt: Add tests if security updates and backports are detected correctly (Sebastian Heinlein)
+ - apt: Disable apt-listbugs frontend (Sebastian Heinlein)
+ - apt: Do not try to install not available files (TODO.apt) (Sebastian Heinlein)
+ - apt: Don't open the cache on backend initialization to speed up processing (Sebastian Heinlein)
+ - apt: Don't use optparse to safe some startup time. Instead use a separate profiler script (Sebastian Heinlein)
+ - apt: Fix a wrong str/unicode replacement by the Py3 preparation (Sebastian Heinlein)
+ - apt: Fix filter tests since we have a new package in the test repo (Sebastian Heinlein)
+ - apt: Fix media change failure and a test case (Sebastian Heinlein)
+ - apt: Fix repo details signals (Sebastian Heinlein)
+ - apt: Improve detection and killing of hanging maintainer scripts (Sebastian Heinlein)
+ - apt: Improve forked child setup (Sebastian Heinlein)
+ - apt: improve progress range handling (Sebastian Heinlein)
+ - apt: More python3 related clean ups (Sebastian Heinlein)
+ - apt: Port to latest PackageKit API (Sebastian Heinlein)
+ - apt: Raise exceptions in the backend code instead of calling PackageKitBaseBackend.error directly (Sebastian Heinlein)
+ - apt: remove encoding mangling - should be handled by packagekit.backend already (Sebastian Heinlein)
+ - apt: remove oboslete files (Sebastian Heinlein)
+ - apt: Respect the ROOT environement variable (Sebastian Heinlein)
+ - apt: Start with updating the backend on several places (Sebastian Heinlein)
+ - apt: Too many API and style fixes to count (Sebastian Heinlein)
+ - apt: Use the apt.progress.base.InstallProgress abilities to handle dpkg progress (Sebastian Heinlein)
+ - apt: use the dpkg bin and options from the apt configuration (Sebastian Heinlein)
+ - apt: Use the ROOT env to set the backend to the chroot and the correct path to the test repo (Sebastian Heinlein)
+ - aptcc: Add Multi-Arch support (Daniel Nicoletti)
+ - aptcc: Add native filter so we do not show i386 packages if we are on amd64 for example (Daniel Nicoletti)
+ - aptcc: Fix crash on get-categories, backend does not support that (Matthias Klumpp)
+ - aptcc: forgot to add DebFile class (Daniel Nicoletti)
+ - aptcc: Initial commit to support InstallPackageFiles (Daniel Nicoletti)
+ - aptcc: Only return GetDistroUpgrades and installFiles if the helpers are available (Daniel Nicoletti)
+ - aptcc: Properly read GDebi install/remove line (Daniel Nicoletti)
+ - aptcc: Use gdebi to resolve local file installation, Fix conffile handlying by interpreting the exit status properly (Daniel Nicoletti)
+ - apt(cc): Use gdbus in the post-update hook call to StateHasChanged (Sebastian Heinlein)
+ - dummy: Add dummy RepairSystem methods (Richard Hughes)
+ - urpmi: Add enums for unimplemented features as commented out code (Per Øyvind Karlsen)
+ - urpmi: Add support for provide type (Per Øyvind Karlsen)
+ - urpmi: Do matching against fullname (Per Øyvind Karlsen)
+ - urpmi: First shot at what-provides (Per Øyvind Karlsen)
+ - urpmi: Fix 'Using a hash as a reference is deprecated' warning (Per Øyvind Karlsen)
+ - urpmi: Implement a 'Supported' filter (Per Øyvind Karlsen)
+ - urpmi: Implement 'Cancel' feature (Per Øyvind Karlsen)
+ - urpmi: Implement 'Free' filter (Per Øyvind Karlsen)
+ - urpmi: Implement get_mime_types (Per Øyvind Karlsen)
+ - urpmi: Implement get_roles (Per Øyvind Karlsen)
+ - urpmi: Implement is_package_installed() which uses URPM:is_package_installed() (Per Øyvind Karlsen)
+ - urpmi: import urpm::msg for N() (Per Øyvind Karlsen)
+ - urpmi: Make find_installed_version use EVRD (Per Øyvind Karlsen)
+ - urpmi: Put 'supported' filter to use (Per Øyvind Karlsen)
+ - urpmi: Traverse database by name rather than nvra (Per Øyvind Karlsen)
+ - urpmi: Update to use find_installed_fullname (Per Øyvind Karlsen)
+ - urpmi: Use urpm2deium from tools & check if undefined or not (Per Øyvind Karlsen)
+ - yum: Use current API for installing untrusted packages (Nils Philippsen)
+ - yum: Consistently use same logic to determine GPG checking (Nils Philippsen)
+ - yum: Don't request authorization for trusted packages (#771746) (Nils Philippsen)
+ - zif: Use the new transaction_reset hook to clear the backend state (Richard Hughes)
+ - zypp: Retrieve url for packages instead of returning "TODO" (Duncan Mac-Vicar P)
+
+New Features:
+ - Add a new repair-system policy and use it by the corresponding RepairSystem method (Sebastian Heinlein)
+ - Add a transaction_reset backend hook (Richard Hughes)
+ - Add new roles SimulateRepairSystem and RepairSystem (Sebastian Heinlein)
+ - Add pk_*_enum_to_localised_text to pk-enum.h and export via GIR (Michael Vogt)
+ - Add possibility to connect/disconnect backend signals (Matthias Klumpp)
+ - Add PropertiesChanged signals to the main and transaction interfaces (Richard Hughes)
+ - Allow the Plasma version to be specified for PK_PROVIDES_ENUM_PLASMA_SERVICE (Kevin Kofler)
+
+Bugfixes:
+ - browser-plugin: Make it compile with newest xulrunner (Matthias Klumpp)
+ - Fix a critical warning in the client tools when a simulation is cancelled (Richard Hughes)
+ - Fix builddir != srcdir issue (Ryan Lortie)
+ - Fix item-percentage call in the spawned backend (Sebastian Heinlein)
+ - gtk-plugin: Fix name of GTK plugin schema file (Matthias Klumpp)
+ - Make PkProc part of the daemon again (Matthias Klumpp)
+ - Remove deprecated g_thread_init() on GLib < 2.31 (Per Øyvind Karlsen)
+ - Set the frontend socket as environment variable in the spawned backend (Sebastian Heinlein)
+ - Update the website matrix to include the new (Simulate)RepairSystem roles (Sebastian Heinlein)
+
 Version 0.7.1
 ~~~~~~~~~~~~~
 Released: 2011-11-10

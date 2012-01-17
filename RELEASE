@@ -25,6 +25,7 @@ Bugfixes:
 2.5. Update translations and commit them with sign-off:
 
 tx pull --all
+git add po/*.po
 
 3. Update library version if new ABI or API in configure.ac
 
