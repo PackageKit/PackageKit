@@ -88,23 +88,6 @@ pk_test_lsof_func (void)
 	g_object_unref (lsof);
 }
 
-static void
-pk_test_proc_func (void)
-{
-	gboolean ret;
-	PkProc *proc;
-//	gchar *files[] = { "/sbin/udevd", NULL };
-
-	proc = pk_proc_new ();
-	g_assert (proc != NULL);
-
-	/* refresh proc data */
-	ret = pk_proc_refresh (proc);
-	g_assert (ret);
-
-	g_object_unref (proc);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -112,7 +95,6 @@ main (int argc, char **argv)
 	g_test_init (&argc, &argv, NULL);
 
 	g_test_add_func ("/plugins/lsof", pk_test_lsof_func);
-	g_test_add_func ("/plugins/proc", pk_test_proc_func);
 
 	return g_test_run ();
 }
