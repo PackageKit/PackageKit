@@ -4788,7 +4788,6 @@ out:
 /**
  * pk_client_simulate_repair_system_async:
  * @client: a valid #PkClient instance
- * @only_trusted: only trusted packages should be installed
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

@@ -1161,7 +1161,7 @@ pk_info_enum_to_localised_past (PkInfoEnum info)
 
 /**
  * pk_role_enum_to_localised_present:
- * @info: The enumerated type value
+ * @role: The enumerated type value
  * 
  * Converts a enumerated type to its localized description
  *
