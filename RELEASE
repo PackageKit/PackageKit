@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_7_1.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_7_2.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.7.2
+Version 0.7.3
 ~~~~~~~~~~~~~
 Released: 2011-xx-xx
 
@@ -31,8 +31,8 @@ git add po/*.po
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.7.2"
-git tag -s -f -m "Release 0.7.2" PACKAGEKIT_0_7_2
+git commit -a -m "Release version 0.7.3"
+git tag -s -f -m "Release 0.7.3" PACKAGEKIT_0_7_3
 <gpg password>
 git push --tags
 git push
@@ -58,7 +58,7 @@ tx push --source
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 0.7.2 released!
+PackageKit 0.7.3 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
