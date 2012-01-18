@@ -1685,6 +1685,11 @@ PkgList aptcc::resolvePI(gchar **package_ids)
     PkgList ret;
 
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_QUERY);
+
+    // Don't fail if package list is empty
+    if (package_ids == NULL)
+	    return ret;
+
     for (uint i = 0; i < g_strv_length(package_ids); i++) {
         if (_cancel) {
             break;
@@ -1774,15 +1779,18 @@ bool aptcc::markDebFileForInstall(const gchar *file, PkgList &install, PkgList &
 
         // The second line contains the packages to remove with '-' appended to
         // the end of the package name
-        gchar *removeStr = g_strndup(lines[1], strlen(lines[1]) - 1);
-        gchar **removePkgs = g_strsplit(removeStr, "- ", 0);
+	gchar **removePkgs = NULL;
+	if (strlen(lines[1]) > 0) {
+		gchar *removeStr = g_strndup(lines[1], strlen(lines[1]) - 1);
+		removePkgs = g_strsplit(removeStr, "- ", 0);
+		g_free(removeStr);
+	}
 
         // Store the changes
         install = resolvePI(installPkgs);
         remove = resolvePI(removePkgs);
         m_localDebFile = file;
-        
-        g_free(removeStr);
+
         g_strfreev(lines);
         g_strfreev(installPkgs);
         g_strfreev(removePkgs);
@@ -1843,7 +1851,7 @@ bool aptcc::runTransaction(PkgList &install, PkgList &remove, bool simulate)
                 return false;
             }
         }
-        
+
         for(PkgList::iterator i = remove.begin(); i != remove.end(); ++i) {
             pkgCache::PkgIterator Pkg = i->first;
             if (_cancel) {
