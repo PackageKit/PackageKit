@@ -1175,19 +1175,22 @@ cout << "FILE INSTALL: " << fileInstall << endl;
         return false;
     }
 
+    // This is broken at time.
+/*
     if (fileInstall) {
         // File installation EXPERIMENTAL
-//         gchar *path;
-//
-//         for (uint i = 0; i < g_strv_length(full_paths); i++) {
-//             if (_cancel) {
-//                 break;
-//             }
-//
-//             path = full_paths[i];
-//             cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
-//         }
-    }
+        gchar *path;
+
+	for (uint i = 0; i < g_strv_length(full_paths); i++) {
+		if (_cancel) {
+			break;
+		}
+
+		path = full_paths[i];
+		cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
+	}
+     }
+*/
 
 	delete m_apt;
 	return true;
@@ -1494,10 +1497,13 @@ pk_backend_get_roles (PkBackend *backend)
     }
 
     // only add GetDistroUpgrades if the binary is present
+    // InstallFiles is not working at time.
+/*
     if (g_file_test (GDEBI_BINARY, G_FILE_TEST_EXISTS)) {
         pk_bitfield_add(roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
         pk_bitfield_add(roles, PK_ROLE_ENUM_INSTALL_FILES);
     }
+*/
 
     return roles;
 }
