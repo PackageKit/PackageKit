@@ -377,7 +377,7 @@ pk_control_proxy_connect (PkControlState *state)
 
 	/* coldplug properties */
 	props = g_dbus_proxy_get_cached_property_names (state->proxy);
-	for (i = 0; props[i] != NULL; i++) {
+	for (i = 0; props != NULL && props[i] != NULL; i++) {
 		value_tmp = g_dbus_proxy_get_cached_property (state->proxy,
 							      props[i]);
 		pk_control_set_property_value (state->control,
