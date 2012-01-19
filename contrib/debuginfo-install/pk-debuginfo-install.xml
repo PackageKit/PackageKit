@@ -173,7 +173,7 @@ manpage.1: manpage.xml
           <option>6</option>
         </term>
         <listitem>
-          <para>Failed to find dependant packages.</para>
+          <para>Failed to find dependent packages.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

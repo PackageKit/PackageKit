@@ -1004,7 +1004,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
  * pk_task_remove_packages_async:
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
- * @allow_deps: if other dependant packages are allowed to be removed from the computer
+ * @allow_deps: if other dependent packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
