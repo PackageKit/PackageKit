@@ -1181,6 +1181,7 @@ pk_control_set_proxy2_async (PkControl *control,
 					   proxy_socks ? proxy_socks : "",
 					   no_proxy ? no_proxy : "",
 					   pac ? pac : "");
+	g_variant_ref_sink (state->parameters);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
@@ -1426,6 +1427,7 @@ pk_control_set_root_async (PkControl *control,
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
 	state->parameters = g_variant_new ("(s)", root ? root : "");
+	g_variant_ref_sink (state->parameters);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
@@ -1862,6 +1864,7 @@ pk_control_get_time_since_action_async (PkControl *control,
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
 	state->parameters = g_variant_new ("(s)", pk_role_enum_to_string (role));
+	g_variant_ref_sink (state->parameters);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
@@ -2081,6 +2084,7 @@ pk_control_can_authorize_async (PkControl *control,
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
 	state->parameters = g_variant_new ("(s)", action_id);
+	g_variant_ref_sink (state->parameters);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
