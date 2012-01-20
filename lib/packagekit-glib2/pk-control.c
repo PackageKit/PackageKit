@@ -1175,12 +1175,12 @@ pk_control_set_proxy2_async (PkControl *control,
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
 	state->parameters = g_variant_new ("(ssssss)",
-					   proxy_http,
-					   proxy_https,
-					   proxy_ftp,
-					   proxy_socks,
-					   no_proxy,
-					   pac);
+					   proxy_http ? proxy_http : "",
+					   proxy_https ? proxy_https : "",
+					   proxy_ftp ? proxy_ftp : "",
+					   proxy_socks ? proxy_socks : "",
+					   no_proxy ? no_proxy : "",
+					   pac ? pac : "");
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
@@ -1425,7 +1425,7 @@ pk_control_set_root_async (PkControl *control,
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
-	state->parameters = g_variant_new ("(s)", root);
+	state->parameters = g_variant_new ("(s)", root ? root : "");
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 
