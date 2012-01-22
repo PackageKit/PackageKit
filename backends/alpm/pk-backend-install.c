@@ -25,6 +25,7 @@
 #include <pk-backend.h>
 
 #include "pk-backend-alpm.h"
+#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-install.h"
 #include "pk-backend-transaction.h"
@@ -94,9 +95,16 @@ pk_backend_simulate_install_files_thread (PkBackend *self)
 static gboolean
 pk_backend_install_files_thread (PkBackend *self)
 {
+	gboolean only_trusted;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+
+	only_trusted = pk_backend_get_bool (self, "only_trusted");
+
+	if (!only_trusted && !pk_backend_disable_signatures (self, &error)) {
+		goto out;
+	}
 
 	if (pk_backend_transaction_initialize (self, 0, &error) &&
 	    pk_backend_transaction_add_targets (self, &error) &&
@@ -104,7 +112,15 @@ pk_backend_install_files_thread (PkBackend *self)
 		pk_backend_transaction_commit (self, &error);
 	}
 
-	return pk_backend_transaction_finish (self, error);
+out:
+	pk_backend_transaction_end (self, (error == NULL) ? &error : NULL);
+
+	if (!only_trusted) {
+		GError **e = (error == NULL) ? &error : NULL;
+		pk_backend_enable_signatures (self, e);
+	}
+
+	return pk_backend_finish (self, error);
 }
 
 void
