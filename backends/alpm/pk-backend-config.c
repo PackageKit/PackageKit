@@ -524,14 +524,14 @@ pk_backend_config_set_siglevel (PkBackendConfig *config, const gchar *section,
 		}
 
 		/* this also allows e.g. NeverEver, so put prefixes last */
-		if (g_str_has_prefix (list, "Never") == 0) {
+		if (g_str_has_prefix (list, "Never")) {
 			if (package) {
 				*level &= ~ALPM_SIG_PACKAGE;
 			}
 			if (database) {
 				*level &= ~ALPM_SIG_DATABASE;
 			}
-		} else if (g_str_has_prefix (list, "Optional") == 0) {
+		} else if (g_str_has_prefix (list, "Optional")) {
 			if (package) {
 				*level |= ALPM_SIG_PACKAGE;
 				*level |= ALPM_SIG_PACKAGE_OPTIONAL;
@@ -540,7 +540,7 @@ pk_backend_config_set_siglevel (PkBackendConfig *config, const gchar *section,
 				*level |= ALPM_SIG_DATABASE;
 				*level |= ALPM_SIG_DATABASE_OPTIONAL;
 			}
-		} else if (g_str_has_prefix (list, "Required") == 0) {
+		} else if (g_str_has_prefix (list, "Required")) {
 			if (package) {
 				*level |= ALPM_SIG_PACKAGE;
 				*level &= ~ALPM_SIG_PACKAGE_OPTIONAL;
@@ -549,7 +549,7 @@ pk_backend_config_set_siglevel (PkBackendConfig *config, const gchar *section,
 				*level |= ALPM_SIG_DATABASE;
 				*level &= ~ALPM_SIG_DATABASE_OPTIONAL;
 			}
-		} else if (g_str_has_prefix (list, "TrustedOnly") == 0) {
+		} else if (g_str_has_prefix (list, "TrustedOnly")) {
 			if (package) {
 				*level &= ~ALPM_SIG_PACKAGE_MARGINAL_OK;
 				*level &= ~ALPM_SIG_PACKAGE_UNKNOWN_OK;
@@ -558,7 +558,7 @@ pk_backend_config_set_siglevel (PkBackendConfig *config, const gchar *section,
 				*level &= ~ALPM_SIG_DATABASE_MARGINAL_OK;
 				*level &= ~ALPM_SIG_DATABASE_UNKNOWN_OK;
 			}
-		} else if (g_str_has_prefix (list, "TrustAll") == 0) {
+		} else if (g_str_has_prefix (list, "TrustAll")) {
 			if (package) {
 				*level |= ALPM_SIG_PACKAGE_MARGINAL_OK;
 				*level |= ALPM_SIG_PACKAGE_UNKNOWN_OK;
