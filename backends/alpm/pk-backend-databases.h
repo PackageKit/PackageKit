@@ -28,6 +28,12 @@ void		 pk_backend_configure_repos		(alpm_list_t *repos,
 							 GHashTable *servers,
 							 GHashTable *levels);
 
+gboolean	 pk_backend_disable_signatures		(PkBackend *self,
+							 GError **error);
+
+gboolean	 pk_backend_enable_signatures		(PkBackend *self,
+							 GError **error);
+
 gboolean	 pk_backend_initialize_databases	(PkBackend *self,
 							 GError **error);
 
