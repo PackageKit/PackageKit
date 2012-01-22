@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "pk-backend-alpm.h"
+#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-sync.h"
 #include "pk-backend-transaction.h"
@@ -150,9 +151,16 @@ pk_backend_simulate_install_packages_thread (PkBackend *self)
 static gboolean
 pk_backend_install_packages_thread (PkBackend *self)
 {
+	gboolean only_trusted;
 	GError *error = NULL;
 
 	g_return_val_if_fail (self != NULL, FALSE);
+
+	only_trusted = pk_backend_get_bool (self, "only_trusted");
+
+	if (!only_trusted && !pk_backend_disable_signatures (self, &error)) {
+		goto out;
+	}
 
 	if (pk_backend_transaction_initialize (self, 0, &error) &&
 	    pk_backend_transaction_sync_targets (self, &error) &&
@@ -160,7 +168,14 @@ pk_backend_install_packages_thread (PkBackend *self)
 		pk_backend_transaction_commit (self, &error);
 	}
 
-	return pk_backend_transaction_finish (self, error);
+	pk_backend_transaction_end (self, (error == NULL) ? &error : NULL);
+out:
+	if (!only_trusted) {
+		GError **e = (error == NULL) ? &error : NULL;
+		pk_backend_enable_signatures (self, e);
+	}
+
+	return pk_backend_finish (self, error);
 }
 
 void
@@ -215,6 +230,7 @@ pk_backend_replaces_dependencies (PkBackend *self, alpm_pkg_t *pkg)
 static gboolean
 pk_backend_update_packages_thread (PkBackend *self)
 {
+	gboolean only_trusted;
 	const alpm_list_t *i;
 	alpm_list_t *asdeps = NULL;
 	GError *error = NULL;
@@ -222,6 +238,12 @@ pk_backend_update_packages_thread (PkBackend *self)
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
+
+	only_trusted = pk_backend_get_bool (self, "only_trusted");
+
+	if (!only_trusted && !pk_backend_disable_signatures (self, &error)) {
+		goto out;
+	}
 
 	if (!pk_backend_transaction_initialize (self, 0, &error) ||
 	    !pk_backend_transaction_sync_targets (self, &error) ||
@@ -256,10 +278,17 @@ pk_backend_update_packages_thread (PkBackend *self)
 	}
 
 out:
+	pk_backend_transaction_end (self, (error == NULL) ? &error : NULL);
+
+	if (!only_trusted) {
+		GError **e = (error == NULL) ? &error : NULL;
+		pk_backend_enable_signatures (self, e);
+	}
+
 	alpm_list_free_inner (asdeps, g_free);
 	alpm_list_free (asdeps);
 
-	return pk_backend_transaction_finish (self, error);
+	return pk_backend_finish (self, error);
 }
 
 void

@@ -132,7 +132,8 @@ disabled_repos_free (GHashTable *table)
 }
 
 static gboolean
-disabled_repos_configure (GHashTable *table, GError **error)
+disabled_repos_configure (GHashTable *table, gboolean only_trusted,
+			  GError **error)
 {
 	const alpm_list_t *i;
 
@@ -148,14 +149,19 @@ disabled_repos_configure (GHashTable *table, GError **error)
 
 	for (i = configured; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
+		alpm_siglevel_t level = repo->level;
 		alpm_db_t *db;
 
 		if (g_hash_table_lookup (table, repo->name) != NULL) {
 			/* repo is disabled */
 			continue;
+		} else if (!only_trusted) {
+			level &= ~ALPM_SIG_PACKAGE;
+			level &= ~ALPM_SIG_DATABASE;
+			level &= ~ALPM_SIG_USE_DEFAULT;
 		}
 
-		db = alpm_db_register_sync (alpm, repo->name, repo->level);
+		db = alpm_db_register_sync (alpm, repo->name, level);
 		if (db == NULL) {
 			enum _alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
@@ -186,13 +192,29 @@ pk_backend_configure_repos (alpm_list_t *repos, GHashTable *servers,
 
 		value = g_hash_table_lookup (levels, i->data);
 		if (value != NULL) {
-			repo->level = *(alpm_siglevel_t *)value;
+			repo->level = *(alpm_siglevel_t *) value;
 		} else {
 			repo->level = ALPM_SIG_USE_DEFAULT;
 		}
 
 		configured = alpm_list_add (configured, repo);
 	}
+}
+
+gboolean
+pk_backend_disable_signatures (PkBackend *self, GError **error)
+{
+	g_return_val_if_fail (self != NULL, FALSE);
+
+	return disabled_repos_configure (disabled, FALSE, error);
+}
+
+gboolean
+pk_backend_enable_signatures (PkBackend *self, GError **error)
+{
+	g_return_val_if_fail (self != NULL, FALSE);
+
+	return disabled_repos_configure (disabled, TRUE, error);
 }
 
 gboolean
@@ -205,7 +227,7 @@ pk_backend_initialize_databases (PkBackend *self, GError **error)
 		return FALSE;
 	}
 
-	if (!disabled_repos_configure (disabled, error)) {
+	if (!disabled_repos_configure (disabled, TRUE, error)) {
 		return FALSE;
 	}
 
@@ -312,7 +334,7 @@ pk_backend_repo_enable_thread (PkBackend *self)
 
 	if (g_hash_table_remove (disabled, repo)) {
 		/* reload configuration to preserve ordering */
-		if (disabled_repos_configure (disabled, &error)) {
+		if (disabled_repos_configure (disabled, TRUE, &error)) {
 			pk_backend_repo_list_changed (self);
 		}
 	} else {
