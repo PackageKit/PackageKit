@@ -1816,7 +1816,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(False)
-        if provides_type == enums.PROVIDES_CODEC:
+        supported_type = False
+        if provides_type in (enums.PROVIDES_CODEC, enums.PROVIDES_ANY):
+            supported_type = True
+
             # Search for privided gstreamer plugins using the package
             # metadata
             import gst
@@ -1854,13 +1857,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         if gst_data in elements:
                             self._emit_visible_package(filters, pkg)
 
-        elif provides_type == enums.PROVIDES_MIMETYPE:
+        if provides_type in (enums.PROVIDES_MIMETYPE, enums.PROVIDES_ANY):
+            supported_type = True
             # Emit packages that contain an application that can handle
             # the given mime type
             for search_item in search:
                 handlers = set()
                 db = get_mapping_db("/var/lib/PackageKit/mime-map.gdbm")
                 if db == None:
+                    if provides_type != enums.PROVIDES_ANY:
+                        raise PKError(enums.ERROR_INTERNAL_ERROR,
+                                      "The list of applications that can handle "
+                                      "files of the given type cannot be opened.")
                     return
                 if search_item in db:
                     pklog.debug("Mime type is registered: %s" % db[search_item])
@@ -1871,7 +1879,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     #        RepositoryRequired signal if the package does not exist
                     handlers = [s.split("/")[1] for s in db[search_item].split(" ")]
                     self._emit_visible_packages_by_name(filters, handlers)
-        else:
+
+        if not supported_type:
             raise PKError(enums.ERROR_NOT_SUPPORTED,
                           "This function is not implemented in this backend")
 
