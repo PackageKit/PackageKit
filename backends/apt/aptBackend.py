@@ -1782,20 +1782,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             appropriate error message
             """
             if not os.access(path, os.R_OK):
-                if ("app-install-data" in self._cache and
-                    not self._cache["app-install-data"].is_installed):
-                    raise PKError(enums.ERROR_INTERNAL_ERROR,
-                                  "Please install the package "
-                                  "app-install data for a list of "
-                                  "applications that can handle files of "
-                                  "the given type")
-                else:
-                    raise PKError(enums.ERROR_INTERNAL_ERROR,
-                                  "The list of applications that can handle "
-                                  "files of the given type cannot be opened.\n"
-                                  "Try to reinstall the package "
-                                  "app-install-data.")
-                return
+                pklog.warning("list of applications that can handle files of the given type %s does not exist")
+                return None
             try:
                 db = gdbm.open(path)
             except:
