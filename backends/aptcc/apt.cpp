@@ -2169,6 +2169,7 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	// make it nonblocking, verry important otherwise
 	// when the child finish we stay stuck.
 	fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
+	fcntl(pty_master, F_SETFL, O_NONBLOCK);
 
 	// init the timer
 	m_lastTermAction = time(NULL);
@@ -2176,7 +2177,10 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 
 	// Check if the child died
 	int ret;
+	char masterbuf[1024];
 	while (waitpid(m_child_pid, &ret, WNOHANG) == 0) {
+		// TODO: This is dpkg's raw output. Maybe save it for error-solving?
+		while(read(pty_master, masterbuf, sizeof(masterbuf)) > 0);
 		updateInterface(readFromChildFD[0], pty_master);
 	}
 
