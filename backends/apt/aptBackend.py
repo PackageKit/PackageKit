@@ -1837,50 +1837,52 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                     "urisource": "Gstreamer-Uri-Sources",
                                     "urisink": "Gstreamer-Uri-Sinks",
                                     "element": "Gstreamer-Elements"}
-            for pkg in self._cache:
-                if pkg.installed:
-                    version = pkg.installed
-                elif pkg.candidate:
-                    version = pkg.candidate
-                else:
-                    continue
-                if not "Gstreamer-Version" in version.record:
-                    continue
+            for search_item in search:
                 gst_version, gst_record, gst_data, gst_caps = \
-                        extract_gstreamer_request(search)
-                if version.record["Gstreamer-Version"] != gst_version:
-                    continue
-                if gst_caps:
-                    try:
-                        pkg_caps = gst.Caps(version.record[gst_record])
-                    except KeyError:
+                        extract_gstreamer_request(search_item)
+                for pkg in self._cache:
+                    if pkg.installed:
+                        version = pkg.installed
+                    elif pkg.candidate:
+                        version = pkg.candidate
+                    else:
                         continue
-                    if gst_caps.intersect(pkg_caps):
-                        self._emit_visible_package(filters, pkg)
-                else:
-                    try:
-                        elements = version.record[gst_record]
-                    except KeyError:
+                    if not "Gstreamer-Version" in version.record:
                         continue
-                    if gst_data in elements:
-                        self._emit_visible_package(filters, pkg)
+                    if version.record["Gstreamer-Version"] != gst_version:
+                        continue
+                    if gst_caps:
+                        try:
+                            pkg_caps = gst.Caps(version.record[gst_record])
+                        except KeyError:
+                            continue
+                        if gst_caps.intersect(pkg_caps):
+                            self._emit_visible_package(filters, pkg)
+                    else:
+                        try:
+                            elements = version.record[gst_record]
+                        except KeyError:
+                            continue
+                        if gst_data in elements:
+                            self._emit_visible_package(filters, pkg)
 
         elif provides_type == enums.PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type
-            handlers = set()
-            db = get_mapping_db("/var/lib/PackageKit/mime-map.gdbm")
-            if db == None:
-                return
-            if search in db:
-                pklog.debug("Mime type is registered: %s" % db[search])
-                # The mime type handler db stores the packages as a string
-                # separated by spaces. Each package has its section
-                # prefixed and separated by a slash
-                # FIXME: Should make use of the section and emit a 
-                #        RepositoryRequired signal if the package does not exist
-                handlers = [s.split("/")[1] for s in db[search].split(" ")]
-                self._emit_visible_packages_by_name(filters, handlers)
+            for search_item in search:
+                handlers = set()
+                db = get_mapping_db("/var/lib/PackageKit/mime-map.gdbm")
+                if db == None:
+                    return
+                if search_item in db:
+                    pklog.debug("Mime type is registered: %s" % db[search_item])
+                    # The mime type handler db stores the packages as a string
+                    # separated by spaces. Each package has its section
+                    # prefixed and separated by a slash
+                    # FIXME: Should make use of the section and emit a 
+                    #        RepositoryRequired signal if the package does not exist
+                    handlers = [s.split("/")[1] for s in db[search_item].split(" ")]
+                    self._emit_visible_packages_by_name(filters, handlers)
         else:
             raise PKError(enums.ERROR_NOT_SUPPORTED,
                           "This function is not implemented in this backend")
