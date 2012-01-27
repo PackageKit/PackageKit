@@ -340,7 +340,8 @@ public:
         ProvidesPostscriptDriver,
         ProvidesPlasmaService,
         ProvidesSharedLib,
-        ProvidesPythonModule
+        ProvidesPythonModule,
+        ProvidesLanguageSupport
     } Provides;
 
     /**

@@ -46,3 +46,15 @@ PYTHON:                 A string in the format of "python<version>(module-name)"
                         If the Python-Version is omitted, the backend will
                         choose the current default Python version.
                         Example: "python2(packagekit)"
+
+LANGUAGE_SUPPORT:       A string in the format of language(ll_CC) or
+                        language(ll), which should correspond to a
+                        language/country pair or just a language, as in
+                        /usr/share/i18n/SUPPORTED. Returns all packages
+                        which provide language support (dictionaries,
+                        translated help, ibus modules, etc.) for all packages
+                        that are currently installed in the system.
+                        Example: "language(zh_CN)" might suggest ibus-pinyin and
+                        libreoffice-l10n-zh-cn if you have ibus and LibreOffice
+                        installed.
+

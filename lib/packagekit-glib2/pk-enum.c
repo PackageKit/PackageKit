@@ -366,6 +366,7 @@ static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_PLASMA_SERVICE,	"plasma-service"},
 	{PK_PROVIDES_ENUM_SHARED_LIB,		"shared-library"},
 	{PK_PROVIDES_ENUM_PYTHON,		"python-module"},
+	{PK_PROVIDES_ENUM_LANGUAGE_SUPPORT,     "language-support"},
 	{0, NULL}
 };
 
