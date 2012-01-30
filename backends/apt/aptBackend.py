@@ -5,6 +5,7 @@
 Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
 Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
 Copyright (C) 2008-2009 Sebastian Heinlein <glatzor@ubuntu.com>
+Copyright (C) 2012 Martin Pitt <martin.pitt@ubuntu.com>
 
 Licensed under the GNU General Public License Version 2
 
@@ -35,6 +36,7 @@ import string
 import subprocess
 import sys
 import time
+import fnmatch
 
 import apt
 import apt.debfile
@@ -1829,8 +1831,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                     "urisink": "Gstreamer-Uri-Sinks",
                                     "element": "Gstreamer-Elements"}
             for search_item in search:
-                gst_version, gst_record, gst_data, gst_caps = \
-                        extract_gstreamer_request(search_item)
+                try:
+                    gst_version, gst_record, gst_data, gst_caps = \
+                            extract_gstreamer_request(search_item)
+                except PKError:
+                    if provides_type == enums.PROVIDES_ANY:
+                        break # ignore invalid codec query, probably for other types
+                    else:
+                        raise
                 for pkg in self._cache:
                     if pkg.installed:
                         version = pkg.installed
@@ -1869,7 +1877,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         raise PKError(enums.ERROR_INTERNAL_ERROR,
                                       "The list of applications that can handle "
                                       "files of the given type cannot be opened.")
-                    return
+                    else:
+                        break
                 if search_item in db:
                     pklog.debug("Mime type is registered: %s" % db[search_item])
                     # The mime type handler db stores the packages as a string
@@ -1879,6 +1888,53 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     #        RepositoryRequired signal if the package does not exist
                     handlers = [s.split("/")[1] for s in db[search_item].split(" ")]
                     self._emit_visible_packages_by_name(filters, handlers)
+
+        if provides_type in (enums.PROVIDES_MODALIAS, enums.PROVIDES_ANY):
+            supported_type = True
+            system_architecture = apt_pkg.get_architectures()[0]
+
+            # Emit packages that contain an application that can handle
+            # the given mime type
+            for search_item in search:
+                if not search_item.startswith('modalias(') or not search_item.endswith(')'):
+                    if provides_type == enums.PROVIDES_ANY:
+                        raise PKError(enums.ERROR_INTERNAL_ERROR,
+                                      "The search term is invalid: %s" % search_item)
+                    else:
+                        continue
+
+                # strip off modalias(...) wrapper
+                search_item = search_item.split('(')[1][:-1]
+
+                for package in self._cache:
+                    # skip foreign architectures, we usually only want native
+                    # driver packages
+                    if package.architecture() != system_architecture:
+                        continue
+
+                    try:
+                        m = package.candidate.record['Modaliases']
+                    except (KeyError, AttributeError):
+                        continue
+
+                    try:
+                        pkg_matches = False
+                        for part in m.split(')'):
+                            part = part.strip(', ')
+                            if not part:
+                                continue
+                            module, lst = part.split('(')
+                            for alias in lst.split(','):
+                                alias = alias.strip()
+                                if fnmatch.fnmatch(search_item, alias):
+                                    self._emit_visible_package(filters, package)
+                                    pkg_matches = True
+                                    break
+                            if pkg_matches:
+                                break
+                    except ValueError:
+                        pklog.warning("Package %s has invalid modalias header: %s" % (
+                            package.name, m))
 
         if not supported_type:
             raise PKError(enums.ERROR_NOT_SUPPORTED,
