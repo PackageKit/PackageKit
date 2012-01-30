@@ -14,7 +14,12 @@ Component naming
 
 MODALIAS:               /!\ Format nor defined (yet)
 
-CODEC:
+CODEC:                  A string in the format of gstreamer<version>(type-format)
+                        where <version> is the GStreamer API version (e. g.
+                        0.10), "type" is a GStreamer element type ("encoder",
+                        "decoder", "urisource", ""urisink", "element"), and
+                        "format" is the type specific search string.
+                        Example: "gstreamer0.10(decoder-audio/ac3)"
 
 MIMETYPE:               Mimetypes are (valid) mimetypes strings,
                         for example "application/x-catalog" or "text/plain".
