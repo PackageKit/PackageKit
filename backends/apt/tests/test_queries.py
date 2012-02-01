@@ -170,6 +170,55 @@ class QueryTests(mox.MoxTestBase):
                                       ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000FACEsv00sd00bc03sc00i00)"])
 
 
+    def test_what_provides_any(self):
+        """Test searching for package providing "any"."""
+        # codec
+        self._catch_callbacks("package")
+        self.backend.package("gstreamer0.10-silly;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_ANY, "gstreamer0.10(decoder-audio/ac3)"])
+
+        # modalias
+        self._catch_callbacks("package")
+        self.backend.package("silly-driver;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_ANY, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00)"])
+
+        # invalid query; ANY should not return an error, just not return any results
+        self._catch_callbacks("package")
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides", 
+                                      ["None", enums.PROVIDES_ANY, "pci:1"])
+
+
+    def test_what_provides_unsupported(self):
+        """Test searching for package providing an unsupported type."""
+
+        self._catch_callbacks()
+        self.backend.error("not-supported", mox.StrContains("not implemented"), True)
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_PLASMA_SERVICE, "plasma4(dataengine-weather)"])
+
+
 def setUp():
     chroot.setup()
     chroot.add_test_repository()

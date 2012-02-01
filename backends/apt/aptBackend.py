@@ -1936,7 +1936,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         pklog.warning("Package %s has invalid modalias header: %s" % (
                             package.name, m))
 
-        if not supported_type:
+        if not supported_type and provides_type != enums.PROVIDES_ANY:
             raise PKError(enums.ERROR_NOT_SUPPORTED,
                           "This function is not implemented in this backend")
 
