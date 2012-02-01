@@ -1806,7 +1806,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                              search)
             caps = None
             if not match:
-                raise PKError(enums.ERROR_INTERNAL_ERROR,
+                raise PKError(enums.ERROR_NOT_SUPPORTED,
                               "The search term is invalid: %s" % search)
             if match.group("opt"):
                 caps_str = "%s, %s" % (match.group("data"), match.group("opt"))
