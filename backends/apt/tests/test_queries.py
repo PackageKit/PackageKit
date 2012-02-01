@@ -23,7 +23,11 @@
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
 import os
+import os.path
 import unittest
+import tempfile
+import shutil
+import sys
 
 import apt_pkg
 import mox
@@ -44,6 +48,13 @@ class QueryTests(mox.MoxTestBase):
     def setUp(self):
         mox.MoxTestBase.setUp(self)
         self.backend = aptBackend.PackageKitAptBackend([])
+
+        self.workdir = tempfile.mkdtemp()
+        self.orig_sys_path = sys.path
+
+    def tearDown(self):
+        shutil.rmtree(self.workdir)
+        sys.path = self.orig_sys_path
 
     def _catch_callbacks(self, *args):
         methods = list(args)
@@ -209,6 +220,103 @@ class QueryTests(mox.MoxTestBase):
     def test_what_provides_unsupported(self):
         """Test searching for package providing an unsupported type."""
 
+        self._catch_callbacks()
+        self.backend.error("not-supported", mox.StrContains("not implemented"), True)
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_PLASMA_SERVICE, "plasma4(dataengine-weather)"])
+
+    def test_what_provides_plugin(self):
+        """Test what-provides plugins"""
+
+        # add plugin for extra codecs
+        f = open(os.path.join(self.workdir, "extra_codecs.py"), "w")
+        f.write("""from packagekit import enums
+
+def fake_what_provides(cache, type, search):
+    if type in (enums.PROVIDES_CODEC, enums.PROVIDES_ANY):
+        return [cache["gstreamer0.10-silly"]]
+    raise NotImplementedError('cannot handle type ' + str(type))
+""")
+        f.close()
+        os.mkdir(os.path.join(self.workdir, "extra_codecs-0.egg-info"))
+        f = open(os.path.join(self.workdir, "extra_codecs-0.egg-info", 'entry_points.txt'), "w")
+        f.write("[packagekit.apt.plugins]\nwhat_provides=extra_codecs:fake_what_provides\n")
+        f.close()
+
+        # invalid plugin, should not stop the valid ones
+        os.mkdir(os.path.join(self.workdir, "nonexisting-1.egg-info"))
+        f = open(os.path.join(self.workdir, "nonexisting-1.egg-info", 'entry_points.txt'), "w")
+        f.write("[packagekit.apt.plugins]\nwhat_provides=nonexisting:what_provides\n")
+        f.close()
+
+        # another plugin to test chaining and a new type
+        f = open(os.path.join(self.workdir, "more_stuff.py"), "w")
+        f.write("""from packagekit import enums
+
+def my_what_provides(cache, type, search):
+    if type in (enums.PROVIDES_CODEC, enums.PROVIDES_ANY):
+        return [cache["silly-base"]]
+    if type in (enums.PROVIDES_LANGUAGE_SUPPORT, enums.PROVIDES_ANY):
+        return [cache["silly-important"]]
+    raise NotImplementedError('cannot handle type ' + str(type))
+""")
+        f.close()
+        os.mkdir(os.path.join(self.workdir, "more_stuff-0.egg-info"))
+        f = open(os.path.join(self.workdir, "more_stuff-0.egg-info", 'entry_points.txt'), "w")
+        f.write("[packagekit.apt.plugins]\nwhat_provides=more_stuff:my_what_provides\n")
+        f.close()
+
+        sys.path.insert(0, self.workdir)
+
+        # reinitialize backend to pick up new sys.path
+        self.backend = aptBackend.PackageKitAptBackend([])
+
+        # search for CODEC (note that gstreamer0.10-silly does not advertise
+        # audio/vorbis, so it isn't caught by the internal implementation)
+        self._catch_callbacks("package")
+        self.backend.package("gstreamer0.10-silly;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.package("silly-base;0.1-0;all;",
+                             enums.INFO_INSTALLED,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_CODEC, "gstreamer0.10(decoder-audio/vorbis)"])
+
+        # test filtering
+        self._catch_callbacks("package")
+        self.backend.package("silly-base;0.1-0;all;",
+                             enums.INFO_INSTALLED,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["installed", enums.PROVIDES_CODEC, "gstreamer0.10(decoder-audio/vorbis)"])
+
+        # test new type
+        self._catch_callbacks("package")
+        self.backend.package("silly-important;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides", 
+                                      ["None", enums.PROVIDES_LANGUAGE_SUPPORT, "locale(de_DE)"])
+
+
+        # test unsupported type
         self._catch_callbacks()
         self.backend.error("not-supported", mox.StrContains("not implemented"), True)
         self.backend.finished()

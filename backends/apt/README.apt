@@ -15,3 +15,30 @@ http://www.packagekit.org/pk-faq.html
 
 Feel free to send comments or bug reports to the PackageKit mailing list
 or to the author directly.
+
+Plugin support
+--------------
+You can create plugins to extend this backend to extend its functionality.  The
+only supported plugin type is for the "what_provides" PackageKit call for now,
+as this is generally the most useful for plugins.
+
+In your module "my_plugin_module_name", implement a
+
+      def my_what_provides(cache, type, search):
+
+function which returns additional packages for the given type
+(packagekit.enum.PROVIDES_*) and search string. The plugin should raise
+NotImplementedError if it cannot handle the given type.
+
+Register the plugin as an entry point (via python setuptools) in setup.py:
+
+   setup(
+       [....]
+
+       entry_points="""[packagekit.apt.plugins]
+what_provides=my_plugin_module_name:my_what_provides
+""",
+       [...])
+
+You can register arbitrarily many plugins, they will be all called and their
+resulting package lists joined.

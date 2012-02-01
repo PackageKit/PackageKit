@@ -42,6 +42,12 @@ import apt
 import apt.debfile
 import apt_pkg
 
+try:
+    import pkg_resources
+except ImportError:
+    # no plugin support available
+    pkg_resources = None
+
 from packagekit.backend import (PackageKitBaseBackend, format_string)
 from packagekit import enums
 
@@ -624,6 +630,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         apt_pkg.config.set("DPkg::Options::", '--force-confdef')
         apt_pkg.config.set("DPkg::Options::", '--force-confold')
         PackageKitBaseBackend.__init__(self, cmds)
+
+        self._init_plugins()
 
     # Methods ( client -> engine -> backend )
 
@@ -1936,6 +1944,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         pklog.warning("Package %s has invalid modalias header: %s" % (
                             package.name, m))
 
+        # run plugins
+        for plugin in self.plugins.get("what_provides", []):
+            pklog.debug("calling what_provides plugin %s" % str(plugin))
+            for search_item in search:
+                try:
+                    for package in plugin(self._cache, provides_type, search_item):
+                        self._emit_visible_package(filters, package)
+                    supported_type = True
+                except NotImplementedError:
+                    pass # keep supported_type as False
+
         if not supported_type and provides_type != enums.PROVIDES_ANY:
             raise PKError(enums.ERROR_NOT_SUPPORTED,
                           "This function is not implemented in this backend")
@@ -1955,6 +1974,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.files(id, files)
 
     # Helpers
+
+    def _init_plugins(self):
+        """Initialize plugins."""
+
+        self.plugins = {} # plugin_name -> [plugin_fn1, ...]
+
+        if not pkg_resources:
+            return
+
+        # just look in standard Python paths for now
+        dists, errors = pkg_resources.working_set.find_plugins(pkg_resources.Environment())
+        for dist in dists:
+            pkg_resources.working_set.add(dist)
+        for plugin_name in ["what_provides"]:
+            for entry_point in pkg_resources.iter_entry_points(
+                    "packagekit.apt.plugins", plugin_name):
+                try:
+                    plugin = entry_point.load()
+                except Exception as e:
+                    pklog.warning("Failed to load %s from plugin %s: %s" % (
+                        plugin_name, str(entry_point.dist), str(e)))
+                    continue
+                pklog.debug("Loaded %s from plugin %s" % (
+                    plugin_name, str(entry_point.dist)))
+                self.plugins.setdefault(plugin_name, []).append(plugin)
 
     def _unlock_cache(self):
         """Unlock the system package cache."""
