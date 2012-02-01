@@ -7,17 +7,20 @@ Architecture: all
 Source: silly-packages
 Version: 0.1-0
 Depends: libc6 (>= 2.7-1), libglib2.0-0 (>= 2.16.0), libgstreamer-plugins-base0.10-0 (>= 0.10.0), libgstreamer0.10-0 (>= 0.10.14), libogg0 (>= 1.0rc3)
-Filename: ./gstreamer0.10-silly_0.1-0_all.deb
-Size: 51932
-MD5sum: c78ae695b2385f3f0e8df5c44b3e6759
-SHA1: 65a73c0059d8642986da2b34aae89bfa39202bac
-SHA256: b51b33092eedc4ef5c9461c730f50f107b4dd6958b6f7a7bfe548d002be181d7
-SHA512: a61d5114990f9277d2343ff83273091690a695b2ef4c720bddab8cc2120ec9740d570781a528cc3dffaa65774a44ec9b112af13fb1e0dd2bfad5dce1c528e8cc
+Filename: gstreamer0.10-silly_0.1-0_all.deb
+Size: 52016
+MD5sum: bbaf259e0dfcb39050061181d2a13755
+SHA1: be59be2d82b7f57097f387a22f5f295d202d9c1d
+SHA256: 6b91b67de10ae547cd4c648ef343c8acd35e626e4a1ac20df1aaae51d6ec6328
+SHA512: 5f8457338d9bb5de5e65544828bc4be8a32bb3afbe3dd7c035e7a11216831c5aa2faec2c138c7f4ee3d2e9febc0d8fa7689a0781a00332c5e3441a96d633b1e7
 Description: gstreamer plugin test package
  Silly packages is a set of packages which will break your package
  management tool. They are created only for debugging purposes.
  .
  This package is a GStreamer test plugin package.
+Gstreamer-Version: 0.10
+Gstreamer-Decoders: audio/ac3; audio/mpeg, mpegversion=(int){ 1, 2, 4 }; 
+Gstreamer-Elements: ac3parse
 
 Package: silly-depend-base
 Priority: extra

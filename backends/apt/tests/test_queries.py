@@ -95,6 +95,30 @@ class QueryTests(mox.MoxTestBase):
                                       ["None", "always fail"])
 
 
+    def test_what_provides_codec(self):
+        """Test searching for package providing a codec."""
+        # invalid query
+        self._catch_callbacks()
+        self.backend.error("not-supported", mox.StrContains("search term is invalid"), True)
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_CODEC, "audio/mpeg"])
+
+        self._catch_callbacks("package")
+        self.backend.package("gstreamer0.10-silly;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_CODEC, "gstreamer0.10(decoder-audio/ac3)"])
+
+
 def setUp():
     chroot.setup()
     chroot.add_test_repository()
