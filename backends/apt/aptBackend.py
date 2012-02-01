@@ -1897,8 +1897,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # the given mime type
             for search_item in search:
                 if not search_item.startswith('modalias(') or not search_item.endswith(')'):
-                    if provides_type == enums.PROVIDES_ANY:
-                        raise PKError(enums.ERROR_INTERNAL_ERROR,
+                    if provides_type != enums.PROVIDES_ANY:
+                        raise PKError(enums.ERROR_NOT_SUPPORTED,
                                       "The search term is invalid: %s" % search_item)
                     else:
                         continue

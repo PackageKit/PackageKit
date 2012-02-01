@@ -226,3 +226,24 @@ Description: package depending on silly-base (but lintian broken)
  This package depends on silly-base and has no "Maintainer" set
  and the file owner is totally wrong so lintian complains about it.
 
+Package: silly-driver
+Priority: extra
+Section: admin
+Installed-Size: 32
+Maintainer: Sebastian Heinlein <devel@glatzor.de>
+Architecture: all
+Source: silly-packages
+Version: 0.1-0
+Filename: silly-driver_0.1-0_all.deb
+Size: 1904
+MD5sum: 7fb8eaa3e84b4fb3bce4bdecb50a168d
+SHA1: 9cde88d48ba954feb66a39facd92a9dacb203588
+SHA256: 261d4857febe2700807b21880cbb41f8d4ee4c282f750d97ba6e283b86559af7
+SHA512: aef6685e7f76a8bff4e38cb1fb42362e5c9c69d216e619b8b84936677a3dd64fac5e4c5e512afea8b4e384df7a4a42d91f45f7f93a3f3565334343cbd04f1695
+Description: driver package
+ Silly packages is a set of packages which will break your package
+ management tool. They are created only for debugging purposes.
+ .
+ This package claims to provide a driver for some PCI cards.
+Modaliases: silly(pci:v0000DEADd0000BEEFsv*sd*bc03sc*i*,pci:v0000DEADd0000FACEsv*sd*bc03sc*i*)
+

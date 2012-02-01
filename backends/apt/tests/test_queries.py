@@ -48,6 +48,7 @@ class QueryTests(mox.MoxTestBase):
     def _catch_callbacks(self, *args):
         methods = list(args)
         methods.extend(("error", "finished"))
+        self.mox.UnsetStubs()
         for meth in methods:
             self.mox.StubOutWithMock(self.backend, meth)
 
@@ -117,6 +118,56 @@ class QueryTests(mox.MoxTestBase):
 
         self.backend.dispatch_command("what-provides",
                                       ["None", enums.PROVIDES_CODEC, "gstreamer0.10(decoder-audio/ac3)"])
+
+    def test_what_provides_modalias(self):
+        """Test searching for package providing a driver."""
+
+        # invalid query
+        self._catch_callbacks()
+        self.backend.error("not-supported", mox.StrContains("search term is invalid"), True)
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_MODALIAS, "pci:1"])
+
+        # no match
+        self._catch_callbacks()
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc02sc00i00)"])
+
+
+
+
+        # match
+        self._catch_callbacks("package")
+        self.backend.package("silly-driver;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00)"])
+
+
+        # second match
+        self._catch_callbacks("package")
+        self.backend.package("silly-driver;0.1-0;all;",
+                             enums.INFO_AVAILABLE,
+                             mox.IsA(str))
+        self.backend.finished()
+        self.mox.ReplayAll()
+        self.backend._open_cache()
+
+        self.backend.dispatch_command("what-provides",
+                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000FACEsv00sd00bc03sc00i00)"])
 
 
 def setUp():
