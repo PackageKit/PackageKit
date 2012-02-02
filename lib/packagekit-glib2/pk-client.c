@@ -784,20 +784,34 @@ pk_client_signal_package (PkClientState *state,
 	if (state->results != NULL && info_enum != PK_INFO_ENUM_FINISHED)
 		pk_results_add_package (state->results, package);
 
-	/* save package-id */
-	ret = pk_progress_set_package_id (state->progress, package_id);
-	if (state->progress_callback != NULL && ret) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_PACKAGE_ID,
-					  state->progress_user_data);
-	}
-
-	/* save package object */
-	ret = pk_progress_set_package (state->progress, package);
-	if (state->progress_callback != NULL && ret) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_PACKAGE,
-					  state->progress_user_data);
+	/* only emit progress for verb packages */
+	switch (info_enum) {
+	case PK_INFO_ENUM_DOWNLOADING:
+	case PK_INFO_ENUM_UPDATING:
+	case PK_INFO_ENUM_INSTALLING:
+	case PK_INFO_ENUM_REMOVING:
+	case PK_INFO_ENUM_CLEANUP:
+	case PK_INFO_ENUM_OBSOLETING:
+	case PK_INFO_ENUM_REINSTALLING:
+	case PK_INFO_ENUM_DOWNGRADING:
+	case PK_INFO_ENUM_PREPARING:
+	case PK_INFO_ENUM_DECOMPRESSING:
+	case PK_INFO_ENUM_FINISHED:
+		ret = pk_progress_set_package_id (state->progress, package_id);
+		if (state->progress_callback != NULL && ret) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_PACKAGE_ID,
+						  state->progress_user_data);
+		}
+		ret = pk_progress_set_package (state->progress, package);
+		if (state->progress_callback != NULL && ret) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_PACKAGE,
+						  state->progress_user_data);
+		}
+		break;
+	default:
+		break;
 	}
 out:
 	g_object_unref (package);
