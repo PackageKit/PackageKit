@@ -3334,7 +3334,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
-					       zif_package_get_printable (package),
+					       package_ids[i],
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3793,7 +3793,8 @@ pk_backend_remove_packages_thread (PkBackend *backend)
 		if (package == NULL) {
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					       "failed to find package: %s",
+					       "failed to find package %s: %s",
+					       package_ids[i],
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3930,7 +3931,8 @@ pk_backend_update_packages_thread (PkBackend *backend)
 		if (package == NULL) {
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					       "failed to find package: %s",
+					       "failed to find package %s: %s",
+					       package_ids[i],
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -4206,7 +4208,8 @@ pk_backend_install_packages_thread (PkBackend *backend)
 		if (package == NULL) {
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					       "failed to find package: %s",
+					       "failed to find package %s: %s",
+					       package_ids[i],
 					       error->message);
 			g_error_free (error);
 			goto out;
