@@ -296,7 +296,14 @@ pk_dbus_init (PkDbus *dbus)
 	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 
 	/* use the bus to get the uid */
-	dbus->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, NULL);
+	dbus->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
+						 NULL, &error);
+	if (dbus->priv->connection == NULL) {
+		g_warning ("cannot connect to the system bus: %s",
+			   error->message);
+		g_error_free (error);
+		return;
+	}
 
 	/* connect to DBus so we can get the pid */
 	dbus->priv->proxy_pid =
