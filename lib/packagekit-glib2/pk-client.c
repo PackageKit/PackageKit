@@ -50,7 +50,7 @@ static void     pk_client_finalize	(GObject     *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
 
-#define PK_CLIENT_DBUS_METHOD_TIMEOUT	1500 /* ms */
+#define PK_CLIENT_DBUS_METHOD_TIMEOUT	G_MAXINT /* ms */
 
 /**
  * PkClientPrivate:
