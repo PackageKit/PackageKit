@@ -752,6 +752,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 	g_return_val_if_fail (config != NULL, FALSE);
 
 	if (config->root == NULL || *config->root == '\0') {
+		g_free (config->root);
 		config->root = g_strdup (PK_BACKEND_DEFAULT_ROOT);
 	} else if (!g_str_has_suffix (config->root, G_DIR_SEPARATOR_S)) {
 		dir = 0;
