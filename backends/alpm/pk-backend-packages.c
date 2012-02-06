@@ -270,15 +270,17 @@ pk_backend_get_details_thread (PkBackend *self)
 			break;
 		}
 
-		licenses = g_string_new ("");
 		i = alpm_pkg_get_licenses (pkg);
-		for (; i != NULL; i = i->next) {
-			/* assume OR although it may not be correct */
-			g_string_append_printf (licenses, " or %s",
-						(const gchar *) i->data);
-		}
-		if (licenses->len == 0) {
-			g_string_append (licenses, " or Unknown");
+		if (i == NULL) {
+			licenses = g_string_new ("Unknown");
+		} else {
+			licenses = g_string_new ((const gchar *) i->data);
+			while ((i = i->next) != NULL) {
+				const gchar *license = (const gchar *) i->data;
+				/* assume OR although it may not be correct */
+				g_string_append_printf (licenses, " or %s",
+							license);
+			}
 		}
 
 		group = pk_group_enum_from_string (alpm_pkg_get_group (pkg));
@@ -291,7 +293,7 @@ pk_backend_get_details_thread (PkBackend *self)
 			size = alpm_pkg_download_size (pkg);
 		}
 
-		pk_backend_details (self, *packages, licenses->str + 4, group,
+		pk_backend_details (self, *packages, licenses->str, group,
 				    desc, url, size);
 		g_string_free (licenses, TRUE);
 	}
@@ -345,10 +347,11 @@ pk_backend_get_files_thread (PkBackend *self)
 		filelist = alpm_pkg_get_files (pkg);
 		for (i = 0; i < filelist->count; ++i) {
 			const gchar *file = filelist->files[i].name;
-			g_string_append_printf (files, ";%s%s", root, file);
+			g_string_append_printf (files, "%s%s;", root, file);
 		}
 
-		pk_backend_files (self, *packages, files->str + 1);
+		g_string_truncate (files, MAX (files->len, 1) - 1);
+		pk_backend_files (self, *packages, files->str);
 		g_string_free (files, TRUE);
 	}
 
