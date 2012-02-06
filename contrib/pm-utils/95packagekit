@@ -11,7 +11,7 @@ case "$1" in
 	thaw|resume)
 		# get PackageKit to invalidate its caches and get new updates
 		dbus-send --system --dest=org.freedesktop.PackageKit \
-			  --type=method_call --print-reply \
+			  --type=method_call \
 			  /org/freedesktop/PackageKit \
 			  org.freedesktop.PackageKit.StateHasChanged \
 			  string:'resume'
