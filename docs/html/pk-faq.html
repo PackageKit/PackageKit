@@ -273,22 +273,20 @@ the transaction process</a> itself.
 This would mean handling the EULA and GPG callbacks in each application. This is less than ideal.
 </p>
 <p>
-For this reason, a session helper is provided by the <code>gpk-update-icon</code> process which
-basically makes all the complexity go away; it handles all the GPG key authentication and
-EULA agreements, and also works with Seahorse and GConf to give some of the settings session persistence.
-Using the session service is also designed to be synchronous, which means you can send the DBUS call
-and just wait for the result, rather than managing callbacks to update custom GUIs.
+For this reason, a session helper is provided which makes all the
+complexity go away; it handles all the GPG key authentication and
+EULA agreements, and also works with authentication agent and user settings.
+Using the session service is also designed to be synchronous, which means
+you can send the DBUS call and just wait for the result, rather than
+managing callbacks to update custom GUIs.
 </p>
 <p>
-The session helper therefore depends on the shared code in <code>gpk-update-icon</code>, but
-because this is implemented as a DBUS service, can be coded as a QObject for KDE or a simpler
-object for XFCE or EFL.
+The session helper is implemented in <code>gpk-update-icon</code> on GNOME,
+and is also availble when <code>apper</code> is installed on KDE.
 If you want full integration using <a href="http://www.packagekit.org/img/gpk-added-deps.png">
 custom dialogs</a> without running the extra session process, then use libpackagekit.
 If you don't care, and just want things to <i>work</i> then
 <a href="http://www.packagekit.org/pk-faq.html#session-methods">use the session interface</a>.
-</p>
-<p>
 If you want a demo, you can download <a href="files/session.c">session.c</a> for a
 session example and <a href="files/system.c">system.c</a> as a system example.
 </p>
@@ -296,21 +294,14 @@ session example and <a href="files/system.c">system.c</a> as a system example.
 Compile with:
 </p>
 <pre>
-gcc -o session -Wall session.c `pkg-config --cflags --libs dbus-glib-1`
+gcc -o session -Wall session.c `pkg-config --cflags --libs gio-2.0`
 gcc -o system -Wall system.c `pkg-config --cflags --libs packagekit-glib`
 </pre>
 
 <hr/>
 <h3><a name="session-methods">How do I use PackageKit in my application?</a></h3>
 <p>
-If you are using <a href="http://www.gnome.org/">GNOME</a>, or running the
-<code>gpk-update-icon</code> then you can use the session dbus interface
-provided by this process.
-If you are not using GNOME, or choose to not use the <code>gpk-update-icon</code>
-applet then you can use an alternate interface provided by your desktop.
-</p>
-<p>
-Using this shared session service you can use the following DBUS methods
+Using the shared session interface you can use the following DBUS methods
 to make PackageKit just do the right thing.
 All the additional
 <a href="http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html">
@@ -318,54 +309,11 @@ confirmation, package downloads, GPG and EULA prompting is done automatically.</
 </p>
 <p>
 The DBUS methods are designed to be run syncronously, but can be run
-async using <code>dbus_g_proxy_begin_call</code> and then returning on
-the <code>DBusGProxyCallNotify</code>.
+async using <code>g_dbus_proxy_call</code> and getting the status with
+<code>g_dbus_proxy_call_finish</code>.
+There is example code available <a href="files/session.c">in c</a> or
+<a href="files/session.py">in python</a>.
 </p>
-<p>
-For example, the following code snippet would install a package by name:
-</p>
-
-<pre>
-#include &lt;dbus/dbus-glib.h&gt;
-
-DBusGConnection *connection;
-DBusGProxy *proxy;
-GError *error = NULL;
-gboolean ret;
-
-connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
-proxy = dbus_g_proxy_new_for_name (connection,
-                             "org.freedesktop.PackageKit",
-                             "/org/freedesktop/PackageKit",
-                             "org.freedesktop.PackageKit.Modify");
-/* execute sync method */
-ret = dbus_g_proxy_call (proxy, "InstallPackageNames", &amp;error,
-                         G_TYPE_STRV, {"openoffice-clipart", NULL},
-                         G_TYPE_STRING, "",
-                         G_TYPE_INVALID, G_TYPE_INVALID);
-if (!ret) {
-        g_warning ("failed: %s", error->message);
-        g_error_free (error);
-}
-</pre>
-<p>
-or in python...
-</p>
-<pre>
-import dbus
-
-try:
-    bus = dbus.SessionBus()
-except dbus.DBusException, e:
-    print 'Unable to connect to dbus: %s' % str(e)
-    sys.exit()
-try:
-    proxy = bus.get_object('org.freedesktop.PackageKit', '/org/freedesktop/PackageKit')
-    iface = dbus.Interface(proxy, 'org.freedesktop.PackageKit.Modify')
-    iface.InstallPackageNames(dbus.UInt32(0), ["openoffice-clipart", "openoffice-clipart-extras"], "show-confirm-search,hide-finished")
-except dbus.DBusException, e:
-    print 'Unable to use PackageKit: %s' % str(e)
-</pre>
 <p>
 The methods available on this interface are:
 </p>
