@@ -16,7 +16,7 @@ exclusive use by any one subsystem or program. CDs and DVDs are gradually being
 replaced with USB key drives, and these can be removed at any time.
 
 During the PackageKit 0.4.x development cycle, code was added to PackageKit,
-gnome-packagekit, and kpackagekit projects to support the use case of software
+gnome-packagekit, and Apper projects to support the use case of software
 sources on external media. This was not wired up in PackageKit 0.5.x, but the
 UI's client have translations for this feature. Late in the 0.6.x series this
 functionality was backported into 0.5.x and therefore the feature will be
