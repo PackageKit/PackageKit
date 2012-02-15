@@ -1370,12 +1370,6 @@ backend_resolve_thread (PkBackend *backend)
 		}
 
 		zypp_emit_filtered_packages_in_list (backend, pkgs);
-
-		if (pkgs.size() < 1) {
-			return zypp_backend_finished_error (
-				backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-				"couldn't find package");
-		}
 	}
 
 	pk_backend_finished (backend);
