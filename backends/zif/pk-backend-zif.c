@@ -3503,6 +3503,9 @@ pk_backend_convert_transaction_reason_to_info_enum (ZifTransactionReason reason)
 	case ZIF_TRANSACTION_REASON_REMOVE_FOR_UPDATE:
 	case ZIF_TRANSACTION_REASON_REMOVE_OBSOLETE:
 	case ZIF_TRANSACTION_REASON_REMOVE_USER_ACTION:
+#if ZIF_CHECK_VERSION(0,2,8)
+	case ZIF_TRANSACTION_REASON_REMOVE_AUTO_DEP:
+#endif
 		return PK_INFO_ENUM_REMOVING;
 	case ZIF_TRANSACTION_REASON_UPDATE_DEPEND:
 	case ZIF_TRANSACTION_REASON_UPDATE_FOR_CONFLICT:
@@ -3759,6 +3762,9 @@ out:
 static gboolean
 pk_backend_remove_packages_thread (PkBackend *backend)
 {
+#if ZIF_CHECK_VERSION(0,2,8)
+	gboolean autoremove;
+#endif
 	gboolean ret;
 	gchar **package_ids;
 	GError *error = NULL;
@@ -3778,6 +3784,14 @@ pk_backend_remove_packages_thread (PkBackend *backend)
 				   90, /* run transaction */
 				   -1);
 	g_assert (ret);
+
+#if ZIF_CHECK_VERSION(0,2,8)
+	/* setup autoremove */
+	autoremove = pk_backend_get_bool (backend, "autoremove");
+	zif_config_set_boolean (priv->config,
+				"clean_requirements_on_remove",
+				autoremove, NULL);
+#endif
 
 	state_local = zif_state_get_child (priv->state);
 	package_ids = pk_backend_get_strv (backend, "package_ids");
