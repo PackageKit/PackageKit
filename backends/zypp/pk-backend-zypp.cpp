@@ -1321,9 +1321,9 @@ backend_resolve_thread (PkBackend *backend)
 		return FALSE;
 	}
 
-	zypp->getTarget()->load();
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	zypp_build_pool (backend, TRUE);
 
 	for (uint i = 0; package_ids[i]; i++) {
 		vector<sat::Solvable> v;
