@@ -536,7 +536,7 @@ pk_results_get_error_code (PkResults *results)
  *
  * Gets the packages from the transaction.
  *
- * Return value: (element-type PkPackage) (transfer full): A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
+ * Return value: (element-type PkPackage) (transfer container): A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
