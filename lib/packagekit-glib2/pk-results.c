@@ -554,7 +554,7 @@ pk_results_get_package_array (PkResults *results)
  *
  * Gets a package sack from the transaction.
  *
- * Return value: (transfer container): A #PkPackageSack of data, g_object_unref() to free.
+ * Return value: (transfer full): A #PkPackageSack of data, g_object_unref() to free.
  *
  * Since: 0.5.2
  **/
