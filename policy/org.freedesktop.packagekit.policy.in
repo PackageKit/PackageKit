@@ -116,6 +116,7 @@
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
+    <annotate key="org.freedesktop.policykit.imply">org.freedesktop.packagekit.package-install</annotate>
   </action>
 
   <action id="org.freedesktop.packagekit.system-update">
