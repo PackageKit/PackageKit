@@ -1888,7 +1888,7 @@ pk_transaction_speed_cb (GObject *object,
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
 					      "Speed",
-					      g_variant_new_byte (transaction->priv->speed));
+					      g_variant_new_uint32 (transaction->priv->speed));
 	pk_transaction_emit_changed (transaction);
 }
 

@@ -522,7 +522,7 @@ pk_client_set_property_value (PkClientState *state,
 	/* remaining-time */
 	if (g_strcmp0 (key, "RemainingTime") == 0) {
 		ret = pk_progress_set_elapsed_time (state->progress,
-						  g_variant_get_uint32 (value));
+						    g_variant_get_uint32 (value));
 		if (ret && state->progress_callback != NULL) {
 			state->progress_callback (state->progress,
 						  PK_PROGRESS_TYPE_REMAINING_TIME,
@@ -534,7 +534,7 @@ pk_client_set_property_value (PkClientState *state,
 	/* speed */
 	if (g_strcmp0 (key, "Speed") == 0) {
 		ret = pk_progress_set_speed (state->progress,
-						  g_variant_get_uint32 (value));
+					     g_variant_get_uint32 (value));
 		if (ret && state->progress_callback != NULL) {
 			state->progress_callback (state->progress,
 						  PK_PROGRESS_TYPE_SPEED,
