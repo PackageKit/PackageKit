@@ -2748,6 +2748,15 @@ out:
 }
 
 /**
+ * pk_backend_sort_string_cb:
+ **/
+static gint
+pk_backend_sort_string_cb (const gchar **a, const gchar **b)
+{
+	return g_strcmp0 (*a, *b);
+}
+
+/**
  * pk_backend_get_files_thread:
  */
 static gboolean
@@ -2857,6 +2866,9 @@ pk_backend_get_files_thread (PkBackend *backend)
 			goto out;
 		}
 
+		/* sort these by name and add to list */
+		g_ptr_array_sort (files,
+				  (GCompareFunc) pk_backend_sort_string_cb);
 		files_str = g_string_new ("");
 		for (j=0; j<files->len; j++) {
 			file = g_ptr_array_index (files, j);
