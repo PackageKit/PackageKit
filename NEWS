@@ -1,3 +1,48 @@
+Version 0.7.3
+~~~~~~~~~~~~~
+Released: 2012-03-01
+
+Notes:
+ - Lots of stability and crasher fixes which means updating to this
+   release is a really good idea if you're already got 0.7.x installed.
+
+Libraries:
+ - glib: Don't segfault the client if there are no cached properties (Richard Hughes)
+ - glib: Fix a critical warning in gnome-settings-daemon when setting the proxy (Richard Hughes)
+ - glib: Fix transfer annotation of pk_results_get_package_sack() (Vincent Untz)
+ - glib: Fix transfer annotations for GPtrArray returns (Martin Pitt)
+ - glib: Do not send progress updates for non-verb packages (Richard Hughes)
+
+Backends:
+ - apt: Add support for plugins, call them for what-provides (Martin Pitt)
+ - apt: Add test case for what-provides CODEC (Martin Pitt)
+ - apt: Add test cases for what-provides ANY and unsupported types (Martin Pitt)
+ - apt: Add test for what-provides MODALIAS (Martin Pitt)
+ - apt: Do not fail on missing /var/lib/PackageKit/mime-map.gdbm (Martin Pitt)
+ - apt: Fix error code for what-provides CODEC (Martin Pitt)
+ - apt: Implement support for what-provides ANY (Martin Pitt)
+ - apt: Implement support for what-provides MODALIAS (Martin Pitt)
+ - apt: what_provides() search argument is a list, not a string (Martin Pitt)
+ - aptcc: Disable InstallFiles() again (Matthias Klumpp)
+ - aptcc: Don't hang on long transactions (Matthias Klumpp)
+ - aptcc: Fix crash when simulating local package install (Matthias Klumpp)
+ - zif: Autoremove deps if 'autoremove' is set (Richard Hughes)
+ - zif: Do not pretty-print a package when it's not found (Richard Hughes)
+ - zif: Ensure the files are sorted by name before returning them to the daemon (Richard Hughes)
+
+New Features:
+ - Add LANGUAGE_SUPPORT what-provides type (Martin Pitt)
+
+Bugfixes:
+ - Document CODEC what-provides type (Martin Pitt)
+ - Don't crash when the system bus isn't available, just abort with an error (Richard Hughes)
+ - Fix a critical warning when starting gnome-settings-daemon (Matthias Clasen)
+ - Imply the install trusted polkit auth when we get the remove auth (Richard Hughes)
+ - Imply the install trusted polkit auth when we get the untrusted auth (Richard Hughes)
+ - Port the session example code to GDBus (Richard Hughes)
+ - web: Add a note to the website about the session helper API (Richard Hughes)
+ - web: Rename KPackageKit to Apper (Matthias Klumpp)
+
 Version 0.7.2
 ~~~~~~~~~~~~~
 Released: 2011-01-17
