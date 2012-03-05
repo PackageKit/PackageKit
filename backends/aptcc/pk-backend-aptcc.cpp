@@ -25,14 +25,13 @@
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/aptconfiguration.h>
 
-#include "apt.h"
+#include "apt-intf.h"
 #include "apt-utils.h"
 #include "matcher.h"
-#include "aptcc_show_broken.h"
+#include "apt-messages.h"
 #include "acqprogress.h"
-#include "aptcc_show_error.h"
 #include "pkg_acqfile.h"
-#include "rsources.h"
+#include "apt-sourceslist.h"
 
 #include <config.h>
 #include <pk-backend.h>
@@ -161,7 +160,7 @@ pk_backend_get_mime_types (PkBackend *backend)
 void
 pk_backend_cancel (PkBackend *backend)
 {
-	aptcc *m_apt = (aptcc*) pk_backend_get_pointer(backend, "aptcc_obj");
+	AptIntf *m_apt = (AptIntf*) pk_backend_get_pointer(backend, "aptcc_obj");
 	if (m_apt) {
 		m_apt->cancel();
 	}
@@ -181,7 +180,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -278,7 +277,7 @@ backend_get_files_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -340,7 +339,7 @@ backend_get_details_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -394,7 +393,7 @@ backend_get_or_update_system_thread (PkBackend *backend)
 	getUpdates = pk_backend_get_bool(backend, "getUpdates");
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -503,7 +502,7 @@ backend_what_provides_thread (PkBackend *backend)
 	    provides == PK_PROVIDES_ENUM_MIMETYPE ||
 	    provides == PK_PROVIDES_ENUM_CODEC ||
 	    provides == PK_PROVIDES_ENUM_ANY) {
-		aptcc *m_apt = new aptcc(backend, _cancel);
+		AptIntf *m_apt = new AptIntf(backend, _cancel);
 		pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 		if (m_apt->init()) {
 			g_debug ("Failed to create apt cache");
@@ -601,7 +600,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	directory = _config->FindDir("Dir::Cache::archives") + "partial/";
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -721,7 +720,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 {
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -788,7 +787,7 @@ pk_backend_resolve_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -827,7 +826,7 @@ pk_backend_search_files_thread (PkBackend *backend)
 
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		aptcc *m_apt = new aptcc(backend, _cancel);
+		AptIntf *m_apt = new AptIntf(backend, _cancel);
 		pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 		if (m_apt->init()) {
 			g_debug ("Failed to create apt cache");
@@ -899,7 +898,7 @@ backend_search_groups_thread (PkBackend *backend)
 		}
 	}
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -979,7 +978,7 @@ backend_search_package_thread (PkBackend *backend)
 		return false;
 	}
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -1122,7 +1121,7 @@ backend_manage_packages_thread (PkBackend *backend)
 cout << "FILE INSTALL: " << fileInstall << endl;
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");
@@ -1399,7 +1398,7 @@ backend_get_packages_thread (PkBackend *backend)
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	pk_backend_set_allow_cancel (backend, true);
 
-	aptcc *m_apt = new aptcc(backend, _cancel);
+	AptIntf *m_apt = new AptIntf(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
 	if (m_apt->init()) {
 		g_debug ("Failed to create apt cache");

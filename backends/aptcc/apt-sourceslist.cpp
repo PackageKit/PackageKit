@@ -1,16 +1,16 @@
-/* rsource.cc - access the sources.list file
- * 
+/* apt-sourceslist.cpp - access the sources.list file
+ *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
- * 
+ *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
  *         Gustavo Niemeyer <niemeyer@conectiva.com>
  *
- * This program is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU General Public License as 
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,15 +18,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- * USA
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
+
+#include "apt-sourceslist.h"
 
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include "rsources.h"
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/fileutl.h>
 #include <apt-pkg/sourcelist.h>
@@ -34,8 +35,9 @@
 #include <apt-pkg/error.h>
 #include <algorithm>
 #include <fstream>
+
 #include "config.h"
-#include "apt.h"
+#include "apt-intf.h"
 
 SourcesList::~SourcesList()
 {
@@ -284,7 +286,7 @@ void SourcesList::SwapSources( SourceRecord *&rec_one, SourceRecord *&rec_two )
 
   rec_p = find( SourceRecords.begin(), SourceRecords.end(), rec_one );
   rec_n = find( SourceRecords.begin(), SourceRecords.end(), rec_two );
-  
+
   SourceRecords.insert( rec_p, rec_two );
   SourceRecords.erase( rec_n );
 }
