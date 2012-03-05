@@ -23,15 +23,6 @@
 
 #include "apt-intf.h"
 
-#include "apt-utils.h"
-#include "matcher.h"
-#include "gstMatcher.h"
-#include "apt-messages.h"
-#include "acqprogress.h"
-#include "pkg_acqfile.h"
-#include "deb-file.h"
-#include "dpkgpm.h"
-
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
 #include <apt-pkg/algorithms.h>
@@ -47,12 +38,21 @@
 #include <sys/fcntl.h>
 #include <pty.h>
 
-#define RAMFS_MAGIC     0x858458f6
-
 #include <fstream>
 #include <dirent.h>
 #include <assert.h>
 #include <regex.h>
+
+#include "apt-utils.h"
+#include "matcher.h"
+#include "gstMatcher.h"
+#include "apt-messages.h"
+#include "acqpkitstatus.h"
+#include "pkg_acqfile.h"
+#include "pkg_dpkgpm.h"
+#include "deb-file.h"
+
+#define RAMFS_MAGIC     0x858458f6
 
 AptIntf::AptIntf(PkBackend *backend, bool &cancel)
 	:
@@ -1272,7 +1272,7 @@ bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
 	return false;
 }
 
-// emitChangedPackages - Show packages to newly install				/*{{{*/
+// emitChangedPackages - Show packages to newly install
 // ---------------------------------------------------------------------
 /* */
 void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
@@ -1638,7 +1638,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
 	usleep(5000);
 }
 
-// DoAutomaticRemove - Remove all automatic unused packages		/*{{{*/
+// DoAutomaticRemove - Remove all automatic unused packages
 // ---------------------------------------------------------------------
 /* Remove unused automatic packages */
 bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
@@ -1907,9 +1907,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate)
 	}
 }
 
-									/*}}}*/
-
-// InstallPackages - Actually download and install the packages		/*{{{*/
+// InstallPackages - Download and install the packages
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
@@ -1979,7 +1977,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
 
 	// Create the package manager and prepare to download
 //     SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
-    SPtr<pkgPackageManager> PM = new pkgDebDPkgPM(Cache);
+	SPtr<pkgPackageManager> PM = new pkgDebDPkgPM(Cache);
 	if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
 	    _error->PendingError() == true) {
 		return false;
@@ -2101,11 +2099,11 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 	_system->UnLock();
 
-    if (!m_localDebFile.empty()) {
-        // add the local file name to be proccessed by the PM queue
-        pkgDebDPkgPM *pm = static_cast<pkgDebDPkgPM*>(&*PM);
-        pm->addDebFile(m_localDebFile);
-    }
+	if (!m_localDebFile.empty()) {
+		// add the local file name to be proccessed by the PM queue
+		pkgDebDPkgPM *pm = static_cast<pkgDebDPkgPM*>(&*PM);
+		pm->addDebFile(m_localDebFile);
+	}
 
 	pkgPackageManager::OrderResult res;
 	res = PM->DoInstallPreFork();

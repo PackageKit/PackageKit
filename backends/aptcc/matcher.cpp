@@ -1,28 +1,30 @@
-// apt.cc
-//
-//  Copyright 1999-2008 Daniel Burrows
-//  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
-//
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; see the file COPYING.  If not, write to
-//  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-//  Boston, MA 02111-1307, USA.
+/* matcher.cpp
+ *
+ * Copyright (c) 1999-2008 Daniel Burrows
+ * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ *               2012 Matthias Klumpp <matthias@tenstral.net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 #include "matcher.h"
 #include <stdio.h>
 #include <iostream>
 
-matcher::matcher(const string &matchers)
+Matcher::Matcher(const string &matchers)
 	: m_hasError(false)
 {
 	string::const_iterator start = matchers.begin();
@@ -32,7 +34,7 @@ matcher::matcher(const string &matchers)
 	}
 }
 
-matcher::~matcher()
+Matcher::~Matcher()
 {
 	for (vector<regex_t>::iterator i=m_matches.begin();
 	    i != m_matches.end(); ++i)
@@ -53,7 +55,7 @@ bool string_matches(const char *s, regex_t &pattern_nogroup)
 	return !regexec(&pattern_nogroup, s, 0, NULL, 0);
 }
 
-bool matcher::matches(const string &s)
+bool Matcher::matches(const string &s)
 {
 	int matchesCount = 0;
 	for (vector<regex_t>::iterator i=m_matches.begin();
@@ -68,7 +70,7 @@ bool matcher::matches(const string &s)
 
 // This matcher is to be used for files
 // pass a map so it can remember which patter was alread used
-bool matcher::matchesFile(const string &s, map<int, bool> &matchers_used)
+bool Matcher::matchesFile(const string &s, map<int, bool> &matchers_used)
 {
 	int matchesCount = 0;
 	for (vector<regex_t>::iterator i = m_matches.begin();
@@ -87,7 +89,7 @@ bool matcher::matchesFile(const string &s, map<int, bool> &matchers_used)
 	return m_matches.size() == matchers_used.size();
 }
 
-bool matcher::parse_pattern(string::const_iterator &start,
+bool Matcher::parse_pattern(string::const_iterator &start,
 			    const std::string::const_iterator &end)
 {
 	// Just filter blank strings out immediately.
@@ -130,7 +132,7 @@ bool matcher::parse_pattern(string::const_iterator &start,
 
 }
 
-string matcher::parse_literal_string_tail(string::const_iterator &start,
+string Matcher::parse_literal_string_tail(string::const_iterator &start,
 					  const string::const_iterator end)
 {
 	std::string rval;
@@ -177,7 +179,7 @@ string matcher::parse_literal_string_tail(string::const_iterator &start,
 // metacharacters (parentheses, ~, |, and !)
 //
 // Advances loc to the first character of 's' following the escaped string.
-string matcher::parse_substr(string::const_iterator &start,
+string Matcher::parse_substr(string::const_iterator &start,
 			     const string::const_iterator &end)
 {
 	std::string rval;
@@ -237,7 +239,7 @@ string matcher::parse_substr(string::const_iterator &start,
 	return rval;
 }
 
-bool matcher::hasError() const
+bool Matcher::hasError() const
 {
 	return m_hasError;
 }

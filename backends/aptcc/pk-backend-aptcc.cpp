@@ -25,17 +25,17 @@
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/aptconfiguration.h>
 
+#include <config.h>
+#include <pk-backend.h>
+#include <pk-backend-spawn.h>
+
 #include "apt-intf.h"
 #include "apt-utils.h"
 #include "matcher.h"
 #include "apt-messages.h"
-#include "acqprogress.h"
+#include "acqpkitstatus.h"
 #include "pkg_acqfile.h"
 #include "apt-sourceslist.h"
-
-#include <config.h>
-#include <pk-backend.h>
-#include <pk-backend-spawn.h>
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
@@ -969,7 +969,7 @@ backend_search_package_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, true);
 
-	matcher *m_matcher = new matcher(search);
+	Matcher *m_matcher = new Matcher(search);
 	g_free(search);
 	if (m_matcher->hasError()) {
 		g_debug("Regex compilation error");

@@ -1,6 +1,6 @@
-/*
+/* deb-file.cpp
  *
- * Copyright (C) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -77,7 +77,7 @@ bool DebFile::check()
 
     std::cout << architecture() << std::endl;
     if (architecture().compare("all") != 0 &&
-        architecture().compare(_config->Find("APT::Architecture")) != 0) 
+        architecture().compare(_config->Find("APT::Architecture")) != 0)
     {
         m_errorMsg = "Wrong architecture ";
         m_errorMsg.append(architecture());
@@ -92,35 +92,35 @@ bool DebFile::check()
 //         self._dbg(1, "ERROR: Wrong architecture dude!")
 //         self._failure_string = _("Wrong architecture '%s'") % arch
 //         return False
-// 
+//
 //     // check version
 //     if self.compare_to_version_in_cache() == self.VERSION_OUTDATED:
 //         if self._cache[self.pkgname].installed:
 //             // the deb is older than the installed
 //             self._failure_string = _("A later version is already installed")
 //             return False
-// 
+//
 //     // FIXME: this sort of error handling sux
 //     self._failure_string = ""
-// 
+//
 //     // check conflicts
 //     if not self.check_conflicts():
 //         return False
-// 
-//     // check if installing it would break anything on the 
+//
+//     // check if installing it would break anything on the
 //     // current system
 //     if not self.check_breaks_existing_packages():
 //         return False
-// 
+//
 //     // try to satisfy the dependencies
 //     if not self._satisfy_depends(self.depends):
 //         return False
-// 
+//
 //     // check for conflicts again (this time with the packages that are
 //     // makeed for install)
 //     if not self.check_conflicts():
 //         return False
-// 
+//
 //     if self._cache._depcache.broken_count > 0:
 //         self._failure_string = _("Failed to satisfy all dependencies "
 //                                     "(broken cache)")
