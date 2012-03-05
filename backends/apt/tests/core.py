@@ -56,15 +56,13 @@ class Chroot(object):
         os.makedirs(os.path.join(self.path, "etc/apt/apt.conf.d"))
         os.makedirs(os.path.join(self.path, "etc/apt/sources.list.d"))
         os.makedirs(os.path.join(self.path, "var/log"))
+        os.makedirs(os.path.join(self.path, "usr/bin"))
         os.makedirs(os.path.join(self.path, "media"))
 
         # Make apt use the new chroot
-        dpkg_wrapper = os.path.join(get_tests_dir(), "dpkg-wrapper.sh")
-        config_path = os.path.join(self.path, "etc/apt/apt.conf.d/10chroot")
-        with open(config_path, "w") as cnf:
-            cnf.write("Dir::Bin::DPkg %s;" % dpkg_wrapper)
+        shutil.copy(os.path.join(get_tests_dir(), "dpkg-wrapper.sh"),
+                    os.path.join(self.path, "usr", "bin", "dpkg"))
         os.environ["ROOT"] = self.path
-        apt_pkg.read_config_file(apt_pkg.config, config_path)
         apt_pkg.init_system()
 
     def remove(self):
