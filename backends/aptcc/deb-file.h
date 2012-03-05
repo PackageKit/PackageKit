@@ -37,7 +37,7 @@ public:
     std::string architecture() const;
     std::string conflicts() const;
 
-    // THIS should be moved to AptCC class
+    // THIS should be moved to AptIntf class
     bool check();
     std::string errorMsg() const;
 

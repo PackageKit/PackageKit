@@ -1730,7 +1730,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
     return ret;
 }
 
-bool AptIntf::markDebFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
+bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
 {
     // We call gdebi to tell us what do we need to install/remove
     // in order to be able to install this package
@@ -1798,6 +1798,33 @@ bool AptIntf::markDebFileForInstall(const gchar *file, PkgList &install, PkgList
     }
 
     return true;
+}
+
+bool AptIntf::installFile(const gchar *path, bool simulate)
+{
+	if (path == NULL)
+		return false;
+
+	DebFile *deb = new DebFile(path);
+	if (!deb->isValid()) {
+		delete deb;
+		return false;
+	}
+
+	if (simulate) {
+		// TODO: Emit signal for to-be-installed package
+		//emit_package("",  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+		delete deb;
+		return true;
+	}
+	delete deb;
+
+	// TODO: Install the package using dpkg
+
+	pk_backend_error_code(m_backend, PK_ERROR_ENUM_NOT_SUPPORTED,
+					"Installation of Deb files is in progress and not (yet) working completely.");
+
+	return false;
 }
 
 bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate)

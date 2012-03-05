@@ -67,7 +67,7 @@ public:
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
 	PkgList resolvePI(gchar **package_ids);
-	bool markDebFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
+	bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
 	/**
 	 *  runs a transaction to install/remove/update packages
@@ -125,17 +125,26 @@ public:
 	void emitFiles(PkBackend *backend, const gchar *pi);
 
 	/**
-	 *  seems to install packages
+	 *  Download and install packages
 	 */
 	bool installPackages(pkgCacheFile &Cache);
 
 	/**
-	 *  check which package provides the codec
+	 *  Install a DEB file
+	 *
+	 *  If you don't want to actually install/update/remove
+	 *    \p simulate should be true, in this case packages with
+	 *    what's going to happen will be emitted.
+	 */
+	bool installFile(const gchar *path, bool simulate);
+
+	/**
+	 *  Check which package provides the codec
 	 */
 	void providesCodec(PkgList &output, gchar **values);
 
 	/**
-	 *  check which package provides a shared library
+	 *  Check which package provides a shared library
 	 */
 	void providesLibrary(PkgList &output, gchar **values);
 
