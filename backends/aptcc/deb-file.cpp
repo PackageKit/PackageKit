@@ -1,6 +1,7 @@
 /* deb-file.cpp
  *
  * Copyright (c) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -28,6 +29,7 @@
 #include <iostream>
 
 DebFile::DebFile(const std::string &filename)
+		: m_filePath(filename)
 {
     FileFd in(filename, FileFd::ReadOnly);
     debDebFile deb(in);
@@ -47,9 +49,19 @@ bool DebFile::isValid() const
     return m_isValid;
 }
 
-std::string DebFile::name() const
+std::string DebFile::filePath() const
+{
+    return m_filePath;
+}
+
+std::string DebFile::packageName() const
 {
     return m_controlData.FindS("Package");
+}
+
+std::string DebFile::sourcePackage() const
+{
+    return m_controlData.FindS("Source");
 }
 
 std::string DebFile::version() const

@@ -1736,12 +1736,11 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
     // in order to be able to install this package
     gint status;
     gchar **argv;
-    gchar **envp;
     gchar *std_out;
     gchar *std_err;
     GError *gerror = NULL;
     argv = (gchar **) g_malloc(5 * sizeof(gchar *));
-    argv[0] = g_strdup("/usr/bin/gdebi");
+    argv[0] = g_strdup(GDEBI_BINARY);
     argv[1] = g_strdup("-q");
     argv[2] = g_strdup("--apt-line");
     argv[3] = g_strdup(file);
@@ -1750,7 +1749,7 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
     gboolean ret;
     ret = g_spawn_sync(NULL, // working dir
                     argv, // argv
-                    envp, // envp
+                    NULL, // envp
                     G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
                     NULL, // child_setup
                     NULL, // user_data
@@ -1805,26 +1804,87 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 	if (path == NULL)
 		return false;
 
-	DebFile *deb = new DebFile(path);
-	if (!deb->isValid()) {
-		delete deb;
+	DebFile deb(path);
+	if (!deb.isValid()) {
 		return false;
 	}
 
 	if (simulate) {
 		// TODO: Emit signal for to-be-installed package
 		//emit_package("",  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
-		delete deb;
 		return true;
 	}
-	delete deb;
 
-	// TODO: Install the package using dpkg
+	string arch = deb.architecture();
+	string aptArch = _config->Find("APT::Architecture");
 
-	pk_backend_error_code(m_backend, PK_ERROR_ENUM_NOT_SUPPORTED,
-					"Installation of Deb files is in progress and not (yet) working completely.");
+	// TODO: Perform this check _before_ installing all dependencies. (The whole thing needs
+	//       some rethinking anyway)
+	if ((arch != "all") &&
+	    (arch != aptArch)) {
+		cout << arch << " vs. " << aptArch << endl;
+		gchar *msg = g_strdup_printf ("Package has wrong architecture, it is %s, but we need %s",
+					      arch.c_str(), aptArch.c_str());
+		pk_backend_error_code(m_backend, PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE, msg);
+		g_free (msg);
+		return false;
+	}
 
-	return false;
+	gint status;
+	gchar **argv;
+	gchar **envp;
+	gchar *std_out;
+	gchar *std_err;
+	GError *error = NULL;
+
+	argv = (gchar **) g_malloc(4 * sizeof(gchar *));
+	argv[0] = g_strdup("/usr/bin/dpkg");
+	argv[1] = g_strdup("-i");
+	argv[2] = g_strdup(path); //g_strdup_printf("\'%s\'", path);
+	argv[3] = NULL;
+
+	envp = (gchar **) g_malloc(4 * sizeof(gchar *));
+	envp[0] = g_strdup("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
+	envp[1] = g_strdup("DEBIAN_FRONTEND=passthrough");
+	envp[2] = g_strdup_printf("DEBCONF_PIPE=%s", pk_backend_get_frontend_socket(m_backend));
+	envp[3] = NULL;
+
+	g_spawn_sync(NULL, // working dir
+			argv,
+			envp,
+			G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
+			NULL, // child_setup
+			NULL, // user_data
+			&std_out, // standard_output
+			&std_err, // standard_error
+			&status,
+			&error);
+	int exit_code = WEXITSTATUS(status);
+
+	cout << argv[2] << endl;
+	cout << "DpkgOut: " << std_out << endl;
+	cout << "DpkgErr: " << std_err << endl;
+
+	if (error != NULL) {
+		// We couldn't run dpkg for some reason...
+		pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error->message);
+		return false;
+	}
+
+	// If installation has failed...
+	if (exit_code != 0) {
+		if ((std_out == NULL) || (strlen(std_out) == 0)) {
+			pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, std_err);
+		} else {
+			pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, std_out);
+		}
+		return false;
+	}
+
+	// Emit data of the now-installed DEB package
+	//emit_package("",  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+
+	return true;
 }
 
 bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate)

@@ -37,9 +37,6 @@
 #include "pkg_acqfile.h"
 #include "apt-sourceslist.h"
 
-#define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
-#define GDEBI_BINARY         "/usr/bin/gdebi"
-
 /* static bodges */
 static bool _cancel = false;
 static PkBackendSpawn *spawn;

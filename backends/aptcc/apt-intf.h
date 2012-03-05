@@ -28,9 +28,11 @@
 #include <apt-pkg/cachefile.h>
 #include <apt-pkg/policy.h>
 
+#include <set>
 #include <pk-backend.h>
 
-#include <set>
+#define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
+#define GDEBI_BINARY         "/usr/bin/gdebi"
 
 using namespace std;
 
