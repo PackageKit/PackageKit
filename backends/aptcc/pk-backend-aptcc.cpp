@@ -1118,7 +1118,7 @@ backend_manage_packages_thread (PkBackend *backend)
         full_paths = pk_backend_get_strv (backend, "full_paths");
         fileInstall = true;
     }
-cout << "FILE INSTALL: " << fileInstall << endl;
+	g_debug ("FILE INSTALL: %i", fileInstall);
 	pk_backend_set_allow_cancel (backend, true);
 
 	AptIntf *m_apt = new AptIntf(backend, _cancel);
@@ -1130,66 +1130,71 @@ cout << "FILE INSTALL: " << fileInstall << endl;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-    PkgList installPkgs, removePkgs;
-    if (fileInstall) {
-        // GDebi can not install more than one package at time
-        if (g_strv_length(full_paths) > 1) {
-            pk_backend_error_code(backend,
-                                  PK_ERROR_ENUM_NOT_SUPPORTED,
-                                  "The backend can only proccess one file at time.");
-            delete m_apt;
-            return false;
-        }
+	PkgList installPkgs, removePkgs;
 
-        // get the list of packages to install
-        if (!m_apt->markDebFileForInstall(full_paths[0], installPkgs, removePkgs)) {
-            delete m_apt;
-            return false;
-        }
-        cout << "installPkgs.size: " << installPkgs.size() << endl;
-        cout << "removePkgs.size: " << removePkgs.size() << endl;
-    } else {
-        // Resolve the given packages
-        gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
-        if (remove) {
-            removePkgs = m_apt->resolvePI(package_ids);
-        } else {
-            installPkgs = m_apt->resolvePI(package_ids);
-        }
+	if (fileInstall) {
+		// File installation EXPERIMENTAL
 
-        if (removePkgs.size() == 0 && installPkgs.size() == 0) {
-            pk_backend_error_code(backend,
-                                  PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-                                  "Could not find package(s)");
-            delete m_apt;
-            return false;
-        }
-    }
-
-    // Install/Update/Remove packages, or just simulate
-    if (!m_apt->runTransaction(installPkgs, removePkgs, simulate)) {
-        // Print transaction errors
-        cout << "runTransaction failed" << endl;
-        delete m_apt;
-        return false;
-    }
-
-    // This is broken at time.
-/*
-    if (fileInstall) {
-        // File installation EXPERIMENTAL
-        gchar *path;
-
-	for (uint i = 0; i < g_strv_length(full_paths); i++) {
-		if (_cancel) {
-			break;
+		// GDebi can not install more than one package at time
+		if (g_strv_length(full_paths) > 1) {
+			pk_backend_error_code(backend,
+					PK_ERROR_ENUM_NOT_SUPPORTED,
+					"The backend can only proccess one file at time.");
+			delete m_apt;
+			return false;
 		}
 
-		path = full_paths[i];
-		cout << "InstallFiles: " << m_apt->installDebFiles(path, simulate) << endl;
+		// get the list of packages to install
+		if (!m_apt->markFileForInstall(full_paths[0], installPkgs, removePkgs)) {
+			delete m_apt;
+			return false;
+		}
+
+		cout << "installPkgs.size: " << installPkgs.size() << endl;
+		cout << "removePkgs.size: " << removePkgs.size() << endl;
+
+	} else {
+		// Resolve the given packages
+		gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
+		if (remove) {
+			removePkgs = m_apt->resolvePI(package_ids);
+		} else {
+			installPkgs = m_apt->resolvePI(package_ids);
+		}
+
+		if (removePkgs.size() == 0 && installPkgs.size() == 0) {
+			pk_backend_error_code(backend,
+					PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+					"Could not find package(s)");
+			delete m_apt;
+			return false;
+		}
 	}
-     }
-*/
+
+	// Install/Update/Remove packages, or just simulate
+	if (!m_apt->runTransaction(installPkgs, removePkgs, simulate)) {
+		// Print transaction errors
+		cout << "runTransaction failed" << endl;
+		delete m_apt;
+		return false;
+	}
+
+	if (fileInstall) {
+		// Now perform the installation!
+		gchar *path;
+		for (uint i = 0; i < g_strv_length(full_paths); i++) {
+			if (_cancel) {
+				break;
+			}
+
+			path = full_paths[i];
+			if (!m_apt->installFile(path, simulate)) {
+				cout << "Installation of DEB file " << path << " failed." << endl;
+				delete m_apt;
+				return false;
+			}
+		}
+	}
 
 	delete m_apt;
 	return true;
@@ -1496,13 +1501,10 @@ pk_backend_get_roles (PkBackend *backend)
     }
 
     // only add GetDistroUpgrades if the binary is present
-    // InstallFiles is not working at time.
-/*
     if (g_file_test (GDEBI_BINARY, G_FILE_TEST_EXISTS)) {
         pk_bitfield_add(roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
         pk_bitfield_add(roles, PK_ROLE_ENUM_INSTALL_FILES);
     }
-*/
 
     return roles;
 }
