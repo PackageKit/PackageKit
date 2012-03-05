@@ -5,9 +5,9 @@ INCLUDES = \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
 libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
-				 acqprogress.cpp \
+				 pkg_dpkgpm.cpp \
+				 acqpkitstatus.cpp \
 				 deb-file.cpp \
-				 dpkgpm.cpp \
 				 matcher.cpp \
 				 gstMatcher.cpp \
 				 apt-messages.cpp \
@@ -30,9 +30,9 @@ EXTRA_DIST = 20packagekit \
 	     gstMatcher.h \
 	     matcher.h \
 	     deb-file.h \
-	     dpkgpm.h \
 	     apt-messages.h \
-	     acqprogress.h \
+	     acqpkitstatus.h \
+	     pkg_dpkgpm.h \
 	     pkg_acqfile.h
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc

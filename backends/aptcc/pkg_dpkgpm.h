@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef DPKG_PM_H
-#define DPKG_PM_H
+#ifndef DEB_DPKG_PM_H
+#define DEB_DPKG_PM_H
 
 #include <string>
 #include <apt-pkg/dpkgpm.h>

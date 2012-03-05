@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* deb-file.h
  *
- * Copyright (C) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -36,7 +36,7 @@ public:
     std::string version() const;
     std::string architecture() const;
     std::string conflicts() const;
-    
+
     // THIS should be moved to AptCC class
     bool check();
     std::string errorMsg() const;

@@ -1,14 +1,25 @@
-// -*- mode: cpp; mode: fold -*-
-// Description								/*{{{*/
-// $Id: acqprogress.cc,v 1.24 2003/04/27 01:56:48 doogie Exp $
-/* ######################################################################
+/* acqpkitstatus.cpp
+ *
+ * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
-   Acquire Progress - Command line progress meter
+#include "acqpkitstatus.h"
 
-   ##################################################################### */
-									/*}}}*/
-// Include files							/*{{{*/
-#include "acqprogress.h"
 #include <apt-pkg/acquire-item.h>
 #include <apt-pkg/acquire-worker.h>
 #include <apt-pkg/strutl.h>
@@ -17,13 +28,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include <iostream>
-									/*}}}*/
 
 using namespace std;
 
-// AcqPackageKitStatus::AcqPackageKitStatus - Constructor				/*{{{*/
+// AcqPackageKitStatus::AcqPackageKitStatus - Constructor
 // ---------------------------------------------------------------------
-/* */
 AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool &cancelled) :
 	m_apt(apt),
 	m_backend(backend),
@@ -32,19 +41,17 @@ AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool 
 	last_sub_percent(PK_BACKEND_PERCENTAGE_INVALID)
 {
 }
-									/*}}}*/
-// AcqPackageKitStatus::Start - Downloading has started			/*{{{*/
+
+// AcqPackageKitStatus::Start - Downloading has started
 // ---------------------------------------------------------------------
-/* */
 void AcqPackageKitStatus::Start()
 {
    pkgAcquireStatus::Start();
    ID = 1;
 };
-									/*}}}*/
+
 // AcqPackageKitStatus::IMSHit - Called when an item got a HIT response	/*{{{*/
 // ---------------------------------------------------------------------
-/* */
 void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
     if (packages.size() == 0) {
@@ -55,8 +62,8 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
     }
     Update = true;
 };
-									/*}}}*/
-// AcqPackageKitStatus::Fetch - An item has started to download		/*{{{*/
+
+// AcqPackageKitStatus::Fetch - An item has started to download
 // ---------------------------------------------------------------------
 /* This prints out the short description and the expected size */
 void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
@@ -67,16 +74,16 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
 
    Itm.Owner->ID = ID++;
 };
-									/*}}}*/
-// AcqPackageKitStatus::Done - Completed a download				/*{{{*/
+
+// AcqPackageKitStatus::Done - Completed a download
 // ---------------------------------------------------------------------
 /* We don't display anything... */
 void AcqPackageKitStatus::Done(pkgAcquire::ItemDesc &Itm)
 {
    Update = true;
 };
-									/*}}}*/
-// AcqPackageKitStatus::Fail - Called when an item fails to download		/*{{{*/
+
+// AcqPackageKitStatus::Fail - Called when an item fails to download
 // ---------------------------------------------------------------------
 /* We print out the error text  */
 void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
@@ -105,8 +112,8 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 	Update = true;
 };
 
-									/*}}}*/
-// AcqTextStatus::Stop - Finished downloading				/*{{{*/
+
+// AcqTextStatus::Stop - Finished downloading
 // ---------------------------------------------------------------------
 /* This prints out the bytes downloaded and the overall average line
    speed */
@@ -122,8 +129,8 @@ void AcqPackageKitStatus::Stop()
 	}
 }
 
-									/*}}}*/
-// AcqPackageKitStatus::Pulse - Regular event pulse				/*{{{*/
+
+// AcqPackageKitStatus::Pulse - Regular event pulse
 // ---------------------------------------------------------------------
 /* This draws the current progress. Each line has an overall percent
    meter and a per active item status meter along with an overall
@@ -196,8 +203,8 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 
 	return !_cancelled;;
 }
-									/*}}}*/
-// AcqPackageKitStatus::MediaChange - Media need to be swapped		/*{{{*/
+
+// AcqPackageKitStatus::MediaChange - Media need to be swapped
 // ---------------------------------------------------------------------
 /* Prompt for a media swap */
 bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
@@ -223,7 +230,7 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 	Update = true;
 	return false;
 }
-									/*}}}*/
+
 
 void AcqPackageKitStatus::addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair)
 {
