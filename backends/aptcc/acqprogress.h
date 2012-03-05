@@ -13,12 +13,12 @@
 #include <apt-pkg/acquire.h>
 #include <pk-backend.h>
 
-#include "apt.h"
+#include "apt-intf.h"
 
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
-	AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled);
+	AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool &cancelled);
 
 	virtual bool MediaChange(string Media, string Drive);
 	virtual void IMSHit(pkgAcquire::ItemDesc &Itm);
@@ -41,7 +41,7 @@ private:
 	unsigned long last_sub_percent;
 	double        last_CPS;
 	string        last_package_name;
-	aptcc         *m_apt;
+	AptIntf         *m_apt;
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages;
 	set<string> currentPackages;

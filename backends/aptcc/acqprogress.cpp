@@ -24,7 +24,7 @@ using namespace std;
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
-AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled) :
+AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool &cancelled) :
 	m_apt(apt),
 	m_backend(backend),
 	_cancelled(cancelled),
