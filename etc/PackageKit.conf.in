@@ -272,7 +272,7 @@ UseIdleBandwidth=true
 # or cannot shutdown without the session exploding. For instance, listing
 # /sbin/dbus-daemon or /usr/sbin/haldaemon would be a really bad idea.
 #
-# Seporate entries can be seporated with the ';' character.
+# Separate entries can be separated with the ';' character.
 #
 # default=/usr/lib*/*/firefox
 NoUpdateProcessList=

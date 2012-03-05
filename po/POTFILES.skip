@@ -6,4 +6,3 @@ contrib/debuginfo-install/egg-debug.c
 lib/packagekit-glib/egg-debug.c
 lib/packagekit-glib2/egg-debug.c
 backends/yum/libzif/egg-debug.c
-
