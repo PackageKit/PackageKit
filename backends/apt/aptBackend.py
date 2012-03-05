@@ -200,15 +200,15 @@ def lock_cache(func):
             try:
                 # see if the lock for the download dir can be acquired
                 # (work around bug in python-apt/apps that call _fetchArchives)
-                lockfile = apt_pkg.config.FindDir("Dir::Cache::Archives") + \
+                lockfile = apt_pkg.config.find_dir("Dir::Cache::Archives") + \
                            "lock"
-                lock = apt_pkg.GetLock(lockfile)
+                lock = apt_pkg.get_lock(lockfile)
                 if lock < 0:
                     raise SystemError("failed to lock '%s'" % lockfile)
                 else:
                     os.close(lock)
                 # then lock the main package system
-                apt_pkg.PkgSystemLock()
+                apt_pkg.pkgsystem_lock()
             except SystemError:
                 time.sleep(3)
             else:
@@ -248,7 +248,9 @@ class PackageKitOpProgress(apt.progress.base.OpProgress):
         self.show_progress = progress
 
     # OpProgress callbacks
-    def update(self, percent):
+    def update(self, percent=None):
+        if percent is None:
+            return
         progress = int(self.pstart + percent / 100 * (self.pend - self.pstart))
         if self.show_progress == True and self.pprev < progress:
             self._backend.percentage(progress)
@@ -786,7 +788,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         if META_RELEASE_SUPPORT == False:
             if "update-manager-core" in self._cache and \
-               self._cache["update-manager-core"].isInstalled == False:
+               self._cache["update-manager-core"].is_installed == False:
                 raise PKError(enums.ERROR_INTERNAL_ERROR,
                               "Please install the package update-manager-core "
                               "to get notified of the latest distribution "
@@ -846,7 +848,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
         for pkg in self._cache:
-            if not pkg.isUpgradable:
+            if not pkg.is_upgradable:
                 continue
             # This may occur on pinned packages which have been updated to
             # later version than the pinned one
@@ -1017,20 +1019,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         total = len(pkg_ids)
         for count, pkg_id in enumerate(pkg_ids):
             self.percentage(count * 100 / total)
-            pkg = self._get_package_by_id(pkg_id)
+            version = self._get_version_by_id(pkg_id)
             #FIXME: We need more fine grained license information!
-            candidate = pkg.candidateOrigin
-            if candidate != None and  \
-               candidate[0].component in ["main", "universe"] and \
-               candidate[0].origin in ["Debian", "Ubuntu"]:
+            if (version.origins and
+                version.origins[0].component in ["main", "universe"] and
+                version.origins[0].origin in ["Debian", "Ubuntu"]):
                 license = "free"
             else:
                 license = "unknown"
             group = self._get_package_group(pkg)
             self.details(pkg_id, license, group,
-                         format_string(pkg.description),
-                         pkg.homepage,
-                         pkg.packageSize)
+                         format_string(version.description),
+                         version.homepage, version.size)
 
     @catch_pkerror
     @lock_cache
@@ -1174,7 +1174,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             for id in ids:
                 version = self._get_version_by_id(id)
                 pkg = version.package
-                if not pkg.isInstalled:
+                if not pkg.is_installed:
                     raise PKError(enums.ERROR_PACKAGE_NOT_INSTALLED,
                                   "Package %s isn't installed" % pkg.name)
                 if pkg.installed != version:
@@ -1185,7 +1185,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     raise PKError(enums.ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                                   "Package %s cannot be removed." % pkg.name)
                 pkgs.append(pkg.name[:])
-                pkg.markDelete(False, False)
+                pkg.mark_delete(False, False)
                 resolver.clear(pkg)
                 resolver.protect(pkg)
                 resolver.remove(pkg)
@@ -1211,8 +1211,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
-            if "python-software-properties" in self._cache and \
-               self._cache["python-software-properties"].isInstalled == False:
+            if ("python-software-properties" in self._cache and
+                not self._cache["python-software-properties"].is_installed):
                 raise PKError(enums.ERROR_INTERNAL_ERROR,
                               "Please install the package "
                               "python-software-properties to handle "
@@ -1293,8 +1293,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         if REPOS_SUPPORT == False:
-            if "python-software-properties" in self._cache and \
-               self._cache["python-software-properties"].isInstalled == False:
+            if ("python-software-properties" in self._cache and
+                not self._cache["python-software-properties"].is_installed):
                 raise PKError(enums.ERROR_INTERNAL_ERROR,
                               "Please install the package "
                               "python-software-properties to handle "
@@ -1526,7 +1526,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     raise PKError(enums.ERROR_PACKAGE_ALREADY_INSTALLED,
                                   "Package %s is already installed" % pkg.name)
                 pkgs.append(pkg.name[:])
-                pkg.markInstall(False, True, True)
+                pkg.mark_install(False, True, True)
                 resolver.clear(pkg)
                 resolver.protect(pkg)
             try:
@@ -1711,9 +1711,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     ver_list.remove(pkg.candidate)
                     ver_list.insert(0, pkg.candidate)
                 for dep_ver in ver_list:
-                    if apt_pkg.CheckDep(dep_ver.version,
-                                        base_dep.relation,
-                                        base_dep.version):
+                    if apt_pkg.check_dep(dep_ver.version,
+                                         base_dep.relation,
+                                         base_dep.version):
                         self._emit_pkg_version(dep_ver)
                         satisfied = True
                         break
@@ -1765,7 +1765,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for count, id in enumerate(ids):
             self.percentage(count / 100 * total)
             version = self._get_version_by_id(id)
-            provided = [pro[0] for pro in version._cand.ProvidesList]
             for pkg in self._cache:
                 if not self._is_package_visible(pkg, filters):
                     continue
@@ -1777,7 +1776,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     satisfied = False
                     for base_dep in dependency.or_dependencies:
                         if version.package.name == base_dep.name or \
-                           base_dep.name in provided:
+                           base_dep.name in version.provides:
                             satisfied = True
                             break
                     if satisfied:
@@ -2127,9 +2126,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             pass
         # Read the pin file of Synaptic if available
-        self._cache._depcache.ReadPinFile()
+        self._cache._depcache.read_pinfile()
         if os.path.exists(SYNAPTIC_PIN_FILE):
-            self._cache._depcache.ReadPinFile(SYNAPTIC_PIN_FILE)
+            self._cache._depcache.read_pinfile(SYNAPTIC_PIN_FILE)
         # Reset the depcache
         self._cache.clear()
 
