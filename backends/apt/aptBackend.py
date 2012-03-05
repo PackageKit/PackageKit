@@ -1916,7 +1916,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 for package in self._cache:
                     # skip foreign architectures, we usually only want native
                     # driver packages
-                    if package.architecture() != system_architecture:
+                    if (not package.candidate or
+                        package.candidate.architecture not in ("all",
+                                                          system_architecture)):
                         continue
 
                     try:
