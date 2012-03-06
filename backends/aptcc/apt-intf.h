@@ -71,6 +71,8 @@ public:
 	PkgList resolvePI(gchar **package_ids);
 	bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
+	bool markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag);
+
 	/**
 	 *  runs a transaction to install/remove/update packages
 	 *  - for install and update, \p remove should be set to false
@@ -79,7 +81,7 @@ public:
 	 *    \p simulate should be true, in this case packages with
 	 *    what's going to happen will be emitted.
 	 */
-	bool runTransaction(PkgList &install, PkgList &remove, bool simulate);
+	bool runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto = false);
 
 	/**
 	 *  Get depends

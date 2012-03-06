@@ -1730,6 +1730,21 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
     return ret;
 }
 
+bool AptIntf::markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag)
+{
+	bool ret;
+	for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
+		if (_cancel) {
+			break;
+		}
+
+		// Mark package as auto-installed
+		cache->MarkAuto(i->first, flag);
+	}
+
+	return true;
+}
+
 bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
 {
     // We call gdebi to tell us what do we need to install/remove
@@ -1801,11 +1816,14 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
 
 bool AptIntf::installFile(const gchar *path, bool simulate)
 {
-	if (path == NULL)
+	if (path == NULL) {
+		g_error ("installFile() path was NULL!");
 		return false;
+	}
 
 	DebFile deb(path);
 	if (!deb.isValid()) {
+		pk_backend_error_code(m_backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "DEB package is invalid!");
 		return false;
 	}
 
@@ -1887,7 +1905,7 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 	return true;
 }
 
-bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate)
+bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto)
 {
 	//cout << "runTransaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
@@ -1939,6 +1957,9 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate)
                 return false;
             }
         }
+
+        if (!simulate)
+		markAutoInstalled(Cache, install, markAuto);
 
         for(PkgList::iterator i = remove.begin(); i != remove.end(); ++i) {
             pkgCache::PkgIterator Pkg = i->first;

@@ -1097,6 +1097,7 @@ backend_manage_packages_thread (PkBackend *backend)
     bool simulate = false;
     bool remove = false;
     bool fileInstall = false;
+    bool markAuto = false;
     gchar **full_paths = NULL;
 
     PkRoleEnum role = pk_backend_get_role (backend);
@@ -1147,6 +1148,10 @@ backend_manage_packages_thread (PkBackend *backend)
 			return false;
 		}
 
+		// Mark newly installed packages as auto-installed
+		// (they're dependencies of the new local package)
+		markAuto = true;
+
 		cout << "installPkgs.size: " << installPkgs.size() << endl;
 		cout << "removePkgs.size: " << removePkgs.size() << endl;
 
@@ -1169,7 +1174,7 @@ backend_manage_packages_thread (PkBackend *backend)
 	}
 
 	// Install/Update/Remove packages, or just simulate
-	if (!m_apt->runTransaction(installPkgs, removePkgs, simulate)) {
+	if (!m_apt->runTransaction(installPkgs, removePkgs, simulate, markAuto)) {
 		// Print transaction errors
 		cout << "runTransaction failed" << endl;
 		delete m_apt;
