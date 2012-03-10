@@ -1727,7 +1727,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
                     if (pair.second.end() == false) {
                         ret.push_back(pair);
                     }
-                
+
                     pair.second = find_candidate_ver(pkg);
                     // check to see if the provided package isn't virtual too
                     if (pair.second.end() == false) {
@@ -1740,7 +1740,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
                 if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
                     continue;
                 }
-                
+
                 pair.first = pkg;
                 pair.second = find_ver(pkg);
                 // check to see if the provided package isn't virtual too
@@ -2311,7 +2311,7 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 
 		close(readFromChildFD[1]);
 
-		_exit(res);
+		return res == 0;
 	}
 
 	cout << "PARENT proccess running..." << endl;
