@@ -1699,24 +1699,60 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
         PkgPair pair;
         pi = package_ids[i];
 
+        // Check if it's a valid package id
         if (pk_package_id_check(pi) == false) {
-            pair.first = packageCache->FindPkg(pi);
-            // Ignore packages that could not be found or that exist only due to dependencies.
-            if (pair.first.end() == true ||
-                (pair.first.VersionList().end() && pair.first.ProvidesList().end())) {
-                continue;
-            }
+            if (m_isMultiArch) {
+                // OK FindPkg is not suitable for muitarch
+                // it can only return one package in this case we need to
+                // search the whole package cache and match the package
+                // name manually
+                for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
+                    if (_cancel) {
+                        break;
+                    }
 
-            pair.second = find_ver(pair.first);
-            // check to see if the provided package isn't virtual too
-            if (pair.second.end() == false) {
-                ret.push_back(pair);
-            }
+                    // check if this is the package we want
+                    if (strcmp(pkg.Name(), pi) != 0) {
+                        continue;
+                    }
 
-            pair.second = find_candidate_ver(pair.first);
-            // check to see if the provided package isn't virtual too
-            if (pair.second.end() == false) {
-                ret.push_back(pair);
+                    // Ignore packages that could not be found or that exist only due to dependencies.
+                    if ((pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))) {
+                        continue;
+                    }
+
+                    pair.first = pkg;
+                    pair.second = find_ver(pkg);
+                    // check to see if the provided package isn't virtual too
+                    if (pair.second.end() == false) {
+                        ret.push_back(pair);
+                    }
+                
+                    pair.second = find_candidate_ver(pkg);
+                    // check to see if the provided package isn't virtual too
+                    if (pair.second.end() == false) {
+                        ret.push_back(pair);
+                    }
+                }
+            } else {
+                pkgCache::PkgIterator pkg = packageCache->FindPkg(pi);
+                // Ignore packages that could not be found or that exist only due to dependencies.
+                if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+                    continue;
+                }
+                
+                pair.first = pkg;
+                pair.second = find_ver(pkg);
+                // check to see if the provided package isn't virtual too
+                if (pair.second.end() == false) {
+                    ret.push_back(pair);
+                }
+
+                pair.second = find_candidate_ver(pkg);
+                // check to see if the provided package isn't virtual too
+                if (pair.second.end() == false) {
+                    ret.push_back(pair);
+                }
             }
         } else {
             bool found;
