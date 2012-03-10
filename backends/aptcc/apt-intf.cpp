@@ -2091,27 +2091,33 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
 		return false;
 	}
 
-	// Generate the list of affected packages and sort it
-	for (pkgCache::PkgIterator I = Cache->PkgBegin(); I.end() == false; I++)
-	{
-		// Ignore no-version packages
-		if (I->VersionList == 0) {
-			continue;
-		}
+        // Generate the list of affected packages
+        for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); pkg.end() == false; ++pkg)
+        {
+                // Ignore no-version packages
+                if (pkg->VersionList == 0) {
+                    continue;
+                }
 
-		// Not interesting
-		if ((Cache[I].Keep() == true ||
-		    Cache[I].InstVerIter(Cache) == I.CurrentVer()) &&
-		    I.State() == pkgCache::PkgIterator::NeedsNothing &&
-		    (Cache[I].iFlags & pkgDepCache::ReInstall) != pkgDepCache::ReInstall &&
-		    (I.Purge() != false || Cache[I].Mode != pkgDepCache::ModeDelete ||
-		    (Cache[I].iFlags & pkgDepCache::Purge) != pkgDepCache::Purge))
-		{
-			continue;
-		}
+                // Not interesting
+                if ((Cache[pkg].Keep() == true ||
+                    Cache[pkg].InstVerIter(Cache) == pkg.CurrentVer()) &&
+                    pkg.State() == pkgCache::PkgIterator::NeedsNothing &&
+                    (Cache[pkg].iFlags & pkgDepCache::ReInstall) != pkgDepCache::ReInstall &&
+                    (pkg.Purge() != false || Cache[pkg].Mode != pkgDepCache::ModeDelete ||
+                    (Cache[pkg].iFlags & pkgDepCache::Purge) != pkgDepCache::Purge))
+                {
+                    continue;
+                }
 
-		// Append it to the list
-		Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(I, Cache[I].InstVerIter(Cache)));
+                pkgCache::VerIterator ver = Cache[pkg].InstVerIter(Cache);
+                if (ver.end() && (ver = find_candidate_ver(pkg))) {
+                    // Ignore invalid versions
+                    continue;
+                }
+
+                // Append it to the list
+                Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 	}
 
 	// Display statistics
