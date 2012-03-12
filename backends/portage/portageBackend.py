@@ -64,6 +64,7 @@ import _emerge.actions
 import _emerge.stdout_spinner
 import _emerge.create_depgraph_params
 import _emerge.AtomArg
+from portage.exception import InvalidAtom
 
 # layman imports
 import layman.db
@@ -967,7 +968,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         for cpv in cpv_list:
             # prevent showing input packages
             if '=' + cpv not in cpv_input:
-                self._package(cpv)
+                try:
+                    self._package(cpv)
+                except InvalidAtom:
+                    continue
 
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
@@ -1043,7 +1047,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         for cp in self._get_all_cp(filters):
             for cpv in self._get_all_cpv(cp, filters):
-                self._package(cpv)
+                try:
+                    self._package(cpv)
+                except InvalidAtom:
+                    continue
 
             cp_processed += 100.0
             self.percentage(int(cp_processed/nb_cp))
@@ -1060,8 +1067,16 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.percentage(None)
 
         # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
-        available_layman_db = layman.db.RemoteDB(layman.config.Config())
+        if hasattr(layman.config, "Config"):
+            installed_layman_db = layman.db.DB(layman.config.Config())
+        else:
+            installed_layman_db = layman.db.DB(layman.config.BareConfig())
+
+        if hasattr(layman.config, "Config"):
+            available_layman_db = layman.db.RemoteDB(layman.config.Config())
+        else:
+            available_layman_db = layman.db.RemoteDB(layman.config.BareConfig())
+
 
         # 'gentoo' is a dummy repo
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
@@ -1121,7 +1136,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         for cpv in cpv_list:
             # prevent showing input packages
             if '=' + cpv not in cpv_input:
-                self._package(cpv)
+                try:
+                    self._package(cpv)
+                except InvalidAtom:
+                    continue
 
     def get_update_detail(self, pkgs):
         # TODO: a lot of informations are missing
@@ -1378,7 +1396,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         myopts = {'--quiet': True}
 
         # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
+        if hasattr(layman.config, "Config"):
+            layman_opts = {"quiet": True}
+            installed_layman_db = layman.db.DB(layman.config.Config())
+        else:
+            layman_opts = {}
+            conf = layman.config.BareConfig()
+            conf.set_option("quiet", True)
+            installed_layman_db = layman.db.DB(conf)
 
         if force:
             timestamp_path = os.path.join(
@@ -1389,7 +1414,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         try:
             self._block_output()
             for o in installed_layman_db.overlays.keys():
-                installed_layman_db.sync(o, quiet=True)
+                installed_layman_db.sync(o, **layman_opts)
             _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
                     self.pvar.mtimedb, myopts, "")
         except:
@@ -1640,7 +1665,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         self.percentage(100)
 
-    def search_file(self, filters, key):
+    def search_file(self, filters, values):
         # FILTERS:
         # - ~installed is not accepted (error)
         # - free: ok
@@ -1659,24 +1684,28 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cpv_processed = 0.0
         is_full_path = True
 
-        if key[0] != "/":
-            is_full_path = False
-            key = re.escape(key)
-            searchre = re.compile("/" + key + "$", re.IGNORECASE)
+        count = 0
+        values_len = len(values)
+        for key in values:
 
-        # free filter
-        cpv_list = self._filter_free(cpv_list, filters)
-        nb_cpv = float(len(cpv_list))
+            if key[0] != "/":
+                is_full_path = False
+                key = re.escape(key)
+                searchre = re.compile("/" + key + "$", re.IGNORECASE)
 
-        for cpv in cpv_list:
-            for f in self._get_file_list(cpv):
-                if (is_full_path and key == f) \
-                or (not is_full_path and searchre.search(f)):
-                    self._package(cpv)
-                    break
+            # free filter
+            cpv_list = self._filter_free(cpv_list, filters)
+            nb_cpv = float(len(cpv_list))
 
-            cpv_processed += 100.0
-            self.percentage(int(cpv_processed/nb_cpv))
+            for cpv in cpv_list:
+                for f in self._get_file_list(cpv):
+                    if (is_full_path and key == f) \
+                            or (not is_full_path and searchre.search(f)):
+                        self._package(cpv)
+                        break
+
+            count += 1
+            self.percentage(float(count)/values_len)
 
         self.percentage(100)
 
