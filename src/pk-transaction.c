@@ -4663,6 +4663,13 @@ pk_transaction_resolve (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (packages);
+	if (length == 0) {
+		error = g_error_new (PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Too few items to process");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
 	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumItemsToResolve");
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
