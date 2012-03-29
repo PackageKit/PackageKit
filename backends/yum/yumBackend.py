@@ -1721,25 +1721,23 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _set_only_trusted(self, only_trusted):
         # if only_trusted is true, it means that we will only install/update
-        # signed files
-
-        # _override_sigchecks logic is reversed
-        override_sigchecks = not only_trusted
+        # signed files and fail on unsigned ones
 
         if hasattr(self.yumbase, "_override_sigchecks"):
-            # yum >= 3.2.29:
+            # _override_sigchecks logic is reversed
+            override_sigchecks = not only_trusted
+
             self.yumbase._override_sigchecks = override_sigchecks
 
             for repo in self.yumbase.repos.listEnabled():
                 repo._override_sigchecks = override_sigchecks
 
-        else:
-            # yum < 3.2.29:
-            for attrname in ("gpgcheck", "repo_gpgcheck", "localpkg_gpgcheck"):
+        for attrname in ("gpgcheck", "repo_gpgcheck", "localpkg_gpgcheck"):
+            if hasattr(self.yumbase.conf, attrname):
                 setattr(self.yumbase.conf, attrname, only_trusted)
 
-            for attrname in ("gpgcheck", "repo_gpgcheck"):
-                for repo in self.yumbase.repos.listEnabled():
+            for repo in self.yumbase.repos.listEnabled():
+                if hasattr(repo, attrname):
                     setattr(repo, attrname, only_trusted)
 
 
