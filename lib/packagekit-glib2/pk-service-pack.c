@@ -112,26 +112,6 @@ pk_service_pack_error_quark (void)
  * pk_service_pack_error_get_type:
  **/
 #define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-GType
-pk_service_pack_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] =
-		{
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_SETUP, "FailedSetup"),
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD, "FailedDownload"),
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION, "FailedExtraction"),
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_FAILED_CREATE, "FailedCreate"),
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_NOTHING_TO_DO, "NothingToDo"),
-			ENUM_ENTRY (PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE, "NotCompatible"),
-			{ 0, NULL, NULL }
-		};
-		etype = g_enum_register_static ("PkServicePackError", values);
-	}
-	return etype;
-}
 
 /**
  * pk_service_pack_check_metadata_file:

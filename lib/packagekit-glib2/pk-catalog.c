@@ -102,21 +102,6 @@ pk_catalog_error_quark (void)
  * pk_catalog_error_get_type:
  **/
 #define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-GType
-pk_catalog_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] =
-		{
-			ENUM_ENTRY (PK_CATALOG_ERROR_FAILED, "Failed"),
-			{ 0, NULL, NULL }
-		};
-		etype = g_enum_register_static ("PkCatalogError", values);
-	}
-	return etype;
-}
 
 /**
  * pk_catalog_mode_to_string:

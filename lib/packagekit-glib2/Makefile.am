@@ -108,6 +108,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-distro-upgrade.h					\
 	pk-enum.c						\
 	pk-enum.h						\
+	pk-enum-types.c						\
+	pk-enum-types.h						\
 	pk-error.c						\
 	pk-error.h						\
 	pk-eula-required.c					\

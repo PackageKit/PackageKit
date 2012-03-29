@@ -77,7 +77,6 @@ struct _PkServicePackClass
 };
 
 GQuark		 pk_service_pack_error_quark		(void);
-GType		 pk_service_pack_error_get_type		(void);
 GType		 pk_service_pack_get_type		(void);
 PkServicePack	*pk_service_pack_new			(void);
 void		 pk_service_pack_test			(gpointer		 user_data);

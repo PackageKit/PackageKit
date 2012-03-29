@@ -73,7 +73,6 @@ struct _PkCatalogClass
 };
 
 GQuark		 pk_catalog_error_quark			(void);
-GType		 pk_catalog_error_get_type		(void);
 GType		 pk_catalog_get_type			(void);
 PkCatalog	*pk_catalog_new				(void);
 void		 pk_catalog_test			(gpointer		 user_data);
