@@ -352,7 +352,7 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		goto out;
 	}
 	if (g_strcmp0 (signal_name, "Changed") == 0) {
-		g_warning ("do something?");
+		/* we don't need to do anything here */
 		goto out;
 	}
 	if (g_strcmp0 (signal_name, "RestartSchedule") == 0) {
