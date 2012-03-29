@@ -34,7 +34,7 @@ lib_LTLIBRARIES =						\
 
 libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 
-libpackagekit_glib2_include_HEADERS =				\
+HEADER_FILES =							\
 	packagekit.h						\
 	pk-bitfield.h						\
 	pk-catalog.h						\
@@ -71,6 +71,11 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-transaction-list.h					\
 	pk-update-detail.h					\
 	pk-version.h						\
+	$(NULL)
+
+libpackagekit_glib2_include_HEADERS =				\
+	$(HEADER_FILES)						\
+	pk-enum-types.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
@@ -218,11 +223,16 @@ endif
 EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
 	pk-version.h.in						\
-	pk-marshal.list
+	pk-marshal.list						\
+	pk-enum-types.h.template				\
+	pk-enum-types.c.template				\
+	$(NULL)
 
 BUILT_SOURCES = 						\
 	pk-marshal.c						\
 	pk-marshal.h						\
+	pk-enum-types.h						\
+	pk-enum-types.c						\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -231,6 +241,12 @@ pk-marshal.c: pk-marshal.list
 
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
+
+pk-enum-types.h: pk-enum-types.h.template $(HEADER_FILES)
+	$(AM_V_GEN) $(GLIB_MKENUMS) --template $^ > $@
+
+pk-enum-types.c: pk-enum-types.c.template $(HEADER_FILES)
+	$(AM_V_GEN) $(GLIB_MKENUMS) --template $^ > $@
 
 CLEANFILES = $(BUILT_SOURCES) *.a *.servicepack
 

@@ -40,6 +40,7 @@
 #include <packagekit-glib2/pk-details.h>
 #include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 #include <packagekit-glib2/pk-error.h>
 #include <packagekit-glib2/pk-eula-required.h>
 #include <packagekit-glib2/pk-files.h>
