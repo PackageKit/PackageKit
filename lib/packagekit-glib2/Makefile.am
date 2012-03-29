@@ -67,6 +67,7 @@ HEADER_FILES =							\
 	pk-service-pack.h					\
 	pk-source.h						\
 	pk-task.h						\
+	pk-task-sync.h						\
 	pk-transaction-past.h					\
 	pk-transaction-list.h					\
 	pk-update-detail.h					\
@@ -148,6 +149,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-source.h						\
 	pk-task.c						\
 	pk-task.h						\
+	pk-task-sync.c						\
+	pk-task-sync.h						\
 	pk-transaction-past.c					\
 	pk-transaction-past.h					\
 	pk-transaction-list.c					\
@@ -182,8 +185,6 @@ libpackagekitprivate_a_SOURCES =				\
 	pk-console-shared.h					\
 	pk-progress-bar.c					\
 	pk-progress-bar.h					\
-	pk-task-sync.c						\
-	pk-task-sync.h						\
 	pk-task-text.c						\
 	pk-task-text.h						\
 	pk-task-wrapper.c					\

@@ -57,6 +57,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-service-pack.h>
 #include <packagekit-glib2/pk-task.h>
+#include <packagekit-glib2/pk-task-sync.h>
 #include <packagekit-glib2/pk-transaction-past.h>
 #include <packagekit-glib2/pk-transaction-list.h>
 #include <packagekit-glib2/pk-update-detail.h>

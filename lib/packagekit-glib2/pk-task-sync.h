@@ -19,6 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#error "Only <packagekit.h> can be included directly."
+#endif
+
 #ifndef __PK_TASK_SYNC_H
 #define __PK_TASK_SYNC_H
 
