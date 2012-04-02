@@ -56,6 +56,7 @@ HTML_IMAGES =						\
 	spec/pk-transactions-download.png		\
 	spec/pk-transactions-sig-install.png		\
 	spec/pk-transactions-success.png		\
+	spec/pk-transactions-auto-untrusted.png		\
 	spec/pk-transactions-trusted.png
 
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).

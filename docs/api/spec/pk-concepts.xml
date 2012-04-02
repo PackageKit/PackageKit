@@ -863,6 +863,29 @@
       </para>
     </sect2>
 
+    <sect2 id="introduction-ideas-transactions-auto-untrusted">
+      <title>Transaction example: Auto Untrusted</title>
+      <mediaobject id="pk-transactions-auto-untrusted">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-auto-untrusted.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        If <literal>SimulateInstallPackage</literal> or
+        <literal>SimulateInstallFile</literal>  is used then the client
+        may receive a <literal>INFO_UNTRUSTED</literal> package.
+      </para>
+      <para>
+        This is used to inform the client that the action would require
+        the untrusted authentication type, which means the client does
+        not attempt to do <literal>SimulateInstallPackage(only_trusted=TRUE)</literal>
+        and only does <literal>SimulateInstallPackage(only_trusted=FALSE)</literal>.
+        This ensures the user has to only authenticate once for the
+        transaction as the <literal>only_trusted=TRUE</literal> action
+        may also require a password.
+      </para>
+    </sect2>
+
     <sect2 id="introduction-ideas-transactions-sig-install">
       <title>Transaction example: Package signature install</title>
       <mediaobject id="pk-transactions-sig-install">
