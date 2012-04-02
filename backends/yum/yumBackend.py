@@ -1785,7 +1785,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if only_trusted:
                         self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
-                    self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
+                    self._show_package(pkg, INFO_UNTRUSTED)
                 try:
                     self._runYumTransaction(allow_skip_broken=True, only_simulate=False)
                 except PkError, e:
@@ -2024,8 +2024,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                     return
-                self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
-
+                self._show_package(pkg, INFO_UNTRUSTED)
             try:
                 self._runYumTransaction(only_simulate=simulate)
             except PkError, e:
@@ -2185,7 +2184,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
                     return
-                self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
                 self._show_package(po, INFO_UNTRUSTED)
             except exceptions.IOError, e:
                 self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
@@ -2362,8 +2360,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if only_trusted:
                         self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
-                    self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
-
+                    self._show_package(pkg, INFO_UNTRUSTED)
                 try:
                     self._runYumTransaction(allow_skip_broken=True, only_simulate=simulate)
                 except PkError, e:
