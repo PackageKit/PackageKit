@@ -3626,13 +3626,6 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 					   (gpointer)pk_info_enum_to_string (PK_INFO_ENUM_UNTRUSTED));
 			g_ptr_array_add (untrusted_array,
 					 package);
-
-			/* ignore the trusted auth step */
-			pk_backend_message (backend,
-					    PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,
-					    "The package %s has trust %s",
-					    zif_package_get_printable (package),
-					    zif_package_trust_kind_to_string (trust_kind));
 		}
 	}
 	state_local = zif_state_get_child (state);
