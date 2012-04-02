@@ -308,13 +308,12 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
 	GError *error = NULL;
-	PkResults *results;
-	PkPackageSack *sack = NULL;
-	guint length;
-	guint i;
 	GPtrArray *array_messages = NULL;
-	PkMessage *message;
-	PkMessageEnum message_type;
+	guint i;
+	guint length;
+	PkPackageSack *sack = NULL;
+	PkPackageSack *untrusted_sack = NULL;
+	PkResults *results;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -353,25 +352,16 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		goto out;
 	}
 
-	/* if we did a simulate and we got a message that a package was untrusted,
-	 * there's no point trying to do the action with only-trusted */
-	if (state->simulate && state->only_trusted) {
-		array_messages = pk_results_get_message_array (state->results);
-		for (i = 0; i < array_messages->len; i++) {
-			message = g_ptr_array_index (array_messages, i);
-			g_object_get (message,
-				      "type", &message_type,
-				      NULL);
-			if (message_type == PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE) {
-				g_debug ("we got an untrusted message, so skipping only-trusted");
-				state->only_trusted = FALSE;
-				break;
-			}
-		}
-	}
-
 	/* get data */
 	sack = pk_results_get_package_sack (results);
+
+	/* if we did a simulate and we got a message that a package was untrusted,
+	 * there's no point trying to do the action with only-trusted */
+	untrusted_sack = pk_package_sack_filter_by_info (sack, PK_INFO_ENUM_UNTRUSTED);
+	if (pk_package_sack_get_size (untrusted_sack) > 0) {
+		g_debug ("we got an untrusted message, so skipping only-trusted");
+		state->only_trusted = FALSE;
+	}
 
 	/* remove all the packages we want to ignore */
 	pk_package_sack_remove_by_filter (sack, pk_task_package_filter_cb, state);
@@ -401,6 +391,8 @@ out:
 		g_object_unref (results);
 	if (sack != NULL)
 		g_object_unref (sack);
+	if (untrusted_sack != NULL)
+		g_object_unref (untrusted_sack);
 	return;
 }
 
