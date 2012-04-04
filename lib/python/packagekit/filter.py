@@ -21,6 +21,7 @@
 # imports
 from .enums import *
 from .package import PackagekitPackage
+import collections
 
 class PackagekitFilter(object, PackagekitPackage):
 
@@ -83,17 +84,21 @@ class PackagekitFilter(object, PackagekitPackage):
             if self._filter_base(pkg):
                 self.package_list.append((pkg, state))
 
+        # prepare lookup table of installed packages
+        installed_dict = collections.defaultdict(list)
+        for pkg, state in self.package_list:
+            if state is INFO_INSTALLED:
+                installed_dict[self._pkg_get_name(pkg)].append(pkg)
+
         # check there are not available versions in the package list
         # that are older than the installed version
         package_list = self.package_list
         self.package_list = []
         for pkg, state in package_list:
 
-            add = True;
+            add = True
             if state is INFO_AVAILABLE:
-                for pkg_tmp, state_tmp in self.package_list:
-                    if state_tmp is not INFO_INSTALLED:
-                        continue
+                for pkg_tmp in installed_dict[self._pkg_get_name(pkg)]:
                     rc = self._pkg_compare(pkg, pkg_tmp)
 
                     # don't add if the same as the installed package
