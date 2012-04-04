@@ -39,6 +39,8 @@ DebFile::DebFile(const std::string &filename)
     if(!m_extractor->Read(deb)) {
       m_isValid = false;
       return;
+    } else {
+	m_isValid = true;
     }
 
     m_controlData = m_extractor->Section;
@@ -77,6 +79,19 @@ std::string DebFile::architecture() const
 std::string DebFile::conflicts() const
 {
     return m_controlData.FindS("Conflicts");
+}
+
+std::string DebFile::summary() const
+{
+    std::string longDesc = description ();
+    longDesc.resize (longDesc.find_first_of ("\n"));
+
+    return longDesc;
+}
+
+std::string DebFile::description() const
+{
+    return m_controlData.FindS("Description");
 }
 
 bool DebFile::check()

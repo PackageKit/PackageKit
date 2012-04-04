@@ -1884,6 +1884,13 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 		return false;
 	}
 
+	// Build package-id for the new package
+	gchar *deb_package_id = pk_package_id_build (deb.packageName ().c_str (),
+						 deb.version ().c_str (),
+						 deb.architecture ().c_str (),
+						 "local");
+	const gchar *deb_summary = deb.summary ().c_str ();
+
 	gint status;
 	gchar **argv;
 	gchar **envp;
@@ -1903,6 +1910,9 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 	envp[2] = g_strdup_printf("DEBCONF_PIPE=%s", pk_backend_get_frontend_socket(m_backend));
 	envp[3] = NULL;
 
+	// We're installing the package now...
+	pk_backend_package (m_backend, PK_INFO_ENUM_INSTALLING, deb_package_id, deb_summary);
+
 	g_spawn_sync(NULL, // working dir
 			argv,
 			envp,
@@ -1915,7 +1925,6 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 			&error);
 	int exit_code = WEXITSTATUS(status);
 
-	cout << argv[2] << endl;
 	cout << "DpkgOut: " << std_out << endl;
 	cout << "DpkgErr: " << std_err << endl;
 
@@ -1936,7 +1945,8 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 	}
 
 	// Emit data of the now-installed DEB package
-	//emit_package("",  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+	pk_backend_package (m_backend, PK_INFO_ENUM_INSTALLED, deb_package_id, deb_summary);
+	g_free (deb_package_id);
 
 	return true;
 }
