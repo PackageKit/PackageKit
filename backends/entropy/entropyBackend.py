@@ -896,11 +896,19 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
-        scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
-            quiet = True)
-        if scandata is None:
-            return
-        if len(scandata) > 0:
+        has_updates = False
+        if hasattr(self._entropy, "ConfigurationUpdates"):
+            updates = self._entropy.ConfigurationUpdates()
+            scandata = updates.get(quiet=True)
+            has_updates = len(scandata) > 0
+        else:
+            scandata = self._entropy.PackageFileUpdates().scan(
+                dcache = True, quiet = True)
+            if scandata is None:
+                return
+            has_updates = len(scandata) > 0
+
+        if has_updates:
             message = "Some configuration files need updating."
             message += ";You should use 'equo conf update' to update them"
             message += ";If you can't do that, ask your system administrator."
