@@ -1,3 +1,42 @@
+Version 0.6.22
+~~~~~~~~~~~~~~
+Released: 2012-04-11
+
+Backends:
+ - alpm: Add GPGDir config option (Jonathan Conder)
+ - alpm: Add new error codes (Jonathan Conder)
+ - alpm: Allow forced install of untrusted packages (Jonathan Conder)
+ - alpm: Fix freedesktop.org bug #44713 (Jonathan Conder)
+ - alpm: Fix locale and proxy support (Jonathan Conder)
+ - alpm: Implement preliminary signature checking (Jonathan Conder)
+ - alpm: Make use of new package origin API (Jonathan Conder)
+ - alpm: Port configuration logic to new API (Jonathan Conder)
+ - alpm: Port enum constants to new API (Jonathan Conder)
+ - alpm: Port error messagess to new API (Jonathan Conder)
+ - alpm: Port function calls to new API (Jonathan Conder)
+ - alpm: Port public structs to new API (Jonathan Conder)
+ - alpm: Port type names to new API (Jonathan Conder)
+ - alpm: Remove ShowSize option, add VerbosePkgLists (Jonathan Conder)
+ - alpm: Report new informational updates to frontend (Jonathan Conder)
+ - alpm: Update error codes again (Jonathan Conder)
+ - entropy: Add support to ConfigurationUpdates (Fabio Erculiani)
+ - entropy: Drop PK_BACKEND_OPTIONS macro usage (Fabio Erculiani)
+ - portage: Drop PK_BACKEND_OPTIONS macro usage (Fabio Erculiani)
+ - portage: Port code to new Layman API and fix usage with newer Portage API (Fabio Erculiani)
+ - yum: Always set GPG checking members if present (Nils Philippsen)
+ - yum: Don't request authorization for trusted packages (Nils Philippsen)
+ - zif: Ensure the files are sorted by name before returning them to the daemon (Richard Hughes)
+ - zif: Fix segfault of the daemon when a program does Resolve("") (Richard Hughes)
+
+Bugfixes:
+ - browser-plugin: Make it compile with newest xulrunner (Matthias Klumpp)
+ - Do not allow an empty resolve call to be passed down to the backends (Richard Hughes)
+ - Drop --print-reply from dbus-send command used on suspend/resume (Adam Williamson)
+ - Fix builddir != srcdir issue (Ryan Lortie)
+ - Fix transfer annotation of pk_results_get_package_sack (Vincent Untz)
+ - Fix transfer annotations for GPtrArray returns (Martin Pitt)
+ - python: Speed up get_package_list (Tomáš Trnka)
+
 Version 0.6.21
 ~~~~~~~~~~~~~~
 Released: 2011-12-05

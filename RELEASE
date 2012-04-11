@@ -7,7 +7,7 @@ git shortlog PACKAGEKIT_0_6_21.. | grep -i -v trivial | grep -v Merge > NEWS.new
 --------------------------------------------------------------------------------
 Version 0.6.22
 ~~~~~~~~~~~~~~
-Released: 2011-xx-xx
+Released: 2012-xx-xx
 
 Notes:
 
