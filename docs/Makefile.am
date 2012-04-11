@@ -1,8 +1,7 @@
 NULL =
 
 SUBDIRS = 						\
-	api						\
-	html
+	api
 
 MAINTAINERCLEANFILES =					\
 	packagekit-qt

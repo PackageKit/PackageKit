@@ -345,13 +345,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files docs
 %defattr(-,root,root,-)
 %{_datadir}/gtk-doc/html/PackageKit
-%dir %{_datadir}/PackageKit/website
-%{_datadir}/PackageKit/website/*.html
-%{_datadir}/PackageKit/website/*.css
-%dir %{_datadir}/PackageKit/website/img
-%{_datadir}/PackageKit/website/img/*.png
-%dir %{_datadir}/PackageKit/website/img/thumbnails
-%{_datadir}/PackageKit/website/img/thumbnails/*.png
 
 %if 0%{?rhel} == 0
 %files smart

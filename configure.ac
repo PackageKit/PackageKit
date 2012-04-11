@@ -736,10 +736,6 @@ AC_CONFIG_FILES([
 Makefile
 etc/Makefile
 docs/Makefile
-docs/html/Makefile
-docs/html/img/Makefile
-docs/html/img/thumbnails/Makefile
-docs/html/videos/Makefile
 docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
