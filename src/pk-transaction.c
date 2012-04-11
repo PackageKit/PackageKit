@@ -4449,7 +4449,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Too few items to process");
 		pk_transaction_release_tid (transaction);
-		goto out;
+		return;
 	}
 	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumItemsToResolve");
 	if (length > max_length) {
