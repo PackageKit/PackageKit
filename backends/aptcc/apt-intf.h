@@ -68,7 +68,7 @@ public:
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
-	PkgList resolvePI(gchar **package_ids);
+        PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
 	bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
 	bool markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag);
@@ -104,6 +104,9 @@ public:
 			  const pkgCache::VerIterator &ver,
 			  PkBitfield filters = PK_FILTER_ENUM_NONE,
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+        
+        bool matchPackage(const PkgPair &package, PkBitfield filters);
+        PkgList filterPackages(PkgList &packages, PkBitfield filters);
 
 	void emit_packages(PkgList &output,
 			   PkBitfield filters = PK_FILTER_ENUM_NONE,

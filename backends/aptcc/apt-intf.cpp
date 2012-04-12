@@ -261,6 +261,118 @@ pkgCache::VerIterator AptIntf::find_ver(const pkgCache::PkgIterator &pkg)
 	return pkg.VersionList();
 }
 
+bool AptIntf::matchPackage(const PkgPair &pair, PkBitfield filters)
+{    
+    if (filters != 0) {
+        const pkgCache::PkgIterator &pkg = pair.first;
+        const pkgCache::VerIterator &ver = pair.second;
+        bool installed = false;
+
+        // Check if the package is installed
+        if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
+            installed = false;
+        }
+        
+        // if we are on multiarch check also the arch filter
+        if (m_isMultiArch && pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH)/* && !installed*/) {
+            // don't emit the package if it does not match
+            // the native architecture
+            if (strcmp(ver.Arch(), "all") != 0 &&
+                strcmp(ver.Arch(), _config->Find("APT::Architecture").c_str()) != 0) {
+                return false;
+            }
+        }
+
+        std::string str = ver.Section() == NULL ? "" : ver.Section();
+        std::string section, repo_section;
+        
+        size_t found;
+        found = str.find_last_of("/");
+        section = str.substr(found + 1);
+        repo_section = str.substr(0, found);
+        
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed) {
+            return false;
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed) {
+            return false;
+        }
+                
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+            // if ver.end() means unknow
+            // strcmp will be true when it's different than devel
+            std::string pkgName = pkg.Name();
+            if (!ends_with(pkgName, "-dev") &&
+                !ends_with(pkgName, "-dbg") &&
+                section.compare("devel") &&
+                section.compare("libdevel")) {
+                return false;
+            }
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+            std::string pkgName = pkg.Name();
+            if (ends_with(pkgName, "-dev") ||
+                ends_with(pkgName, "-dbg") ||
+                !section.compare("devel") ||
+                !section.compare("libdevel")) {
+                return false;
+            }
+        }
+    
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI)) {
+            // if ver.end() means unknow
+            // strcmp will be true when it's different than x11
+            if (section.compare("x11") && section.compare("gnome") &&
+                section.compare("kde") && section.compare("graphics")) {
+                return false;
+            }
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI)) {
+            if (!section.compare("x11") || !section.compare("gnome") ||
+                !section.compare("kde") || !section.compare("graphics")) {
+                return false;
+            }
+        }
+    
+        // TODO add Ubuntu handling
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE)) {
+            if (!repo_section.compare("contrib") ||
+                !repo_section.compare("non-free")) {
+                return false;
+            }
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE)) {
+            if (repo_section.compare("contrib") &&
+                repo_section.compare("non-free")) {
+                return false;
+            }
+        }
+    
+        // TODO test this one..
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_COLLECTIONS)) {
+            if (!repo_section.compare("metapackages")) {
+                return false;
+            }
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
+            if (repo_section.compare("metapackages")) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+PkgList AptIntf::filterPackages(PkgList &packages, PkBitfield filters)
+{
+    if (filters != 0) {
+        PkgList ret;
+        for (PkgList::iterator i = packages.begin(); i != packages.end(); ++i) {
+            if (matchPackage(*i, filters)) {
+                ret.push_back(*i);
+            }
+        }
+        return ret;
+    } else {
+        return packages;
+    }
+}
+
 // used to emit packages it collects all the needed info
 void AptIntf::emit_package(const pkgCache::PkgIterator &pkg,
 			 const pkgCache::VerIterator &ver,
@@ -275,7 +387,7 @@ void AptIntf::emit_package(const pkgCache::PkgIterator &pkg,
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
 		}
-	}
+	}   
 
 	if (m_isMultiArch &&
 	   (pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH) && state == PK_INFO_ENUM_AVAILABLE)) {
@@ -1680,7 +1792,7 @@ bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
 	return true;
 }
 
-PkgList AptIntf::resolvePI(gchar **package_ids)
+PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
 {
     gchar *pi;
     PkgList ret;
@@ -1691,7 +1803,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
     if (package_ids == NULL)
 	    return ret;
 
-    for (uint i = 0; i < g_strv_length(package_ids); i++) {
+    for (uint i = 0; i < g_strv_length(package_ids); ++i) {
         if (_cancel) {
             break;
         }
@@ -1701,7 +1813,8 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
 
         // Check if it's a valid package id
         if (pk_package_id_check(pi) == false) {
-            if (m_isMultiArch) {
+            // Check if we are on multiarch AND if the package name didn't contains the arch field (GDEBI for instance)
+            if (m_isMultiArch && strstr(pi, ":") == NULL) {
                 // OK FindPkg is not suitable for muitarch
                 // it can only return one package in this case we need to
                 // search the whole package cache and match the package
@@ -1763,7 +1876,8 @@ PkgList AptIntf::resolvePI(gchar **package_ids)
             }
         }
     }
-    return ret;
+
+    return filterPackages(ret, filters);
 }
 
 bool AptIntf::markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag)
@@ -1837,9 +1951,21 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
 		g_free(removeStr);
 	}
 
-        // Store the changes
-        install = resolvePI(installPkgs);
-        remove = resolvePI(removePkgs);
+        // Resolve the packages to install
+        PkBitfield intallFilters;
+        intallFilters = pk_bitfield_from_enums (
+            PK_FILTER_ENUM_NOT_INSTALLED,
+            PK_FILTER_ENUM_ARCH,
+            -1);
+        install = resolvePI(installPkgs, intallFilters);
+
+        // Resolve the packages to remove
+        PkBitfield removeFilters;
+        removeFilters = pk_bitfield_from_enums (
+            PK_FILTER_ENUM_INSTALLED,
+            PK_FILTER_ENUM_ARCH,
+            -1);
+        remove = resolvePI(removePkgs, removeFilters);
         m_localDebFile = file;
 
         g_strfreev(lines);
