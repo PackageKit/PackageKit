@@ -232,37 +232,35 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 }
 
 
-void AcqPackageKitStatus::addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair)
+void AcqPackageKitStatus::addPackagePair(PkgPair packagePair)
 {
 	packages.push_back(packagePair);
 }
 
 void AcqPackageKitStatus::emit_package(const string &name, bool finished)
 {
-	if (name.compare(last_package_name) != 0 && packages.size()) {
-		// find the package
-		for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
-			    it != packages.end(); ++it)
-		{
-			if (_cancelled) {
-				break;
-			}
-			// try to see if any package matches
-			if (name.compare(it->first.Name()) == 0) {
-				m_apt->emit_package(it->first,
-						    it->second,
-						    PK_INFO_ENUM_UNKNOWN,
-							finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
-				last_package_name = name;
+    if (name.compare(last_package_name) != 0 && packages.size()) {
+        // find the package
+        for (PkgList::iterator it = packages.begin(); it != packages.end(); ++it) {
+            if (_cancelled) {
+                break;
+            }
 
-				// Find the downloading item
-				if (finished) {
-					currentPackages.erase(name);
-				} else {
-					currentPackages.insert(name);
-				}
-				break;
-			}
-		}
-	}
+            // try to see if any package matches
+            if (name.compare(it->first.Name()) == 0) {
+                m_apt->emit_package(*it,
+                                    PK_INFO_ENUM_UNKNOWN,
+                                    finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
+                last_package_name = name;
+
+                // Find the downloading item
+                if (finished) {
+                    currentPackages.erase(name);
+                } else {
+                    currentPackages.insert(name);
+                }
+                break;
+            }
+        }
+    }
 }

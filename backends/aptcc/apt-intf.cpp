@@ -180,61 +180,61 @@ AptIntf::~AptIntf()
 
 void AptIntf::cancel()
 {
-	if (!_cancel) {
-		_cancel = true;
-	        pk_backend_set_status(m_backend, PK_STATUS_ENUM_CANCEL);
-	}
-	if (m_child_pid > 0) {
-		kill(m_child_pid, SIGTERM);
-	}
+    if (!_cancel) {
+        _cancel = true;
+        pk_backend_set_status(m_backend, PK_STATUS_ENUM_CANCEL);
+    }
+    if (m_child_pid > 0) {
+        kill(m_child_pid, SIGTERM);
+    }
 }
 
-pair<pkgCache::PkgIterator, pkgCache::VerIterator>
-		      AptIntf::find_package_id(const gchar *package_id, bool &found)
+PkgPair AptIntf::find_package_id(const gchar *package_id, bool &found)
 {
-	gchar **parts;
-	pkgCache::VerIterator ver;
-	pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+    gchar **parts;
+    pkgCache::VerIterator ver;
+    PkgPair pkg_ver;
 
-	found = true;
+    found = true;
 
-	parts = pk_package_id_split (package_id);
-	gchar *pkgNameArch;
-	pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
-	pkg_ver.first = packageCache->FindPkg(pkgNameArch);
-	g_free(pkgNameArch);
+    parts = pk_package_id_split (package_id);
+    gchar *pkgNameArch;
+    pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
+    pkg_ver.first = packageCache->FindPkg(pkgNameArch);
+    g_free(pkgNameArch);
 
-	// Ignore packages that could not be found or that exist only due to dependencies.
-	if (pkg_ver.first.end() == true ||
-	    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
-	{
-		g_strfreev (parts);
-		return pkg_ver;
-	}
+    // Ignore packages that could not be found or that exist only due to dependencies.
+    if (pkg_ver.first.end() == true ||
+        (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
+    {
+        g_strfreev(parts);
+        return pkg_ver;
+    }
 
-	ver = find_ver(pkg_ver.first);
-	// check to see if the provided package isn't virtual too
-	if (ver.end() == false &&
-	    strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-	{
-		g_strfreev (parts);
-		pkg_ver.second = ver;
-		return pkg_ver;
-	}
+    ver = find_ver(pkg_ver.first);
+    // check to see if the provided package isn't virtual too
+    if (ver.end() == false &&
+        strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+    {
+        g_strfreev(parts);
+        pkg_ver.second = ver;
+        return pkg_ver;
+    }
 
-	ver = find_candidate_ver(pkg_ver.first);
-	// check to see if the provided package isn't virtual too
-	if (ver.end() == false &&
-	    strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-	{
-		g_strfreev (parts);
-		pkg_ver.second = ver;
-		return pkg_ver;
-	}
+    ver = find_candidate_ver(pkg_ver.first);
+    // check to see if the provided package isn't virtual too
+    if (ver.end() == false &&
+        strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+    {
+        g_strfreev(parts);
+        pkg_ver.second = ver;
+        return pkg_ver;
+    }
 
     found = false;
-	g_strfreev (parts);
-	return pkg_ver;
+    g_strfreev (parts);
+
+    return pkg_ver;
 }
 
 pkgCache::VerIterator AptIntf::find_candidate_ver(const pkgCache::PkgIterator &pkg)
@@ -374,186 +374,105 @@ PkgList AptIntf::filterPackages(PkgList &packages, PkBitfield filters)
 }
 
 // used to emit packages it collects all the needed info
-void AptIntf::emit_package(const pkgCache::PkgIterator &pkg,
-			 const pkgCache::VerIterator &ver,
-			 PkBitfield filters,
-			 PkInfoEnum state)
+void AptIntf::emit_package(const PkgPair &pair,
+                           PkBitfield filters,
+                           PkInfoEnum state)
 {
-	// check the state enum to see if it was not set.
-	if (state == PK_INFO_ENUM_UNKNOWN) {
+    const pkgCache::PkgIterator &pkg = pair.first;
+    const pkgCache::VerIterator &ver = pair.second;
+
+    // check the state enum to see if it was not set.
+    if (state == PK_INFO_ENUM_UNKNOWN) {
         if (pkg->CurrentState == pkgCache::State::Installed &&
             pkg.CurrentVer() == ver) {
-			state = PK_INFO_ENUM_INSTALLED;
-		} else {
-			state = PK_INFO_ENUM_AVAILABLE;
-		}
-	}   
+            state = PK_INFO_ENUM_INSTALLED;
+        } else {
+            state = PK_INFO_ENUM_AVAILABLE;
+        }
+    }   
 
-	if (m_isMultiArch &&
-	   (pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH) && state == PK_INFO_ENUM_AVAILABLE)) {
-		// don't emit the package if it does not match
-		// the native architecture
-			if (strcmp(ver.Arch(), "all") != 0 &&
-			strcmp(ver.Arch(), _config->Find("APT::Architecture").c_str()) != 0) {
-				return;
-			}
-	}
+    // Check if the filters match the package
+    if (!matchPackage(pair, filters)) {
+        return;
+    }
+        
+    pkgCache::VerFileIterator vf = ver.FileList();
 
-	if (filters != 0) {
-		std::string str = ver.Section() == NULL ? "" : ver.Section();
-		std::string section, repo_section;
-
-		size_t found;
-		found = str.find_last_of("/");
-		section = str.substr(found + 1);
-		repo_section = str.substr(0, found);
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)
-		    && state == PK_INFO_ENUM_INSTALLED) {
-			return;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)
-		    && state == PK_INFO_ENUM_AVAILABLE) {
-			return;
-		}
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
-			// if ver.end() means unknow
-			// strcmp will be true when it's different than devel
-			std::string pkgName = pkg.Name();
-			if (!ends_with(pkgName, "-dev") &&
-			    !ends_with(pkgName, "-dbg") &&
-			    section.compare("devel") &&
-			    section.compare("libdevel")) {
-				return;
-			}
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-			std::string pkgName = pkg.Name();
-			if (ends_with(pkgName, "-dev") ||
-			    ends_with(pkgName, "-dbg") ||
-			    !section.compare("devel") ||
-			    !section.compare("libdevel")) {
-				return;
-			}
-		}
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
-			// if ver.end() means unknow
-			// strcmp will be true when it's different than x11
-			if (section.compare("x11") && section.compare("gnome") &&
-			    section.compare("kde") && section.compare("graphics")) {
-				return;
-			}
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
-			if (!section.compare("x11") || !section.compare("gnome") ||
-			    !section.compare("kde") || !section.compare("graphics")) {
-				return;
-			}
-		}
-
-		// TODO add Ubuntu handling
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
-			if (!repo_section.compare("contrib") ||
-			    !repo_section.compare("non-free")) {
-				return;
-			}
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
-			if (repo_section.compare("contrib") &&
-			    repo_section.compare("non-free")) {
-				return;
-			}
-		}
-
-		// TODO test this one..
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_COLLECTIONS)) {
-			if (!repo_section.compare("metapackages")) {
-				return;
-			}
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
-			if (repo_section.compare("metapackages")) {
-				return;
-			}
-		}
-
-	}
-	pkgCache::VerFileIterator vf = ver.FileList();
-
-	gchar *package_id;
-	package_id = pk_package_id_build(pkg.Name(),
-					 ver.VerStr(),
-					 ver.Arch(),
-					 vf.File().Archive() == NULL ? "" : vf.File().Archive());
-	pk_backend_package(m_backend,
-			   state,
-			   package_id,
-			   get_short_description(ver, packageRecords).c_str());
-        g_free(package_id);
+    gchar *package_id;
+    package_id = pk_package_id_build(pkg.Name(),
+                                     ver.VerStr(),
+                                     ver.Arch(),
+                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
+    pk_backend_package(m_backend,
+                       state,
+                       package_id,
+                       get_short_description(ver, packageRecords).c_str());
+    g_free(package_id);
 }
 
 void AptIntf::emit_packages(PkgList &output,
-			  PkBitfield filters,
-			  PkInfoEnum state)
+                            PkBitfield filters,
+                            PkInfoEnum state)
 {
-	// Sort so we can remove the duplicated entries
-	sort(output.begin(), output.end(), compare());
-	// Remove the duplicated entries
-	output.erase(unique(output.begin(),
-			    output.end(),
-			    result_equality()),
-		     output.end());
+    // Sort so we can remove the duplicated entries
+    sort(output.begin(), output.end(), compare());
 
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
-		emit_package(i->first, i->second, filters, state);
-	}
+    // Remove the duplicated entries
+    output.erase(unique(output.begin(),
+                        output.end(),
+                        result_equality()),
+                 output.end());
+
+    for (PkgList::iterator i = output.begin(); i != output.end(); ++i) {
+        if (_cancel) {
+            break;
+        }
+
+        emit_package(*i, filters, state);
+    }
 }
 
 void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
 {
-	PkInfoEnum state;
-	// Sort so we can remove the duplicated entries
-	sort(output.begin(), output.end(), compare());
-	// Remove the duplicated entries
-	output.erase(unique(output.begin(),
-			    output.end(),
-			    result_equality()),
-		     output.end());
+    PkInfoEnum state;
+    // Sort so we can remove the duplicated entries
+    sort(output.begin(), output.end(), compare());
+    // Remove the duplicated entries
+    output.erase(unique(output.begin(),
+                        output.end(),
+                        result_equality()),
+                    output.end());
 
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
-	    i != output.end(); ++i)
-	{
-		if (_cancel) {
-			break;
-		}
+    for (PkgList::iterator i = output.begin(); i != output.end(); ++i) {
+        if (_cancel) {
+            break;
+        }
 
-		// the default update info
-		state = PK_INFO_ENUM_NORMAL;
+        // the default update info
+        state = PK_INFO_ENUM_NORMAL;
 
-		// let find what kind of upgrade this is
-		pkgCache::VerFileIterator vf = i->second.FileList();
-		std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
-		std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
-		std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
-		if (origin.compare("Debian") == 0 ||
-		    origin.compare("Ubuntu") == 0) {
-			if (ends_with(archive, "-security") ||
-			    label.compare("Debian-Security") == 0) {
-				state = PK_INFO_ENUM_SECURITY;
-			} else if (ends_with(archive, "-backports")) {
-				state = PK_INFO_ENUM_ENHANCEMENT;
-			} else if (ends_with(archive, "-updates")) {
-				state = PK_INFO_ENUM_BUGFIX;
-			}
-		} else if (origin.compare("Backports.org archive") == 0 ||
-				   ends_with(origin, "-backports")) {
-			state = PK_INFO_ENUM_ENHANCEMENT;
-		}
+        // let find what kind of upgrade this is
+        pkgCache::VerFileIterator vf = i->second.FileList();
+        std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+        std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
+        std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
+        if (origin.compare("Debian") == 0 ||
+            origin.compare("Ubuntu") == 0) {
+            if (ends_with(archive, "-security") ||
+                label.compare("Debian-Security") == 0) {
+                state = PK_INFO_ENUM_SECURITY;
+            } else if (ends_with(archive, "-backports")) {
+                state = PK_INFO_ENUM_ENHANCEMENT;
+            } else if (ends_with(archive, "-updates")) {
+                state = PK_INFO_ENUM_BUGFIX;
+            }
+        } else if (origin.compare("Backports.org archive") == 0 ||
+                            ends_with(origin, "-backports")) {
+            state = PK_INFO_ENUM_ENHANCEMENT;
+        }
 
-		emit_package(i->first, i->second, filters, state);
-	}
+        emit_package(*i, filters, state);
+    }
 }
 
 // search packages which provide a codec (specified in "values")
@@ -591,7 +510,7 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         rec.GetRec(start, stop);
         string record(start, stop - start);
         if (matcher->matches(record)) {
-            output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+            output.push_back(PkgPair(pkg, ver));
         }
     }
 
@@ -601,71 +520,73 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
 // search packages which provide the libraries specified in "values"
 void AptIntf::providesLibrary(PkgList &output, gchar **values)
 {
-	bool ret = false;
-	// Quick-check for library names
-	for (uint i = 0; i < g_strv_length(values); i++)
-		if (g_str_has_prefix (values[i], "lib")) {
-			ret = true;
-			break;
-		}
-	if (!ret)
-		return;
+    bool ret = false;
+    // Quick-check for library names
+    for (uint i = 0; i < g_strv_length(values); i++) {
+        if (g_str_has_prefix (values[i], "lib")) {
+            ret = true;
+            break;
+        }
+    }
 
-	const char *libreg_str = "^\\(lib.*\\)\\.so\\.[0-9]*";
-	g_debug ("RegStr: %s", libreg_str);
-	regex_t libreg;
-	if(regcomp(&libreg, libreg_str, 0) != 0) {
-		g_debug("Regex compilation error: ", libreg);
-		return;
-	}
+    if (!ret) {
+        return;
+    }
 
-	gchar *value;
-	for (uint i = 0; i < g_strv_length(values); i++) {
-		value = values[i];
-		regmatch_t matches[2];
-		if (regexec(&libreg, value, 2, matches, 0) != REG_NOMATCH) {
-			string libPkgName = string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
+    const char *libreg_str = "^\\(lib.*\\)\\.so\\.[0-9]*";
+    g_debug("RegStr: %s", libreg_str);
+    regex_t libreg;
+    if(regcomp(&libreg, libreg_str, 0) != 0) {
+        g_debug("Regex compilation error: ", libreg);
+        return;
+    }
 
-			string strvalue = string(value);
-			ssize_t pos = strvalue.find (".so.");
-			if ((pos != string::npos) && (pos > 0)) {
-				// If last char is a number, add a "-" (to be policy-compliant)
-				if (g_ascii_isdigit (libPkgName.at (libPkgName.length () - 1)))
-					libPkgName.append ("-");
+    gchar *value;
+    for (uint i = 0; i < g_strv_length(values); i++) {
+        value = values[i];
+        regmatch_t matches[2];
+        if (regexec(&libreg, value, 2, matches, 0) != REG_NOMATCH) {
+            string libPkgName = string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
 
-				libPkgName.append (strvalue.substr (pos + 4));
-			}
+            string strvalue = string(value);
+            ssize_t pos = strvalue.find (".so.");
+            if ((pos != string::npos) && (pos > 0)) {
+                    // If last char is a number, add a "-" (to be policy-compliant)
+                if (g_ascii_isdigit (libPkgName.at (libPkgName.length () - 1))) {
+                    libPkgName.append ("-");
+                }
 
-			g_debug ("pkg-name: %s", libPkgName.c_str ());
+                libPkgName.append (strvalue.substr (pos + 4));
+            }
 
-			for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-				// Ignore packages that exist only due to dependencies.
-				if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-				continue;
-				}
+            g_debug ("pkg-name: %s", libPkgName.c_str ());
 
-				// TODO: Ignore virtual packages
-				pkgCache::VerIterator ver = find_ver (pkg);
-				if (ver.end() == true) {
-					ver = find_candidate_ver(pkg);
-					if (ver.end() == true) {
-						continue;
-					}
-				}
+            for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
+                // Ignore packages that exist only due to dependencies.
+                if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+                    continue;
+                }
 
-				// Make everything lower-case
-				std::transform(libPkgName.begin(), libPkgName.end(), libPkgName.begin(), ::tolower);
+                // TODO: Ignore virtual packages
+                pkgCache::VerIterator ver = find_ver (pkg);
+                if (ver.end() == true) {
+                    ver = find_candidate_ver(pkg);
+                    if (ver.end() == true) {
+                        continue;
+                    }
+                }
 
-				if (g_strcmp0 (pkg.Name (), libPkgName.c_str ()) == 0) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
-				}
-			}
+                // Make everything lower-case
+                std::transform(libPkgName.begin(), libPkgName.end(), libPkgName.begin(), ::tolower);
 
-		} else {
-			g_debug("libmatcher: Did not match: %s", value);
-		}
-	}
-
+                if (g_strcmp0 (pkg.Name (), libPkgName.c_str ()) == 0) {
+                    output.push_back(PkgPair(pkg, ver));
+                }
+            }
+        } else {
+            g_debug("libmatcher: Did not match: %s", value);
+        }
+    }
 }
 
 // used to emit packages it collects all the needed info
@@ -983,69 +904,67 @@ void AptIntf::emitUpdateDetails(PkgList &pkgs)
 }
 
 void AptIntf::get_depends(PkgList &output,
-			pkgCache::PkgIterator pkg,
-			bool recursive)
+                          pkgCache::PkgIterator pkg,
+                          bool recursive)
 {
-	pkgCache::DepIterator dep = find_ver(pkg).DependsList();
-	while (!dep.end()) {
-		if (_cancel) {
-			break;
-		}
-		pkgCache::VerIterator ver = find_ver(dep.TargetPkg());
-		// Ignore packages that exist only due to dependencies.
-		if (ver.end()) {
-			dep++;
-			continue;
-		} else if (dep->Type == pkgCache::Dep::Depends) {
-			if (recursive) {
-				if (!contains(output, dep.TargetPkg())) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
-					get_depends(output, dep.TargetPkg(), recursive);
-				}
-			} else {
-				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(dep.TargetPkg(), ver));
-			}
-		}
-		dep++;
-	}
+    pkgCache::DepIterator dep = find_ver(pkg).DependsList();
+    while (!dep.end()) {
+        if (_cancel) {
+            break;
+        }
+
+        pkgCache::VerIterator ver = find_ver(dep.TargetPkg());
+        // Ignore packages that exist only due to dependencies.
+        if (ver.end()) {
+            dep++;
+            continue;
+        } else if (dep->Type == pkgCache::Dep::Depends) {
+            if (recursive) {
+                if (!contains(output, dep.TargetPkg())) {
+                    output.push_back(PkgPair(dep.TargetPkg(), ver));
+                    get_depends(output, dep.TargetPkg(), recursive);
+                }
+            } else {
+                output.push_back(PkgPair(dep.TargetPkg(), ver));
+            }
+        }
+        dep++;
+    }
 }
 
 void AptIntf::get_requires(PkgList &output,
-			pkgCache::PkgIterator pkg,
-			bool recursive)
+                           pkgCache::PkgIterator pkg,
+                           bool recursive)
 {
-	for (pkgCache::PkgIterator parentPkg = packageCache->PkgBegin(); !parentPkg.end(); ++parentPkg) {
-		if (_cancel) {
-			break;
-		}
-		// Ignore packages that exist only due to dependencies.
-		if (parentPkg.VersionList().end() && parentPkg.ProvidesList().end()) {
-			continue;
-		}
+    for (pkgCache::PkgIterator parentPkg = packageCache->PkgBegin(); !parentPkg.end(); ++parentPkg) {
+        if (_cancel) {
+            break;
+        }
+        // Ignore packages that exist only due to dependencies.
+        if (parentPkg.VersionList().end() && parentPkg.ProvidesList().end()) {
+            continue;
+        }
 
-		// Don't insert virtual packages instead add what it provides
-		pkgCache::VerIterator ver = find_ver(parentPkg);
-		if (ver.end() == false) {
-			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > deps;
-			get_depends(deps, parentPkg, false);
-			for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=deps.begin();
-			    i != deps.end();
-			    ++i)
-			{
-				if (i->first == pkg) {
-					if (recursive) {
-						if (!contains(output, parentPkg)) {
-							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
-							get_requires(output, parentPkg, recursive);
-						}
-					} else {
-						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(parentPkg, ver));
-					}
-					break;
-				}
-			}
-		}
-	}
+        // Don't insert virtual packages instead add what it provides
+        pkgCache::VerIterator ver = find_ver(parentPkg);
+        if (ver.end() == false) {
+            PkgList deps;
+            get_depends(deps, parentPkg, false);
+            for (PkgList::iterator i=deps.begin(); i != deps.end(); ++i) {
+                if (i->first == pkg) {
+                    if (recursive) {
+                        if (!contains(output, parentPkg)) {
+                            output.push_back(PkgPair(parentPkg, ver));
+                            get_requires(output, parentPkg, recursive);
+                        }
+                    } else {
+                        output.push_back(PkgPair(parentPkg, ver));
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
@@ -1389,89 +1308,85 @@ bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
 /* */
 void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
 {
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > installing,
-								    removing,
-								    updating,
-								    downgrading;
+    PkgList installing;
+    PkgList removing;
+    PkgList updating;
+    PkgList downgrading;
 
-	string VersionsList;
-	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
-	{
-		if (Cache[pkg].NewInstall() == true) {
-			// installing
-			installing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		} else if (Cache[pkg].Delete() == true) {
-			// removing
-			removing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_ver(pkg)));
-		} else if (Cache[pkg].Upgrade() == true) {
-			// updating
-			updating.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		} else if (Cache[pkg].Downgrade() == true) {
-			// downgrading
-			downgrading.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		}
-	}
+    string VersionsList;
+    for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
+    {
+        if (Cache[pkg].NewInstall() == true) {
+            // installing
+            installing.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        } else if (Cache[pkg].Delete() == true) {
+            // removing
+            removing.push_back(PkgPair(pkg, find_ver(pkg)));
+        } else if (Cache[pkg].Upgrade() == true) {
+            // updating
+            updating.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        } else if (Cache[pkg].Downgrade() == true) {
+            // downgrading
+            downgrading.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        }
+    }
 
-	// emit packages that have changes
-	emit_packages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
-	emit_packages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
-	emit_packages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
-	emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
+    // emit packages that have changes
+    emit_packages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+    emit_packages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
+    emit_packages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+    emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
 }
 
 void AptIntf::populateInternalPackages(pkgCacheFile &Cache)
 {
-	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
-		if (Cache[pkg].NewInstall() == true) {
-			// installing
-			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		} else if (Cache[pkg].Delete() == true) {
-			// removing
-			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_ver(pkg)));
-		} else if (Cache[pkg].Upgrade() == true) {
-			// updating
-			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		} else if (Cache[pkg].Downgrade() == true) {
-			// downgrading
-			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-		}
-	}
+    for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
+        if (Cache[pkg].NewInstall() == true) {
+            // installing
+            m_pkgs.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        } else if (Cache[pkg].Delete() == true) {
+            // removing
+            m_pkgs.push_back(PkgPair(pkg, find_ver(pkg)));
+        } else if (Cache[pkg].Upgrade() == true) {
+            // updating
+            m_pkgs.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        } else if (Cache[pkg].Downgrade() == true) {
+            // downgrading
+            m_pkgs.push_back(PkgPair(pkg, find_candidate_ver(pkg)));
+        }
+    }
 }
 
 void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
 {
-	for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=m_pkgs.begin();
-	     i != m_pkgs.end();
-	     ++i)
-	{
-		if (i->first.Name() == name) {
-			emit_package(i->first, i->second, PK_FILTER_ENUM_NONE, state);
-			return;
-		}
-	}
+    for (PkgList::iterator i = m_pkgs.begin(); i != m_pkgs.end(); ++i) {
+        if (i->first.Name() == name) {
+            emit_package(*i, PK_FILTER_ENUM_NONE, state);
+            return;
+        }
+    }
 
-	pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
-	pkg_ver.first = packageCache->FindPkg(name);
-	// Ignore packages that could not be found or that exist only due to dependencies.
-	if (pkg_ver.first.end() == true ||
-	    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
-	{
-		return;
-	}
+    PkgPair pkgPair;
+    pkgPair.first = packageCache->FindPkg(name);
+    // Ignore packages that could not be found or that exist only due to dependencies.
+    if (pkgPair.first.end() == true ||
+        (pkgPair.first.VersionList().end() && pkgPair.first.ProvidesList().end())) {
+        return;
+    }
 
-	pkg_ver.second = find_ver(pkg_ver.first);
-	// check to see if the provided package isn't virtual too
-	if (pkg_ver.second.end() == false)
-	{
-		emit_package(pkg_ver.first, pkg_ver.second, PK_FILTER_ENUM_NONE, state);
-	}
+    pkgPair.second = find_ver(pkgPair.first);
+    // check to see if the provided package isn't virtual too
+    if (pkgPair.second.end() == false)
+    {
+        emit_package(pkgPair, PK_FILTER_ENUM_NONE, state);
+    }
 
-	pkg_ver.second = find_candidate_ver(pkg_ver.first);
-	// check to see if we found the package
-	if (pkg_ver.second.end() == false)
-	{
-		emit_package(pkg_ver.first, pkg_ver.second, PK_FILTER_ENUM_NONE, state);
-	}
+    pkgPair.second = find_candidate_ver(pkgPair.first);
+    // check to see if we found the package
+    if (pkgPair.second.end() == false)
+    {
+        emit_package(pkgPair, PK_FILTER_ENUM_NONE, state);
+    }
 }
 
 void AptIntf::updateInterface(int fd, int writeFd)
@@ -2289,7 +2204,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
                 }
 
                 // Append it to the list
-                Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+                Stat.addPackagePair(PkgPair(pkg, ver));
 	}
 
 	// Display statistics

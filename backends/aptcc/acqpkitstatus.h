@@ -41,7 +41,7 @@ public:
 
 	bool Pulse(pkgAcquire *Owner);
 
-	void addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair);
+	void addPackagePair(PkgPair packagePair);
 
 private:
 	PkBackend *m_backend;
@@ -54,7 +54,7 @@ private:
 	string        last_package_name;
 	AptIntf       *m_apt;
 
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages;
+    PkgList packages;
 	set<string> currentPackages;
 
 	void emit_package(const string &name, bool finished);

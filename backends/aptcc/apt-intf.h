@@ -97,16 +97,15 @@ public:
 			  pkgCache::PkgIterator pkg,
 			  bool recursive);
 
-	/**
-	 *  Emits a package if it match the filters
-	 */
-	void emit_package(const pkgCache::PkgIterator &pkg,
-			  const pkgCache::VerIterator &ver,
-			  PkBitfield filters = PK_FILTER_ENUM_NONE,
-			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+    /**
+     *  Emits a package if it match the filters
+     */
+    void emit_package(const PkgPair &pair,
+                      PkBitfield filters = PK_FILTER_ENUM_NONE,
+                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
         
-        bool matchPackage(const PkgPair &package, PkBitfield filters);
-        PkgList filterPackages(PkgList &packages, PkBitfield filters);
+    bool matchPackage(const PkgPair &pair, PkBitfield filters);
+    PkgList filterPackages(PkgList &packages, PkBitfield filters);
 
 	void emit_packages(PkgList &output,
 			   PkBitfield filters = PK_FILTER_ENUM_NONE,

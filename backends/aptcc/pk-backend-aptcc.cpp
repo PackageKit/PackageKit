@@ -188,7 +188,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 	bool depends = pk_backend_get_bool(backend, "get_depends");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	PkgList output;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		if (_cancel) {
 			break;
@@ -202,7 +202,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 			return false;
 		}
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		PkgPair pkg_ver;
         bool found;
 		pkg_ver = m_apt->find_package_id(pi, found);
 		if (!found)
@@ -293,7 +293,7 @@ backend_get_files_thread (PkBackend *backend)
 			return false;
 		}
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		PkgPair pkg_ver;
         bool found;
 		pkg_ver = m_apt->find_package_id(pi, found);
 		if (!found)
@@ -510,7 +510,7 @@ backend_what_provides_thread (PkBackend *backend)
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 		vector<string> packages;
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+		PkgList output;
 
 		if (provides == PK_PROVIDES_ENUM_SHARED_LIB) {
 			m_apt->providesLibrary (output, values);
@@ -538,7 +538,7 @@ backend_what_provides_thread (PkBackend *backend)
 			if (ver.end() == true) {
 				continue;
 			}
-			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+			output.push_back(PkgPair(pkg, ver));
 		}
 
 		if (error && provides == PK_PROVIDES_ENUM_MIMETYPE) {
@@ -649,7 +649,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 			break;
 		}
 
-		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		PkgPair pkg_ver;
         bool found;
 		pkg_ver = m_apt->find_package_id(pi, found);
 		// Ignore packages that could not be found or that exist only due to dependencies.
@@ -834,7 +834,7 @@ pk_backend_search_files_thread (PkBackend *backend)
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 		vector<string> packages = search_files (backend, values, _cancel);
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+		PkgList output;
 		for(vector<string>::iterator i = packages.begin();
 		    i != packages.end(); ++i)
 		{
@@ -850,7 +850,7 @@ pk_backend_search_files_thread (PkBackend *backend)
 			{
 				continue;
 			}
-			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+			output.push_back(PkgPair(pkg, ver));
 		}
 		// It's faster to emmit the packages here rather than in the matching part
 		m_apt->emit_packages(output, filters);
@@ -905,7 +905,7 @@ backend_search_groups_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	PkgList output;
 	for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
 		if (_cancel) {
 			break;
@@ -929,7 +929,7 @@ backend_search_groups_thread (PkBackend *backend)
 			     i != groups.end();
 			     ++i) {
 				if (*i == get_enum_group(section)) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+					output.push_back(PkgPair(pkg, ver));
 					break;
 				}
 			}
@@ -994,7 +994,7 @@ backend_search_package_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pkgDepCache::Policy Plcy;
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	PkgList output;
 	if (pk_backend_get_bool (backend, "search_details")) {
 		for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
 			if (_cancel) {
@@ -1010,7 +1010,7 @@ backend_search_package_thread (PkBackend *backend)
                 if (m_matcher->matches(pkg.Name()) ||
                     m_matcher->matches(get_long_description(ver, m_apt->packageRecords))) {
                     // The package matched
-                    output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+                    output.push_back(PkgPair(pkg, ver));
                 }
             } else if (m_matcher->matches(pkg.Name())) {
                 // The package is virtual and MATCHED the name
@@ -1025,7 +1025,7 @@ backend_search_package_thread (PkBackend *backend)
                     {
                         // we add the package now because we will need to
                         // remove duplicates later anyway
-                        output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+                        output.push_back(PkgPair(Prv.OwnerPkg(), ver));
                     }
                 }
             }
@@ -1044,7 +1044,7 @@ backend_search_package_thread (PkBackend *backend)
 				// Don't insert virtual packages instead add what it provides
 				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 				if (ver.end() == false) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+					output.push_back(PkgPair(pkg, ver));
 				} else {
 					// iterate over the provides list
 					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
@@ -1055,7 +1055,7 @@ backend_search_package_thread (PkBackend *backend)
 						{
 							// we add the package now because we will need to
 							// remove duplicates later anyway
-							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+							output.push_back(PkgPair(Prv.OwnerPkg(), ver));
 						}
 					}
 				}
@@ -1415,7 +1415,7 @@ backend_get_packages_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+	PkgList output;
 	output.reserve(m_apt->packageCache->HeaderP->PackageCount);
 	for(pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin();
 	    !pkg.end(); ++pkg)
@@ -1430,7 +1430,7 @@ backend_get_packages_thread (PkBackend *backend)
 		// Don't insert virtual packages as they don't have all kinds of info
 		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 		if (ver.end() == false) {
-			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+			output.push_back(PkgPair(pkg, ver));
 		}
 	}
 
