@@ -255,7 +255,7 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 
         // Check if the package is installed
         if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
-            installed = false;
+            installed = true;
         }
         
         // if we are on multiarch check also the arch filter
@@ -363,6 +363,11 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver,
                           PkBitfield filters,
                           PkInfoEnum state)
 {
+    // Check if the filters match the package
+    if (!matchPackage(ver, filters)) {
+        return;
+    }
+
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
 
     // check the state enum to see if it was not set.
@@ -373,11 +378,6 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver,
         } else {
             state = PK_INFO_ENUM_AVAILABLE;
         }
-    }
-
-    // Check if the filters match the package
-    if (!matchPackage(ver, filters)) {
-        return;
     }
 
     pkgCache::VerFileIterator vf = ver.FileList();
@@ -407,12 +407,12 @@ void AptIntf::emit_packages(PkgList &output,
                         result_equality()),
                  output.end());
 
-    for (PkgList::iterator i = output.begin(); i != output.end(); ++i) {
+    for (PkgList::iterator it = output.begin(); it != output.end(); ++it) {
         if (_cancel) {
             break;
         }
 
-        emitPackage(*i, filters, state);
+        emitPackage(*it, filters, state);
     }
 }
 

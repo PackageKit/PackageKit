@@ -1347,7 +1347,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
         return false;
     }
 
-    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
     PkgList output;
     output.reserve(m_apt->packageCache->HeaderP->PackageCount);
     for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin();
