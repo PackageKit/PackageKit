@@ -164,7 +164,8 @@ private:
     bool       &_cancel;
 
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
-    bool TryToInstall(const pkgCache::PkgIterator &constPkg,
+    bool packageIsSupported(const pkgCache::PkgIterator &pkgIter);
+    bool tryToInstall(const pkgCache::PkgIterator &constPkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,
                       bool Remove,
@@ -175,7 +176,7 @@ private:
      *  interprets dpkg status fd
     */
     void updateInterface(int readFd, int writeFd);
-    bool DoAutomaticRemove(pkgCacheFile &Cache);
+    bool doAutomaticRemove(pkgCacheFile &Cache);
     void emitChangedPackages(pkgCacheFile &Cache);
     bool removingEssentialPackages(pkgCacheFile &Cache);
 

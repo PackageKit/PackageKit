@@ -329,6 +329,13 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             }
         }
 
+        // Check for supported packages
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_SUPPORTED)) {
+            return packageIsSupported(pkg);
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED)) {
+            return !packageIsSupported(pkg);
+        }
+
         // TODO test this one..
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_COLLECTIONS)) {
             if (!repo_section.compare("metapackages")) {
@@ -1117,6 +1124,42 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
     }
 }
 
+/**
+  * Check if package is officially supported by the current distribution
+  */
+bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter)
+{
+    const pkgCache::VerIterator &verIter = pkgIter.VersionList();
+    string origin = "";
+    if(!verIter.end()) {
+         pkgCache::VerFileIterator VF = verIter.FileList();
+         origin = VF.File().Origin();
+    }
+
+    string str = verIter.Section() == NULL ? "" : verIter.Section();
+    size_t j = str.find_last_of("/");
+    string section = str.substr(j + 1);
+    if (section == "")
+        section = "main";
+
+    // Get a fetcher
+    AcqPackageKitStatus Stat(this, m_backend, _cancel);
+    Stat.addPackage(verIter);
+    pkgAcquire fetcher;
+    fetcher.Setup(&Stat);
+
+    bool trusted = checkTrusted(fetcher, false);
+
+    if ((origin == "Debian") || (origin == "Ubuntu"))  {
+        if ((section == "main" ||
+             section == "restricted") && trusted) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
 {
     string UntrustedList;
@@ -1153,7 +1196,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
     return false;
 }
 
-bool AptIntf::TryToInstall(const pkgCache::PkgIterator &constPkg,
+bool AptIntf::tryToInstall(const pkgCache::PkgIterator &constPkg,
                            pkgDepCache &Cache,
                            pkgProblemResolver &Fix,
                            bool Remove,
@@ -1654,7 +1697,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
  *
  * Remove unused automatic packages
  */
-bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
+bool AptIntf::doAutomaticRemove(pkgCacheFile &Cache)
 {
     bool doAutoRemove;
     if (pk_backend_get_bool(m_backend, "autoremove")) {
@@ -2022,7 +2065,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
                 break;
             }
 
-            if (TryToInstall(it->ParentPkg(),
+            if (tryToInstall(it->ParentPkg(),
                              Cache,
                              Fix,
                              false, // remove
@@ -2041,7 +2084,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
                 break;
             }
 
-            if (TryToInstall(it->ParentPkg(),
+            if (tryToInstall(it->ParentPkg(),
                              Cache,
                              Fix,
                              true, // remove
@@ -2080,7 +2123,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
 bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
 {
     // Try to auto-remove packages
-    if (!DoAutomaticRemove(Cache)) {
+    if (!doAutomaticRemove(Cache)) {
         // TODO
         return false;
     }
@@ -2184,7 +2227,6 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
     if (DebBytes != Cache->DebSize()) {
         cout << DebBytes << ',' << Cache->DebSize() << endl;
         cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
-        /*		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");*/
     }
 
     // Number of bytes

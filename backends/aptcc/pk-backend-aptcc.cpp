@@ -54,7 +54,7 @@ gchar* pk_backend_get_description(PkBackend *backend)
  */
 gchar* pk_backend_get_author(PkBackend *backend)
 {
-    return g_strdup ("Daniel Nicoletti <dantti85-pk@yahoo.com.br>");
+    return g_strdup ("Daniel Nicoletti <dantti12@gmail.com>");
 }
 
 /**
@@ -124,6 +124,7 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
                 PK_FILTER_ENUM_GUI,
                 PK_FILTER_ENUM_INSTALLED,
                 PK_FILTER_ENUM_DEVELOPMENT,
+                PK_FILTER_ENUM_SUPPORTED,
                 PK_FILTER_ENUM_FREE,
                 -1);
 
