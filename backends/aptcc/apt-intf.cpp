@@ -1117,7 +1117,7 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
     }
 }
 
-bool AptIntf::checkTrusted(pkgAcquire &fetcher)
+bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
 {
     string UntrustedList;
     PkgList untrusted;
@@ -1134,7 +1134,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher)
 
     if (untrusted.empty()) {
         return true;
-    } else {
+    } else if (simulating) {
         emit_packages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
     }
 
@@ -1653,7 +1653,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
  * DoAutomaticRemove - Remove all automatic unused packages
  *
  * Remove unused automatic packages
-*/
+ */
 bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
 {
     bool doAutoRemove;
@@ -2228,7 +2228,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
         }
     }
 
-    if ((simulating) && (!checkTrusted(fetcher))) {
+    if ((!checkTrusted(fetcher, simulating)) && (!simulating)) {
         return false;
     }
 
