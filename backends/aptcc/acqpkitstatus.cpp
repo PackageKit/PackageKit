@@ -232,9 +232,9 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 }
 
 
-void AcqPackageKitStatus::addPackagePair(PkgPair packagePair)
+void AcqPackageKitStatus::addPackage(const pkgCache::VerIterator &ver)
 {
-    packages.push_back(packagePair);
+    packages.push_back(ver);
 }
 
 void AcqPackageKitStatus::emit_package(const string &name, bool finished)
@@ -247,10 +247,10 @@ void AcqPackageKitStatus::emit_package(const string &name, bool finished)
             }
 
             // try to see if any package matches
-            if (name.compare(it->first.Name()) == 0) {
-                m_apt->emit_package(*it,
-                                    PK_INFO_ENUM_UNKNOWN,
-                                    finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
+            if (name.compare(it->ParentPkg().Name()) == 0) {
+                m_apt->emitPackage(*it,
+                                   PK_INFO_ENUM_UNKNOWN,
+                                   finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
                 last_package_name = name;
 
                 // Find the downloading item

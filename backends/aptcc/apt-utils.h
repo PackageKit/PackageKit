@@ -39,11 +39,11 @@ class compare
 public:
     compare() {}
 
-    bool operator()(const PkgPair &a,
-                    const PkgPair &b) {
-        int ret = strcmp(a.first.Name(), b.first.Name());
+    bool operator()(const pkgCache::VerIterator &a,
+                    const pkgCache::VerIterator &b) {
+        int ret = strcmp(a.ParentPkg().Name(), b.ParentPkg().Name());
         if (ret == 0) {
-            return strcmp(a.second.VerStr(), b.second.VerStr()) < 0;
+            return strcmp(a.VerStr(), b.VerStr()) < 0;
         }
         return ret < 0;
     }
@@ -55,10 +55,10 @@ class result_equality
 public:
     result_equality() {}
 
-    bool operator() (const PkgPair &a, const PkgPair &b) {
-        return strcmp(a.first.Name(), b.first.Name()) == 0 &&
-                strcmp(a.second.VerStr(), b.second.VerStr()) == 0 &&
-                strcmp(a.second.Arch(), b.second.Arch()) == 0;
+    bool operator() (const pkgCache::VerIterator &a, const pkgCache::VerIterator &b) {
+        return strcmp(a.ParentPkg().Name(), b.ParentPkg().Name()) == 0 &&
+                strcmp(a.VerStr(), b.VerStr()) == 0 &&
+                strcmp(a.Arch(), b.Arch()) == 0;
     }
 };
 
@@ -121,7 +121,7 @@ string getBugzillaUrls(const string &changelog);
 /**
   * Return if the given vector contain a package
   */
-bool contains(PkgList packages, const pkgCache::PkgIterator pkg);
+bool contains(PkgList packages, const pkgCache::PkgIterator &pkg);
 
 /**
   * Return if the given string ends with the other

@@ -192,9 +192,8 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
             return false;
         }
 
-        PkgPair pkg_ver;
         bool found;
-        pkg_ver = m_apt->find_package_id(pi, found);
+        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi, found);
         if (!found) {
             pk_backend_error_code (backend,
                                    PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -204,9 +203,9 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
         }
 
         if (depends) {
-            m_apt->get_depends(output, pkg_ver.first, recursive);
+            m_apt->getDepends(output, ver, recursive);
         } else {
-            m_apt->get_requires(output, pkg_ver.first, recursive);
+            m_apt->getRequires(output, ver, recursive);
         }
     }
 
@@ -278,9 +277,8 @@ static gboolean backend_get_files_thread(PkBackend *backend)
             return false;
         }
 
-        PkgPair pkg_ver;
         bool found;
-        pkg_ver = m_apt->find_package_id(pi, found);
+        m_apt->findPackageId(pi, found);
         if (!found) {
             pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
             delete m_apt;
@@ -415,11 +413,11 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
              ++pkg) {
             if ((*Cache)[pkg].Upgrade()    == true &&
                     (*Cache)[pkg].NewInstall() == false) {
-                update.push_back(PkgPair(pkg, m_apt->find_candidate_ver(pkg)));
+                update.push_back(m_apt->find_candidate_ver(pkg));
             } else if ((*Cache)[pkg].Upgradable() == true &&
                        pkg->CurrentVer != 0 &&
                        (*Cache)[pkg].Delete() == false) {
-                kept.push_back(PkgPair(pkg, m_apt->find_candidate_ver(pkg)));
+                kept.push_back(m_apt->find_candidate_ver(pkg));
             }
         }
 
@@ -503,15 +501,15 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
             if (_cancel) {
                 break;
             }
-            pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
+            const pkgCache::PkgIterator &pkg = m_apt->packageCache->FindPkg(i->c_str());
             if (pkg.end() == true) {
                 continue;
             }
-            pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
             if (ver.end() == true) {
                 continue;
             }
-            output.push_back(PkgPair(pkg, ver));
+            output.push_back(ver);
         }
 
         if (error && provides == PK_PROVIDES_ENUM_MIMETYPE) {
@@ -620,15 +618,14 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
             break;
         }
 
-        PkgPair pkg_ver;
         bool found;
-        pkg_ver = m_apt->find_package_id(pi, found);
+        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi, found);
         // Ignore packages that could not be found or that exist only due to dependencies.
         if (!found) {
             _error->Error("Can't find this package id \"%s\".", pi);
             continue;
         } else {
-            if(!pkg_ver.second.Downloadable()) {
+            if(!ver.Downloadable()) {
                 _error->Error("No downloadable files for %s,"
                               "perhaps it is a local or obsolete" "package?",
                               pi);
@@ -639,10 +636,10 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
             if (get_archive(&fetcher,
                             m_apt->packageSourceList,
                             m_apt->packageRecords,
-                            pkg_ver.second,
+                            ver,
                             directory,
                             storeFileName)) {
-                Stat.addPackagePair(pkg_ver);
+                Stat.addPackage(ver);
             }
             string destFile = directory + "/" + flNotDir(storeFileName);
             if (filelist.empty()) {
@@ -801,15 +798,15 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
             if (_cancel) {
                 break;
             }
-            pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
+            const pkgCache::PkgIterator &pkg = m_apt->packageCache->FindPkg(i->c_str());
             if (pkg.end() == true) {
                 continue;
             }
-            pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
             if (ver.end() == true) {
                 continue;
             }
-            output.push_back(PkgPair(pkg, ver));
+            output.push_back(ver);
         }
         // It's faster to emmit the packages here rather than in the matching part
         m_apt->emit_packages(output, filters);
@@ -873,7 +870,7 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
         }
 
         // Ignore virtual packages
-        pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+        const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
         if (ver.end() == false) {
             string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
 
@@ -886,7 +883,7 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
                  i != groups.end();
                  ++i) {
                 if (*i == get_enum_group(section)) {
-                    output.push_back(PkgPair(pkg, ver));
+                    output.push_back(ver);
                     break;
                 }
             }
@@ -959,12 +956,12 @@ static gboolean backend_search_package_thread(PkBackend *backend)
                 continue;
             }
 
-            pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
             if (ver.end() == false) {
                 if (m_matcher->matches(pkg.Name()) ||
                         m_matcher->matches(get_long_description(ver, m_apt->packageRecords))) {
                     // The package matched
-                    output.push_back(PkgPair(pkg, ver));
+                    output.push_back(ver);
                 }
             } else if (m_matcher->matches(pkg.Name())) {
                 // The package is virtual and MATCHED the name
@@ -972,13 +969,13 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 
                 // iterate over the provides list
                 for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                    ver = m_apt->find_ver(Prv.OwnerPkg());
+                    const pkgCache::VerIterator &ownerVer = m_apt->find_ver(Prv.OwnerPkg());
 
                     // check to see if the provided package isn't virtual too
-                    if (ver.end() == false) {
+                    if (ownerVer.end() == false) {
                         // we add the package now because we will need to
                         // remove duplicates later anyway
-                        output.push_back(PkgPair(Prv.OwnerPkg(), ver));
+                        output.push_back(ownerVer);
                     }
                 }
             }
@@ -995,20 +992,20 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 
             if (m_matcher->matches(pkg.Name())) {
                 // Don't insert virtual packages instead add what it provides
-                pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+                const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
                 if (ver.end() == false) {
-                    output.push_back(PkgPair(pkg, ver));
+                    output.push_back(ver);
                 } else {
                     // iterate over the provides list
                     for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                        ver = m_apt->find_ver(Prv.OwnerPkg());
+                        const pkgCache::VerIterator &ownerVer = m_apt->find_ver(Prv.OwnerPkg());
 
                         // check to see if the provided package isn't virtual too
-                        if (ver.end() == false)
+                        if (ownerVer.end() == false)
                         {
                             // we add the package now because we will need to
                             // remove duplicates later anyway
-                            output.push_back(PkgPair(Prv.OwnerPkg(), ver));
+                            output.push_back(ownerVer);
                         }
                     }
                 }
@@ -1364,9 +1361,9 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
         }
 
         // Don't insert virtual packages as they don't have all kinds of info
-        pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+        const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
         if (ver.end() == false) {
-            output.push_back(PkgPair(pkg, ver));
+            output.push_back(ver);
         }
     }
 

@@ -45,8 +45,7 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
  */
 vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
 
-typedef pair<pkgCache::PkgIterator, pkgCache::VerIterator> PkgPair;
-typedef vector<PkgPair> PkgList;
+typedef vector<pkgCache::VerIterator> PkgList;
 
 class pkgProblemResolver;
 
@@ -62,8 +61,7 @@ public:
 
     // Check the returned VerIterator.end()
     // if it's true we could not find it
-    pair<pkgCache::PkgIterator, pkgCache::VerIterator>
-    find_package_id(const gchar *package_id, bool &found);
+    pkgCache::VerIterator findPackageId(const gchar *package_id, bool &found);
     pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
     pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
@@ -85,25 +83,25 @@ public:
     /**
      *  Get depends
      */
-    void get_depends(PkgList &output,
-                     pkgCache::PkgIterator pkg,
-                     bool recursive);
+    void getDepends(PkgList &output,
+                    const pkgCache::VerIterator &ver,
+                    bool recursive);
 
     /**
      *  Get requires
      */
-    void get_requires(PkgList &output,
-                      pkgCache::PkgIterator pkg,
-                      bool recursive);
+    void getRequires(PkgList &output,
+                     const pkgCache::VerIterator &ver,
+                     bool recursive);
 
     /**
      *  Emits a package if it match the filters
      */
-    void emit_package(const PkgPair &pair,
-                      PkBitfield filters = PK_FILTER_ENUM_NONE,
-                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+    void emitPackage(const pkgCache::VerIterator &ver,
+                     PkBitfield filters = PK_FILTER_ENUM_NONE,
+                     PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-    bool matchPackage(const PkgPair &pair, PkBitfield filters);
+    bool matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters);
     PkgList filterPackages(PkgList &packages, PkBitfield filters);
 
     void emit_packages(PkgList &output,
@@ -115,13 +113,13 @@ public:
     /**
      *  Emits details
      */
-    void emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitDetails(const pkgCache::VerIterator &ver);
     void emitDetails(PkgList &pkgs);
 
     /**
      *  Emits update detail
      */
-    void emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitUpdateDetails(const pkgCache::VerIterator &version);
     void emitUpdateDetails(PkgList &pkgs);
 
     /**
@@ -166,7 +164,7 @@ private:
     bool       &_cancel;
 
     bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend);
-    bool TryToInstall(pkgCache::PkgIterator Pkg,
+    bool TryToInstall(const pkgCache::PkgIterator &constPkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,
                       bool Remove,

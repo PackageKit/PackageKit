@@ -41,7 +41,7 @@ public:
 
     bool Pulse(pkgAcquire *Owner);
 
-    void addPackagePair(PkgPair packagePair);
+    void addPackage(const pkgCache::VerIterator &ver);
 
 private:
     PkBackend *m_backend;

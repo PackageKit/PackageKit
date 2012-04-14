@@ -375,10 +375,10 @@ string getBugzillaUrls(const string &changelog)
     return ret;
 }
 
-bool contains(PkgList packages, const pkgCache::PkgIterator pkg)
+bool contains(PkgList packages, const pkgCache::PkgIterator &pkg)
 {
     for (PkgList::iterator it = packages.begin(); it != packages.end(); ++it) {
-        if (it->first == pkg) {
+        if (it->ParentPkg() == pkg) {
             return true;
         }
     }
