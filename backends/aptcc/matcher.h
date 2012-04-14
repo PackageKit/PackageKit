@@ -33,23 +33,23 @@ using namespace std;
 class Matcher
 {
 public:
-	Matcher(const string &matchers);
-	~Matcher();
+    Matcher(const string &matchers);
+    ~Matcher();
 
-	bool matches(const string &s);
-	bool matchesFile(const string &s, map<int, bool> &matchers_used);
-	bool hasError() const;
+    bool matches(const string &s);
+    bool matchesFile(const string &s, map<int, bool> &matchers_used);
+    bool hasError() const;
 
 private:
-	bool m_hasError;
-	string m_error;
-	bool parse_pattern(string::const_iterator &start,
-			   const std::string::const_iterator &end);
-	string parse_substr(string::const_iterator &start,
-			    const string::const_iterator &end);
-	string parse_literal_string_tail(string::const_iterator &start,
-					 const string::const_iterator end);
-	vector<regex_t> m_matches;
+    bool m_hasError;
+    string m_error;
+    bool parse_pattern(string::const_iterator &start,
+                       const std::string::const_iterator &end);
+    string parse_substr(string::const_iterator &start,
+                        const string::const_iterator &end);
+    string parse_literal_string_tail(string::const_iterator &start,
+                                     const string::const_iterator end);
+    vector<regex_t> m_matches;
 };
 
 #endif

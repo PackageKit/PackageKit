@@ -37,13 +37,13 @@
 using namespace std;
 
 /**
-*  returns a list of packages names
-*/
+ *  returns a list of packages names
+ */
 vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
 
 /**
-*  returns a list of packages names
-*/
+ *  returns a list of packages names
+ */
 vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
 
 typedef pair<pkgCache::PkgIterator, pkgCache::VerIterator> PkgPair;
@@ -55,47 +55,47 @@ class AptIntf
 {
 
 public:
-	AptIntf(PkBackend *backend, bool &cancel);
-	~AptIntf();
+    AptIntf(PkBackend *backend, bool &cancel);
+    ~AptIntf();
 
-	bool init();
-	void cancel();
+    bool init();
+    void cancel();
 
-	// Check the returned VerIterator.end()
-	// if it's true we could not find it
-	pair<pkgCache::PkgIterator, pkgCache::VerIterator>
-			find_package_id(const gchar *package_id, bool &found);
-	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
-	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
+    // Check the returned VerIterator.end()
+    // if it's true we could not find it
+    pair<pkgCache::PkgIterator, pkgCache::VerIterator>
+    find_package_id(const gchar *package_id, bool &found);
+    pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
+    pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 
-        PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
-	bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
+    PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
+    bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
-	bool markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag);
+    bool markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag);
 
-	/**
-	 *  runs a transaction to install/remove/update packages
-	 *  - for install and update, \p remove should be set to false
-	 *  - if you are going to remove, \p remove should be true
-	 *  - if you don't want to actually install/update/remove
-	 *    \p simulate should be true, in this case packages with
-	 *    what's going to happen will be emitted.
-	 */
-	bool runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto = false);
+    /**
+     *  runs a transaction to install/remove/update packages
+     *  - for install and update, \p remove should be set to false
+     *  - if you are going to remove, \p remove should be true
+     *  - if you don't want to actually install/update/remove
+     *    \p simulate should be true, in this case packages with
+     *    what's going to happen will be emitted.
+     */
+    bool runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto = false);
 
-	/**
-	 *  Get depends
-	 */
-	void get_depends(PkgList &output,
-			 pkgCache::PkgIterator pkg,
-			 bool recursive);
+    /**
+     *  Get depends
+     */
+    void get_depends(PkgList &output,
+                     pkgCache::PkgIterator pkg,
+                     bool recursive);
 
-	/**
-	 *  Get requires
-	 */
-	void get_requires(PkgList &output,
-			  pkgCache::PkgIterator pkg,
-			  bool recursive);
+    /**
+     *  Get requires
+     */
+    void get_requires(PkgList &output,
+                      pkgCache::PkgIterator pkg,
+                      bool recursive);
 
     /**
      *  Emits a package if it match the filters
@@ -103,98 +103,98 @@ public:
     void emit_package(const PkgPair &pair,
                       PkBitfield filters = PK_FILTER_ENUM_NONE,
                       PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
-        
+
     bool matchPackage(const PkgPair &pair, PkBitfield filters);
     PkgList filterPackages(PkgList &packages, PkBitfield filters);
 
-	void emit_packages(PkgList &output,
-			   PkBitfield filters = PK_FILTER_ENUM_NONE,
-			   PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+    void emit_packages(PkgList &output,
+                       PkBitfield filters = PK_FILTER_ENUM_NONE,
+                       PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-	void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
+    void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
-	/**
-	 *  Emits details
-	 */
-	void emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
-	void emitDetails(PkgList &pkgs);
+    /**
+     *  Emits details
+     */
+    void emitDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitDetails(PkgList &pkgs);
 
-	/**
-	 *  Emits update detail
-	 */
-	void emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
-	void emitUpdateDetails(PkgList &pkgs);
+    /**
+     *  Emits update detail
+     */
+    void emitUpdateDetails(const pkgCache::PkgIterator &pkg, const pkgCache::VerIterator &ver);
+    void emitUpdateDetails(PkgList &pkgs);
 
-	/**
-	*  Emits files of packages
-	*/
-	void emitFiles(PkBackend *backend, const gchar *pi);
+    /**
+    *  Emits files of packages
+    */
+    void emitFiles(PkBackend *backend, const gchar *pi);
 
-	/**
-	 *  Download and install packages
-	 */
-	bool installPackages(pkgCacheFile &Cache);
+    /**
+     *  Download and install packages
+     */
+    bool installPackages(pkgCacheFile &Cache);
 
-	/**
-	 *  Install a DEB file
-	 *
-	 *  If you don't want to actually install/update/remove
-	 *    \p simulate should be true, in this case packages with
-	 *    what's going to happen will be emitted.
-	 */
-	bool installFile(const gchar *path, bool simulate);
+    /**
+     *  Install a DEB file
+     *
+     *  If you don't want to actually install/update/remove
+     *    \p simulate should be true, in this case packages with
+     *    what's going to happen will be emitted.
+     */
+    bool installFile(const gchar *path, bool simulate);
 
-	/**
-	 *  Check which package provides the codec
-	 */
-	void providesCodec(PkgList &output, gchar **values);
+    /**
+     *  Check which package provides the codec
+     */
+    void providesCodec(PkgList &output, gchar **values);
 
-	/**
-	 *  Check which package provides a shared library
-	 */
-	void providesLibrary(PkgList &output, gchar **values);
+    /**
+     *  Check which package provides a shared library
+     */
+    void providesLibrary(PkgList &output, gchar **values);
 
-	pkgRecords    *packageRecords;
-	pkgCache      *packageCache;
-	pkgDepCache   *packageDepCache;
-	pkgSourceList *packageSourceList;
+    pkgRecords    *packageRecords;
+    pkgCache      *packageCache;
+    pkgDepCache   *packageDepCache;
+    pkgSourceList *packageSourceList;
 
 private:
-	MMap       *Map;
-	OpProgress Progress;
-	pkgPolicy  *Policy;
-	PkBackend  *m_backend;
-	bool       &_cancel;
+    MMap       *Map;
+    OpProgress Progress;
+    pkgPolicy  *Policy;
+    PkBackend  *m_backend;
+    bool       &_cancel;
 
-	bool TryToInstall(pkgCache::PkgIterator Pkg,
-			  pkgDepCache &Cache,
-			  pkgProblemResolver &Fix,
-			  bool Remove,
-			  bool BrokenFix,
-			  unsigned int &ExpectedInst);
+    bool TryToInstall(pkgCache::PkgIterator Pkg,
+                      pkgDepCache &Cache,
+                      pkgProblemResolver &Fix,
+                      bool Remove,
+                      bool BrokenFix,
+                      unsigned int &ExpectedInst);
 
-	/**
-	 *  interprets dpkg status fd
-	*/
-	void updateInterface(int readFd, int writeFd);
-	bool DoAutomaticRemove(pkgCacheFile &Cache);
-	void emitChangedPackages(pkgCacheFile &Cache);
-	bool removingEssentialPackages(pkgCacheFile &Cache);
+    /**
+     *  interprets dpkg status fd
+    */
+    void updateInterface(int readFd, int writeFd);
+    bool DoAutomaticRemove(pkgCacheFile &Cache);
+    void emitChangedPackages(pkgCacheFile &Cache);
+    bool removingEssentialPackages(pkgCacheFile &Cache);
 
-	bool m_isMultiArch;
-	PkgList m_pkgs;
-	string m_localDebFile;
-	void populateInternalPackages(pkgCacheFile &Cache);
-	void emitTransactionPackage(string name, PkInfoEnum state);
-	time_t     m_lastTermAction;
-	string     m_lastPackage;
-	uint       m_lastSubProgress;
-	PkInfoEnum m_state;
-	bool       m_startCounting;
+    bool m_isMultiArch;
+    PkgList m_pkgs;
+    string m_localDebFile;
+    void populateInternalPackages(pkgCacheFile &Cache);
+    void emitTransactionPackage(string name, PkInfoEnum state);
+    time_t     m_lastTermAction;
+    string     m_lastPackage;
+    uint       m_lastSubProgress;
+    PkInfoEnum m_state;
+    bool       m_startCounting;
 
-	// when the internal terminal timesout after no activity
-	int m_terminalTimeout;
-	pid_t m_child_pid;
+    // when the internal terminal timesout after no activity
+    int m_terminalTimeout;
+    pid_t m_child_pid;
 };
 
 #endif

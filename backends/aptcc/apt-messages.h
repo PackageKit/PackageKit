@@ -33,13 +33,13 @@
  * Call the Packagekit error dialog
  */
 bool show_errors(PkBackend *backend,
-		PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
+                 PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
 
 /**
  * Call the Packagekit message dialog
  */
 bool show_warnings(PkBackend *backend,
-		PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
+                   PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
 
 /** Shows a list of all broken packages together with their
  *  dependencies.  Similar to and based on the equivalent routine in

@@ -28,9 +28,8 @@
 #include <set>
 #include <pk-backend.h>
 
+#include "apt-intf.h"
 #include "pkg_acqfile.h"
-
-typedef std::vector<pkgCache::PkgIterator> pkgvector;
 
 using namespace std;
 
@@ -38,64 +37,61 @@ using namespace std;
 class compare
 {
 public:
-	compare() {}
+    compare() {}
 
-	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
-			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
-	{
-		int ret = strcmp(a.first.Name(), b.first.Name());
-		if (ret == 0) {
-		    return strcmp(a.second.VerStr(), b.second.VerStr()) < 0;
-		}
-		return ret < 0;
-	}
+    bool operator()(const PkgPair &a,
+                    const PkgPair &b) {
+        int ret = strcmp(a.first.Name(), b.first.Name());
+        if (ret == 0) {
+            return strcmp(a.second.VerStr(), b.second.VerStr()) < 0;
+        }
+        return ret < 0;
+    }
 };
 
 /** \brief operator== for match results. */
 class result_equality
 {
 public:
-	result_equality() {}
+    result_equality() {}
 
-	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
-			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
-	{
-		return strcmp(a.first.Name(), b.first.Name()) == 0 &&
-		       strcmp(a.second.VerStr(), b.second.VerStr()) == 0 &&
-		       strcmp(a.second.Arch(), b.second.Arch()) == 0;
-	}
+    bool operator() (const PkgPair &a, const PkgPair &b) {
+        return strcmp(a.first.Name(), b.first.Name()) == 0 &&
+                strcmp(a.second.VerStr(), b.second.VerStr()) == 0 &&
+                strcmp(a.second.Arch(), b.second.Arch()) == 0;
+    }
 };
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_default_short_description(const pkgCache::VerIterator &ver,
-				     pkgRecords *records);
+                                     pkgRecords *records);
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_short_description(const pkgCache::VerIterator &ver,
-			     pkgRecords *records);
+                             pkgRecords *records);
 
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_default_long_description(const pkgCache::VerIterator &ver,
-				    pkgRecords *records);
+                                    pkgRecords *records);
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_long_description(const pkgCache::VerIterator &ver,
-			    pkgRecords *records);
+                            pkgRecords *records);
 
 /** \return a short description string corresponding to the given
  *  version.
  */
 string get_long_description_parsed(const pkgCache::VerIterator &ver,
-				   pkgRecords *records);
+                                   pkgRecords *records);
 
 /**
   * Return the PkEnumGroup of the give group string.
@@ -125,8 +121,7 @@ string getBugzillaUrls(const string &changelog);
 /**
   * Return if the given vector contain a package
   */
-bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
-	      const pkgCache::PkgIterator pkg);
+bool contains(PkgList packages, const pkgCache::PkgIterator pkg);
 
 /**
   * Return if the given string ends with the other

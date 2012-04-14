@@ -28,30 +28,30 @@
 
 class DebFile
 {
-//     typedef int user_tag_reference;
+    //     typedef int user_tag_reference;
 public:
-	DebFile(const std::string &filename);
-	bool isValid() const;
+    DebFile(const std::string &filename);
+    bool isValid() const;
 
-	std::string filePath() const;
-	std::string packageName() const;
-	std::string sourcePackage() const;
-	std::string version() const;
-	std::string architecture() const;
-	std::string summary() const;
-	std::string description() const;
-	std::string conflicts() const;
+    std::string filePath() const;
+    std::string packageName() const;
+    std::string sourcePackage() const;
+    std::string version() const;
+    std::string architecture() const;
+    std::string summary() const;
+    std::string description() const;
+    std::string conflicts() const;
 
-	// THIS should be moved to AptIntf class
-	bool check();
-	std::string errorMsg() const;
+    // THIS should be moved to AptIntf class
+    bool check();
+    std::string errorMsg() const;
 
 private:
-	std::string m_filePath;
-	debDebFile::MemControlExtract *m_extractor;
-	pkgTagSection m_controlData;
-	std::string m_errorMsg;
-	bool m_isValid;
+    std::string m_filePath;
+    debDebFile::MemControlExtract *m_extractor;
+    pkgTagSection m_controlData;
+    std::string m_errorMsg;
+    bool m_isValid;
 };
 
 #endif

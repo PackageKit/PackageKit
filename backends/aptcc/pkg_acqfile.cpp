@@ -43,119 +43,118 @@
 // Let's all sing a song about apt-pkg's brokenness..
 
 pkgAcqFileSane::pkgAcqFileSane(pkgAcquire *Owner, string URI,
-                   string Description, string ShortDesc,
-                   string filename):
-  Item(Owner)
+                               string Description, string ShortDesc,
+                               string filename) :
+    Item(Owner)
 {
-  Retries=_config->FindI("Acquire::Retries",0);
-  DestFile=filename;
+    Retries=_config->FindI("Acquire::Retries",0);
+    DestFile=filename;
 
-  Desc.URI=URI;
-  Desc.Description=Description;
-  Desc.Owner=this;
-  Desc.ShortDesc=ShortDesc;
+    Desc.URI=URI;
+    Desc.Description=Description;
+    Desc.Owner=this;
+    Desc.ShortDesc=ShortDesc;
 
-  QueueURI(Desc);
+    QueueURI(Desc);
 }
 
 // Straight from acquire-item.cc
 /* Here we try other sources */
 void pkgAcqFileSane::Failed(string Message,pkgAcquire::MethodConfig *Cnf)
 {
-  ErrorText = LookupTag(Message,"Message");
+    ErrorText = LookupTag(Message,"Message");
 
-  // This is the retry counter
-  if (Retries != 0 &&
-      Cnf->LocalOnly == false &&
-      StringToBool(LookupTag(Message,"Transient-Failure"),false) == true)
-    {
-      Retries--;
-      QueueURI(Desc);
-      return;
+    // This is the retry counter
+    if (Retries != 0 &&
+            Cnf->LocalOnly == false &&
+            StringToBool(LookupTag(Message,"Transient-Failure"),false) == true) {
+        Retries--;
+        QueueURI(Desc);
+        return;
     }
 
-  Item::Failed(Message,Cnf);
+    Item::Failed(Message,Cnf);
 }
 
 // Mostly copied from pkgAcqArchive.
 bool get_archive(pkgAcquire *Owner, pkgSourceList *Sources,
-		pkgRecords *Recs, pkgCache::VerIterator const &Version,
-		string directory, string &StoreFilename)
+                 pkgRecords *Recs, pkgCache::VerIterator const &Version,
+                 string directory, string &StoreFilename)
 {
-	pkgCache::VerFileIterator Vf=Version.FileList();
+    pkgCache::VerFileIterator Vf=Version.FileList();
 
-	if (Version.Arch() == 0) {
-		return _error->Error("I wasn't able to locate a file for the %s package. "
-				    "This might mean you need to manually fix this package. (due to missing arch)",
-				    Version.ParentPkg().Name());
-	}
+    if (Version.Arch() == 0) {
+        return _error->Error("I wasn't able to locate a file for the %s package. "
+                             "This might mean you need to manually fix this package. (due to missing arch)",
+                             Version.ParentPkg().Name());
+    }
 
-	/* We need to find a filename to determine the extension. We make the
-	    assumption here that all the available sources for this version share
-	    the same extension.. */
-	// Skip not source sources, they do not have file fields.
-	for (; Vf.end() == false; Vf++) {
-		if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
-			continue;
-		}
-		break;
-	}
+    /* We need to find a filename to determine the extension. We make the
+        assumption here that all the available sources for this version share
+        the same extension.. */
+    // Skip not source sources, they do not have file fields.
+    for (; Vf.end() == false; Vf++) {
+        if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
+            continue;
+        }
+        break;
+    }
 
-	// Does not really matter here.. we are going to fail out below
-	if (Vf.end() != true) {
-		// If this fails to get a file name we will bomb out below.
-		pkgRecords::Parser &Parse = Recs->Lookup(Vf);
-		if (_error->PendingError() == true) {
-			return false;
-		}
+    // Does not really matter here.. we are going to fail out below
+    if (Vf.end() != true) {
+        // If this fails to get a file name we will bomb out below.
+        pkgRecords::Parser &Parse = Recs->Lookup(Vf);
+        if (_error->PendingError() == true) {
+            return false;
+        }
 
-		// Generate the final file name as: package_version_arch.foo
-		StoreFilename = QuoteString(Version.ParentPkg().Name(),"_:") + '_' +
-		    QuoteString(Version.VerStr(),"_:") + '_' +
-		    QuoteString(Version.Arch(),"_:.") +
-		    "." + flExtension(Parse.FileName());
-	}
+        // Generate the final file name as: package_version_arch.foo
+        StoreFilename = QuoteString(Version.ParentPkg().Name(),"_:") + '_' +
+                QuoteString(Version.VerStr(),"_:") + '_' +
+                QuoteString(Version.Arch(),"_:.") +
+                "." + flExtension(Parse.FileName());
+    }
 
-	for (; Vf.end() == false; Vf++) {
-		// Ignore not source sources
-		if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
-			continue;
-		}
+    for (; Vf.end() == false; Vf++) {
+        // Ignore not source sources
+        if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
+            continue;
+        }
 
-		// Try to cross match against the source list
-		pkgIndexFile *Index;
-		if (Sources->FindIndex(Vf.File(),Index) == false) {
-			continue;
-		}
+        // Try to cross match against the source list
+        pkgIndexFile *Index;
+        if (Sources->FindIndex(Vf.File(),Index) == false) {
+            continue;
+        }
 
-		// Grab the text package record
-		pkgRecords::Parser &Parse = Recs->Lookup(Vf);
-		if (_error->PendingError() == true) {
-			return false;
-		}
+        // Grab the text package record
+        pkgRecords::Parser &Parse = Recs->Lookup(Vf);
+        if (_error->PendingError() == true) {
+            return false;
+        }
 
-		const string PkgFile = Parse.FileName();
-		const string MD5     = Parse.MD5Hash();
-		if (PkgFile.empty() == true) {
-			return _error->Error("The package index files are corrupted. No Filename: "
-					    "field for package %s.",
-					    Version.ParentPkg().Name());
-		}
+        const string PkgFile = Parse.FileName();
+        const string MD5     = Parse.MD5Hash();
+        if (PkgFile.empty() == true) {
+            return _error->Error("The package index files are corrupted. No Filename: "
+                                 "field for package %s.",
+                                 Version.ParentPkg().Name());
+        }
 
-		string DestFile = directory + "/" + flNotDir(StoreFilename);
+        string DestFile = directory + "/" + flNotDir(StoreFilename);
 
-		// Create the item
-		new pkgAcqFile(Owner,
-				Index->ArchiveURI(PkgFile),
-				MD5,
-				Version->Size,
-				Index->ArchiveInfo(Version),
-				Version.ParentPkg().Name(),
-				"",
-				DestFile);
+        // Create the item
+        new pkgAcqFile(Owner,
+                       Index->ArchiveURI(PkgFile),
+                       MD5,
+                       Version->Size,
+                       Index->ArchiveInfo(Version),
+                       Version.ParentPkg().Name(),
+                       "",
+                       DestFile);
 
-		Vf++;
-		return true;
-	}
-	return false;
+        Vf++;
+        return true;
+    }
+    return false;
 }

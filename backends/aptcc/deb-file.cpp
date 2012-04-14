@@ -28,19 +28,19 @@
 
 #include <iostream>
 
-DebFile::DebFile(const std::string &filename)
-		: m_filePath(filename)
+DebFile::DebFile(const std::string &filename) :
+    m_filePath(filename)
 {
     FileFd in(filename, FileFd::ReadOnly);
     debDebFile deb(in);
 
     // Extract control data
     m_extractor = new debDebFile::MemControlExtract("control");
-    if(!m_extractor->Read(deb)) {
-      m_isValid = false;
-      return;
+    if (!m_extractor->Read(deb)) {
+        m_isValid = false;
+        return;
     } else {
-	m_isValid = true;
+        m_isValid = true;
     }
 
     m_controlData = m_extractor->Section;
@@ -104,56 +104,55 @@ bool DebFile::check()
 
     std::cout << architecture() << std::endl;
     if (architecture().compare("all") != 0 &&
-        architecture().compare(_config->Find("APT::Architecture")) != 0)
-    {
+            architecture().compare(_config->Find("APT::Architecture")) != 0) {
         m_errorMsg = "Wrong architecture ";
         m_errorMsg.append(architecture());
         return false;
     }
-//     if not "Architecture" in self._sections:
-//         self._dbg(1, "ERROR: no architecture field")
-//         self._failure_string = _("No Architecture field in the package")
-//         return False
-//     arch = self._sections["Architecture"]
-//     if  arch != "all" and arch != apt_pkg.config.find("APT::Architecture"):
-//         self._dbg(1, "ERROR: Wrong architecture dude!")
-//         self._failure_string = _("Wrong architecture '%s'") % arch
-//         return False
-//
-//     // check version
-//     if self.compare_to_version_in_cache() == self.VERSION_OUTDATED:
-//         if self._cache[self.pkgname].installed:
-//             // the deb is older than the installed
-//             self._failure_string = _("A later version is already installed")
-//             return False
-//
-//     // FIXME: this sort of error handling sux
-//     self._failure_string = ""
-//
-//     // check conflicts
-//     if not self.check_conflicts():
-//         return False
-//
-//     // check if installing it would break anything on the
-//     // current system
-//     if not self.check_breaks_existing_packages():
-//         return False
-//
-//     // try to satisfy the dependencies
-//     if not self._satisfy_depends(self.depends):
-//         return False
-//
-//     // check for conflicts again (this time with the packages that are
-//     // makeed for install)
-//     if not self.check_conflicts():
-//         return False
-//
-//     if self._cache._depcache.broken_count > 0:
-//         self._failure_string = _("Failed to satisfy all dependencies "
-//                                     "(broken cache)")
-//         // clean the cache again
-//         self._cache.clear()
-//         return False
+    //     if not "Architecture" in self._sections:
+    //         self._dbg(1, "ERROR: no architecture field")
+    //         self._failure_string = _("No Architecture field in the package")
+    //         return False
+    //     arch = self._sections["Architecture"]
+    //     if  arch != "all" and arch != apt_pkg.config.find("APT::Architecture"):
+    //         self._dbg(1, "ERROR: Wrong architecture dude!")
+    //         self._failure_string = _("Wrong architecture '%s'") % arch
+    //         return False
+    //
+    //     // check version
+    //     if self.compare_to_version_in_cache() == self.VERSION_OUTDATED:
+    //         if self._cache[self.pkgname].installed:
+    //             // the deb is older than the installed
+    //             self._failure_string = _("A later version is already installed")
+    //             return False
+    //
+    //     // FIXME: this sort of error handling sux
+    //     self._failure_string = ""
+    //
+    //     // check conflicts
+    //     if not self.check_conflicts():
+    //         return False
+    //
+    //     // check if installing it would break anything on the
+    //     // current system
+    //     if not self.check_breaks_existing_packages():
+    //         return False
+    //
+    //     // try to satisfy the dependencies
+    //     if not self._satisfy_depends(self.depends):
+    //         return False
+    //
+    //     // check for conflicts again (this time with the packages that are
+    //     // makeed for install)
+    //     if not self.check_conflicts():
+    //         return False
+    //
+    //     if self._cache._depcache.broken_count > 0:
+    //         self._failure_string = _("Failed to satisfy all dependencies "
+    //                                     "(broken cache)")
+    //         // clean the cache again
+    //         self._cache.clear()
+    //         return False
     return true;
 }
 

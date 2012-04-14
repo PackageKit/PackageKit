@@ -29,35 +29,35 @@
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
-	AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool &cancelled);
+    AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool &cancelled);
 
-	virtual bool MediaChange(string Media, string Drive);
-	virtual void IMSHit(pkgAcquire::ItemDesc &Itm);
-	virtual void Fetch(pkgAcquire::ItemDesc &Itm);
-	virtual void Done(pkgAcquire::ItemDesc &Itm);
-	virtual void Fail(pkgAcquire::ItemDesc &Itm);
-	virtual void Start();
-	virtual void Stop();
+    virtual bool MediaChange(string Media, string Drive);
+    virtual void IMSHit(pkgAcquire::ItemDesc &Itm);
+    virtual void Fetch(pkgAcquire::ItemDesc &Itm);
+    virtual void Done(pkgAcquire::ItemDesc &Itm);
+    virtual void Fail(pkgAcquire::ItemDesc &Itm);
+    virtual void Start();
+    virtual void Stop();
 
-	bool Pulse(pkgAcquire *Owner);
+    bool Pulse(pkgAcquire *Owner);
 
-	void addPackagePair(PkgPair packagePair);
+    void addPackagePair(PkgPair packagePair);
 
 private:
-	PkBackend *m_backend;
-	unsigned long ID;
-	bool &_cancelled;
+    PkBackend *m_backend;
+    unsigned long ID;
+    bool &_cancelled;
 
-	unsigned long last_percent;
-	unsigned long last_sub_percent;
-	double        last_CPS;
-	string        last_package_name;
-	AptIntf       *m_apt;
+    unsigned long last_percent;
+    unsigned long last_sub_percent;
+    double        last_CPS;
+    string        last_package_name;
+    AptIntf       *m_apt;
 
     PkgList packages;
-	set<string> currentPackages;
+    set<string> currentPackages;
 
-	void emit_package(const string &name, bool finished);
+    void emit_package(const string &name, bool finished);
 };
 
 #endif
