@@ -248,7 +248,7 @@ pkgCache::VerIterator AptIntf::find_ver(const pkgCache::PkgIterator &pkg)
 }
 
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
-{    
+{
     if (filters != 0) {
         const pkgCache::PkgIterator &pkg = ver.ParentPkg();
         bool installed = false;
@@ -257,7 +257,7 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
         if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
             installed = true;
         }
-        
+
         // if we are on multiarch check also the arch filter
         if (m_isMultiArch && pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH)/* && !installed*/) {
             // don't emit the package if it does not match
@@ -270,12 +270,12 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 
         std::string str = ver.Section() == NULL ? "" : ver.Section();
         std::string section, repo_section;
-        
+
         size_t found;
         found = str.find_last_of("/");
         section = str.substr(found + 1);
         repo_section = str.substr(0, found);
-        
+
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed) {
             return false;
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed) {

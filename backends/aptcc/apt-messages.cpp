@@ -28,22 +28,38 @@
 
 using namespace std;
 
-bool show_errors(PkBackend *backend, PkErrorEnum errorCode)
+bool show_errors(PkBackend *backend, PkErrorEnum errorCode, bool errModify)
 {
     stringstream errors;
+    stringstream messages;
+
+    PkMessageEnum messageCode = PK_MESSAGE_ENUM_UNKNOWN;
+    if (errorCode == PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)
+        messageCode = PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED;
 
     string Err;
     while (_error->empty() == false) {
         bool Type = _error->PopMessage(Err);
-        if (Type == true) {
-            errors << "E: " << Err << endl;
+
+        // Ugly workaround to demote the "repo not found" error message to a simple message
+        if ((errModify) && (Err.find("404  Not Found") != string::npos)) {
+            messages << "E: " << Err << endl;
         } else {
-            errors << "W: " << Err << endl;
+            if (Type == true) {
+                errors << "E: " << Err << endl;
+            } else {
+                errors << "W: " << Err << endl;
+            }
         }
     }
 
     if (!errors.str().empty()) {
         pk_backend_error_code(backend, errorCode, errors.str().c_str());
+    }
+
+    if ((errModify) && (!messages.str().empty())) {
+        cout << "Emitting backend message:" << messages.str() << endl;
+        pk_backend_message(backend, messageCode, messages.str().c_str());
     }
 }
 
