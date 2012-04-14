@@ -132,7 +132,7 @@ public:
     /**
      *  Download and install packages
      */
-    bool installPackages(pkgCacheFile &Cache, bool simulate);
+    bool installPackages(pkgCacheFile &Cache, bool simulating);
 
     /**
      *  Install a DEB file
@@ -165,6 +165,7 @@ private:
     PkBackend  *m_backend;
     bool       &_cancel;
 
+    bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend);
     bool TryToInstall(pkgCache::PkgIterator Pkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,

@@ -1116,17 +1116,27 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
     }
 }
 
-static bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
+bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 {
     string UntrustedList;
+    PkgList untrusted;
     for (pkgAcquire::ItemIterator I = fetcher.ItemsBegin(); I < fetcher.ItemsEnd(); ++I) {
         if (!(*I)->IsTrusted()) {
+            // The pkgAcquire::Item had a version hiden on it's subclass
+            // pkgAcqArchive but it was protected our subclass exposes that
+            pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(*I);
+            untrusted.push_back(PkgPair(archive->version().ParentPkg(), archive->version()));
+
             UntrustedList += string((*I)->ShortDesc()) + " ";
         }
     }
 
-    if (UntrustedList == "") {
+    if (untrusted.empty()) {
         return true;
+    } else {
+        // TODO does it make sense to emit packages
+        // when not simulating?
+        emit_packages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
     }
 
     if (pk_backend_get_bool(backend, "only_trusted") == false ||
@@ -2068,7 +2078,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
-bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulate)
+bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
 {
     // Try to auto-remove packages
     if (!DoAutomaticRemove(Cache)) {
@@ -2219,16 +2229,14 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulate)
         }
     }
 
-    if (!checkTrusted(fetcher, m_backend)) {
+    if (!checkTrusted(fetcher, m_backend) && !simulating) {
         return false;
     }
 
-    if (simulate) {
+    if (simulating) {
         // Print out a list of packages that are going to be installed extra
         emitChangedPackages(Cache);
         return true;
-    } else {
-
     }
 
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_DOWNLOAD);

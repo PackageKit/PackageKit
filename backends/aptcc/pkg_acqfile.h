@@ -48,6 +48,13 @@ public:
     virtual ~pkgAcqFileSane() {}
 };
 
+class pkgAcqArchiveSane : public pkgAcqArchive
+{
+public:
+    // This is insane the version is protected
+    pkgCache::VerIterator version() { return Version; }
+};
+
 /** Like pkgAcqArchive, but uses generic File objects to download to
  *  the cwd (and copies from file:/ URLs).
  */
