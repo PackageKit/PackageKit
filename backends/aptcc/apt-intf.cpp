@@ -1117,7 +1117,7 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
     }
 }
 
-bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
+bool AptIntf::checkTrusted(pkgAcquire &fetcher)
 {
     string UntrustedList;
     PkgList untrusted;
@@ -1134,9 +1134,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
 
     if (untrusted.empty()) {
         return true;
-    } else if (simulating) {
-        // TODO does it make sense to emit packages
-        // when not simulating?
+    } else {
         emit_packages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
     }
 
@@ -1293,9 +1291,9 @@ bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
     return false;
 }
 
-// emitChangedPackages - Show packages to newly install
-// ---------------------------------------------------------------------
-/* */
+/**
+ * emitChangedPackages - Show packages to newly install
+ */
 void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
 {
     PkgList installing;
@@ -1651,9 +1649,11 @@ void AptIntf::updateInterface(int fd, int writeFd)
     usleep(5000);
 }
 
-// DoAutomaticRemove - Remove all automatic unused packages
-// ---------------------------------------------------------------------
-/* Remove unused automatic packages */
+/**
+ * DoAutomaticRemove - Remove all automatic unused packages
+ *
+ * Remove unused automatic packages
+*/
 bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
 {
     bool doAutoRemove;
@@ -2071,10 +2071,12 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     return installPackages(Cache, simulate);
 }
 
-// InstallPackages - Download and install the packages
-// ---------------------------------------------------------------------
-/* This displays the informative messages describing what is going to
-   happen and then calls the download routines */
+/**
+ * InstallPackages - Download and install the packages
+ *
+ * This displays the informative messages describing what is going to
+ * happen and then calls the download routines
+ */
 bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
 {
     // Try to auto-remove packages
@@ -2226,7 +2228,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
         }
     }
 
-    if (!checkTrusted(fetcher, simulating) && !simulating) {
+    if ((simulating) && (!checkTrusted(fetcher))) {
         return false;
     }
 
