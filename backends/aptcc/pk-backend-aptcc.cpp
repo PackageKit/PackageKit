@@ -426,7 +426,9 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
         m_apt->emitUpdates(update, filters);
         m_apt->emit_packages(kept, filters, PK_INFO_ENUM_BLOCKED);
     } else {
-        res = m_apt->installPackages(Cache);
+        // TODO there should be a simulate upgrade system,
+        // tho afaik Apper and GPK don't use this
+        res = m_apt->installPackages(Cache, false);
     }
 
     delete m_apt;

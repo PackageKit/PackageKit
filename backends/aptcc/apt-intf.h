@@ -28,7 +28,6 @@
 #include <apt-pkg/cachefile.h>
 #include <apt-pkg/policy.h>
 
-#include <set>
 #include <pk-backend.h>
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
@@ -133,7 +132,7 @@ public:
     /**
      *  Download and install packages
      */
-    bool installPackages(pkgCacheFile &Cache);
+    bool installPackages(pkgCacheFile &Cache, bool simulate);
 
     /**
      *  Install a DEB file

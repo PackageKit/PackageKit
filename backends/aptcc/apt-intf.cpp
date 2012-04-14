@@ -49,7 +49,6 @@
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "pkg_acqfile.h"
-#include "pkg_dpkgpm.h"
 #include "deb-file.h"
 
 #define RAMFS_MAGIC     0x858458f6
@@ -1645,7 +1644,12 @@ void AptIntf::updateInterface(int fd, int writeFd)
 /* Remove unused automatic packages */
 bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
 {
-    bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
+    bool doAutoRemove;
+    if (pk_backend_get_bool(m_backend, "autoremove")) {
+        doAutoRemove = true;
+    } else {
+        doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
+    }
     pkgDepCache::ActionGroup group(*Cache);
 
     if (_config->FindB("APT::Get::Remove",true) == false &&
@@ -1655,27 +1659,30 @@ bool AptIntf::DoAutomaticRemove(pkgCacheFile &Cache)
         doAutoRemove = false;
     }
 
-    // look over the cache to see what can be removed
-    for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg) {
-        if (Cache[Pkg].Garbage && doAutoRemove)
-        {
-            if (Pkg.CurrentVer() != 0 &&
-                    Pkg->CurrentState != pkgCache::State::ConfigFiles) {
-                Cache->MarkDelete(Pkg, _config->FindB("APT::Get::Purge", false));
-            } else {
-                Cache->MarkKeep(Pkg, false, false);
+    if (doAutoRemove) {
+        bool purge = _config->FindB("APT::Get::Purge", false);
+        // look over the cache to see what can be removed
+        for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg) {
+            if (Cache[Pkg].Garbage) {
+                if (Pkg.CurrentVer() != 0 &&
+                        Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+                    Cache->MarkDelete(Pkg, purge);
+                } else {
+                    Cache->MarkKeep(Pkg, false, false);
+                }
             }
+        }
+
+        // Now see if we destroyed anything
+        if (Cache->BrokenCount() != 0) {
+            cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
+                    "shouldn't happen. Please file a bug report against apt." << endl;
+            // TODO call show_broken
+            //       ShowBroken(c1out,Cache,false);
+            return _error->Error("Internal Error, AutoRemover broke stuff");
         }
     }
 
-    // Now see if we destroyed anything
-    if (Cache->BrokenCount() != 0) {
-        cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
-                "shouldn't happen. Please file a bug report against apt." << endl;
-        // TODO call show_broken
-        //       ShowBroken(c1out,Cache,false);
-        return _error->Error("Internal Error, AutoRemover broke stuff");
-    }
     return true;
 }
 
@@ -2052,35 +2059,23 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         }
     }
 
-    // Try to auto-remove packages
-    if (!DoAutomaticRemove(Cache)) {
-        // TODO
-        return false;
-    }
-
-    // check for essential packages!!!
-    if (removingEssentialPackages(Cache)) {
-        return false;
-    }
-
-    if (simulate) {
-        // Print out a list of packages that are going to be installed extra
-        emitChangedPackages(Cache);
-        return true;
-    } else {
-        // Store the packages that are going to change
-        // so we can emit them as we process it.
-        populateInternalPackages(Cache);
-        return installPackages(Cache);
-    }
+    // If we are simulating the install packages
+    // will just calculate the trusted packages
+    return installPackages(Cache, simulate);
 }
 
 // InstallPackages - Download and install the packages
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
-bool AptIntf::installPackages(pkgCacheFile &Cache)
+bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulate)
 {
+    // Try to auto-remove packages
+    if (!DoAutomaticRemove(Cache)) {
+        // TODO
+        return false;
+    }
+
     //cout << "installPackages() called" << endl;
     if (_config->FindB("APT::Get::Purge",false) == true) {
         pkgCache::PkgIterator I = Cache->PkgBegin();
@@ -2140,8 +2135,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
     fetcher.Setup(&Stat);
 
     // Create the package manager and prepare to download
-    //     SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
-    SPtr<pkgPackageManager> PM = new pkgDebDPkgPM(Cache);
+    SPtr<pkgPackageManager> PM = _system->CreatePM(Cache);
     if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
             _error->PendingError() == true) {
         return false;
@@ -2229,6 +2223,14 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
         return false;
     }
 
+    if (simulate) {
+        // Print out a list of packages that are going to be installed extra
+        emitChangedPackages(Cache);
+        return true;
+    } else {
+
+    }
+
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_DOWNLOAD);
     pk_backend_set_simultaneous_mode(m_backend, true);
     // Download and check if we can continue
@@ -2245,29 +2247,26 @@ bool AptIntf::installPackages(pkgCacheFile &Cache)
         return false;
     }
 
-    // Right now it's not safe to cancel
-    pk_backend_set_allow_cancel (m_backend, false);
+    // Store the packages that are going to change
+    // so we can emit them as we process it.
+    populateInternalPackages(Cache);
 
-    // TODO true or false?
+    // Check if the user canceled
     if (_cancel) {
         return true;
     }
+
+    // Right now it's not safe to cancel
+    pk_backend_set_allow_cancel (m_backend, false);
 
     // Download should be finished by now, changing it's status
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
     pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
     pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-    // TODO DBus activated does not have all vars
     // we could try to see if this is the case
     setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
     _system->UnLock();
-
-    if (!m_localDebFile.empty()) {
-        // add the local file name to be proccessed by the PM queue
-        pkgDebDPkgPM *pm = static_cast<pkgDebDPkgPM*>(&*PM);
-        pm->addDebFile(m_localDebFile);
-    }
 
     pkgPackageManager::OrderResult res;
     res = PM->DoInstallPreFork();
