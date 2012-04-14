@@ -163,7 +163,7 @@ private:
     PkBackend  *m_backend;
     bool       &_cancel;
 
-    bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend);
+    bool checkTrusted(pkgAcquire &fetcher, bool simulating);
     bool TryToInstall(const pkgCache::PkgIterator &constPkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,

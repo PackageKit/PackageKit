@@ -1117,7 +1117,7 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
     }
 }
 
-bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
+bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
 {
     string UntrustedList;
     PkgList untrusted;
@@ -1134,13 +1134,13 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 
     if (untrusted.empty()) {
         return true;
-    } else {
+    } else if (simulating) {
         // TODO does it make sense to emit packages
         // when not simulating?
         emit_packages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
     }
 
-    if (pk_backend_get_bool(backend, "only_trusted") == false ||
+    if (pk_backend_get_bool(m_backend, "only_trusted") == false ||
             _config->FindB("APT::Get::AllowUnauthenticated", false) == true) {
         g_debug ("Authentication warning overridden.\n");
         return true;
@@ -1148,7 +1148,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 
     string warning("The following packages cannot be authenticated:\n");
     warning += UntrustedList;
-    pk_backend_error_code(backend,
+    pk_backend_error_code(m_backend,
                           PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
                           warning.c_str());
     _error->Discard();
@@ -2226,7 +2226,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
         }
     }
 
-    if (!checkTrusted(fetcher, m_backend) && !simulating) {
+    if (!checkTrusted(fetcher, simulating) && !simulating) {
         return false;
     }
 
