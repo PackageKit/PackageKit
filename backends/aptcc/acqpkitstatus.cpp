@@ -58,7 +58,7 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
         pk_backend_repo_detail(m_backend,
                                "",
                                Itm.Description.c_str(),
-                               false);
+                               true);
     }
     Update = true;
 }
