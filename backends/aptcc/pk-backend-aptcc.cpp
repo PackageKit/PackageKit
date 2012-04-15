@@ -30,6 +30,7 @@
 #include <pk-backend-spawn.h>
 
 #include "apt-intf.h"
+#include "AptCacheFile.h"
 #include "apt-utils.h"
 #include "matcher.h"
 #include "apt-messages.h"
@@ -178,7 +179,7 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
 
     bool depends = pk_backend_get_bool(backend, "get_depends");
 
-    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
     PkgList output;
     for (uint i = 0; i < g_strv_length(package_ids); ++i) {
         if (_cancel) {
@@ -193,9 +194,8 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
             return false;
         }
 
-        bool found;
-        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi, found);
-        if (!found) {
+        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi);
+        if (ver.end()) {
             pk_backend_error_code (backend,
                                    PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                    "Couldn't find package");
@@ -278,9 +278,8 @@ static gboolean backend_get_files_thread(PkBackend *backend)
             return false;
         }
 
-        bool found;
-        m_apt->findPackageId(pi, found);
-        if (!found) {
+        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi);
+        if (ver.end()) {
             pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
             delete m_apt;
             return false;
@@ -414,11 +413,11 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
              ++pkg) {
             if ((*Cache)[pkg].Upgrade()    == true &&
                     (*Cache)[pkg].NewInstall() == false) {
-                update.push_back(m_apt->find_candidate_ver(pkg));
+                update.push_back(m_apt->findCandidateVer(pkg));
             } else if ((*Cache)[pkg].Upgradable() == true &&
                        pkg->CurrentVer != 0 &&
                        (*Cache)[pkg].Delete() == false) {
-                kept.push_back(m_apt->find_candidate_ver(pkg));
+                kept.push_back(m_apt->findCandidateVer(pkg));
             }
         }
 
@@ -506,7 +505,7 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
             if (pkg.end() == true) {
                 continue;
             }
-            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
             if (ver.end() == true) {
                 continue;
             }
@@ -619,10 +618,9 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
             break;
         }
 
-        bool found;
-        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi, found);
+        const pkgCache::VerIterator &ver = m_apt->findPackageId(pi);
         // Ignore packages that could not be found or that exist only due to dependencies.
-        if (!found) {
+        if (ver.end()) {
             _error->Error("Can't find this package id \"%s\".", pi);
             continue;
         } else {
@@ -803,7 +801,7 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
             if (pkg.end() == true) {
                 continue;
             }
-            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
             if (ver.end() == true) {
                 continue;
             }
@@ -871,7 +869,7 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
         }
 
         // Ignore virtual packages
-        const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+        const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
         if (ver.end() == false) {
             string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
 
@@ -957,7 +955,7 @@ static gboolean backend_search_package_thread(PkBackend *backend)
                 continue;
             }
 
-            const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
             if (ver.end() == false) {
                 if (m_matcher->matches(pkg.Name()) ||
                         m_matcher->matches(get_long_description(ver, m_apt->packageRecords))) {
@@ -970,7 +968,7 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 
                 // iterate over the provides list
                 for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                    const pkgCache::VerIterator &ownerVer = m_apt->find_ver(Prv.OwnerPkg());
+                    const pkgCache::VerIterator &ownerVer = m_apt->findVer(Prv.OwnerPkg());
 
                     // check to see if the provided package isn't virtual too
                     if (ownerVer.end() == false) {
@@ -993,13 +991,13 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 
             if (m_matcher->matches(pkg.Name())) {
                 // Don't insert virtual packages instead add what it provides
-                const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+                const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
                 if (ver.end() == false) {
                     output.push_back(ver);
                 } else {
                     // iterate over the provides list
                     for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                        const pkgCache::VerIterator &ownerVer = m_apt->find_ver(Prv.OwnerPkg());
+                        const pkgCache::VerIterator &ownerVer = m_apt->findVer(Prv.OwnerPkg());
 
                         // check to see if the provided package isn't virtual too
                         if (ownerVer.end() == false)
@@ -1362,7 +1360,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
         }
 
         // Don't insert virtual packages as they don't have all kinds of info
-        const pkgCache::VerIterator &ver = m_apt->find_ver(pkg);
+        const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
         if (ver.end() == false) {
             output.push_back(ver);
         }

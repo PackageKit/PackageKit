@@ -59,11 +59,25 @@ public:
     bool init();
     void cancel();
 
-    // Check the returned VerIterator.end()
-    // if it's true we could not find it
-    pkgCache::VerIterator findPackageId(const gchar *package_id, bool &found);
-    pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
-    pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
+    /**
+     * Tries to find a package with the given packageId
+     * @returns pkgCache::VerIterator that if .end() is true the package could not be found
+     */
+    pkgCache::VerIterator findPackageId(const gchar *packageId);
+
+    /**
+     * Tries to find the current version of a package
+     * if it can't find it will return the candidate
+     * TODO check if we really need the candidate version
+     * @returns pkgCache::VerIterator that if .end() is true the version could not be found
+     */
+    pkgCache::VerIterator findVer(const pkgCache::PkgIterator &pkg);
+
+    /**
+     * Tries to find the candidate version of a package
+     * @returns pkgCache::VerIterator that if .end() is true the version could not be found
+     */
+    pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
 
     PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
     bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);

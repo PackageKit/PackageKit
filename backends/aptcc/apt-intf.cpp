@@ -182,14 +182,12 @@ void AptIntf::cancel()
     }
 }
 
-pkgCache::VerIterator AptIntf::findPackageId(const gchar *package_id, bool &found)
+pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
 {
     gchar **parts;
     pkgCache::PkgIterator pkg;
 
-    found = true;
-
-    parts = pk_package_id_split (package_id);
+    parts = pk_package_id_split(packageId);
     gchar *pkgNameArch;
     pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
     pkg = packageCache->FindPkg(pkgNameArch);
@@ -202,7 +200,7 @@ pkgCache::VerIterator AptIntf::findPackageId(const gchar *package_id, bool &foun
         return pkgCache::VerIterator();
     }
 
-    const pkgCache::VerIterator &ver = find_ver(pkg);
+    const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (ver.end() == false &&
             strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
@@ -210,7 +208,7 @@ pkgCache::VerIterator AptIntf::findPackageId(const gchar *package_id, bool &foun
         return ver;
     }
 
-    const pkgCache::VerIterator &candidateVer = find_candidate_ver(pkg);
+    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if the provided package isn't virtual too
     if (candidateVer.end() == false &&
             strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
@@ -218,19 +216,12 @@ pkgCache::VerIterator AptIntf::findPackageId(const gchar *package_id, bool &foun
         return candidateVer;
     }
 
-    found = false;
     g_strfreev (parts);
 
     return ver;
 }
 
-pkgCache::VerIterator AptIntf::find_candidate_ver(const pkgCache::PkgIterator &pkg)
-{
-    // get the candidate version iterator
-    return (*packageDepCache)[pkg].CandidateVerIter(*packageDepCache);
-}
-
-pkgCache::VerIterator AptIntf::find_ver(const pkgCache::PkgIterator &pkg)
+pkgCache::VerIterator AptIntf::findVer(const pkgCache::PkgIterator &pkg)
 {
     // if the package is installed return the current version
     if (!pkg.CurrentVer().end()) {
@@ -238,13 +229,19 @@ pkgCache::VerIterator AptIntf::find_ver(const pkgCache::PkgIterator &pkg)
     }
 
     // Else get the candidate version iterator
-    const pkgCache::VerIterator &candidateVer = find_candidate_ver(pkg);
+    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     if (!candidateVer.end()) {
         return candidateVer;
     }
 
     // return the version list as a last resource
     return pkg.VersionList();
+}
+
+pkgCache::VerIterator AptIntf::findCandidateVer(const pkgCache::PkgIterator &pkg)
+{
+    // get the candidate version iterator
+    return (*packageDepCache)[pkg].CandidateVerIter(*packageDepCache);
 }
 
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
@@ -491,9 +488,9 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
 
         // TODO search in updates packages
         // Ignore virtual packages
-        pkgCache::VerIterator ver = find_ver(pkg);
+        pkgCache::VerIterator ver = findVer(pkg);
         if (ver.end() == true) {
-            ver = find_candidate_ver(pkg);
+            ver = findCandidateVer(pkg);
             if (ver.end() == true) {
                 continue;
             }
@@ -563,9 +560,9 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
                 }
 
                 // TODO: Ignore virtual packages
-                pkgCache::VerIterator ver = find_ver (pkg);
+                pkgCache::VerIterator ver = findVer (pkg);
                 if (ver.end() == true) {
-                    ver = find_candidate_ver(pkg);
+                    ver = findCandidateVer(pkg);
                     if (ver.end() == true) {
                         continue;
                     }
@@ -647,7 +644,7 @@ void AptIntf::emitUpdateDetails(const pkgCache::VerIterator &version)
 {
     const pkgCache::PkgIterator &pkg = version.ParentPkg();
     // Get the version of the current package
-    const pkgCache::VerIterator &currver = find_ver(pkg);
+    const pkgCache::VerIterator &currver = findVer(pkg);
     const pkgCache::VerFileIterator &currvf  = currver.FileList();
     // Build a package_id from the current version
     gchar *current_package_id;
@@ -661,7 +658,7 @@ void AptIntf::emitUpdateDetails(const pkgCache::VerIterator &version)
     if (version.end() == false) {
         candver = version;
     } else {
-        candver = find_candidate_ver(pkg);
+        candver = findCandidateVer(pkg);
     }
 
     pkgCache::VerFileIterator vf = candver.FileList();
@@ -904,7 +901,7 @@ void AptIntf::getDepends(PkgList &output,
             break;
         }
 
-        const pkgCache::VerIterator &ver = find_ver(dep.TargetPkg());
+        const pkgCache::VerIterator &ver = findVer(dep.TargetPkg());
         // Ignore packages that exist only due to dependencies.
         if (ver.end()) {
             dep++;
@@ -941,7 +938,7 @@ void AptIntf::getRequires(PkgList &output,
         }
 
         // Don't insert virtual packages instead add what it provides
-        const pkgCache::VerIterator &parentVer = find_ver(parentPkg);
+        const pkgCache::VerIterator &parentVer = findVer(parentPkg);
         if (parentVer.end() == false) {
             PkgList deps;
             getDepends(deps, parentVer, false);
@@ -1357,16 +1354,16 @@ void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
     for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
         if (Cache[pkg].NewInstall() == true) {
             // installing
-            installing.push_back(find_candidate_ver(pkg));
+            installing.push_back(findCandidateVer(pkg));
         } else if (Cache[pkg].Delete() == true) {
             // removing
-            removing.push_back(find_ver(pkg));
+            removing.push_back(findVer(pkg));
         } else if (Cache[pkg].Upgrade() == true) {
             // updating
-            updating.push_back(find_candidate_ver(pkg));
+            updating.push_back(findCandidateVer(pkg));
         } else if (Cache[pkg].Downgrade() == true) {
             // downgrading
-            downgrading.push_back(find_candidate_ver(pkg));
+            downgrading.push_back(findCandidateVer(pkg));
         }
     }
 
@@ -1382,16 +1379,16 @@ void AptIntf::populateInternalPackages(pkgCacheFile &Cache)
     for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
         if (Cache[pkg].NewInstall() == true) {
             // installing
-            m_pkgs.push_back(find_candidate_ver(pkg));
+            m_pkgs.push_back(findCandidateVer(pkg));
         } else if (Cache[pkg].Delete() == true) {
             // removing
-            m_pkgs.push_back(find_ver(pkg));
+            m_pkgs.push_back(findVer(pkg));
         } else if (Cache[pkg].Upgrade() == true) {
             // updating
-            m_pkgs.push_back(find_candidate_ver(pkg));
+            m_pkgs.push_back(findCandidateVer(pkg));
         } else if (Cache[pkg].Downgrade() == true) {
             // downgrading
-            m_pkgs.push_back(find_candidate_ver(pkg));
+            m_pkgs.push_back(findCandidateVer(pkg));
         }
     }
 }
@@ -1412,13 +1409,13 @@ void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
         return;
     }
 
-    const pkgCache::VerIterator &ver = find_ver(pkg);
+    const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (ver.end() == false) {
         emitPackage(ver, PK_FILTER_ENUM_NONE, state);
     }
 
-    const pkgCache::VerIterator &candidateVer = find_candidate_ver(pkg);
+    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if we found the package
     if (candidateVer.end() == false) {
         emitPackage(candidateVer, PK_FILTER_ENUM_NONE, state);
@@ -1791,13 +1788,13 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
                         continue;
                     }
 
-                    const pkgCache::VerIterator &ver = find_ver(pkg);
+                    const pkgCache::VerIterator &ver = findVer(pkg);
                     // check to see if the provided package isn't virtual too
                     if (ver.end() == false) {
                         ret.push_back(ver);
                     }
 
-                    const pkgCache::VerIterator &candidateVer = find_candidate_ver(pkg);
+                    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
                     // check to see if the provided package isn't virtual too
                     if (candidateVer.end() == false) {
                         ret.push_back(candidateVer);
@@ -1810,23 +1807,22 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
                     continue;
                 }
 
-                const pkgCache::VerIterator &ver = find_ver(pkg);
+                const pkgCache::VerIterator &ver = findVer(pkg);
                 // check to see if the provided package isn't virtual too
                 if (ver.end() == false) {
                     ret.push_back(ver);
                 }
 
-                const pkgCache::VerIterator &candidateVer = find_candidate_ver(pkg);
+                const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
                 // check to see if the provided package isn't virtual too
                 if (candidateVer.end() == false) {
                     ret.push_back(candidateVer);
                 }
             }
         } else {
-            bool found;
-            const pkgCache::VerIterator &ver = findPackageId(pi, found);
+            const pkgCache::VerIterator &ver = findPackageId(pi);
             // check to see if we found the package
-            if (found) {
+            if (!ver.end()) {
                 ret.push_back(ver);
             }
         }
@@ -2220,7 +2216,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
         }
 
         pkgCache::VerIterator ver = Cache[pkg].InstVerIter(Cache);
-        if (ver.end() && (ver = find_candidate_ver(pkg))) {
+        if (ver.end() && (ver = findCandidateVer(pkg))) {
             // Ignore invalid versions
             continue;
         }
