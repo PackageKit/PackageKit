@@ -26,15 +26,23 @@ class AptCacheFile : public pkgCacheFile
 {
 public:
     AptCacheFile();
+    ~AptCacheFile();
 
     /**
       * Inits the package cache returning false if it can't open
       */
     bool open(bool withLock = false);
 
-    inline pkgRecords* GetPkgRecords() { BuildDepCache(); return m_packageRecords; }
+    /**
+      * Build caches
+      */
+    bool buildCaches(bool withLock = false);
+
+    inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
 
 private:
+    void buildPkgRecords();
+
     pkgRecords *m_packageRecords;
 };
 

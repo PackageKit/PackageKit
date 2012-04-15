@@ -19,29 +19,39 @@
  */
 #include "AptCacheFile.h"
 
-AptCacheFile::AptCacheFile()
+AptCacheFile::AptCacheFile() :
+    m_packageRecords(0)
 {
+}
+
+AptCacheFile::~AptCacheFile()
+{
+    if (m_packageRecords) {
+        delete m_packageRecords;
+    }
 }
 
 bool AptCacheFile::open(bool withLock)
 {
     // TODO maybe subclass this to show more info when opening
     OpTextProgress opTextProgress(*_config);
-    if (pkgCacheFile::Open(&opTextProgress, withLock) == false) {
-         return false;
+    return Open(&opTextProgress, withLock);
+}
+
+bool AptCacheFile::buildCaches(bool withLock)
+{
+    OpTextProgress opTextProgress(*_config);
+    return BuildCaches(&opTextProgress, withLock);
+}
+
+void AptCacheFile::buildPkgRecords()
+{
+    if (m_packageRecords) {
+        return;
     }
 
-    // Generate it and map it
-    // TODO for what we need this???
-//    bool Res = pkgMakeStatusCache(GetSourceList(), opTextProgress, &Map, true);
-//    Progress.Done();
-//    if(!Res) {
-//        return false;
-//        //"The package lists or status file could not be parsed or opened."
-//    }
-
     // Create the text record parser
-    m_packageRecords = new pkgRecords(*this);
+    m_packageRecords = new pkgRecords(*this->GetPkgCache());
 }
 
 

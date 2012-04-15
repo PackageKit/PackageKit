@@ -54,18 +54,12 @@
 #define RAMFS_MAGIC     0x858458f6
 
 AptIntf::AptIntf(PkBackend *backend, bool &cancel) :
-    packageRecords(0),
-    packageCache(0),
-    packageDepCache(0),
-    packageSourceList(0),
-    Map(0),
-    Policy(0),
     m_backend(backend),
-    _cancel(cancel),
+    m_cancel(cancel),
     m_terminalTimeout(120),
     m_lastSubProgress(0)
 {
-    _cancel = false;
+    m_cancel = false;
 }
 
 bool AptIntf::init()
@@ -98,88 +92,31 @@ bool AptIntf::init()
     ftp_proxy = pk_backend_get_proxy_ftp(m_backend);
     setenv("ftp_proxy", ftp_proxy, 1);
 
-    packageSourceList = new pkgSourceList;
-    // Read the source list
-    packageSourceList->ReadMainList();
-
-    // Generate it and map it
-    bool Res = pkgMakeStatusCache(*packageSourceList, Progress, &Map, true);
-    Progress.Done();
-    if(!Res) {
-        return false;
-        //"The package lists or status file could not be parsed or opened."
-    }
-
-    packageCache = new pkgCache(Map);
-    if (_error->PendingError()) {
-        return false;
-    }
-
-    // create depcache
-    Policy = new pkgPolicy(packageCache);
-    if (_error->PendingError()) {
-        return false;
-    }
-
-    if (!ReadPinFile(*Policy)) {
-        return false;
-    }
-
-    packageDepCache = new pkgDepCache(packageCache, Policy);
-    if (_error->PendingError()) {
-        return false;
-    }
-
-    packageDepCache->Init(&Progress);
-    Progress.Done();
-    if (_error->PendingError()) {
-        return false;
-    }
-
-    // Create the text record parser
-    packageRecords = new pkgRecords(*packageDepCache);
+    // Tries to open the cache
+//    if (!m_cache.open()) {
+//        return false;
+//    }
 }
 
 AptIntf::~AptIntf()
 {
-    if (packageRecords) {
-        g_debug ("~apt_init packageRecords");
-        delete packageRecords;
-    }
-
-    if (packageCache) {
-        g_debug ("~apt_init packageCache");
-        delete packageCache;
-    }
-
-    if (packageDepCache) {
-        g_debug ("~apt_init packageDepCache");
-        delete packageDepCache;
-    }
-
-    if (Policy) {
-        g_debug ("~apt_init Policy");
-        delete Policy;
-    }
-
-    if (packageSourceList) {
-        delete packageSourceList;
-    }
-
     pk_backend_finished(m_backend);
-
-    delete Map;
 }
 
 void AptIntf::cancel()
 {
-    if (!_cancel) {
-        _cancel = true;
+    if (!m_cancel) {
+        m_cancel = true;
         pk_backend_set_status(m_backend, PK_STATUS_ENUM_CANCEL);
     }
     if (m_child_pid > 0) {
         kill(m_child_pid, SIGTERM);
     }
+}
+
+pkgCache::PkgIterator AptIntf::findPackage(const std::string &packageName)
+{
+    m_cache.GetPkgCache()->FindPkg(packageName);
 }
 
 pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
@@ -190,7 +127,7 @@ pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
     parts = pk_package_id_split(packageId);
     gchar *pkgNameArch;
     pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
-    pkg = packageCache->FindPkg(pkgNameArch);
+    pkg = findPackage(pkgNameArch);
     g_free(pkgNameArch);
 
     // Ignore packages that could not be found or that exist only due to dependencies.
@@ -241,7 +178,11 @@ pkgCache::VerIterator AptIntf::findVer(const pkgCache::PkgIterator &pkg)
 pkgCache::VerIterator AptIntf::findCandidateVer(const pkgCache::PkgIterator &pkg)
 {
     // get the candidate version iterator
-    return (*packageDepCache)[pkg].CandidateVerIter(*packageDepCache);
+    pkgCache::VerIterator ret;
+    if (m_cache.open()) {
+        ret = m_cache[pkg].CandidateVerIter(m_cache);
+    }
+    return ret;
 }
 
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
@@ -398,7 +339,7 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver,
     pk_backend_package(m_backend,
                        state,
                        package_id,
-                       get_short_description(ver, packageRecords).c_str());
+                       get_short_description(ver, m_cache.GetPkgRecords()).c_str());
     g_free(package_id);
 }
 
@@ -416,7 +357,7 @@ void AptIntf::emit_packages(PkgList &output,
                  output.end());
 
     for (PkgList::iterator it = output.begin(); it != output.end(); ++it) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -436,7 +377,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
                  output.end());
 
     for (PkgList::iterator i = output.begin(); i != output.end(); ++i) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -475,8 +416,8 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         return;
     }
 
-    for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-        if (_cancel) {
+    for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
             delete matcher;
             break;
         }
@@ -497,7 +438,7 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         }
 
         pkgCache::VerFileIterator vf = ver.FileList();
-        pkgRecords::Parser &rec = packageRecords->Lookup(vf);
+        pkgRecords::Parser &rec = m_cache.GetPkgRecords()->Lookup(vf);
         const char *start, *stop;
         rec.GetRec(start, stop);
         string record(start, stop - start);
@@ -553,7 +494,7 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
 
             g_debug ("pkg-name: %s", libPkgName.c_str ());
 
-            for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
+            for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
                 // Ignore packages that exist only due to dependencies.
                 if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
                     continue;
@@ -581,6 +522,90 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
     }
 }
 
+// Mostly copied from pkgAcqArchive.
+bool AptIntf::getArchive(pkgAcquire *Owner,
+                         const pkgCache::VerIterator &Version,
+                         std::string directory,
+                         std::string &StoreFilename)
+{
+    pkgCache::VerFileIterator Vf=Version.FileList();
+
+    if (Version.Arch() == 0) {
+        return _error->Error("I wasn't able to locate a file for the %s package. "
+                             "This might mean you need to manually fix this package. (due to missing arch)",
+                             Version.ParentPkg().Name());
+    }
+
+    /* We need to find a filename to determine the extension. We make the
+        assumption here that all the available sources for this version share
+        the same extension.. */
+    // Skip not source sources, they do not have file fields.
+    for (; Vf.end() == false; Vf++) {
+        if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
+            continue;
+        }
+        break;
+    }
+
+    // Does not really matter here.. we are going to fail out below
+    if (Vf.end() != true) {
+        // If this fails to get a file name we will bomb out below.
+        pkgRecords::Parser &Parse = m_cache.GetPkgRecords()->Lookup(Vf);
+        if (_error->PendingError() == true) {
+            return false;
+        }
+
+        // Generate the final file name as: package_version_arch.foo
+        StoreFilename = QuoteString(Version.ParentPkg().Name(),"_:") + '_' +
+                QuoteString(Version.VerStr(),"_:") + '_' +
+                QuoteString(Version.Arch(),"_:.") +
+                "." + flExtension(Parse.FileName());
+    }
+
+    for (; Vf.end() == false; Vf++) {
+        // Ignore not source sources
+        if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
+            continue;
+        }
+
+        // Try to cross match against the source list
+        pkgIndexFile *Index;
+        if (m_cache.GetSourceList()->FindIndex(Vf.File(),Index) == false) {
+            continue;
+        }
+
+        // Grab the text package record
+        pkgRecords::Parser &Parse = m_cache.GetPkgRecords()->Lookup(Vf);
+        if (_error->PendingError() == true) {
+            return false;
+        }
+
+        const string PkgFile = Parse.FileName();
+        const string MD5     = Parse.MD5Hash();
+        if (PkgFile.empty() == true) {
+            return _error->Error("The package index files are corrupted. No Filename: "
+                                 "field for package %s.",
+                                 Version.ParentPkg().Name());
+        }
+
+        string DestFile = directory + "/" + flNotDir(StoreFilename);
+
+        // Create the item
+        new pkgAcqFile(Owner,
+                       Index->ArchiveURI(PkgFile),
+                       MD5,
+                       Version->Size,
+                       Index->ArchiveInfo(Version),
+                       Version.ParentPkg().Name(),
+                       "",
+                       DestFile);
+
+        Vf++;
+        return true;
+    }
+    return false;
+}
+
 // used to emit packages it collects all the needed info
 void AptIntf::emitDetails(const pkgCache::VerIterator &ver)
 {
@@ -595,7 +620,7 @@ void AptIntf::emitDetails(const pkgCache::VerIterator &ver)
     section = section.substr(found + 1);
 
     pkgCache::VerFileIterator vf = ver.FileList();
-    pkgRecords::Parser &rec = packageRecords->Lookup(vf);
+    pkgRecords::Parser &rec = m_cache.GetPkgRecords()->Lookup(vf);
 
     long size;
     if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
@@ -615,7 +640,7 @@ void AptIntf::emitDetails(const pkgCache::VerIterator &ver)
                        package_id,
                        "unknown",
                        get_enum_group(section),
-                       get_long_description_parsed(ver, packageRecords).c_str(),
+                       get_long_description_parsed(ver, m_cache.GetPkgRecords()).c_str(),
                        rec.Homepage().c_str(),
                        size);
 
@@ -631,7 +656,7 @@ void AptIntf::emitDetails(PkgList &pkgs)
                pkgs.end());
 
     for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -663,7 +688,7 @@ void AptIntf::emitUpdateDetails(const pkgCache::VerIterator &version)
 
     pkgCache::VerFileIterator vf = candver.FileList();
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
-    pkgRecords::Parser &rec = packageRecords->Lookup(candver.FileList());
+    pkgRecords::Parser &rec = m_cache.GetPkgRecords()->Lookup(candver.FileList());
 
     // Build the changelogURI
     char uri[512];
@@ -739,7 +764,7 @@ void AptIntf::emitUpdateDetails(const pkgCache::VerIterator &version)
                  pkgfilename.c_str());
     }
     // Create the download object
-    AcqPackageKitStatus Stat(this, m_backend, _cancel);
+    AcqPackageKitStatus Stat(this, m_backend, m_cancel);
 
     // get a fetcher
     pkgAcquire fetcher;
@@ -883,7 +908,7 @@ void AptIntf::emitUpdateDetails(const pkgCache::VerIterator &version)
 void AptIntf::emitUpdateDetails(PkgList &pkgs)
 {
     for(PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -897,7 +922,7 @@ void AptIntf::getDepends(PkgList &output,
 {
     pkgCache::DepIterator dep = ver.DependsList();
     while (!dep.end()) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -927,8 +952,8 @@ void AptIntf::getRequires(PkgList &output,
                           const pkgCache::VerIterator &ver,
                           bool recursive)
 {
-    for (pkgCache::PkgIterator parentPkg = packageCache->PkgBegin(); !parentPkg.end(); ++parentPkg) {
-        if (_cancel) {
+    for (pkgCache::PkgIterator parentPkg = m_cache.GetPkgCache()->PkgBegin(); !parentPkg.end(); ++parentPkg) {
+        if (m_cancel) {
             break;
         }
 
@@ -962,8 +987,145 @@ void AptIntf::getRequires(PkgList &output,
     }
 }
 
+PkgList AptIntf::getPackages()
+{
+    PkgList output;
+    output.reserve(m_cache.GetPkgCache()->HeaderP->PackageCount);
+    for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
+            break;
+        }
+
+        // Ignore packages that exist only due to dependencies.
+        if(pkg.VersionList().end() && pkg.ProvidesList().end()) {
+            continue;
+        }
+
+        // Don't insert virtual packages as they don't have all kinds of info
+        const pkgCache::VerIterator &ver = findVer(pkg);
+        if (ver.end() == false) {
+            output.push_back(ver);
+        }
+    }
+    return output;
+}
+
+PkgList AptIntf::getPackagesFromGroup(vector<PkGroupEnum> &groups)
+{
+    PkgList output;
+    for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
+            break;
+        }
+        // Ignore packages that exist only due to dependencies.
+        if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+            continue;
+        }
+
+        // Ignore virtual packages
+        const pkgCache::VerIterator &ver = findVer(pkg);
+        if (ver.end() == false) {
+            string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
+
+            size_t found;
+            found = section.find_last_of("/");
+            section = section.substr(found + 1);
+
+            // Don't insert virtual packages instead add what it provides
+            for (vector<PkGroupEnum>::iterator it = groups.begin();
+                 it != groups.end();
+                 ++it) {
+                if (*it == get_enum_group(section)) {
+                    output.push_back(ver);
+                    break;
+                }
+            }
+        }
+    }
+    return output;
+}
+
+PkgList AptIntf::searchPackageName(Matcher *matcher)
+{
+    PkgList output;
+    for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
+            break;
+        }
+        // Ignore packages that exist only due to dependencies.
+        if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+            continue;
+        }
+
+        if (matcher->matches(pkg.Name())) {
+            // Don't insert virtual packages instead add what it provides
+            const pkgCache::VerIterator &ver = findVer(pkg);
+            if (ver.end() == false) {
+                output.push_back(ver);
+            } else {
+                // iterate over the provides list
+                for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
+                    const pkgCache::VerIterator &ownerVer = findVer(Prv.OwnerPkg());
+
+                    // check to see if the provided package isn't virtual too
+                    if (ownerVer.end() == false) {
+                        // we add the package now because we will need to
+                        // remove duplicates later anyway
+                        output.push_back(ownerVer);
+                    }
+                }
+            }
+        }
+    }
+    return output;
+}
+
+PkgList AptIntf::searchPackageDetails(Matcher *matcher)
+{
+    PkgList output;
+    for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
+            break;
+        }
+        // Ignore packages that exist only due to dependencies.
+        if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+            continue;
+        }
+
+        const pkgCache::VerIterator &ver = findVer(pkg);
+        if (ver.end() == false) {
+            if (matcher->matches(pkg.Name()) ||
+                    matcher->matches(getPackageLongDescription(ver))) {
+                // The package matched
+                output.push_back(ver);
+            }
+        } else if (matcher->matches(pkg.Name())) {
+            // The package is virtual and MATCHED the name
+            // Don't insert virtual packages instead add what it provides
+
+            // iterate over the provides list
+            for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
+                const pkgCache::VerIterator &ownerVer = findVer(Prv.OwnerPkg());
+
+                // check to see if the provided package isn't virtual too
+                if (ownerVer.end() == false) {
+                    // we add the package now because we will need to
+                    // remove duplicates later anyway
+                    output.push_back(ownerVer);
+                }
+            }
+        }
+    }
+    return output;
+}
+
+string AptIntf::getPackageLongDescription(const pkgCache::VerIterator &ver)
+{
+    return get_long_description(ver, m_cache.GetPkgRecords());
+}
+
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
-vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
+vector<string> search_files (PkBackend *backend, gchar **values, bool &m_cancel)
 {
     vector<string> packageList;
     regex_t re;
@@ -991,7 +1153,7 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 
     string line;
     while ((dirp = readdir(dp)) != NULL) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
         if (ends_with(dirp->d_name, ".list")) {
@@ -1016,7 +1178,7 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 }
 
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
-vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel)
+vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &m_cancel)
 {
     vector<string> packageList;
     regex_t re;
@@ -1046,7 +1208,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 
     string line;
     while ((dirp = readdir(dp)) != NULL) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
         if (ends_with(dirp->d_name, ".desktop")) {
@@ -1147,7 +1309,7 @@ bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter, string co
         component = "main";
 
     // Get a fetcher
-    AcqPackageKitStatus Stat(this, m_backend, _cancel);
+    AcqPackageKitStatus Stat(this, m_backend, m_cancel);
     Stat.addPackage(verIter);
     pkgAcquire fetcher;
     fetcher.Setup(&Stat);
@@ -1279,21 +1441,21 @@ bool AptIntf::tryToInstall(const pkgCache::PkgIterator &constPkg,
 }
 
 // checks if there are Essential packages being removed
-bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
+bool AptIntf::removingEssentialPackages(AptCacheFile &cache)
 {
     string List;
-    bool *Added = new bool[Cache->Head().PackageCount];
-    for (unsigned int I = 0; I != Cache->Head().PackageCount; ++I) {
+    bool *Added = new bool[cache->Head().PackageCount];
+    for (unsigned int I = 0; I != cache->Head().PackageCount; ++I) {
         Added[I] = false;
     }
 
-    for (pkgCache::PkgIterator I = Cache->PkgBegin(); ! I.end(); ++I) {
+    for (pkgCache::PkgIterator I = cache->PkgBegin(); ! I.end(); ++I) {
         if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential &&
                 (I->Flags & pkgCache::Flag::Important) != pkgCache::Flag::Important) {
             continue;
         }
 
-        if (Cache[I].Delete() == true) {
+        if (cache[I].Delete() == true) {
             if (Added[I->ID] == false) {
                 Added[I->ID] = true;
                 List += string(I.Name()) + " ";
@@ -1313,7 +1475,7 @@ bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
             }
 
             pkgCache::PkgIterator P = D.SmartTargetPkg();
-            if (Cache[P].Delete() == true)
+            if (cache[P].Delete() == true)
             {
                 if (Added[P->ID] == true){
                     continue;
@@ -1343,7 +1505,7 @@ bool AptIntf::removingEssentialPackages(pkgCacheFile &Cache)
 /**
  * emitChangedPackages - Show packages to newly install
  */
-void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
+void AptIntf::emitChangedPackages(AptCacheFile &cache)
 {
     PkgList installing;
     PkgList removing;
@@ -1351,17 +1513,17 @@ void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
     PkgList downgrading;
 
     string VersionsList;
-    for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
-        if (Cache[pkg].NewInstall() == true) {
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {
+        if (cache[pkg].NewInstall() == true) {
             // installing
             installing.push_back(findCandidateVer(pkg));
-        } else if (Cache[pkg].Delete() == true) {
+        } else if (cache[pkg].Delete() == true) {
             // removing
             removing.push_back(findVer(pkg));
-        } else if (Cache[pkg].Upgrade() == true) {
+        } else if (cache[pkg].Upgrade() == true) {
             // updating
             updating.push_back(findCandidateVer(pkg));
-        } else if (Cache[pkg].Downgrade() == true) {
+        } else if (cache[pkg].Downgrade() == true) {
             // downgrading
             downgrading.push_back(findCandidateVer(pkg));
         }
@@ -1374,19 +1536,19 @@ void AptIntf::emitChangedPackages(pkgCacheFile &Cache)
     emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
 }
 
-void AptIntf::populateInternalPackages(pkgCacheFile &Cache)
+void AptIntf::populateInternalPackages(AptCacheFile &cache)
 {
-    for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
-        if (Cache[pkg].NewInstall() == true) {
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {
+        if (cache[pkg].NewInstall() == true) {
             // installing
             m_pkgs.push_back(findCandidateVer(pkg));
-        } else if (Cache[pkg].Delete() == true) {
+        } else if (cache[pkg].Delete() == true) {
             // removing
             m_pkgs.push_back(findVer(pkg));
-        } else if (Cache[pkg].Upgrade() == true) {
+        } else if (cache[pkg].Upgrade() == true) {
             // updating
             m_pkgs.push_back(findCandidateVer(pkg));
-        } else if (Cache[pkg].Downgrade() == true) {
+        } else if (cache[pkg].Downgrade() == true) {
             // downgrading
             m_pkgs.push_back(findCandidateVer(pkg));
         }
@@ -1402,7 +1564,7 @@ void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
         }
     }
 
-    const pkgCache::PkgIterator &pkg = packageCache->FindPkg(name);
+    const pkgCache::PkgIterator &pkg = findPackage(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() == true ||
             (pkg.VersionList().end() && pkg.ProvidesList().end())) {
@@ -1440,7 +1602,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
         m_lastTermAction = time(NULL);
 
         if( buf[0] == '\n') {
-            if (_cancel) {
+            if (m_cancel) {
                 kill(m_child_pid, SIGTERM);
             }
             //cout << "got line: " << line << endl;
@@ -1703,7 +1865,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
  *
  * Remove unused automatic packages
  */
-bool AptIntf::doAutomaticRemove(pkgCacheFile &Cache)
+bool AptIntf::doAutomaticRemove(AptCacheFile &cache)
 {
     bool doAutoRemove;
     if (pk_backend_get_bool(m_backend, "autoremove")) {
@@ -1711,7 +1873,7 @@ bool AptIntf::doAutomaticRemove(pkgCacheFile &Cache)
     } else {
         doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
     }
-    pkgDepCache::ActionGroup group(*Cache);
+    pkgDepCache::ActionGroup group(*cache);
 
     if (_config->FindB("APT::Get::Remove",true) == false &&
             doAutoRemove == true) {
@@ -1723,23 +1885,23 @@ bool AptIntf::doAutomaticRemove(pkgCacheFile &Cache)
     if (doAutoRemove) {
         bool purge = _config->FindB("APT::Get::Purge", false);
         // look over the cache to see what can be removed
-        for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg) {
-            if (Cache[Pkg].Garbage) {
+        for (pkgCache::PkgIterator Pkg = cache->PkgBegin(); ! Pkg.end(); ++Pkg) {
+            if (cache[Pkg].Garbage) {
                 if (Pkg.CurrentVer() != 0 &&
                         Pkg->CurrentState != pkgCache::State::ConfigFiles) {
-                    Cache->MarkDelete(Pkg, purge);
+                    cache->MarkDelete(Pkg, purge);
                 } else {
-                    Cache->MarkKeep(Pkg, false, false);
+                    cache->MarkKeep(Pkg, false, false);
                 }
             }
         }
 
         // Now see if we destroyed anything
-        if (Cache->BrokenCount() != 0) {
+        if (cache->BrokenCount() != 0) {
             cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
                     "shouldn't happen. Please file a bug report against apt." << endl;
             // TODO call show_broken
-            //       ShowBroken(c1out,Cache,false);
+            //       ShowBroken(c1out,cache,false);
             return _error->Error("Internal Error, AutoRemover broke stuff");
         }
     }
@@ -1759,7 +1921,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
         return ret;
 
     for (uint i = 0; i < g_strv_length(package_ids); ++i) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -1769,12 +1931,12 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
         if (pk_package_id_check(pi) == false) {
             // Check if we are on multiarch AND if the package name didn't contains the arch field (GDEBI for instance)
             if (m_isMultiArch && strstr(pi, ":") == NULL) {
-                // OK FindPkg is not suitable for muitarch
+                // OK FindPkg is not suitable on muitarch without ":arch"
                 // it can only return one package in this case we need to
                 // search the whole package cache and match the package
                 // name manually
-                for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-                    if (_cancel) {
+                for (pkgCache::PkgIterator pkg = m_cache.GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+                    if (m_cancel) {
                         break;
                     }
 
@@ -1801,7 +1963,7 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
                     }
                 }
             } else {
-                const pkgCache::PkgIterator &pkg = packageCache->FindPkg(pi);
+                const pkgCache::PkgIterator &pkg = findPackage(pi);
                 // Ignore packages that could not be found or that exist only due to dependencies.
                 if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
                     continue;
@@ -1831,11 +1993,20 @@ PkgList AptIntf::resolvePI(gchar **package_ids, PkBitfield filters)
     return filterPackages(ret, filters);
 }
 
-bool AptIntf::markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag)
+void AptIntf::refreshCache()
+{
+    // Create the progress
+    AcqPackageKitStatus Stat(this, m_backend, m_cancel);
+
+    // do the work
+    ListUpdate(Stat, *m_cache.GetSourceList());
+}
+
+bool AptIntf::markAutoInstalled(AptCacheFile &cache, PkgList &pkgs, bool flag)
 {
     bool ret;
     for(PkgList::iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
-        if (_cancel) {
+        if (m_cancel) {
             break;
         }
 
@@ -2031,17 +2202,16 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto)
 {
     //cout << "runTransaction" << simulate << remove << endl;
-    bool WithLock = !simulate; // Check to see if we are just simulating,
+    bool withLock = !simulate; // Check to see if we are just simulating,
     //since for that no lock is needed
 
-    pkgCacheFile Cache;
-    OpTextProgress Prog(*_config);
+    AptCacheFile cache;
     int timeout = 10;
     // TODO test this
-    while (Cache.Open(&Prog, WithLock) == false) {
+    while (cache.open(withLock) == false) {
         // failed to open cache, try checkDeps then..
-        // || Cache.CheckDeps(CmdL.FileSize() != 1) == false
-        if (WithLock == false || (timeout <= 0)) {
+        // || cache.CheckDeps(CmdL.FileSize() != 1) == false
+        if (withLock == false || (timeout <= 0)) {
             show_errors(m_backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
             return false;
         } else {
@@ -2055,23 +2225,23 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
 
     // Enter the special broken fixing mode if the user specified arguments
     bool BrokenFix = false;
-    if (Cache->BrokenCount() != 0) {
+    if (cache->BrokenCount() != 0) {
         BrokenFix = true;
     }
 
     unsigned int ExpectedInst = 0;
-    pkgProblemResolver Fix(Cache);
+    pkgProblemResolver Fix(cache);
 
     // new scope for the ActionGroup
     {
-        pkgDepCache::ActionGroup group(Cache);
+        pkgDepCache::ActionGroup group(cache);
         for (PkgList::iterator it = install.begin(); it != install.end(); ++it) {
-            if (_cancel) {
+            if (m_cancel) {
                 break;
             }
 
             if (tryToInstall(it->ParentPkg(),
-                             Cache,
+                             cache,
                              Fix,
                              false, // remove
                              BrokenFix,
@@ -2081,16 +2251,16 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         }
 
         if (!simulate) {
-            markAutoInstalled(Cache, install, markAuto);
+            markAutoInstalled(cache, install, markAuto);
         }
 
         for (PkgList::iterator it = remove.begin(); it != remove.end(); ++it) {
-            if (_cancel) {
+            if (m_cancel) {
                 break;
             }
 
             if (tryToInstall(it->ParentPkg(),
-                             Cache,
+                             cache,
                              Fix,
                              true, // remove
                              BrokenFix,
@@ -2106,17 +2276,17 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         }
 
         // Now we check the state of the packages,
-        if (Cache->BrokenCount() != 0) {
+        if (cache->BrokenCount() != 0) {
             // if the problem resolver could not fix all broken things
             // show what is broken
-            show_broken(m_backend, Cache, false);
+            show_broken(m_backend, cache, false);
             return false;
         }
     }
 
     // If we are simulating the install packages
     // will just calculate the trusted packages
-    return installPackages(Cache, simulate);
+    return installPackages(cache, simulate);
 }
 
 /**
@@ -2125,44 +2295,44 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
  * This displays the informative messages describing what is going to
  * happen and then calls the download routines
  */
-bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
+bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
 {
     // Try to auto-remove packages
-    if (!doAutomaticRemove(Cache)) {
+    if (!doAutomaticRemove(cache)) {
         // TODO
         return false;
     }
 
     //cout << "installPackages() called" << endl;
     if (_config->FindB("APT::Get::Purge",false) == true) {
-        pkgCache::PkgIterator I = Cache->PkgBegin();
+        pkgCache::PkgIterator I = cache->PkgBegin();
         for (; I.end() == false; ++I) {
-            if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete) {
-                Cache->MarkDelete(I,true);
+            if (I.Purge() == false && cache[I].Mode == pkgDepCache::ModeDelete) {
+                cache->MarkDelete(I,true);
             }
         }
     }
 
     // check for essential packages!!!
-    if (removingEssentialPackages(Cache)) {
+    if (removingEssentialPackages(cache)) {
         return false;
     }
 
     // Sanity check
-    if (Cache->BrokenCount() != 0) {
+    if (cache->BrokenCount() != 0) {
         // TODO
-        show_broken(m_backend, Cache, false);
+        show_broken(m_backend, cache, false);
         _error->Error("Internal error, InstallPackages was called with broken packages!");
         return false;
     }
 
-    if (Cache->DelCount() == 0 && Cache->InstCount() == 0 &&
-            Cache->BadCount() == 0) {
+    if (cache->DelCount() == 0 && cache->InstCount() == 0 &&
+            cache->BadCount() == 0) {
         return true;
     }
 
     // No remove flag
-    if (Cache->DelCount() != 0 && _config->FindB("APT::Get::Remove", true) == false) {
+    if (cache->DelCount() != 0 && _config->FindB("APT::Get::Remove", true) == false) {
         pk_backend_error_code(m_backend,
                               PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
                               "Packages need to be removed but remove is disabled.");
@@ -2170,7 +2340,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
     }
 
     // Create the text record parser
-    pkgRecords Recs(Cache);
+    pkgRecords Recs(cache);
     if (_error->PendingError() == true) {
         return false;
     }
@@ -2185,37 +2355,37 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
     }
 
     // Create the download object
-    AcqPackageKitStatus Stat(this, m_backend, _cancel);
+    AcqPackageKitStatus Stat(this, m_backend, m_cancel);
 
     // get a fetcher
     pkgAcquire fetcher;
     fetcher.Setup(&Stat);
 
     // Create the package manager and prepare to download
-    SPtr<pkgPackageManager> PM = _system->CreatePM(Cache);
-    if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
+    SPtr<pkgPackageManager> PM = _system->CreatePM(cache);
+    if (PM->GetArchives(&fetcher, m_cache.GetSourceList(), &Recs) == false ||
             _error->PendingError() == true) {
         return false;
     }
 
     // Generate the list of affected packages
-    for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); pkg.end() == false; ++pkg) {
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); pkg.end() == false; ++pkg) {
         // Ignore no-version packages
         if (pkg->VersionList == 0) {
             continue;
         }
 
         // Not interesting
-        if ((Cache[pkg].Keep() == true ||
-             Cache[pkg].InstVerIter(Cache) == pkg.CurrentVer()) &&
+        if ((cache[pkg].Keep() == true ||
+             cache[pkg].InstVerIter(cache) == pkg.CurrentVer()) &&
                 pkg.State() == pkgCache::PkgIterator::NeedsNothing &&
-                (Cache[pkg].iFlags & pkgDepCache::ReInstall) != pkgDepCache::ReInstall &&
-                (pkg.Purge() != false || Cache[pkg].Mode != pkgDepCache::ModeDelete ||
-                 (Cache[pkg].iFlags & pkgDepCache::Purge) != pkgDepCache::Purge)) {
+                (cache[pkg].iFlags & pkgDepCache::ReInstall) != pkgDepCache::ReInstall &&
+                (pkg.Purge() != false || cache[pkg].Mode != pkgDepCache::ModeDelete ||
+                 (cache[pkg].iFlags & pkgDepCache::Purge) != pkgDepCache::Purge)) {
             continue;
         }
 
-        pkgCache::VerIterator ver = Cache[pkg].InstVerIter(Cache);
+        pkgCache::VerIterator ver = cache[pkg].InstVerIter(cache);
         if (ver.end() && (ver = findCandidateVer(pkg))) {
             // Ignore invalid versions
             continue;
@@ -2229,8 +2399,8 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
     double FetchBytes = fetcher.FetchNeeded();
     double FetchPBytes = fetcher.PartialPresent();
     double DebBytes = fetcher.TotalNeeded();
-    if (DebBytes != Cache->DebSize()) {
-        cout << DebBytes << ',' << Cache->DebSize() << endl;
+    if (DebBytes != cache->DebSize()) {
+        cout << DebBytes << ',' << cache->DebSize() << endl;
         cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
     }
 
@@ -2281,7 +2451,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
 
     if (simulating) {
         // Print out a list of packages that are going to be installed extra
-        emitChangedPackages(Cache);
+        emitChangedPackages(cache);
         return true;
     }
 
@@ -2289,7 +2459,7 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
     pk_backend_set_simultaneous_mode(m_backend, true);
     // Download and check if we can continue
     if (fetcher.Run() != pkgAcquire::Continue
-            && _cancel == false) {
+            && m_cancel == false) {
         // We failed and we did not cancel
         show_errors(m_backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         return false;
@@ -2303,10 +2473,10 @@ bool AptIntf::installPackages(pkgCacheFile &Cache, bool simulating)
 
     // Store the packages that are going to change
     // so we can emit them as we process it.
-    populateInternalPackages(Cache);
+    populateInternalPackages(cache);
 
     // Check if the user canceled
-    if (_cancel) {
+    if (m_cancel) {
         return true;
     }
 

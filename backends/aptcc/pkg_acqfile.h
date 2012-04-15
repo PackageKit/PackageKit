@@ -55,11 +55,4 @@ public:
     pkgCache::VerIterator version() { return Version; }
 };
 
-/** Like pkgAcqArchive, but uses generic File objects to download to
- *  the cwd (and copies from file:/ URLs).
- */
-bool get_archive(pkgAcquire *Owner, pkgSourceList *Sources,
-                 pkgRecords *Recs, pkgCache::VerIterator const &Version,
-                 std::string directory, std::string &StoreFilename);
-
 #endif

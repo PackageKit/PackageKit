@@ -376,11 +376,10 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 
-    pkgCacheFile Cache;
-    OpTextProgress Prog(*_config);
+    AptCacheFile cache;
     int timeout = 10;
     // TODO test this
-    while (Cache.Open(&Prog, !getUpdates) == false) {
+    while (cache.open(!getUpdates) == false) {
         // failed to open cache, try checkDeps then..
         // || Cache.CheckDeps(CmdL.FileSize() != 1) == false
         if (getUpdates == true || (timeout <= 0)) {
@@ -389,15 +388,15 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
                                   "Could not open package cache.");
             return false;
         } else {
-            pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+            pk_backend_set_status(backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
             sleep(1);
             timeout--;
         }
     }
-    pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_RUNNING);
 
-    if (pkgDistUpgrade(*Cache) == false) {
-        show_broken(backend, Cache, false);
+    if (pkgDistUpgrade(*cache) == false) {
+        show_broken(backend, cache, false);
         g_debug ("Internal error, DistUpgrade broke stuff");
         delete m_apt;
         return false;
@@ -408,15 +407,15 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
         PkgList update;
         PkgList kept;
 
-        for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin();
+        for (pkgCache::PkgIterator pkg = cache.GetPkgCache()->PkgBegin();
              !pkg.end();
              ++pkg) {
-            if ((*Cache)[pkg].Upgrade()    == true &&
-                    (*Cache)[pkg].NewInstall() == false) {
+            if ((*cache)[pkg].Upgrade()    == true &&
+                    (*cache)[pkg].NewInstall() == false) {
                 update.push_back(m_apt->findCandidateVer(pkg));
-            } else if ((*Cache)[pkg].Upgradable() == true &&
+            } else if ((*cache)[pkg].Upgradable() == true &&
                        pkg->CurrentVer != 0 &&
-                       (*Cache)[pkg].Delete() == false) {
+                       (*cache)[pkg].Delete() == false) {
                 kept.push_back(m_apt->findCandidateVer(pkg));
             }
         }
@@ -426,7 +425,7 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
     } else {
         // TODO there should be a simulate upgrade system,
         // tho afaik Apper and GPK don't use this
-        res = m_apt->installPackages(Cache, false);
+        res = m_apt->installPackages(cache, false);
     }
 
     delete m_apt;
@@ -484,24 +483,24 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
         PkgList output;
 
         if (provides == PK_PROVIDES_ENUM_SHARED_LIB) {
-            m_apt->providesLibrary (output, values);
+            m_apt->providesLibrary(output, values);
         } else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-            packages = searchMimeType (backend, values, error, _cancel);
+            packages = searchMimeType(backend, values, error, _cancel);
         } else if (provides == PK_PROVIDES_ENUM_CODEC) {
-            m_apt->providesCodec (output, values);
+            m_apt->providesCodec(output, values);
         } else {
             // PK_PROVIDES_ENUM_ANY, just search for everything a package can provide
-            m_apt->providesLibrary (output, values);
-            m_apt->providesCodec (output, values);
-            packages = searchMimeType (backend, values, error, _cancel);
+            m_apt->providesLibrary(output, values);
+            m_apt->providesCodec(output, values);
+            packages = searchMimeType(backend, values, error, _cancel);
         }
 
-        for (vector<string>::iterator i = packages.begin();
-             i != packages.end(); ++i) {
+        for (vector<string>::iterator it = packages.begin();
+             it != packages.end(); ++it) {
             if (_cancel) {
                 break;
             }
-            const pkgCache::PkgIterator &pkg = m_apt->packageCache->FindPkg(i->c_str());
+            const pkgCache::PkgIterator &pkg = m_apt->findPackage(*it);
             if (pkg.end() == true) {
                 continue;
             }
@@ -515,7 +514,7 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
         if (error && provides == PK_PROVIDES_ENUM_MIMETYPE) {
             // check if app-install-data is installed
             pkgCache::PkgIterator pkg;
-            pkg = m_apt->packageCache->FindPkg("app-install-data");
+            pkg = m_apt->findPackage("app-install-data");
             if (pkg->CurrentState != pkgCache::State::Installed) {
                 pk_backend_error_code (backend,
                                        PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -632,12 +631,10 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
             }
 
             string storeFileName;
-            if (get_archive(&fetcher,
-                            m_apt->packageSourceList,
-                            m_apt->packageRecords,
-                            ver,
-                            directory,
-                            storeFileName)) {
+            if (m_apt->getArchive(&fetcher,
+                                  ver,
+                                  directory,
+                                  storeFileName)) {
                 Stat.addPackage(ver);
             }
             string destFile = directory + "/" + flNotDir(storeFileName);
@@ -687,7 +684,7 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
         return false;
     }
 
-    pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
     // Lock the list directory
     FileFd Lock;
     if (_config->FindB("Debug::NoLocking", false) == false) {
@@ -699,16 +696,12 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
             // 	 return _error->Error(_("Unable to lock the list directory"));
         }
     }
-    // Create the progress
-    AcqPackageKitStatus Stat(m_apt, backend, _cancel);
 
-    // do the work
-    ListUpdate(Stat, *m_apt->packageSourceList);
+    m_apt->refreshCache();
 
     // Rebuild the cache.
-    pkgCacheFile Cache;
-    OpTextProgress Prog(*_config);
-    if (Cache.BuildCaches(&Prog, true) == false) {
+    AptCacheFile cache;
+    if (cache.buildCaches(true) == false) {
         if (_error->PendingError() == true) {
             show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
         }
@@ -792,12 +785,12 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
         pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
         vector<string> packages = search_files(backend, values, _cancel);
         PkgList output;
-        for(vector<string>::iterator i = packages.begin();
-            i != packages.end(); ++i) {
+        for(vector<string>::iterator it = packages.begin();
+            it != packages.end(); ++it) {
             if (_cancel) {
                 break;
             }
-            const pkgCache::PkgIterator &pkg = m_apt->packageCache->FindPkg(i->c_str());
+            const pkgCache::PkgIterator &pkg = m_apt->findPackage(*it);
             if (pkg.end() == true) {
                 continue;
             }
@@ -858,38 +851,10 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
     }
 
     pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-    PkgList output;
-    for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-        if (_cancel) {
-            break;
-        }
-        // Ignore packages that exist only due to dependencies.
-        if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-            continue;
-        }
-
-        // Ignore virtual packages
-        const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-        if (ver.end() == false) {
-            string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
-
-            size_t found;
-            found = section.find_last_of("/");
-            section = section.substr(found + 1);
-
-            // Don't insert virtual packages instead add what it provides
-            for (vector<PkGroupEnum>::iterator i = groups.begin();
-                 i != groups.end();
-                 ++i) {
-                if (*i == get_enum_group(section)) {
-                    output.push_back(ver);
-                    break;
-                }
-            }
-        }
-    }
 
     // It's faster to emmit the packages here rather than in the matching part
+    PkgList output;
+    output = m_apt->getPackagesFromGroup(groups);
     m_apt->emit_packages(output, filters);
 
     pk_backend_set_percentage (backend, 100);
@@ -918,11 +883,11 @@ static gboolean backend_search_package_thread(PkBackend *backend)
     pk_backend_set_percentage(backend, PK_BACKEND_PERCENTAGE_INVALID);
     pk_backend_set_allow_cancel(backend, true);
 
-    Matcher *m_matcher = new Matcher(search);
+    Matcher *matcher = new Matcher(search);
     g_free(search);
-    if (m_matcher->hasError()) {
+    if (matcher->hasError()) {
         g_debug("Regex compilation error");
-        delete m_matcher;
+        delete matcher;
         pk_backend_finished (backend);
         return false;
     }
@@ -931,92 +896,30 @@ static gboolean backend_search_package_thread(PkBackend *backend)
     pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
     if (m_apt->init()) {
         g_debug ("Failed to create apt cache");
-        delete m_matcher;
+        delete matcher;
         delete m_apt;
         return false;
     }
 
     if (_error->PendingError() == true) {
-        delete m_matcher;
+        delete matcher;
         delete m_apt;
         return false;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
-    pkgDepCache::Policy Plcy;
     PkgList output;
     if (pk_backend_get_bool(backend, "search_details")) {
-        for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-            if (_cancel) {
-                break;
-            }
-            // Ignore packages that exist only due to dependencies.
-            if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-                continue;
-            }
-
-            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-            if (ver.end() == false) {
-                if (m_matcher->matches(pkg.Name()) ||
-                        m_matcher->matches(get_long_description(ver, m_apt->packageRecords))) {
-                    // The package matched
-                    output.push_back(ver);
-                }
-            } else if (m_matcher->matches(pkg.Name())) {
-                // The package is virtual and MATCHED the name
-                // Don't insert virtual packages instead add what it provides
-
-                // iterate over the provides list
-                for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                    const pkgCache::VerIterator &ownerVer = m_apt->findVer(Prv.OwnerPkg());
-
-                    // check to see if the provided package isn't virtual too
-                    if (ownerVer.end() == false) {
-                        // we add the package now because we will need to
-                        // remove duplicates later anyway
-                        output.push_back(ownerVer);
-                    }
-                }
-            }
-        }
+        output = m_apt->searchPackageDetails(matcher);
     } else {
-        for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
-            if (_cancel) {
-                break;
-            }
-            // Ignore packages that exist only due to dependencies.
-            if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-                continue;
-            }
-
-            if (m_matcher->matches(pkg.Name())) {
-                // Don't insert virtual packages instead add what it provides
-                const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-                if (ver.end() == false) {
-                    output.push_back(ver);
-                } else {
-                    // iterate over the provides list
-                    for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
-                        const pkgCache::VerIterator &ownerVer = m_apt->findVer(Prv.OwnerPkg());
-
-                        // check to see if the provided package isn't virtual too
-                        if (ownerVer.end() == false)
-                        {
-                            // we add the package now because we will need to
-                            // remove duplicates later anyway
-                            output.push_back(ownerVer);
-                        }
-                    }
-                }
-            }
-        }
+        output = m_apt->searchPackageName(matcher);
     }
 
     // It's faster to emmit the packages here than in the matching part
     m_apt->emit_packages(output, filters);
 
-    delete m_matcher;
-    pk_backend_set_percentage (backend, 100);
+    delete matcher;
+    pk_backend_set_percentage(backend, 100);
     delete m_apt;
     return true;
 }
@@ -1348,23 +1251,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
     PkgList output;
-    output.reserve(m_apt->packageCache->HeaderP->PackageCount);
-    for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin();
-         !pkg.end(); ++pkg) {
-        if (_cancel) {
-            break;
-        }
-        // Ignore packages that exist only due to dependencies.
-        if(pkg.VersionList().end() && pkg.ProvidesList().end()) {
-            continue;
-        }
-
-        // Don't insert virtual packages as they don't have all kinds of info
-        const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-        if (ver.end() == false) {
-            output.push_back(ver);
-        }
-    }
+    output = m_apt->getPackages();
 
     // It's faster to emmit the packages rather here than in the matching part
     m_apt->emit_packages(output, filters);

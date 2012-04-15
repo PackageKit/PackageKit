@@ -30,6 +30,8 @@
 
 #include <pk-backend.h>
 
+#include "AptCacheFile.h"
+
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
 
@@ -48,7 +50,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 typedef vector<pkgCache::VerIterator> PkgList;
 
 class pkgProblemResolver;
-
+class Matcher;
 class AptIntf
 {
 
@@ -58,6 +60,12 @@ public:
 
     bool init();
     void cancel();
+
+    /**
+     * Tries to find a package with the given packageId
+     * @returns pkgCache::VerIterator that if .end() is true the package could not be found
+     */
+    pkgCache::PkgIterator findPackage(const std::string &packageName);
 
     /**
      * Tries to find a package with the given packageId
@@ -80,9 +88,12 @@ public:
     pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
 
     PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
+
+    void refreshCache();
+
     bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
-    bool markAutoInstalled(pkgCacheFile &cache, PkgList &pkgs, bool flag);
+    bool markAutoInstalled(AptCacheFile &cache, PkgList &pkgs, bool flag);
 
     /**
      *  runs a transaction to install/remove/update packages
@@ -107,6 +118,16 @@ public:
     void getRequires(PkgList &output,
                      const pkgCache::VerIterator &ver,
                      bool recursive);
+
+    PkgList getPackages();
+    PkgList getPackagesFromGroup(vector<PkGroupEnum> &groups);
+    PkgList searchPackageName(Matcher *matcher);
+    PkgList searchPackageDetails(Matcher *matcher);
+
+    /**
+      * Get the long description of a package
+      */
+    string getPackageLongDescription(const pkgCache::VerIterator &ver);
 
     /**
      *  Emits a package if it match the filters
@@ -144,7 +165,7 @@ public:
     /**
      *  Download and install packages
      */
-    bool installPackages(pkgCacheFile &Cache, bool simulating);
+    bool installPackages(AptCacheFile &cache, bool simulating);
 
     /**
      *  Install a DEB file
@@ -165,17 +186,16 @@ public:
      */
     void providesLibrary(PkgList &output, gchar **values);
 
-    pkgRecords    *packageRecords;
-    pkgCache      *packageCache;
-    pkgDepCache   *packageDepCache;
-    pkgSourceList *packageSourceList;
+    /** Like pkgAcqArchive, but uses generic File objects to download to
+     *  the cwd (and copies from file:/ URLs).
+     */
+    bool getArchive(pkgAcquire *Owner, pkgCache::VerIterator const &Version,
+                    std::string directory, std::string &StoreFilename);
 
 private:
-    MMap       *Map;
-    OpProgress Progress;
-    pkgPolicy  *Policy;
+    AptCacheFile m_cache;
     PkBackend  *m_backend;
-    bool       &_cancel;
+    bool       &m_cancel;
 
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
     bool packageIsSupported(const pkgCache::PkgIterator &pkgIter, string component);
@@ -190,14 +210,14 @@ private:
      *  interprets dpkg status fd
     */
     void updateInterface(int readFd, int writeFd);
-    bool doAutomaticRemove(pkgCacheFile &Cache);
-    void emitChangedPackages(pkgCacheFile &Cache);
-    bool removingEssentialPackages(pkgCacheFile &Cache);
+    bool doAutomaticRemove(AptCacheFile &cache);
+    void emitChangedPackages(AptCacheFile &cache);
+    bool removingEssentialPackages(AptCacheFile &cache);
 
     bool m_isMultiArch;
     PkgList m_pkgs;
     string m_localDebFile;
-    void populateInternalPackages(pkgCacheFile &Cache);
+    void populateInternalPackages(AptCacheFile &cache);
     void emitTransactionPackage(string name, PkInfoEnum state);
     time_t     m_lastTermAction;
     string     m_lastPackage;
