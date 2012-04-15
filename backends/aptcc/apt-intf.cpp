@@ -269,12 +269,16 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
         }
 
         std::string str = ver.Section() == NULL ? "" : ver.Section();
-        std::string section, repo_section;
+        std::string section, component;
 
         size_t found;
         found = str.find_last_of("/");
         section = str.substr(found + 1);
-        repo_section = str.substr(0, found);
+        if(found == str.npos) {
+            component = "main";
+        } else {
+            component = str.substr(0, found);
+        }
 
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed) {
             return false;
@@ -318,31 +322,31 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 
         // TODO add Ubuntu handling
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE)) {
-            if (!repo_section.compare("contrib") ||
-                    !repo_section.compare("non-free")) {
+            if (!component.compare("contrib") ||
+                    !component.compare("non-free")) {
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE)) {
-            if (repo_section.compare("contrib") &&
-                    repo_section.compare("non-free")) {
+            if (component.compare("contrib") &&
+                    component.compare("non-free")) {
                 return false;
             }
         }
 
         // Check for supported packages
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_SUPPORTED)) {
-            return packageIsSupported(pkg);
+            return packageIsSupported(pkg, component);
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED)) {
-            return !packageIsSupported(pkg);
+            return !packageIsSupported(pkg, component);
         }
 
         // TODO test this one..
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_COLLECTIONS)) {
-            if (!repo_section.compare("metapackages")) {
+            if (!component.compare("metapackages")) {
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
-            if (repo_section.compare("metapackages")) {
+            if (component.compare("metapackages")) {
                 return false;
             }
         }
@@ -909,12 +913,12 @@ void AptIntf::getDepends(PkgList &output,
             if (recursive) {
                 if (!contains(output, dep.TargetPkg())) {
                     // TODO is this still working
-//                    output.push_back(PkgPair(dep.TargetPkg(), ver));
+                    //                    output.push_back(PkgPair(dep.TargetPkg(), ver));
                     output.push_back(ver);
                     getDepends(output, ver, recursive);
                 }
             } else {
-//                output.push_back(PkgPair(dep.TargetPkg(), ver));
+                //                output.push_back(PkgPair(dep.TargetPkg(), ver));
                 output.push_back(ver);
             }
         }
@@ -942,16 +946,16 @@ void AptIntf::getRequires(PkgList &output,
             PkgList deps;
             getDepends(deps, parentVer, false);
             for (PkgList::iterator it = deps.begin(); it != deps.end(); ++it) {
-//                if (i->ParentPkg() == ver) { TODO make sure this works!!!!
+                //                if (i->ParentPkg() == ver) { TODO make sure this works!!!!
                 if (*it == ver) {
                     if (recursive) {
                         if (!contains(output, parentPkg)) {
-//                            output.push_back(PkgPair(parentPkg, ver));
+                            //                            output.push_back(PkgPair(parentPkg, ver));
                             output.push_back(parentVer);
                             getRequires(output, parentVer, recursive);
                         }
                     } else {
-//                        output.push_back(PkgPair(parentPkg, ver));
+                        //                        output.push_back(PkgPair(parentPkg, ver));
                         output.push_back(parentVer);
                     }
                     break;
@@ -1133,20 +1137,17 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
 /**
   * Check if package is officially supported by the current distribution
   */
-bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter)
+bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter, string component)
 {
     const pkgCache::VerIterator &verIter = pkgIter.VersionList();
-    string origin = "";
+    string origin;
     if(!verIter.end()) {
-         pkgCache::VerFileIterator VF = verIter.FileList();
-         origin = VF.File().Origin();
+        pkgCache::VerFileIterator vf = verIter.FileList();
+        origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
     }
 
-    string str = verIter.Section() == NULL ? "" : verIter.Section();
-    size_t j = str.find_last_of("/");
-    string section = str.substr(j + 1);
-    if (section == "")
-        section = "main";
+    if (component.empty())
+        component = "main";
 
     // Get a fetcher
     AcqPackageKitStatus Stat(this, m_backend, _cancel);
@@ -1156,9 +1157,11 @@ bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter)
 
     bool trusted = checkTrusted(fetcher, false);
 
-    if ((origin == "Debian") || (origin == "Ubuntu"))  {
-        if ((section == "main" ||
-             section == "restricted") && trusted) {
+    if ((origin.compare ("Debian") == 0) || (origin.compare ("Ubuntu") == 0))  {
+        if ((component.compare ("main") == 0 ||
+             component.compare ("restricted") == 0 ||
+             component.compare ("unstable") == 0 ||
+             component.compare ("testing") == 0) && trusted) {
             return true;
         }
     }

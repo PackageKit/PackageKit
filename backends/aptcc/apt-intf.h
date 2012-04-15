@@ -164,7 +164,7 @@ private:
     bool       &_cancel;
 
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
-    bool packageIsSupported(const pkgCache::PkgIterator &pkgIter);
+    bool packageIsSupported(const pkgCache::PkgIterator &pkgIter, string component);
     bool tryToInstall(const pkgCache::PkgIterator &constPkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,
