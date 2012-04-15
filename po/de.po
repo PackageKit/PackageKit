@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Christian  <Christian.Kirbach@googlemail.com>, 2011.
 # Christian Kirbach <Christian.Kirbach@googlemail.com>, 2009, 2011.
@@ -213,7 +213,7 @@ msgstr "Aktualisiert"
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:424
 msgid "Enabled"
-msgstr "Aktiviertakti"
+msgstr "Aktiviert"
 
 #. TRANSLATORS: if the repo is disabled
 #: ../client/pk-console.c:427
@@ -1849,7 +1849,7 @@ msgstr "Die Transaktion wurde nicht weitergeführt"
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr "EULA annehmen"
@@ -1933,7 +1933,7 @@ msgstr "Legitimation ist zum Aktualisieren des Betriebssystems erforderlich"
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
 msgstr "Externe Aufgabe abbrechen"
@@ -1943,7 +1943,7 @@ msgstr "Externe Aufgabe abbrechen"
 #. instance to a LTSP image or a virtual machine.
 #. - This could be used to overwrite files not owned by the user using
 #. a carefully created package file.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:34
 msgid "Change location that packages are installed"
 msgstr "Wechseln Sie den Ort, auf den Pakete installiert werden sollen"
@@ -1952,7 +1952,7 @@ msgstr "Wechseln Sie den Ort, auf den Pakete installiert werden sollen"
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
 msgstr "Einstellungen der Depotquelle ändern"
@@ -1962,7 +1962,7 @@ msgstr "Einstellungen der Depotquelle ändern"
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
 msgstr "Signierte Pakete installieren"
@@ -1972,7 +1972,7 @@ msgstr "Signierte Pakete installieren"
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
 msgstr "Nicht vertrauenswürdige lokale Datei installieren"
@@ -1980,7 +1980,7 @@ msgstr "Nicht vertrauenswürdige lokale Datei installieren"
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
 msgstr "Systemressourcen aktualisieren"
@@ -1991,7 +1991,7 @@ msgstr "Systemressourcen aktualisieren"
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
 msgstr "Ein Gerät neu laden"
@@ -2004,7 +2004,7 @@ msgstr "Ein Gerät neu laden"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
 msgstr "Paket entfernen"
@@ -2013,7 +2013,7 @@ msgstr "Paket entfernen"
 #. - Normal users require admin authentication to rollback system state
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
 msgstr "Eine vorhergehende Transaktion zurücknehmen"
@@ -2021,7 +2021,7 @@ msgstr "Eine vorhergehende Transaktion zurücknehmen"
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
 msgstr "Netwerk-Proxy festlegen"
@@ -2031,7 +2031,7 @@ msgstr "Netwerk-Proxy festlegen"
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
 msgstr "Einem Schlüssel zum Signieren von Paketen vertrauen"
@@ -2042,7 +2042,7 @@ msgstr "Einem Schlüssel zum Signieren von Paketen vertrauen"
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
 msgstr "Pakete aktualisieren"
@@ -2051,7 +2051,7 @@ msgstr "Pakete aktualisieren"
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
-#. 
+#.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Upgrade System"
 msgstr "Systemaktualisierung"
