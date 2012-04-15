@@ -33,15 +33,12 @@ AptCacheFile::~AptCacheFile()
 
 bool AptCacheFile::open(bool withLock)
 {
-    // TODO maybe subclass this to show more info when opening
-    OpTextProgress opTextProgress(*_config);
-    return Open(&opTextProgress, withLock);
+    return Open(NULL, withLock);
 }
 
 bool AptCacheFile::buildCaches(bool withLock)
 {
-    OpTextProgress opTextProgress(*_config);
-    return BuildCaches(&opTextProgress, withLock);
+    return BuildCaches(NULL, withLock);
 }
 
 void AptCacheFile::buildPkgRecords()

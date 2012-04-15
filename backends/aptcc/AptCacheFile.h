@@ -39,6 +39,11 @@ public:
     bool buildCaches(bool withLock = false);
 
     inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
+    /**
+      * GetDepCache will build the dependency cache if needed and return it
+      * @note This override if because the policy should be built before the cache
+      */
+    inline pkgDepCache* GetDepCache() { BuildPolicy(); BuildDepCache(); return DCache; }
 
 private:
     void buildPkgRecords();
