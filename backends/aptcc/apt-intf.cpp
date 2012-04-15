@@ -93,9 +93,8 @@ bool AptIntf::init()
     setenv("ftp_proxy", ftp_proxy, 1);
 
     // Tries to open the cache
-//    if (!m_cache.open()) {
-//        return false;
-//    }
+//    return !m_cache.open();
+    return false; // WTF why it was expecting this?
 }
 
 AptIntf::~AptIntf()
@@ -114,9 +113,14 @@ void AptIntf::cancel()
     }
 }
 
-pkgCache::PkgIterator AptIntf::findPackage(const std::string &packageName)
+pkgCache::PkgIterator AptIntf::findPackage(const std::string &name)
 {
-    m_cache.GetPkgCache()->FindPkg(packageName);
+    return m_cache.GetDepCache()->FindPkg(name);
+}
+
+pkgCache::PkgIterator AptIntf::findPackageArch(const std::string &name, const std::string &arch)
+{
+    return m_cache.GetDepCache()->FindPkg(name, arch);
 }
 
 pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
@@ -125,14 +129,10 @@ pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
     pkgCache::PkgIterator pkg;
 
     parts = pk_package_id_split(packageId);
-    gchar *pkgNameArch;
-    pkgNameArch = g_strdup_printf("%s:%s", parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
-    pkg = findPackage(pkgNameArch);
-    g_free(pkgNameArch);
+    pkg = findPackageArch(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
 
     // Ignore packages that could not be found or that exist only due to dependencies.
-    if (pkg.end() == true ||
-            (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
         g_strfreev(parts);
         return pkgCache::VerIterator();
     }

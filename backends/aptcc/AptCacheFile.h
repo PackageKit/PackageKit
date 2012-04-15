@@ -39,11 +39,18 @@ public:
     bool buildCaches(bool withLock = false);
 
     inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
+
+    /**
+      * GetPolicy will build the policy object if needed and return it
+      * @note This override if because the cache should be built before the policy
+      */
+    inline pkgPolicy* GetPolicy() { BuildCaches(NULL, false); BuildPolicy(); return Policy; }
+
     /**
       * GetDepCache will build the dependency cache if needed and return it
-      * @note This override if because the policy should be built before the cache
+      * @note This override if because the policy should be built before the dependency cache
       */
-    inline pkgDepCache* GetDepCache() { BuildPolicy(); BuildDepCache(); return DCache; }
+    inline pkgDepCache* GetDepCache() { BuildCaches(NULL, false); BuildPolicy(); BuildDepCache(); return DCache; }
 
 private:
     void buildPkgRecords();
