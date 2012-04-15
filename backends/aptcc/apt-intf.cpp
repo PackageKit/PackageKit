@@ -1095,6 +1095,12 @@ void AptIntf::emitFiles(PkBackend *backend, const gchar *pi)
                 ":" +
                 string(parts[PK_PACKAGE_ID_ARCH]) +
                 ".list";
+        if (!FileExists(fName)) {
+            // if the file was not found try without the arch field
+            fName = "/var/lib/dpkg/info/" +
+                    string(parts[PK_PACKAGE_ID_NAME]) +
+                    ".list";
+        }
     } else {
         fName = "/var/lib/dpkg/info/" +
                 string(parts[PK_PACKAGE_ID_NAME]) +
