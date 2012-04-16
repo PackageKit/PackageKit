@@ -20,6 +20,8 @@
 
 #include "acqpkitstatus.h"
 
+#include "pkg_acqfile.h"
+
 #include <apt-pkg/acquire-item.h>
 #include <apt-pkg/acquire-worker.h>
 #include <apt-pkg/strutl.h>
@@ -248,9 +250,7 @@ void AcqPackageKitStatus::emit_package(const string &name, bool finished)
 
             // try to see if any package matches
             if (name.compare(it->ParentPkg().Name()) == 0) {
-                m_apt->emitPackage(*it,
-                                   PK_INFO_ENUM_UNKNOWN,
-                                   finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
+                m_apt->emitPackage(*it, finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
                 last_package_name = name;
 
                 // Find the downloading item

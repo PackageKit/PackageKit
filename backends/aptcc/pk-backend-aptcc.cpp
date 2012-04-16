@@ -211,7 +211,7 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
     }
 
     // It's faster to emmit the packages here than in the matching part
-    m_apt->emit_packages(output, filters);
+    m_apt->emitPackages(output, filters);
 
     delete m_apt;
     return true;
@@ -285,7 +285,7 @@ static gboolean backend_get_files_thread(PkBackend *backend)
             return false;
         }
 
-        m_apt->emitFiles(backend, pi);
+        m_apt->emitPackageFiles(pi);
     }
 
     delete m_apt;
@@ -306,11 +306,11 @@ static gboolean backend_get_details_thread(PkBackend *backend)
 
     PkRoleEnum role = pk_backend_get_role (backend);
     bool updateDetail = role == PK_ROLE_ENUM_GET_UPDATE_DETAIL ? true : false;
-    package_ids = pk_backend_get_strv (backend, "package_ids");
+    package_ids = pk_backend_get_strv(backend, "package_ids");
     if (package_ids == NULL) {
-        pk_backend_error_code (backend,
-                               PK_ERROR_ENUM_PACKAGE_ID_INVALID,
-                               "Invalid package id");
+        pk_backend_error_code(backend,
+                              PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                              "Invalid package id");
         pk_backend_finished (backend);
         return false;
     }
@@ -329,8 +329,8 @@ static gboolean backend_get_details_thread(PkBackend *backend)
         pkgInitSystem(*_config, _system);
     }
 
-    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-    PkgList pkgs = m_apt->resolvePI(package_ids);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
+    PkgList pkgs = m_apt->resolvePackageIds(package_ids);
 
     if (updateDetail) {
         m_apt->emitUpdateDetails(pkgs);
@@ -404,24 +404,29 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
 
     bool res = true;
     if (getUpdates) {
-        PkgList update;
+        PkgList updates;
         PkgList kept;
-
         for (pkgCache::PkgIterator pkg = cache.GetPkgCache()->PkgBegin();
              !pkg.end();
              ++pkg) {
-            if ((*cache)[pkg].Upgrade()    == true &&
-                    (*cache)[pkg].NewInstall() == false) {
-                update.push_back(m_apt->findCandidateVer(pkg));
-            } else if ((*cache)[pkg].Upgradable() == true &&
+            if (cache[pkg].Upgrade() == true &&
+                    cache[pkg].NewInstall() == false) {
+                const pkgCache::VerIterator &ver = m_apt->findCandidateVer(pkg);
+                if (!ver.end()) {
+                    updates.push_back(ver);
+                }
+            } else if (cache[pkg].Upgradable() == true &&
                        pkg->CurrentVer != 0 &&
-                       (*cache)[pkg].Delete() == false) {
-                kept.push_back(m_apt->findCandidateVer(pkg));
+                       cache[pkg].Delete() == false) {
+                const pkgCache::VerIterator &ver = m_apt->findCandidateVer(pkg);
+                if (!ver.end()) {
+                    kept.push_back(ver);
+                }
             }
         }
 
-        m_apt->emitUpdates(update, filters);
-        m_apt->emit_packages(kept, filters, PK_INFO_ENUM_BLOCKED);
+        m_apt->emitUpdates(updates, filters);
+        m_apt->emitPackages(kept, filters, PK_INFO_ENUM_BLOCKED);
     } else {
         // TODO there should be a simulate upgrade system,
         // tho afaik Apper and GPK don't use this
@@ -479,64 +484,46 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
         }
 
         pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-        vector<string> packages;
-        PkgList output;
 
+        PkgList output;
         if (provides == PK_PROVIDES_ENUM_SHARED_LIB) {
             m_apt->providesLibrary(output, values);
         } else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-            packages = searchMimeType(backend, values, error, _cancel);
+            m_apt->providesMimeType(output, values);
         } else if (provides == PK_PROVIDES_ENUM_CODEC) {
             m_apt->providesCodec(output, values);
         } else {
             // PK_PROVIDES_ENUM_ANY, just search for everything a package can provide
             m_apt->providesLibrary(output, values);
             m_apt->providesCodec(output, values);
-            packages = searchMimeType(backend, values, error, _cancel);
+            m_apt->providesMimeType(output, values);
         }
 
-        for (vector<string>::iterator it = packages.begin();
-             it != packages.end(); ++it) {
-            if (_cancel) {
-                break;
-            }
-            const pkgCache::PkgIterator &pkg = m_apt->findPackage(*it);
-            if (pkg.end() == true) {
-                continue;
-            }
-            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-            if (ver.end() == true) {
-                continue;
-            }
-            output.push_back(ver);
-        }
-
-        if (error && provides == PK_PROVIDES_ENUM_MIMETYPE) {
+        if (output.empty() && provides == PK_PROVIDES_ENUM_MIMETYPE) {
             // check if app-install-data is installed
             pkgCache::PkgIterator pkg;
             pkg = m_apt->findPackage("app-install-data");
             if (pkg->CurrentState != pkgCache::State::Installed) {
-                pk_backend_error_code (backend,
-                                       PK_ERROR_ENUM_INTERNAL_ERROR,
-                                       "You need the app-install-data "
-                                       "package to be able to look for "
-                                       "applications that can handle "
-                                       "this kind of file");
+                pk_backend_error_code(backend,
+                                      PK_ERROR_ENUM_INTERNAL_ERROR,
+                                      "You need the app-install-data "
+                                      "package to be able to look for "
+                                      "applications that can handle "
+                                      "this kind of file");
             }
         } else {
-            // It's faster to emmit the packages here rather than in the matching part
-            m_apt->emit_packages(output, filters);
+            // It's faster to emit the packages here rather than in the matching part
+            m_apt->emitPackages(output, filters);
         }
 
         delete m_apt;
-
     } else {
-        provides_text = pk_provides_enum_to_string (provides);
-        pk_backend_error_code (backend,
-                               PK_ERROR_ENUM_NOT_SUPPORTED,
-                               "Provides %s not supported",
-                               provides_text);
-        pk_backend_finished (backend);
+        provides_text = pk_provides_enum_to_string(provides);
+        pk_backend_error_code(backend,
+                              PK_ERROR_ENUM_NOT_SUPPORTED,
+                              "Provides %s not supported",
+                              provides_text);
+        pk_backend_finished(backend);
     }
 
     return true;
@@ -745,10 +732,10 @@ static gboolean pk_backend_resolve_thread(PkBackend *backend)
         return false;
     }
 
-    PkgList pkgs = m_apt->resolvePI(package_ids);
+    PkgList pkgs = m_apt->resolvePackageIds(package_ids);
 
     // It's faster to emmit the packages here rather than in the matching part
-    m_apt->emit_packages(pkgs, filters);
+    m_apt->emitPackages(pkgs, filters);
 
     delete m_apt;
     return true;
@@ -783,29 +770,15 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
         }
 
         pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
-        vector<string> packages = search_files(backend, values, _cancel);
         PkgList output;
-        for(vector<string>::iterator it = packages.begin();
-            it != packages.end(); ++it) {
-            if (_cancel) {
-                break;
-            }
-            const pkgCache::PkgIterator &pkg = m_apt->findPackage(*it);
-            if (pkg.end() == true) {
-                continue;
-            }
-            const pkgCache::VerIterator &ver = m_apt->findVer(pkg);
-            if (ver.end() == true) {
-                continue;
-            }
-            output.push_back(ver);
-        }
-        // It's faster to emmit the packages here rather than in the matching part
-        m_apt->emit_packages(output, filters);
+        output = m_apt->searchPackageFiles(values);
+
+        // It's faster to emit the packages here rather than in the matching part
+        m_apt->emitPackages(output, filters);
 
         delete m_apt;
     } else {
-        pk_backend_finished (backend);
+        pk_backend_finished(backend);
     }
 
     return true;
@@ -823,24 +796,9 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
 {
     gchar **values;
     PkBitfield filters;
-    vector<PkGroupEnum> groups;
 
     values = pk_backend_get_strv(backend, "search");
-    filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-    pk_backend_set_allow_cancel(backend, true);
-
-    int len = g_strv_length(values);
-    for (uint i = 0; i < len; i++) {
-        if (values[i] == NULL) {
-            pk_backend_error_code(backend,
-                                  PK_ERROR_ENUM_GROUP_NOT_FOUND,
-                                  values[i]);
-            pk_backend_finished(backend);
-            return false;
-        } else {
-            groups.push_back(pk_group_enum_from_string(values[i]));
-        }
-    }
+    filters = (PkBitfield) pk_backend_get_uint(backend, "filters");
 
     AptIntf *m_apt = new AptIntf(backend, _cancel);
     pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
@@ -850,14 +808,14 @@ static gboolean backend_search_groups_thread (PkBackend *backend)
         return false;
     }
 
-    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+    pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 
     // It's faster to emmit the packages here rather than in the matching part
     PkgList output;
-    output = m_apt->getPackagesFromGroup(groups);
-    m_apt->emit_packages(output, filters);
+    output = m_apt->getPackagesFromGroup(values);
+    m_apt->emitPackages(output, filters);
 
-    pk_backend_set_percentage (backend, 100);
+    pk_backend_set_percentage(backend, 100);
     delete m_apt;
     return true;
 }
@@ -916,7 +874,7 @@ static gboolean backend_search_package_thread(PkBackend *backend)
     }
 
     // It's faster to emmit the packages here than in the matching part
-    m_apt->emit_packages(output, filters);
+    m_apt->emitPackages(output, filters);
 
     delete matcher;
     pk_backend_set_percentage(backend, 100);
@@ -1009,9 +967,9 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
         // Resolve the given packages
         gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
         if (remove) {
-            removePkgs = m_apt->resolvePI(package_ids);
+            removePkgs = m_apt->resolvePackageIds(package_ids);
         } else {
-            installPkgs = m_apt->resolvePI(package_ids);
+            installPkgs = m_apt->resolvePackageIds(package_ids);
         }
 
         if (removePkgs.size() == 0 && installPkgs.size() == 0) {
@@ -1254,7 +1212,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
     output = m_apt->getPackages();
 
     // It's faster to emmit the packages rather here than in the matching part
-    m_apt->emit_packages(output, filters);
+    m_apt->emitPackages(output, filters);
 
     delete m_apt;
     return true;

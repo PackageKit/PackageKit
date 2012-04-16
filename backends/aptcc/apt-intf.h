@@ -37,23 +37,12 @@
 
 using namespace std;
 
-/**
- *  returns a list of packages names
- */
-vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
-
-/**
- *  returns a list of packages names
- */
-vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
-
 typedef vector<pkgCache::VerIterator> PkgList;
 
 class pkgProblemResolver;
 class Matcher;
 class AptIntf
 {
-
 public:
     AptIntf(PkBackend *backend, bool &cancel);
     ~AptIntf();
@@ -62,20 +51,20 @@ public:
     void cancel();
 
     /**
-     * Tries to find a package with the given packageId
-     * @returns pkgCache::VerIterator that if .end() is true the package could not be found
+     * Tries to find a package with the given package name
+     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
      */
     pkgCache::PkgIterator findPackage(const std::string &name);
 
     /**
-     * Tries to find a package with the given packageId
-     * @returns pkgCache::VerIterator that if .end() is true the package could not be found
+     * Tries to find a package with the given package name and arch
+     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
      */
     pkgCache::PkgIterator findPackageArch(const std::string &name, const std::string &arch = std::string());
 
     /**
      * Tries to find a package with the given packageId
-     * @returns pkgCache::VerIterator that if .end() is true the package could not be found
+     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
      */
     pkgCache::VerIterator findPackageId(const gchar *packageId);
 
@@ -83,22 +72,38 @@ public:
      * Tries to find the current version of a package
      * if it can't find it will return the candidate
      * TODO check if we really need the candidate version
-     * @returns pkgCache::VerIterator that if .end() is true the version could not be found
+     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
      */
     pkgCache::VerIterator findVer(const pkgCache::PkgIterator &pkg);
 
     /**
      * Tries to find the candidate version of a package
-     * @returns pkgCache::VerIterator that if .end() is true the version could not be found
+     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
      */
     pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
 
-    PkgList resolvePI(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
+    /**
+     * Tries to find a list of packages mathing the package ids
+     * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
+     */
+    PkgList resolvePackageIds(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
+    /**
+      * Refreshes the sources of packages
+      */
     void refreshCache();
 
+    /**
+      * Tries to resolve a pkg file installation of the given \sa file
+      * @param install is where the packages to be installed will be stored
+      * @param remove is where the packages to be removed will be stored
+      * @returns true if the package can be installed
+      */
     bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
 
+    /**
+      * Marks the given packages as auto installed
+      */
     bool markAutoInstalled(AptCacheFile &cache, PkgList &pkgs, bool flag);
 
     /**
@@ -112,65 +117,101 @@ public:
     bool runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto = false);
 
     /**
-     *  Get depends
+     *  Get package depends
      */
     void getDepends(PkgList &output,
                     const pkgCache::VerIterator &ver,
                     bool recursive);
 
     /**
-     *  Get requires
+     *  Get package requires
      */
     void getRequires(PkgList &output,
                      const pkgCache::VerIterator &ver,
                      bool recursive);
 
+    /**
+      * Returns a list of all packages in the cache
+      */
     PkgList getPackages();
-    PkgList getPackagesFromGroup(vector<PkGroupEnum> &groups);
+
+    /**
+      * Returns a list of all packages in the given groups
+      */
+    PkgList getPackagesFromGroup(gchar **values);
+
+    /**
+      * Returns a list of all packages that matched their names with matcher
+      */
     PkgList searchPackageName(Matcher *matcher);
+
+    /**
+      * Returns a list of all packages that matched their description with matcher
+      */
     PkgList searchPackageDetails(Matcher *matcher);
 
     /**
-      * Get the long description of a package
+      * Returns a list of all packages that matched contains the given files
       */
-    string getPackageLongDescription(const pkgCache::VerIterator &ver);
+    PkgList searchPackageFiles(gchar **values);
 
     /**
-     *  Emits a package if it match the filters
+     *  Emits a package with the given state
      */
     void emitPackage(const pkgCache::VerIterator &ver,
-                     PkBitfield filters = PK_FILTER_ENUM_NONE,
                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-    bool matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters);
-    PkgList filterPackages(PkgList &packages, PkBitfield filters);
+    /**
+      * Emits a list of packages that matches the given filters
+      */
+    void emitPackages(PkgList &output,
+                      PkBitfield filters = PK_FILTER_ENUM_NONE,
+                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
-    void emit_packages(PkgList &output,
-                       PkBitfield filters = PK_FILTER_ENUM_NONE,
-                       PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
-
+    /**
+      * Emits a list of updates that matches the given filters
+      */
     void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
     /**
-     *  Emits details
-     */
-    void emitDetails(const pkgCache::VerIterator &ver);
+      * Checks if a given package matches the filters
+      * @returns true if it passed the filters
+      */
+    bool matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters);
+
+    /**
+      * Returns the list of packages with the ones that passed the given filters
+      */
+    PkgList filterPackages(PkgList &packages, PkBitfield filters);
+
+    /**
+      * Emits details of the given package
+      */
+    void emitPackageDetail(const pkgCache::VerIterator &ver);
+
+    /**
+      * Emits details of the given package list
+      */
     void emitDetails(PkgList &pkgs);
 
     /**
-     *  Emits update detail
-     */
-    void emitUpdateDetails(const pkgCache::VerIterator &version);
+      * Emits update detail
+      */
+    void emitUpdateDetail(const pkgCache::VerIterator &candver);
+
+    /**
+      * Emits update datails for the given list
+      */
     void emitUpdateDetails(PkgList &pkgs);
 
     /**
-    *  Emits files of packages
-    */
-    void emitFiles(PkBackend *backend, const gchar *pi);
+      *  Emits the files of a package
+      */
+    void emitPackageFiles(const gchar *pi);
 
     /**
-     *  Download and install packages
-     */
+      *  Download and install packages
+      */
     bool installPackages(AptCacheFile &cache, bool simulating);
 
     /**
@@ -191,6 +232,11 @@ public:
      *  Check which package provides a shared library
      */
     void providesLibrary(PkgList &output, gchar **values);
+
+    /**
+     *  returns a list of packages names
+     */
+    void providesMimeType(PkgList &output, gchar **values);
 
     /** Like pkgAcqArchive, but uses generic File objects to download to
      *  the cwd (and copies from file:/ URLs).
@@ -222,13 +268,11 @@ private:
 
     bool m_isMultiArch;
     PkgList m_pkgs;
-    string m_localDebFile;
     void populateInternalPackages(AptCacheFile &cache);
     void emitTransactionPackage(string name, PkInfoEnum state);
     time_t     m_lastTermAction;
     string     m_lastPackage;
     uint       m_lastSubProgress;
-    PkInfoEnum m_state;
     bool       m_startCounting;
 
     // when the internal terminal timesout after no activity
