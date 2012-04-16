@@ -54,6 +54,7 @@
 #define RAMFS_MAGIC     0x858458f6
 
 AptIntf::AptIntf(PkBackend *backend, bool &cancel) :
+    m_cache(backend),
     m_backend(backend),
     m_cancel(cancel),
     m_terminalTimeout(120),
@@ -93,7 +94,10 @@ bool AptIntf::init()
     setenv("ftp_proxy", ftp_proxy, 1);
 
     // Tries to open the cache
-    return !m_cache.Open();
+    bool ret;
+    ret = m_cache.Open();
+    cout << "AptIntf::init() " << ret << endl;
+    return !ret;
 }
 
 AptIntf::~AptIntf()
@@ -2258,7 +2262,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     bool withLock = !simulate; // Check to see if we are just simulating,
     //since for that no lock is needed
 
-    AptCacheFile cache;
+    AptCacheFile cache(m_backend);
     int timeout = 10;
     // TODO test this
     while (cache.Open(withLock) == false) {
@@ -2332,7 +2336,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         if (cache->BrokenCount() != 0) {
             // if the problem resolver could not fix all broken things
             // show what is broken
-            show_broken(m_backend, cache, false);
+            cache.ShowBroken(false);
             return false;
         }
     }
@@ -2374,7 +2378,7 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
     // Sanity check
     if (cache->BrokenCount() != 0) {
         // TODO
-        show_broken(m_backend, cache, false);
+        cache.ShowBroken(false);
         _error->Error("Internal error, InstallPackages was called with broken packages!");
         return false;
     }

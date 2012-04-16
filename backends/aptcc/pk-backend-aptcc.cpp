@@ -376,16 +376,15 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 
-    AptCacheFile cache;
+    AptCacheFile cache(backend);
     int timeout = 10;
     // TODO test this
-    while (cache.Open(!getUpdates) == false) {
-        // failed to open cache, try checkDeps then..
-        // || Cache.CheckDeps(CmdL.FileSize() != 1) == false
+    while (cache.Open(!getUpdates) == false || cache.CheckDeps() == false) {
         if (getUpdates == true || (timeout <= 0)) {
             pk_backend_error_code(backend,
                                   PK_ERROR_ENUM_NO_CACHE,
                                   "Could not open package cache.");
+            delete m_apt;
             return false;
         } else {
             pk_backend_set_status(backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
@@ -396,7 +395,7 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
     pk_backend_set_status(backend, PK_STATUS_ENUM_RUNNING);
 
     if (pkgDistUpgrade(*cache) == false) {
-        show_broken(backend, cache, false);
+        cache.ShowBroken(false);
         g_debug ("Internal error, DistUpgrade broke stuff");
         delete m_apt;
         return false;
@@ -687,7 +686,7 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
     m_apt->refreshCache();
 
     // Rebuild the cache.
-    AptCacheFile cache;
+    AptCacheFile cache(backend);
     if (cache.BuildCaches(true) == false) {
         if (_error->PendingError() == true) {
             show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);

@@ -12,8 +12,8 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 apt-messages.cpp \
 				 apt-utils.cpp \
 				 apt-sourceslist.cpp \
-				 apt-intf.cpp \
                                  AptCacheFile.cpp \
+				 apt-intf.cpp \
 				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg -lapt-inst $(PK_PLUGIN_LIBS)
 libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GSTREAMER_LIBS)

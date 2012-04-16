@@ -42,10 +42,4 @@ bool show_errors(PkBackend *backend,
 bool show_warnings(PkBackend *backend,
                    PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
 
-/** Shows a list of all broken packages together with their
- *  dependencies.  Similar to and based on the equivalent routine in
- *  apt-get.
- */
-void show_broken(PkBackend *backend, pkgCacheFile &cache, bool Now);
-
 #endif // AAPT_BACKEND_MESSAGES_H

@@ -21,11 +21,12 @@
 #define APTCACHEFILE_H
 
 #include <apt-pkg/cachefile.h>
+#include <pk-backend.h>
 
 class AptCacheFile : public pkgCacheFile
 {
 public:
-    AptCacheFile();
+    AptCacheFile(PkBackend *backend);
     ~AptCacheFile();
 
     /**
@@ -42,6 +43,17 @@ public:
       * Build caches
       */
     bool BuildCaches(bool withLock = false);
+
+    /** This routine generates the caches and then opens the dependency cache
+      * and verifies that the system is OK.
+      */
+    bool CheckDeps(bool AllowBroken = false);
+
+    /** Shows a list of all broken packages together with their
+     *  dependencies.  Similar to and based on the equivalent routine in
+     *  apt-get.
+     */
+    void ShowBroken(bool Now);
 
     inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
 
@@ -61,6 +73,7 @@ private:
     void buildPkgRecords();
 
     pkgRecords *m_packageRecords;
+    PkBackend  *m_backend;
 };
 
 #endif // APTCACHEFILE_H
