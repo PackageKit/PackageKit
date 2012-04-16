@@ -26,19 +26,28 @@ AptCacheFile::AptCacheFile() :
 
 AptCacheFile::~AptCacheFile()
 {
+    delete m_packageRecords;
+    pkgCacheFile::Close();
+}
+
+bool AptCacheFile::Open(bool withLock)
+{
+    return pkgCacheFile::Open(NULL, withLock);
+}
+
+void AptCacheFile::Close()
+{
     if (m_packageRecords) {
         delete m_packageRecords;
     }
+    m_packageRecords = 0;
+
+    pkgCacheFile::Close();
 }
 
-bool AptCacheFile::open(bool withLock)
+bool AptCacheFile::BuildCaches(bool withLock)
 {
-    return Open(NULL, withLock);
-}
-
-bool AptCacheFile::buildCaches(bool withLock)
-{
-    return BuildCaches(NULL, withLock);
+    return pkgCacheFile::BuildCaches(NULL, withLock);
 }
 
 void AptCacheFile::buildPkgRecords()
@@ -50,5 +59,3 @@ void AptCacheFile::buildPkgRecords()
     // Create the text record parser
     m_packageRecords = new pkgRecords(*this->GetPkgCache());
 }
-
-

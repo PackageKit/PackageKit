@@ -93,8 +93,7 @@ bool AptIntf::init()
     setenv("ftp_proxy", ftp_proxy, 1);
 
     // Tries to open the cache
-//    return !m_cache.open();
-    return false; // WTF why it was expecting this?
+    return !m_cache.Open();
 }
 
 AptIntf::~AptIntf()
@@ -115,12 +114,20 @@ void AptIntf::cancel()
 
 pkgCache::PkgIterator AptIntf::findPackage(const std::string &name)
 {
-    return m_cache.GetDepCache()->FindPkg(name);
+    // This is needed otherwise we get random crashes
+//    if (!m_cache.open()) {
+//        return pkgCache::PkgIterator();
+//    }
+    return m_cache->FindPkg(name);
 }
 
 pkgCache::PkgIterator AptIntf::findPackageArch(const std::string &name, const std::string &arch)
 {
-    return m_cache.GetDepCache()->FindPkg(name, arch);
+    // This is needed otherwise we get random crashes
+//    if (!m_cache.open()) {
+//        return pkgCache::PkgIterator();
+//    }
+    return m_cache->FindPkg(name, arch);
 }
 
 pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
@@ -1963,8 +1970,9 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_QUERY);
 
     // Don't fail if package list is empty
-    if (package_ids == NULL)
+    if (package_ids == NULL) {
         return ret;
+    }
 
     for (uint i = 0; i < g_strv_length(package_ids); ++i) {
         if (m_cancel) {
@@ -2253,7 +2261,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     AptCacheFile cache;
     int timeout = 10;
     // TODO test this
-    while (cache.open(withLock) == false) {
+    while (cache.Open(withLock) == false) {
         // failed to open cache, try checkDeps then..
         // || cache.CheckDeps(CmdL.FileSize() != 1) == false
         if (withLock == false || (timeout <= 0)) {

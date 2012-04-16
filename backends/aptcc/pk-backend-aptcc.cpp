@@ -379,7 +379,7 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
     AptCacheFile cache;
     int timeout = 10;
     // TODO test this
-    while (cache.open(!getUpdates) == false) {
+    while (cache.Open(!getUpdates) == false) {
         // failed to open cache, try checkDeps then..
         // || Cache.CheckDeps(CmdL.FileSize() != 1) == false
         if (getUpdates == true || (timeout <= 0)) {
@@ -688,7 +688,7 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
 
     // Rebuild the cache.
     AptCacheFile cache;
-    if (cache.buildCaches(true) == false) {
+    if (cache.BuildCaches(true) == false) {
         if (_error->PendingError() == true) {
             show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
         }
