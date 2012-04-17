@@ -96,7 +96,6 @@ bool AptIntf::init()
     // Tries to open the cache
     bool ret;
     ret = m_cache.Open();
-    cout << "AptIntf::init() " << ret << endl;
     return !ret;
 }
 

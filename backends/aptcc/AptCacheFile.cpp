@@ -26,15 +26,11 @@
 AptCacheFile::AptCacheFile(PkBackend *backend) :
     m_packageRecords(0)
 {
-    std::cout << "AptCacheFile::AptCacheFile()" << std::endl;
 }
 
 AptCacheFile::~AptCacheFile()
 {
-    std::cout << "AptCacheFile::~AptCacheFile()" << std::endl;
-
-    delete m_packageRecords;
-    pkgCacheFile::Close();
+    Close();
 }
 
 bool AptCacheFile::Open(bool withLock)
@@ -44,12 +40,15 @@ bool AptCacheFile::Open(bool withLock)
 
 void AptCacheFile::Close()
 {
-    if (m_packageRecords) {
-        delete m_packageRecords;
-    }
+    delete m_packageRecords;
+
     m_packageRecords = 0;
 
     pkgCacheFile::Close();
+
+    // Discard all errors to avoid a future failure when opening
+    // the package cache
+    _error->Discard();
 }
 
 bool AptCacheFile::BuildCaches(bool withLock)
