@@ -405,19 +405,19 @@ static gboolean backend_get_or_update_system_thread (PkBackend *backend)
     if (getUpdates) {
         PkgList updates;
         PkgList kept;
-        for (pkgCache::PkgIterator pkg = cache.GetPkgCache()->PkgBegin();
+        for (pkgCache::PkgIterator pkg = cache->PkgBegin();
              !pkg.end();
              ++pkg) {
             if (cache[pkg].Upgrade() == true &&
                     cache[pkg].NewInstall() == false) {
-                const pkgCache::VerIterator &ver = m_apt->findCandidateVer(pkg);
+                const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
                 if (!ver.end()) {
                     updates.push_back(ver);
                 }
             } else if (cache[pkg].Upgradable() == true &&
                        pkg->CurrentVer != 0 &&
                        cache[pkg].Delete() == false) {
-                const pkgCache::VerIterator &ver = m_apt->findCandidateVer(pkg);
+                const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
                 if (!ver.end()) {
                     kept.push_back(ver);
                 }

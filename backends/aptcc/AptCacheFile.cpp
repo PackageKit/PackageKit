@@ -254,3 +254,126 @@ void AptCacheFile::buildPkgRecords()
     // Create the text record parser
     m_packageRecords = new pkgRecords(*this);
 }
+
+pkgCache::VerIterator AptCacheFile::findCandidateVer(const pkgCache::PkgIterator &pkg)
+{
+    // get the candidate version iterator
+    return (*this)[pkg].CandidateVerIter(*this);
+}
+
+std::string AptCacheFile::getDefaultShortDescription(const pkgCache::VerIterator &ver)
+{
+    if (ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
+        return string();
+    }
+
+    pkgCache::VerFileIterator vf = ver.FileList();
+    return m_packageRecords->Lookup(vf).ShortDesc();
+}
+
+std::string AptCacheFile::getShortDescription(const pkgCache::VerIterator &ver)
+{
+    if (ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
+        return string();
+    }
+
+    pkgCache::DescIterator d = ver.TranslatedDescription();
+    if (d.end()) {
+        return string();
+    }
+
+    pkgCache::DescFileIterator df = d.FileList();
+    if (df.end()) {
+        return string();
+    } else {
+        return m_packageRecords->Lookup(df).ShortDesc();
+    }
+}
+
+std::string AptCacheFile::getDefaultLongDescription(const pkgCache::VerIterator &ver)
+{
+    if(ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
+        return string();
+    }
+
+    pkgCache::VerFileIterator vf = ver.FileList();
+
+    if (vf.end()) {
+        return string();
+    } else {
+        return m_packageRecords->Lookup(vf).LongDesc();
+    }
+}
+
+std::string AptCacheFile::getLongDescription(const pkgCache::VerIterator &ver)
+{
+    if (ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
+        return string();
+    }
+
+    pkgCache::DescIterator d = ver.TranslatedDescription();
+    if (d.end()) {
+        return string();
+    }
+
+    pkgCache::DescFileIterator df = d.FileList();
+    if (df.end()) {
+        return string();
+    } else {
+        return m_packageRecords->Lookup(df).LongDesc();
+    }
+}
+
+std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &ver)
+{
+    return debParser(getLongDescription(ver));
+}
+
+std::string AptCacheFile::debParser(std::string descr)
+{
+    // Policy page on package descriptions
+    // http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Description
+    unsigned int i;
+    string::size_type nlpos=0;
+
+    nlpos = descr.find('\n');
+    // delete first line
+    if (nlpos != string::npos) {
+        descr.erase(0, nlpos + 2);        // del "\n " too
+    }
+
+    // avoid replacing '\n' for a ' ' after a '.\n' is found
+    bool removedFullStop = false;
+    while (nlpos < descr.length()) {
+        // find the new line position
+        nlpos = descr.find('\n', nlpos);
+        if (nlpos == string::npos) {
+            // if it could not find the new line
+            // get out of the loop
+            break;
+        }
+
+        i = nlpos;
+        // erase the char after '\n' which is always " "
+        descr.erase(++i, 1);
+
+        // remove lines likes this: " .", making it a \n
+        if (descr[i] == '.') {
+            descr.erase(i, 1);
+            nlpos = i;
+            // don't permit the next round to replace a '\n' to a ' '
+            removedFullStop = true;
+            continue;
+        } else if (descr[i] != ' ' && removedFullStop == false) {
+            // it's not a line to be verbatim displayed
+            // So it's a paragraph let's replace '\n' with a ' '
+            // replace new line with " "
+            descr.replace(nlpos, 1, " ");
+        }
+
+        removedFullStop = false;
+        nlpos++;
+    }
+
+    return descr;
+}

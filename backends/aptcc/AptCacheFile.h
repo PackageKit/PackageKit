@@ -69,8 +69,40 @@ public:
       */
     inline pkgDepCache* GetDepCache() { BuildCaches(); BuildPolicy(); BuildDepCache(); return DCache; }
 
+    /**
+     * Tries to find the candidate version of a package
+     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
+     */
+    pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
+
+    /** \return a short description string corresponding to the given
+     *  version.
+     */
+    std::string getDefaultShortDescription(const pkgCache::VerIterator &ver);
+
+    /** \return a short description string corresponding to the given
+     *  version.
+     */
+    std::string getShortDescription(const pkgCache::VerIterator &ver);
+
+    /** \return a short description string corresponding to the given
+     *  version.
+     */
+    std::string getDefaultLongDescription(const pkgCache::VerIterator &ver);
+
+    /** \return a short description string corresponding to the given
+     *  version.
+     */
+    std::string getLongDescription(const pkgCache::VerIterator &ver);
+
+    /** \return a short description string corresponding to the given
+     *  version.
+     */
+    std::string getLongDescriptionParsed(const pkgCache::VerIterator &ver);
+
 private:
     void buildPkgRecords();
+    static std::string debParser(std::string descr);
 
     pkgRecords *m_packageRecords;
     PkBackend  *m_backend;

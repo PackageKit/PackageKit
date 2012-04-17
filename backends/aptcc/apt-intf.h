@@ -65,12 +65,6 @@ public:
     pkgCache::VerIterator findVer(const pkgCache::PkgIterator &pkg);
 
     /**
-     * Tries to find the candidate version of a package
-     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
-     */
-    pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
-
-    /**
      * Tries to find a list of packages mathing the package ids
      * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
      */
