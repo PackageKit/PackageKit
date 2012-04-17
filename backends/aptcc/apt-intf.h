@@ -232,7 +232,7 @@ private:
     bool       &m_cancel;
 
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
-    bool packageIsSupported(const pkgCache::PkgIterator &pkgIter, string component);
+    bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
     bool tryToInstall(const pkgCache::PkgIterator &constPkg,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,

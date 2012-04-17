@@ -243,24 +243,29 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             }
         }
 
-        // TODO add Ubuntu handling
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE)) {
-            if (!component.compare("contrib") ||
-                    !component.compare("non-free")) {
+            if (component.compare("main") != 0 &&
+                    component.compare("universe") != 0) {
+                // Must be in main and universe to be free
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE)) {
-            if (component.compare("contrib") &&
-                    component.compare("non-free")) {
+            if (component.compare("main") == 0 ||
+                    component.compare("universe") == 0) {
+                // Must not be in main or universe to be free
                 return false;
             }
         }
 
         // Check for supported packages
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_SUPPORTED)) {
-            return packageIsSupported(pkg, component);
+            if (!packageIsSupported(ver, component)) {
+                return false;
+            }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED)) {
-            return !packageIsSupported(pkg, component);
+            if (packageIsSupported(ver, component)) {
+                return false;
+            }
         }
 
         // TODO test this one..
@@ -1334,17 +1339,17 @@ void AptIntf::emitPackageFiles(const gchar *pi)
 /**
   * Check if package is officially supported by the current distribution
   */
-bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter, string component)
+bool AptIntf::packageIsSupported(const pkgCache::VerIterator &verIter, string component)
 {
-    const pkgCache::VerIterator &verIter = pkgIter.VersionList();
     string origin;
-    if(!verIter.end()) {
+    if (!verIter.end()) {
         pkgCache::VerFileIterator vf = verIter.FileList();
         origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
     }
 
-    if (component.empty())
+    if (component.empty()) {
         component = "main";
+    }
 
     // Get a fetcher
     AcqPackageKitStatus Stat(this, m_backend, m_cancel);
@@ -1354,11 +1359,11 @@ bool AptIntf::packageIsSupported(const pkgCache::PkgIterator &pkgIter, string co
 
     bool trusted = checkTrusted(fetcher, false);
 
-    if ((origin.compare ("Debian") == 0) || (origin.compare ("Ubuntu") == 0))  {
-        if ((component.compare ("main") == 0 ||
-             component.compare ("restricted") == 0 ||
-             component.compare ("unstable") == 0 ||
-             component.compare ("testing") == 0) && trusted) {
+    if ((origin.compare("Debian") == 0) || (origin.compare("Ubuntu") == 0))  {
+        if ((component.compare("main") == 0 ||
+             component.compare("restricted") == 0 ||
+             component.compare("unstable") == 0 ||
+             component.compare("testing") == 0) && trusted) {
             return true;
         }
     }
