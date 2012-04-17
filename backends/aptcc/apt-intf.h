@@ -51,18 +51,6 @@ public:
     void cancel();
 
     /**
-     * Tries to find a package with the given package name
-     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
-     */
-    pkgCache::PkgIterator findPackage(const std::string &name);
-
-    /**
-     * Tries to find a package with the given package name and arch
-     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
-     */
-    pkgCache::PkgIterator findPackageArch(const std::string &name, const std::string &arch = std::string());
-
-    /**
      * Tries to find a package with the given packageId
      * @returns pkgCache::VerIterator, if .end() is true the package could not be found
      */

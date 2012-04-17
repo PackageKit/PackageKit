@@ -115,31 +115,13 @@ void AptIntf::cancel()
     }
 }
 
-pkgCache::PkgIterator AptIntf::findPackage(const std::string &name)
-{
-    // This is needed otherwise we get random crashes
-//    if (!m_cache.open()) {
-//        return pkgCache::PkgIterator();
-//    }
-    return m_cache->FindPkg(name);
-}
-
-pkgCache::PkgIterator AptIntf::findPackageArch(const std::string &name, const std::string &arch)
-{
-    // This is needed otherwise we get random crashes
-//    if (!m_cache.open()) {
-//        return pkgCache::PkgIterator();
-//    }
-    return m_cache->FindPkg(name, arch);
-}
-
 pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)
 {
     gchar **parts;
     pkgCache::PkgIterator pkg;
 
     parts = pk_package_id_split(packageId);
-    pkg = findPackageArch(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
+    pkg = m_cache->FindPkg(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
 
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
@@ -1192,7 +1174,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
         if (m_cancel) {
             break;
         }
-        const pkgCache::PkgIterator &pkg = findPackage(*it);
+        const pkgCache::PkgIterator &pkg = m_cache->FindPkg(*it);
         if (pkg.end() == true) {
             continue;
         }
@@ -1273,7 +1255,7 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
         if (m_cancel) {
             break;
         }
-        const pkgCache::PkgIterator &pkg = findPackage(*it);
+        const pkgCache::PkgIterator &pkg = m_cache->FindPkg(*it);
         if (pkg.end() == true) {
             continue;
         }
@@ -1282,6 +1264,21 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
             continue;
         }
         output.push_back(ver);
+    }
+
+    // Check if app-install-data is installed
+    if (output.empty()) {
+        // check if app-install-data is installed
+        pkgCache::PkgIterator pkg;
+        pkg = m_cache->FindPkg("app-install-data");
+        if (pkg->CurrentState != pkgCache::State::Installed) {
+            pk_backend_error_code(m_backend,
+                                  PK_ERROR_ENUM_INTERNAL_ERROR,
+                                  "You need the app-install-data "
+                                  "package to be able to look for "
+                                  "applications that can handle "
+                                  "this kind of file");
+        }
     }
 }
 
@@ -1619,7 +1616,7 @@ void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
         }
     }
 
-    const pkgCache::PkgIterator &pkg = findPackage(name);
+    const pkgCache::PkgIterator &pkg = m_cache->FindPkg(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() == true ||
             (pkg.VersionList().end() && pkg.ProvidesList().end())) {
@@ -2020,7 +2017,7 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
                     }
                 }
             } else {
-                const pkgCache::PkgIterator &pkg = findPackage(pi);
+                const pkgCache::PkgIterator &pkg = m_cache->FindPkg(pi);
                 // Ignore packages that could not be found or that exist only due to dependencies.
                 if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
                     continue;

@@ -498,22 +498,8 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
             m_apt->providesMimeType(output, values);
         }
 
-        if (output.empty() && provides == PK_PROVIDES_ENUM_MIMETYPE) {
-            // check if app-install-data is installed
-            pkgCache::PkgIterator pkg;
-            pkg = m_apt->findPackage("app-install-data");
-            if (pkg->CurrentState != pkgCache::State::Installed) {
-                pk_backend_error_code(backend,
-                                      PK_ERROR_ENUM_INTERNAL_ERROR,
-                                      "You need the app-install-data "
-                                      "package to be able to look for "
-                                      "applications that can handle "
-                                      "this kind of file");
-            }
-        } else {
-            // It's faster to emit the packages here rather than in the matching part
-            m_apt->emitPackages(output, filters);
-        }
+        // It's faster to emit the packages here rather than in the matching part
+        m_apt->emitPackages(output, filters);
 
         delete m_apt;
     } else {
