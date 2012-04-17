@@ -84,14 +84,17 @@ bool AptIntf::init()
         // 		_locale.erase(found);
         // 		_config->Set("APT::Acquire::Translation", _locale);
     }
+    g_free(locale);
 
     // set http proxy
     http_proxy = pk_backend_get_proxy_http(m_backend);
     setenv("http_proxy", http_proxy, 1);
+    g_free(http_proxy);
 
     // set ftp proxy
     ftp_proxy = pk_backend_get_proxy_ftp(m_backend);
     setenv("ftp_proxy", ftp_proxy, 1);
+    g_free(ftp_proxy);
 
     // Tries to open the cache
     bool ret;
@@ -2579,6 +2582,7 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
             // we don't have a socket set, let's fallback to noninteractive
             setenv("DEBIAN_FRONTEND", "noninteractive", 1);
         }
+        g_free(socket);
 
         gchar *locale;
         // Set the LANGUAGE so debconf messages get localization
@@ -2587,6 +2591,7 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
             setenv("LANG", locale, 1);
             //setenv("LANG", "C", 1);
         }
+        g_free(locale);
 
         // Pass the write end of the pipe to the install function
         res = PM->DoInstallPostFork(readFromChildFD[1]);
