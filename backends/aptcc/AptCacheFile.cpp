@@ -56,10 +56,8 @@ bool AptCacheFile::BuildCaches(bool withLock)
     return pkgCacheFile::BuildCaches(NULL, withLock);
 }
 
-bool AptCacheFile::CheckDeps(bool AllowBroken)
+bool AptCacheFile::CheckDeps(bool FixBroken)
 {
-    bool FixBroken = _config->FindB("APT::Get::Fix-Broken",false);
-
     if (_error->PendingError() == true) {
         return false;
     }
@@ -86,32 +84,23 @@ bool AptCacheFile::CheckDeps(bool AllowBroken)
         }
     }
 
-    // Nothing is broken
-    if (DCache->BrokenCount() == 0 || AllowBroken == true) {
+    // Nothing is broken or we don't want to try fixing it
+    if (DCache->BrokenCount() == 0 || FixBroken == false) {
         return true;
     }
 
     // Attempt to fix broken things
-    if (FixBroken == true) {
-//        c1out << _("Correcting dependencies...") << flush;
-        if (pkgFixBroken(*DCache) == false || DCache->BrokenCount() != 0) {
-//            c1out << _(" failed.") << endl;
-            ShowBroken(true);
-
-            return _error->Error("Unable to correct dependencies");
-        }
-        if (pkgMinimizeUpgrade(*DCache) == false) {
-            return _error->Error("Unable to minimize the upgrade set");
-        }
-
-//        c1out << _(" Done") << endl;
-    } else {
-//        c1out << _("You might want to run 'apt-get -f install' to correct these.") << endl;
+    if (pkgFixBroken(*DCache) == false || DCache->BrokenCount() != 0) {
+        // We failed to fix the cache
         ShowBroken(true);
 
-        return _error->Error("Unmet dependencies. Try using -f.");
+        return _error->Error("Unable to correct dependencies");
+    }
+    if (pkgMinimizeUpgrade(*DCache) == false) {
+        return _error->Error("Unable to minimize the upgrade set");
     }
 
+    // Fixing the cache is DONE no errors were found
     return true;
 }
 

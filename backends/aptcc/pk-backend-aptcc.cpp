@@ -891,13 +891,15 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     bool remove = false;
     bool fileInstall = false;
     bool markAuto = false;
+    bool fixBroken = false;
     gchar **full_paths = NULL;
 
     PkRoleEnum role = pk_backend_get_role (backend);
     if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
             role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
             role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES ||
-            role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
+            role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
+            role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM) {
         simulate = true;
     }
     if (role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
@@ -906,11 +908,20 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     }
     if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
             role == PK_ROLE_ENUM_INSTALL_FILES) {
-        full_paths = pk_backend_get_strv (backend, "full_paths");
+        full_paths = pk_backend_get_strv(backend, "full_paths");
         fileInstall = true;
+
+        // Mark newly installed packages as auto-installed
+        // (they're dependencies of the new local package)
+        markAuto = true;
+    }
+    if (role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM ||
+            role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+        // On fix broken mode no package to remove/install is allowed
+        fixBroken = true;
     }
     g_debug ("FILE INSTALL: %i", fileInstall);
-    pk_backend_set_allow_cancel (backend, true);
+    pk_backend_set_allow_cancel(backend, true);
 
     AptIntf *m_apt = new AptIntf(backend, _cancel);
     pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
@@ -941,14 +952,10 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
             return false;
         }
 
-        // Mark newly installed packages as auto-installed
-        // (they're dependencies of the new local package)
-        markAuto = true;
-
         cout << "installPkgs.size: " << installPkgs.size() << endl;
         cout << "removePkgs.size: " << removePkgs.size() << endl;
 
-    } else {
+    } else if (!fixBroken) {
         // Resolve the given packages
         gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
         if (remove) {
@@ -967,7 +974,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     }
 
     // Install/Update/Remove packages, or just simulate
-    if (!m_apt->runTransaction(installPkgs, removePkgs, simulate, markAuto)) {
+    if (!m_apt->runTransaction(installPkgs, removePkgs, simulate, markAuto, fixBroken)) {
         // Print transaction errors
         cout << "runTransaction failed" << endl;
         delete m_apt;
@@ -1055,6 +1062,22 @@ void pk_backend_simulate_remove_packages(PkBackend *backend, gchar **packages, g
  * pk_backend_remove_packages:
  */
 void pk_backend_remove_packages(PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+    pk_backend_thread_create(backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_repair_system:
+ */
+void pk_backend_repair_system(PkBackend *backend, gboolean only_trusted)
+{
+    pk_backend_thread_create(backend, backend_manage_packages_thread);
+}
+
+/**
+ * pk_backend_simulate_repair_system:
+ */
+void pk_backend_simulate_repair_system(PkBackend *backend)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }

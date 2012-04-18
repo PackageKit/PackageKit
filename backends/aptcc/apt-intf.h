@@ -96,7 +96,11 @@ public:
      *    \p simulate should be true, in this case packages with
      *    what's going to happen will be emitted.
      */
-    bool runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto = false);
+    bool runTransaction(PkgList &install,
+                        PkgList &remove,
+                        bool simulate,
+                        bool markAuto,
+                        bool fixBroken);
 
     /**
      *  Get package depends

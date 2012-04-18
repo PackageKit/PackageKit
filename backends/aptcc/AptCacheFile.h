@@ -44,10 +44,14 @@ public:
       */
     bool BuildCaches(bool withLock = false);
 
-    /** This routine generates the caches and then opens the dependency cache
+    /**
+      * This routine generates the caches and then opens the dependency cache
       * and verifies that the system is OK.
+      * @param FixBroken when true it will try to perform the instalation
+      * even if we have broken packages, when false it will try to fix
+      * the current situation
       */
-    bool CheckDeps(bool AllowBroken = false);
+    bool CheckDeps(bool FixBroken = false);
 
     /** Shows a list of all broken packages together with their
      *  dependencies.  Similar to and based on the equivalent routine in

@@ -2255,7 +2255,7 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     return true;
 }
 
-bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto)
+bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto, bool fixBroken)
 {
     //cout << "runTransaction" << simulate << remove << endl;
     bool withLock = !simulate; // Check to see if we are just simulating,
@@ -2264,9 +2264,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     AptCacheFile cache(m_backend);
     int timeout = 10;
     // TODO test this
-    while (cache.Open(withLock) == false) {
-        // failed to open cache, try checkDeps then..
-        // || cache.CheckDeps(CmdL.FileSize() != 1) == false
+    while (cache.Open(withLock) == false || cache.CheckDeps(fixBroken) == false) {
         if (withLock == false || (timeout <= 0)) {
             show_errors(m_backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
             return false;
@@ -2276,10 +2274,13 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
             sleep(1);
             timeout--;
         }
+        // Close the cache if we are going to try again
+        cache.Close();
     }
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
 
     // Enter the special broken fixing mode if the user specified arguments
+    // THIS mode will run if fixBroken is false and the cache has broken packages
     bool BrokenFix = false;
     if (cache->BrokenCount() != 0) {
         BrokenFix = true;
