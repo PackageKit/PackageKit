@@ -1415,8 +1415,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
         emitPackages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
     }
 
-    if (pk_backend_get_bool(m_backend, "only_trusted") == false ||
-            _config->FindB("APT::Get::AllowUnauthenticated", false) == true) {
+    if (pk_backend_get_bool(m_backend, "only_trusted") == false) {
         g_debug ("Authentication warning overridden.\n");
         return true;
     }
@@ -1471,27 +1470,15 @@ bool AptIntf::tryToInstall(const pkgCache::PkgIterator &constPkg,
     Fix.Protect(Pkg);
     if (Remove == true) {
         Fix.Remove(Pkg);
-        Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge", false));
+        // TODO this is false since PackageKit can't
+        // tell it want's o purge
+        Cache.MarkDelete(Pkg, false);
         return true;
     }
 
     // Install it
-    Cache.MarkInstall(Pkg,false);
-    if (State.Install() == false) {
-        if (_config->FindB("APT::Get::ReInstall",false) == true) {
-            if (Pkg->CurrentVer == 0 || Pkg.CurrentVer().Downloadable() == false) {
-                // 	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
-                // 		     Pkg.Name());
-                ;
-            } else {
-                Cache.SetReInstall(Pkg,true);
-            }
-        } else {
-            // 	 if (AllowFail == true)
-            // 	    ioprintf(c1out,_("%s is already the newest version.\n"),
-            // 		     Pkg.Name());
-        }
-    } else {
+    Cache.MarkInstall(Pkg, false);
+    if (State.Install() == true) {
         ExpectedInst++;
     }
 
@@ -1955,29 +1942,18 @@ void AptIntf::updateInterface(int fd, int writeFd)
  */
 bool AptIntf::doAutomaticRemove(AptCacheFile &cache)
 {
-    bool doAutoRemove;
-    if (pk_backend_get_bool(m_backend, "autoremove")) {
-        doAutoRemove = true;
-    } else {
-        doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
-    }
+    bool doAutoRemove = pk_backend_get_bool(m_backend, "autoremove");
+
     pkgDepCache::ActionGroup group(*cache);
 
-    if (_config->FindB("APT::Get::Remove",true) == false &&
-            doAutoRemove == true) {
-        cout << "We are not supposed to delete stuff, can't start "
-                "AutoRemover" << endl;
-        doAutoRemove = false;
-    }
-
     if (doAutoRemove) {
-        bool purge = _config->FindB("APT::Get::Purge", false);
         // look over the cache to see what can be removed
         for (pkgCache::PkgIterator Pkg = cache->PkgBegin(); ! Pkg.end(); ++Pkg) {
             if (cache[Pkg].Garbage) {
                 if (Pkg.CurrentVer() != 0 &&
                         Pkg->CurrentState != pkgCache::State::ConfigFiles) {
-                    cache->MarkDelete(Pkg, purge);
+                    // TODO, packagekit could provide a way to purge
+                    cache->MarkDelete(Pkg, false);
                 } else {
                     cache->MarkKeep(Pkg, false, false);
                 }
@@ -2394,20 +2370,11 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
  */
 bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
 {
+    //cout << "installPackages() called" << endl;
     // Try to auto-remove packages
     if (!doAutomaticRemove(cache)) {
         // TODO
         return false;
-    }
-
-    //cout << "installPackages() called" << endl;
-    if (_config->FindB("APT::Get::Purge",false) == true) {
-        pkgCache::PkgIterator I = cache->PkgBegin();
-        for (; I.end() == false; ++I) {
-            if (I.Purge() == false && cache[I].Mode == pkgDepCache::ModeDelete) {
-                cache->MarkDelete(I,true);
-            }
-        }
     }
 
     // check for essential packages!!!
@@ -2426,14 +2393,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
     if (cache->DelCount() == 0 && cache->InstCount() == 0 &&
             cache->BadCount() == 0) {
         return true;
-    }
-
-    // No remove flag
-    if (cache->DelCount() != 0 && _config->FindB("APT::Get::Remove", true) == false) {
-        pk_backend_error_code(m_backend,
-                              PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
-                              "Packages need to be removed but remove is disabled.");
-        return false;
     }
 
     // Create the text record parser
