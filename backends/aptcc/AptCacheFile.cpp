@@ -69,19 +69,7 @@ bool AptCacheFile::CheckDeps(bool FixBroken)
 
     // Apply corrections for half-installed packages
     if (pkgApplyStatus(*DCache) == false) {
-        return false;
-    }
-
-    if (_config->FindB("APT::Get::Fix-Policy-Broken",false) == true) {
-        FixBroken = true;
-        if ((DCache->PolicyBrokenCount() > 0)) {
-            // upgrade all policy-broken packages with ForceImportantDeps=True
-            for (pkgCache::PkgIterator I = Cache->PkgBegin(); !I.end(); ++I) {
-                if ((*DCache)[I].NowPolicyBroken() == true) {
-                    DCache->MarkInstall(I,true,0, false, true);
-                }
-            }
-        }
+        return _error->Error("Unable to apply corrections for half-installed packages");;
     }
 
     // Nothing is broken or we don't want to try fixing it
@@ -104,7 +92,7 @@ bool AptCacheFile::CheckDeps(bool FixBroken)
     return true;
 }
 
-void AptCacheFile::ShowBroken(bool Now)
+void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
 {
     std::stringstream out;
 
@@ -231,7 +219,7 @@ void AptCacheFile::ShowBroken(bool Now)
             }
         }
     }
-    pk_backend_error_code(m_backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, out.str().c_str());
+    pk_backend_error_code(m_backend, error, out.str().c_str());
 }
 
 void AptCacheFile::buildPkgRecords()

@@ -57,7 +57,7 @@ public:
      *  dependencies.  Similar to and based on the equivalent routine in
      *  apt-get.
      */
-    void ShowBroken(bool Now);
+    void ShowBroken(bool Now, PkErrorEnum error = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED);
 
     inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
 

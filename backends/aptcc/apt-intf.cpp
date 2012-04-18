@@ -2296,7 +2296,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     AptCacheFile cache(m_backend);
     int timeout = 10;
     // TODO test this
-    while (cache.Open(withLock) == false || cache.CheckDeps(fixBroken) == false) {
+    while (cache.Open(withLock) == false) {
         if (withLock == false || (timeout <= 0)) {
             show_errors(m_backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
             return false;
@@ -2309,6 +2309,13 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         // Close the cache if we are going to try again
         cache.Close();
     }
+
+    // Check if there are half-installed packages and if we can fix them
+    if (cache.CheckDeps(fixBroken) == false) {
+        show_errors(m_backend, PK_ERROR_ENUM_INTERNAL_ERROR);
+        return false;
+    }
+
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
 
     // Enter the special broken fixing mode if the user specified arguments
@@ -2367,8 +2374,9 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
         // Now we check the state of the packages,
         if (cache->BrokenCount() != 0) {
             // if the problem resolver could not fix all broken things
-            // show what is broken
-            cache.ShowBroken(false);
+            // suggest to run RepairSystem by saing that the last transaction
+            // did not finish well
+            cache.ShowBroken(false, PK_ERROR_ENUM_UNFINISHED_TRANSACTION);
             return false;
         }
     }
