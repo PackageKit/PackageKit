@@ -194,7 +194,8 @@ public:
         ErrorProvideTypeNotSupported,
         ErrorInstallRootInvalid,
         ErrorCannotFetchSources,
-        ErrorCancelledPriority
+        ErrorCancelledPriority,
+        ErrorUnfinishedTransaction
     } Error;
 
     /**
@@ -211,7 +212,8 @@ public:
         ExitKilled, /* when we forced the cancel, but had to sigkill */
         ExitMediaChangeRequired,
         ExitNeedUntrusted,
-        ExitCancelledPriority
+        ExitCancelledPriority,
+        ExitRepairRequired
     } Exit;
 
     /**

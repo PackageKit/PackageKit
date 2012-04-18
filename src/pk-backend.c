@@ -2195,6 +2195,11 @@ pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *
 	else
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
+	/* set the hint that RepairSystem is needed */
+	if (error_code == PK_ERROR_ENUM_UNFINISHED_TRANSACTION) {
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_REPAIR_REQUIRED);
+	}
+
 	/* form PkError struct */
 	item = pk_error_new ();
 	g_object_set (item,
