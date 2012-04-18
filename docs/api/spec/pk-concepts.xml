@@ -1003,6 +1003,26 @@
       </para>
     </sect2>
 
+    <sect2 id="introduction-ideas-transactions-repair">
+      <title>Transaction example: Repair</title>
+      <mediaobject id="pk-transactions-repair">
+        <imageobject>
+          <imagedata format="PNG" fileref="pk-transactions-repair-required.png" align="center"/>
+        </imageobject>
+      </mediaobject>
+      <para>
+        If the package management system is damaged, a repair may be required.
+        This is not automatically done befor each transaction as the user
+        may have to verify destructive package actions or make manual changes to
+        configuration files.
+      </para>
+      <para>
+        This transaction sequence is not common and is not supported on
+        many backends.
+        It may be completely implemented in the frontend or not at all.
+      </para>
+    </sect2>
+
   </sect1>
 
   <sect1 id="introduction-ideas-transactionid">
