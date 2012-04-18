@@ -756,6 +756,12 @@ public:
     void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false);
 
     /**
+     * Repairs a broken system
+     * \sa simulateRepairSystem();
+     */
+    void repairSystem(bool onlyTrusted = true);
+
+    /**
      * Activates or disables a repository
      */
     void repoEnable(const QString &repoId, bool enable = true);
@@ -928,6 +934,14 @@ public:
      * \sa simulateUpdatePackages(const QList<Package> &packages)
      */
     void simulateUpdatePackage(const Package &package);
+
+    /**
+     * Tries to fix a broken system
+     * \note this function will emit packages that describe the actions
+     * the backend will take
+     * \sa repairSystem(bool);
+     */
+    void simulateRepairSystem();
 
     /**
      * Update the given \p packages

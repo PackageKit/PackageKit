@@ -479,6 +479,11 @@ void Transaction::removePackage(const Package &package, bool allowDeps, bool aut
     removePackages(QList<Package>() << package, allowDeps, autoremove);
 }
 
+void Transaction::repairSystem(bool onlyTrusted)
+{
+    RUN_TRANSACTION(RepairSystem(onlyTrusted))
+}
+
 void Transaction::repoEnable(const QString &repoId, bool enable)
 {
     RUN_TRANSACTION(RepoEnable(repoId, enable))
@@ -592,6 +597,11 @@ void Transaction::simulateUpdatePackages(const QList<Package> &packages)
 void Transaction::simulateUpdatePackage(const Package &package)
 {
     simulateUpdatePackages(QList<Package>() << package);
+}
+
+void Transaction::simulateRepairSystem()
+{
+    RUN_TRANSACTION(SimulateRepairSystem())
 }
 
 void Transaction::updatePackages(const QList<Package> &packages, bool onlyTrusted)
