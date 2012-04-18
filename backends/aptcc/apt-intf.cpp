@@ -61,6 +61,9 @@ AptIntf::AptIntf(PkBackend *backend, bool &cancel) :
     m_lastSubProgress(0)
 {
     m_cancel = false;
+
+    // Make sure initial m_time is 0
+    m_restartStat.st_mtime = 0;
 }
 
 bool AptIntf::init()
@@ -104,6 +107,25 @@ bool AptIntf::init()
 
 AptIntf::~AptIntf()
 {
+    // Check the restart thing
+    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+        struct stat restartStat;
+        g_stat(REBOOT_REQUIRED, &restartStat);
+
+        if (restartStat.st_mtime > m_restartStat.st_mtime) {
+            // Emit the packages that caused the restart
+            if (!m_restartPackages.empty()) {
+                emitRequireRestart(m_restartPackages);
+            } else if (!m_pkgs.empty()) {
+                // Assume all of them
+                emitRequireRestart(m_pkgs);
+            } else {
+                // Emit a foo require restart
+                pk_backend_require_restart(m_backend, PK_RESTART_ENUM_SYSTEM, "aptcc;;;");
+            }
+        }
+    }
+
     pk_backend_finished(m_backend);
 }
 
@@ -113,6 +135,7 @@ void AptIntf::cancel()
         m_cancel = true;
         pk_backend_set_status(m_backend, PK_STATUS_ENUM_CANCEL);
     }
+
     if (m_child_pid > 0) {
         kill(m_child_pid, SIGTERM);
     }
@@ -298,13 +321,12 @@ PkgList AptIntf::filterPackages(PkgList &packages, PkBitfield filters)
 }
 
 // used to emit packages it collects all the needed info
-void AptIntf::emitPackage(const pkgCache::VerIterator &ver,
-                          PkInfoEnum state)
+void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
 {
-    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-
     // check the state enum to see if it was not set.
     if (state == PK_INFO_ENUM_UNKNOWN) {
+        const pkgCache::PkgIterator &pkg = ver.ParentPkg();
+
         if (pkg->CurrentState == pkgCache::State::Installed &&
                 pkg.CurrentVer() == ver) {
             state = PK_INFO_ENUM_INSTALLED;
@@ -313,13 +335,8 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver,
         }
     }
 
-    pkgCache::VerFileIterator vf = ver.FileList();
-
     gchar *package_id;
-    package_id = pk_package_id_build(pkg.Name(),
-                                     ver.VerStr(),
-                                     ver.Arch(),
-                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
+    package_id = utilBuildPackageId(ver);
     pk_backend_package(m_backend,
                        state,
                        package_id,
@@ -346,6 +363,25 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
         if (matchPackage(*it, filters)) {
             emitPackage(*it, state);
         }
+    }
+}
+
+void AptIntf::emitRequireRestart(PkgList &output)
+{
+    // Sort so we can remove the duplicated entries
+    sort(output.begin(), output.end(), compare());
+
+    // Remove the duplicated entries
+    output.erase(unique(output.begin(),
+                        output.end(),
+                        result_equality()),
+                 output.end());
+
+    for (PkgList::iterator it = output.begin(); it != output.end(); ++it) {
+        gchar *package_id;
+        package_id = utilBuildPackageId(*it);
+        pk_backend_require_restart(m_backend, PK_RESTART_ENUM_SYSTEM, package_id);
+        g_free(package_id);
     }
 }
 
@@ -620,11 +656,7 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
     }
 
     gchar *package_id;
-    package_id = pk_package_id_build(pkg.Name(),
-                                     ver.VerStr(),
-                                     ver.Arch(),
-                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
-
+    package_id = utilBuildPackageId(ver);
     pk_backend_details(m_backend,
                        package_id,
                        "unknown",
@@ -666,13 +698,10 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
     // Get the version of the current package
     const pkgCache::VerIterator &currver = findVer(pkg);
-    const pkgCache::VerFileIterator &currvf  = currver.FileList();
+
     // Build a package_id from the current version
     gchar *current_package_id;
-    current_package_id = pk_package_id_build(pkg.Name(),
-                                             currver.VerStr(),
-                                             currver.Arch(),
-                                             currvf.File().Archive() == NULL ? "" : currvf.File().Archive());
+    current_package_id = utilBuildPackageId(currver);
 
     pkgCache::VerFileIterator vf = candver.FileList();
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
@@ -852,10 +881,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     // Build a package_id from the update version
     string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
     gchar *package_id;
-    package_id = pk_package_id_build(pkg.Name(),
-                                     candver.VerStr(),
-                                     candver.Arch(),
-                                     archive.c_str());
+    package_id = utilBuildPackageId(candver);
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
     if (archive.compare("stable") == 0) {
@@ -868,10 +894,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     }
 
     PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-    if (starts_with(pkg.Name(), "linux-image-") ||
-            starts_with(pkg.Name(), "nvidia-") ||
-            strcmp(pkg.Name(), "libc6") == 0 ||
-            strcmp(pkg.Name(), "dbus") == 0) {
+    if (utilRestartRequired(pkg.Name())) {
         restart = PK_RESTART_ENUM_SYSTEM;
     }
 
@@ -1546,68 +1569,77 @@ bool AptIntf::removingEssentialPackages(AptCacheFile &cache)
 }
 
 /**
- * emitChangedPackages - Show packages to newly install
+ * checkChangedPackages - Check whas is goind to happen to the packages
  */
-void AptIntf::emitChangedPackages(AptCacheFile &cache)
+PkgList AptIntf::checkChangedPackages(AptCacheFile &cache, bool emitChanged)
 {
+    PkgList ret;
     PkgList installing;
     PkgList removing;
     PkgList updating;
     PkgList downgrading;
 
-    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {       
         if (cache[pkg].NewInstall() == true) {
             // installing;
             const pkgCache::VerIterator &ver = m_cache.findCandidateVer(pkg);
             if (!ver.end()) {
+                ret.push_back(ver);
                 installing.push_back(ver);
+
+                // append to the restart required list
+                if (utilRestartRequired(pkg.Name())) {
+                    m_restartPackages.push_back(ver);
+                }
             }
         } else if (cache[pkg].Delete() == true) {
             // removing
             const pkgCache::VerIterator &ver = findVer(pkg);
             if (!ver.end()) {
+                ret.push_back(ver);
                 removing.push_back(ver);
+
+                // append to the restart required list
+                if (utilRestartRequired(pkg.Name())) {
+                    m_restartPackages.push_back(ver);
+                }
             }
         } else if (cache[pkg].Upgrade() == true) {
             // updating
             const pkgCache::VerIterator &ver = m_cache.findCandidateVer(pkg);
             if (!ver.end()) {
+                ret.push_back(ver);
                 updating.push_back(ver);
+
+                // append to the restart required list
+                if (utilRestartRequired(pkg.Name())) {
+                    m_restartPackages.push_back(ver);
+                }
             }
         } else if (cache[pkg].Downgrade() == true) {
             // downgrading
             const pkgCache::VerIterator &ver = findVer(pkg);
             if (!ver.end()) {
+                ret.push_back(ver);
                 downgrading.push_back(ver);
+
+                // append to the restart required list
+                if (utilRestartRequired(pkg.Name())) {
+                    m_restartPackages.push_back(ver);
+                }
             }
         }
     }
 
-    // emit packages that have changes
-    emitPackages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
-    emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
-    emitPackages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
-    emitPackages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
-}
-
-void AptIntf::populateInternalPackages(AptCacheFile &cache)
-{
-    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {
-        if (cache[pkg].NewInstall() == true) {
-            // installing
-            m_pkgs.push_back(m_cache.findCandidateVer(pkg));
-        } else if (cache[pkg].Delete() == true) {
-            // removing
-            m_pkgs.push_back(findVer(pkg));
-        } else if (cache[pkg].Upgrade() == true) {
-            // updating
-            m_pkgs.push_back(m_cache.findCandidateVer(pkg));
-        } else if (cache[pkg].Downgrade() == true) {
-            // downgrading
-            // TODO shouldn't be the current version?
-            m_pkgs.push_back(m_cache.findCandidateVer(pkg));
-        }
+    if (emitChanged) {
+        // emit packages that have changes
+        emitPackages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+        emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
+        emitPackages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+        emitPackages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
     }
+
+    return ret;
 }
 
 void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
@@ -2189,10 +2221,10 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     }
 
     // Build package-id for the new package
-    gchar *deb_package_id = pk_package_id_build (deb.packageName ().c_str (),
-                                                 deb.version ().c_str (),
-                                                 deb.architecture ().c_str (),
-                                                 "local");
+    gchar *deb_package_id = pk_package_id_build(deb.packageName ().c_str (),
+                                                deb.version ().c_str (),
+                                                deb.architecture ().c_str (),
+                                                "local");
     const gchar *deb_summary = deb.summary ().c_str ();
 
     gint status;
@@ -2508,8 +2540,17 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
 
     if (simulating) {
         // Print out a list of packages that are going to be installed extra
-        emitChangedPackages(cache);
+        checkChangedPackages(cache, true);
         return true;
+    } else {
+        // Store the packages that are going to change
+        // so we can emit them as we process it
+        m_pkgs = checkChangedPackages(cache, false);
+
+        // Prepare for the restart thing
+        if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+            g_stat(REBOOT_REQUIRED, &m_restartStat);
+        }
     }
 
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_DOWNLOAD);
@@ -2527,10 +2568,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
         cout << "PendingError download" << endl;
         return false;
     }
-
-    // Store the packages that are going to change
-    // so we can emit them as we process it.
-    populateInternalPackages(cache);
 
     // Check if the user canceled
     if (m_cancel) {

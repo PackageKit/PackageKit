@@ -264,6 +264,28 @@ bool starts_with(const string &str, const char *start)
     return str.size() >= startSize && (strncmp(str.data(), start, startSize) == 0);
 }
 
+bool utilRestartRequired(const string &packageName)
+{
+    if (starts_with(packageName, "linux-image-") ||
+            starts_with(packageName, "nvidia-") ||
+            packageName == "libc6" ||
+            packageName == "dbus") {
+        return true;
+    }
+    return false;
+}
+
+gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
+{
+    gchar *package_id;
+    pkgCache::VerFileIterator vf = ver.FileList();
+    package_id = pk_package_id_build(ver.ParentPkg().Name(),
+                                     ver.VerStr(),
+                                     ver.Arch(),
+                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
+    return package_id;
+}
+
 const char *utf8(const char *str)
 {
     static char *_str = NULL;

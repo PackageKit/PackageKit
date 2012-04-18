@@ -103,6 +103,17 @@ bool ends_with(const string &str, const char *end);
 bool starts_with(const string &str, const char *end);
 
 /**
+  * Return true if the given package name is on the list of packages that require a restart
+  */
+bool utilRestartRequired(const string &packageName);
+
+/**
+  * Build a package id from the given package version
+  * The caller must g_free the returned value
+  */
+gchar* utilBuildPackageId(const pkgCache::VerIterator &ver);
+
+/**
   * Return an utf8 string
   */
 const char *utf8(const char *str);

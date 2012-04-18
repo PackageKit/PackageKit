@@ -23,10 +23,8 @@
 #ifndef APTINTF_H
 #define APTINTF_H
 
-#include <apt-pkg/pkgrecords.h>
-#include <apt-pkg/pkgcachegen.h>
-#include <apt-pkg/cachefile.h>
-#include <apt-pkg/policy.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 #include <pk-backend.h>
 
@@ -34,6 +32,7 @@
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
+#define REBOOT_REQUIRED      "/var/run/reboot-required"
 
 using namespace std;
 
@@ -144,8 +143,7 @@ public:
     /**
      *  Emits a package with the given state
      */
-    void emitPackage(const pkgCache::VerIterator &ver,
-                     PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+    void emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
     /**
       * Emits a list of packages that matches the given filters
@@ -153,6 +151,8 @@ public:
     void emitPackages(PkgList &output,
                       PkBitfield filters = PK_FILTER_ENUM_NONE,
                       PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+
+    void emitRequireRestart(PkgList &output);
 
     /**
       * Emits a list of updates that matches the given filters
@@ -231,10 +231,6 @@ public:
                     std::string directory, std::string &StoreFilename);
 
 private:
-    AptCacheFile m_cache;
-    PkBackend  *m_backend;
-    bool       &m_cancel;
-
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
     bool tryToInstall(const pkgCache::PkgIterator &constPkg,
@@ -246,16 +242,22 @@ private:
 
     /**
      *  interprets dpkg status fd
-    */
+     */
     void updateInterface(int readFd, int writeFd);
     bool doAutomaticRemove(AptCacheFile &cache);
-    void emitChangedPackages(AptCacheFile &cache);
     bool removingEssentialPackages(AptCacheFile &cache);
+    PkgList checkChangedPackages(AptCacheFile &cache, bool emitChanged);
+    void emitTransactionPackage(string name, PkInfoEnum state);
+
+    AptCacheFile m_cache;
+    PkBackend  *m_backend;
+    bool       &m_cancel;
+    struct stat m_restartStat;
 
     bool m_isMultiArch;
     PkgList m_pkgs;
-    void populateInternalPackages(AptCacheFile &cache);
-    void emitTransactionPackage(string name, PkInfoEnum state);
+    PkgList m_restartPackages;
+
     time_t     m_lastTermAction;
     string     m_lastPackage;
     uint       m_lastSubProgress;
