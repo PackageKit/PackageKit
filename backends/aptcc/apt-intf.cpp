@@ -2610,6 +2610,7 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
         _error->DumpErrors();
 
         close(readFromChildFD[1]);
+        close(pty_master);
 
         return res == 0;
     }
@@ -2634,8 +2635,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
     }
 
     close(readFromChildFD[0]);
-    close(readFromChildFD[1]);
-    close(pty_master);
 
     cout << "Parent finished..." << endl;
     return true;
