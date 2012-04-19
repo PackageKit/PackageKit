@@ -2609,10 +2609,9 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
         // dump errors into cerr (pass it to the parent process)
         _error->DumpErrors();
 
-        close(readFromChildFD[1]);
-        close(pty_master);
-
-        return res == 0;
+        // finishes the child process, _exit is used to not
+        // close some parent file descriptors
+        _exit(res);
     }
 
     cout << "PARENT proccess running..." << endl;
@@ -2635,6 +2634,8 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
     }
 
     close(readFromChildFD[0]);
+    close(readFromChildFD[1]);
+    close(pty_master);
 
     cout << "Parent finished..." << endl;
     return true;
