@@ -242,7 +242,7 @@ string getBugzillaUrls(const string &changelog)
     return ret;
 }
 
-bool contains(const PkgList packages, const pkgCache::PkgIterator &pkg)
+bool contains(const PkgList &packages, const pkgCache::PkgIterator &pkg)
 {
     for (PkgList::const_iterator it = packages.begin(); it != packages.end(); ++it) {
         if (it->ParentPkg() == pkg) {
