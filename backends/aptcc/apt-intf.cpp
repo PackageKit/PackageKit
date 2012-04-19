@@ -305,11 +305,11 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
     return true;
 }
 
-PkgList AptIntf::filterPackages(PkgList &packages, PkBitfield filters)
+PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
 {
     if (filters != 0) {
         PkgList ret;
-        for (PkgList::iterator i = packages.begin(); i != packages.end(); ++i) {
+        for (PkgList::const_iterator i = packages.begin(); i != packages.end(); ++i) {
             if (matchPackage(*i, filters)) {
                 ret.push_back(*i);
             }
@@ -355,7 +355,7 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
                         result_equality()),
                  output.end());
 
-    for (PkgList::iterator it = output.begin(); it != output.end(); ++it) {
+    for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
         if (m_cancel) {
             break;
         }
@@ -377,7 +377,7 @@ void AptIntf::emitRequireRestart(PkgList &output)
                         result_equality()),
                  output.end());
 
-    for (PkgList::iterator it = output.begin(); it != output.end(); ++it) {
+    for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
         gchar *package_id;
         package_id = utilBuildPackageId(*it);
         pk_backend_require_restart(m_backend, PK_RESTART_ENUM_SYSTEM, package_id);
@@ -396,7 +396,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
                         result_equality()),
                  output.end());
 
-    for (PkgList::iterator i = output.begin(); i != output.end(); ++i) {
+    for (PkgList::const_iterator i = output.begin(); i != output.end(); ++i) {
         if (m_cancel) {
             break;
         }
@@ -676,7 +676,7 @@ void AptIntf::emitDetails(PkgList &pkgs)
     pkgs.erase(unique(pkgs.begin(), pkgs.end(), result_equality()),
                pkgs.end());
 
-    for (PkgList::iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
+    for (PkgList::const_iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
         if (m_cancel) {
             break;
         }
@@ -916,9 +916,9 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     g_free(package_id);
 }
 
-void AptIntf::emitUpdateDetails(PkgList &pkgs)
+void AptIntf::emitUpdateDetails(const PkgList &pkgs)
 {
-    for (PkgList::iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
+    for (PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
         if (m_cancel) {
             break;
         }
@@ -975,7 +975,7 @@ void AptIntf::getRequires(PkgList &output,
         if (parentVer.end() == false) {
             PkgList deps;
             getDepends(deps, parentVer, false);
-            for (PkgList::iterator it = deps.begin(); it != deps.end(); ++it) {
+            for (PkgList::const_iterator it = deps.begin(); it != deps.end(); ++it) {
                 if (*it == ver) {
                     if (recursive) {
                         if (!contains(output, parentPkg)) {
@@ -1054,7 +1054,7 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
             section = section.substr(found + 1);
 
             // Don't insert virtual packages instead add what it provides
-            for (vector<PkGroupEnum>::iterator it = groups.begin();
+            for (vector<PkGroupEnum>::const_iterator it = groups.begin();
                  it != groups.end();
                  ++it) {
                 if (*it == get_enum_group(section)) {
@@ -1194,7 +1194,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
     regfree(&re);
 
     // Resolve the package names now
-    for (vector<string>::iterator it = packages.begin();
+    for (vector<string>::const_iterator it = packages.begin();
         it != packages.end(); ++it) {
         if (m_cancel) {
             break;
@@ -1275,7 +1275,7 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
     regfree(&re);
 
     // resolve the package names
-    for (vector<string>::iterator it = packages.begin();
+    for (vector<string>::const_iterator it = packages.begin();
          it != packages.end(); ++it) {
         if (m_cancel) {
             break;
@@ -1631,7 +1631,7 @@ PkgList AptIntf::checkChangedPackages(AptCacheFile &cache, bool emitChanged)
 
 void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
 {
-    for (PkgList::iterator it = m_pkgs.begin(); it != m_pkgs.end(); ++it) {
+    for (PkgList::const_iterator it = m_pkgs.begin(); it != m_pkgs.end(); ++it) {
         if (it->ParentPkg().Name() == name) {
             emitPackage(*it, state);
             return;
@@ -2067,10 +2067,10 @@ void AptIntf::refreshCache()
     ListUpdate(Stat, *m_cache.GetSourceList());
 }
 
-bool AptIntf::markAutoInstalled(AptCacheFile &cache, PkgList &pkgs, bool flag)
+bool AptIntf::markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs, bool flag)
 {
     bool ret;
-    for(PkgList::iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
+    for(PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
         if (m_cancel) {
             break;
         }
@@ -2263,7 +2263,7 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     return true;
 }
 
-bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, bool markAuto, bool fixBroken)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool simulate, bool markAuto, bool fixBroken)
 {
     //cout << "runTransaction" << simulate << remove << endl;
     bool withLock = !simulate; // Check to see if we are just simulating,
@@ -2307,7 +2307,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
     // new scope for the ActionGroup
     {
         pkgDepCache::ActionGroup group(cache);
-        for (PkgList::iterator it = install.begin(); it != install.end(); ++it) {
+        for (PkgList::const_iterator it = install.begin(); it != install.end(); ++it) {
             if (m_cancel) {
                 break;
             }
@@ -2326,7 +2326,7 @@ bool AptIntf::runTransaction(PkgList &install, PkgList &remove, bool simulate, b
             markAutoInstalled(cache, install, markAuto);
         }
 
-        for (PkgList::iterator it = remove.begin(); it != remove.end(); ++it) {
+        for (PkgList::const_iterator it = remove.begin(); it != remove.end(); ++it) {
             if (m_cancel) {
                 break;
             }

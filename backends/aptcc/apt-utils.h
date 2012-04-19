@@ -90,7 +90,7 @@ string getBugzillaUrls(const string &changelog);
 /**
   * Return if the given vector contain a package
   */
-bool contains(PkgList packages, const pkgCache::PkgIterator &pkg);
+bool contains(const PkgList &packages, const pkgCache::PkgIterator &pkg);
 
 /**
   * Return if the given string ends with the other

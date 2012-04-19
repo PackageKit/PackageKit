@@ -85,7 +85,7 @@ public:
     /**
       * Marks the given packages as auto installed
       */
-    bool markAutoInstalled(AptCacheFile &cache, PkgList &pkgs, bool flag);
+    bool markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs, bool flag);
 
     /**
      *  runs a transaction to install/remove/update packages
@@ -95,8 +95,8 @@ public:
      *    \p simulate should be true, in this case packages with
      *    what's going to happen will be emitted.
      */
-    bool runTransaction(PkgList &install,
-                        PkgList &remove,
+    bool runTransaction(const PkgList &install,
+                        const PkgList &remove,
                         bool simulate,
                         bool markAuto,
                         bool fixBroken);
@@ -168,7 +168,7 @@ public:
     /**
       * Returns the list of packages with the ones that passed the given filters
       */
-    PkgList filterPackages(PkgList &packages, PkBitfield filters);
+    PkgList filterPackages(const PkgList &packages, PkBitfield filters);
 
     /**
       * Emits details of the given package
@@ -188,7 +188,7 @@ public:
     /**
       * Emits update datails for the given list
       */
-    void emitUpdateDetails(PkgList &pkgs);
+    void emitUpdateDetails(const PkgList &pkgs);
 
     /**
       *  Emits the files of a package
