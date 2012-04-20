@@ -2067,19 +2067,16 @@ void AptIntf::refreshCache()
     ListUpdate(Stat, *m_cache.GetSourceList());
 }
 
-bool AptIntf::markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs, bool flag)
+void AptIntf::markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs)
 {
-    bool ret;
-    for(PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
+    for (PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
         if (m_cancel) {
             break;
         }
 
         // Mark package as auto-installed
-        cache->MarkAuto(it->ParentPkg(), flag);
+        cache->MarkAuto(it->ParentPkg(), true);
     }
-
-    return true;
 }
 
 bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
@@ -2322,8 +2319,9 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
             }
         }
 
-        if (!simulate) {
-            markAutoInstalled(cache, install, markAuto);
+        // Mark package dependencies of a local file as auto-installed
+        if (!simulate && markAuto) {
+            markAutoInstalled(cache, install);
         }
 
         for (PkgList::const_iterator it = remove.begin(); it != remove.end(); ++it) {

@@ -85,7 +85,7 @@ public:
     /**
       * Marks the given packages as auto installed
       */
-    bool markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs, bool flag);
+    void markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs);
 
     /**
      *  runs a transaction to install/remove/update packages
