@@ -22,6 +22,8 @@
 
 #include "apt-messages.h"
 
+#include "apt-utils.h"
+
 #include <string>
 #include <sstream>
 #include <cstdio>
@@ -54,12 +56,11 @@ bool show_errors(PkBackend *backend, PkErrorEnum errorCode, bool errModify)
     }
 
     if (!errors.str().empty()) {
-        pk_backend_error_code(backend, errorCode, errors.str().c_str());
+        pk_backend_error_code(backend, errorCode, utf8(errors.str().c_str()));
     }
 
     if ((errModify) && (!messages.str().empty())) {
-        cout << "Emitting backend message:" << messages.str() << endl;
-        pk_backend_message(backend, messageCode, messages.str().c_str());
+        pk_backend_message(backend, messageCode, utf8(messages.str().c_str()));
     }
 }
 
@@ -78,6 +79,6 @@ bool show_warnings(PkBackend *backend, PkMessageEnum message)
     }
 
     if (!warnings.str().empty()) {
-        pk_backend_message(backend, message, warnings.str().c_str());
+        pk_backend_message(backend, message, utf8(warnings.str().c_str()));
     }
 }

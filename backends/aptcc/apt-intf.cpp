@@ -102,6 +102,12 @@ bool AptIntf::init()
     // Tries to open the cache
     bool ret;
     ret = m_cache.Open();
+
+    // Prepare for the restart thing
+    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+        g_stat(REBOOT_REQUIRED, &m_restartStat);
+    }
+
     return !ret;
 }
 
@@ -2505,11 +2511,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
         // Store the packages that are going to change
         // so we can emit them as we process it
         m_pkgs = checkChangedPackages(cache, false);
-
-        // Prepare for the restart thing
-        if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
-            g_stat(REBOOT_REQUIRED, &m_restartStat);
-        }
     }
 
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_DOWNLOAD);

@@ -681,11 +681,10 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
         return false;
     }
 
-    // missing gpg signature would appear here
-    // TODO we need a better enum
+    // missing repo gpg signature would appear here
     if (_error->PendingError() == false && _error->empty() == false) {
-        //show_warnings(backend, PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE);
-        //TODO: emit a package with PK_INFO_ENUM_UNTRUSTED
+        // TODO we need a repo warning
+        show_warnings(backend, PK_MESSAGE_ENUM_BROKEN_MIRROR);
     }
 
     delete apt;

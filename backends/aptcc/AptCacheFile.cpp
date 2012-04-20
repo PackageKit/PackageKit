@@ -19,6 +19,8 @@
  */
 #include "AptCacheFile.h"
 
+#include "apt-utils.h"
+
 #include <apt-pkg/algorithms.h>
 #include <sstream>
 #include <cstdio>
@@ -219,7 +221,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
             }
         }
     }
-    pk_backend_error_code(m_backend, error, out.str().c_str());
+    pk_backend_error_code(m_backend, error, utf8(out.str().c_str()));
 }
 
 void AptCacheFile::buildPkgRecords()
