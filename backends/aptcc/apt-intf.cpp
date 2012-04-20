@@ -1429,33 +1429,42 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
     return false;
 }
 
-bool AptIntf::tryToInstall(const pkgCache::PkgIterator &constPkg,
-                           pkgDepCache &Cache,
-                           pkgProblemResolver &Fix,
-                           bool Remove,
-                           bool BrokenFix,
-                           unsigned int &ExpectedInst)
+void AptIntf::tryToRemove(const pkgCache::VerIterator &ver,
+                          pkgDepCache &Cache,
+                          pkgProblemResolver &Fix)
 {
-    pkgCache::PkgIterator Pkg = constPkg;
-    // This is a pure virtual package and there is a single available provides
-    if (Cache[Pkg].CandidateVer == 0 && Pkg->ProvidesList != 0 &&
-            Pkg.ProvidesList()->NextProvides == 0) {
-        pkgCache::PkgIterator Tmp = Pkg.ProvidesList().OwnerPkg();
-        // TODO this is UGLY!!! create a local PkgIterator for this
-        Pkg = Tmp;
-    }
+    pkgCache::PkgIterator Pkg = ver.ParentPkg();
 
-    // Check if there is something at all to install
-    pkgDepCache::StateCache &State = Cache[Pkg];
-    if (Remove == true && Pkg->CurrentVer == 0) {
+    // The package is not installed
+    if (Pkg->CurrentVer == 0) {
         Fix.Clear(Pkg);
         Fix.Protect(Pkg);
         Fix.Remove(Pkg);
 
-        return true;
+        return;
     }
 
-    if (State.CandidateVer == 0 && Remove == false) {
+    Fix.Clear(Pkg);
+    Fix.Protect(Pkg);
+    Fix.Remove(Pkg);
+    // TODO this is false since PackageKit can't
+    // tell it want's o purge
+    Cache.MarkDelete(Pkg, false);
+}
+
+
+bool AptIntf::tryToInstall(const pkgCache::VerIterator &ver,
+                           pkgDepCache &Cache,
+                           pkgProblemResolver &Fix,
+                           bool BrokenFix,
+                           unsigned int &ExpectedInst)
+{
+    pkgCache::PkgIterator Pkg = ver.ParentPkg();
+
+    // Check if there is something at all to install
+    pkgDepCache::StateCache &State = Cache[Pkg];
+
+    if (State.CandidateVer == 0) {
         _error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());
 
         pk_backend_error_code(m_backend,
@@ -1468,13 +1477,6 @@ bool AptIntf::tryToInstall(const pkgCache::PkgIterator &constPkg,
 
     Fix.Clear(Pkg);
     Fix.Protect(Pkg);
-    if (Remove == true) {
-        Fix.Remove(Pkg);
-        // TODO this is false since PackageKit can't
-        // tell it want's o purge
-        Cache.MarkDelete(Pkg, false);
-        return true;
-    }
 
     // Install it
     Cache.MarkInstall(Pkg, false);
@@ -2309,10 +2311,9 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
                 break;
             }
 
-            if (tryToInstall(it->ParentPkg(),
+            if (tryToInstall(*it,
                              cache,
                              Fix,
-                             false, // remove
                              BrokenFix,
                              ExpectedInst) == false) {
                 return false;
@@ -2329,14 +2330,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
                 break;
             }
 
-            if (tryToInstall(it->ParentPkg(),
-                             cache,
-                             Fix,
-                             true, // remove
-                             BrokenFix,
-                             ExpectedInst) == false) {
-                return false;
-            }
+            tryToRemove(*it, cache, Fix);
         }
 
         // Call the scored problem resolver

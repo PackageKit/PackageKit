@@ -233,10 +233,12 @@ public:
 private:
     bool checkTrusted(pkgAcquire &fetcher, bool simulating);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
-    bool tryToInstall(const pkgCache::PkgIterator &constPkg,
+    void tryToRemove(const pkgCache::VerIterator &ver,
+                     pkgDepCache &Cache,
+                     pkgProblemResolver &Fix);
+    bool tryToInstall(const pkgCache::VerIterator &ver,
                       pkgDepCache &Cache,
                       pkgProblemResolver &Fix,
-                      bool Remove,
                       bool BrokenFix,
                       unsigned int &ExpectedInst);
 
