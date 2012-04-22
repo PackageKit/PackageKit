@@ -20,6 +20,8 @@
 
 #include "acqpkitstatus.h"
 
+#include "apt-intf.h"
+
 #include <apt-pkg/acquire-item.h>
 #include <apt-pkg/acquire-worker.h>
 

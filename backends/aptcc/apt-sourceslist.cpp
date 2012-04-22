@@ -37,7 +37,6 @@
 #include <fstream>
 
 #include "config.h"
-#include "apt-intf.h"
 
 SourcesList::~SourcesList()
 {

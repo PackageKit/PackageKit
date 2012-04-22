@@ -24,6 +24,8 @@
 
 #include "apt-utils.h"
 
+#include <apt-pkg/error.h>
+
 #include <sstream>
 
 using namespace std;

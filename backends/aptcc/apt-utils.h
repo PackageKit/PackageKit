@@ -25,36 +25,11 @@
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/acquire.h>
 
-#include "apt-intf.h"
+#include <glib.h>
 
-// compare...uses the candidate version of each package.
-class compare
-{
-public:
-    compare() {}
+#include <pk-backend.h>
 
-    bool operator()(const pkgCache::VerIterator &a,
-                    const pkgCache::VerIterator &b) {
-        int ret = strcmp(a.ParentPkg().Name(), b.ParentPkg().Name());
-        if (ret == 0) {
-            return strcmp(a.VerStr(), b.VerStr()) < 0;
-        }
-        return ret < 0;
-    }
-};
-
-/** \brief operator== for match results. */
-class result_equality
-{
-public:
-    result_equality() {}
-
-    bool operator() (const pkgCache::VerIterator &a, const pkgCache::VerIterator &b) {
-        return strcmp(a.ParentPkg().Name(), b.ParentPkg().Name()) == 0 &&
-                strcmp(a.VerStr(), b.VerStr()) == 0 &&
-                strcmp(a.Arch(), b.Arch()) == 0;
-    }
-};
+using namespace std;
 
 /**
   * Return the PkEnumGroup of the give group string.
@@ -80,11 +55,6 @@ string getCVEUrls(const string &changelog);
   * Returns a list of links pairs url;description for Debian and Ubuntu bugs
   */
 string getBugzillaUrls(const string &changelog);
-
-/**
-  * Return if the given vector contain a package
-  */
-bool contains(const PkgList &packages, const pkgCache::PkgIterator &pkg);
 
 /**
   * Return if the given string ends with the other

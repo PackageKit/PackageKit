@@ -349,13 +349,10 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
 void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state)
 {
     // Sort so we can remove the duplicated entries
-    sort(output.begin(), output.end(), compare());
+    output.sort();
 
     // Remove the duplicated entries
-    output.erase(unique(output.begin(),
-                        output.end(),
-                        result_equality()),
-                 output.end());
+    output.removeDuplicates();
 
     for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
         if (m_cancel) {
@@ -371,13 +368,10 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
 void AptIntf::emitRequireRestart(PkgList &output)
 {
     // Sort so we can remove the duplicated entries
-    sort(output.begin(), output.end(), compare());
-
+    output.sort();
+    
     // Remove the duplicated entries
-    output.erase(unique(output.begin(),
-                        output.end(),
-                        result_equality()),
-                 output.end());
+    output.removeDuplicates();
 
     for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
         gchar *package_id;
@@ -391,12 +385,10 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
 {
     PkInfoEnum state;
     // Sort so we can remove the duplicated entries
-    sort(output.begin(), output.end(), compare());
+    output.sort();
+    
     // Remove the duplicated entries
-    output.erase(unique(output.begin(),
-                        output.end(),
-                        result_equality()),
-                 output.end());
+    output.removeDuplicates();
 
     for (PkgList::const_iterator i = output.begin(); i != output.end(); ++i) {
         if (m_cancel) {
@@ -673,10 +665,10 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
 void AptIntf::emitDetails(PkgList &pkgs)
 {
     // Sort so we can remove the duplicated entries
-    sort(pkgs.begin(), pkgs.end(), compare());
+    pkgs.sort();
+    
     // Remove the duplicated entries
-    pkgs.erase(unique(pkgs.begin(), pkgs.end(), result_equality()),
-               pkgs.end());
+    pkgs.removeDuplicates();
 
     for (PkgList::const_iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
         if (m_cancel) {
@@ -946,7 +938,7 @@ void AptIntf::getDepends(PkgList &output,
             continue;
         } else if (dep->Type == pkgCache::Dep::Depends) {
             if (recursive) {
-                if (!contains(output, dep.TargetPkg())) {
+                if (!output.contains(dep.TargetPkg())) {
                     output.push_back(ver);
                     getDepends(output, ver, recursive);
                 }
@@ -980,7 +972,7 @@ void AptIntf::getRequires(PkgList &output,
             for (PkgList::const_iterator it = deps.begin(); it != deps.end(); ++it) {
                 if (*it == ver) {
                     if (recursive) {
-                        if (!contains(output, parentPkg)) {
+                        if (!output.contains(parentPkg)) {
                             output.push_back(parentVer);
                             getRequires(output, parentVer, recursive);
                         }

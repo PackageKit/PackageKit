@@ -31,13 +31,11 @@
 
 #include <pk-backend.h>
 
+#include "PkgList.h"
+
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
 #define REBOOT_REQUIRED      "/var/run/reboot-required"
-
-using namespace std;
-
-typedef vector<pkgCache::VerIterator> PkgList;
 
 class pkgProblemResolver;
 class Matcher;

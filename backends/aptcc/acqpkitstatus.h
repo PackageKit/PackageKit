@@ -24,8 +24,13 @@
 #include <apt-pkg/acquire.h>
 #include <pk-backend.h>
 
-#include "apt-intf.h"
+#include "PkgList.h"
 
+#include <set>
+
+using std::set;
+
+class AptIntf;
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:

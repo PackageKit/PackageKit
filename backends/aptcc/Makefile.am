@@ -4,7 +4,8 @@ INCLUDES = \
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
-libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
+libpk_backend_aptcc_la_SOURCES = PkgList.cpp \
+				 pkg_acqfile.cpp \
 				 acqpkitstatus.cpp \
 				 deb-file.cpp \
 				 matcher.cpp \
@@ -25,6 +26,7 @@ aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
 
 EXTRA_DIST = 20packagekit \
+	     PkgList.h \
 	     apt-intf.h \
 	     apt-utils.h \
 	     apt-sourceslist.h \

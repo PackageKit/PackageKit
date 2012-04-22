@@ -22,6 +22,8 @@
 
 #include "pkg_acqfile.h"
 
+#include <glib/gstdio.h>
+
 #include <fstream>
 
 PkGroupEnum get_enum_group(string group)
@@ -240,16 +242,6 @@ string getBugzillaUrls(const string &changelog)
     g_regex_unref(regex);
 
     return ret;
-}
-
-bool contains(const PkgList &packages, const pkgCache::PkgIterator &pkg)
-{
-    for (PkgList::const_iterator it = packages.begin(); it != packages.end(); ++it) {
-        if (it->ParentPkg() == pkg) {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool ends_with(const string &str, const char *end)
