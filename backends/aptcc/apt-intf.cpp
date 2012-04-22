@@ -74,9 +74,6 @@ bool AptIntf::init()
 
     m_isMultiArch = APT::Configuration::getArchitectures(false).size() > 1;
 
-    // Set PackageKit status
-    pk_backend_set_status(m_backend, PK_STATUS_ENUM_LOADING_CACHE);
-
     // set locale
     if (locale = pk_backend_get_locale(m_backend)) {
         setlocale(LC_ALL, locale);

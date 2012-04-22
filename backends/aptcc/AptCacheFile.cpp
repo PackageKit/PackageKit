@@ -20,6 +20,7 @@
 #include "AptCacheFile.h"
 
 #include "apt-utils.h"
+#include "OpPackageKitProgress.h"
 
 #include <apt-pkg/algorithms.h>
 #include <sstream>
@@ -38,7 +39,8 @@ AptCacheFile::~AptCacheFile()
 
 bool AptCacheFile::Open(bool withLock)
 {
-    return pkgCacheFile::Open(NULL, withLock);
+    OpPackageKitProgress progress(m_backend);
+    return pkgCacheFile::Open(&progress, withLock);
 }
 
 void AptCacheFile::Close()
@@ -56,7 +58,8 @@ void AptCacheFile::Close()
 
 bool AptCacheFile::BuildCaches(bool withLock)
 {
-    return pkgCacheFile::BuildCaches(NULL, withLock);
+    OpPackageKitProgress progress(m_backend);
+    return pkgCacheFile::BuildCaches(&progress, withLock);
 }
 
 bool AptCacheFile::CheckDeps(bool FixBroken)
