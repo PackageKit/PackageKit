@@ -12,6 +12,7 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 apt-messages.cpp \
 				 apt-utils.cpp \
 				 apt-sourceslist.cpp \
+				 OpPackageKitProgress.cpp \
                                  AptCacheFile.cpp \
 				 apt-intf.cpp \
 				 pk-backend-aptcc.cpp
@@ -32,6 +33,7 @@ EXTRA_DIST = 20packagekit \
 	     deb-file.h \
 	     apt-messages.h \
 	     acqpkitstatus.h \
+	     OpPackageKitProgress.h \
              AptCacheFile.h \
 	     pkg_acqfile.h
 

@@ -26,7 +26,8 @@
 #include <cstdio>
 
 AptCacheFile::AptCacheFile(PkBackend *backend) :
-    m_packageRecords(0)
+    m_packageRecords(0),
+    m_backend(backend)
 {
 }
 
