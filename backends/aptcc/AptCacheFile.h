@@ -53,6 +53,11 @@ public:
       */
     bool CheckDeps(bool FixBroken = false);
 
+    /**
+     * Mark Cache for dist-upgrade
+     */
+    bool DistUpgrade();
+
     /** Shows a list of all broken packages together with their
      *  dependencies.  Similar to and based on the equivalent routine in
      *  apt-get.

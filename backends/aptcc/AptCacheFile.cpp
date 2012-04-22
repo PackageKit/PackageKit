@@ -98,6 +98,11 @@ bool AptCacheFile::CheckDeps(bool FixBroken)
     return true;
 }
 
+bool AptCacheFile::DistUpgrade()
+{
+    return pkgDistUpgrade(*this);
+}
+
 void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
 {
     std::stringstream out;

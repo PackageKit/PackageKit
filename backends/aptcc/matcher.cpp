@@ -1,7 +1,7 @@
 /* matcher.cpp
  *
  * Copyright (c) 1999-2008 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify

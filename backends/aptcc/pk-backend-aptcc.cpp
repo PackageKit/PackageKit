@@ -1,7 +1,6 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
- *
+/*
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (C) 2009-2012 Daniel Nicoletti <dantti12@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -22,8 +21,6 @@
 
 #include <stdio.h>
 #include <apt-pkg/init.h>
-#include <apt-pkg/algorithms.h>
-#include <apt-pkg/aptconfiguration.h>
 
 #include <config.h>
 #include <pk-backend.h>
@@ -31,8 +28,6 @@
 
 #include "apt-intf.h"
 #include "AptCacheFile.h"
-#include "apt-utils.h"
-#include "matcher.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "pkg_acqfile.h"
@@ -394,7 +389,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
     }
     pk_backend_set_status(backend, PK_STATUS_ENUM_RUNNING);
 
-    if (pkgDistUpgrade(*cache) == false) {
+    if (cache.DistUpgrade() == false) {
         cache.ShowBroken(false);
         g_debug("Internal error, DistUpgrade broke stuff");
         delete apt;
@@ -822,45 +817,36 @@ static gboolean backend_search_package_thread(PkBackend *backend)
     search = g_strjoinv("|", values);
     filters = (PkBitfield) pk_backend_get_uint(backend, "filters");
 
-    pk_backend_set_percentage(backend, PK_BACKEND_PERCENTAGE_INVALID);
-    pk_backend_set_allow_cancel(backend, true);
-
-    Matcher *matcher = new Matcher(search);
-    g_free(search);
-    if (matcher->hasError()) {
-        g_debug("Regex compilation error");
-        delete matcher;
-        pk_backend_finished(backend);
-        return false;
-    }
-
     AptIntf *apt = new AptIntf(backend, _cancel);
     pk_backend_set_pointer(backend, "aptcc_obj", apt);
     if (apt->init()) {
         g_debug("Failed to create apt cache");
-        delete matcher;
+        g_free(search);
         delete apt;
         return false;
     }
 
     if (_error->PendingError() == true) {
-        delete matcher;
+        g_free(search);
         delete apt;
         return false;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
+    pk_backend_set_percentage(backend, PK_BACKEND_PERCENTAGE_INVALID);
+    pk_backend_set_allow_cancel(backend, true);
+
     PkgList output;
     if (pk_backend_get_bool(backend, "search_details")) {
-        output = apt->searchPackageDetails(matcher);
+        output = apt->searchPackageDetails(search);
     } else {
-        output = apt->searchPackageName(matcher);
+        output = apt->searchPackageName(search);
     }
+    g_free(search);
 
     // It's faster to emmit the packages here than in the matching part
     apt->emitPackages(output, filters);
 
-    delete matcher;
     pk_backend_set_percentage(backend, 100);
     delete apt;
     return true;

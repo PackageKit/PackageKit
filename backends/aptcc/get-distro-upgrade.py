@@ -6,7 +6,7 @@ Provides an apt backend to PackageKit
 Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
 Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
 Copyright (C) 2008-2009 Sebastian Heinlein <glatzor@ubuntu.com>
-Copyright (C) 2010 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+Copyright (C) 2010 Daniel Nicoletti <dantti12@gmail.com>
 
 Licensed under the GNU General Public License Version 2
 

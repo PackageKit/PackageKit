@@ -1,6 +1,6 @@
 /* deb-file.h
  *
- * Copyright (c) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2011 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
@@ -23,34 +23,35 @@
 #ifndef DEB_FILE_H
 #define DEB_FILE_H
 
-#include <string>
 #include <apt-pkg/debfile.h>
+
+using std::string;
 
 class DebFile
 {
     //     typedef int user_tag_reference;
 public:
-    DebFile(const std::string &filename);
+    DebFile(const string &filename);
     bool isValid() const;
 
-    std::string filePath() const;
-    std::string packageName() const;
-    std::string sourcePackage() const;
-    std::string version() const;
-    std::string architecture() const;
-    std::string summary() const;
-    std::string description() const;
-    std::string conflicts() const;
+    string filePath() const;
+    string packageName() const;
+    string sourcePackage() const;
+    string version() const;
+    string architecture() const;
+    string summary() const;
+    string description() const;
+    string conflicts() const;
 
     // THIS should be moved to AptIntf class
     bool check();
-    std::string errorMsg() const;
+    string errorMsg() const;
 
 private:
-    std::string m_filePath;
+    string m_filePath;
     debDebFile::MemControlExtract *m_extractor;
     pkgTagSection m_controlData;
-    std::string m_errorMsg;
+    string m_errorMsg;
     bool m_isValid;
 };
 

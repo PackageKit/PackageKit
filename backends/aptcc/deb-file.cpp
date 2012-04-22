@@ -1,6 +1,6 @@
 /* deb-file.cpp
  *
- * Copyright (c) 2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2011 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
@@ -22,13 +22,9 @@
 
 #include "deb-file.h"
 
-#include <apt-pkg/fileutl.h>
-#include <apt-pkg/tagfile.h>
 #include <apt-pkg/init.h>
 
-#include <iostream>
-
-DebFile::DebFile(const std::string &filename) :
+DebFile::DebFile(const string &filename) :
     m_filePath(filename)
 {
     FileFd in(filename, FileFd::ReadOnly);
@@ -51,45 +47,45 @@ bool DebFile::isValid() const
     return m_isValid;
 }
 
-std::string DebFile::filePath() const
+string DebFile::filePath() const
 {
     return m_filePath;
 }
 
-std::string DebFile::packageName() const
+string DebFile::packageName() const
 {
     return m_controlData.FindS("Package");
 }
 
-std::string DebFile::sourcePackage() const
+string DebFile::sourcePackage() const
 {
     return m_controlData.FindS("Source");
 }
 
-std::string DebFile::version() const
+string DebFile::version() const
 {
     return m_controlData.FindS("Version");
 }
 
-std::string DebFile::architecture() const
+string DebFile::architecture() const
 {
     return m_controlData.FindS("Architecture");
 }
 
-std::string DebFile::conflicts() const
+string DebFile::conflicts() const
 {
     return m_controlData.FindS("Conflicts");
 }
 
-std::string DebFile::summary() const
+string DebFile::summary() const
 {
-    std::string longDesc = description ();
+    string longDesc = description ();
     longDesc.resize (longDesc.find_first_of ("\n"));
 
     return longDesc;
 }
 
-std::string DebFile::description() const
+string DebFile::description() const
 {
     return m_controlData.FindS("Description");
 }
@@ -156,7 +152,7 @@ bool DebFile::check()
     return true;
 }
 
-std::string DebFile::errorMsg() const
+string DebFile::errorMsg() const
 {
     return m_errorMsg;
 }

@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (c) 2001, 2005 Daniel Burrows (aptitude)
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,15 +23,9 @@
 #define APT_UTILS_H
 
 #include <apt-pkg/pkgrecords.h>
-
-#include <string.h>
-#include <set>
-#include <pk-backend.h>
+#include <apt-pkg/acquire.h>
 
 #include "apt-intf.h"
-#include "pkg_acqfile.h"
-
-using namespace std;
 
 // compare...uses the candidate version of each package.
 class compare

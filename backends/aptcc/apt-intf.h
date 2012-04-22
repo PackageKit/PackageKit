@@ -1,7 +1,7 @@
 /* apt-intf.h - Interface to APT
  *
  * Copyright (c) 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,10 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include <pk-backend.h>
+#include <apt-pkg/depcache.h>
+#include <apt-pkg/acquire.h>
 
-#include "AptCacheFile.h"
+#include <pk-backend.h>
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
@@ -40,6 +41,7 @@ typedef vector<pkgCache::VerIterator> PkgList;
 
 class pkgProblemResolver;
 class Matcher;
+class AptCacheFile;
 class AptIntf
 {
 public:
@@ -128,12 +130,12 @@ public:
     /**
       * Returns a list of all packages that matched their names with matcher
       */
-    PkgList searchPackageName(Matcher *matcher);
+    PkgList searchPackageName(gchar *search);
 
     /**
       * Returns a list of all packages that matched their description with matcher
       */
-    PkgList searchPackageDetails(Matcher *matcher);
+    PkgList searchPackageDetails(gchar *search);
 
     /**
       * Returns a list of all packages that matched contains the given files
@@ -251,7 +253,7 @@ private:
     PkgList checkChangedPackages(AptCacheFile &cache, bool emitChanged);
     void emitTransactionPackage(string name, PkInfoEnum state);
 
-    AptCacheFile m_cache;
+    AptCacheFile *m_cache;
     PkBackend  *m_backend;
     bool       &m_cancel;
     struct stat m_restartStat;

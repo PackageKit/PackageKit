@@ -1,6 +1,6 @@
 /* acqpkitstatus.cpp
  *
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,8 @@
 
 #include "acqpkitstatus.h"
 
-#include "pkg_acqfile.h"
-
 #include <apt-pkg/acquire-item.h>
 #include <apt-pkg/acquire-worker.h>
-#include <apt-pkg/strutl.h>
-#include <apt-pkg/error.h>
-
-#include <stdio.h>
-#include <signal.h>
-#include <iostream>
-
-using namespace std;
 
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor
 // ---------------------------------------------------------------------

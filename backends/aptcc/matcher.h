@@ -1,7 +1,7 @@
 /* matcher.h
  *
  * Copyright (c) 1999-2008 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ private:
     bool m_hasError;
     string m_error;
     bool parse_pattern(string::const_iterator &start,
-                       const std::string::const_iterator &end);
+                       const string::const_iterator &end);
     string parse_substr(string::const_iterator &start,
                         const string::const_iterator &end);
     string parse_literal_string_tail(string::const_iterator &start,

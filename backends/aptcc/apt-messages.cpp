@@ -1,7 +1,7 @@
 /* apt-messages.cpp
  *
  * Copyright (c) 2004 Daniel Burrows
- * Copyright (c) 2009-2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009-2011 Daniel Nicoletti <dantti12@gmail.com>
  *               2011-2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,7 @@
 
 #include "apt-utils.h"
 
-#include <string>
 #include <sstream>
-#include <cstdio>
 
 using namespace std;
 

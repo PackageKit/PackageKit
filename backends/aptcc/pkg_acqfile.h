@@ -1,7 +1,7 @@
 /* pkg_acqfile.h
  *
  * Copyright (c) 2002, 2005 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify

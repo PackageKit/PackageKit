@@ -1,7 +1,7 @@
 /* pkg_acqfile.cpp
  *
  * Copyright (c) 2002, 2005 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,17 +28,7 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-
-#include <apt-pkg/error.h>
 #include <apt-pkg/configuration.h>
-#include <apt-pkg/acquire-item.h>
-#include <apt-pkg/sourcelist.h>
-#include <apt-pkg/strutl.h>
 
 // Let's all sing a song about apt-pkg's brokenness..
 
