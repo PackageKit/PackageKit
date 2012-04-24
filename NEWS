@@ -1,3 +1,75 @@
+Version 0.7.4
+~~~~~~~~~~~~~
+Released: 2012-04-24
+
+Libraries:
+ - packagekit-glib2: Add GType's for packagekit-glib2 enumerations (Stef Walter)
+ - packagekit-qt2: Add simulateRepairSystem and repairSystem(bool) to the Transaction API (Daniel Nicoletti)
+ - python: Speed up get_package_list (Tomáš Trnka)
+
+Backends:
+ - apt: apt.cache.Cache() now reuses the dpkg of the chroot (Sebastian Heinlein)
+ - apt: Fix modalias search on non-multi-arch systems (Sebastian Heinlein)
+ - apt: Replace use of depracted python-apt 0.7.x API (Sebastian Heinlein)
+ - aptcc: Add a new class to show cache opening progress (Daniel Nicoletti)
+ - aptcc: Add AptCacheFile to handle all pkg cache openings (Daniel Nicoletti)
+ - aptcc: Add SimulateRepairSystem and RepairSystem methods (Daniel Nicoletti)
+ - aptcc: Avoid crashing when error messages containing invalid utf8 is sent (Daniel Nicoletti)
+ - aptcc: Change the way we mark auto-installed packages (Daniel Nicoletti)
+ - aptcc: Correctly emit if a repo is enabled (Matthias Klumpp)
+ - aptcc: Create a PkgList class to provide convience methods (Daniel Nicoletti)
+ - aptcc: Don't emit error if repo is empty (Matthias Klumpp)
+ - aptcc: Don't emit untrusted packages when we are not simulating (Daniel Nicoletti)
+ - aptcc: Emit newly-installed local package information (Matthias Klumpp)
+ - aptcc: Emit packages that are untrusted with the PK_INFO_ENUM_UNTRUSTED enum (Daniel Nicoletti)
+ - aptcc: Emit UnfinishedTransaction when we were not able to fix the cache (Daniel Nicoletti)
+ - aptcc: Fix a multiarch bug that failed to resolve packages (Daniel Nicoletti)
+ - aptcc: Fix crash when a package for an invalid version (Daniel Nicoletti)
+ - aptcc: Fix INSTALLED filter (Daniel Nicoletti)
+ - aptcc: Fix resolving of gdebi packages when they have :arch field (Daniel Nicoletti)
+ - aptcc: Fix SUPPORTED check and component-finding code (Matthias Klumpp)
+ - aptcc: Implement basic support for InstallFiles() (Matthias Klumpp)
+ - aptcc: Implement SUPPORTED support (Matthias Klumpp)
+ - aptcc: Improve classes readability, and fix a crash caused by an invalid package (Daniel Nicoletti)
+ - aptcc: Improve the autoremove code (Daniel Nicoletti)
+ - aptcc: Make sure BuildPolicy is called when getting the dep cache (Daniel Nicoletti)
+ - aptcc: Make sure we discard errors when closing the cache (Daniel Nicoletti)
+ - aptcc: Mark dependencies of a file-installation as automatic (Matthias Klumpp)
+ - aptcc: Move cache related functions to pkgCacheFile subclass (Daniel Nicoletti)
+ - aptcc: Move ShowBroken to AptCacheFile, and added CheckDeps from apt-get (Daniel Nicoletti)
+ - aptcc: Refactored to use AptCacheFile (Daniel Nicoletti)
+ - aptcc: Reident the code and re-enforce KDElibs coding style (Daniel Nicoletti)
+ - aptcc: Remove a code duplication and emit proper RestartRequired signal (Daniel Nicoletti)
+ - aptcc: Reorganise parts of AptCC to make the code more readable (Matthias Klumpp)
+ - aptcc: Separate the try install/remove functions (Daniel Nicoletti)
+ - aptcc: Simplify code for checking trusted packages (Matthias Klumpp)
+ - aptcc: Some more stuff required for installFiles() (Matthias Klumpp)
+ - aptcc: Update license headers & fix some more indentation and typos (Matthias Klumpp)
+ - aptcc: use const_iterators to avoid mistakes (Daniel Nicoletti)
+ - aptcc: Use _exit() to quit the child process as synaptic does (Daniel Nicoletti)
+ - aptcc: We are not apt-get so remove "APT::Get::*" confs (Daniel Nicoletti)
+ - aptcc: When on multiarch some packages that should have the :arch appended to the installed list files (Daniel Nicoletti)
+ - entropy: Add support to ConfigurationUpdates (Fabio Erculiani)
+ - portage: Port code to new Layman API and fix usage with newer Portage API (Fabio Erculiani)
+ - yum: Always set GPG checking members if present (Nils Philippsen)
+ - yum: Convert all instances of Message(untrusted-package) to Package(untrusted) (Richard Hughes)
+ - zif: Do not use Message(untrusted-package) (Richard Hughes)
+ - zif: Fix segfault of the daemon when a program does Resolve with no arguments (Richard Hughes)
+ - zypp: Build pool before resolving (Vincent Untz)
+ - zypp: Do not set a PACKAGE_NOT_FOUND error when resolving packages (Vincent Untz)
+
+New Features:
+ - Deprecate Message(untrusted-package) from the API (Richard Hughes)
+ - Install pk-task-sync.h as part of the public API (Stef Walter)
+ - Add full integration so that UI can know when to repair the system (Daniel Nicoletti)
+
+Bugfixes:
+ - Add some documentation about the auto-untrusted logic (Richard Hughes)
+ - Add some documentation for the new RepairSystem transaction interaction (Richard Hughes)
+ - Do not allow an empty resolve call to be passed down to the backends (Richard Hughes)
+ - Do not include the website in the tarball (Richard Hughes)
+ - Drop --print-reply from dbus-send command used on suspend/resume (Adam Williamson)
+
 Version 0.7.3
 ~~~~~~~~~~~~~
 Released: 2012-03-01
