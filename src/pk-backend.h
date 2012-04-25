@@ -67,9 +67,9 @@ typedef struct
 
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-gboolean	 pk_backend_lock			(PkBackend	*backend)
+gboolean	 pk_backend_open			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_unlock			(PkBackend	*backend)
+gboolean	 pk_backend_close			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_reset			(PkBackend	*backend);
 gboolean	 pk_backend_set_name			(PkBackend	*backend,

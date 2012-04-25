@@ -244,11 +244,11 @@ pk_test_backend_func (void)
 	g_clear_error (&error);
 
 	/* lock an valid backend */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* lock a backend again */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* get backend name */
@@ -257,11 +257,11 @@ pk_test_backend_func (void)
 	g_free (text);
 
 	/* unlock an valid backend */
-	ret = pk_backend_unlock (backend);
+	ret = pk_backend_close (backend);
 	g_assert (ret);
 
 	/* unlock an valid backend again */
-	ret = pk_backend_unlock (backend);
+	ret = pk_backend_close (backend);
 	g_assert (ret);
 
 	/* check we are not finished */
@@ -273,7 +273,7 @@ pk_test_backend_func (void)
 	g_assert (!ret);
 
 	/* lock again */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* wait for a thread to return true */
@@ -393,7 +393,7 @@ pk_test_backend_spawn_func (void)
 	/* needed to avoid an error */
 	ret = pk_backend_set_name (backend, "test_spawn", NULL);
 	g_assert (ret);
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage1 */
@@ -473,7 +473,7 @@ pk_test_backend_spawn_func (void)
 	g_assert (ret);
 
 	/* manually unlock as we have no engine */
-	ret = pk_backend_unlock (backend);
+	ret = pk_backend_close (backend);
 	g_assert (ret);
 
 	/* reset */
@@ -498,7 +498,7 @@ pk_test_backend_spawn_func (void)
 			  G_CALLBACK (pk_test_backend_spawn_package_cb), backend_spawn);
 
 	/* needed to avoid an error */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 
 	/* test search-name.sh running */
 	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
@@ -511,7 +511,7 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpint (_backend_spawn_number_packages, ==, 2);
 
 	/* manually unlock as we have no engine */
-	ret = pk_backend_unlock (backend);
+	ret = pk_backend_close (backend);
 	g_assert (ret);
 
 	/* done */
@@ -1060,7 +1060,7 @@ pk_test_transaction_func (void)
 	g_assert (ret);
 
 	/* lock an valid backend */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* get PkTransaction object */
@@ -1360,7 +1360,7 @@ pk_test_transaction_list_func (void)
 	g_assert (ret);
 
 	/* lock an valid backend */
-	ret = pk_backend_lock (backend);
+	ret = pk_backend_open (backend);
 	g_assert (ret);
 
 	/* get a transaction list object */

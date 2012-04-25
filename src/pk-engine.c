@@ -1717,7 +1717,7 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 
 	/* lock database */
-	ret = pk_backend_lock (engine->priv->backend);
+	ret = pk_backend_open (engine->priv->backend);
 	if (!ret)
 		g_error ("could not lock backend, you need to restart the daemon");
 
@@ -1856,7 +1856,7 @@ pk_engine_finalize (GObject *object)
 				PK_PLUGIN_PHASE_DESTROY);
 
 	/* unlock if we locked this */
-	ret = pk_backend_unlock (engine->priv->backend);
+	ret = pk_backend_close (engine->priv->backend);
 	if (!ret)
 		g_warning ("couldn't unlock the backend");
 
