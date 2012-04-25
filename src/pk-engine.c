@@ -235,12 +235,11 @@ pk_engine_emit_property_changed (PkEngine *engine,
 				       NULL);
 }
 
-#if 0
 /**
- * pk_engine_inhibit_locked_cb:
+ * pk_engine_set_locked:
  **/
 static void
-pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *engine)
+pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -256,7 +255,6 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 					 g_variant_new_boolean (is_locked));
 	pk_engine_emit_changed (engine);
 }
-#endif
 
 /**
  * pk_engine_notify_repo_list_changed_cb:
@@ -295,12 +293,27 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 }
 
 /**
+ * pk_engine_allow_cancel_cb:
+ **/
+static void
+pk_engine_allow_cancel_cb (PkBackend *backend,
+			   gboolean allow_cancel,
+			   PkEngine *engine)
+{
+	/* automatically locked if the transaction cannot be cancelled */
+	pk_engine_set_locked (engine, !allow_cancel);
+}
+
+/**
  * pk_engine_finished_cb:
  **/
 static void
 pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* cannot be locked if the transaction is finished */
+	pk_engine_set_locked (engine, FALSE);
 
 	/* daemon is busy */
 	pk_engine_reset_timer (engine);
@@ -1715,6 +1728,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend = pk_backend_new ();
 	g_signal_connect (engine->priv->backend, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
+	g_signal_connect (engine->priv->backend, "allow-cancel",
+			  G_CALLBACK (pk_engine_allow_cancel_cb), engine);
 
 	/* lock database */
 	ret = pk_backend_open (engine->priv->backend);
