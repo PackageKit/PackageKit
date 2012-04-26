@@ -37,7 +37,7 @@
             'auth_admin_keep'.
      -->
     <_description>Install signed package</_description>
-    <_message>Authentication is required to install a signed package</_message>
+    <_message>Authentication is required to install a package</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
