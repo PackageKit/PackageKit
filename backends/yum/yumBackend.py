@@ -1975,7 +1975,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_RUNNING)
         txmbrs = []
 
-        self._set_only_trusted(only_trusted)
+        self._set_only_trusted(only_trusted or simulate)
 
         for package_id in package_ids:
             grp = self._is_meta_package(package_id)
@@ -2314,7 +2314,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        self._set_only_trusted(only_trusted)
+        self._set_only_trusted(only_trusted or simulate)
 
         txmbrs = []
         try:
