@@ -39,11 +39,19 @@ AC_SUBST(PK_VERSION)
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
 #
-# increment;
-# CURRENT	If the API or ABI interface has changed (reset REVISION to 0)
-# REVISION	If the API and ABI remains the same, but bugs are fixed.
-# AGE		If libpackagekit can be linked into executables which can be
-# 		built with previous versions of this library. Don't use.
+# - If interfaces have been changed or added, but binary compatibility
+#   has been preserved, change:
+#      CURRENT += 1
+#      REVISION = 0
+#      AGE += 1
+# - If binary compatibility has been broken (eg removed or changed
+#   interfaces), change:
+#      CURRENT += 1
+#      REVISION = 0
+#      AGE = 0
+# - If the interface is the same as the previous version, but bugs are
+#   fixed, change:
+#      REVISION += 1
 LT_CURRENT=14
 LT_REVISION=13
 LT_AGE=0
@@ -53,7 +61,20 @@ AC_SUBST(LT_AGE)
 
 # libtool versioning - this applies to libpackagekit-qt2
 #
-LT_QT_CURRENT=2
+# - If interfaces have been changed or added, but binary compatibility
+#   has been preserved, change:
+#      CURRENT += 1
+#      REVISION = 0
+#      AGE += 1
+# - If binary compatibility has been broken (eg removed or changed
+#   interfaces), change:
+#      CURRENT += 1
+#      REVISION = 0
+#      AGE = 0
+# - If the interface is the same as the previous version, but bugs are
+#   fixed, change:
+#      REVISION += 1
+LT_QT_CURRENT=3
 LT_QT_REVISION=0
 LT_QT_AGE=1
 AC_SUBST(LT_QT_CURRENT)
