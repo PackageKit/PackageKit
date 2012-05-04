@@ -273,6 +273,101 @@ out:
 }
 
 /**
+ * pk_package_sack_add_packages_from_line:
+ **/
+static void
+pk_package_sack_add_packages_from_line (PkPackageSack *sack, const gchar *package_str, GError **error)
+{
+	GError *error_local = NULL;
+	gboolean ret;
+	PkPackage *package;
+	gchar **pdata;
+	PkInfoEnum info;
+
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+
+	package = pk_package_new ();
+
+	pdata = g_strsplit (package_str, "\t", -1);
+	if (g_strv_length (pdata) != 3) {
+		g_set_error (error, 1, 0, "invalid package-info line: %s", package_str);
+		goto out;
+	}
+
+	info = pk_info_enum_from_string (pdata[0]);
+	g_object_set (package,
+		      "info", info,
+		      "summary", pdata[2],
+		      NULL);
+	ret = pk_package_set_id (package, pdata[1], &error_local);
+	if (!ret) {
+		g_set_error (error, 1, 0, "invalid package-id in package-info line: %s", pdata[1]);
+		goto out;
+	}
+	ret = pk_package_sack_add_package (sack, package);
+	if (!ret)
+		g_set_error (error, 1, 0, "could not add package '%s' to package-sack!", pdata[1]);
+
+out:
+	g_strfreev (pdata);
+	g_object_unref (package);
+}
+
+/**
+ * pk_package_sack_add_packages_from_file
+ * @sack: a valid #PkPackageSack instance
+ * @file: a valid package-list file
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Adds packages from package-list file to a PkPackageSack.
+ *
+ * Return value: %TRUE if there were no errors.
+ *
+ **/
+gboolean
+pk_package_sack_add_packages_from_file (PkPackageSack *sack, GFile *file, GError **error)
+{
+	GError *error_local = NULL;
+	gboolean ret = TRUE;
+	GFileInputStream *is;
+	GDataInputStream *input;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+
+	is = g_file_read (file, NULL, &error_local);
+
+	if (is == NULL) {
+		g_propagate_error (error, error_local);
+		return FALSE;
+	}
+
+	input = g_data_input_stream_new (G_INPUT_STREAM (is));
+
+	/* read package info file line by line */
+	while (TRUE) {
+		gchar *line;
+
+		line = g_data_input_stream_read_line (input, NULL, NULL, &error_local);
+
+		if (line == NULL)
+			break;
+		g_strstrip (line);
+
+		pk_package_sack_add_packages_from_line (sack, line, &error_local);
+		if (error_local != NULL) {
+			g_propagate_error (error, error_local);
+			ret = FALSE;
+			break;
+		}
+	}
+
+	g_object_unref (input);
+	g_object_unref (is);
+
+	return ret;
+}
+
+/**
  * pk_package_sack_remove_package:
  * @sack: a valid #PkPackageSack instance
  * @package: a valid #PkPackage instance
