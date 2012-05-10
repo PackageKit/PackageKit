@@ -34,7 +34,7 @@ struct PkPluginPrivate {
 const gchar *
 pk_plugin_get_description (void)
 {
-	return "Maintains a SQLite db of all packages for fast read-only access to package information";
+	return "Maintains a database of all packages for fast read-only access to package information";
 }
 
 /**
