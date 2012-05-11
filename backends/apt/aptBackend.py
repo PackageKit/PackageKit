@@ -20,7 +20,7 @@ __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 import datetime
 import errno
 import fcntl
-import gdbm
+import dbm.gnu
 import glob
 import gzip
 import locale
@@ -726,7 +726,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
-        for pkg_name in self._cache.keys():
+        for pkg_name in list(self._cache.keys()):
             if matches(values, pkg_name):
                 self._emit_all_visible_pkg_versions(filters,
                                                     self._cache[pkg_name])
@@ -958,7 +958,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 changelog_raw = pkg.get_changelog()
                 # The internal download error string of python-apt ist not
                 # provided as unicode object
-                if not isinstance(changelog_raw, unicode):
+                if not isinstance(changelog_raw, str):
                     changelog_raw = changelog_raw.decode("UTF-8")
                 else:
                     # Write the changelog to the cache
@@ -1794,7 +1794,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 pklog.warning("list of applications that can handle files of the given type %s does not exist")
                 return None
             try:
-                db = gdbm.open(path)
+                db = dbm.gnu.open(path)
             except:
                 raise PKError(enums.ERROR_INTERNAL_ERROR,
                               "The list of applications that can handle "
