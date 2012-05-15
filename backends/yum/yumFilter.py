@@ -118,6 +118,20 @@ class YumFilter(PackagekitFilter):
             newest[key] = (pkg, state)
         return newest.values()
 
+    def _do_application_filtering(self, pkglist):
+        '''
+        Only return the application packages
+        '''
+        pkglist_new = []
+        for pkg, state in pkglist:
+            files = pkg.returnFileEntries('dir')
+            files.extend(pkg.returnFileEntries()) # regular files
+            for file in files:
+                if file.startswith("/usr/share/applications/") and file.endswith(".desktop"):
+                    pkglist_new.append((pkg, state))
+                    break
+        return pkglist_new
+
     def post_process(self):
         ''' do filtering we couldn't do when generating the list '''
 
@@ -126,6 +140,9 @@ class YumFilter(PackagekitFilter):
 
         if FILTER_NEWEST in self.fltlist:
             self.package_list = self._do_newest_filtering(self.package_list)
+
+        if FILTER_APPLICATION in self.fltlist:
+            self.package_list = self._do_application_filtering(self.package_list)
 
         return self.package_list
 
