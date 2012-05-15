@@ -352,7 +352,7 @@ pk_client_get_user_temp (const gchar *subfolder, GError **error)
 	gchar *path = NULL;
 
 	/* build path in home folder */
-	path = g_build_filename (g_get_home_dir (), ".PackageKit", subfolder, NULL);
+	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);
 
 	/* find if exists */
 	file = g_file_new_for_path (path);
