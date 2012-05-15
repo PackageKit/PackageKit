@@ -418,16 +418,84 @@ out:
 }
 
 /**
+ * pk_backend_package_is_application:
+ **/
+static gboolean
+pk_backend_package_is_application (ZifPackage *package,
+				   gboolean *is_application,
+				   ZifState *state,
+				   GError **error)
+{
+	const gchar *filename;
+	gboolean ret = TRUE;
+	GPtrArray *files;
+	guint i;
+
+	/* get file lists and see if it installs a desktop file */
+	files = zif_package_get_files (package, state, error);
+	if (files == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	for (i = 0; i < files->len; i++) {
+		filename = g_ptr_array_index (files, i);
+		if (g_str_has_prefix (filename, "/usr/share/applications/") &&
+		    g_str_has_suffix (filename, ".desktop")) {
+			*is_application = TRUE;
+			goto out;
+		}
+	}
+
+	/* not an application */
+	*is_application = FALSE;
+out:
+	if (files != NULL)
+		g_ptr_array_unref (files);
+	return ret;
+}
+
+/**
  * pk_backend_filter_package_array:
  **/
 static GPtrArray *
-pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
+pk_backend_filter_package_array (GPtrArray *array,
+				 PkBitfield filters,
+				 ZifState *state,
+				 GError **error)
 {
-	GHashTable *hash_installed;
+	gboolean is_application;
+	gboolean ret;
+	GHashTable *hash_application = NULL;
+	GHashTable *hash_installed = NULL;
 	gpointer found;
 	GPtrArray *result = NULL;
 	guint i;
 	ZifPackage *package;
+	ZifState *state_local;
+	ZifState *state_loop;
+
+	/* get the filelists if the application filter is used */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_APPLICATION) ||
+	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_APPLICATION)) {
+		hash_application = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+		state_local = zif_state_get_child (state);
+		zif_state_set_number_steps (state_local, array->len);
+		for (i = 0; i < array->len; i++) {
+			package = g_ptr_array_index (array, i);
+			state_loop = zif_state_get_child (state_local);
+			ret = pk_backend_package_is_application (package,
+								 &is_application,
+								 state_loop,
+								 error);
+			if (!ret)
+				goto out;
+			if (is_application) {
+				g_hash_table_insert (hash_application,
+						     (gpointer) zif_package_get_name_version_arch (package),
+						     GINT_TO_POINTER (1));
+			}
+		}
+	}
 
 	hash_installed = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
 	result = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -462,6 +530,15 @@ pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 		} else if (pk_bitfield_contain (filters,
 						PK_FILTER_ENUM_NOT_INSTALLED)) {
 			if (zif_package_is_installed (package))
+				continue;
+		}
+
+		/* application */
+		if (pk_bitfield_contain (filters,
+					 PK_FILTER_ENUM_APPLICATION)) {
+			found = g_hash_table_lookup (hash_application,
+						     zif_package_get_name_version_arch (package));
+			if (found == NULL)
 				continue;
 		}
 
@@ -517,7 +594,11 @@ pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
 		zif_package_array_filter_newest (result);
 
-	g_hash_table_destroy (hash_installed);
+out:
+	if (hash_application != NULL)
+		g_hash_table_destroy (hash_application);
+	if (hash_installed != NULL)
+		g_hash_table_destroy (hash_installed);
 	return result;
 }
 
@@ -1305,7 +1386,19 @@ pk_backend_search_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = pk_backend_filter_package_array (array, filters);
+	state_local = zif_state_get_child (priv->state);
+	result = pk_backend_filter_package_array (array,
+						  filters,
+						  state_local,
+						  &error);
+	if (result == NULL) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
+				       "failed to filters: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1788,6 +1881,7 @@ pk_backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_FREE,
 		PK_FILTER_ENUM_NEWEST,
 		PK_FILTER_ENUM_ARCH,
+		PK_FILTER_ENUM_APPLICATION,
 		-1);
 }
 
@@ -2203,7 +2297,19 @@ pk_backend_get_depends_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = pk_backend_filter_package_array (array, filters);
+	state_local = zif_state_get_child (priv->state);
+	result = pk_backend_filter_package_array (array,
+						  filters,
+						  state_local,
+						  &error);
+	if (result == NULL) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
+				       "failed to filter: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -2416,7 +2522,19 @@ pk_backend_get_requires_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = pk_backend_filter_package_array (array, filters);
+	state_local = zif_state_get_child (priv->state);
+	result = pk_backend_filter_package_array (array,
+						  filters,
+						  state_local,
+						  &error);
+	if (result == NULL) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
+				       "failed to filter: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -3188,7 +3306,19 @@ pk_backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = pk_backend_filter_package_array (updates_available, filters);
+	state_local = zif_state_get_child (priv->state);
+	result = pk_backend_filter_package_array (updates_available,
+						  filters,
+						  state_local,
+						  &error);
+	if (result == NULL) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
+				       "failed to filter: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* done */
 	pk_backend_set_percentage (backend, 100);
