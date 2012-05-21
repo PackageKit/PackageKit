@@ -12,7 +12,11 @@ In general, the component naming should be "type(component-name)".
 Component naming
 ----------------
 
-MODALIAS:               /!\ Format nor defined (yet)
+MODALIAS:               A string with the modalias, for example
+                        "pci:v00008086d00003B64sv000017AAsd0000215Fbc07sc80i00"
+                        or "usb:v09DAp000Ad0014dc00dsc00dp00ic03isc01ip02".
+                        Returns packages which provide a driver for this
+                        device.
 
 CODEC:                  A string in the format of gstreamer<version>(type-format)
                         where <version> is the GStreamer API version (e. g.
