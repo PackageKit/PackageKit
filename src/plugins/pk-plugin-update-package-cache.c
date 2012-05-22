@@ -24,6 +24,8 @@
 #include <gio/gio.h>
 #include <pk-plugin.h>
 #include <packagekit-glib2/pk-package.h>
+#include <packagekit-glib2/pk-package-sack-sync.h>
+#include <packagekit-glib2/pk-debug.h>
 
 #include "pk-package-cache.h"
 
@@ -51,6 +53,10 @@ pk_plugin_initialize (PkPlugin *plugin)
 	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
 	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
 	plugin->priv->pkg_sack = pk_package_sack_new ();
+
+	/* use logging */
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
+	pk_debug_add_log_domain ("PkPkgCache");
 }
 
 /**
@@ -135,8 +141,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	guint package_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
-	PkPackageCache *cache;
+	PkPackageCache *cache = NULL;
 	GPtrArray *pkarray;
+	PkPackage *package;
+	uint i;
 	gchar *data = NULL;
 	PkPluginPrivate *priv = plugin->priv;
 
@@ -184,21 +192,44 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* update UI */
 	pk_backend_set_percentage (plugin->backend, 90);
 
-	//gboolean	 pk_package_sack_get_details		(PkPackageSack		*package_sack,
-	//						 GCancellable		*cancellable,
-	//						 GError			**error);
+#if 0
+	/* fetch details from all packages in list */
+	ret = pk_package_sack_get_details (priv->pkg_sack, NULL, &error);
+	if (!ret) {
+		g_warning ("%s: %s\n", "Could not get package details", error->message);
+		g_error_free (error);
+		goto out;
+	}
+#endif
 
 	cache = pk_package_cache_new ();
 	pk_package_cache_set_filename (cache, PK_SYSTEM_PACKAGE_CACHE_FILENAME, NULL);
+	ret = pk_package_cache_open (cache, FALSE, &error);
+	if (!ret) {
+		g_warning ("%s: %s\n", "Failed to open cache", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
-	// TODO: Update DB here!
+	pkarray = pk_package_sack_get_array (priv->pkg_sack);
+
+	/* add packages to cache */
+	for (i=0; i<pkarray->len; i++) {
+		package = g_ptr_array_index (pkarray, i);
+		ret = pk_package_cache_add_package (cache, package, &error);
+		if (!ret) {
+			g_warning ("%s: %s\n", "Couldn't update cache", error->message);
+			g_error_free (error);
+			g_object_unref (cache);
+			g_ptr_array_unref (pkarray);
+			goto out;
+		}
+	}
 
 	/* convert to a file and save the package list - we require this for backward-compatibility */
 	ret = pk_conf_get_bool (conf, "UpdatePackageList");
 	if (ret) {
-		pkarray = pk_package_sack_get_array (priv->pkg_sack);
 		data = pk_plugin_package_array_to_string (pkarray);
-		g_ptr_array_unref (pkarray);
 
 		ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
 					data, -1, &error);
@@ -209,6 +240,8 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		}
 	}
 
+	g_ptr_array_unref (pkarray);
+
 	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
 	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
@@ -217,5 +250,14 @@ out:
 	if (finished_id != 0) {
 		g_signal_handler_disconnect (plugin->backend, finished_id);
 		g_signal_handler_disconnect (plugin->backend, package_id);
+	}
+
+	if (cache != NULL) {
+		ret = pk_package_cache_close (cache, FALSE, &error);
+		if (!ret) {
+			g_warning ("%s: %s\n", "Failed to close cache", error->message);
+			g_error_free (error);
+		}
+		g_object_unref (cache);
 	}
 }

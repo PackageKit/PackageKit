@@ -99,6 +99,58 @@ pk_package_cache_get_dbversion_sqlite_cb (void *data, gint argc, gchar **argv, g
 }
 
 /**
+ * pk_package_cache_update_db:
+ */
+static gboolean
+pk_package_cache_update_db (PkPackageCache *pkcache, GError **error)
+{
+	gboolean ret = TRUE;
+	const gchar *statement;
+	gint rc;
+	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_CACHE (pkcache), FALSE);
+
+	/* check database is in correct state */
+	if (!priv->locked) {
+		g_set_error (error, 1, 0, "database is not open");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* create table for packages */
+	statement = "CREATE TABLE IF NOT EXISTS packages ("
+		    "package_id TEXT primary key,"
+		    "installed BOOLEAN DEFAULT FALSE,"
+		    "repo_id TEXT,"
+		    "summary TEXT,"
+		    "description TEXT,"
+		    "url TEXT,"
+		    "size_download INT,"
+		    "size_installed INT);";
+	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
+	if (rc) {
+		g_set_error (error, 1, 0, "Can't create packages table: %s\n", sqlite3_errmsg (priv->db));
+		ret = FALSE;
+		goto out;
+	}
+
+	/* create config - we don't need this right now, but might be useful later */
+	statement = "CREATE TABLE IF NOT EXISTS config ("
+		    "data TEXT primary key,"
+		    "value INTEGER);";
+	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
+	if (rc) {
+		g_set_error (error, 1, 0, "Can't create config table: %s\n", sqlite3_errmsg (priv->db));
+		ret = FALSE;
+		goto out;
+	}
+
+out:
+	return ret;
+}
+
+/**
  * pk_package_cache_open:
  *
  * Opens the package cache database
@@ -107,6 +159,7 @@ gboolean
 pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **error)
 {
 	gboolean ret = TRUE;
+	GError *e = NULL;
 	gint rc;
 	const gchar *statement;
 	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
@@ -148,6 +201,14 @@ pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **e
 
 	/* we're ready to use the db! */
 	priv->locked = TRUE;
+
+	/* create the database sheme */
+	ret = pk_package_cache_update_db (pkcache, &e);
+	if (!ret) {
+		g_propagate_error (error, e);
+		goto out;
+	}
+
 out:
 	return ret;
 }
@@ -199,6 +260,53 @@ pk_package_cache_close (PkPackageCache *pkcache, gboolean vaccuum, GError **erro
 	priv->locked = FALSE;
 	priv->dbversion = 0;
 out:
+	return ret;
+}
+
+/**
+ * pk_package_cache_add_package:
+ */
+gboolean
+pk_package_cache_add_package (PkPackageCache *pkcache, PkPackage *package, GError **error)
+{
+	gboolean ret = TRUE;
+	gint rc;
+	gchar *statement = NULL;
+	gboolean pkg_installed;
+	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_CACHE (pkcache), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+
+	/* check database is in correct state */
+	if (!priv->locked) {
+		g_set_error (error, 1, 0, "database is not open");
+		ret = FALSE;
+		goto out;
+	}
+
+	pkg_installed = (pk_package_get_info (package) == PK_INFO_ENUM_INSTALLED);
+
+	/* generate SQL */
+	statement = sqlite3_mprintf ("INSERT INTO packages (package_id, installed, repo_id, summary, "
+				     "description, url, size_download, size_installed)"
+				     "VALUES (%Q, %i, %Q, %Q, %Q, %Q, %i, %i);",
+					pk_package_get_id (package),
+					pkg_installed,
+					pk_package_get_data (package),
+					pk_package_get_summary (package),
+					"::TODO",
+					"::TODO",
+					0,
+					0);
+	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
+	if (rc) {
+		g_set_error (error, 1, 0, "Can't add package: %s\n", sqlite3_errmsg (priv->db));
+		ret = FALSE;
+		goto out;
+	}
+out:
+	sqlite3_free (statement);
 	return ret;
 }
 

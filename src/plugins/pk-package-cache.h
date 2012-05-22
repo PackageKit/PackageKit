@@ -23,6 +23,7 @@
 #define __PK_PACKAGE_CACHE_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-package.h>
 
 G_BEGIN_DECLS
 
@@ -60,6 +61,9 @@ gboolean	 pk_package_cache_close			(PkPackageCache	*pkcache,
 							 gboolean	 vaccuum,
 							 GError		**error);
 guint		 pk_package_cache_get_version		(PkPackageCache *pkcache);
+gboolean	 pk_package_cache_add_package		(PkPackageCache *pkcache,
+							 PkPackage *package,
+							 GError **error);
 
 G_END_DECLS
 
