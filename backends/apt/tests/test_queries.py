@@ -141,7 +141,7 @@ class QueryTests(mox.MoxTestBase):
         self.backend._open_cache()
 
         self.backend.dispatch_command("what-provides",
-                                      ["None", enums.PROVIDES_MODALIAS, "pci:1"])
+                                      ["None", enums.PROVIDES_MODALIAS, "pci 1"])
 
         # no match
         self._catch_callbacks()
@@ -150,7 +150,7 @@ class QueryTests(mox.MoxTestBase):
         self.backend._open_cache()
 
         self.backend.dispatch_command("what-provides",
-                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc02sc00i00)"])
+                                      ["None", enums.PROVIDES_MODALIAS, "pci:v0000DEADd0000BEEFsv00sd00bc02sc00i00"])
 
 
 
@@ -165,7 +165,7 @@ class QueryTests(mox.MoxTestBase):
         self.backend._open_cache()
 
         self.backend.dispatch_command("what-provides",
-                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00)"])
+                                      ["None", enums.PROVIDES_MODALIAS, "pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00"])
 
 
         # second match
@@ -178,7 +178,7 @@ class QueryTests(mox.MoxTestBase):
         self.backend._open_cache()
 
         self.backend.dispatch_command("what-provides",
-                                      ["None", enums.PROVIDES_MODALIAS, "modalias(pci:v0000DEADd0000FACEsv00sd00bc03sc00i00)"])
+                                      ["None", enums.PROVIDES_MODALIAS, "pci:v0000DEADd0000FACEsv00sd00bc03sc00i00"])
 
 
     def test_what_provides_any(self):
@@ -205,7 +205,7 @@ class QueryTests(mox.MoxTestBase):
         self.backend._open_cache()
 
         self.backend.dispatch_command("what-provides",
-                                      ["None", enums.PROVIDES_ANY, "modalias(pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00)"])
+                                      ["None", enums.PROVIDES_ANY, "pci:v0000DEADd0000BEEFsv00sd00bc03sc00i00"])
 
         # invalid query; ANY should not return an error, just not return any results
         self._catch_callbacks("package")
