@@ -23,8 +23,9 @@
 #include <config.h>
 #include <gio/gio.h>
 #include <pk-plugin.h>
-#include <sqlite3.h>
 #include <packagekit-glib2/pk-package.h>
+
+#include "pk-package-cache.h"
 
 struct PkPluginPrivate {
 	PkPackageSack		*pkg_sack;
@@ -134,6 +135,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	guint package_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
+	PkPackageCache *cache;
 	GPtrArray *pkarray;
 	gchar *data = NULL;
 	PkPluginPrivate *priv = plugin->priv;
@@ -185,6 +187,9 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	//gboolean	 pk_package_sack_get_details		(PkPackageSack		*package_sack,
 	//						 GCancellable		*cancellable,
 	//						 GError			**error);
+
+	cache = pk_package_cache_new ();
+	pk_package_cache_set_filename (cache, PK_SYSTEM_PACKAGE_CACHE_FILENAME, NULL);
 
 	// TODO: Update DB here!
 

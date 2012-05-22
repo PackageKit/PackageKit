@@ -74,6 +74,13 @@ G_BEGIN_DECLS
  */
 #define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
 
+/**
+ * PK_PACKAGE_CACHE_FILENAME:
+ *
+ * The default location of the package cache database
+ */
+#define	PK_SYSTEM_PACKAGE_CACHE_FILENAME	"/var/lib/PackageKit/package-cache.db"
+
 void		 pk_common_test				(gpointer	 user_data);
 gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
