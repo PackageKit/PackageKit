@@ -1902,7 +1902,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
             # Emit packages that contain an application that can handle
             # the given modalias
-            valid_modalias_re = re.compile('^[a-z0-9]+:\S+$')
+            valid_modalias_re = re.compile('^[a-z0-9]+:')
             for search_item in search:
                 if not valid_modalias_re.match(search_item):
                     if provides_type != enums.PROVIDES_ANY:
