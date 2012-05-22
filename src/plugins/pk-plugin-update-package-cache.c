@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2012 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -86,6 +87,41 @@ pk_plugin_finished_cb (PkBackend *backend,
 }
 
 /**
+ * pk_plugin_package_array_to_string:
+ **/
+static gchar *
+pk_plugin_package_array_to_string (GPtrArray *array)
+{
+	guint i;
+	PkPackage *package;
+	GString *string;
+	PkInfoEnum info;
+	gchar *package_id;
+	gchar *summary;
+
+	string = g_string_new ("");
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		g_object_get (package,
+			      "info", &info,
+			      "package-id", &package_id,
+			      "summary", &summary,
+			      NULL);
+		g_string_append_printf (string, "%s\t%s\t%s\n",
+					pk_info_enum_to_string (info),
+					package_id,
+					summary);
+		g_free (package_id);
+		g_free (summary);
+	}
+
+	/* remove trailing newline */
+	if (string->len != 0)
+		g_string_set_size (string, string->len-1);
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_plugin_transaction_finished_end:
  */
 void
@@ -93,15 +129,18 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 				    PkTransaction *transaction)
 {
 	gboolean ret;
+	GError *error = NULL;
 	guint finished_id = 0;
 	guint package_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
+	GPtrArray *pkarray;
+	gchar *data = NULL;
 	PkPluginPrivate *priv = plugin->priv;
 
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
-	ret = pk_conf_get_bool (conf, "UpdatePackageList");
+	ret = pk_conf_get_bool (conf, "UpdatePackageCache");
 	if (!ret)
 		goto out;
 
@@ -138,7 +177,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
-	g_main_loop_run (plugin->priv->loop);
+	g_main_loop_run (priv->loop);
 
 	/* update UI */
 	pk_backend_set_percentage (plugin->backend, 90);
@@ -149,7 +188,23 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	// TODO: Update DB here!
 
-	/* update UI */
+	/* convert to a file and save the package list - we require this for backward-compatibility */
+	ret = pk_conf_get_bool (conf, "UpdatePackageList");
+	if (ret) {
+		pkarray = pk_package_sack_get_array (priv->pkg_sack);
+		data = pk_plugin_package_array_to_string (pkarray);
+		g_ptr_array_unref (pkarray);
+
+		ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
+					data, -1, &error);
+		if (!ret) {
+			g_warning ("failed to save to file: %s",
+				error->message);
+			g_error_free (error);
+		}
+	}
+
+	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
 	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
 
