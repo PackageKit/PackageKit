@@ -30,7 +30,7 @@
 #include "pk-package-cache.h"
 
 struct PkPluginPrivate {
-	PkPackageSack		*pkg_sack;
+	GPtrArray		*pkgs;
 	GMainLoop		*loop;
 };
 
@@ -52,7 +52,7 @@ pk_plugin_initialize (PkPlugin *plugin)
 	/* create private area */
 	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
 	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
-	plugin->priv->pkg_sack = pk_package_sack_new ();
+	plugin->priv->pkgs = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -66,7 +66,7 @@ void
 pk_plugin_destroy (PkPlugin *plugin)
 {
 	g_main_loop_unref (plugin->priv->loop);
-	g_object_unref (plugin->priv->pkg_sack);
+	g_ptr_array_unref (plugin->priv->pkgs);
 }
 
 /**
@@ -77,7 +77,7 @@ pk_plugin_package_cb (PkBackend *backend,
 		      PkPackage *package,
 		      PkPlugin *plugin)
 {
-	pk_package_sack_add_package (plugin->priv->pkg_sack, package);
+	g_ptr_array_add (plugin->priv->pkgs, g_object_ref (package));
 }
 
 /**
@@ -142,7 +142,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	PkConf *conf;
 	PkRoleEnum role;
 	PkPackageCache *cache = NULL;
-	GPtrArray *pkarray;
 	PkPackage *package;
 	uint i;
 	gchar *data = NULL;
@@ -174,8 +173,9 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	g_debug ("plugin: recreating package database");
 
-	/* clear old package-sack */
-	pk_package_sack_clear (priv->pkg_sack);
+	/* clear old package list */
+	if (plugin->priv->pkgs->len > 0)
+		g_ptr_array_set_size (plugin->priv->pkgs, 0);
 
 	/* update UI */
 	pk_backend_set_status (plugin->backend,
@@ -211,17 +211,13 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		goto out;
 	}
 
-	pkarray = pk_package_sack_get_array (priv->pkg_sack);
-
 	/* add packages to cache */
-	for (i=0; i<pkarray->len; i++) {
-		package = g_ptr_array_index (pkarray, i);
+	for (i=0; i<priv->pkgs->len; i++) {
+		package = g_ptr_array_index (priv->pkgs, i);
 		ret = pk_package_cache_add_package (cache, package, &error);
 		if (!ret) {
 			g_warning ("%s: %s\n", "Couldn't update cache", error->message);
 			g_error_free (error);
-			g_object_unref (cache);
-			g_ptr_array_unref (pkarray);
 			goto out;
 		}
 	}
@@ -229,7 +225,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* convert to a file and save the package list - we require this for backward-compatibility */
 	ret = pk_conf_get_bool (conf, "UpdatePackageList");
 	if (ret) {
-		data = pk_plugin_package_array_to_string (pkarray);
+		data = pk_plugin_package_array_to_string (priv->pkgs);
 
 		ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
 					data, -1, &error);
@@ -239,8 +235,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 			g_error_free (error);
 		}
 	}
-
-	g_ptr_array_unref (pkarray);
 
 	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
