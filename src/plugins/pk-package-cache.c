@@ -272,7 +272,15 @@ pk_package_cache_add_package (PkPackageCache *pkcache, PkPackage *package, GErro
 	gboolean ret = TRUE;
 	gint rc;
 	gchar *statement = NULL;
+
+	PkGroupEnum group;
+	gchar *license;
+	gchar *url;
+	gchar *description;
+	gchar *package_id;
+	guint64 size;
 	gboolean pkg_installed;
+
 	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_CACHE (pkcache), FALSE);
@@ -285,19 +293,29 @@ pk_package_cache_add_package (PkPackageCache *pkcache, PkPackage *package, GErro
 		goto out;
 	}
 
+	/* get package details */
 	pkg_installed = (pk_package_get_info (package) == PK_INFO_ENUM_INSTALLED);
+
+	g_object_get (package,
+			"package-id", &package_id,
+			"group", &group,
+			"license", &license,
+			"url", &url,
+			"description", &description,
+			"size", &size,
+			NULL);
 
 	/* generate SQL */
 	statement = sqlite3_mprintf ("INSERT INTO packages (package_id, installed, repo_id, summary, "
 				     "description, url, size_download, size_installed)"
 				     "VALUES (%Q, %i, %Q, %Q, %Q, %Q, %i, %i);",
-					pk_package_get_id (package),
+					package_id,
 					pkg_installed,
 					pk_package_get_data (package),
 					pk_package_get_summary (package),
-					"::TODO",
-					"::TODO",
-					0,
+					description,
+					url,
+					size,
 					0);
 	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 	if (rc) {

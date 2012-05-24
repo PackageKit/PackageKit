@@ -35,6 +35,31 @@ struct PkPluginPrivate {
 };
 
 /**
+ * pk_package_sack_find_by_id:
+ */
+static PkPackage *
+pk_plugin_find_package_by_id (PkPlugin *plugin, const gchar *package_id)
+{
+	PkPackage *package_tmp;
+	const gchar *id;
+	PkPackage *package = NULL;
+	guint i;
+	guint len;
+
+	len = plugin->priv->pkgs->len;
+	for (i=0; i<len; i++) {
+		package_tmp = g_ptr_array_index (plugin->priv->pkgs, i);
+		id = pk_package_get_id (package_tmp);
+		if (g_strcmp0 (package_id, id) == 0) {
+			package = g_object_ref (package_tmp);
+			break;
+		}
+	}
+
+	return package;
+}
+
+/**
  * pk_plugin_get_description:
  */
 const gchar *
@@ -78,6 +103,56 @@ pk_plugin_package_cb (PkBackend *backend,
 		      PkPlugin *plugin)
 {
 	g_ptr_array_add (plugin->priv->pkgs, g_object_ref (package));
+}
+
+/**
+ * pk_plugin_details_cb:
+ **/
+static void
+pk_plugin_details_cb (PkBackend *backend,
+			PkDetails *item,
+			PkPlugin *plugin)
+{
+	gchar *package_id;
+	gchar *description;
+	gchar *license;
+	gchar *url;
+	guint64 size;
+	PkGroupEnum group;
+	PkPackage *package;
+
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "group", &group,
+		      "description", &description,
+		      "license", &license,
+		      "url", &url,
+		      "size", &size,
+		      NULL);
+
+	/* get package, and set data */
+	package = pk_plugin_find_package_by_id (plugin, package_id);
+	if (package == NULL) {
+		g_warning ("failed to find %s", package_id);
+		goto out;
+	}
+
+	/* set data */
+	g_object_set (package,
+		      "license", license,
+		      "group", group,
+		      "description", description,
+		      "url", url,
+		      "size", size,
+		      NULL);
+	g_object_unref (package);
+
+out:
+	g_free (package_id);
+	g_free (description);
+	g_free (license);
+	g_free (url);
 }
 
 /**
@@ -129,6 +204,30 @@ pk_plugin_package_array_to_string (GPtrArray *array)
 }
 
 /**
+ * pk_package_sack_get_package_ids:
+ **/
+static gchar **
+pk_plugin_get_package_ids (PkPlugin *plugin)
+{
+	const gchar *id;
+	gchar **package_ids;
+	const GPtrArray *array;
+	PkPackage *package;
+	guint i;
+
+	/* create array of package_ids */
+	array = plugin->priv->pkgs;
+	package_ids = g_new0 (gchar *, array->len+1);
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		id = pk_package_get_id (package);
+		package_ids[i] = g_strdup (id);
+	}
+
+	return package_ids;
+}
+
+/**
  * pk_plugin_transaction_finished_end:
  */
 void
@@ -137,11 +236,14 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 {
 	gboolean ret;
 	GError *error = NULL;
-	guint finished_id = 0;
-	guint package_id = 0;
+	guint finished_sig_id = 0;
+	guint package_sig_id = 0;
+	guint details_sig_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
+
 	PkPackageCache *cache = NULL;
+	gchar **package_ids;
 	PkPackage *package;
 	uint i;
 	gchar *data = NULL;
@@ -166,10 +268,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	}
 
 	/* connect to backend */
-	finished_id = g_signal_connect (plugin->backend, "finished",
+	finished_sig_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (plugin->backend, "package",
+	package_sig_id = g_signal_connect (plugin->backend, "package",
 				       G_CALLBACK (pk_plugin_package_cb), plugin);
+	details_sig_id = g_signal_connect (plugin->backend, "details",
+				       G_CALLBACK (pk_plugin_details_cb), plugin);
 
 	g_debug ("plugin: recreating package database");
 
@@ -192,16 +296,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* update UI */
 	pk_backend_set_percentage (plugin->backend, 90);
 
-#if 0
-	/* fetch details from all packages in list */
-	ret = pk_package_sack_get_details (priv->pkg_sack, NULL, &error);
-	if (!ret) {
-		g_warning ("%s: %s\n", "Could not get package details", error->message);
-		g_error_free (error);
-		goto out;
-	}
-#endif
+	/* fetch package details too */
+	package_ids = pk_plugin_get_package_ids (plugin);
+	pk_backend_get_details (plugin->backend, package_ids);
+	g_strfreev (package_ids);
 
+	/* open the package-cache */
 	cache = pk_package_cache_new ();
 	pk_package_cache_set_filename (cache, PK_SYSTEM_PACKAGE_CACHE_FILENAME, NULL);
 	ret = pk_package_cache_open (cache, FALSE, &error);
@@ -241,9 +341,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
 
 out:
-	if (finished_id != 0) {
-		g_signal_handler_disconnect (plugin->backend, finished_id);
-		g_signal_handler_disconnect (plugin->backend, package_id);
+	if (finished_sig_id != 0) {
+		g_signal_handler_disconnect (plugin->backend, finished_sig_id);
+		g_signal_handler_disconnect (plugin->backend, package_sig_id);
+		g_signal_handler_disconnect (plugin->backend, details_sig_id);
 	}
 
 	if (cache != NULL) {
