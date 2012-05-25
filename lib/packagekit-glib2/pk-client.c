@@ -352,7 +352,7 @@ pk_client_get_user_temp (const gchar *subfolder, GError **error)
 	gchar *path = NULL;
 
 	/* build path in home folder */
-	path = g_build_filename (g_get_home_dir (), ".PackageKit", subfolder, NULL);
+	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);
 
 	/* find if exists */
 	file = g_file_new_for_path (path);
@@ -1323,11 +1323,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "package-id", tmp_str[0],
 			      "repository-name", tmp_str[1],
 			      "key-url", tmp_str[2],
-			      "key-userid", tmp_str[2],
-			      "key-id", tmp_str[3],
-			      "key-fingerprint", tmp_str[4],
-			      "key-timestamp", tmp_str[5],
-			      "type", pk_sig_type_enum_from_string (tmp_str[6]),
+			      "key-userid", tmp_str[3],
+			      "key-id", tmp_str[4],
+			      "key-fingerprint", tmp_str[5],
+			      "key-timestamp", tmp_str[6],
+			      "type", pk_sig_type_enum_from_string (tmp_str[7]),
 			      "role", state->role,
 			      "transaction-id", state->transaction_id,
 			      NULL);

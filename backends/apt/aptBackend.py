@@ -1901,17 +1901,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             system_architecture = apt_pkg.get_architectures()[0]
 
             # Emit packages that contain an application that can handle
-            # the given mime type
+            # the given modalias
+            valid_modalias_re = re.compile('^[a-z0-9]+:')
             for search_item in search:
-                if not search_item.startswith('modalias(') or not search_item.endswith(')'):
+                if not valid_modalias_re.match(search_item):
                     if provides_type != enums.PROVIDES_ANY:
                         raise PKError(enums.ERROR_NOT_SUPPORTED,
                                       "The search term is invalid: %s" % search_item)
                     else:
                         continue
-
-                # strip off modalias(...) wrapper
-                search_item = search_item.split('(')[1][:-1]
 
                 for package in self._cache:
                     # skip foreign architectures, we usually only want native

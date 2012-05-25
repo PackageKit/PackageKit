@@ -783,7 +783,14 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
     // fetch the changelog
     pk_backend_set_status(m_backend, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
-    string filename = getChangelogFile(pkg.Name(), origin, verstr, srcpkg, uri, &fetcher);
+    
+    // Create a random temp dir
+    char dirName[] = "/tmp/aptccXXXXXXXX";
+    char *tempDir = mkdtemp(dirName);
+    string filename = tempDir;
+    filename.append("/");
+    filename.append(pkg.Name());
+    getChangelogFile(filename, pkg.Name(), origin, verstr, srcpkg, uri, &fetcher);
 
     string changelog;
     string update_text;
@@ -866,6 +873,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     g_regex_unref(regexVer);
     g_regex_unref(regexDate);
     unlink(filename.c_str());
+    rmdir(tempDir);
 
     // Check if the update was updates since it was issued
     if (issued.compare(updated) == 0) {

@@ -107,18 +107,16 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
-string getChangelogFile(const string &name,
-                        const string &origin,
-                        const string &verstr,
-                        const string &srcPkg,
-                        const string &uri,
-                        pkgAcquire *fetcher)
+void getChangelogFile(const string &filename,
+                      const string &name,
+                      const string &origin,
+                      const string &verstr,
+                      const string &srcPkg,
+                      const string &uri,
+                      pkgAcquire *fetcher)
 {
     string descr("Changelog for ");
     descr += name;
-
-    // no need to translate this, the changelog is in english anyway
-    string filename = "/tmp/aptcc_changelog";
 
     new pkgAcqFileSane(fetcher, uri, descr, name, filename);
 
@@ -146,8 +144,6 @@ string getChangelogFile(const string &name,
         }
     }
     out.close();
-
-    return filename;
 }
 
 string getCVEUrls(const string &changelog)

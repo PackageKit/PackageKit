@@ -101,7 +101,7 @@ def debug_exception(type, value, tb):
     else:
         import traceback, pdb
         traceback.print_exception(type, value, tb)
-        print
+        print()
         pdb.pm()
 
 def run(args, single=False):

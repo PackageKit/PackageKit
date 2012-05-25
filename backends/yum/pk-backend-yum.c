@@ -351,6 +351,7 @@ pk_backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_FREE,
 		PK_FILTER_ENUM_NEWEST,
 		PK_FILTER_ENUM_ARCH,
+		PK_FILTER_ENUM_APPLICATION,
 		-1);
 }
 
