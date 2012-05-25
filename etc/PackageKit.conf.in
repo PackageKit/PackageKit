@@ -126,12 +126,15 @@ UseSyslog=false
 # default=true
 ScanDesktopFiles=true
 
-# Update the package list when we refresh the cache
+# Update the package cache on PackageKit transactions
+# The cache is used by client applications to fetch
+# package-information very fast.
 #
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
+#       or GetDetails()
 #
 # default=true
-UpdatePackageList=true
+UpdatePackageCache=true
 
 # Check for running processes when we update packages
 #

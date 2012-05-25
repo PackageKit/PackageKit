@@ -256,7 +256,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	details_sig_id = g_signal_connect (plugin->backend, "details",
 				       G_CALLBACK (pk_plugin_details_cb), plugin);
 
-	g_debug ("plugin: recreating package database");
+	g_debug ("plugin: recreating package-cache database");
 
 	/* clear old package list */
 	pk_package_sack_clear (priv->sack);
@@ -320,9 +320,8 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		}
 	}
 
-	ret = pk_conf_get_bool (conf, "UpdatePackageList");
-	if (ret)
-		pk_plugin_save_package_list (plugin, pkg_array);
+	/* create & save legacy package-list */
+	pk_plugin_save_package_list (plugin, pkg_array);
 
 	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
