@@ -30,34 +30,9 @@
 #include "pk-package-cache.h"
 
 struct PkPluginPrivate {
-	GPtrArray		*pkgs;
+	PkPackageSack		*sack;
 	GMainLoop		*loop;
 };
-
-/**
- * pk_package_sack_find_by_id:
- */
-static PkPackage *
-pk_plugin_find_package_by_id (PkPlugin *plugin, const gchar *package_id)
-{
-	PkPackage *package_tmp;
-	const gchar *id;
-	PkPackage *package = NULL;
-	guint i;
-	guint len;
-
-	len = plugin->priv->pkgs->len;
-	for (i=0; i<len; i++) {
-		package_tmp = g_ptr_array_index (plugin->priv->pkgs, i);
-		id = pk_package_get_id (package_tmp);
-		if (g_strcmp0 (package_id, id) == 0) {
-			package = g_object_ref (package_tmp);
-			break;
-		}
-	}
-
-	return package;
-}
 
 /**
  * pk_plugin_get_description:
@@ -77,7 +52,7 @@ pk_plugin_initialize (PkPlugin *plugin)
 	/* create private area */
 	plugin->priv = PK_TRANSACTION_PLUGIN_GET_PRIVATE (PkPluginPrivate);
 	plugin->priv->loop = g_main_loop_new (NULL, FALSE);
-	plugin->priv->pkgs = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	plugin->priv->sack = pk_package_sack_new ();
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -91,7 +66,7 @@ void
 pk_plugin_destroy (PkPlugin *plugin)
 {
 	g_main_loop_unref (plugin->priv->loop);
-	g_ptr_array_unref (plugin->priv->pkgs);
+	g_object_unref (plugin->priv->sack);
 }
 
 /**
@@ -102,7 +77,7 @@ pk_plugin_package_cb (PkBackend *backend,
 		      PkPackage *package,
 		      PkPlugin *plugin)
 {
-	g_ptr_array_add (plugin->priv->pkgs, g_object_ref (package));
+	pk_package_sack_add_package (plugin->priv->sack, package);
 }
 
 /**
@@ -132,7 +107,7 @@ pk_plugin_details_cb (PkBackend *backend,
 		      NULL);
 
 	/* get package, and set data */
-	package = pk_plugin_find_package_by_id (plugin, package_id);
+	package = pk_package_sack_find_by_id (plugin->priv->sack, package_id);
 	if (package == NULL) {
 		g_warning ("failed to find %s", package_id);
 		goto out;
@@ -204,27 +179,25 @@ pk_plugin_package_array_to_string (GPtrArray *array)
 }
 
 /**
- * pk_package_sack_get_package_ids:
+ * pk_plugin_package_array_to_string:
  **/
-static gchar **
-pk_plugin_get_package_ids (PkPlugin *plugin)
+static void
+pk_plugin_save_package_list (PkPlugin *plugin, GPtrArray *pkg_array)
 {
-	const gchar *id;
-	gchar **package_ids;
-	const GPtrArray *array;
-	PkPackage *package;
-	guint i;
+	GError *error = NULL;
+	gboolean ret;
+	gchar *data = NULL;
 
-	/* create array of package_ids */
-	array = plugin->priv->pkgs;
-	package_ids = g_new0 (gchar *, array->len+1);
-	for (i=0; i<array->len; i++) {
-		package = g_ptr_array_index (array, i);
-		id = pk_package_get_id (package);
-		package_ids[i] = g_strdup (id);
+	/* convert to a file and save the package list - we require this for backward-compatibility */
+	data = pk_plugin_package_array_to_string (pkg_array);
+
+	ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
+				data, -1, &error);
+	if (!ret) {
+		g_warning ("failed to save to file: %s",
+			error->message);
+		g_error_free (error);
 	}
-
-	return package_ids;
 }
 
 /**
@@ -236,17 +209,18 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 {
 	gboolean ret;
 	GError *error = NULL;
+	PkConf *conf;
+	PkRoleEnum role;
 	guint finished_sig_id = 0;
 	guint package_sig_id = 0;
 	guint details_sig_id = 0;
-	PkConf *conf;
-	PkRoleEnum role;
+	PkBitfield backend_signals;
 
 	PkPackageCache *cache = NULL;
+	GPtrArray *pkg_array = NULL;
 	gchar **package_ids;
 	PkPackage *package;
 	uint i;
-	gchar *data = NULL;
 	PkPluginPrivate *priv = plugin->priv;
 
 	/* check the config file */
@@ -267,6 +241,13 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		goto out;
 	}
 
+	/* don't forward unnecessary info the the transaction */
+	backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
+	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_DETAILS);
+	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_PACKAGE);
+	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_FINISHED);
+	pk_transaction_set_signals (transaction, backend_signals);
+
 	/* connect to backend */
 	finished_sig_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
@@ -278,8 +259,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	g_debug ("plugin: recreating package database");
 
 	/* clear old package list */
-	if (plugin->priv->pkgs->len > 0)
-		g_ptr_array_set_size (plugin->priv->pkgs, 0);
+	pk_package_sack_clear (priv->sack);
 
 	/* update UI */
 	pk_backend_set_status (plugin->backend,
@@ -296,10 +276,16 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* update UI */
 	pk_backend_set_percentage (plugin->backend, 90);
 
-	/* fetch package details too */
-	package_ids = pk_plugin_get_package_ids (plugin);
-	pk_backend_get_details (plugin->backend, package_ids);
-	g_strfreev (package_ids);
+	/* fetch package details too, if possible */
+	if (pk_backend_is_implemented (plugin->backend,
+	    PK_ROLE_ENUM_GET_DETAILS)) {
+		pk_backend_reset (plugin->backend);
+		package_ids = pk_package_sack_get_ids (priv->sack);
+		pk_backend_get_details (plugin->backend, package_ids);
+		g_strfreev (package_ids);
+	} else {
+		g_debug ("cannot get details");
+	}
 
 	/* open the package-cache */
 	cache = pk_package_cache_new ();
@@ -311,9 +297,21 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		goto out;
 	}
 
+	pkg_array = pk_package_sack_get_array (priv->sack);
+
+	/* clear the cache, so we can recreate it */
+	g_clear_error (&error);
+	pk_package_cache_clear (cache, &error);
+	if (!ret) {
+		g_warning ("%s: %s\n", "Failed to clear cache", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* add packages to cache */
-	for (i=0; i<priv->pkgs->len; i++) {
-		package = g_ptr_array_index (priv->pkgs, i);
+	g_clear_error (&error);
+	for (i=0; i<pkg_array->len; i++) {
+		package = g_ptr_array_index (pkg_array, i);
 		ret = pk_package_cache_add_package (cache, package, &error);
 		if (!ret) {
 			g_warning ("%s: %s\n", "Couldn't update cache", error->message);
@@ -322,19 +320,9 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		}
 	}
 
-	/* convert to a file and save the package list - we require this for backward-compatibility */
 	ret = pk_conf_get_bool (conf, "UpdatePackageList");
-	if (ret) {
-		data = pk_plugin_package_array_to_string (priv->pkgs);
-
-		ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
-					data, -1, &error);
-		if (!ret) {
-			g_warning ("failed to save to file: %s",
-				error->message);
-			g_error_free (error);
-		}
-	}
+	if (ret)
+		pk_plugin_save_package_list (plugin, pkg_array);
 
 	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
@@ -347,7 +335,11 @@ out:
 		g_signal_handler_disconnect (plugin->backend, details_sig_id);
 	}
 
+	/* restore transaction signal connections */
+	pk_transaction_set_signals (transaction, PK_TRANSACTION_ALL_BACKEND_SIGNALS);
+
 	if (cache != NULL) {
+		g_clear_error (&error);
 		ret = pk_package_cache_close (cache, FALSE, &error);
 		if (!ret) {
 			g_warning ("%s: %s\n", "Failed to close cache", error->message);
@@ -355,4 +347,7 @@ out:
 		}
 		g_object_unref (cache);
 	}
+
+	if (pkg_array != NULL)
+		g_ptr_array_unref (pkg_array);
 }
