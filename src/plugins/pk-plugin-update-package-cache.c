@@ -282,6 +282,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		pk_backend_reset (plugin->backend);
 		package_ids = pk_package_sack_get_ids (priv->sack);
 		pk_backend_get_details (plugin->backend, package_ids);
+
+		/* wait for finished */
+		g_main_loop_run (priv->loop);
+
 		g_strfreev (package_ids);
 	} else {
 		g_debug ("cannot get details");
