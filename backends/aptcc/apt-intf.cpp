@@ -369,7 +369,7 @@ void AptIntf::emitRequireRestart(PkgList &output)
 {
     // Sort so we can remove the duplicated entries
     output.sort();
-    
+
     // Remove the duplicated entries
     output.removeDuplicates();
 
@@ -386,7 +386,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
     PkInfoEnum state;
     // Sort so we can remove the duplicated entries
     output.sort();
-    
+
     // Remove the duplicated entries
     output.removeDuplicates();
 
@@ -666,7 +666,7 @@ void AptIntf::emitDetails(PkgList &pkgs)
 {
     // Sort so we can remove the duplicated entries
     pkgs.sort();
-    
+
     // Remove the duplicated entries
     pkgs.removeDuplicates();
 
@@ -783,7 +783,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
     // fetch the changelog
     pk_backend_set_status(m_backend, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
-    
+
     // Create a random temp dir
     char dirName[] = "/tmp/aptccXXXXXXXX";
     char *tempDir = mkdtemp(dirName);
@@ -1586,7 +1586,7 @@ PkgList AptIntf::checkChangedPackages(AptCacheFile &cache, bool emitChanged)
     PkgList updating;
     PkgList downgrading;
 
-    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {       
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); ! pkg.end(); ++pkg) {
         if (cache[pkg].NewInstall() == true) {
             // installing;
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
