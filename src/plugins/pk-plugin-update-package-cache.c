@@ -268,7 +268,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* get the new package list */
 	pk_backend_reset (plugin->backend);
-	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_NONE);
+	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_GUI);
 
 	/* wait for finished */
 	g_main_loop_run (priv->loop);
@@ -288,7 +288,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 		g_strfreev (package_ids);
 	} else {
-		g_debug ("cannot get details");
+		g_warning ("cannot get details");
 	}
 
 	/* open the package-cache */
