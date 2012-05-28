@@ -507,6 +507,23 @@ pk_results_get_exit_code (PkResults *results)
 }
 
 /**
+ * pk_results_get_role:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the role that produced these results.
+ *
+ * Return value: The #PkRoleEnum or %PK_ROLE_ENUM_UNKNOWN if not set
+ *
+ * Since: 0.7.5
+ **/
+PkRoleEnum
+pk_results_get_role (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), PK_ROLE_ENUM_UNKNOWN);
+	return results->priv->role;
+}
+
+/**
  * pk_results_get_error_code:
  * @results: a valid #PkResults instance
  *
