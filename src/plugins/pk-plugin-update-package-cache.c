@@ -213,7 +213,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	PkRoleEnum role;
 	guint finished_sig_id = 0;
 	guint package_sig_id = 0;
-	guint details_sig_id = 0;
 	PkBitfield backend_signals;
 
 	PkPackageCache *cache = NULL;
@@ -253,8 +252,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
 	package_sig_id = g_signal_connect (plugin->backend, "package",
 				       G_CALLBACK (pk_plugin_package_cb), plugin);
-	details_sig_id = g_signal_connect (plugin->backend, "details",
-				       G_CALLBACK (pk_plugin_details_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_DETAILS,
+			      (PkBackendVFunc) pk_plugin_details_cb,
+			      plugin);
 
 	g_debug ("plugin: rebuilding package cache");
 
@@ -335,7 +336,9 @@ out:
 	if (finished_sig_id != 0) {
 		g_signal_handler_disconnect (plugin->backend, finished_sig_id);
 		g_signal_handler_disconnect (plugin->backend, package_sig_id);
-		g_signal_handler_disconnect (plugin->backend, details_sig_id);
+		pk_backend_set_vfunc (plugin->backend,
+				      PK_BACKEND_SIGNAL_DETAILS,
+				      NULL, NULL);
 	}
 
 	/* restore transaction signal connections */
