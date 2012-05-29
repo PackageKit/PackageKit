@@ -83,6 +83,12 @@
  */
 #define PK_BACKEND_CANCEL_ACTION_TIMEOUT	2000 /* ms */
 
+typedef struct {
+	gboolean		 enabled;
+	PkBackendVFunc		 vfunc;
+	gpointer		 user_data;
+} PkBackendVFuncItem;
+
 struct PkBackendPrivate
 {
 	gboolean		 during_initialize;
@@ -138,6 +144,7 @@ struct PkBackendPrivate
 	PkTime			*time;
 	guint			 uid;
 	gchar			*cmdline;
+	PkBackendVFuncItem	 vfunc_items[PK_BACKEND_SIGNAL_LAST];
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -709,6 +716,22 @@ out:
 }
 
 /**
+ * pk_backend_set_vfunc:
+ **/
+void
+pk_backend_set_vfunc (PkBackend *backend,
+		      PkBackendSignal signal_kind,
+		      PkBackendVFunc vfunc,
+		      gpointer user_data)
+{
+	PkBackendVFuncItem *item;
+	item = &backend->priv->vfunc_items[signal_kind];
+	item->enabled = TRUE;
+	item->vfunc = vfunc;
+	item->user_data = user_data;
+}
+
+/**
  * pk_backend_set_proxy:
  **/
 gboolean
@@ -922,6 +945,22 @@ pk_backend_close (PkBackend *backend)
 		backend->priv->desc->destroy (backend);
 	backend->priv->opened = FALSE;
 	return TRUE;
+}
+
+/**
+ * pk_backend_call_vfunc:
+ **/
+static void
+pk_backend_call_vfunc (PkBackend *backend,
+		       PkBackendSignal signal_kind,
+		       GObject *object)
+{
+	PkBackendVFuncItem *item;
+
+	/* call transaction vfunc if not disabled and set */
+	item = &backend->priv->vfunc_items[signal_kind];
+	if (item->enabled && item->vfunc != NULL)
+		item->vfunc (backend, object, item->user_data);
 }
 
 /**
