@@ -1971,16 +1971,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS)) {
-		if (priv->signal_details == 0)
-			priv->signal_details =
-				g_signal_connect (priv->backend, "details",
-						G_CALLBACK (pk_transaction_details_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+				      PK_BACKEND_SIGNAL_DETAILS,
+				      (PkBackendVFunc) pk_transaction_details_cb,
+				      transaction);
 	} else {
-		if (priv->signal_details > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_details);
-			priv->signal_details = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+				      PK_BACKEND_SIGNAL_DETAILS,
+				      NULL,
+				      transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ERROR_CODE)) {

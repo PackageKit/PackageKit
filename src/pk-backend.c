@@ -152,7 +152,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_DETAILS,
 	SIGNAL_FILES,
 	SIGNAL_DISTRO_UPGRADE,
 	SIGNAL_PACKAGE,
@@ -1739,7 +1738,9 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_DETAILS], 0, item);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_DETAILS,
+			       G_OBJECT (item));
 	pk_results_add_details (backend->priv->results, item);
 
 	/* we parsed okay */
@@ -3241,11 +3242,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_MESSAGE] =
 		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_DETAILS] =
-		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
