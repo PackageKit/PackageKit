@@ -284,6 +284,15 @@ gchar		*pk_backend_get_locale			(PkBackend	*backend);
 gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
 guint		 pk_backend_get_cache_age		(PkBackend	*backend);
 
+/* transaction vfuncs */
+typedef void	 (*PkBackendVFunc)			(PkBackend	*backend,
+							 GObject	*object,
+							 gpointer	 user_data);
+void		 pk_backend_set_vfunc			(PkBackend	*backend,
+							 PkBackendSignal signal_kind,
+							 PkBackendVFunc	 vfunc,
+							 gpointer	 user_data);
+
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,

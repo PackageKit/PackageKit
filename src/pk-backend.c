@@ -83,6 +83,12 @@
  */
 #define PK_BACKEND_CANCEL_ACTION_TIMEOUT	2000 /* ms */
 
+typedef struct {
+	gboolean		 enabled;
+	PkBackendVFunc		 vfunc;
+	gpointer		 user_data;
+} PkBackendVFuncItem;
+
 struct PkBackendPrivate
 {
 	gboolean		 during_initialize;
@@ -138,6 +144,7 @@ struct PkBackendPrivate
 	PkTime			*time;
 	guint			 uid;
 	gchar			*cmdline;
+	PkBackendVFuncItem	 vfunc_items[PK_BACKEND_SIGNAL_LAST];
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -145,7 +152,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_DETAILS,
 	SIGNAL_FILES,
 	SIGNAL_DISTRO_UPGRADE,
 	SIGNAL_PACKAGE,
@@ -709,6 +715,22 @@ out:
 }
 
 /**
+ * pk_backend_set_vfunc:
+ **/
+void
+pk_backend_set_vfunc (PkBackend *backend,
+		      PkBackendSignal signal_kind,
+		      PkBackendVFunc vfunc,
+		      gpointer user_data)
+{
+	PkBackendVFuncItem *item;
+	item = &backend->priv->vfunc_items[signal_kind];
+	item->enabled = TRUE;
+	item->vfunc = vfunc;
+	item->user_data = user_data;
+}
+
+/**
  * pk_backend_set_proxy:
  **/
 gboolean
@@ -922,6 +944,22 @@ pk_backend_close (PkBackend *backend)
 		backend->priv->desc->destroy (backend);
 	backend->priv->opened = FALSE;
 	return TRUE;
+}
+
+/**
+ * pk_backend_call_vfunc:
+ **/
+static void
+pk_backend_call_vfunc (PkBackend *backend,
+		       PkBackendSignal signal_kind,
+		       GObject *object)
+{
+	PkBackendVFuncItem *item;
+
+	/* call transaction vfunc if not disabled and set */
+	item = &backend->priv->vfunc_items[signal_kind];
+	if (item->enabled && item->vfunc != NULL)
+		item->vfunc (backend, object, item->user_data);
 }
 
 /**
@@ -1700,7 +1738,9 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_DETAILS], 0, item);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_DETAILS,
+			       G_OBJECT (item));
 	pk_results_add_details (backend->priv->results, item);
 
 	/* we parsed okay */
@@ -3202,11 +3242,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_MESSAGE] =
 		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_DETAILS] =
-		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
 			      G_TYPE_NONE, 1, G_TYPE_POINTER);
