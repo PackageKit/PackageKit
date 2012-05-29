@@ -256,7 +256,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	details_sig_id = g_signal_connect (plugin->backend, "details",
 				       G_CALLBACK (pk_plugin_details_cb), plugin);
 
-	g_debug ("plugin: recreating package-cache database");
+	g_debug ("plugin: rebuilding package cache");
 
 	/* clear old package list */
 	pk_package_sack_clear (priv->sack);
@@ -268,7 +268,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* get the new package list */
 	pk_backend_reset (plugin->backend);
-	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_GUI);
+	pk_backend_get_packages (plugin->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
 	g_main_loop_run (priv->loop);
