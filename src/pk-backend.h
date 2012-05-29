@@ -89,7 +89,7 @@ gboolean	 pk_backend_set_uid			(PkBackend	*backend,
 							 guint		 uid);
 gboolean	 pk_backend_set_cmdline			(PkBackend	*backend,
 							 const gchar	*cmdline);
-gboolean	 pk_backend_set_keep_environment (PkBackend	*backend,
+gboolean	 pk_backend_set_keep_environment	(PkBackend	*backend,
 							 gboolean keep_environment);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -99,7 +99,7 @@ gchar		*pk_backend_get_description		(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_backend_get_author			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_get_keep_environment (PkBackend	*backend);
+gboolean	 pk_backend_get_keep_environment	(PkBackend	*backend);
 
 typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
