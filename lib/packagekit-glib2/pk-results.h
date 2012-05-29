@@ -115,7 +115,8 @@ gboolean	 pk_results_add_message 		(PkResults		*results,
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-PkError *pk_results_get_error_code			(PkResults		*results);
+PkError		*pk_results_get_error_code		(PkResults		*results);
+PkRoleEnum	 pk_results_get_role			(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

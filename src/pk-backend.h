@@ -65,6 +65,32 @@ typedef struct
  */
 #define PK_BACKEND_PERCENTAGE_INVALID		101
 
+/* this is used to connect/disconnect backend signals */
+typedef enum {
+	PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+	PK_BACKEND_SIGNAL_DETAILS,
+	PK_BACKEND_SIGNAL_ERROR_CODE,
+	PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+	PK_BACKEND_SIGNAL_FINISHED,
+	PK_BACKEND_SIGNAL_MESSAGE,
+	PK_BACKEND_SIGNAL_PACKAGE,
+	PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+	PK_BACKEND_SIGNAL_FILES,
+	PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
+	PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
+	PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
+	PK_BACKEND_SIGNAL_NOTIFY_SPEED,
+	PK_BACKEND_SIGNAL_REPO_DETAIL,
+	PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+	PK_BACKEND_SIGNAL_EULA_REQUIRED,
+	PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
+	PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+	PK_BACKEND_SIGNAL_STATUS_CHANGED,
+	PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+	PK_BACKEND_SIGNAL_CATEGORY,
+	PK_BACKEND_SIGNAL_LAST
+} PkBackendSignal;
+
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
 gboolean	 pk_backend_open			(PkBackend	*backend)
@@ -89,7 +115,7 @@ gboolean	 pk_backend_set_uid			(PkBackend	*backend,
 							 guint		 uid);
 gboolean	 pk_backend_set_cmdline			(PkBackend	*backend,
 							 const gchar	*cmdline);
-gboolean	 pk_backend_set_keep_environment (PkBackend	*backend,
+gboolean	 pk_backend_set_keep_environment	(PkBackend	*backend,
 							 gboolean keep_environment);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -99,7 +125,7 @@ gchar		*pk_backend_get_description		(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_backend_get_author			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_get_keep_environment (PkBackend	*backend);
+gboolean	 pk_backend_get_keep_environment	(PkBackend	*backend);
 
 typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
