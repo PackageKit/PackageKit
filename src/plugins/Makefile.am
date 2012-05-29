@@ -60,7 +60,7 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-scan-desktop-files.la		\
 	libpk_plugin-update-check-processes.la		\
 	libpk_plugin-check-shared-libraries-in-use.la	\
-	libpk-plugin-clear-firmware-requests.la
+	libpk_plugin-clear-firmware-requests.la
 
 libpk_plugin_example_la_SOURCES = pk-plugin-example.c
 libpk_plugin_example_la_LIBADD = $(PK_PLUGIN_LIBS)
