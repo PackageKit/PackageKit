@@ -492,7 +492,9 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
 
-	package = g_object_ref (g_hash_table_lookup (sack->priv->table, package_id));
+	package = g_hash_table_lookup (sack->priv->table, package_id);
+	if (package != NULL)
+		g_object_ref (package);
 
 	return package;
 }
