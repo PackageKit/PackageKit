@@ -750,7 +750,6 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend,
 				  PkDistroUpgrade *item,
 				  PkTransaction *transaction)
 {
-	const gchar *type_text;
 	gchar *name;
 	gchar *summary;
 	PkUpdateStateEnum state;
@@ -769,16 +768,16 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	type_text = pk_distro_upgrade_enum_to_string (state);
 	g_debug ("emitting distro-upgrade %s, %s, %s",
-		 type_text, name, summary);
+		 pk_distro_upgrade_enum_to_string (state),
+		 name, summary);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "DistroUpgrade",
-				       g_variant_new ("(sss)",
-						      type_text,
+				       g_variant_new ("(uss)",
+						      state,
 						      name,
 						      summary != NULL ? summary : ""),
 				       NULL);
@@ -1653,7 +1652,6 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb,
 			       PkTransactionPast *item,
 			       PkTransaction *transaction)
 {
-	const gchar *role_text;
 	gchar *tid;
 	gchar *timespec;
 	gchar *data;
@@ -1682,9 +1680,9 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb,
 		      NULL);
 
 	/* emit */
-	role_text = pk_role_enum_to_string (role);
 	g_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
-		   tid, timespec, succeeded, role_text,
+		   tid, timespec, succeeded,
+		   pk_role_enum_to_string (role),
 		   duration, data, uid, cmdline);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
@@ -1695,7 +1693,7 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb,
 						      tid,
 						      timespec,
 						      succeeded,
-						      role_text,
+						      role,
 						      duration,
 						      data != NULL ? data : "",
 						      uid,

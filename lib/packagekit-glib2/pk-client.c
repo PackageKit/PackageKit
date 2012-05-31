@@ -1094,6 +1094,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	gboolean tmp_bool;
 	guint tmp_uint;
 	guint tmp_uint2;
+	guint tmp_uint3;
 	guint64 tmp_uint64;
 
 	/* connect up the signals */
@@ -1205,7 +1206,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			       &tmp_str[0],
 			       &tmp_str[1],
 			       &tmp_bool,
-			       &tmp_str[2],
+			       &tmp_uint3,
 			       &tmp_uint,
 			       &tmp_str[3],
 			       &tmp_uint2,
@@ -1215,7 +1216,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "tid", tmp_str[0],
 			      "timespec", tmp_str[1],
 			      "succeeded", tmp_bool,
-			      "role", pk_role_enum_from_string (tmp_str[2]),
+			      "role", tmp_uint3,
 			      "duration", tmp_uint,
 			      "data", tmp_str[3],
 			      "uid", tmp_uint2,
@@ -1230,13 +1231,13 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {
 		PkDistroUpgrade *item;
 		g_variant_get (parameters,
-			       "(&s&s&s)",
-			       &tmp_str[0],
+			       "(u&s&s)",
+			       &tmp_uint,
 			       &tmp_str[1],
 			       &tmp_str[2]);
 		item = pk_distro_upgrade_new ();
 		g_object_set (item,
-			      "state", pk_update_state_enum_from_string (tmp_str[0]),
+			      "state", tmp_uint,
 			      "name", tmp_str[1],
 			      "summary", tmp_str[2],
 			      "role", state->role,

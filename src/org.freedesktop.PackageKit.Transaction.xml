@@ -2347,7 +2347,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="role" direction="out">
+      <arg type="u" name="role" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -2535,11 +2535,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="type" direction="out">
+      <arg type="u" name="type" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid upgrade string enumerated type, e.g. <doc:tt>stable</doc:tt>
+              A valid upgrade enumerated type, e.g. <doc:tt>stable</doc:tt>
               or <doc:tt>unstable</doc:tt>
             </doc:para>
           </doc:summary>
