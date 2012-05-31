@@ -1944,7 +1944,7 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="type" direction="out">
+      <arg type="u" name="type" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

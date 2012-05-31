@@ -3988,8 +3988,8 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 					       transaction->priv->tid,
 					       PK_DBUS_INTERFACE_TRANSACTION,
 					       "Message",
-					       g_variant_new ("(ss)",
-							      pk_message_enum_to_string (pk_message_get_kind (message)),
+					       g_variant_new ("(us)",
+							      pk_message_get_kind (message),
 							      pk_message_get_details (message)),
 					       NULL);
 	}

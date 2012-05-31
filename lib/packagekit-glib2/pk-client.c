@@ -1100,12 +1100,12 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "Message") == 0) {
 		PkMessage *item;
 		g_variant_get (parameters,
-			       "(&s&s)",
-			       &tmp_str[0],
+			       "(u&s)",
+			       &tmp_uint,
 			       &tmp_str[1]);
 		item = pk_message_new ();
 		g_object_set (item,
-			      "type", pk_message_enum_from_string (tmp_str[0]),
+			      "type", tmp_uint,
 			      "details", tmp_str[1],
 			      "role", state->role,
 			      "transaction-id", state->transaction_id,
