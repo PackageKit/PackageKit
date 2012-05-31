@@ -1713,7 +1713,6 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				 PkUpdateDetail *item,
 				 PkTransaction *transaction)
 {
-	const gchar *state_text;
 	gchar *package_id;
 	gchar *updates;
 	gchar *obsoletes;
@@ -1751,7 +1750,6 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 
 	/* emit */
 	g_debug ("emitting update-detail");
-	state_text = pk_update_state_enum_to_string (state);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
@@ -1767,7 +1765,7 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 						      restart,
 						      update_text != NULL ? update_text : "",
 						      changelog != NULL ? changelog : "",
-						      state_text,
+						      state,
 						      issued != NULL ? issued : "",
 						      updated != NULL ? updated : ""),
 				       NULL);

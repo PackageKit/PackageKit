@@ -2495,7 +2495,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="state" direction="out">
+      <arg type="u" name="state" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
