@@ -1853,7 +1853,7 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="code" direction="out">
+      <arg type="u" name="code" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

@@ -1378,12 +1378,12 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "ErrorCode") == 0) {
 		PkError *item;
 		g_variant_get (parameters,
-			       "(&s&s)",
-			       &tmp_str[0],
+			       "(u&s)",
+			       &tmp_uint,
 			       &tmp_str[1]);
 		item = pk_error_new ();
 		g_object_set (item,
-			      "code", pk_error_enum_from_string (tmp_str[0]),
+			      "code", tmp_uint,
 			      "details", tmp_str[1],
 			      "role", state->role,
 			      "transaction-id", state->transaction_id,
