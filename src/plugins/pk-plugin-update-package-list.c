@@ -155,8 +155,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* connect to backend */
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (plugin->backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				(PkBackendVFunc) pk_plugin_package_cb,
+				plugin);
 
 	g_debug ("plugin: updating package lists");
 

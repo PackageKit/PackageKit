@@ -140,13 +140,11 @@ struct PkTransactionPrivate
 	PkProvidesEnum		 cached_provides;
 
 	guint			 signal_allow_cancel;
-	guint			 signal_details;
 	guint			 signal_error_code;
 	guint			 signal_files;
 	guint			 signal_distro_upgrade;
 	guint			 signal_finished;
 	guint			 signal_message;
-	guint			 signal_package;
 	guint			 signal_percentage;
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
@@ -2040,16 +2038,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE)) {
-		if (priv->signal_package == 0)
-			priv->signal_package =
-				g_signal_connect (priv->backend, "package",
-						G_CALLBACK (pk_transaction_package_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_PACKAGE,
+					(PkBackendVFunc) pk_transaction_package_cb,
+					transaction);
 	} else {
-		if (priv->signal_package > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_package);
-			priv->signal_package = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_PACKAGE,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS)) {

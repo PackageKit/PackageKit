@@ -487,8 +487,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	}
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (plugin->backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				(PkBackendVFunc) pk_plugin_package_cb,
+				plugin);
 
 	/* use a local backend instance */
 	pk_backend_reset (plugin->backend);
