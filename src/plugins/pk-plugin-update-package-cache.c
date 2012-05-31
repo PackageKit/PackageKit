@@ -341,9 +341,6 @@ out:
 				      NULL, NULL);
 	}
 
-	/* restore transaction signal connections */
-	pk_transaction_set_signals (transaction, PK_TRANSACTION_ALL_BACKEND_SIGNALS);
-
 	if (cache != NULL) {
 		g_clear_error (&error);
 		ret = pk_package_cache_close (cache, FALSE, &error);
