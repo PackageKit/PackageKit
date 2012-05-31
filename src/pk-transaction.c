@@ -930,30 +930,43 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	const gchar *function = NULL;
 	gboolean ret;
 	gboolean ran_one = FALSE;
+	PkBitfield backend_signals = PK_BACKEND_SIGNAL_LAST;
 	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
-
-	if (transaction->priv->plugins == NULL)
-		goto out;
 
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
+		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES:
 		function = "pk_plugin_transaction_content_types";
+		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
 		function = "pk_plugin_transaction_started";
+		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
 		function = "pk_plugin_transaction_finished_start";
+		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
 		function = "pk_plugin_transaction_finished_results";
+		backend_signals = pk_bitfield_from_enums (
+			PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+			PK_BACKEND_SIGNAL_MESSAGE,
+			PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
+			PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
+			PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
+			PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+			PK_BACKEND_SIGNAL_STATUS_CHANGED,
+			PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+			-1);
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END:
 		function = "pk_plugin_transaction_finished_end";
+		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	default:
 		g_assert_not_reached ();
@@ -961,6 +974,8 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	}
 
 	g_assert (function != NULL);
+	if (transaction->priv->plugins == NULL)
+		goto out;
 
 	/* run each plugin */
 	for (i=0; i<transaction->priv->plugins->len; i++) {
@@ -975,9 +990,12 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
+		pk_transaction_set_signals (transaction, backend_signals);
 		plugin_func (plugin, transaction);
 	}
 out:
+	/* set this to a know state in case the plugin misbehaves */
+	pk_transaction_set_signals (transaction, backend_signals);
 	if (!ran_one)
 		g_debug ("no plugins provided %s", function);
 }
@@ -1079,7 +1097,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	PkPackage *item;
 	gchar *package_id;
 	PkInfoEnum info;
-	PkBitfield backend_signals;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1094,25 +1111,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START);
 
-	/* only leave these connected, disconnect everything else straight away */
-	backend_signals = pk_bitfield_from_enums (
-		PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-		PK_BACKEND_SIGNAL_MESSAGE,
-		PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
-		PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
-		PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
-		PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-		PK_BACKEND_SIGNAL_STATUS_CHANGED,
-		PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-		-1);
-	pk_transaction_set_signals (transaction, backend_signals);
-
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS);
-
-	/* we don't allow to send signals from the second phase post transaction */
-	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -1120,9 +1121,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
-
-	/* make sure that everything is disconnected (plugin might have changed something) */
-	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
@@ -2239,7 +2237,6 @@ pk_transaction_run (PkTransaction *transaction)
 	gboolean ret;
 	GError *error = NULL;
 	PkExitEnum exit_status;
-	PkBitfield backend_signals;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -2283,9 +2280,6 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
 
-	/* restore backend signals */
-	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
-
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
@@ -2309,9 +2303,6 @@ pk_transaction_run (PkTransaction *transaction)
 		goto out;
 	}
 
-	/* restore backend signals */
-	pk_transaction_set_signals (transaction, PK_TRANSACTION_NO_BACKEND_SIGNALS);
-
 	/* might have to reset again if we used the backend */
 	pk_backend_reset (priv->backend);
 
@@ -2321,16 +2312,9 @@ pk_transaction_run (PkTransaction *transaction)
 		 priv->tid,
 		 pk_role_enum_to_string (priv->role));
 
-	/* connect the backend */
-	backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
-	pk_transaction_set_signals (transaction, backend_signals);
-
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
-
-	/* restore connections (might be necessary) */
-	pk_transaction_set_signals (transaction, backend_signals);
 
 	/* check again if we should skip this transaction */
 	exit_status = pk_backend_get_exit_code (priv->backend);
