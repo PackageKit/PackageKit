@@ -1513,7 +1513,6 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 					 PkMediaChangeRequired *item,
 					 PkTransaction *transaction)
 {
-	const gchar *media_type_text;
 	gchar *media_id;
 	gchar *media_text;
 	PkMediaTypeEnum media_type;
@@ -1532,16 +1531,17 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	media_type_text = pk_media_type_enum_to_string (media_type);
 	g_debug ("emitting media-change-required %s, %s, %s",
-		   media_type_text, media_id, media_text);
+		 pk_media_type_enum_to_string (media_type),
+		 media_id,
+		 media_text);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "MediaChangeRequired",
-				       g_variant_new ("(sss)",
-						      media_type_text,
+				       g_variant_new ("(uss)",
+						      media_type,
 						      media_id,
 						      media_text != NULL ? media_text : ""),
 				       NULL);

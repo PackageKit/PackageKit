@@ -1395,13 +1395,13 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "MediaChangeRequired") == 0) {
 		PkMediaChangeRequired *item;
 		g_variant_get (parameters,
-			       "(&s&s&s)",
-			       &tmp_str[0],
+			       "(u&s&s)",
+			       &tmp_uint,
 			       &tmp_str[1],
 			       &tmp_str[2]);
 		item = pk_media_change_required_new ();
 		g_object_set (item,
-			      "media-type", pk_media_type_enum_from_string (tmp_str[0]),
+			      "media-type", tmp_uint,
 			      "media-id", tmp_str[1],
 			      "media-text", tmp_str[2],
 			      "role", state->role,
