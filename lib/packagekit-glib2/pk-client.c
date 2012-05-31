@@ -1126,12 +1126,12 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "Package") == 0) {
 		g_variant_get (parameters,
-			       "(&s&s&s)",
-			       &tmp_str[0],
+			       "(u&s&s)",
+			       &tmp_uint,
 			       &tmp_str[1],
 			       &tmp_str[2]);
 		pk_client_signal_package (state,
-					  pk_info_enum_from_string (tmp_str[0]),
+					  tmp_uint,
 					  tmp_str[1],
 					  tmp_str[2]);
 		return;

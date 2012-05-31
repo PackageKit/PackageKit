@@ -1983,11 +1983,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="info" direction="out">
+      <arg type="u" name="info" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid <doc:tt>info</doc:tt> string enumerated type
+              A valid <doc:tt>info</doc:tt> enumerated type
             </doc:para>
           </doc:summary>
         </doc:doc>

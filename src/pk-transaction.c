@@ -1268,7 +1268,6 @@ pk_transaction_package_cb (PkBackend *backend,
 			   PkPackage *item,
 			   PkTransaction *transaction)
 {
-	const gchar *info_text;
 	const gchar *role_text;
 	PkInfoEnum info;
 	const gchar *package_id;
@@ -1328,16 +1327,18 @@ pk_transaction_package_cb (PkBackend *backend,
 	package_id = pk_package_get_id (item);
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (package_id);
-	info_text = pk_info_enum_to_string (info);
 	summary = pk_package_get_summary (item);
-	g_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	g_debug ("emit package %s, %s, %s",
+		 pk_info_enum_to_string (info),
+		 package_id,
+		 summary);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Package",
-				       g_variant_new ("(sss)",
-						      info_text,
+				       g_variant_new ("(uss)",
+						      info,
 						      package_id,
 						      summary ? summary : ""),
 				       NULL);
