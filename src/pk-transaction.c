@@ -154,7 +154,6 @@ struct PkTransactionPrivate
 	guint			 signal_media_change_required;
 	guint			 signal_require_restart;
 	guint			 signal_status_changed;
-	guint			 signal_update_detail;
 	guint			 signal_category;
 	guint			 signal_speed;
 	guint			 signal_item_progress;
@@ -2193,16 +2192,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL)) {
-		if (priv->signal_update_detail == 0)
-			priv->signal_update_detail =
-				g_signal_connect (priv->backend, "update-detail",
-						G_CALLBACK (pk_transaction_update_detail_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+					(PkBackendVFunc) pk_transaction_update_detail_cb,
+					transaction);
 	} else {
-		if (priv->signal_update_detail > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_update_detail);
-			priv->signal_update_detail = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY)) {

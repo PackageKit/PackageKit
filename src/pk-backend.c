@@ -154,7 +154,6 @@ enum {
 	SIGNAL_STATUS_CHANGED,
 	SIGNAL_FILES,
 	SIGNAL_DISTRO_UPGRADE,
-	SIGNAL_UPDATE_DETAIL,
 	SIGNAL_ERROR_CODE,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
 	SIGNAL_EULA_REQUIRED,
@@ -1460,7 +1459,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_UPDATE_DETAIL], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_UPDATE_DETAIL, G_OBJECT (item));
 	pk_results_add_update_detail (backend->priv->results, item);
 
 	/* we parsed okay */
@@ -3226,11 +3225,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	/* objects */
-	signals[SIGNAL_UPDATE_DETAIL] =
-		g_signal_new ("update-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
