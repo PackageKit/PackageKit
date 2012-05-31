@@ -5848,7 +5848,7 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Status") == 0) {
-		retval = g_variant_new_string (pk_status_enum_to_string (priv->status));
+		retval = g_variant_new_uint32 (priv->status);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "LastPackage") == 0) {

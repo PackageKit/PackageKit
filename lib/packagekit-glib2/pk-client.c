@@ -433,7 +433,7 @@ pk_client_set_property_value (PkClientState *state,
 	/* status */
 	if (g_strcmp0 (key, "Status") == 0) {
 		ret = pk_progress_set_status (state->progress,
-						  pk_status_enum_from_string (g_variant_get_string (value, NULL)));
+					      g_variant_get_uint32 (value));
 		if (ret && state->progress_callback != NULL) {
 			state->progress_callback (state->progress,
 						  PK_PROGRESS_TYPE_STATUS,

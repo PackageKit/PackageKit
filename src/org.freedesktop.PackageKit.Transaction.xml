@@ -23,11 +23,11 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="Status" type="s" access="read">
+    <property name="Status" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The transaction status, e.g. <doc:tt>downloading</doc:tt>.
+            The transaction status enum, e.g. <doc:tt>downloading</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
