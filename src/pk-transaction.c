@@ -1393,7 +1393,6 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 					   PkRepoSignatureRequired *item,
 					   PkTransaction *transaction)
 {
-	const gchar *type_text;
 	gchar *package_id;
 	gchar *repository_name;
 	gchar *key_url;
@@ -1422,16 +1421,16 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	type_text = pk_sig_type_enum_to_string (type);
 	g_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
 		 package_id, repository_name, key_url, key_userid, key_id,
-		 key_fingerprint, key_timestamp, type_text);
+		 key_fingerprint, key_timestamp,
+		 pk_sig_type_enum_to_string (type));
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "RepoSignatureRequired",
-				       g_variant_new ("(ssssssss)",
+				       g_variant_new ("(sssssssu)",
 						      package_id,
 						      repository_name,
 						      key_url != NULL ? key_url : "",
@@ -1439,7 +1438,7 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 						      key_id != NULL ? key_id : "",
 						      key_fingerprint != NULL ? key_fingerprint : "",
 						      key_timestamp != NULL ? key_timestamp : "",
-						      type_text),
+						      type),
 				       NULL);
 
 	/* we should mark this transaction so that we finish with a special code */

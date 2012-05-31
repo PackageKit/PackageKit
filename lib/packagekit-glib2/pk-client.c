@@ -1309,7 +1309,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "RepoSignatureRequired") == 0) {
 		PkRepoSignatureRequired *item;
 		g_variant_get (parameters,
-			       "(&s&s&s&s&s&s&s&s)",
+			       "(&s&s&s&s&s&s&su)",
 			       &tmp_str[0],
 			       &tmp_str[1],
 			       &tmp_str[2],
@@ -1317,7 +1317,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			       &tmp_str[4],
 			       &tmp_str[5],
 			       &tmp_str[6],
-			       &tmp_str[7]);
+			       &tmp_uint);
 		item = pk_repo_signature_required_new ();
 		g_object_set (item,
 			      "package-id", tmp_str[0],
@@ -1327,7 +1327,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "key-id", tmp_str[4],
 			      "key-fingerprint", tmp_str[5],
 			      "key-timestamp", tmp_str[6],
-			      "type", pk_sig_type_enum_from_string (tmp_str[7]),
+			      "type", tmp_uint,
 			      "role", state->role,
 			      "transaction-id", state->transaction_id,
 			      NULL);
