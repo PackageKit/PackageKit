@@ -1911,7 +1911,7 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="exit" direction="out">
+      <arg type="u" name="exit" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

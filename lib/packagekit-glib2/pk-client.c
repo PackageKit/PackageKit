@@ -1117,11 +1117,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "Finished") == 0) {
 		g_variant_get (parameters,
-			       "(&su)",
-			       &tmp_str[0],
+			       "(uu)",
+			       &tmp_uint2,
 			       &tmp_uint);
 		pk_client_signal_finished (state,
-					   pk_exit_enum_from_string (tmp_str[0]),
+					   tmp_uint2,
 					   tmp_uint);
 		return;
 	}
