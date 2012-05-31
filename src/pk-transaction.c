@@ -457,7 +457,7 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
 					      "Status",
-					      g_variant_new_string (pk_status_enum_to_string (status)));
+					      g_variant_new_uint32 (status));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -2679,54 +2679,6 @@ out:
 	return ret;
 }
 
-/**
- * pk_transaction_filter_check:
- **/
-gboolean
-pk_transaction_filter_check (const gchar *filter, GError **error)
-{
-	gchar **sections = NULL;
-	guint i;
-	guint length;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (error != NULL, FALSE);
-
-	/* is zero? */
-	if (pk_strzero (filter)) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "filter zero length");
-		goto out;
-	}
-
-	/* check for invalid input */
-	ret = pk_transaction_strvalidate (filter, error);
-	if (!ret)
-		goto out;
-
-	/* split by delimeter ';' */
-	sections = g_strsplit (filter, ";", 0);
-	length = g_strv_length (sections);
-	for (i=0; i<length; i++) {
-		/* only one wrong part is enough to fail the filter */
-		if (pk_strzero (sections[i])) {
-			ret = FALSE;
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Single empty section of filter: %s", filter);
-			goto out;
-		}
-		if (pk_filter_enum_from_string (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
-			ret = FALSE;
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Unknown filter part: %s", sections[i]);
-			goto out;
-		}
-	}
-out:
-	g_strfreev (sections);
-	return ret;
-}
-
 #ifdef USE_SECURITY_POLKIT
 /**
  * pk_transaction_action_obtain_authorization:
@@ -3390,14 +3342,14 @@ pk_transaction_get_depends (PkTransaction *transaction,
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&sb)",
+	g_variant_get (params, "(t^a&sb)",
 		       &filter,
 		       &package_ids,
 		       &recursive);
@@ -3410,13 +3362,6 @@ pk_transaction_get_depends (PkTransaction *transaction,
 					PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDepends not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3441,7 +3386,7 @@ pk_transaction_get_depends (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
@@ -3648,15 +3593,15 @@ pk_transaction_get_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s)",
+	g_variant_get (params, "(t)",
 		       &filter);
 
-	g_debug ("GetPackages method called: %s", filter);
+	g_debug ("GetPackages method called: %" G_GUINT64_FORMAT, filter);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -3667,15 +3612,8 @@ pk_transaction_get_packages (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
 
 	/* try to commit this */
@@ -3727,12 +3665,12 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s)",
+	g_variant_get (params, "(t)",
 		       &filter);
 
 	g_debug ("GetRepoList method called");
@@ -3746,15 +3684,8 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
 
 	/* try to commit this */
@@ -3783,14 +3714,14 @@ pk_transaction_get_requires (PkTransaction *transaction,
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&sb)",
+	g_variant_get (params, "(t^a&sb)",
 		       &filter,
 		       &package_ids,
 		       &recursive);
@@ -3803,13 +3734,6 @@ pk_transaction_get_requires (PkTransaction *transaction,
 					PK_ROLE_ENUM_GET_REQUIRES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRequires not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3834,7 +3758,7 @@ pk_transaction_get_requires (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
@@ -4014,12 +3938,12 @@ pk_transaction_get_updates (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s)",
+	g_variant_get (params, "(t)",
 		       &filter);
 
 	g_debug ("GetUpdates method called");
@@ -4033,15 +3957,8 @@ pk_transaction_get_updates (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
 	/* try and reuse cache */
@@ -4609,31 +4526,25 @@ pk_transaction_resolve (PkTransaction *transaction,
 	guint i;
 	guint length;
 	guint max_length;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **packages;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
 		       &packages);
 
 	packages_temp = pk_package_ids_to_string (packages);
-	g_debug ("Resolve method called: %s, %s", filter, packages_temp);
+	g_debug ("Resolve method called: %" G_GUINT64_FORMAT ", %s",
+		 filter, packages_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_RESOLVE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Resolve not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4666,7 +4577,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (packages);
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
 
 	/* try to commit this */
@@ -4744,17 +4655,18 @@ pk_transaction_search_details (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
 		       &values);
 
-	g_debug ("SearchDetails method called: %s, %s", filter, values[0]);
+	g_debug ("SearchDetails method called: %" G_GUINT64_FORMAT ", %s",
+		 filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4772,15 +4684,8 @@ pk_transaction_search_details (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
 
@@ -4807,17 +4712,18 @@ pk_transaction_search_files (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	guint i;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
 		       &values);
 
-	g_debug ("SearchFiles method called: %s, %s", filter, values[0]);
+	g_debug ("SearchFiles method called: %" G_GUINT64_FORMAT ", %s",
+		 filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4845,15 +4751,8 @@ pk_transaction_search_files (PkTransaction *transaction,
 		}
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
 
@@ -4880,17 +4779,18 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	guint i;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
 		       &values);
 
-	g_debug ("SearchGroups method called: %s, %s", filter, values[0]);
+	g_debug ("SearchGroups method called: %" G_GUINT64_FORMAT ", %s",
+		 filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4918,15 +4818,8 @@ pk_transaction_search_groups (PkTransaction *transaction,
 		}
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
 
@@ -4952,17 +4845,18 @@ pk_transaction_search_names (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
 		       &values);
 
-	g_debug ("SearchNames method called: %s, %s", filter, values[0]);
+	g_debug ("SearchNames method called: %"  G_GUINT64_FORMAT ", %s",
+		 filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4980,15 +4874,8 @@ pk_transaction_search_names (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
 
@@ -5611,14 +5498,14 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	gboolean ret;
 	PkProvidesEnum provides;
 	GError *error = NULL;
-	const gchar *filter;
+	PkBitfield filter;
 	const gchar *type;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s&s^a&s)",
+	g_variant_get (params, "(t&s^a&s)",
 		       &filter,
 		       &type,
 		       &values);
@@ -5641,13 +5528,6 @@ pk_transaction_what_provides (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check the filter */
-	ret = pk_transaction_filter_check (filter, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
 	/* check provides */
 	provides = pk_provides_enum_from_string (type);
 	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
@@ -5658,7 +5538,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
+	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	transaction->priv->cached_provides = provides;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);

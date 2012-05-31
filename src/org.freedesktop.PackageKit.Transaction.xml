@@ -330,11 +330,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -460,11 +460,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -484,11 +484,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -518,11 +518,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -621,11 +621,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1002,11 +1002,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1095,11 +1095,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1148,11 +1148,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1208,11 +1208,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1288,11 +1288,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1566,11 +1566,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="filter" direction="in">
+      <arg type="t" name="filter" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A correct filter, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
+              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>

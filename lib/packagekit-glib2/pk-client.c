@@ -1515,7 +1515,6 @@ pk_client_set_hints_cb (GObject *source_object,
 			gpointer user_data)
 {
 	const gchar *enum_text;
-	gchar *filters_text = NULL;
 	GError *error = NULL;
 	GVariant *value;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
@@ -1540,10 +1539,9 @@ pk_client_set_hints_cb (GObject *source_object,
 
 	/* do this async, although this should be pretty fast anyway */
 	if (state->role == PK_ROLE_ENUM_RESOLVE) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "Resolve",
-				   g_variant_new ("(s^a&s)",
-						  filters_text,
+				   g_variant_new ("(t^a&s)",
+						  state->filters,
 						  state->package_ids),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -1554,10 +1552,9 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "SearchNames",
-				   g_variant_new ("(s^a&s)",
-						  filters_text,
+				   g_variant_new ("(t^a&s)",
+						  state->filters,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -1565,10 +1562,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "SearchDetails",
-				   g_variant_new ("(s^a&s)",
-						  filters_text,
+				   g_variant_new ("(t^a&s)",
+						  state->filters,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -1576,10 +1572,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "SearchGroups",
-				   g_variant_new ("(s^a&s)",
-						  filters_text,
+				   g_variant_new ("(t^a&s)",
+						  state->filters,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -1587,10 +1582,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "SearchFiles",
-				   g_variant_new ("(s^a&s)",
-						  filters_text,
+				   g_variant_new ("(t^a&s)",
+						  state->filters,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -1644,10 +1638,9 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "GetUpdates",
-				   g_variant_new ("(s)",
-						  filters_text),
+				   g_variant_new ("(t)",
+						  state->filters),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,
@@ -1663,10 +1656,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "GetDepends",
-				   g_variant_new ("(s^a&sb)",
-						  filters_text,
+				   g_variant_new ("(t^a&sb)",
+						  state->filters,
 						  state->package_ids,
 						  state->recursive),
 				   G_DBUS_CALL_FLAGS_NONE,
@@ -1678,20 +1670,18 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "GetPackages",
 				   g_variant_new ("(s)",
-						  filters_text),
+						  state->filters),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "GetRequires",
-				   g_variant_new ("(s^a&sb)",
-						  filters_text,
+				   g_variant_new ("(t^a&sb)",
+						  state->filters,
 						  state->package_ids,
 						  state->recursive),
 				   G_DBUS_CALL_FLAGS_NONE,
@@ -1703,11 +1693,10 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		enum_text = pk_provides_enum_to_string (state->provides);
 		g_dbus_proxy_call (state->proxy, "WhatProvides",
-				   g_variant_new ("(ss^a&s)",
-						  filters_text,
+				   g_variant_new ("(ts^a&s)",
+						  state->filters,
 						  enum_text,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
@@ -1836,10 +1825,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   pk_client_method_cb,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		filters_text = pk_filter_bitfield_to_string (state->filters);
 		g_dbus_proxy_call (state->proxy, "GetRepoList",
-				   g_variant_new ("(s)",
-						  filters_text),
+				   g_variant_new ("(t)",
+						  state->filters),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,
@@ -1947,7 +1935,6 @@ pk_client_set_hints_cb (GObject *source_object,
 out:
 	if (value != NULL)
 		g_variant_unref (value);
-	g_free (filters_text);
 	return;
 }
 
