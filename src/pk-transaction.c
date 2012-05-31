@@ -1560,7 +1560,6 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 				   PkRequireRestart *item,
 				   PkTransaction *transaction)
 {
-	const gchar *restart_text;
 	PkRequireRestart *item_tmp;
 	GPtrArray *array;
 	gboolean found = FALSE;
@@ -1595,9 +1594,10 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 	g_ptr_array_unref (array);
 
 	/* ignore */
-	restart_text = pk_restart_enum_to_string (restart);
 	if (found) {
-		g_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
+		g_debug ("ignoring %s (%s) as already sent",
+			 pk_restart_enum_to_string (restart),
+			 package_id);
 		return;
 	}
 
@@ -1605,14 +1605,16 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 	pk_results_add_require_restart (transaction->priv->results, item);
 
 	/* emit */
-	g_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
+	g_debug ("emitting require-restart %s, '%s'",
+		 pk_restart_enum_to_string (restart),
+		 package_id);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "RequireRestart",
-				       g_variant_new ("(ss)",
-						      restart_text,
+				       g_variant_new ("(us)",
+						      restart,
 						      package_id),
 				       NULL);
 	g_free (package_id);

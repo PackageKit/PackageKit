@@ -1249,12 +1249,12 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
 		PkRequireRestart *item;
 		g_variant_get (parameters,
-			       "(&s&s)",
-			       &tmp_str[0],
+			       "(u&s)",
+			       &tmp_uint,
 			       &tmp_str[1]);
 		item = pk_require_restart_new ();
 		g_object_set (item,
-			      "restart", pk_restart_enum_from_string (tmp_str[0]),
+			      "restart", tmp_uint,
 			      "package-id", tmp_str[1],
 			      "role", state->role,
 			      "transaction-id", state->transaction_id,
