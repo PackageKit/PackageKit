@@ -5844,7 +5844,7 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	PkTransactionPrivate *priv = transaction->priv;
 
 	if (g_strcmp0 (property_name, "Role") == 0) {
-		retval = g_variant_new_string (pk_role_enum_to_string (priv->role));
+		retval = g_variant_new_uint32 (priv->role);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Status") == 0) {

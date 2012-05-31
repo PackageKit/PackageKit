@@ -14,11 +14,11 @@
     </doc:doc>
 
     <!--*****************************************************************************************-->
-    <property name="Role" type="s" access="read">
+    <property name="Role" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The transaction role, e.g. <doc:tt>update-system</doc:tt>.
+            The transaction role enum, e.g. <doc:tt>update-system</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
