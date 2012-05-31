@@ -531,7 +531,6 @@ pk_transaction_details_cb (PkBackend *backend,
 			   PkDetails *item,
 			   PkTransaction *transaction)
 {
-	const gchar *group_text;
 	gchar *package_id;
 	gchar *description;
 	gchar *license;
@@ -556,7 +555,6 @@ pk_transaction_details_cb (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	group_text = pk_group_enum_to_string (group);
 	g_debug ("emitting details");
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
@@ -566,7 +564,7 @@ pk_transaction_details_cb (PkBackend *backend,
 				       g_variant_new ("(ssssst)",
 						      package_id,
 						      license != NULL ? license : "",
-						      group_text,
+						      group,
 						      description != NULL ? description : "",
 						      url != NULL ? url : "",
 						      size),
