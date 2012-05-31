@@ -2464,7 +2464,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="restart" direction="out">
+      <arg type="u" name="restart" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

@@ -1714,7 +1714,6 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				 PkTransaction *transaction)
 {
 	const gchar *state_text;
-	const gchar *restart_text;
 	gchar *package_id;
 	gchar *updates;
 	gchar *obsoletes;
@@ -1752,21 +1751,20 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 
 	/* emit */
 	g_debug ("emitting update-detail");
-	restart_text = pk_restart_enum_to_string (restart);
 	state_text = pk_update_state_enum_to_string (state);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "UpdateDetail",
-				       g_variant_new ("(ssssssssssss)",
+				       g_variant_new ("(ssssssusssss)",
 						      package_id,
 						      updates != NULL ? updates : "",
 						      obsoletes != NULL ? obsoletes : "",
 						      vendor_url != NULL ? vendor_url : "",
 						      bugzilla_url != NULL ? bugzilla_url : "",
 						      cve_url != NULL ? cve_url : "",
-						      restart_text,
+						      restart,
 						      update_text != NULL ? update_text : "",
 						      changelog != NULL ? changelog : "",
 						      state_text,
