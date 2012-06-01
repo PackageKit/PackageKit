@@ -212,7 +212,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	PkConf *conf;
 	PkRoleEnum role;
 	guint finished_sig_id = 0;
-	guint package_sig_id = 0;
 	PkBitfield backend_signals;
 
 	PkPackageCache *cache = NULL;
@@ -247,11 +246,13 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_FINISHED);
 	pk_transaction_set_signals (transaction, backend_signals);
 
-	/* connect to backend */
+	/* connect backend */
 	finished_sig_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_sig_id = g_signal_connect (plugin->backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_PACKAGE,
+			      (PkBackendVFunc) pk_plugin_package_cb,
+			      plugin);
 	pk_backend_set_vfunc (plugin->backend,
 			      PK_BACKEND_SIGNAL_DETAILS,
 			      (PkBackendVFunc) pk_plugin_details_cb,
@@ -335,10 +336,8 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 out:
 	if (finished_sig_id != 0) {
 		g_signal_handler_disconnect (plugin->backend, finished_sig_id);
-		g_signal_handler_disconnect (plugin->backend, package_sig_id);
-		pk_backend_set_vfunc (plugin->backend,
-				      PK_BACKEND_SIGNAL_DETAILS,
-				      NULL, NULL);
+		pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_PACKAGE, NULL, NULL);
+		pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_DETAILS, NULL, NULL);
 	}
 
 	if (cache != NULL) {
