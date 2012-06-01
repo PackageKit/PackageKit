@@ -152,7 +152,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_DISTRO_UPGRADE,
 	SIGNAL_ERROR_CODE,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
 	SIGNAL_EULA_REQUIRED,
@@ -1810,7 +1809,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum state, const 
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_DISTRO_UPGRADE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_DISTRO_UPGRADE, G_OBJECT (item));
 	pk_results_add_distro_upgrade (backend->priv->results, item);
 
 	/* success */
@@ -3198,11 +3197,6 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	/* objects */
 
-	signals[SIGNAL_DISTRO_UPGRADE] =
-		g_signal_new ("distro-upgrade",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

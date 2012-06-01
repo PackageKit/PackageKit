@@ -1979,16 +1979,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DISTRO_UPGRADE)) {
-		if (priv->signal_distro_upgrade == 0)
-			priv->signal_distro_upgrade =
-				g_signal_connect (priv->backend, "distro-upgrade",
-						G_CALLBACK (pk_transaction_distro_upgrade_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+					(PkBackendVFunc) pk_transaction_distro_upgrade_cb,
+					transaction);
 	} else {
-		if (priv->signal_distro_upgrade > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_distro_upgrade);
-			priv->signal_distro_upgrade = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED)) {
