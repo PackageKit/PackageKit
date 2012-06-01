@@ -388,10 +388,6 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_REPO_LIST,
 		PK_ROLE_ENUM_REPO_ENABLE,
 		PK_ROLE_ENUM_GET_CATEGORIES,
-		PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-		PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-		PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-		PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		-1);
 
 	/* only add GetDistroUpgrades if the binary is present */
@@ -538,60 +534,40 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper (priv->spawn,
+				 "yumBackend.py",
+				 "install-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_remove_packages:
- */
-void
-pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
-{
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
-	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void
-pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-update-packages", package_ids_temp, NULL);
-	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_install_packages:
- */
-void
-pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-install-packages", package_ids_temp, NULL);
-	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "install-files", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper (priv->spawn,
+				 "yumBackend.py",
+				 "install-files",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
@@ -620,12 +596,26 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string (autoremove), package_ids_temp, NULL);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper (priv->spawn,
+				 "yumBackend.py",
+				 "remove-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 pk_backend_bool_to_string (allow_deps),
+				 pk_backend_bool_to_string (autoremove),
+				 NULL);
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
@@ -692,21 +682,36 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper (priv->spawn,
+				 "yumBackend.py",
+				 "update-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
+	gchar *transaction_flags_temp;
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper (priv->spawn,
+				 "yumBackend.py",
+				 "update-system",
+				 transaction_flags_temp,
+				 NULL);
+	g_free (transaction_flags_temp);
 }
 
 /**
@@ -774,20 +779,6 @@ void
 pk_backend_get_categories (PkBackend *backend)
 {
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-categories", NULL);
-}
-
-/**
- * pk_backend_simulate_install_files:
- */
-void
-pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
-{
-	gchar *package_ids_temp;
-
-	/* send the complete list as stdin */
-	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-install-files", package_ids_temp, NULL);
-	g_free (package_ids_temp);
 }
 
 /**

@@ -1741,7 +1741,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     setattr(repo, attrname, only_trusted)
 
 
-    def update_system(self, only_trusted):
+    def update_system(self, transaction_flags):
         '''
         Implement the update-system functionality
         '''
@@ -1755,7 +1755,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        self._set_only_trusted(only_trusted)
+        self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags)
 
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
@@ -1782,12 +1782,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
                     if signed:
                         continue
-                    if only_trusted:
+                    if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
                         self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
                     self._show_package(pkg, INFO_UNTRUSTED)
                 try:
-                    self._runYumTransaction(allow_skip_broken=True, only_simulate=False)
+                    self._runYumTransaction(allow_skip_broken=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -1954,13 +1954,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
 
-    def install_packages(self, only_trusted, inst_files):
-        self._install_packages(only_trusted, inst_files)
-
-    def simulate_install_packages(self, inst_files):
-        self._install_packages(False, inst_files, True)
-
-    def _install_packages(self, only_trusted, package_ids, simulate=False):
+    def install_packages(self, transaction_flags, package_ids):
         '''
         Implement the install-packages functionality
         '''
@@ -1975,7 +1969,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_RUNNING)
         txmbrs = []
 
-        self._set_only_trusted(only_trusted or simulate)
+        self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags or TRANSACTION_FLAG_SIMULATE in transaction_flags)
 
         for package_id in package_ids:
             grp = self._is_meta_package(package_id)
@@ -2021,12 +2015,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     return
                 if signed:
                     continue
-                if only_trusted:
+                if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
                     self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                     return
                 self._show_package(pkg, INFO_UNTRUSTED)
             try:
-                self._runYumTransaction(only_simulate=simulate)
+                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
@@ -2049,13 +2043,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_NEWER_PACKAGE_EXISTS, "A newer version of %s is available online." % po.name)
 
-    def install_files(self, only_trusted, inst_files):
-        self._install_files(only_trusted, inst_files)
-
-    def simulate_install_files(self, inst_files):
-        self._install_files(False, inst_files, True)
-
-    def _install_files(self, only_trusted, inst_files, simulate=False):
+    def install_files(self, transaction_flags, inst_files):
         '''
         Implement the install-files functionality
         Install the package containing the inst_file file
@@ -2163,7 +2151,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
                        'All of the specified packages have already been installed')
 
-        self._set_only_trusted(only_trusted or simulate)
+        self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags or TRANSACTION_FLAG_SIMULATE in transaction_flags)
 
         # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
         # This means we don't run runYumTransaction, and don't get the GPG failure in
@@ -2181,7 +2169,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase._checkSignatures([po], None)
             except yum.Errors.YumGPGCheckError, e:
-                if only_trusted:
+                if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
                     return
                 self._show_package(po, INFO_UNTRUSTED)
@@ -2215,7 +2203,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 return
 
             try:
-                self._runYumTransaction(only_simulate=simulate)
+                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
                 return
@@ -2243,7 +2231,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if not self.yumbase.tsInfo.pkgSack:
                                 self.yumbase.tsInfo.pkgSack = MetaSack()
                             try:
-                                self._runYumTransaction(only_simulate=simulate)
+                                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
                             except PkError, e:
                                 self.error(e.code, e.details, exit=False)
                                 return
@@ -2293,13 +2281,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return True
 
-    def update_packages(self, only_trusted, package_ids):
-        self._update_packages(only_trusted, package_ids)
-
-    def simulate_update_packages(self, package_ids):
-        self._update_packages(False, package_ids, True)
-
-    def _update_packages(self, only_trusted, package_ids, simulate=False):
+    def update_packages(self, transaction_flags, package_ids):
         '''
         Implement the install functionality
         This will only work with yum 3.2.4 or higher
@@ -2314,7 +2296,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        self._set_only_trusted(only_trusted or simulate)
+        self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags or TRANSACTION_FLAG_SIMULATE in transaction_flags)
 
         txmbrs = []
         try:
@@ -2357,12 +2339,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
                     if signed:
                         continue
-                    if only_trusted:
+                    if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
                         self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
                     self._show_package(pkg, INFO_UNTRUSTED)
                 try:
-                    self._runYumTransaction(allow_skip_broken=True, only_simulate=simulate)
+                    self._runYumTransaction(allow_skip_broken=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -2479,13 +2461,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def remove_packages(self, allowdep, autoremove, package_ids):
-        self._remove_packages(allowdep, autoremove, package_ids)
-
-    def simulate_remove_packages(self, package_ids):
-        self._remove_packages(True, False, package_ids, True)
-
-    def _remove_packages(self, allowdep, autoremove, package_ids, simulate=False):
+    def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         '''
         Implement the remove functionality
         Needed to be implemented in a sub class
@@ -2553,9 +2529,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
             try:
                 if not allowdep:
-                    self._runYumTransaction(allow_remove_deps=False, only_simulate=simulate)
+                    self._runYumTransaction(allow_remove_deps=False, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
                 else:
-                    self._runYumTransaction(allow_remove_deps=True, only_simulate=simulate)
+                    self._runYumTransaction(allow_remove_deps=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
