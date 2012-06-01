@@ -5494,18 +5494,19 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	PkProvidesEnum provides;
 	GError *error = NULL;
 	PkBitfield filter;
-	const gchar *type;
 	gchar **values;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(t&s^a&s)",
+	g_variant_get (params, "(t&u^a&s)",
 		       &filter,
-		       &type,
+		       &provides,
 		       &values);
 
-	g_debug ("WhatProvides method called: %s, %s", type, values[0]);
+	g_debug ("WhatProvides method called: %s, %s",
+		 pk_provides_enum_to_string (provides),
+		 values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -5519,15 +5520,6 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check provides */
-	provides = pk_provides_enum_from_string (type);
-	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
-				     "provide type '%s' not found", type);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}

@@ -1575,7 +1575,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="type" direction="in">
+      <arg type="u" name="type" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>

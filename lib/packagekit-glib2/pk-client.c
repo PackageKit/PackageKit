@@ -1693,11 +1693,10 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		enum_text = pk_provides_enum_to_string (state->provides);
 		g_dbus_proxy_call (state->proxy, "WhatProvides",
-				   g_variant_new ("(ts^a&s)",
+				   g_variant_new ("(tu^a&s)",
 						  state->filters,
-						  enum_text,
+						  state->provides,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
