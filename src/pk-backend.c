@@ -157,7 +157,6 @@ enum {
 	SIGNAL_ERROR_CODE,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
 	SIGNAL_EULA_REQUIRED,
-	SIGNAL_REQUIRE_RESTART,
 	SIGNAL_MESSAGE,
 	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_FINISHED,
@@ -1504,7 +1503,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_REQUIRE_RESTART], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REQUIRE_RESTART, G_OBJECT (item));
 	pk_results_add_require_restart (backend->priv->results, item);
 
 	/* success */
@@ -3225,11 +3224,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	/* objects */
-	signals[SIGNAL_REQUIRE_RESTART] =
-		g_signal_new ("require-restart",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_MESSAGE] =
 		g_signal_new ("message",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -152,7 +152,6 @@ struct PkTransactionPrivate
 	guint			 signal_repo_signature_required;
 	guint			 signal_eula_required;
 	guint			 signal_media_change_required;
-	guint			 signal_require_restart;
 	guint			 signal_status_changed;
 	guint			 signal_category;
 	guint			 signal_speed;
@@ -2166,16 +2165,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REQUIRE_RESTART)) {
-		if (priv->signal_require_restart == 0)
-			priv->signal_require_restart =
-				g_signal_connect (priv->backend, "require-restart",
-						G_CALLBACK (pk_transaction_require_restart_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+					(PkBackendVFunc) pk_transaction_require_restart_cb,
+					transaction);
 	} else {
-		if (priv->signal_require_restart > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_require_restart);
-			priv->signal_require_restart = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED)) {
