@@ -3010,7 +3010,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ACCEPT_EULA);
+	transaction->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
 
 	g_variant_get (params, "(&s)",
 		       &eula_id);
@@ -3265,7 +3265,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_directory = g_strdup (directory);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
+	transaction->priv->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3306,7 +3306,7 @@ pk_transaction_get_categories (PkTransaction *transaction,
 		goto out;
 	}
 
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_CATEGORIES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_CATEGORIES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3380,7 +3380,7 @@ pk_transaction_get_depends (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
+	transaction->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3450,7 +3450,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
+	transaction->priv->role = PK_ROLE_ENUM_GET_DETAILS;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3491,7 +3491,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3559,7 +3559,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_FILES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3605,7 +3605,7 @@ pk_transaction_get_packages (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_PACKAGES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3638,7 +3638,7 @@ pk_transaction_get_old_transactions (PkTransaction *transaction,
 
 	g_debug ("GetOldTransactions method called");
 
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
+	transaction->priv->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
 	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-old-transactions");
@@ -3677,7 +3677,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
+	transaction->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3752,7 +3752,7 @@ pk_transaction_get_requires (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3821,7 +3821,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+	transaction->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3950,7 +3950,7 @@ pk_transaction_get_updates (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
+	transaction->priv->role = PK_ROLE_ENUM_GET_UPDATES;
 
 	/* try and reuse cache */
 	ret = pk_transaction_try_emit_cache (transaction);
@@ -4118,7 +4118,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
+	transaction->priv->role = PK_ROLE_ENUM_INSTALL_FILES;
 out:
 	g_free (full_paths_temp);
 	g_free (content_type);
@@ -4182,7 +4182,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
+	transaction->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
@@ -4250,7 +4250,7 @@ pk_transaction_install_signature (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->cached_key_id = g_strdup (key_id);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_SIGNATURE);
+	transaction->priv->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4299,7 +4299,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_force = force;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REFRESH_CACHE);
+	transaction->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4375,7 +4375,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	transaction->priv->cached_allow_deps = allow_deps;
 	transaction->priv->cached_autoremove = autoremove;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
+	transaction->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4432,7 +4432,7 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_enabled = enabled;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_ENABLE);
+	transaction->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4491,7 +4491,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 	transaction->priv->cached_repo_id = g_strdup (repo_id);
 	transaction->priv->cached_parameter = g_strdup (parameter);
 	transaction->priv->cached_value = g_strdup (value);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_SET_DATA);
+	transaction->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4572,7 +4572,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (packages);
 	transaction->priv->cached_filters = filter;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
+	transaction->priv->role = PK_ROLE_ENUM_RESOLVE;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -4625,7 +4625,7 @@ pk_transaction_rollback (PkTransaction *transaction,
 
 	/* save so we can run later */
 	transaction->priv->cached_transaction_id = g_strdup (transaction_id);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ROLLBACK);
+	transaction->priv->role = PK_ROLE_ENUM_ROLLBACK;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4681,7 +4681,7 @@ pk_transaction_search_details (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
+	transaction->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -4748,7 +4748,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
+	transaction->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -4815,7 +4815,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
+	transaction->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -4871,7 +4871,7 @@ pk_transaction_search_names (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
+	transaction->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -5418,7 +5418,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_only_trusted = only_trusted;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	transaction->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
@@ -5527,7 +5527,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	transaction->priv->cached_provides = provides;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
+	transaction->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -5586,7 +5586,7 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_value = g_strdup (distro_id);
 	transaction->priv->cached_provides = upgrade_kind;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+	transaction->priv->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
