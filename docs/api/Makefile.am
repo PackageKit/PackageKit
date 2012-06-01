@@ -52,6 +52,7 @@ HTML_IMAGES =						\
 	spec/pk-faq-filter.png				\
 	spec/pk-transactions.svg			\
 	spec/pk-transactions-set-locale.png		\
+	spec/pk-transactions-repair-required.png	\
 	spec/pk-transactions-failure.png		\
 	spec/pk-transactions-download.png		\
 	spec/pk-transactions-sig-install.png		\
