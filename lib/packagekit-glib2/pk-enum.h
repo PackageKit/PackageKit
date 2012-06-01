@@ -517,6 +517,7 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_NONE,			/* Since: 0.8.1 */
 	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,		/* Since: 0.8.1 */
 	PK_TRANSACTION_FLAG_ENUM_SIMULATE,		/* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_PREPARE,		/* Since: 0.8.1 */
 	PK_TRANSACTION_FLAG_ENUM_LAST			/* Since: 0.8.1 */
 } PkTransactionFlagEnum;
 
