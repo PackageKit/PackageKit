@@ -406,6 +406,13 @@ static const PkEnumMatch enum_upgrade_kind[] = {
 	{0, NULL}
 };
 
+static const PkEnumMatch enum_transaction_flag[] = {
+	{PK_TRANSACTION_FLAG_ENUM_NONE,		"none"},	/* fall though value */
+	{PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,	"only-trusted"},
+	{PK_TRANSACTION_FLAG_ENUM_SIMULATE,	"simluate"},
+	{0, NULL}
+};
+
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values
@@ -1003,6 +1010,38 @@ const gchar *
 pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind)
 {
 	return pk_enum_find_string (enum_upgrade_kind, upgrade_kind);
+}
+
+/**
+ * pk_transaction_flag_enum_from_string:
+ * @transaction_flag: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. %PK_TRANSACTION_FLAG_ENUM_SIMULATE
+ *
+ * Since: 0.8.1
+ **/
+PkTransactionFlagEnum
+pk_transaction_flag_enum_from_string (const gchar *transaction_flag)
+{
+	return pk_enum_find_value (enum_transaction_flag, transaction_flag);
+}
+
+/**
+ * pk_transaction_flag_enum_to_string:
+ * @transaction_flag: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "simulate"
+ *
+ * Since: 0.8.1
+ **/
+const gchar *
+pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag)
+{
+	return pk_enum_find_string (enum_transaction_flag, transaction_flag);
 }
 
 /**
