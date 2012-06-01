@@ -36,6 +36,10 @@ if PK_BUILD_DEVICE_REBIND
 SUBDIRS += device-rebind
 endif
 
+if PK_BUILD_SYSTEMD_UPDATES
+SUBDIRS += systemd-updates
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 

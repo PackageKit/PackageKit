@@ -328,6 +328,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_libexecdir}/packagekitd
+%{_libexecdir}/pk-trigger-offline-update
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %{_bindir}/pkgenpack

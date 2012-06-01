@@ -483,6 +483,13 @@ else
 fi
 AM_CONDITIONAL(PK_BUILD_PM_UTILS, test $build_pm_utils = "yes")
 
+dnl ---------------------------------------------------------------------------
+dnl - Able to use systemd updates functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build systemd updates functionality]),
+	      build_systemd_updates=$enableval,build_systemd_updates=yes)
+AM_CONDITIONAL(PK_BUILD_SYSTEMD_UPDATES, test $build_systemd_updates = "yes")
+
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
@@ -770,6 +777,7 @@ contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
 contrib/device-rebind/Makefile
 contrib/pm-utils/Makefile
+contrib/systemd-updates/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
@@ -841,6 +849,7 @@ echo "
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
         device-rebind:             ${build_device_rebind}
+        systemd-updates:           ${build_systemd_updates}
         pm-utils scripts:          ${build_pm_utils}
         QT library:                ${build_qt}
 

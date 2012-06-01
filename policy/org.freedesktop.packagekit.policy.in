@@ -267,5 +267,21 @@
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.trigger-offline-update">
+    <!-- SECURITY:
+          - Normal users are able to ask updates to be installed at
+            early boot time without a password.
+     -->
+    <_description>Trigger offline updates</_description>
+    <_message>Authentication is required to trigger offline updates</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/pk-trigger-offline-update</annotate>
+  </action>
+
 </policyconfig>
 
