@@ -146,7 +146,6 @@ struct PkTransactionPrivate
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
 	guint			 signal_status_changed;
-	guint			 signal_category;
 	guint			 signal_speed;
 	guint			 signal_item_progress;
 	GPtrArray		*plugins;
@@ -2172,16 +2171,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY)) {
-		if (priv->signal_category == 0)
-			priv->signal_category =
-				g_signal_connect (priv->backend, "category",
-						G_CALLBACK (pk_transaction_category_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_CATEGORY,
+					(PkBackendVFunc) pk_transaction_category_cb,
+					transaction);
 	} else {
-		if (priv->signal_category > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_category);
-			priv->signal_category = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_CATEGORY,
+					NULL,
+					transaction);
 	}
 }
 
