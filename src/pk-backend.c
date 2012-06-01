@@ -155,7 +155,6 @@ enum {
 	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_FINISHED,
 	SIGNAL_ALLOW_CANCEL,
-	SIGNAL_REPO_DETAIL,
 	SIGNAL_CATEGORY,
 	SIGNAL_ITEM_PROGRESS,
 	SIGNAL_LAST
@@ -1999,7 +1998,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_REPO_DETAIL], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REPO_DETAIL, G_OBJECT (item));
 	pk_results_add_repo_detail (backend->priv->results, item);
 
 	/* success */
@@ -3193,11 +3192,6 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	/* objects */
 
-	signals[SIGNAL_REPO_DETAIL] =
-		g_signal_new ("repo-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_CATEGORY] =
 		g_signal_new ("category",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -145,7 +145,6 @@ struct PkTransactionPrivate
 	guint			 signal_percentage;
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
-	guint			 signal_repo_detail;
 	guint			 signal_status_changed;
 	guint			 signal_category;
 	guint			 signal_speed;
@@ -2088,16 +2087,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL)) {
-		if (priv->signal_repo_detail == 0)
-			priv->signal_repo_detail =
-				g_signal_connect (priv->backend, "repo-detail",
-						G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REPO_DETAIL,
+					(PkBackendVFunc) pk_transaction_repo_detail_cb,
+					transaction);
 	} else {
-		if (priv->signal_repo_detail > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_repo_detail);
-			priv->signal_repo_detail = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REPO_DETAIL,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED)) {
