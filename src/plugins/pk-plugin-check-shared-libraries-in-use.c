@@ -282,7 +282,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	guint i;
 	guint j = 0;
 	guint length = 0;
-	guint files_id = 0;
 	guint finished_id = 0;
 	PkConf *conf;
 	PkInfoEnum info;
@@ -310,8 +309,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	files_id = g_signal_connect (plugin->backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
@@ -433,8 +431,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	/* don't emit until we've run the transaction and it's success */
 	pk_backend_set_percentage (plugin->backend, 100);
 out:
-	if (files_id > 0)
-		g_signal_handler_disconnect (plugin->backend, files_id);
 	if (finished_id > 0)
 		g_signal_handler_disconnect (plugin->backend, finished_id);
 	g_strfreev (files);

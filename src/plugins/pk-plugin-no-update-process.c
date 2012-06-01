@@ -161,7 +161,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	gchar **files = NULL;
 	gchar **package_ids;
 	gchar *process = NULL;
-	guint files_id = 0;
 	guint finished_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
@@ -211,8 +210,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	pk_backend_set_status (plugin->backend,
 			       PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 
-	files_id = g_signal_connect (plugin->backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
 
@@ -234,8 +232,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		goto out;
 	}
 out:
-	if (files_id > 0)
-		g_signal_handler_disconnect (plugin->backend, files_id);
 	if (finished_id > 0)
 		g_signal_handler_disconnect (plugin->backend, finished_id);
 	g_strfreev (files);

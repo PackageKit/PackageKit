@@ -152,7 +152,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_FILES,
 	SIGNAL_DISTRO_UPGRADE,
 	SIGNAL_ERROR_CODE,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
@@ -1762,7 +1761,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_FILES], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_FILES, G_OBJECT (item));
 	pk_results_add_files (backend->priv->results, item);
 
 	/* success */
@@ -3175,6 +3174,7 @@ pk_backend_class_init (PkBackendClass *klass)
 	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
 	/* properties */
+
 	signals[SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3197,11 +3197,7 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	/* objects */
-	signals[SIGNAL_FILES] =
-		g_signal_new ("files",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+
 	signals[SIGNAL_DISTRO_UPGRADE] =
 		g_signal_new ("distro-upgrade",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
