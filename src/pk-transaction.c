@@ -146,7 +146,6 @@ struct PkTransactionPrivate
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
 	guint			 signal_repo_detail;
-	guint			 signal_eula_required;
 	guint			 signal_media_change_required;
 	guint			 signal_status_changed;
 	guint			 signal_category;
@@ -2115,16 +2114,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED)) {
-		if (priv->signal_eula_required == 0)
-			priv->signal_eula_required =
-				g_signal_connect (priv->backend, "eula-required",
-						G_CALLBACK (pk_transaction_eula_required_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_EULA_REQUIRED,
+					(PkBackendVFunc) pk_transaction_eula_required_cb,
+					transaction);
 	} else {
-		if (priv->signal_eula_required > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_eula_required);
-			priv->signal_eula_required = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_EULA_REQUIRED,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED)) {

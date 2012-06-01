@@ -152,7 +152,6 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_STATUS_CHANGED,
-	SIGNAL_EULA_REQUIRED,
 	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_FINISHED,
 	SIGNAL_ALLOW_CANCEL,
@@ -1913,7 +1912,7 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_EULA_REQUIRED], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_EULA_REQUIRED, G_OBJECT (item));
 	pk_results_add_eula_required (backend->priv->results, item);
 
 	/* success */
@@ -3195,11 +3194,6 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	/* objects */
 
-	signals[SIGNAL_EULA_REQUIRED] =
-		g_signal_new ("eula-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_MEDIA_CHANGE_REQUIRED] =
 		g_signal_new ("media-change-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
