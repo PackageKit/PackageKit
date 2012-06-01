@@ -679,7 +679,7 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
       </doc:doc>
-      <arg type="b" name="only_trusted" direction="in">
+      <arg type="t" name="transaction_flags" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -736,12 +736,12 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install-untrusted</doc:permission>
       </doc:doc>
-      <arg type="b" name="only_trusted" direction="in">
+      <arg type="t" name="transaction_flags" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               If the transaction is only allowed to install trusted packages.
-              Unsigned packages should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
+              Unsigned packages should not be installed if transaction_flags contains <doc:tt>ALLOW_UNTRUSTED</doc:tt>.
             </doc:para>
             <doc:para>
               If this method is can only install trusted packages, and the packages are unsigned, then
@@ -1317,134 +1317,6 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="SimulateInstallFiles">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method simulates a package file instalation emitting packages required to be
-            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The latter is used to present the user untrusted packages that are about to be installed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="full_paths" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of full path and filenames to packages.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
-    <method name="SimulateInstallPackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method simulates a package instalation emitting packages required to be
-            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The latter is used to present the user untrusted packages that are about to be installed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
-    <method name="SimulateRemovePackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method simulates a package removal emitting packages required to be
-            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The latter is used to present the user untrusted packages that are about to be installed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="autoremove" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
-              This option is only really interesting on embedded devices with a limited amount of
-              flash storage.
-              It suggests to the packagekit backend that dependencies installed at the same time as
-              the package should also be removed if they are not required by anything else.
-              For instance, if you install OpenOffice, it might download libneon as a dependency.
-              When <doc:tt>auto_remove</doc:tt> is set to true, and you remove OpenOffice then
-              libneon will also get removed automatically.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
-    <method name="SimulateUpdatePackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method simulates a package update emitting packages required to be
-            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The latter is used to present the user untrusted packages that are about to be installed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
     <method name="UpdatePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -1468,12 +1340,12 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
       </doc:doc>
-      <arg type="b" name="only_trusted" direction="in">
+      <arg type="t" name="transaction_flags" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               If the transaction is only allowed to update to trusted packages.
-              Unsigned packages should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
+              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
             </doc:para>
             <doc:para>
               If this method is can only update trusted packages, and the packages are unsigned, then
@@ -1525,12 +1397,12 @@
           </doc:para>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-system</doc:permission>
       </doc:doc>
-      <arg type="b" name="only_trusted" direction="in">
+      <arg type="t" name="transaction_flags" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               If the transaction is only allowed to update to trusted packages.
-              Unsigned packages should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
+              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
             </doc:para>
             <doc:para>
               If this method is can only update trusted packages, and the packages are unsigned, then
@@ -1640,28 +1512,6 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="SimulateRepairSystem">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method simulates recovering the package management system from e.g.
-            unsatisfied dependencies of installed packages emitting packages required to be
-            installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The latter is used to present the user untrusted packages that are about to be installed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </method>
-
-    <!--*****************************************************************************************-->
     <method name="RepairSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -1679,12 +1529,12 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="b" name="only_trusted" direction="in">
+      <arg type="t" name="transaction_flags" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               If the transaction is only allowed to install trusted packages.
-              Unsigned packages should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
+              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
             </doc:para>
             <doc:para>
               If this method is can only install trusted packages, and the packages are unsigned, then

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -124,7 +124,7 @@ struct PkTransactionPrivate
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_autoremove;
 	gboolean		 cached_enabled;
-	gboolean		 cached_only_trusted;
+	PkBitfield		 cached_transaction_flags;
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
@@ -272,21 +272,6 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
 	g_return_val_if_fail (transaction->priv->tid != NULL, 0);
 	return pk_backend_get_runtime (transaction->priv->backend);
-}
-
-/**
- * pk_transaction_set_role:
- * We should only set this when we are creating a manual cache
- **/
-static gboolean
-pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* save this */
-	transaction->priv->role = role;
-	return TRUE;
 }
 
 /**
@@ -842,9 +827,9 @@ pk_transaction_state_to_string (PkTransactionState state)
  *
  * 1. 'new'
  * 2. 'waiting for auth'  <--- waiting for PolicyKit (optional)
- * 3. 'committed'         <--- when the client sets the role
- * 4. 'ready'             <--- when the transaction is ready to be run
- * 5. 'running'           <--- where PkBackend gets used
+ * 3. 'committed'	 <--- when the client sets the role
+ * 4. 'ready'	     <--- when the transaction is ready to be run
+ * 5. 'running'	   <--- where PkBackend gets used
  * 6. 'finished'
  *
  **/
@@ -1033,7 +1018,7 @@ pk_transaction_get_package_ids (PkTransaction *transaction)
  **/
 void
 pk_transaction_set_package_ids (PkTransaction *transaction,
-			        gchar **package_ids)
+				gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_strfreev (transaction->priv->cached_package_ids);
@@ -1902,8 +1887,8 @@ pk_transaction_percentage_cb (GObject *object,
  **/
 static void
 pk_transaction_subpercentage_cb (GObject *object,
-			         GParamSpec *pspec,
-			         PkTransaction *transaction)
+				 GParamSpec *pspec,
+				 PkTransaction *transaction)
 {
 	g_object_get (object,
 		      "subpercentage", &transaction->priv->subpercentage,
@@ -2358,19 +2343,19 @@ pk_transaction_run (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
 		pk_backend_search_names (priv->backend,priv->cached_filters,priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		pk_backend_install_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
+		pk_backend_install_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
-		pk_backend_install_files (priv->backend, priv->cached_only_trusted, priv->cached_full_paths);
+		pk_backend_install_files (priv->backend, priv->cached_transaction_flags, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
 		pk_backend_install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
 		pk_backend_refresh_cache (priv->backend,  priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
-		pk_backend_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
+		pk_backend_remove_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		pk_backend_update_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
+		pk_backend_update_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		pk_backend_update_system (priv->backend, priv->cached_only_trusted);
+		pk_backend_update_system (priv->backend, priv->cached_transaction_flags);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
 		pk_backend_get_categories (priv->backend);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
@@ -2379,20 +2364,10 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
 		pk_backend_repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
-	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
-		pk_backend_simulate_install_files (priv->backend, priv->cached_full_paths);
-	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
-		pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
-		pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_autoremove);
-	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-		pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
+	else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		pk_backend_upgrade_system (priv->backend, priv->cached_value, priv->cached_provides);
 	} else if (priv->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-		pk_backend_repair_system (priv->backend, priv->cached_only_trusted);
-	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM) {
-		pk_backend_simulate_repair_system (priv->backend);
+		pk_backend_repair_system (priv->backend, priv->cached_transaction_flags);
 	} else {
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
@@ -2825,7 +2800,9 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
  * transaction list when authorised, and not before.
  **/
 static gboolean
-pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_trusted, PkRoleEnum role, GError **error)
+pk_transaction_obtain_authorization (PkTransaction *transaction,
+				     PkRoleEnum role,
+				     GError **error)
 {
 	PolkitDetails *details;
 	const gchar *action_id;
@@ -2845,17 +2822,25 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	}
 
 	/* map the roles to policykit rules */
-	if (only_trusted)
+	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		action_id = pk_transaction_role_to_action_only_trusted (role);
-	else
+	} else {
 		action_id = pk_transaction_role_to_action_allow_untrusted (role);
+	}
 	if (action_id == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
 		goto out;
 	}
 
 	/* log */
-	pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", priv->uid, action_id, only_trusted);
+	pk_syslog_add (priv->syslog,
+		       PK_SYSLOG_TYPE_AUTH,
+		       "uid %i is trying to obtain %s auth (only_trusted:%i)",
+		       priv->uid,
+		       action_id,
+		       pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+					    PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED));
 
 	/* set transaction state */
 	pk_transaction_set_state (transaction,
@@ -2880,7 +2865,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 		polkit_details_insert (details, "cmdline", priv->cmdline);
 
 	/* do not use the default icon and wording for some roles */
-	if (!priv->cached_only_trusted) {
+	if (role == PK_ROLE_ENUM_INSTALL_PACKAGES &&
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    !pk_bitfield_contain (priv->cached_transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 
 		/* don't use the friendly PackageKit icon as this is
 		 * might be a ricky authorisation */
@@ -2946,7 +2933,9 @@ out:
  * pk_transaction_obtain_authorization:
  **/
 static gboolean
-pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_trusted, PkRoleEnum role, GError **error)
+pk_transaction_obtain_authorization (PkTransaction *transaction,
+				     PkRoleEnum role,
+				     GError **error)
 {
 	gboolean ret;
 
@@ -3024,7 +3013,6 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
 						   PK_ROLE_ENUM_ACCEPT_EULA,
 						   &error);
 	if (!ret) {
@@ -3156,8 +3144,8 @@ pk_transaction_cancel (PkTransaction *transaction,
 	if (transaction->priv->uid != uid) {
 		g_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
 		ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
-						   PK_ROLE_ENUM_CANCEL, &error);
+							   PK_ROLE_ENUM_CANCEL,
+							   &error);
 		if (!ret) {
 				goto out;
 		}
@@ -4037,18 +4025,19 @@ pk_transaction_install_files (PkTransaction *transaction,
 	gchar *content_type = NULL;
 	guint length;
 	guint i;
-	gboolean only_trusted;
+	PkBitfield transaction_flags;
 	gchar **full_paths;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(b^a&s)",
-		       &only_trusted,
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
 		       &full_paths);
 
 	full_paths_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
+	g_debug ("InstallFiles method called: %s (transaction_flags %" G_GUINT64_FORMAT ")",
+		 full_paths_temp, transaction_flags);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4108,17 +4097,19 @@ pk_transaction_install_files (PkTransaction *transaction,
 		}
 	}
 
+	/* save so we can run later */
+	transaction->priv->cached_transaction_flags = transaction_flags;
+	transaction->priv->cached_full_paths = g_strdupv (full_paths);
+	transaction->priv->role = PK_ROLE_ENUM_INSTALL_FILES;
+
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_INSTALL_FILES,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
-
-	/* save so we can run later */
-	transaction->priv->cached_only_trusted = only_trusted;
-	transaction->priv->cached_full_paths = g_strdupv (full_paths);
-	transaction->priv->role = PK_ROLE_ENUM_INSTALL_FILES;
 out:
 	g_free (full_paths_temp);
 	g_free (content_type);
@@ -4138,14 +4129,14 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
-	gboolean only_trusted;
+	PkBitfield transaction_flags;
 	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(b^a&s)",
-		       &only_trusted,
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
 		       &package_ids);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -4180,12 +4171,14 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_only_trusted = only_trusted;
+	transaction->priv->cached_transaction_flags = transaction_flags;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_INSTALL_PACKAGES,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -4254,7 +4247,6 @@ pk_transaction_install_signature (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
 						   PK_ROLE_ENUM_INSTALL_SIGNATURE,
 						   &error);
 	if (!ret) {
@@ -4303,7 +4295,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
 						   PK_ROLE_ENUM_REFRESH_CACHE,
 						   &error);
 	if (!ret) {
@@ -4379,7 +4370,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
 						   PK_ROLE_ENUM_REMOVE_PACKAGES,
 						   &error);
 	if (!ret) {
@@ -4436,8 +4426,8 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
-						   PK_ROLE_ENUM_REPO_ENABLE, &error);
+						   PK_ROLE_ENUM_REPO_ENABLE,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -4495,7 +4485,6 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
 						   PK_ROLE_ENUM_REPO_SET_DATA,
 						   &error);
 	if (!ret) {
@@ -4629,8 +4618,8 @@ pk_transaction_rollback (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
-						   PK_ROLE_ENUM_ROLLBACK, &error);
+						   PK_ROLE_ENUM_ROLLBACK,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -5050,318 +5039,6 @@ out:
 }
 
 /**
- * pk_transaction_simulate_install_files:
- **/
-static void
-pk_transaction_simulate_install_files (PkTransaction *transaction,
-				       GVariant *params,
-				       GDBusMethodInvocation *context)
-{
-	gchar *full_paths_temp;
-	gboolean ret;
-	GError *error = NULL;
-	GError *error_local = NULL;
-	PkServicePack *service_pack;
-	gchar *content_type;
-	guint length;
-	guint i;
-	gchar **full_paths;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(^a&s)",
-		       &full_paths);
-
-	full_paths_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateInstallFiles not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES);
-
-	/* check all files exists and are valid */
-	length = g_strv_length (full_paths);
-
-	for (i=0; i<length; i++) {
-		/* exists */
-		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
-		if (!ret) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-					     "No such file %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
-			goto out;
-		}
-
-		/* get content type */
-		content_type = pk_transaction_get_content_type_for_file (full_paths[i], &error_local);
-		if (content_type == NULL) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					     "Failed to get content type for file %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
-			goto out;
-		}
-
-		/* supported content type? */
-		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		g_free (content_type);
-		if (!ret) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					     "MIME type not supported %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
-			goto out;
-		}
-
-		/* valid */
-		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
-			service_pack = pk_service_pack_new ();
-			ret = pk_service_pack_check_valid (service_pack, full_paths[i], &error_local);
-			g_object_unref (service_pack);
-			if (!ret) {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
-				pk_transaction_release_tid (transaction);
-				g_error_free (error_local);
-				goto out;
-			}
-		}
-	}
-
-	/* save so we can run later */
-	transaction->priv->cached_full_paths = g_strdupv (full_paths);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	g_free (full_paths_temp);
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
- * pk_transaction_simulate_install_packages:
- **/
-static void
-pk_transaction_simulate_install_packages (PkTransaction *transaction,
-					  GVariant *params,
-					  GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	guint length;
-	guint max_length;
-	gchar **package_ids;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(^a&s)",
-		       &package_ids);
-
-	g_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateInstallPackages not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
-	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check package_ids */
-	ret = pk_package_ids_check (package_ids);
-	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* save so we can run later */
-	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
- * pk_transaction_simulate_remove_packages:
- **/
-static void
-pk_transaction_simulate_remove_packages (PkTransaction *transaction,
-					 GVariant *params,
-					 GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	guint length;
-	guint max_length;
-	gchar **package_ids;
-	gboolean autoremove;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(^a&sb)",
-		       &package_ids,
-		       &autoremove);
-
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("SimulateRemovePackages method called: %s", package_ids_temp);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateRemovePackages not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
-	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check package_ids */
-	ret = pk_package_ids_check (package_ids);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* save so we can run later */
-	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	transaction->priv->cached_autoremove = autoremove;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	g_free (package_ids_temp);
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
- * pk_transaction_simulate_update_packages:
- **/
-static void
-pk_transaction_simulate_update_packages (PkTransaction *transaction,
-					 GVariant *params,
-					 GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	guint length;
-	guint max_length;
-	gchar **package_ids;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(^a&s)",
-		       &package_ids);
-
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("SimulateUpdatePackages method called: %s", package_ids_temp);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SimulateUpdatePackages not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
-	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check package_ids */
-	ret = pk_package_ids_check (package_ids);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* save so we can run later */
-	transaction->priv->cached_package_ids = g_strdupv (package_ids);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
  * pk_transaction_update_packages:
  **/
 static void
@@ -5374,14 +5051,14 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
-	gboolean only_trusted;
+	PkBitfield transaction_flags;
 	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(b^a&s)",
-		       &only_trusted,
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
 		       &package_ids);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -5416,12 +5093,14 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_only_trusted = only_trusted;
+	transaction->priv->cached_transaction_flags = transaction_flags;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_UPDATE_PACKAGES,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -5441,13 +5120,13 @@ pk_transaction_update_system (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	gboolean only_trusted;
+	PkBitfield transaction_flags;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(b)",
-		       &only_trusted);
+	g_variant_get (params, "(t)",
+		       &transaction_flags);
 
 	g_debug ("UpdateSystem method called");
 
@@ -5468,11 +5147,13 @@ pk_transaction_update_system (PkTransaction *transaction,
 		goto out;
 	}
 
-	transaction->priv->cached_only_trusted = only_trusted;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_SYSTEM);
+	transaction->priv->cached_transaction_flags = transaction_flags;
+	transaction->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, only_trusted, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_UPDATE_SYSTEM,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -5590,8 +5271,8 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-						   FALSE,
-						   PK_ROLE_ENUM_UPGRADE_SYSTEM, &error);
+						   PK_ROLE_ENUM_UPGRADE_SYSTEM,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -5599,84 +5280,44 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 out:
 	pk_transaction_dbus_return (context, error);
 }
-
-/**
- * pk_transaction_simulate_repair_system:
- **/
-static void
-pk_transaction_simulate_repair_system (PkTransaction *transaction,
-                                       GVariant *params,
-                                       GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_debug ("SimulateRepairSystem method called");
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-	                                PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-		                     "SimulateRepairSystem not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* save so we can run later */
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-		                     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
 
 /**
  * pk_transaction_repair_system:
  **/
 static void
 pk_transaction_repair_system (PkTransaction *transaction,
-                              GVariant *params,
-                              GDBusMethodInvocation *context)
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
-	gboolean only_trusted;
+	PkBitfield transaction_flags;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(b)", &only_trusted);
+	g_variant_get (params, "(t)", &transaction_flags);
 
-	g_debug ("RepairSystem method called (only trusted %i)", only_trusted);
+	g_debug ("RepairSystem method called (transaction_flags %" G_GUINT64_FORMAT ")",
+		 transaction_flags);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-	                                PK_ROLE_ENUM_REPAIR_SYSTEM)) {
+					PK_ROLE_ENUM_REPAIR_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-		                     "RepairSystem not supported by backend");
+				     "RepairSystem not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_only_trusted = only_trusted;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPAIR_SYSTEM);
+	transaction->priv->cached_transaction_flags = transaction_flags;
+	transaction->priv->role = PK_ROLE_ENUM_REPAIR_SYSTEM;
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
-	                                           only_trusted,
-	                                           PK_ROLE_ENUM_REPAIR_SYSTEM, &error);
+						   PK_ROLE_ENUM_REPAIR_SYSTEM,
+						   &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -5923,26 +5564,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 
-	if (g_strcmp0 (method_name, "SimulateInstallFiles") == 0) {
-		pk_transaction_simulate_install_files (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "SimulateInstallPackages") == 0) {
-		pk_transaction_simulate_install_packages (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "SimulateRemovePackages") == 0) {
-		pk_transaction_simulate_remove_packages (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "SimulateUpdatePackages") == 0) {
-		pk_transaction_simulate_update_packages (transaction, parameters, invocation);
-		goto out;
-	}
-
 	if (g_strcmp0 (method_name, "UpdatePackages") == 0) {
 		pk_transaction_update_packages (transaction, parameters, invocation);
 		goto out;
@@ -5965,11 +5586,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "RepairSystem") == 0) {
 		pk_transaction_repair_system (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "SimulateRepairSystem") == 0) {
-		pk_transaction_simulate_repair_system (transaction, parameters, invocation);
 		goto out;
 	}
 out:
@@ -6077,7 +5693,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->caller_active = TRUE;
-	transaction->priv->cached_only_trusted = TRUE;
+	transaction->priv->cached_transaction_flags = PK_TRANSACTION_FLAG_ENUM_NONE;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
 	transaction->priv->uid = PK_TRANSACTION_UID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;

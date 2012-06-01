@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -166,18 +166,19 @@ void		pk_backend_get_update_detail		(PkBackend	*backend,
 void		pk_backend_get_updates			(PkBackend	*backend,
 							 PkBitfield	 filters);
 void		pk_backend_install_packages		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 void		pk_backend_install_signature		(PkBackend	*backend,
 							 PkSigTypeEnum	 type,
 							 const gchar	*key_id,
 							 const gchar	*package_id);
 void		pk_backend_install_files		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**full_paths);
 void		pk_backend_refresh_cache		(PkBackend	*backend,
 							 gboolean	 force);
 void		pk_backend_remove_packages		(PkBackend	*backend,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
@@ -199,10 +200,10 @@ void		pk_backend_search_names			(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 gchar		**search);
 void		pk_backend_update_packages		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 void		pk_backend_update_system		(PkBackend	*backend,
-							 gboolean	 only_trusted);
+							 PkBitfield	 transaction_flags);
 void		pk_backend_get_repo_list		(PkBackend	*backend,
 							 PkBitfield	 filters);
 void		pk_backend_repo_enable			(PkBackend	*backend,
@@ -218,21 +219,11 @@ void		pk_backend_what_provides		(PkBackend	*backend,
 							 gchar		**search);
 void		pk_backend_get_packages			(PkBackend	*backend,
 							 PkBitfield	 filters);
-void		pk_backend_simulate_install_files	(PkBackend	*backend,
-							 gchar		**full_paths);
-void		pk_backend_simulate_install_packages	(PkBackend	*backend,
-							 gchar		**package_ids);
-void		pk_backend_simulate_remove_packages	(PkBackend	*backend,
-							 gchar		**package_ids,
-							 gboolean	 autoremove);
-void		pk_backend_simulate_update_packages	(PkBackend	*backend,
-							 gchar		**package_ids);
 void		pk_backend_upgrade_system		(PkBackend	*backend,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
 void		pk_backend_repair_system		(PkBackend	*backend,
-							 gboolean	 only_trusted);
-void		pk_backend_simulate_repair_system	(PkBackend	*backend);
+							 PkBitfield	 transaction_flags);
 
 /* set the state */
 gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
@@ -458,10 +449,10 @@ typedef struct {
 	void		(*get_updates)			(PkBackend	*backend,
 							 PkBitfield	 filters);
 	void		(*install_files)		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**full_paths);
 	void		(*install_packages)		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 	void		(*install_signature)		(PkBackend	*backend,
 							 PkSigTypeEnum	 type,
@@ -470,6 +461,7 @@ typedef struct {
 	void		(*refresh_cache)		(PkBackend	*backend,
 							 gboolean	 force);
 	void		(*remove_packages)		(PkBackend	*backend,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
@@ -498,23 +490,14 @@ typedef struct {
 							 PkBitfield	 filters,
 							 gchar		**values);
 	void		(*update_packages)		(PkBackend	*backend,
-							 gboolean	 only_trusted,
+							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend,
-							 gboolean	 only_trusted);
+							 PkBitfield	 transaction_flags);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 gchar		**values);
-	void		(*simulate_install_files)	(PkBackend	*backend,
-							 gchar		**full_paths);
-	void		(*simulate_install_packages)	(PkBackend	*backend,
-							 gchar		**package_ids);
-	void		(*simulate_remove_packages)	(PkBackend	*backend,
-							 gchar		**package_ids,
-							 gboolean	 autoremove);
-	void		(*simulate_update_packages)	(PkBackend	*backend,
-							 gchar		**package_ids);
 	void		(*transaction_start)		(PkBackend	*backend);
 	void		(*transaction_stop)		(PkBackend	*backend);
 	void		(*upgrade_system)		(PkBackend	*backend,
@@ -522,9 +505,8 @@ typedef struct {
 							 PkUpgradeKindEnum upgrade_kind);
 	void		(*transaction_reset)		(PkBackend	*backend);
 	void		(*repair_system)		(PkBackend	*backend,
-							 gboolean	 only_trusted);
-	void		(*simulate_repair_system)	(PkBackend	*backend);
-	gpointer	padding[4];
+							 PkBitfield	 transaction_flags);
+	gpointer	padding[20];
 } PkBackendDesc;
 
 G_END_DECLS

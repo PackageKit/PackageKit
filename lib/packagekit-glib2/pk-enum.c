@@ -124,13 +124,8 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
 	{PK_ROLE_ENUM_GET_CATEGORIES,			"get-categories"},
 	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
-	{PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,		"simulate-install-files"},
-	{PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,	"simulate-install-packages"},
-	{PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,		"simulate-remove-packages"},
-	{PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,		"simulate-update-packages"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
-	{PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM,		"simulate-repair-system"},
 	{0, NULL}
 };
 
@@ -1339,22 +1334,6 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Getting transactions");
-		break;
-	case PK_ROLE_ENUM_SIMULATE_INSTALL_FILES:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Simulating install");
-		break;
-	case PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Simulating install");
-		break;
-	case PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Simulating remove");
-		break;
-	case PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Simulating update");
 		break;
 	default:
 		g_warning ("role unrecognised: %s", pk_role_enum_to_string (role));
