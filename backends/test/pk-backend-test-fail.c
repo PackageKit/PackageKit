@@ -146,7 +146,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -155,7 +155,7 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	pk_backend_finished (backend);
 }
@@ -173,7 +173,11 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
 	pk_backend_finished (backend);
 }
@@ -242,7 +246,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
@@ -251,7 +255,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_finished (backend);
 }

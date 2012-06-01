@@ -184,8 +184,10 @@ pk_test_backend_func (void)
 	g_assert (backend != NULL);
 
 	/* connect */
-	g_signal_connect (backend, "package",
-			  G_CALLBACK (pk_test_backend_package_cb), NULL);
+	pk_backend_set_vfunc (backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				(PkBackendVFunc) pk_test_backend_package_cb,
+				NULL);
 
 	/* create a config file */
 	filename = "/tmp/dave";
@@ -207,7 +209,7 @@ pk_test_backend_func (void)
 	ret = g_unlink (filename);
 	g_assert (!ret);
 
-	g_signal_connect (backend, "message", G_CALLBACK (pk_test_backend_message_cb), NULL);
+	pk_backend_set_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, (PkBackendVFunc) pk_test_backend_message_cb, NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_test_backend_finished_cb), NULL);
 
 	/* get eula that does not exist */
@@ -494,8 +496,10 @@ pk_test_backend_spawn_func (void)
 	g_signal_connect (backend, "finished",
 			  G_CALLBACK (pk_test_backend_spawn_finished_cb), backend_spawn);
 	/* so we can count the returned packages */
-	g_signal_connect (backend, "package",
-			  G_CALLBACK (pk_test_backend_spawn_package_cb), backend_spawn);
+	pk_backend_set_vfunc (backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				(PkBackendVFunc) pk_test_backend_spawn_package_cb,
+				backend_spawn);
 
 	/* needed to avoid an error */
 	ret = pk_backend_open (backend);

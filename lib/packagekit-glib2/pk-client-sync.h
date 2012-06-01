@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -106,7 +106,7 @@ PkResults	*pk_client_get_old_transactions		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_update_system		(PkClient		*client,
-							 gboolean		 only_trusted,
+							 PkBitfield		 transaction_flags,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
@@ -166,6 +166,7 @@ PkResults	*pk_client_get_categories		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_remove_packages		(PkClient		*client,
+							 PkBitfield		 transaction_flags,
 							 gchar			**package_ids,
 							 gboolean		 allow_deps,
 							 gboolean		 autoremove,
@@ -182,7 +183,7 @@ PkResults	*pk_client_refresh_cache		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_install_packages		(PkClient		*client,
-							 gboolean		 only_trusted,
+							 PkBitfield		 transaction_flags,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
@@ -199,7 +200,7 @@ PkResults	*pk_client_install_signature		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_update_packages		(PkClient		*client,
-							 gboolean		 only_trusted,
+							 PkBitfield		 transaction_flags,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
@@ -207,7 +208,7 @@ PkResults	*pk_client_update_packages		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_install_files		(PkClient		*client,
-							 gboolean		 only_trusted,
+							 PkBitfield		 transaction_flags,
 							 gchar			**files,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
@@ -252,35 +253,6 @@ PkResults	*pk_client_repo_set_data		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_simulate_install_files	(PkClient		*client,
-							 gchar			**files,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
-PkResults	*pk_client_simulate_install_packages	(PkClient		*client,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
-PkResults	*pk_client_simulate_remove_packages	(PkClient		*client,
-							 gchar			**package_ids,
-							 gboolean		 autoremove,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
-PkResults	*pk_client_simulate_update_packages	(PkClient		*client,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_client_upgrade_system		(PkClient		*client,
 							 const gchar		*distro_id,
 							 PkUpgradeKindEnum	 upgrade_kind,
@@ -290,13 +262,7 @@ PkResults	*pk_client_upgrade_system		(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_repair_system		(PkClient		*client,
-							 gboolean		 only_trusted,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
-PkResults	*pk_client_simulate_repair_system	(PkClient		*client,
+							 PkBitfield		 transaction_flags,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,

@@ -30,7 +30,10 @@ MIMETYPE:               Mimetypes are (valid) mimetypes strings,
 
 FONT:                   A font name, e.g. "Cantarell".
 
-HARDWARE_DRIVER:
+HARDWARE_DRIVER:        The only valid query at the moment is
+                        "drivers_for_attached_hardware" which delivers all
+                        driver packages that apply to the current system's
+                        hardware.
 
 POSTSCRIPT_DRIVER:
                         A string in the format of "postscriptdriver(mfg;mdl;)"

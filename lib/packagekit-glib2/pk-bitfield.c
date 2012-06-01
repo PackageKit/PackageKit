@@ -315,3 +315,75 @@ out:
 	g_strfreev (split);
 	return filters_enum;
 }
+
+/**
+ * pk_transaction_flag_bitfield_to_string:
+ * @transaction_flags: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "only-trusted;simulate"
+ *
+ * Since: 0.8.1
+ **/
+gchar *
+pk_transaction_flag_bitfield_to_string (PkBitfield transaction_flags)
+{
+	GString *string;
+	guint i;
+
+	/* shortcut */
+	if (transaction_flags == 0)
+		return g_strdup (pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
+
+	string = g_string_new ("");
+	for (i=0; i<PK_TRANSACTION_FLAG_ENUM_LAST; i++) {
+		if ((transaction_flags & pk_bitfield_value (i)) == 0)
+			continue;
+		g_string_append_printf (string, "%s;", pk_transaction_flag_enum_to_string (i));
+	}
+	/* do we have a 'none' transaction_flag? \n */
+	if (string->len == 0) {
+		g_warning ("not valid!");
+		g_string_append (string, pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_transaction_flag_bitfield_from_string:
+ * @transaction_flags: the enumerated constant value, e.g. "only-trusted;simulate"
+ *
+ * Converts text representation to its enumerated type bitfield, or 0 for invalid
+ *
+ * Return value: The enumerated type values
+ *
+ * Since: 0.8.1
+ **/
+PkBitfield
+pk_transaction_flag_bitfield_from_string (const gchar *transaction_flags)
+{
+	PkBitfield transaction_flags_enum = 0;
+	gchar **split;
+	guint length;
+	guint i;
+	PkFilterEnum transaction_flag;
+
+	split = g_strsplit (transaction_flags, ";", 0);
+	if (split == NULL) {
+		g_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		transaction_flag = pk_transaction_flag_enum_from_string (split[i]);
+		transaction_flags_enum += pk_bitfield_value (transaction_flag);
+	}
+out:
+	g_strfreev (split);
+	return transaction_flags_enum;
+}

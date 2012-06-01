@@ -3671,7 +3671,6 @@ pk_backend_convert_transaction_reason_to_info_enum (ZifTransactionReason reason)
 static gboolean
 pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 {
-	gboolean only_trusted;
 	gboolean ret;
 	gboolean simulate;
 	GError *error = NULL;
@@ -3680,16 +3679,19 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	GPtrArray *install = NULL;
 	GPtrArray *simulate_array = NULL;
 	guint i, j;
+	PkBitfield transaction_flags;
 	PkInfoEnum info_enum;
 	ZifPackage *package;
 	ZifPackageTrustKind trust_kind;
 	ZifState *state_local;
 #if ZIF_CHECK_VERSION(0,2,5)
-	ZifTransactionFlags flags;
+	ZifTransactionFlags flags = 0;
 #endif
 
 	/* set steps */
-	simulate = pk_backend_get_bool (backend, "hint:simulate");
+	transaction_flags = pk_backend_get_uint (backend, "transaction_flags");
+	simulate = pk_bitfield_contain (transaction_flags,
+					PK_TRANSACTION_FLAG_ENUM_SIMULATE);
 	if (simulate) {
 		ret = zif_state_set_steps (state,
 					   NULL,
@@ -3822,8 +3824,8 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	}
 
 	/* check if any are not trusted */
-	only_trusted = pk_backend_get_bool (backend, "only_trusted");
-	if (only_trusted) {
+	if (pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		for (i=0; i<install->len; i++) {
 			package = g_ptr_array_index (install, i);
 			trust_kind = zif_package_get_trust_kind (package);
@@ -3852,7 +3854,10 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* commit the transaction */
 	state_local = zif_state_get_child (state);
 #if ZIF_CHECK_VERSION(0,2,5)
-	flags = only_trusted ? 0 : ZIF_TRANSACTION_FLAG_ALLOW_UNTRUSTED;
+	if (!pk_bitfield_contain (transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+		flags = ZIF_TRANSACTION_FLAG_ALLOW_UNTRUSTED;
+	}
 	ret = zif_transaction_commit_full (priv->transaction,
 					   flags,
 					   state_local,
@@ -5314,7 +5319,8 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted,
+pk_backend_install_files (PkBackend *backend,
+			  PkBitfield transaction_flags,
 			  gchar **full_paths)
 {
 	pk_backend_thread_create (backend, pk_backend_install_files_thread);
@@ -5324,7 +5330,8 @@ pk_backend_install_files (PkBackend *backend, gboolean only_trusted,
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted,
+pk_backend_install_packages (PkBackend *backend,
+			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
 	pk_backend_thread_create (backend, pk_backend_install_packages_thread);
@@ -5351,8 +5358,11 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids,
-			    gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
 	pk_backend_thread_create (backend, pk_backend_remove_packages_thread);
 }
@@ -5413,47 +5423,10 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * pk_backend_simulate_install_files:
- */
-void
-pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
-{
-	pk_backend_thread_create (backend, pk_backend_install_files_thread);
-}
-
-/**
- * pk_backend_simulate_install_packages:
- */
-void
-pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_thread_create (backend, pk_backend_install_packages_thread);
-}
-
-/**
- * pk_backend_simulate_remove_packages:
- */
-void
-pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids,
-				     gboolean autoremove)
-{
-	pk_backend_thread_create (backend, pk_backend_remove_packages_thread);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void
-pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_thread_create (backend, pk_backend_update_packages_thread);
-}
-
-/**
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, pk_backend_update_packages_thread);
 }
@@ -5462,7 +5435,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_thread_create (backend, pk_backend_update_system_thread);
 }

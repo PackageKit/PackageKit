@@ -80,13 +80,8 @@ typedef enum {
 	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 	PK_ROLE_ENUM_GET_CATEGORIES,
 	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-	PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-	PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-	PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
-	PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
 	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 0.6.11 */
 	PK_ROLE_ENUM_REPAIR_SYSTEM,			/* Since: 0.7.2 */
-	PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM,		/* Since: 0.7.2 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -513,6 +508,18 @@ typedef enum {
 	PK_UPGRADE_KIND_ENUM_LAST
 } PkUpgradeKindEnum;
 
+/**
+ * PkTransactionFlagEnum:
+ *
+ * The transaction flags that alter how the transaction is handled
+ **/
+typedef enum {
+	PK_TRANSACTION_FLAG_ENUM_NONE,			/* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,		/* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_SIMULATE,		/* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_LAST			/* Since: 0.8.1 */
+} PkTransactionFlagEnum;
+
 /* general */
 void		 pk_enum_test				(gpointer	 user_data);
 guint		 pk_enum_find_value			(const PkEnumMatch *table,
@@ -572,6 +579,10 @@ const gchar	*pk_authorize_type_enum_to_string	(PkAuthorizeEnum authorize_type);
 
 PkUpgradeKindEnum  pk_upgrade_kind_enum_from_string	(const gchar	*upgrade_kind);
 const gchar	*pk_upgrade_kind_enum_to_string		(PkUpgradeKindEnum upgrade_kind);
+
+PkTransactionFlagEnum pk_transaction_flag_enum_from_string (const gchar	*transaction_flag);
+const gchar	*pk_transaction_flag_enum_to_string	(PkTransactionFlagEnum transaction_flag);
+
 const gchar	*pk_status_enum_to_localised_text	(PkStatusEnum	 status);
 const gchar	*pk_info_enum_to_localised_past		(PkInfoEnum	 info);
 const gchar	*pk_info_enum_to_localised_present	(PkInfoEnum	 info);

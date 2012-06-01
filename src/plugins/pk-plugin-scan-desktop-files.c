@@ -487,8 +487,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	}
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	package_id = g_signal_connect (plugin->backend, "package",
-				       G_CALLBACK (pk_plugin_package_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				(PkBackendVFunc) pk_plugin_package_cb,
+				plugin);
 
 	/* use a local backend instance */
 	pk_backend_reset (plugin->backend);
@@ -606,7 +608,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	gchar *package_id_tmp;
 	GPtrArray *array = NULL;
 	GPtrArray *list = NULL;
-	guint files_id = 0;
 	guint finished_id = 0;
 	guint i;
 	PkInfoEnum info;
@@ -635,8 +636,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	}
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	files_id = g_signal_connect (plugin->backend, "files",
-				     G_CALLBACK (pk_plugin_files_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -675,8 +675,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 
 	pk_backend_set_percentage (plugin->backend, 100);
 out:
-	if (files_id > 0)
-		g_signal_handler_disconnect (plugin->backend, files_id);
 	if (finished_id > 0)
 		g_signal_handler_disconnect (plugin->backend, finished_id);
 	if (array != NULL)

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -151,23 +151,11 @@ G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 static gpointer pk_backend_object = NULL;
 
 enum {
-	SIGNAL_STATUS_CHANGED,
-	SIGNAL_FILES,
-	SIGNAL_DISTRO_UPGRADE,
-	SIGNAL_PACKAGE,
-	SIGNAL_UPDATE_DETAIL,
-	SIGNAL_ERROR_CODE,
-	SIGNAL_REPO_SIGNATURE_REQUIRED,
-	SIGNAL_EULA_REQUIRED,
-	SIGNAL_REQUIRE_RESTART,
-	SIGNAL_MESSAGE,
-	SIGNAL_CHANGE_TRANSACTION_DATA,
-	SIGNAL_FINISHED,
 	SIGNAL_ALLOW_CANCEL,
-	SIGNAL_REPO_DETAIL,
-	SIGNAL_CATEGORY,
-	SIGNAL_MEDIA_CHANGE_REQUIRED,
+	SIGNAL_CHANGE_TRANSACTION_DATA,
+	SIGNAL_STATUS_CHANGED,
 	SIGNAL_ITEM_PROGRESS,
+	SIGNAL_FINISHED,
 	SIGNAL_LAST
 };
 
@@ -324,20 +312,10 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	if (desc->get_categories != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
-	if (desc->simulate_install_files != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
-	if (desc->simulate_install_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
-	if (desc->simulate_remove_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
-	if (desc->simulate_update_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	if (desc->upgrade_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	if (desc->repair_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
-	if (desc->simulate_repair_system != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
 	backend->priv->roles = roles;
 out:
 	return backend->priv->roles;
@@ -671,10 +649,6 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
 			g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
 			g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
-			g_module_symbol (handle, "pk_backend_simulate_install_files", (gpointer *)&desc->simulate_install_files);
-			g_module_symbol (handle, "pk_backend_simulate_install_packages", (gpointer *)&desc->simulate_install_packages);
-			g_module_symbol (handle, "pk_backend_simulate_remove_packages", (gpointer *)&desc->simulate_remove_packages);
-			g_module_symbol (handle, "pk_backend_simulate_update_packages", (gpointer *)&desc->simulate_update_packages);
 			g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
 			g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
 			g_module_symbol (handle, "pk_backend_transaction_reset", (gpointer *)&desc->transaction_reset);
@@ -683,7 +657,6 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
 			g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
 			g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
-			g_module_symbol (handle, "pk_backend_simulate_repair_system", (gpointer *)&desc->simulate_repair_system);
 
 			/* get old static string data */
 			ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
@@ -1316,17 +1289,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* replace unsafe chars */
 	summary_safe = pk_backend_strsafe (summary);
 
-	/* fix up available and installed when doing simulate roles */
-	if (backend->priv->transaction_role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
-	    backend->priv->transaction_role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
-	    backend->priv->transaction_role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
-	    backend->priv->transaction_role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-		if (info == PK_INFO_ENUM_AVAILABLE)
-			info = PK_INFO_ENUM_INSTALLING;
-		else if (info == PK_INFO_ENUM_INSTALLED)
-			info = PK_INFO_ENUM_REMOVING;
-	}
-
 	/* create a new package object AFTER we emulate the info value */
 	g_object_set (item,
 		      "info", info,
@@ -1378,7 +1340,9 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	backend->priv->has_sent_package = TRUE;
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_PACKAGE], 0, item);
+	pk_backend_call_vfunc (backend,
+				PK_BACKEND_SIGNAL_PACKAGE,
+				G_OBJECT (item));
 
 	/* add to results if meaningful */
 	if (info != PK_INFO_ENUM_FINISHED)
@@ -1459,7 +1423,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_UPDATE_DETAIL], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_UPDATE_DETAIL, G_OBJECT (item));
 	pk_results_add_update_detail (backend->priv->results, item);
 
 	/* we parsed okay */
@@ -1504,7 +1468,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_REQUIRE_RESTART], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REQUIRE_RESTART, G_OBJECT (item));
 	pk_results_add_require_restart (backend->priv->results, item);
 
 	/* success */
@@ -1554,7 +1518,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
 	pk_results_add_message (backend->priv->results, item);
 
 	/* success */
@@ -1790,7 +1754,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_FILES], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_FILES, G_OBJECT (item));
 	pk_results_add_files (backend->priv->results, item);
 
 	/* success */
@@ -1839,7 +1803,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum state, const 
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_DISTRO_UPGRADE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_DISTRO_UPGRADE, G_OBJECT (item));
 	pk_results_add_distro_upgrade (backend->priv->results, item);
 
 	/* success */
@@ -1894,7 +1858,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED, G_OBJECT (item));
 	pk_results_add_repo_signature_required (backend->priv->results, item);
 
 	/* success */
@@ -1945,7 +1909,7 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_EULA_REQUIRED], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_EULA_REQUIRED, G_OBJECT (item));
 	pk_results_add_eula_required (backend->priv->results, item);
 
 	/* success */
@@ -1989,7 +1953,7 @@ pk_backend_media_change_required (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED, G_OBJECT (item));
 	pk_results_add_media_change_required (backend->priv->results, item);
 
 	/* success */
@@ -2033,7 +1997,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_REPO_DETAIL], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REPO_DETAIL, G_OBJECT (item));
 	pk_results_add_repo_detail (backend->priv->results, item);
 
 	/* success */
@@ -2079,7 +2043,7 @@ pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *ca
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_CATEGORY], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_CATEGORY, G_OBJECT (item));
 	pk_results_add_category (backend->priv->results, item);
 
 	/* success */
@@ -2157,7 +2121,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* warn the backend developer that they've done something worng
 	 * - we can't use pk_backend_message here as we have already set
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
-	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
 
 	pk_backend_finished (backend);
 out:
@@ -2248,7 +2212,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_ERROR_CODE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_ERROR_CODE, G_OBJECT (item));
 	pk_results_set_error_code (backend->priv->results, item);
 
 	/* success */
@@ -3203,6 +3167,7 @@ pk_backend_class_init (PkBackendClass *klass)
 	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
 	/* properties */
+
 	signals[SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3224,67 +3189,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
-	/* objects */
-	signals[SIGNAL_PACKAGE] =
-		g_signal_new ("package",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_UPDATE_DETAIL] =
-		g_signal_new ("update-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_REQUIRE_RESTART] =
-		g_signal_new ("require-restart",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_MESSAGE] =
-		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_FILES] =
-		g_signal_new ("files",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_DISTRO_UPGRADE] =
-		g_signal_new ("distro-upgrade",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_ERROR_CODE] =
-		g_signal_new ("error-code",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_REPO_SIGNATURE_REQUIRED] =
-		g_signal_new ("repo-signature-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_EULA_REQUIRED] =
-		g_signal_new ("eula-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_MEDIA_CHANGE_REQUIRED] =
-		g_signal_new ("media-change-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_REPO_DETAIL] =
-		g_signal_new ("repo-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[SIGNAL_CATEGORY] =
-		g_signal_new ("category",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_ITEM_PROGRESS] =
 		g_signal_new ("item-progress",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3504,16 +3408,15 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_PACKAGES);
-	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_set_bool (backend, "hint:simulate", FALSE);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->install_packages (backend, only_trusted, package_ids);
+	backend->priv->desc->install_packages (backend, transaction_flags, package_ids);
 }
 
 /**
@@ -3535,16 +3438,15 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_FILES);
-	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
-	pk_backend_set_bool (backend, "hint:simulate", FALSE);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->install_files (backend, only_trusted, full_paths);
+	backend->priv->desc->install_files (backend, transaction_flags, full_paths);
 }
 
 /**
@@ -3565,17 +3467,25 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->remove_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REMOVE_PACKAGES);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "allow_deps", allow_deps);
 	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
-	pk_backend_set_bool (backend, "hint:simulate", FALSE);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->remove_packages (backend, package_ids, allow_deps, autoremove);
+	backend->priv->desc->remove_packages (backend,
+					      transaction_flags,
+					      package_ids,
+					      allow_deps,
+					      autoremove);
 }
 
 /**
@@ -3671,31 +3581,29 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->update_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_set_bool (backend, "hint:simulate", FALSE);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->update_packages (backend, only_trusted, package_ids);
+	backend->priv->desc->update_packages (backend, transaction_flags, package_ids);
 }
 
 /**
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->update_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
-	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
-	pk_backend_set_bool (backend, "hint:simulate", FALSE);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->update_system (backend, only_trusted);
+	backend->priv->desc->update_system (backend, transaction_flags);
 }
 
 /**
@@ -3774,67 +3682,6 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * pk_backend_simulate_install_files:
- */
-void
-pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->simulate_install_files != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
-	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
-	pk_backend_set_bool (backend, "hint:simulate", TRUE);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->simulate_install_files (backend, full_paths);
-}
-
-/**
- * pk_backend_simulate_install_packages:
- */
-void
-pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->simulate_install_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_set_bool (backend, "hint:simulate", TRUE);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->simulate_install_packages (backend, package_ids);
-}
-
-/**
- * pk_backend_simulate_remove_packages:
- */
-void
-pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean	 autoremove)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->simulate_remove_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
-	pk_backend_set_bool (backend, "hint:simulate", TRUE);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->simulate_remove_packages (backend, package_ids, autoremove);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void
-pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->simulate_update_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_set_bool (backend, "hint:simulate", TRUE);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->simulate_update_packages (backend, package_ids);
-}
-
-/**
  * pk_backend_upgrade_system:
  */
 void
@@ -3853,28 +3700,14 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
  * pk_backend_repair_system:
  */
 void
-pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repair_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPAIR_SYSTEM);
-	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
+	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_backend_transaction_reset (backend);
-	backend->priv->desc->repair_system (backend, only_trusted);
-}
-
-/**
- * pk_backend_simulate_repair_system:
- */
-void
-pk_backend_simulate_repair_system (PkBackend *backend)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->repair_system != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM);
-	pk_backend_set_bool (backend, "hint:simulate", TRUE);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->simulate_repair_system (backend);
+	backend->priv->desc->repair_system (backend, transaction_flags);
 }
 
 /**
