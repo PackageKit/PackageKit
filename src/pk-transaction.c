@@ -146,7 +146,6 @@ struct PkTransactionPrivate
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
 	guint			 signal_repo_detail;
-	guint			 signal_repo_signature_required;
 	guint			 signal_eula_required;
 	guint			 signal_media_change_required;
 	guint			 signal_status_changed;
@@ -2104,16 +2103,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED)) {
-		if (priv->signal_repo_signature_required == 0)
-			priv->signal_repo_signature_required =
-				g_signal_connect (priv->backend, "repo-signature-required",
-						G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+					(PkBackendVFunc) pk_transaction_repo_signature_required_cb,
+					transaction);
 	} else {
-		if (priv->signal_repo_signature_required > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_repo_signature_required);
-			priv->signal_repo_signature_required = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED)) {
