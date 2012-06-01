@@ -157,7 +157,6 @@ enum {
 	SIGNAL_ALLOW_CANCEL,
 	SIGNAL_REPO_DETAIL,
 	SIGNAL_CATEGORY,
-	SIGNAL_MEDIA_CHANGE_REQUIRED,
 	SIGNAL_ITEM_PROGRESS,
 	SIGNAL_LAST
 };
@@ -1956,7 +1955,7 @@ pk_backend_media_change_required (PkBackend *backend,
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED, G_OBJECT (item));
 	pk_results_add_media_change_required (backend->priv->results, item);
 
 	/* success */
@@ -3194,11 +3193,6 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	/* objects */
 
-	signals[SIGNAL_MEDIA_CHANGE_REQUIRED] =
-		g_signal_new ("media-change-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
