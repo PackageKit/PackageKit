@@ -4209,19 +4209,22 @@ pk_transaction_install_signature (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	const gchar *sig_type;
 	const gchar *key_id;
 	const gchar *package_id;
+	PkSigTypeEnum sig_type;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s&s&s)",
+	g_variant_get (params, "(u&s&s)",
 		       &sig_type,
 		       &key_id,
 		       &package_id);
 
-	g_debug ("InstallSignature method called: %s, %s", key_id, package_id);
+	g_debug ("InstallSignature method called: %s, %s, %s",
+		 pk_sig_type_enum_to_string (sig_type),
+		 key_id,
+		 package_id);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,

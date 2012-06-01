@@ -774,11 +774,11 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.install-signature</doc:permission>
       </doc:doc>
-      <arg type="s" name="sig_type" direction="in">
+      <arg type="u" name="sig_type" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A key type, e.g. <doc:tt>gpg</doc:tt>
+              A key type enum, e.g. <doc:tt>gpg</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>

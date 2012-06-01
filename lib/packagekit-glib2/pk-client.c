@@ -1514,7 +1514,6 @@ pk_client_set_hints_cb (GObject *source_object,
 			GAsyncResult *res,
 			gpointer user_data)
 {
-	const gchar *enum_text;
 	GError *error = NULL;
 	GVariant *value;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
@@ -1768,10 +1767,9 @@ pk_client_set_hints_cb (GObject *source_object,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
-		enum_text = pk_sig_type_enum_to_string (state->type);
 		g_dbus_proxy_call (state->proxy, "InstallSignature",
-				   g_variant_new ("(sss)",
-						  enum_text,
+				   g_variant_new ("(uss)",
+						  state->type,
 						  state->key_id,
 						  state->package_id),
 				   G_DBUS_CALL_FLAGS_NONE,
