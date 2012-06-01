@@ -461,13 +461,43 @@ pk_backend_install_timeout (gpointer data)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	const gchar *license_agreement;
 	const gchar *eula_id;
 	gboolean has_eula;
 
-	/* FIXME: support only_trusted */
+	/* simulate */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING,
+				    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+				    "lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
+
+		pk_backend_package (backend, PK_INFO_ENUM_REINSTALLING,
+				    "libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
+
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+				    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "glib2;2.14.0;i386;fedora", "The GLib library");
+
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNGRADING,
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
+
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+				    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
+
+		pk_backend_finished (backend);
+		return;
+	}
 
 	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
 		if (_use_gpg && !_has_signature) {
@@ -520,7 +550,7 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 		}
 	}
 
-	if (_use_trusted && only_trusted) {
+	if (_use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
 				       "Can't install as untrusted");
 		pk_backend_finished (backend);
@@ -571,7 +601,7 @@ pk_backend_install_files_timeout (gpointer data)
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	pk_backend_set_percentage (backend, 101);
@@ -717,7 +747,11 @@ pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
@@ -904,7 +938,7 @@ pk_backend_update_packages_download_timeout (gpointer data)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	const gchar *eula_id;
 	const gchar *license_agreement;
@@ -1103,7 +1137,7 @@ out:
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	gchar *frontend_socket = NULL;
 	GError *error = NULL;
@@ -1340,63 +1374,6 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 	pk_backend_finished (backend);
 }
 
-/**
- * pk_backend_simulate_remove_packages:
- */
-void
-pk_backend_simulate_remove_packages (PkBackend *backend,
-				     gchar **package_ids,
-				     gboolean autoremove)
-{
-	pk_backend_remove_packages (backend, package_ids, TRUE, autoremove);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void
-pk_backend_simulate_update_packages (PkBackend *backend,
-				     gchar **package_ids)
-{
-	pk_backend_update_packages (backend, FALSE, package_ids);
-}
-
-/**
- * pk_backend_simulate_install_packages:
- */
-void
-pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-
-	pk_backend_package (backend, PK_INFO_ENUM_REMOVING,
-			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
-			    "gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-
-	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-			    "lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
-
-	pk_backend_package (backend, PK_INFO_ENUM_REINSTALLING,
-			    "libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
-
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-			    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
-
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "glib2;2.14.0;i386;fedora", "The GLib library");
-
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNGRADING,
-			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
-
-	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
-			    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
-
-	pk_backend_finished (backend);
-}
-
-
 static gboolean
 pk_backend_upgrade_system_timeout (gpointer data)
 {
@@ -1458,16 +1435,7 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
  * pk_backend_repair_system:
  */
 void
-pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
-{
-	pk_backend_finished (backend);
-}
-
-/**
- * pk_backend_simulate_repair_system:
- */
-void
-pk_backend_simulate_repair_system (PkBackend *backend)
+pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_finished (backend);
 }
