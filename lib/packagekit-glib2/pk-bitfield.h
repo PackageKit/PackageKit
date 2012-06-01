@@ -49,6 +49,8 @@ PkBitfield	 pk_group_bitfield_from_string 		(const gchar	*groups);
 gchar		*pk_group_bitfield_to_string		(PkBitfield	 groups);
 PkBitfield	 pk_filter_bitfield_from_string 		(const gchar	*filters);
 gchar		*pk_filter_bitfield_to_string		(PkBitfield	 filters);
+PkBitfield	 pk_transaction_flag_bitfield_from_string (const gchar	*transaction_flags);
+gchar		*pk_transaction_flag_bitfield_to_string	(PkBitfield	 transaction_flags);
 void		 pk_bitfield_test			(gpointer	 user_data);
 
 G_END_DECLS
