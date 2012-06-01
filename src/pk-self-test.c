@@ -209,7 +209,7 @@ pk_test_backend_func (void)
 	ret = g_unlink (filename);
 	g_assert (!ret);
 
-	g_signal_connect (backend, "message", G_CALLBACK (pk_test_backend_message_cb), NULL);
+	pk_backend_set_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, (PkBackendVFunc) pk_test_backend_message_cb, NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_test_backend_finished_cb), NULL);
 
 	/* get eula that does not exist */

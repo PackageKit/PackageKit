@@ -144,7 +144,6 @@ struct PkTransactionPrivate
 	guint			 signal_files;
 	guint			 signal_distro_upgrade;
 	guint			 signal_finished;
-	guint			 signal_message;
 	guint			 signal_percentage;
 	guint			 signal_subpercentage;
 	guint			 signal_remaining;
@@ -2023,16 +2022,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE)) {
-		if (priv->signal_message == 0)
-			priv->signal_message =
-				g_signal_connect (priv->backend, "message",
-						G_CALLBACK (pk_transaction_message_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_MESSAGE,
+					(PkBackendVFunc) pk_transaction_message_cb,
+					transaction);
 	} else {
-		if (priv->signal_message > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_message);
-			priv->signal_message = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_MESSAGE,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE)) {

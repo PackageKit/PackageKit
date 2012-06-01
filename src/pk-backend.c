@@ -157,7 +157,6 @@ enum {
 	SIGNAL_ERROR_CODE,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
 	SIGNAL_EULA_REQUIRED,
-	SIGNAL_MESSAGE,
 	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_FINISHED,
 	SIGNAL_ALLOW_CANCEL,
@@ -1553,7 +1552,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 		      NULL);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
 	pk_results_add_message (backend->priv->results, item);
 
 	/* success */
@@ -2156,7 +2155,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* warn the backend developer that they've done something worng
 	 * - we can't use pk_backend_message here as we have already set
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
-	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
 
 	pk_backend_finished (backend);
 out:
@@ -3224,11 +3223,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	/* objects */
-	signals[SIGNAL_MESSAGE] =
-		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[SIGNAL_FILES] =
 		g_signal_new ("files",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
