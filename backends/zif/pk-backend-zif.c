@@ -3699,6 +3699,14 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 					   1, /* check trusted */
 					   5, /* print packages */
 					   -1);
+	} else if (pk_bitfield_contain (transaction_flags,
+					PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+		ret = zif_state_set_steps (state,
+					   NULL,
+					   30, /* resolve */
+					   1, /* check trusted */
+					   69, /* prepare */
+					   -1);
 	} else {
 		ret = zif_state_set_steps (state,
 					   NULL,
@@ -3848,6 +3856,13 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 				       "cancelled: %s",
 				       error->message);
 		g_error_free (error);
+		goto out;
+	}
+
+	/* we're only preparing the transaction for later */
+	if (pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+		g_debug ("exit after downloading as transaction is prepare");
 		goto out;
 	}
 
