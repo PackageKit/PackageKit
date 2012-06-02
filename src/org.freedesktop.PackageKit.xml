@@ -76,11 +76,11 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <property name="Roles" type="s" access="read">
+    <property name="Roles" type="t" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The roles the backend supports, e.g. <doc:tt>"search-name;refresh-cache"</doc:tt>.
+            The roles the backend supports, e.g. <doc:tt>search-name|refresh-cache</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>

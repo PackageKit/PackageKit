@@ -1390,8 +1390,7 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Roles") == 0) {
-		tmp = pk_role_bitfield_to_string (engine->priv->roles);
-		retval = g_variant_new_string (tmp);
+		retval = g_variant_new_uint64 (engine->priv->roles);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Groups") == 0) {

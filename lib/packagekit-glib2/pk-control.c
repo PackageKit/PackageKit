@@ -233,8 +233,7 @@ pk_control_set_property_value (PkControl *control,
 		return;
 	}
 	if (g_strcmp0 (key, "Roles") == 0) {
-		tmp_str = g_variant_get_string (value, NULL);
-		tmp_bitfield = pk_role_bitfield_from_string (tmp_str);
+		tmp_bitfield = g_variant_get_uint64 (value);
 		if (control->priv->roles == tmp_bitfield)
 			return;
 		control->priv->roles = tmp_bitfield;
