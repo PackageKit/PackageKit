@@ -1409,7 +1409,7 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "NetworkState") == 0) {
-		retval = g_variant_new_string (pk_network_enum_to_string (engine->priv->network_state));
+		retval = g_variant_new_uint32 (engine->priv->network_state);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "DistroId") == 0) {

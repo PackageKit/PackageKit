@@ -131,7 +131,7 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <property name="NetworkState" type="s" access="read">
+    <property name="NetworkState" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>

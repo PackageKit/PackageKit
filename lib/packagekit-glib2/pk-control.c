@@ -265,8 +265,7 @@ pk_control_set_property_value (PkControl *control,
 		return;
 	}
 	if (g_strcmp0 (key, "NetworkState") == 0) {
-		tmp_str = g_variant_get_string (value, NULL);
-		tmp_uint = pk_network_enum_from_string (tmp_str);
+		tmp_uint = g_variant_get_uint32 (value);
 		if (control->priv->network_state == tmp_uint)
 			return;
 		control->priv->network_state = tmp_uint;
