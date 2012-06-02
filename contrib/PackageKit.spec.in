@@ -247,8 +247,10 @@ user to restart the computer or remove and re-insert the device.
         --disable-static \
         --enable-yum \
         --enable-zif \
-%if 0%{?rhel} == 0
+%if 0
         --enable-smart \
+%endif
+%if 0%{?rhel} == 0
         --enable-introspection \
 %endif
         --with-default-backend=auto \
@@ -354,9 +356,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %if 0%{?rhel} == 0
 %files smart
 %defattr(-,root,root,-)
-%{_libdir}/packagekit-backend/libpk_backend_smart.so
-%dir %{_datadir}/PackageKit/helpers/smart
-%{_datadir}/PackageKit/helpers/smart/*
+#%{_libdir}/packagekit-backend/libpk_backend_smart.so
+#%dir %{_datadir}/PackageKit/helpers/smart
+#%{_datadir}/PackageKit/helpers/smart/*
 %endif
 
 %files yum
@@ -384,7 +386,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files qt
 %defattr(-,root,root,-)
-%{_libdir}/*packagekit-qt*.so.*
+#%{_libdir}/*packagekit-qt*.so.*
 
 %files cron
 %defattr(-,root,root,-)
@@ -435,10 +437,10 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files qt-devel
 %defattr(-,root,root,-)
-%{_libdir}/libpackagekit-qt*.so
-%{_includedir}/PackageKit/packagekit-qt2/*
-%{_libdir}/pkgconfig/packagekit-qt2.pc
-%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
+#%{_libdir}/libpackagekit-qt*.so
+#%{_includedir}/PackageKit/packagekit-qt2/*
+#%{_libdir}/pkgconfig/packagekit-qt2.pc
+#%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)
