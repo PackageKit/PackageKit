@@ -1394,8 +1394,7 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Groups") == 0) {
-		tmp = pk_group_bitfield_to_string (engine->priv->groups);
-		retval = g_variant_new_string (tmp);
+		retval = g_variant_new_uint64 (engine->priv->groups);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Filters") == 0) {

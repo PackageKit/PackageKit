@@ -87,11 +87,11 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <property name="Groups" type="s" access="read">
+    <property name="Groups" type="t" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The groups the backend supports, e.g. <doc:tt>"accessories;games"</doc:tt>.
+            The groups the backend supports, e.g. <doc:tt>accessories|games</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
