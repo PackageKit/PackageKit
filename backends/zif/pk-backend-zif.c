@@ -1599,31 +1599,39 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_INSTALLING:
 		/* package install */
 		status = PK_STATUS_ENUM_INSTALL;
-		pk_backend_package (backend,
-				    PK_INFO_ENUM_INSTALLING,
-				    action_hint,
-				    "");
+		if (zif_package_id_check (action_hint)) {
+			pk_backend_package (backend,
+					    PK_INFO_ENUM_INSTALLING,
+					    action_hint,
+					    "");
+		}
 		break;
 	case ZIF_STATE_ACTION_REMOVING:
 		status = PK_STATUS_ENUM_REMOVE;
-		pk_backend_package (backend,
-				    PK_INFO_ENUM_REMOVING,
-				    action_hint,
-				    "");
+		if (zif_package_id_check (action_hint)) {
+			pk_backend_package (backend,
+					    PK_INFO_ENUM_REMOVING,
+					    action_hint,
+					    "");
+		}
 		break;
 	case ZIF_STATE_ACTION_UPDATING:
 		status = PK_STATUS_ENUM_UPDATE;
-		pk_backend_package (backend,
-				    PK_INFO_ENUM_UPDATING,
-				    action_hint,
-				    "");
+		if (zif_package_id_check (action_hint)) {
+			pk_backend_package (backend,
+					    PK_INFO_ENUM_UPDATING,
+					    action_hint,
+					    "");
+		}
 		break;
 	case ZIF_STATE_ACTION_CLEANING:
 		status = PK_STATUS_ENUM_CLEANUP;
-		pk_backend_package (backend,
-				    PK_INFO_ENUM_CLEANUP,
-				    action_hint,
-				    "");
+		if (zif_package_id_check (action_hint)) {
+			pk_backend_package (backend,
+					    PK_INFO_ENUM_CLEANUP,
+					    action_hint,
+					    "");
+		}
 		break;
 	case ZIF_STATE_ACTION_TEST_COMMIT:
 		status = PK_STATUS_ENUM_TEST_COMMIT;
