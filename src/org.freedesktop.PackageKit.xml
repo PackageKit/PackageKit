@@ -98,11 +98,11 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <property name="Filters" type="s" access="read">
+    <property name="Filters" type="t" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The filters the backend supports, e.g. <doc:tt>"installed;newest"</doc:tt>.
+            The filters the backend supports, e.g. <doc:tt>installed|newest</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>

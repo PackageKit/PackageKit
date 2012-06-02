@@ -1358,7 +1358,6 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 			       const gchar *property_name, GError **error,
 			       gpointer user_data)
 {
-	gchar *tmp = NULL;
 	GVariant *retval = NULL;
 	PkEngine *engine = PK_ENGINE (user_data);
 
@@ -1398,8 +1397,7 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Filters") == 0) {
-		tmp = pk_filter_bitfield_to_string (engine->priv->filters);
-		retval = g_variant_new_string (tmp);
+		retval = g_variant_new_uint64 (engine->priv->filters);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "MimeTypes") == 0) {
@@ -1421,7 +1419,6 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 	g_critical ("failed to get property %s",
 		    property_name);
 out:
-	g_free (tmp);
 	return retval;
 }
 

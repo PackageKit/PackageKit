@@ -249,8 +249,7 @@ pk_control_set_property_value (PkControl *control,
 		return;
 	}
 	if (g_strcmp0 (key, "Filters") == 0) {
-		tmp_str = g_variant_get_string (value, NULL);
-		tmp_bitfield = pk_filter_bitfield_from_string (tmp_str);
+		tmp_bitfield = g_variant_get_uint64 (value);
 		if (control->priv->filters == tmp_bitfield)
 			return;
 		control->priv->filters = tmp_bitfield;
