@@ -53,6 +53,44 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	g_free (cmd);
 }
 
+static void
+pk_offline_update_reboot (void)
+{
+	GDBusConnection *connection;
+	GError *error = NULL;
+	GVariant *val = NULL;
+
+	/* reboot using systemd */
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	if (connection == NULL) {
+		g_warning ("Failed to get system bus connection: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	val = g_dbus_connection_call_sync (connection,
+					   "org.freedesktop.systemd1",
+					   "/org/freedesktop/systemd1",
+					   "org.freedesktop.systemd1.Manager",
+					   "Reboot",
+					   NULL,
+					   NULL,
+					   G_DBUS_CALL_FLAGS_NONE,
+					   -1,
+					   NULL,
+					   &error);
+	if (val == NULL) {
+		g_warning ("Failed to reboot: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	if (connection != NULL)
+		g_object_unref (connection);
+	if (val != NULL)
+		g_variant_unref (val);
+}
+
 /**
  * main:
  **/
@@ -92,6 +130,7 @@ main (int argc, char *argv[])
 	retval = EXIT_SUCCESS;
 out:
 	g_unlink ("/system-update");
+	pk_offline_update_reboot ();
 	if (task != NULL)
 		g_object_unref (task);
 	return retval;
