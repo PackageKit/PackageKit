@@ -1055,6 +1055,40 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
 }
 
 /**
+ * pk_transaction_write_prepared_file:
+ **/
+static void
+pk_transaction_write_prepared_file (PkTransaction *transaction)
+{
+	gboolean ret;
+	gchar *path;
+	GError *error = NULL;
+
+	/* not interesting to us */
+	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		return;
+	}
+
+	/* write filename */
+	path = g_build_filename (LOCALSTATEDIR,
+				 "lib",
+				 "PackageKit",
+				 "prepared-update",
+				 NULL);
+	ret = g_file_set_contents (path,
+				   pk_role_enum_to_string (transaction->priv->role),
+				   -1,
+				   &error);
+	if (!ret) {
+		g_warning ("failed to write %s: %s",
+			   path, error->message);
+		g_error_free (error);
+	}
+	g_free (path);
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1158,6 +1192,13 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* only reset the time if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
+
+	/* write notification files if anything is pending */
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
+	    pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+		pk_transaction_write_prepared_file (transaction);
+	}
 
 	/* did we finish okay? */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)

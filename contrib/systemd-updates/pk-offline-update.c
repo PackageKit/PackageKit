@@ -168,6 +168,7 @@ main (int argc, char *argv[])
 		g_error_free (error);
 		goto out;
 	}
+	g_unlink ("/var/lib/PackageKit/prepared-update");
 	retval = EXIT_SUCCESS;
 out:
 	g_unlink ("/system-update");
