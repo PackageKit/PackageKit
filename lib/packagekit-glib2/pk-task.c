@@ -47,12 +47,14 @@ struct _PkTaskPrivate
 {
 	GPtrArray			*array;
 	gboolean			 simulate;
+	gboolean			 only_prepare;
 	gboolean			 interactive;
 };
 
 enum {
 	PROP_0,
 	PROP_SIMULATE,
+	PROP_ONLY_PREPARE,
 	PROP_INTERACTIVE,
 	PROP_LAST
 };
@@ -67,6 +69,7 @@ typedef struct {
 	PkRoleEnum			 role;
 	PkExitEnum			 exit_enum;
 	gboolean			 simulate;
+	gboolean			 only_prepare;
 	gboolean			 transaction_flags;
 	gchar				**package_ids;
 	gboolean			 allow_deps;
@@ -174,21 +177,30 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 static void
 pk_task_do_async_action (PkTaskState *state)
 {
+	PkBitfield transaction_flags;
+
 	/* so the callback knows if we are serious or not */
 	state->simulate = FALSE;
 
+	/* only prepare the transaction */
+	transaction_flags = state->transaction_flags;
+	if (state->task->priv->only_prepare) {
+		pk_bitfield_add (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_PREPARE);
+	}
+
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		pk_client_install_packages_async (PK_CLIENT(state->task), state->transaction_flags, state->package_ids,
+		pk_client_install_packages_async (PK_CLIENT(state->task), transaction_flags, state->package_ids,
 						  state->cancellable, state->progress_callback, state->progress_user_data,
 						  (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		pk_client_update_packages_async (PK_CLIENT(state->task), state->transaction_flags, state->package_ids,
+		pk_client_update_packages_async (PK_CLIENT(state->task), transaction_flags, state->package_ids,
 						 state->cancellable, state->progress_callback, state->progress_user_data,
 						 (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		pk_client_remove_packages_async (PK_CLIENT(state->task),
-						 state->transaction_flags,
+						 transaction_flags,
 						 state->package_ids,
 						 state->allow_deps,
 						 state->autoremove,
@@ -197,25 +209,25 @@ pk_task_do_async_action (PkTaskState *state)
 						 state->progress_user_data,
 						 (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		pk_client_update_system_async (PK_CLIENT(state->task), state->transaction_flags,
+		pk_client_update_system_async (PK_CLIENT(state->task), transaction_flags,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
-		pk_client_install_files_async (PK_CLIENT(state->task), state->transaction_flags, state->files,
+		pk_client_install_files_async (PK_CLIENT(state->task), transaction_flags, state->files,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_RESOLVE) {
 		pk_client_resolve_async (PK_CLIENT(state->task), state->filters, state->packages,
-				         state->cancellable, state->progress_callback, state->progress_user_data,
-				         (GAsyncReadyCallback) pk_task_ready_cb, state);
+					 state->cancellable, state->progress_callback, state->progress_user_data,
+					 (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		pk_client_search_names_async (PK_CLIENT(state->task), state->filters, state->values,
 					      state->cancellable, state->progress_callback, state->progress_user_data,
 					      (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		pk_client_search_details_async (PK_CLIENT(state->task), state->filters, state->values,
-					        state->cancellable, state->progress_callback, state->progress_user_data,
-					        (GAsyncReadyCallback) pk_task_ready_cb, state);
+						state->cancellable, state->progress_callback, state->progress_user_data,
+						(GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
 		pk_client_search_groups_async (PK_CLIENT(state->task), state->filters, state->values,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -262,8 +274,8 @@ pk_task_do_async_action (PkTaskState *state)
 					   (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
 		pk_client_get_categories_async (PK_CLIENT(state->task),
-					        state->cancellable, state->progress_callback, state->progress_user_data,
-					        (GAsyncReadyCallback) pk_task_ready_cb, state);
+						state->cancellable, state->progress_callback, state->progress_user_data,
+						(GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		pk_client_refresh_cache_async (PK_CLIENT(state->task), state->force,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -281,9 +293,9 @@ pk_task_do_async_action (PkTaskState *state)
 					     state->cancellable, state->progress_callback, state->progress_user_data,
 					     (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-		pk_client_repair_system_async (PK_CLIENT(state->task), state->transaction_flags,
-		                               state->cancellable, state->progress_callback, state->progress_user_data,
-		                               (GAsyncReadyCallback) pk_task_ready_cb, state);
+		pk_client_repair_system_async (PK_CLIENT(state->task), transaction_flags,
+					       state->cancellable, state->progress_callback, state->progress_user_data,
+					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else {
 		g_assert_not_reached ();
 	}
@@ -2203,9 +2215,12 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
  * Since: 0.7.2
  **/
 void
-pk_task_repair_system_async (PkTask *task, GCancellable *cancellable,
-                             PkProgressCallback progress_callback, gpointer progress_user_data,
-                             GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_repair_system_async (PkTask *task,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkTaskState *state;
@@ -2304,6 +2319,40 @@ pk_task_get_simulate (PkTask *task)
 	return task->priv->simulate;
 }
 
+/**
+ * pk_task_set_only_prepare:
+ * @task: a valid #PkTask instance
+ * @only_prepare: %FALSE to actually commit the transaction
+ *
+ * If the transaction should be prepared (depsolved, packages
+ * downloaded, etc) but not committed.
+ *
+ * Since: 0.8.1
+ **/
+void
+pk_task_set_only_prepare (PkTask *task, gboolean only_prepare)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->only_prepare = only_prepare;
+	g_object_notify (G_OBJECT (task), "only_prepare");
+}
+
+/**
+ * pk_task_get_only_prepare:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we are just preparing the transaction for later.
+ *
+ * Return value: %TRUE if we are simulating
+ *
+ * Since: 0.8.1
+ **/
+gboolean
+pk_task_get_only_prepare (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->only_prepare;
+}
 
 /**
  * pk_task_set_interactive:
@@ -2356,6 +2405,9 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 	case PROP_INTERACTIVE:
 		g_value_set_boolean (value, priv->interactive);
 		break;
+	case PROP_ONLY_PREPARE:
+		g_value_set_boolean (value, priv->only_prepare);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2377,6 +2429,9 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 		break;
 	case PROP_INTERACTIVE:
 		priv->interactive = g_value_get_boolean (value);
+		break;
+	case PROP_ONLY_PREPARE:
+		priv->only_prepare = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2415,6 +2470,16 @@ pk_task_class_init (PkTaskClass *klass)
 				      TRUE,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
+
+	/**
+	 * PkTask:only-prepare:
+	 *
+	 * Since: 0.8.1
+	 */
+	pspec = g_param_spec_boolean ("only-prepare", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ONLY_PREPARE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
