@@ -489,6 +489,14 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build systemd updates functionality]),
 	      build_systemd_updates=$enableval,build_systemd_updates=yes)
 AM_CONDITIONAL(PK_BUILD_SYSTEMD_UPDATES, test $build_systemd_updates = "yes")
+if test x$build_systemd_updates = xyes; then
+	AC_ARG_WITH([systemdsystemunitdir],
+		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
+		    [],
+		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+	AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
+fi
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
