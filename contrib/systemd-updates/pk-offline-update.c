@@ -24,35 +24,74 @@
 #include <packagekit-glib2/packagekit.h>
 #include <stdlib.h>
 
+/**
+ * pk_offline_update_set_boot_msg:
+ **/
+static void
+pk_offline_update_set_boot_msg (const gchar *msg)
+{
+	gboolean ret;
+	gchar *cmd;
+	GError *error = NULL;
+
+	cmd = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
+	ret = g_spawn_command_line_sync (cmd, NULL, NULL, NULL, &error);
+	if (!ret) {
+		g_warning ("failed to display message on splash: %s",
+			   error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+	g_free (cmd);
+}
+
+/**
+ * pk_offline_update_pause_progress:
+ **/
+static void
+pk_offline_update_pause_progress (void)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	ret = g_spawn_command_line_async ("plymouth pause-progress", &error);
+	if (!ret) {
+		g_warning ("failed to pause progress for splash: %s",
+			   error->message);
+		g_error_free (error);
+	}
+}
+
+/**
+ * pk_offline_update_progress_cb:
+ **/
 static void
 pk_offline_update_progress_cb (PkProgress *progress,
 			       PkProgressType type,
 			       gpointer user_data)
 {
-	gboolean ret;
-	gchar *cmd = NULL;
-	GError *error = NULL;
-	guint percentage;
+	gchar *msg = NULL;
+	gint percentage;
 
 	if (type != PK_PROGRESS_TYPE_PERCENTAGE)
-		return;
+		goto out;
 	g_object_get (progress, "percentage", &percentage, NULL);
-	g_print ("Update process %i%% complete\n", percentage);
+	if (percentage < 0)
+		goto out;
+
+	/* print on terminal */
+	g_print ("Offline update process %i%% complete\n", percentage);
 
 	/* update plymouth */
-	if (percentage > 0) {
-		cmd = g_strdup_printf ("plymouth display-message --text=\"Update process %i%% complete\"",
-				       percentage);
-		ret = g_spawn_command_line_async (cmd, &error);
-		if (!ret) {
-			g_warning ("failed to spawn plymouth: %s",
-				   error->message);
-			g_error_free (error);
-		}
-	}
-	g_free (cmd);
+	msg = g_strdup_printf ("Update process %i%% complete", percentage);
+	pk_offline_update_set_boot_msg (msg);
+out:
+	g_free (msg);
 }
 
+/**
+ * pk_offline_update_reboot:
+ **/
 static void
 pk_offline_update_reboot (void)
 {
@@ -61,6 +100,7 @@ pk_offline_update_reboot (void)
 	GVariant *val = NULL;
 
 	/* reboot using systemd */
+	pk_offline_update_set_boot_msg ("Rebooting after installing updates...");
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
 		g_warning ("Failed to get system bus connection: %s",
@@ -115,6 +155,7 @@ main (int argc, char *argv[])
 	/* just update the system */
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
+	pk_offline_update_pause_progress ();
 	results = pk_client_update_system (PK_CLIENT (task),
 					   0,
 					   NULL, /* GCancellable */
