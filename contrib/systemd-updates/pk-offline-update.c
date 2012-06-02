@@ -116,7 +116,7 @@ main (int argc, char *argv[])
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
 	results = pk_client_update_system (PK_CLIENT (task),
-					   pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1),
+					   0,
 					   NULL, /* GCancellable */
 					   pk_offline_update_progress_cb,
 					   NULL, /* user_data */
