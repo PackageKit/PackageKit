@@ -463,7 +463,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	GPtrArray *array = NULL;
 	guint finished_id = 0;
 	guint i;
-	guint package_id = 0;
 	PkRoleEnum role;
 
 	/* load */
@@ -541,8 +540,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	if (package_id > 0)
-		g_signal_handler_disconnect (plugin->backend, package_id);
 	if (finished_id > 0)
 		g_signal_handler_disconnect (plugin->backend, finished_id);
 }
@@ -636,7 +633,10 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	}
 	finished_id = g_signal_connect (plugin->backend, "finished",
 					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FILES,
+			      (PkBackendVFunc) pk_plugin_files_cb,
+			      plugin);
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
