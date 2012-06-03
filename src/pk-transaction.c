@@ -3893,8 +3893,8 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 					       transaction->priv->tid,
 					       PK_DBUS_INTERFACE_TRANSACTION,
 					       "Package",
-					       g_variant_new ("(sss)",
-							      pk_info_enum_to_string (pk_package_get_info (package)),
+					       g_variant_new ("(uss)",
+							      pk_package_get_info (package),
 							      pk_package_get_id (package),
 							      pk_package_get_summary (package)),
 					       NULL);
