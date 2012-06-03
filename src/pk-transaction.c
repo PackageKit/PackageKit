@@ -1230,7 +1230,6 @@ pk_transaction_message_cb (PkBackend *backend,
 			   PkMessage *item,
 			   PkTransaction *transaction)
 {
-	const gchar *message_text;
 	gboolean developer_mode;
 	gchar *details;
 	PkMessageEnum type;
@@ -1257,15 +1256,15 @@ pk_transaction_message_cb (PkBackend *backend,
 	pk_results_add_message (transaction->priv->results, item);
 
 	/* emit */
-	message_text = pk_message_enum_to_string (type);
-	g_debug ("emitting message %s, '%s'", message_text, details);
+	g_debug ("emitting message %s, '%s'",
+		 pk_message_enum_to_string (type), details);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Message",
-				       g_variant_new ("(ss)",
-						      message_text,
+				       g_variant_new ("(us)",
+						      type,
 						      details),
 				       NULL);
 	g_free (details);
