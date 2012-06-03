@@ -1733,7 +1733,8 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		g_dbus_proxy_call (state->proxy, "RemovePackages",
-				   g_variant_new ("(^a&sbb)",
+				   g_variant_new ("(t^a&sbb)",
+						  state->transaction_flags,
 						  state->package_ids,
 						  state->allow_deps,
 						  state->autoremove),

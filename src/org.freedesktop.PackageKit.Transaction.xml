@@ -867,6 +867,15 @@
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
       </doc:doc>
+      <arg type="t" name="transaction_flags" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the transaction should be simulated or prepared.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
       <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>

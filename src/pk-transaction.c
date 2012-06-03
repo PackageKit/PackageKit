@@ -4347,11 +4347,13 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
+	PkBitfield transaction_flags;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(^a&sbb)",
+	g_variant_get (params, "(t^a&sbb)",
+		       &transaction_flags,
 		       &package_ids,
 		       &allow_deps,
 		       &autoremove);
@@ -4389,9 +4391,10 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
+	transaction->priv->cached_transaction_flags = transaction_flags;
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_allow_deps = allow_deps;
 	transaction->priv->cached_autoremove = autoremove;
-	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 
 	/* try to get authorization */
