@@ -1825,7 +1825,7 @@ pk_engine_init (PkEngine *engine)
 	pk_transaction_list_set_plugins (engine->priv->transaction_list,
 					 engine->priv->plugins);
 
-	/* we use a trasaction db to store old transactions and to do rollbacks */
+	/* we use a trasaction db to store old transactions */
 	engine->priv->transaction_db = pk_transaction_db_new ();
 
 	/* own the object */

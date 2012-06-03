@@ -506,7 +506,7 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cance
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Get the old transaction list, mainly used for the rollback viewer.
+ * Get the old transaction list, mainly used for the transaction viewer.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
@@ -1312,54 +1312,6 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *can
 
 	/* run async method */
 	pk_client_accept_eula_async (client, eula_id, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
-
-	g_main_loop_run (helper->loop);
-
-	results = helper->results;
-
-	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
-
-	return results;
-}
-
-/**
- * pk_client_rollback:
- * @client: a valid #PkClient instance
- * @transaction_id: the <literal>transaction_id</literal> we want to return to
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @error: the #GError to store any failure, or %NULL
- *
- * We may want to agree to a EULA dialog if one is presented.
- *
- * Warning: this function is synchronous, and may block. Do not use it in GUI
- * applications.
- *
- * Return value: (transfer full): a %PkResults object, or NULL for error
- *
- * Since: 0.5.3
- **/
-PkResults *
-pk_client_rollback (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
-		    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
-{
-	PkClientHelper *helper;
-	PkResults *results;
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
-
-	/* run async method */
-	pk_client_accept_eula_async (client, transaction_id, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);

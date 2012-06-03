@@ -246,13 +246,6 @@ void		 pk_task_refresh_cache_async		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
-void		 pk_task_rollback_async			(PkTask			*task,
-							 const gchar		*transaction_id,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
 void		 pk_task_get_repo_list_async		(PkTask			*task,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,

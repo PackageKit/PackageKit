@@ -137,22 +137,6 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.system-rollback">
-    <!-- SECURITY:
-          - Normal users require admin authentication to rollback system state
-            as this will change a large number of packages, and could expose the
-            system to previously patched security vulnerabilities.
-     -->
-    <_description>Rollback to a previous transaction</_description>
-    <_message>Authentication is required to rollback a transaction</_message>
-    <icon_name>package-x-generic</icon_name>
-    <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
-    </defaults>
-  </action>
-
   <action id="org.freedesktop.packagekit.system-sources-configure">
     <!-- SECURITY:
           - Normal users require admin authentication to enable or disable

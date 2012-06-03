@@ -739,7 +739,6 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */
-	NULL,					/* rollback */
 	backend_search_description,		/* search_details */
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */

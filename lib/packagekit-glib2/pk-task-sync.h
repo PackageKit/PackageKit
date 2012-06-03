@@ -192,13 +192,6 @@ PkResults	*pk_task_refresh_cache_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_task_rollback_sync			(PkTask			*task,
-							 const gchar		*transaction_id,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_task_get_repo_list_sync		(PkTask			*task,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,

@@ -10,8 +10,6 @@
 * Fix ServicePack to work correctly:
   http://lists.freedesktop.org/archives/packagekit/2008-March/002434.html
 
-* Handle rollbacks for select backends, i.e. allow transaction data to be changed
-
 * Don't display install if something is upgradable
   Return update when we search for something that is installed, but an
   update exists for

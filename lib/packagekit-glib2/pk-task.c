@@ -280,10 +280,6 @@ pk_task_do_async_action (PkTaskState *state)
 		pk_client_refresh_cache_async (PK_CLIENT(state->task), state->force,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_ready_cb, state);
-	} else if (state->role == PK_ROLE_ENUM_ROLLBACK) {
-		pk_client_rollback_async (PK_CLIENT(state->task), state->transaction_id,
-					  state->cancellable, state->progress_callback, state->progress_user_data,
-					  (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
 		pk_client_get_repo_list_async (PK_CLIENT(state->task), state->filters,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -2035,57 +2031,6 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 	state->ret = FALSE;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->force = force;
-	state->request = pk_task_generate_request_id ();
-
-	g_debug ("adding state %p", state);
-	g_ptr_array_add (task->priv->array, state);
-
-	/* run task with callbacks */
-	pk_task_do_async_action (state);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_task_rollback_async:
- * @task: a valid #PkTask instance
- * @transaction_id: The transaction ID of the old transaction
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * Rollback to a previous package state.
- *
- * Since: 0.6.5
- **/
-void
-pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable *cancellable,
-			PkProgressCallback progress_callback, gpointer progress_user_data,
-			GAsyncReadyCallback callback_ready, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkTaskState *state;
-
-	g_return_if_fail (PK_IS_TASK (task));
-	g_return_if_fail (callback_ready != NULL);
-	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-
-	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
-
-	/* save state */
-	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_ROLLBACK;
-	state->res = g_object_ref (res);
-	state->task = g_object_ref (task);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->progress_callback = progress_callback;
-	state->progress_user_data = progress_user_data;
-	state->ret = FALSE;
-	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
-	state->transaction_id = g_strdup (transaction_id);
 	state->request = pk_task_generate_request_id ();
 
 	g_debug ("adding state %p", state);

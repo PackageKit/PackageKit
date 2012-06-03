@@ -354,10 +354,6 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		/* TRANSLATORS: transaction state, checking if we have all the security keys for the operation */
 		text = _("Checking signatures");
 		break;
-	case PK_STATUS_ENUM_ROLLBACK:
-		/* TRANSLATORS: transaction state, when we return to a previous system state */
-		text = _("Rolling back");
-		break;
 	case PK_STATUS_ENUM_TEST_COMMIT:
 		/* TRANSLATORS: transaction state, when we're doing a test transaction */
 		text = _("Testing changes");

@@ -700,50 +700,6 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 }
 
 /**
- * pk_backend_rollback_timeout:
- */
-static gboolean
-pk_backend_rollback_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 0) {
-		_updated_gtkhtml = FALSE;
-		_updated_kernel = FALSE;
-		_updated_powertop = FALSE;
-		pk_backend_set_status (backend, PK_STATUS_ENUM_ROLLBACK);
-	}
-	if (_progress_percentage == 20)
-		pk_backend_set_allow_cancel (backend, FALSE);
-	if (_progress_percentage == 100) {
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
-	return TRUE;
-}
-
-
-/**
- * pk_backend_rollback:
- */
-void
-pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
-{
-	/* allow testing error condition */
-	if (g_strcmp0 (transaction_id, "/397_eeecadad_data") == 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "invalid transaction_id");
-		pk_backend_finished (backend);
-		return;
-	}
-	_progress_percentage = 0;
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_signal_timeout = g_timeout_add (2000, pk_backend_rollback_timeout, backend);
-}
-
-/**
  * pk_backend_remove_packages:
  */
 void

@@ -67,7 +67,6 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_OBSOLETE,		"obsolete"},
 	{PK_STATUS_ENUM_DEP_RESOLVE,		"dep-resolve"},
 	{PK_STATUS_ENUM_SIG_CHECK,		"sig-check"},
-	{PK_STATUS_ENUM_ROLLBACK,		"rollback"},
 	{PK_STATUS_ENUM_TEST_COMMIT,		"test-commit"},
 	{PK_STATUS_ENUM_COMMIT,			"commit"},
 	{PK_STATUS_ENUM_REQUEST,		"request"},
@@ -111,7 +110,6 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REPO_ENABLE,			"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,			"repo-set-data"},
 	{PK_ROLE_ENUM_RESOLVE,				"resolve"},
-	{PK_ROLE_ENUM_ROLLBACK,				"rollback"},
 	{PK_ROLE_ENUM_SEARCH_DETAILS,			"search-details"},
 	{PK_ROLE_ENUM_SEARCH_FILE,			"search-file"},
 	{PK_ROLE_ENUM_SEARCH_GROUP,			"search-group"},
@@ -1279,10 +1277,6 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_CANCEL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Canceling");
-		break;
-	case PK_ROLE_ENUM_ROLLBACK:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Rolling back");
 		break;
 	case PK_ROLE_ENUM_GET_REPO_LIST:
 		/* TRANSLATORS: The role of the transaction, in present tense */

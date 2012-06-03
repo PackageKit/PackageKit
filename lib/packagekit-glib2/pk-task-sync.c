@@ -1050,52 +1050,6 @@ pk_task_refresh_cache_sync (PkTask *task, gboolean force, GCancellable *cancella
 }
 
 /**
- * pk_task_rollback_sync:
- * @task: a valid #PkTask instance
- * @transaction_id: The transaction ID of the old transaction
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @error: the #GError to store any failure, or %NULL
- *
- * Rollback to a previous package state.
- *
- * Return value: (transfer full): a %PkResults object, or NULL for error
- *
- * Since: 0.6.5
- **/
-PkResults *
-pk_task_rollback_sync (PkTask *task, const gchar *transaction_id, GCancellable *cancellable,
-		       PkProgressCallback progress_callback, gpointer progress_user_data,
-		       GError **error)
-{
-	PkTaskHelper *helper;
-	PkResults *results;
-
-	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	/* create temp object */
-	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
-
-	/* run async method */
-	pk_task_rollback_async (task, transaction_id, cancellable, progress_callback, progress_user_data,
-				(GAsyncReadyCallback) pk_task_generic_finish_sync, helper);
-
-	g_main_loop_run (helper->loop);
-
-	results = helper->results;
-
-	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
-
-	return results;
-}
-
-/**
  * pk_task_get_repo_list_sync:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results

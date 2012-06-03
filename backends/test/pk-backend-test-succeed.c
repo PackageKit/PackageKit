@@ -235,15 +235,6 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 }
 
 /**
- * pk_backend_rollback:
- */
-void
-pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
-{
-	pk_backend_finished (backend);
-}
-
-/**
  * pk_backend_search_details:
  */
 void

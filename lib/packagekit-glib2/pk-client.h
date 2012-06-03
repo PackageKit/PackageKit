@@ -326,14 +326,6 @@ void		 pk_client_accept_eula_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_rollback_async		(PkClient		*client,
-							 const gchar		*transaction_id,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
-
 void		 pk_client_get_repo_list_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,

@@ -2341,8 +2341,6 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_get_update_detail (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
 		pk_backend_resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_ROLLBACK)
-		pk_backend_rollback (priv->backend, priv->cached_transaction_id);
 	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
 		pk_backend_download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
 	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
@@ -2755,9 +2753,6 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 			break;
 		case PK_ROLE_ENUM_INSTALL_SIGNATURE:
 			policy = "org.freedesktop.packagekit.system-trust-signing-key";
-			break;
-		case PK_ROLE_ENUM_ROLLBACK:
-			policy = "org.freedesktop.packagekit.system-rollback";
 			break;
 		case PK_ROLE_ENUM_REPO_ENABLE:
 		case PK_ROLE_ENUM_REPO_SET_DATA:
@@ -4605,58 +4600,6 @@ out:
 }
 
 /**
- * pk_transaction_rollback:
- **/
-static void
-pk_transaction_rollback (PkTransaction *transaction,
-			 GVariant *params,
-			 GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-	const gchar *transaction_id;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(&s)",
-		       &transaction_id);
-
-	g_debug ("Rollback method called: %s", transaction_id);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_ROLLBACK)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Rollback not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check for sanity */
-	ret = pk_transaction_strvalidate (transaction_id, &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* save so we can run later */
-	transaction->priv->cached_transaction_id = g_strdup (transaction_id);
-	transaction->priv->role = PK_ROLE_ENUM_ROLLBACK;
-
-	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction,
-						   PK_ROLE_ENUM_ROLLBACK,
-						   &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
  * pk_transaction_search_details:
  **/
 void
@@ -5564,11 +5507,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "Resolve") == 0) {
 		pk_transaction_resolve (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "Rollback") == 0) {
-		pk_transaction_rollback (transaction, parameters, invocation);
 		goto out;
 	}
 

@@ -1045,28 +1045,6 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="Rollback">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method rolls back the package database to a previous transaction.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.rollback</doc:permission>
-      </doc:doc>
-      <arg type="s" name="transaction_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid transaction ID.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
     <method name="SearchDetails">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

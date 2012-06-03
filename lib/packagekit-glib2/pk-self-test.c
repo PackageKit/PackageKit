@@ -953,7 +953,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	text = pk_role_bitfield_to_string (roles);
 	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
-		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
+		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
 		     "simulate-remove-packages;simulate-update-packages;upgrade-system;"
@@ -1098,7 +1098,7 @@ pk_test_control_func (void)
 	text = pk_role_bitfield_to_string (roles);
 	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
-		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
+		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
 		     "simulate-remove-packages;simulate-update-packages;upgrade-system;"

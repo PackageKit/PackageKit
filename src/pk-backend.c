@@ -288,8 +288,6 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	if (desc->resolve != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_RESOLVE);
-	if (desc->rollback != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_ROLLBACK);
 	if (desc->search_details != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
 	if (desc->search_files != NULL)
@@ -644,7 +642,6 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
 			g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
 			g_module_symbol (handle, "pk_backend_resolve", (gpointer *)&desc->resolve);
-			g_module_symbol (handle, "pk_backend_rollback", (gpointer *)&desc->rollback);
 			g_module_symbol (handle, "pk_backend_search_details", (gpointer *)&desc->search_details);
 			g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
 			g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
@@ -3501,20 +3498,6 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_transaction_reset (backend);
 	backend->priv->desc->resolve (backend, filters, package_ids);
-}
-
-/**
- * pk_backend_rollback:
- */
-void
-pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->rollback != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_ROLLBACK);
-	pk_store_set_string (backend->priv->store, "transaction_id", transaction_id);
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->rollback (backend, transaction_id);
 }
 
 /**

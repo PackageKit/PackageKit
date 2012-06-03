@@ -24,3 +24,5 @@ Guide to porting backends from 0.7.x to 0.8.x
  * Switch the RemovePackages() arguments to match the DBus API if you're
    using a spawned backend, i.e.
    transaction_flags, package_ids, allow_deps, auto_remove
+
+ * Remove any references to Rollback, it's no longer available.

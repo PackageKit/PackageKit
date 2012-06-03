@@ -185,8 +185,6 @@ void		pk_backend_remove_packages		(PkBackend	*backend,
 void		pk_backend_resolve			(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 gchar		**packages);
-void		pk_backend_rollback			(PkBackend	*backend,
-							 const gchar	*transaction_id);
 void		pk_backend_search_details		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 gchar		**search);
@@ -475,8 +473,6 @@ typedef struct {
 	void		(*resolve)			(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 gchar		**packages);
-	void		(*rollback)			(PkBackend	*backend,
-							 const gchar	*transaction_id);
 	void		(*search_details)		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 gchar		**values);

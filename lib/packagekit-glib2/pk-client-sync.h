@@ -222,13 +222,6 @@ PkResults	*pk_client_accept_eula			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_rollback			(PkClient		*client,
-							 const gchar		*transaction_id,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_client_get_repo_list		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
