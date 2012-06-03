@@ -1,0 +1,26 @@
+Guide to porting backends from 0.6.x to 0.7.x
+
+ * Remove any Simulate* methods from pk-backend-*.c
+
+ * Rename the 'gboolean only_trusted' arguments to
+   'PkBitfield transaction_flags' in the following methods:
+  - InstallFiles
+  - InstallPackages
+  - UpdateFiles
+  - UpdateSystem
+
+ * Add a 'PkBitfield transaction_flags' argument to the methods:
+  - RemovePackages
+
+ * If PK_TRANSACTION_FLAG_ENUM_ONLY_SIMULATE is set in transaction_flags
+   then depsolve and return what would be done. Treat this just like
+   the Simulate* methods, i.e. emit what would be done in an actual
+   transaction.
+
+ * If PK_TRANSACTION_FLAG_ENUM_PREPARE is set in transaction_flags
+   then depsolve and download any packages or metadata, but don't
+   actually make any database changes or change any files
+
+ * Switch the RemovePackages() arguments to match the DBus API if you're
+   using a spawned backend, i.e.
+   transaction_flags, package_ids, allow_deps, auto_remove
