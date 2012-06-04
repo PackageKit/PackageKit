@@ -5,11 +5,19 @@ INCLUDES =						\
 	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib
 
-libexec_PROGRAMS = pk-offline-update pk-trigger-offline-update
+libexec_PROGRAMS =					\
+	pk-clear-offline-update				\
+	pk-offline-update				\
+	pk-trigger-offline-update
 
 pk_trigger_offline_update_SOURCES =				\
 	pk-trigger-offline-update.c
 pk_trigger_offline_update_CFLAGS =				\
+	$(WARNINGFLAGS_C)
+
+pk_clear_offline_update_SOURCES =				\
+	pk-clear-offline-update.c
+pk_clear_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)
 
 PK_GLIB2_LIBS =						\

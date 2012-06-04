@@ -24,6 +24,9 @@
 #include <packagekit-glib2/packagekit.h>
 #include <stdlib.h>
 
+#define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
+#define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
+
 /**
  * pk_offline_update_set_boot_msg:
  **/
@@ -132,6 +135,138 @@ out:
 }
 
 /**
+ * pk_offline_update_write_error:
+ **/
+static void
+pk_offline_update_write_error (const GError *error)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	GError *error_local = NULL;
+	GKeyFile *key_file;
+	PkErrorEnum error_enum = PK_ERROR_ENUM_UNKNOWN;
+
+	/* just write what we've got */
+	key_file = g_key_file_new ();
+	g_key_file_set_boolean (key_file,
+				PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				"Success",
+				FALSE);
+	g_key_file_set_string (key_file,
+			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+			       "ErrorDetails",
+			       error->message);
+	if (error->code >= 0xff)
+		error_enum = error->code - 0xff;
+	if (error_enum != PK_ERROR_ENUM_UNKNOWN) {
+		g_key_file_set_string (key_file,
+				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				       "ErrorCode",
+				       pk_error_enum_to_string (error_enum));
+	}
+
+	/* write file */
+	data = g_key_file_to_data (key_file, NULL, &error_local);
+	if (data == NULL) {
+		g_warning ("failed to get keyfile data: %s",
+			   error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
+				   data,
+				   -1,
+				   &error_local);
+	if (!ret) {
+		g_warning ("failed to write file: %s",
+			   error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
+	g_key_file_free (key_file);
+	g_free (data);
+}
+
+/**
+ * pk_offline_update_write_results:
+ **/
+static void
+pk_offline_update_write_results (PkResults *results)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	GError *error = NULL;
+	GKeyFile *key_file;
+	GPtrArray *packages;
+	GString *string;
+	guint i;
+	PkError *pk_error;
+	PkPackage *package;
+
+	key_file = g_key_file_new ();
+	pk_error = pk_results_get_error_code (results);
+	if (pk_error != NULL) {
+		g_key_file_set_boolean (key_file,
+					PK_OFFLINE_UPDATE_RESULTS_GROUP,
+					"Success",
+					FALSE);
+		g_key_file_set_string (key_file,
+				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				       "ErrorCode",
+				       pk_error_enum_to_string (pk_error_get_code (pk_error)));
+		g_key_file_set_string (key_file,
+				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				       "ErrorDetails",
+				       pk_error_get_details (pk_error));
+	} else {
+		g_key_file_set_boolean (key_file,
+					PK_OFFLINE_UPDATE_RESULTS_GROUP,
+					"Success",
+					TRUE);
+	}
+
+	/* save packages if any set */
+	packages = pk_results_get_package_array (results);
+	if (packages != NULL) {
+		string = g_string_new ("");
+		for (i = 0; packages->len; i++) {
+			package = g_ptr_array_index (packages, i);
+			g_string_append_printf (string, "%s,",
+						pk_package_get_id (package));
+		}
+		if (string->len > 0)
+			g_string_set_size (string, string->len - 1);
+		g_key_file_set_string (key_file,
+				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				       "Packages",
+				       string->str);
+		g_string_free (string, TRUE);
+	}
+
+	/* write file */
+	data = g_key_file_to_data (key_file, NULL, &error);
+	if (data == NULL) {
+		g_warning ("failed to get keyfile data: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
+				   data,
+				   -1,
+				   &error);
+	if (!ret) {
+		g_warning ("failed to write file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_key_file_free (key_file);
+	g_free (data);
+}
+
+/**
  * main:
  **/
 int
@@ -164,10 +299,12 @@ main (int argc, char *argv[])
 					   &error);
 	if (results == NULL) {
 		retval = EXIT_FAILURE;
+		pk_offline_update_write_error (error);
 		g_warning ("failed to update system: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
+	pk_offline_update_write_results (results);
 	g_unlink ("/var/lib/PackageKit/prepared-update");
 	retval = EXIT_SUCCESS;
 out:
