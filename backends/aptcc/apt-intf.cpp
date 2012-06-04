@@ -2280,7 +2280,7 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     return true;
 }
 
-bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool simulate, bool markAuto, bool fixBroken)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool simulate, bool markAuto, bool fixBroken, bool downloadOnly)
 {
     //cout << "runTransaction" << simulate << remove << endl;
     bool withLock = !simulate; // Check to see if we are just simulating,
@@ -2369,7 +2369,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
 
     // If we are simulating the install packages
     // will just calculate the trusted packages
-    return installPackages(cache, simulate);
+    return installPackages(cache, simulate, downloadOnly);
 }
 
 /**
@@ -2378,7 +2378,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
  * This displays the informative messages describing what is going to
  * happen and then calls the download routines
  */
-bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
+bool AptIntf::installPackages(AptCacheFile &cache, bool simulating, bool downloadOnly)
 {
     //cout << "installPackages() called" << endl;
     // Try to auto-remove packages
@@ -2539,6 +2539,11 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
     if (_error->PendingError() == true) {
         cout << "PendingError download" << endl;
         return false;
+    }
+    
+    // Download finished, check if we should proceed the install
+    if (downloadOnly) {
+        return true;
     }
 
     // Check if the user canceled

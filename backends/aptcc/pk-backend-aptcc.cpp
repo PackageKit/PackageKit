@@ -421,10 +421,15 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
 
         apt->emitUpdates(updates, filters);
         apt->emitPackages(kept, filters, PK_INFO_ENUM_BLOCKED);
-    } else {
+    } else { 
+        PkBitfield transaction_flags;
+        bool downloadOnly;
+        transaction_flags = pk_backend_get_uint(backend, "transaction_flags");        
+        downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_PREPARE);
+
         // TODO there should be a simulate upgrade system,
         // tho afaik Apper and GPK don't use this
-        res = apt->installPackages(cache, false);
+        res = apt->installPackages(cache, false, downloadOnly);
     }
 
     delete apt;
@@ -872,29 +877,33 @@ void pk_backend_search_details(PkBackend *backend, PkBitfield filters, gchar **v
 
 static gboolean backend_manage_packages_thread(PkBackend *backend)
 {
-    bool simulate = false;
-    bool remove = false;
-    bool fileInstall = false;
-    bool markAuto = false;
-    bool fixBroken = false;
-    gchar **full_paths = NULL;
-
-    PkBitfield transaction_flags;
-    transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
+    // Get the transaction flags
+    PkBitfield transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
+    
+    // Check if we should only simulate the install (calculate dependencies)
+    bool simulate;
     simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+    
+    // Check if we should only download all the required packages for this transaction
+    bool downloadOnly;
+    downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_PREPARE);
 
+    // Get the transaction role since this method is called by install/remove/update
     PkRoleEnum role = pk_backend_get_role(backend);
-    if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-        remove = true;
-    }
+
+    // Check if we are removing packages
+    bool remove = (role == PK_ROLE_ENUM_REMOVE_PACKAGES);
+
+    // Check if we are installing local files
+    bool fileInstall = false;
+    gchar **full_paths = NULL;
     if (role == PK_ROLE_ENUM_INSTALL_FILES) {
         full_paths = pk_backend_get_strv(backend, "full_paths");
         fileInstall = true;
-
-        // Mark newly installed packages as auto-installed
-        // (they're dependencies of the new local package)
-        markAuto = true;
     }
+    
+    // Check if we should fix broken packages
+    bool fixBroken = false;
     if (role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
         // On fix broken mode no package to remove/install is allowed
         fixBroken = true;
@@ -953,7 +962,15 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     }
 
     // Install/Update/Remove packages, or just simulate
-    if (!apt->runTransaction(installPkgs, removePkgs, simulate, markAuto, fixBroken)) {
+    bool ret;
+    ret = apt->runTransaction(installPkgs,
+                              removePkgs,
+                              simulate,
+                              fileInstall, // Mark newly installed packages as auto-installed
+                                           // (they're dependencies of the new local package)
+                              fixBroken,
+                              downloadOnly);
+    if (!ret) {
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
         delete apt;

@@ -99,7 +99,8 @@ public:
                         const PkgList &remove,
                         bool simulate,
                         bool markAuto,
-                        bool fixBroken);
+                        bool fixBroken,
+                        bool downloadOnly);
 
     /**
      *  Get package depends
@@ -198,7 +199,7 @@ public:
     /**
       *  Download and install packages
       */
-    bool installPackages(AptCacheFile &cache, bool simulating);
+    bool installPackages(AptCacheFile &cache, bool simulating, bool downloadOnly);
 
     /**
      *  Install a DEB file
