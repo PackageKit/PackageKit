@@ -1496,13 +1496,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 		goto out;
 	}
 
-	/* we've deprecated this */
-	if (message == PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE) {
-		g_warning ("Do not use %s, instead indicate the package using Package(untrusted,package_id,summary)",
-			   pk_message_enum_to_string (message));
-		goto out;
-	}
-
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);

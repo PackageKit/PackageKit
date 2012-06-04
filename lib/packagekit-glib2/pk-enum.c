@@ -218,7 +218,6 @@ static const PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_BACKEND_ERROR,		"backend-error"},
 	{PK_MESSAGE_ENUM_DAEMON_ERROR,		"daemon-error"},
 	{PK_MESSAGE_ENUM_CACHE_BEING_REBUILT,	"cache-being-rebuilt"},
-	{PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,	"untrusted-package"},
 	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
 	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,	"could-not-find-package"},
 	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
