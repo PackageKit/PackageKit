@@ -443,7 +443,7 @@ void pk_backend_get_updates(PkBackend *backend, PkBitfield filters)
 /**
  * pk_backend_update_system:
  */
-void pk_backend_update_system(PkBackend *backend, gboolean only_trusted)
+void pk_backend_update_system(PkBackend *backend, PkBitfield transaction_flags)
 {
     pk_backend_set_bool(backend, "getUpdates", false);
     pk_backend_thread_create(backend, backend_get_or_update_system_thread);
@@ -879,20 +879,15 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     bool fixBroken = false;
     gchar **full_paths = NULL;
 
+    PkBitfield transaction_flags;
+    transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
+    simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+
     PkRoleEnum role = pk_backend_get_role(backend);
-    if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
-            role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
-            role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES ||
-            role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
-            role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM) {
-        simulate = true;
-    }
-    if (role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
-            role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+    if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
         remove = true;
     }
-    if (role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
-            role == PK_ROLE_ENUM_INSTALL_FILES) {
+    if (role == PK_ROLE_ENUM_INSTALL_FILES) {
         full_paths = pk_backend_get_strv(backend, "full_paths");
         fileInstall = true;
 
@@ -900,8 +895,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
         // (they're dependencies of the new local package)
         markAuto = true;
     }
-    if (role == PK_ROLE_ENUM_SIMULATE_REPAIR_SYSTEM ||
-            role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+    if (role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
         // On fix broken mode no package to remove/install is allowed
         fixBroken = true;
     }
@@ -988,25 +982,9 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
 }
 
 /**
- * pk_backend_simulate_install_packages:
- */
-void pk_backend_simulate_install_packages(PkBackend *backend, gchar **packages)
-{
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
-}
-
-/**
  * pk_backend_install_packages:
  */
-void pk_backend_install_packages(PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void pk_backend_simulate_update_packages(PkBackend *backend, gchar **packages)
+void pk_backend_install_packages(PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
@@ -1014,15 +992,7 @@ void pk_backend_simulate_update_packages(PkBackend *backend, gchar **packages)
 /**
  * pk_backend_update_packages:
  */
-void pk_backend_update_packages(PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
-}
-
-/**
- * pk_backend_simulate_install_files:
- */
-void pk_backend_simulate_install_files(PkBackend *backend, gchar **full_paths)
+void pk_backend_update_packages(PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
@@ -1030,15 +1000,7 @@ void pk_backend_simulate_install_files(PkBackend *backend, gchar **full_paths)
 /**
  * pk_backend_install_files:
  */
-void pk_backend_install_files(PkBackend *backend, gboolean only_trusted, gchar **full_paths)
-{
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
-}
-
-/**
- * pk_backend_simulate_remove_packages:
- */
-void pk_backend_simulate_remove_packages(PkBackend *backend, gchar **packages, gboolean autoremove)
+void pk_backend_install_files(PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
@@ -1046,7 +1008,11 @@ void pk_backend_simulate_remove_packages(PkBackend *backend, gchar **packages, g
 /**
  * pk_backend_remove_packages:
  */
-void pk_backend_remove_packages(PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void pk_backend_remove_packages(PkBackend *backend,
+                                PkBitfield transaction_flags,
+                                gchar **package_ids,
+                                gboolean allow_deps,
+                                gboolean autoremove)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
@@ -1054,15 +1020,7 @@ void pk_backend_remove_packages(PkBackend *backend, gchar **package_ids, gboolea
 /**
  * pk_backend_repair_system:
  */
-void pk_backend_repair_system(PkBackend *backend, gboolean only_trusted)
-{
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
-}
-
-/**
- * pk_backend_simulate_repair_system:
- */
-void pk_backend_simulate_repair_system(PkBackend *backend)
+void pk_backend_repair_system(PkBackend *backend, PkBitfield transaction_flags)
 {
     pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
@@ -1261,9 +1219,7 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_UPDATE_SYSTEM,
                 PK_ROLE_ENUM_GET_REPO_LIST,
                 PK_ROLE_ENUM_REPO_ENABLE,
-                PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-                PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-                PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+                PK_ROLE_ENUM_REPAIR_SYSTEM,
                 -1);
 
     // only add GetDistroUpgrades if the binary is present
@@ -1273,7 +1229,6 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
 
     // only add GetDistroUpgrades if the binary is present
     if (g_file_test(GDEBI_BINARY, G_FILE_TEST_EXISTS)) {
-        pk_bitfield_add(roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
         pk_bitfield_add(roles, PK_ROLE_ENUM_INSTALL_FILES);
     }
 
