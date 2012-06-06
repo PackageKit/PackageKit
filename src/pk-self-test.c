@@ -1067,67 +1067,6 @@ pk_test_transaction_func (void)
 	transaction = pk_transaction_new ();
 	g_assert (transaction != NULL);
 
-	/* test a fail filter (null) */
-	ret = pk_transaction_filter_check (NULL, &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* test a fail filter () */
-	ret = pk_transaction_filter_check ("", &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* test a fail filter (;) */
-	ret = pk_transaction_filter_check (";", &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* test a fail filter (invalid) */
-	ret = pk_transaction_filter_check ("moo", &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-
-	g_clear_error (&error);
-
-	/* test a fail filter (invalid, multiple) */
-	ret = pk_transaction_filter_check ("moo;foo", &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* test a fail filter (valid then zero length) */
-	ret = pk_transaction_filter_check ("gui;;", &error);
-	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* test a pass filter (none) */
-	ret = pk_transaction_filter_check ("none", &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_clear_error (&error);
-
-	/* test a pass filter (single) */
-	ret = pk_transaction_filter_check ("gui", &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_clear_error (&error);
-
-	/* test a pass filter (multiple) */
-	ret = pk_transaction_filter_check ("devel;~gui", &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_clear_error (&error);
-
-	/* test a pass filter (multiple2) */
-	ret = pk_transaction_filter_check ("~gui;~installed", &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_clear_error (&error);
-
 	/* validate incorrect text */
 	ret = pk_transaction_strvalidate ("richard$hughes", &error);
 	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
@@ -1417,7 +1356,10 @@ pk_test_transaction_list_func (void)
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
 
 	/* this tests the run-on-commit action */
-	pk_transaction_get_updates (transaction, g_variant_new ("(s)", "none"), NULL);
+	pk_transaction_get_updates (transaction,
+				    g_variant_new ("(t)",
+						   pk_bitfield_value (PK_FILTER_ENUM_NONE)),
+				    NULL);
 
 	/* make sure transaction has correct flags */
 	transaction = pk_transaction_list_get_transaction (tlist, tid);
@@ -1496,7 +1438,9 @@ pk_test_transaction_list_func (void)
 	array = g_strsplit ("dave", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
 	pk_transaction_search_details (transaction,
-				       g_variant_new ("(s^as)", "none", array),
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
 				       NULL);
 	g_strfreev (array);
 
@@ -1504,7 +1448,9 @@ pk_test_transaction_list_func (void)
 	array = g_strsplit ("power", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
 	pk_transaction_search_names (transaction,
-				     g_variant_new ("(s^as)", "none", array),
+				     g_variant_new ("(t^as)",
+						    pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						    array),
 				     NULL);
 	g_strfreev (array);
 
@@ -1512,7 +1458,9 @@ pk_test_transaction_list_func (void)
 	array = g_strsplit ("paul", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
 	pk_transaction_search_details (transaction,
-				       g_variant_new ("(s^as)", "none", array),
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
 				       NULL);
 	g_strfreev (array);
 
