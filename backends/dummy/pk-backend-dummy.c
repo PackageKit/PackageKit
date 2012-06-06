@@ -424,7 +424,6 @@ static gboolean
 pk_backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	guint sub_percent;
 
 	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
@@ -445,12 +444,6 @@ pk_backend_install_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	}
-	if (_progress_percentage > 30 && _progress_percentage < 50) {
-		sub_percent = ((gfloat) (_progress_percentage - 30.0f) / 20.0f) * 100.0f;
-		pk_backend_set_sub_percentage (backend, sub_percent);
-	} else {
-		pk_backend_set_sub_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
@@ -816,7 +809,6 @@ static gboolean
 pk_backend_update_packages_download_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	guint sub;
 
 	if (_progress_percentage == 100) {
 		if (_use_blocked) {
@@ -832,14 +824,17 @@ pk_backend_update_packages_download_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
-		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_set_item_progress (backend,
+					      "powertop;1.8-1.fc8;i386;fedora",
+					      0);
 	}
 	if (_progress_percentage == 20 && !_updated_kernel) {
-		pk_backend_set_sub_percentage (backend, 100);
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
-		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_set_item_progress (backend,
+					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					      0);
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	}
 	if (_progress_percentage == 30 && !_updated_gtkhtml) {
@@ -848,45 +843,49 @@ pk_backend_update_packages_download_timeout (gpointer data)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		pk_backend_set_sub_percentage (backend, 100);
 		if (!_use_blocked) {
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
 			_updated_gtkhtml = TRUE;
 		}
-		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_set_item_progress (backend,
+					      "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					      0);
 	}
 	if (_progress_percentage == 40 && !_updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
-		pk_backend_set_sub_percentage (backend, 100);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
+		pk_backend_set_item_progress (backend,
+					      "powertop;1.8-1.fc8;i386;fedora",
+					      0);
 		_updated_powertop = TRUE;
-		pk_backend_set_sub_percentage (backend, 0);
 	}
 	if (_progress_percentage == 60 && !_updated_kernel) {
-		pk_backend_set_sub_percentage (backend, 100);
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
+		pk_backend_set_item_progress (backend,
+					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					      0);
 		_updated_kernel = TRUE;
-		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_set_item_progress (backend,
+					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					      0);
 	}
 	if (_progress_percentage == 80 && !_updated_kernel) {
-		pk_backend_set_sub_percentage (backend, 100);
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
-		pk_backend_set_sub_percentage (backend, 0);
+		pk_backend_set_item_progress (backend,
+					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					      0);
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	sub = (_progress_percentage % 10) * 10;
-	if (sub != 0)
-		pk_backend_set_sub_percentage (backend, sub);
 	return TRUE;
 }
 
@@ -1016,7 +1015,6 @@ pk_backend_update_system_timeout (gpointer data)
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	pk_backend_set_sub_percentage (backend, (_progress_percentage % 10) * 10);
 	return TRUE;
 }
 
@@ -1371,7 +1369,6 @@ pk_backend_upgrade_system_timeout (gpointer data)
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);
-	pk_backend_set_sub_percentage (backend, (_progress_percentage % 10) * 10);
 	return TRUE;
 }
 
