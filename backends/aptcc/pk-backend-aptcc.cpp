@@ -425,7 +425,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
         PkBitfield transaction_flags;
         bool downloadOnly;
         transaction_flags = pk_backend_get_uint(backend, "transaction_flags");        
-        downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_PREPARE);
+        downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 
         // TODO there should be a simulate upgrade system,
         // tho afaik Apper and GPK don't use this
@@ -886,7 +886,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     
     // Check if we should only download all the required packages for this transaction
     bool downloadOnly;
-    downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_PREPARE);
+    downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 
     // Get the transaction role since this method is called by install/remove/update
     PkRoleEnum role = pk_backend_get_role(backend);

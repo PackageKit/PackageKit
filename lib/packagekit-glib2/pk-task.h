@@ -280,9 +280,9 @@ gboolean	 pk_task_get_simulate			(PkTask			*task);
 void		 pk_task_set_interactive		(PkTask			*task,
 							 gboolean		 interactive);
 gboolean	 pk_task_get_interactive		(PkTask			*task);
-void		 pk_task_set_only_prepare		(PkTask			*task,
-							 gboolean		 only_prepare);
-gboolean	 pk_task_get_only_prepare		(PkTask			*task);
+void		 pk_task_set_only_download		(PkTask			*task,
+							 gboolean		 only_download);
+gboolean	 pk_task_get_only_download		(PkTask			*task);
 
 G_END_DECLS
 

@@ -1196,7 +1196,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* write notification files if anything is pending */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
 	    pk_bitfield_contain (transaction->priv->cached_transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		pk_transaction_write_prepared_file (transaction);
 	}
 

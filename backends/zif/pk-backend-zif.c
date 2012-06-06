@@ -3708,7 +3708,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 					   5, /* print packages */
 					   -1);
 	} else if (pk_bitfield_contain (transaction_flags,
-					PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+					PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		ret = zif_state_set_steps (state,
 					   NULL,
 					   30, /* resolve */
@@ -3869,7 +3869,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 
 	/* we're only preparing the transaction for later */
 	if (pk_bitfield_contain (transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_PREPARE)) {
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		g_debug ("exit after downloading as transaction is prepare");
 		goto out;
 	}

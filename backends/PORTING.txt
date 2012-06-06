@@ -17,7 +17,7 @@ Guide to porting backends from 0.7.x to 0.8.x
    the Simulate* methods, i.e. emit what would be done in an actual
    transaction.
 
- * If PK_TRANSACTION_FLAG_ENUM_PREPARE is set in transaction_flags
+ * If PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD is set in transaction_flags
    then depsolve and download any packages or metadata, but don't
    actually make any database changes or change any files
 

@@ -1257,7 +1257,7 @@ main (int argc, char *argv[])
 	gboolean background = FALSE;
 	gboolean help = FALSE;
 	gboolean noninteractive = FALSE;
-	gboolean only_prepare = FALSE;
+	gboolean only_download = FALSE;
 	guint cache_age = 0;
 	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
@@ -1292,9 +1292,9 @@ main (int argc, char *argv[])
 		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
 			/* command line argument, do we ask questions */
 			_("Install the packages without asking for confirmation"), NULL },
-		{ "only-prepare", 'y', 0, G_OPTION_ARG_NONE, &only_prepare,
+		{ "only-download", 'y', 0, G_OPTION_ARG_NONE, &only_download,
 			/* command line argument, do we just download or apply changes */
-			_("Prepare the transaction but do not commit it"), NULL },
+			_("Prepare the transaction by downloading pakages only"), NULL },
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
@@ -1389,7 +1389,7 @@ main (int argc, char *argv[])
 		      "background", background,
 		      "simulate", !noninteractive,
 		      "interactive", !noninteractive,
-		      "only-prepare", only_prepare,
+		      "only-download", only_download,
 		      "cache-age", cache_age,
 		      NULL);
 

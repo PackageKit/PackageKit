@@ -402,7 +402,7 @@ static const PkEnumMatch enum_transaction_flag[] = {
 	{PK_TRANSACTION_FLAG_ENUM_NONE,		"none"},	/* fall though value */
 	{PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,	"only-trusted"},
 	{PK_TRANSACTION_FLAG_ENUM_SIMULATE,	"simluate"},
-	{PK_TRANSACTION_FLAG_ENUM_PREPARE,	"prepare"},
+	{PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, "only-download"},
 	{0, NULL}
 };
 

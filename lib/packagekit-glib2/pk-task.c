@@ -47,7 +47,7 @@ struct _PkTaskPrivate
 {
 	GPtrArray			*array;
 	gboolean			 simulate;
-	gboolean			 only_prepare;
+	gboolean			 only_download;
 	gboolean			 interactive;
 };
 
@@ -69,7 +69,7 @@ typedef struct {
 	PkRoleEnum			 role;
 	PkExitEnum			 exit_enum;
 	gboolean			 simulate;
-	gboolean			 only_prepare;
+	gboolean			 only_download;
 	gboolean			 transaction_flags;
 	gchar				**package_ids;
 	gboolean			 allow_deps;
@@ -184,9 +184,9 @@ pk_task_do_async_action (PkTaskState *state)
 
 	/* only prepare the transaction */
 	transaction_flags = state->transaction_flags;
-	if (state->task->priv->only_prepare) {
+	if (state->task->priv->only_download) {
 		pk_bitfield_add (transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_PREPARE);
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 	}
 
 	/* do the correct action */
@@ -2265,9 +2265,9 @@ pk_task_get_simulate (PkTask *task)
 }
 
 /**
- * pk_task_set_only_prepare:
+ * pk_task_set_only_download:
  * @task: a valid #PkTask instance
- * @only_prepare: %FALSE to actually commit the transaction
+ * @only_download: %FALSE to actually commit the transaction
  *
  * If the transaction should be prepared (depsolved, packages
  * downloaded, etc) but not committed.
@@ -2275,15 +2275,15 @@ pk_task_get_simulate (PkTask *task)
  * Since: 0.8.1
  **/
 void
-pk_task_set_only_prepare (PkTask *task, gboolean only_prepare)
+pk_task_set_only_download (PkTask *task, gboolean only_download)
 {
 	g_return_if_fail (PK_IS_TASK (task));
-	task->priv->only_prepare = only_prepare;
-	g_object_notify (G_OBJECT (task), "only_prepare");
+	task->priv->only_download = only_download;
+	g_object_notify (G_OBJECT (task), "only-download");
 }
 
 /**
- * pk_task_get_only_prepare:
+ * pk_task_get_only_download:
  * @task: a valid #PkTask instance
  *
  * Gets if we are just preparing the transaction for later.
@@ -2293,10 +2293,10 @@ pk_task_set_only_prepare (PkTask *task, gboolean only_prepare)
  * Since: 0.8.1
  **/
 gboolean
-pk_task_get_only_prepare (PkTask *task)
+pk_task_get_only_download (PkTask *task)
 {
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	return task->priv->only_prepare;
+	return task->priv->only_download;
 }
 
 /**
@@ -2351,7 +2351,7 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 		g_value_set_boolean (value, priv->interactive);
 		break;
 	case PROP_ONLY_PREPARE:
-		g_value_set_boolean (value, priv->only_prepare);
+		g_value_set_boolean (value, priv->only_download);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2376,7 +2376,7 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 		priv->interactive = g_value_get_boolean (value);
 		break;
 	case PROP_ONLY_PREPARE:
-		priv->only_prepare = g_value_get_boolean (value);
+		priv->only_download = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2417,11 +2417,11 @@ pk_task_class_init (PkTaskClass *klass)
 	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
 
 	/**
-	 * PkTask:only-prepare:
+	 * PkTask:only-download:
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_boolean ("only-prepare", NULL, NULL,
+	pspec = g_param_spec_boolean ("only-download", NULL, NULL,
 				      FALSE,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ONLY_PREPARE, pspec);
