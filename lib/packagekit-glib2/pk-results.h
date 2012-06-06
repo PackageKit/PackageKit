@@ -27,6 +27,7 @@
 #define __PK_RESULTS_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-category.h>
 #include <packagekit-glib2/pk-details.h>
 #include <packagekit-glib2/pk-distro-upgrade.h>
@@ -117,6 +118,7 @@ PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
 PkError		*pk_results_get_error_code		(PkResults		*results);
 PkRoleEnum	 pk_results_get_role			(PkResults		*results);
+PkBitfield	 pk_results_get_transaction_flags	(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

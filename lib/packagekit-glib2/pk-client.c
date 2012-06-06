@@ -1535,6 +1535,7 @@ pk_client_set_hints_cb (GObject *source_object,
 	g_object_set (state->results,
 		      "role", state->role,
 		      "progress", state->progress,
+		      "transaction-flags", state->transaction_flags,
 		      NULL);
 
 	/* do this async, although this should be pretty fast anyway */

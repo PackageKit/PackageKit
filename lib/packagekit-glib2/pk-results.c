@@ -48,6 +48,7 @@ static void     pk_results_finalize	(GObject     *object);
 struct _PkResultsPrivate
 {
 	PkRoleEnum		 role;
+	PkBitfield		 transaction_flags;
 	guint			 inputs;
 	PkProgress		*progress;
 	PkExitEnum		 exit_enum;
@@ -71,6 +72,7 @@ struct _PkResultsPrivate
 enum {
 	PROP_0,
 	PROP_ROLE,
+	PROP_TRANSACTION_FLAGS,
 	PROP_INPUTS,
 	PROP_PROGRESS,
 	PROP_LAST
@@ -90,6 +92,9 @@ pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	switch (prop_id) {
 	case PROP_ROLE:
 		g_value_set_uint (value, priv->role);
+		break;
+	case PROP_TRANSACTION_FLAGS:
+		g_value_set_uint64 (value, priv->transaction_flags);
 		break;
 	case PROP_INPUTS:
 		g_value_set_uint (value, priv->inputs);
@@ -115,6 +120,9 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	switch (prop_id) {
 	case PROP_ROLE:
 		priv->role = g_value_get_uint (value);
+		break;
+	case PROP_TRANSACTION_FLAGS:
+		priv->transaction_flags = g_value_get_uint64 (value);
 		break;
 	case PROP_INPUTS:
 		priv->inputs = g_value_get_uint (value);
@@ -524,6 +532,23 @@ pk_results_get_role (PkResults *results)
 }
 
 /**
+ * pk_results_get_transaction_flags:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the transaction flag for these results.
+ *
+ * Return value: The #PkBitfield or 0 if not set
+ *
+ * Since: 0.8.1
+ **/
+PkBitfield
+pk_results_get_transaction_flags (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
+	return results->priv->transaction_flags;
+}
+
+/**
  * pk_results_get_error_code:
  * @results: a valid #PkResults instance
  *
@@ -847,6 +872,16 @@ pk_results_class_init (PkResultsClass *klass)
 				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
+	/**
+	 * PkResults:transaction-flags:
+	 *
+	 * Since: 0.8.1
+	 */
+	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_TRANSACTION_FLAGS, pspec);
 
 	/**
 	 * PkResults:inputs:
