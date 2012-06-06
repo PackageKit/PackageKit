@@ -170,15 +170,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def reset(self):
         self._package_list = []
 
-    def install_packages(self, only_trusted, packageids):
-        self._install_packages(only_trusted, packageids)
-
-    def simulate_install_packages(self, packageids):
-        self._install_packages(False, packageids, True)
-
     @needs_cache
-    def _install_packages(self, only_trusted, packageids, simulate=False):
-        if only_trusted:
+    def install_packages(self, transaction_flags, packageids):
+        if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
         packages = []
@@ -208,22 +202,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        if simulate:
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             self._show_changeset(trans.getChangeSet())
         else:
             self.status(STATUS_INSTALL)
             self._packagesdict = trans.getChangeSet()
             self.ctrl.commitTransaction(trans, confirm=False)
 
-    def install_files(self, only_trusted, paths):
-        self._install_files(only_trusted, paths)
-
-    def simulate_install_files(self, paths):
-        self._install_files(False, paths, True)
-
     @needs_cache
-    def _install_files(self, only_trusted, paths, simulate=False):
-        if only_trusted:
+    def install_files(self, transaction_flags, paths):
+        if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
         for path in paths:
@@ -243,21 +231,15 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        if simulate:
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             self._show_changeset(trans.getChangeSet())
         else:
             self.status(STATUS_INSTALL)
             self._packagesdict = trans.getChangeSet()
             self.ctrl.commitTransaction(trans, confirm=False)
 
-    def remove_packages(self, allow_deps, autoremove, packageids):
-        self._remove_packages(allow_deps, autoremove, packageids)
-
-    def simulate_remove_packages(self, packageids):
-        self._remove_packages(True, False, packageids, True)
-
     @needs_cache
-    def _remove_packages(self, allow_deps, autoremove, packageids, simulate=False):
+    def remove_packages(self, transaction_flags, packageids, allow_deps, autoremove):
         # TODO: use autoremove
         packages = []
         for packageid in packageids:
@@ -289,22 +271,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        if simulate:
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             self._show_changeset(trans.getChangeSet())
         else:
             self.status(STATUS_REMOVE)
             self._packagesdict = trans.getChangeSet()
             self.ctrl.commitTransaction(trans, confirm=False)
 
-    def update_packages(self, only_trusted, packageids):
-        self._update_packages(only_trusted, packageids)
-
-    def simulate_update_packages(self, packageids):
-        self._update_packages(False, packageids, True)
-
     @needs_cache
-    def _update_packages(self, only_trusted, packageids, simulate=False):
-        if only_trusted:
+    def update_packages(self, transaction_flags, packageids):
+        if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
         packages = []
@@ -327,7 +303,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.status(STATUS_DEP_RESOLVE)
         trans.run()
-        if simulate:
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             self._show_changeset(trans.getChangeSet())
         else:
             self.status(STATUS_UPDATE)
@@ -357,8 +333,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.files(package, ";".join(files))
 
     @needs_cache
-    def update_system(self, only_trusted):
-        if only_trusted:
+    def update_system(self, transaction_flags):
+        if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
         self.status(STATUS_INFO)
