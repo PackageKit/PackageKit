@@ -25,6 +25,7 @@ INCLUDES =						\
 	$(PYTHON_CFLAGS)				\
 	$(NETWORK_MANAGER_CFLAGS)			\
 	$(CONNMAN_CFLAGS)				\
+	$(SYSTEMD_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"				\
 	-DSBINDIR=\"$(sbindir)\"			\
@@ -146,6 +147,7 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
+	$(SYSTEMD_LIBS)					\
 	$(NULL)
 
 packagekitd_CFLAGS =					\
@@ -190,6 +192,7 @@ pk_self_test_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
+	$(SYSTEMD_LIBS)					\
 	$(NULL)
 
 pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
@@ -239,6 +242,7 @@ libpkplugins_la_LIBADD =				\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
+	$(SYSTEMD_LIBS)					\
 	$(NULL)
 
 libpkplugins_la_CFLAGS =				\

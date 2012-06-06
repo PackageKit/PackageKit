@@ -23,8 +23,13 @@
 #  include <config.h>
 #endif
 
+#include <stdlib.h>
 #include <glib.h>
 #include <gio/gio.h>
+
+#ifdef PK_BUILD_SYSTEMD
+ #include <systemd/sd-login.h>
+#endif
 
 #include "pk-dbus.h"
 
@@ -188,12 +193,42 @@ out:
 	return cmdline;
 }
 
+#ifdef PK_BUILD_SYSTEMD
+/**
+ * pk_dbus_get_session_systemd:
+ **/
+static gchar *
+pk_dbus_get_session_systemd (guint pid)
+{
+	gchar *session = NULL;
+	gchar *session_tmp = NULL;
+	gint rc;
+
+	rc = sd_pid_get_session (pid, &session_tmp);
+	if (rc < 0) {
+		g_warning ("failed to get session, errno %i", rc);
+		goto out;
+	}
+	if (session_tmp == NULL) {
+		g_warning ("no session for %i", pid);
+		goto out;
+	}
+
+	/* convert to a GLib allocated string */
+	session = g_strdup_printf ("/org/freedesktop/logind/session-%s",
+				   session_tmp);
+out:
+	free (session_tmp);
+	return session;
+}
+#endif
+
 /**
  * pk_dbus_get_session:
  * @dbus: the #PkDbus instance
  * @sender: the sender, usually got from dbus_g_method_get_dbus()
  *
- * Gets the ConsoleKit session for the ID.
+ * Gets the logind or ConsoleKit session for the ID.
  *
  * Return value: the session identifier, or %NULL if it could not be obtained
  **/
@@ -201,7 +236,9 @@ gchar *
 pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 {
 	gchar *session = NULL;
+#ifndef PK_BUILD_SYSTEMD
 	GError *error = NULL;
+#endif
 	guint pid;
 	GVariant *value = NULL;
 
@@ -228,6 +265,10 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 		goto out;
 	}
 
+	/* get session from systemd or ConsoleKit */
+#ifdef PK_BUILD_SYSTEMD
+	session = pk_dbus_get_session_systemd (pid);
+#else
 	/* get session from ConsoleKit */
 	value = g_dbus_proxy_call_sync (dbus->priv->proxy_session,
 					"GetSessionForUnixProcess",
@@ -244,6 +285,7 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 		goto out;
 	}
 	g_variant_get (value, "(o)", &session);
+#endif
 out:
 	if (value != NULL)
 		g_variant_unref (value);

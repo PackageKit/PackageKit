@@ -47,6 +47,7 @@ BuildRequires: cppunit-devel
 BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
+BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
 BuildRequires: zif-devel >= 0.2.5
 

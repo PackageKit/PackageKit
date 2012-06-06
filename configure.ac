@@ -301,9 +301,15 @@ fi
 AM_CONDITIONAL(PK_BUILD_CONNMAN, test x$PK_BUILD_CONNMAN = xyes)
 
 dnl ---------------------------------------------------------------------------
-dnl - Check if ConsoleKit is installed, otherwise, warn the user at the end
+dnl - Use systemd and logind rather than ConsoleKit
 dnl ---------------------------------------------------------------------------
-AC_PATH_PROG(CONSOLEKIT_DAEMON, console-kit-daemon, [], [/usr/sbin$PATH_SEPARATOR/sbin$PATH_SEPARATOR$PATH])
+AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and logind code]),
+	      enable_systemd=$enableval,enable_systemd=yes)
+AM_CONDITIONAL(PK_BUILD_SYSTEMD, test x$enable_systemd = xyes)
+if test x$enable_systemd = xyes; then
+	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login)
+	AC_DEFINE(PK_BUILD_SYSTEMD,1,[Build systemd code])
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
@@ -847,6 +853,7 @@ echo "
         cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
+        Use systemd:               ${enable_systemd}
         Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
@@ -882,15 +889,6 @@ echo "
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "
-
-if test ! -x "$CONSOLEKIT_DAEMON"; then
-	echo "**********************************************************************"
-	echo "** ConsoleKit doesn't look to be installed (it's a running dependency)"
-	echo "** You will be able to run PackageKit without ConsoleKit"
-	echo "** but it is not supported nor recommended."
-	echo "**********************************************************************"
-	echo ""
-fi
 
 # warn that dummy is basically broken
 if test x$with_security_framework = xdummy; then
