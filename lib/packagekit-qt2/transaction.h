@@ -445,12 +445,6 @@ public:
     uint percentage() const;
 
     /**
-     * The percentage complete of the individual task, for example, downloading.
-     * \return percentage, or 101 if not known.
-     */
-    uint subpercentage() const;
-
-    /**
      * The amount of time elapsed during the transaction in seconds.
      * \return time in seconds.
      */

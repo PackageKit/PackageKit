@@ -118,7 +118,6 @@ struct PkBackendPrivate
 	guint			 download_files;
 	guint			 percentage;
 	guint			 remaining;
-	guint			 subpercentage;
 	guint			 signal_error_timeout;
 	guint			 signal_finished;
 	guint			 speed;
@@ -168,7 +167,6 @@ enum {
 	PROP_TRANSACTION_ID,
 	PROP_SPEED,
 	PROP_PERCENTAGE,
-	PROP_SUBPERCENTAGE,
 	PROP_REMAINING,
 	PROP_UID,
 	PROP_CMDLINE,
@@ -1060,41 +1058,6 @@ pk_backend_set_item_progress (PkBackend *backend,
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_ITEM_PROGRESS], 0,
 		       package_id, percentage);
-	return TRUE;
-}
-
-/**
- * pk_backend_set_sub_percentage:
- **/
-gboolean
-pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->opened != FALSE, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: sub-percentage %i", percentage);
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->subpercentage == percentage) {
-		g_debug ("duplicate set of %i", percentage);
-		return FALSE;
-	}
-
-	/* invalid number? */
-	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		g_debug ("invalid number %i", percentage);
-		return FALSE;
-	}
-
-	/* save in case we need this from coldplug */
-	backend->priv->subpercentage = percentage;
-
-	/* emit the progress changed signal */
-	g_object_notify (G_OBJECT (backend), "subpercentage");
 	return TRUE;
 }
 
@@ -2957,9 +2920,6 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_PERCENTAGE:
 		g_value_set_uint (value, priv->percentage);
 		break;
-	case PROP_SUBPERCENTAGE:
-		g_value_set_uint (value, priv->subpercentage);
-		break;
 	case PROP_REMAINING:
 		g_value_set_uint (value, priv->remaining);
 		break;
@@ -3007,9 +2967,6 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_PERCENTAGE:
 		priv->percentage = g_value_get_uint (value);
-		break;
-	case PROP_SUBPERCENTAGE:
-		priv->subpercentage = g_value_get_uint (value);
 		break;
 	case PROP_REMAINING:
 		priv->remaining = g_value_get_uint (value);
@@ -3125,14 +3082,6 @@ pk_backend_class_init (PkBackendClass *klass)
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
 
 	/**
-	 * PkBackend:subpercentage:
-	 */
-	pspec = g_param_spec_uint ("subpercentage", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, pspec);
-
-	/**
 	 * PkBackend:remaining:
 	 */
 	pspec = g_param_spec_uint ("remaining", NULL, NULL,
@@ -3234,7 +3183,6 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->transaction_role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->remaining = 0;
 	backend->priv->percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
-	backend->priv->subpercentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->speed = 0;
 	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);

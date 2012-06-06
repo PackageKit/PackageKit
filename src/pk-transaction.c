@@ -80,7 +80,6 @@ struct PkTransactionPrivate
 	PkStatusEnum		 status;
 	PkTransactionState	 state;
 	guint			 percentage;
-	guint			 subpercentage;
 	guint			 elapsed_time;
 	guint			 remaining_time;
 	guint			 speed;
@@ -143,7 +142,6 @@ struct PkTransactionPrivate
 	guint			 signal_distro_upgrade;
 	guint			 signal_finished;
 	guint			 signal_percentage;
-	guint			 signal_subpercentage;
 	guint			 signal_remaining;
 	guint			 signal_status_changed;
 	guint			 signal_speed;
@@ -361,7 +359,6 @@ pk_transaction_emit_changed (PkTransaction *transaction)
 static void
 pk_transaction_progress_changed_emit (PkTransaction *transaction,
 				     guint percentage,
-				     guint subpercentage,
 				     guint elapsed,
 				     guint remaining)
 {
@@ -369,7 +366,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 
 	/* save so we can do GetProgress on a queued or finished transaction */
 	transaction->priv->percentage = percentage;
-	transaction->priv->subpercentage = subpercentage;
 	transaction->priv->elapsed_time = elapsed;
 	transaction->priv->remaining_time = remaining;
 
@@ -377,9 +373,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 	pk_transaction_emit_property_changed (transaction,
 					      "Percentage",
 					      g_variant_new_uint32 (percentage));
-	pk_transaction_emit_property_changed (transaction,
-					      "Subpercentage",
-					      g_variant_new_uint32 (subpercentage));
 	pk_transaction_emit_property_changed (transaction,
 					      "ElapsedTime",
 					      g_variant_new_uint32 (elapsed));
@@ -850,14 +843,12 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 						    PK_STATUS_ENUM_WAITING_FOR_AUTH);
 		pk_transaction_progress_changed_emit (transaction,
 						      PK_BACKEND_PERCENTAGE_INVALID,
-						      PK_BACKEND_PERCENTAGE_INVALID,
 						      0, 0);
 
 	} else if (state == PK_TRANSACTION_STATE_READY) {
 		pk_transaction_status_changed_emit (transaction,
 						    PK_STATUS_ENUM_WAIT);
 		pk_transaction_progress_changed_emit (transaction,
-						      PK_BACKEND_PERCENTAGE_INVALID,
 						      PK_BACKEND_PERCENTAGE_INVALID,
 						      0, 0);
 	}
@@ -927,7 +918,6 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 			PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 			PK_BACKEND_SIGNAL_MESSAGE,
 			PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
-			PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
 			PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
 			PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 			PK_BACKEND_SIGNAL_STATUS_CHANGED,
@@ -1916,24 +1906,6 @@ pk_transaction_percentage_cb (GObject *object,
 }
 
 /**
- * pk_transaction_subpercentage_cb:
- **/
-static void
-pk_transaction_subpercentage_cb (GObject *object,
-				 GParamSpec *pspec,
-				 PkTransaction *transaction)
-{
-	g_object_get (object,
-		      "subpercentage", &transaction->priv->subpercentage,
-		      NULL);
-	/* emit */
-	pk_transaction_emit_property_changed (transaction,
-					      "Subpercentage",
-					      g_variant_new_uint32 (transaction->priv->subpercentage));
-	pk_transaction_emit_changed (transaction);
-}
-
-/**
  * pk_transaction_remaining_cb:
  **/
 static void
@@ -2083,19 +2055,6 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 			g_signal_handler_disconnect (priv->backend,
 					priv->signal_percentage);
 			priv->signal_percentage = 0;
-		}
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE)) {
-		if (priv->signal_subpercentage == 0)
-			priv->signal_subpercentage =
-				g_signal_connect (priv->backend, "notify::subpercentage",
-						G_CALLBACK (pk_transaction_subpercentage_cb), transaction);
-	} else {
-		if (priv->signal_subpercentage > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_subpercentage);
-			priv->signal_subpercentage = 0;
 		}
 	}
 
@@ -3074,7 +3033,7 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
-		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
+		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
 		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
@@ -3174,7 +3133,7 @@ pk_transaction_cancel (PkTransaction *transaction,
 skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
-		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
+		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
 		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
@@ -5341,10 +5300,6 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		retval = g_variant_new_uint32 (transaction->priv->percentage);
 		goto out;
 	}
-	if (g_strcmp0 (property_name, "Subpercentage") == 0) {
-		retval = g_variant_new_uint32 (priv->subpercentage);
-		goto out;
-	}
 	if (g_strcmp0 (property_name, "AllowCancel") == 0) {
 		retval = g_variant_new_boolean (priv->allow_cancel);
 		goto out;
@@ -5665,7 +5620,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
 	transaction->priv->backend = pk_backend_new ();

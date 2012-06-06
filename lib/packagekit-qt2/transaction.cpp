@@ -232,15 +232,6 @@ uint Transaction::percentage() const
     return d->p->percentage();
 }
 
-uint Transaction::subpercentage() const
-{
-    Q_D(const Transaction);
-    if (d->destroyed) {
-        return 0;
-    }
-    return d->p->subpercentage();
-}
-
 uint Transaction::elapsedTime() const
 {
     Q_D(const Transaction);

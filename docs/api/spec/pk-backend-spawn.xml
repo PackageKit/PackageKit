@@ -220,10 +220,6 @@
             <entry><literal>percentage[tab]value</literal></entry>
           </row>
           <row>
-            <entry>Subpercentage</entry>
-            <entry><literal>subpercentage[tab]value</literal></entry>
-          </row>
-          <row>
             <entry>NoPercentageUpdates</entry>
             <entry><literal>no-percentage-updates</literal></entry>
           </row>

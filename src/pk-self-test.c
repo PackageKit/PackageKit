@@ -418,10 +418,6 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage", NULL);
 	g_assert (!ret);
 
-	/* test pk_backend_spawn_inject_data Subpercentage */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "subpercentage\t17", NULL);
-	g_assert (ret);
-
 	/* test pk_backend_spawn_inject_data NoPercentageUpdates");
 	ret = pk_backend_spawn_inject_data (backend_spawn, "no-percentage-updates", NULL);
 	g_assert (ret);

@@ -77,7 +77,6 @@ typedef enum {
 	PK_BACKEND_SIGNAL_ITEM_PROGRESS,
 	PK_BACKEND_SIGNAL_FILES,
 	PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
-	PK_BACKEND_SIGNAL_NOTIFY_SUBPERCENTAGE,
 	PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
 	PK_BACKEND_SIGNAL_NOTIFY_SPEED,
 	PK_BACKEND_SIGNAL_REPO_DETAIL,
@@ -240,8 +239,6 @@ gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_item_progress		(PkBackend	*backend,
 							 const gchar	*package_id,
-							 guint		 percentage);
-gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_speed			(PkBackend	*backend,
 							 guint		 speed);

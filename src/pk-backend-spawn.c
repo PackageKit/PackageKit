@@ -296,22 +296,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		} else {
 			pk_backend_set_percentage (priv->backend, percentage);
 		}
-	} else if (g_strcmp0 (command, "subpercentage") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
-		}
-		ret = pk_strtoint (sections[1], &percentage);
-		if (!ret) {
-			g_set_error (error, 1, 0, "invalid subpercentage value %s", sections[1]);
-			ret = FALSE;
-		} else if (percentage < 0 || percentage > 100) {
-			g_set_error (error, 1, 0, "invalid subpercentage value %i", percentage);
-			ret = FALSE;
-		} else {
-			pk_backend_set_sub_percentage (priv->backend, percentage);
-		}
 	} else if (g_strcmp0 (command, "item-percentage") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

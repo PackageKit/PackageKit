@@ -105,7 +105,6 @@ class PackageKitBaseBackend:
         self.interactive = False
         self.cache_age = 0
         self.percentage_old = 0
-        self.sub_percentage_old = 0
 
         # try to get LANG
         try:
@@ -178,16 +177,6 @@ class PackageKitBaseBackend:
         @param percent: percentage of the current item (int preferred)
         '''
         print("item-percentage\t%s\t%i" % (package_id, percent))
-        sys.stdout.flush()
-
-    def sub_percentage(self, percent=None):
-        '''
-        send 'subpercentage' signal : subprogress percentage
-        @param percent: subprogress percentage (int preferred)
-        '''
-        if percent == 0 or percent > self.sub_percentage_old:
-            print("subpercentage\t%i" % (percent))
-            self.sub_percentage_old = percent
         sys.stdout.flush()
 
     def error(self, err, description, exit=True):

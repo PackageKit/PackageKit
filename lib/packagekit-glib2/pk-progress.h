@@ -69,7 +69,6 @@ typedef enum {
 	PK_PROGRESS_TYPE_PACKAGE_ID,
 	PK_PROGRESS_TYPE_TRANSACTION_ID,
 	PK_PROGRESS_TYPE_PERCENTAGE,
-	PK_PROGRESS_TYPE_SUBPERCENTAGE,
 	PK_PROGRESS_TYPE_ALLOW_CANCEL,
 	PK_PROGRESS_TYPE_STATUS,
 	PK_PROGRESS_TYPE_ROLE,
@@ -96,8 +95,6 @@ gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
 							 const gchar		*package_id);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
 							 gint			 percentage);
-gboolean	 pk_progress_set_subpercentage		(PkProgress		*progress,
-							 gint			 subpercentage);
 gboolean	 pk_progress_set_status			(PkProgress		*progress,
 							 PkStatusEnum		 status);
 gboolean	 pk_progress_set_role			(PkProgress		*progress,

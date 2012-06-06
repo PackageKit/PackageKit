@@ -20,8 +20,8 @@
 class PackagekitProgress:
     '''
     Progress class there controls the total progress of a transaction
-    the transaction is divided in n milestones. the class contains a subpercentage
-    of the current step (milestone n -> n+1) and the percentage of the whole transaction
+    the transaction is divided in n milestones. the class contains
+    the current step (milestone n -> n+1) and the percentage of the whole transaction
 
     Usage:
 
@@ -34,7 +34,6 @@ class PackagekitProgress:
         # do the action is this step
         for i in range(100):
             # do some action
-            progress.set_subpercent(i+1)
             print "progress : %s " % progress.percent
         progress.step() # step to next milestone
 
@@ -46,7 +45,6 @@ class PackagekitProgress:
         self.percent = 0
         self.steps = []
         self.current_step = 0
-        self.subpercent = 0
 
     def set_steps(self, steps):
         '''
@@ -61,7 +59,6 @@ class PackagekitProgress:
         self.percent = 0
         self.steps = []
         self.current_step = 0
-        self.subpercent = 0
 
     def step(self):
         '''
@@ -70,21 +67,12 @@ class PackagekitProgress:
         if self.current_step < len(self.steps)-1:
             self.current_step += 1
             self.percent = self.steps[self.current_step]
-            self.subpercent = 0
         else:
             self.percent = 100
-            self.subpercent = 0
-
-    def set_subpercent(self, pct):
-        '''
-        Set subpercentage and update percentage
-        '''
-        self.subpercent = pct
-        self._update_percent()
 
     def _update_percent(self):
         '''
-        Increment percentage based on current step and subpercentage
+        Increment percentage based on current step
         '''
         if self.current_step == 0:
             startpct = 0
@@ -94,8 +82,6 @@ class PackagekitProgress:
             endpct = self.steps[self.current_step+1]
         else:
             endpct = 100
-        deltapct = endpct -startpct
-        f = float(self.subpercent)/100.0
-        incr = int(f*deltapct)
+        incr = endpct -startpct
         self.percent = startpct + incr
 

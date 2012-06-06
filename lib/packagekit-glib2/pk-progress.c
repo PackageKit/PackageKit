@@ -47,7 +47,6 @@ struct _PkProgressPrivate
 	gchar				*package_id;
 	gchar				*transaction_id;
 	gint				 percentage;
-	gint				 subpercentage;
 	guint				 item_progress_value;
 	gchar				*item_progress_id;
 	gboolean			 allow_cancel;
@@ -66,7 +65,6 @@ enum {
 	PROP_PACKAGE_ID,
 	PROP_TRANSACTION_ID,
 	PROP_PERCENTAGE,
-	PROP_SUBPERCENTAGE,
 	PROP_ALLOW_CANCEL,
 	PROP_ROLE,
 	PROP_STATUS,
@@ -100,9 +98,6 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_PERCENTAGE:
 		g_value_set_int (value, progress->priv->percentage);
-		break;
-	case PROP_SUBPERCENTAGE:
-		g_value_set_int (value, progress->priv->subpercentage);
 		break;
 	case PROP_ITEM_PROGRESS_VALUE:
 		g_value_set_int (value, progress->priv->item_progress_value);
@@ -245,27 +240,6 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
 	/* new value */
 	progress->priv->percentage = percentage;
 	g_object_notify (G_OBJECT(progress), "percentage");
-
-	return TRUE;
-}
-
-/**
- * pk_progress_set_subpercentage:
- *
- * Since: 0.5.2
- **/
-gboolean
-pk_progress_set_subpercentage (PkProgress *progress, gint subpercentage)
-{
-	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
-
-	/* the same as before? */
-	if (progress->priv->subpercentage == subpercentage)
-		return FALSE;
-
-	/* new value */
-	progress->priv->subpercentage = subpercentage;
-	g_object_notify (G_OBJECT(progress), "subpercentage");
 
 	return TRUE;
 }
@@ -480,9 +454,6 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	case PROP_PERCENTAGE:
 		pk_progress_set_percentage (progress, g_value_get_int (value));
 		break;
-	case PROP_SUBPERCENTAGE:
-		pk_progress_set_subpercentage (progress, g_value_get_int (value));
-		break;
 	case PROP_ALLOW_CANCEL:
 		pk_progress_set_allow_cancel (progress, g_value_get_boolean (value));
 		break;
@@ -559,16 +530,6 @@ pk_progress_class_init (PkProgressClass *klass)
 				  -1, G_MAXINT, -1,
 				  G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
-
-	/**
-	 * PkProgress:subpercentage:
-	 *
-	 * Since: 0.5.2
-	 */
-	pspec = g_param_spec_int ("subpercentage", NULL, NULL,
-				  -1, G_MAXINT, -1,
-				  G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, pspec);
 
 	/**
 	 * PkPackage:allow-cancel:

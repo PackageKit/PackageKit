@@ -62,18 +62,6 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="Subpercentage" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The sub-percentage complete of the transaction.
-          </doc:para>
-          <doc:para>
-            Backends should set this value to 101 if the amount complete cannot be calculated.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
     <property name="AllowCancel" type="b" access="read">
       <doc:doc>
         <doc:description>

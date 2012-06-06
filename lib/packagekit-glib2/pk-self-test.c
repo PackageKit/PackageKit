@@ -561,8 +561,6 @@ pk_test_client_progress_cb (PkProgress *progress, PkProgressType type, gpointer 
 		_package_cb++;
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE)
 		_progress_cb++;
-	if (type == PK_PROGRESS_TYPE_SUBPERCENTAGE)
-		_progress_cb++;
 	if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL)
 		_allow_cancel_cb++;
 	if (type == PK_PROGRESS_TYPE_STATUS)

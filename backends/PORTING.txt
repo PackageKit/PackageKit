@@ -26,3 +26,6 @@ Guide to porting backends from 0.7.x to 0.8.x
    transaction_flags, package_ids, allow_deps, auto_remove
 
  * Remove any references to Rollback, it's no longer available.
+
+ * Remove any calls to pk_backend_set_sub_percentage() and replace them
+   with calls to pk_backend_set_item_progress(package)
