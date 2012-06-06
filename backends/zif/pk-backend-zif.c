@@ -101,17 +101,6 @@ pk_backend_state_percentage_changed_cb (ZifState *state,
 }
 
 /**
- * pk_backend_state_subpercentage_changed_cb:
- */
-static void
-pk_backend_state_subpercentage_changed_cb (ZifState *state,
-					   guint subpercentage,
-					   PkBackend *backend)
-{
-	pk_backend_set_sub_percentage (backend, subpercentage);
-}
-
-/**
  * pk_backend_is_all_installed:
  */
 static gboolean
@@ -1717,9 +1706,6 @@ pk_backend_initialize (PkBackend *backend)
 	zif_state_set_cancellable (priv->state, priv->cancellable);
 	g_signal_connect (priv->state, "percentage-changed",
 			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
-			  backend);
-	g_signal_connect (priv->state, "subpercentage-changed",
-			  G_CALLBACK (pk_backend_state_subpercentage_changed_cb),
 			  backend);
 	g_signal_connect (priv->state, "action-changed",
 			  G_CALLBACK (pk_backend_state_action_changed_cb),
