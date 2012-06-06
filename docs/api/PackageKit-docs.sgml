@@ -40,6 +40,7 @@
         This part documents core features of PackageKit.
       </para>
     </partintro>
+    <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
     <xi:include href="spec/pk-introduction.xml"/>
     <xi:include href="spec/pk-concepts.xml"/>
     <xi:include href="spec/pk-backend-compiled.xml"/>
