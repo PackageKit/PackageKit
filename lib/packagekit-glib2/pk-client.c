@@ -1660,7 +1660,7 @@ pk_client_set_hints_cb (GObject *source_object,
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
 		g_dbus_proxy_call (state->proxy, "GetPackages",
-				   g_variant_new ("(s)",
+				   g_variant_new ("(t)",
 						  state->filters),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
