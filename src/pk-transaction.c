@@ -5164,32 +5164,22 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 	GError *error = NULL;
 	PkUpgradeKindEnum upgrade_kind;
 	const gchar *distro_id;
-	const gchar *upgrade_kind_str;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&s*s)",
+	g_variant_get (params, "(&su)",
 		       &distro_id,
-		       &upgrade_kind_str);
+		       &upgrade_kind);
 
 	g_debug ("UpgradeSystem method called: %s (%s)",
-		 distro_id, upgrade_kind_str);
+		 distro_id, pk_upgrade_kind_enum_to_string (upgrade_kind));
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "UpgradeSystem not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* check upgrade kind */
-	upgrade_kind = pk_upgrade_kind_enum_from_string (upgrade_kind_str);
-	if (upgrade_kind == PK_UPGRADE_KIND_ENUM_UNKNOWN) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
-				     "upgrade kind '%s' not found", upgrade_kind_str);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}

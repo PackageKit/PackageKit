@@ -1835,9 +1835,9 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		g_dbus_proxy_call (state->proxy, "UpgradeSystem",
-				   g_variant_new ("(ss)",
+				   g_variant_new ("(su)",
 						  state->distro_id,
-						  pk_upgrade_kind_enum_to_string (state->upgrade_kind)),
+						  state->upgrade_kind),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,

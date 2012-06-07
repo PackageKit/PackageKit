@@ -1470,7 +1470,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="upgrade_kind" direction="in">
+      <arg type="u" name="upgrade_kind" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
