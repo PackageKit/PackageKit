@@ -91,6 +91,7 @@ Summary: PackageKit SMART backend
 Group: System Environment/Libraries
 Requires: smart
 Requires: %{name} = %{version}-%{release}
+Provides: PackageKit-backend
 
 %description smart
 A backend for PackageKit to enable SMART functionality.
@@ -248,10 +249,8 @@ user to restart the computer or remove and re-insert the device.
         --disable-static \
         --enable-yum \
         --enable-zif \
-%if 0
-        --enable-smart \
-%endif
 %if 0%{?rhel} == 0
+        --enable-smart \
         --enable-introspection \
 %endif
         --with-default-backend=auto \
@@ -357,9 +356,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %if 0%{?rhel} == 0
 %files smart
 %defattr(-,root,root,-)
-#%{_libdir}/packagekit-backend/libpk_backend_smart.so
-#%dir %{_datadir}/PackageKit/helpers/smart
-#%{_datadir}/PackageKit/helpers/smart/*
+%{_libdir}/packagekit-backend/libpk_backend_smart.so
+%dir %{_datadir}/PackageKit/helpers/smart
+%{_datadir}/PackageKit/helpers/smart/*
 %endif
 
 %files yum
