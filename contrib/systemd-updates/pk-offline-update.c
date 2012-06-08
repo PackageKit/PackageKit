@@ -28,17 +28,17 @@
 #define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
 
 /**
- * pk_offline_update_set_boot_msg:
+ * pk_offline_update_set_plymouth_msg:
  **/
 static void
-pk_offline_update_set_boot_msg (const gchar *msg)
+pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
 	gboolean ret;
 	gchar *cmd;
 	GError *error = NULL;
 
 	cmd = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
-	ret = g_spawn_command_line_sync (cmd, NULL, NULL, NULL, &error);
+	ret = g_spawn_command_line_async (cmd, &error);
 	if (!ret) {
 		g_warning ("failed to display message on splash: %s",
 			   error->message);
@@ -49,20 +49,44 @@ pk_offline_update_set_boot_msg (const gchar *msg)
 }
 
 /**
- * pk_offline_update_pause_progress:
+ * pk_offline_update_set_plymouth_mode:
  **/
 static void
-pk_offline_update_pause_progress (void)
+pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *cmdline;
 
-	ret = g_spawn_command_line_async ("plymouth pause-progress", &error);
+	cmdline = g_strdup_printf ("plymouth change-mode --%s", mode);
+	ret = g_spawn_command_line_async (cmdline, &error);
 	if (!ret) {
-		g_warning ("failed to pause progress for splash: %s",
+		g_warning ("failed to change mode for splash: %s",
 			   error->message);
 		g_error_free (error);
 	}
+	g_free (cmdline);
+}
+
+/**
+ * pk_offline_update_set_plymouth_percentage:
+ **/
+static void
+pk_offline_update_set_plymouth_percentage (guint percentage)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *cmdline;
+
+	cmdline = g_strdup_printf ("plymouth system-update --progress=%i",
+				   percentage);
+	ret = g_spawn_command_line_async (cmdline, &error);
+	if (!ret) {
+		g_warning ("failed to set percentage for splash: %s",
+			   error->message);
+		g_error_free (error);
+	}
+	g_free (cmdline);
 }
 
 /**
@@ -87,7 +111,8 @@ pk_offline_update_progress_cb (PkProgress *progress,
 
 	/* update plymouth */
 	msg = g_strdup_printf ("Update process %i%% complete", percentage);
-	pk_offline_update_set_boot_msg (msg);
+	pk_offline_update_set_plymouth_msg (msg);
+	pk_offline_update_set_plymouth_percentage (percentage);
 out:
 	g_free (msg);
 }
@@ -103,7 +128,8 @@ pk_offline_update_reboot (void)
 	GVariant *val = NULL;
 
 	/* reboot using systemd */
-	pk_offline_update_set_boot_msg ("Rebooting after installing updates...");
+	pk_offline_update_set_plymouth_mode ("shutdown");
+	pk_offline_update_set_plymouth_msg ("Rebooting after installing updates...");
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
 		g_warning ("Failed to get system bus connection: %s",
@@ -290,7 +316,7 @@ main (int argc, char *argv[])
 	/* just update the system */
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
-	pk_offline_update_pause_progress ();
+	pk_offline_update_set_plymouth_mode ("updates");
 	results = pk_client_update_system (PK_CLIENT (task),
 					   0,
 					   NULL, /* GCancellable */
