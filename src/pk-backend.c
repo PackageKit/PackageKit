@@ -99,6 +99,7 @@ struct PkBackendPrivate
 	gboolean		 set_eula;
 	gboolean		 set_signature;
 	gboolean		 simultaneous;
+	gboolean		 locked;
 	gboolean		 use_time;
 	gboolean		 use_threads;
 	gboolean		 keep_environment;
@@ -151,6 +152,7 @@ static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_ALLOW_CANCEL,
+	SIGNAL_LOCKED_CHANGED,
 	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_STATUS_CHANGED,
 	SIGNAL_ITEM_PROGRESS,
@@ -1515,6 +1517,24 @@ pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
 	backend->priv->simultaneous = simultaneous;
 	if (simultaneous)
 		g_warning ("simultaneous mode is not well tested, use with caution");
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_locked:
+ *
+ * Set if your backend currently locks the cache, so no other tool will have write
+ * access on it. (read-only transactions will still be permitted)
+ **/
+gboolean
+pk_backend_set_locked (PkBackend *backend, gboolean locked)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->opened != FALSE, FALSE);
+
+	backend->priv->locked = locked;
+	g_signal_emit (backend, signals[SIGNAL_LOCKED_CHANGED], 0, locked);
+
 	return TRUE;
 }
 
@@ -3127,7 +3147,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-
+	signals[SIGNAL_LOCKED_CHANGED] =
+		g_signal_new ("locked-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals[SIGNAL_ITEM_PROGRESS] =
 		g_signal_new ("item-progress",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

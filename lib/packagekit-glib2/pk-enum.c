@@ -195,6 +195,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,	"cannot-fetch-sources"},
 	{PK_ERROR_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
 	{PK_ERROR_ENUM_UNFINISHED_TRANSACTION,	"unfinished-transaction"},
+	{PK_ERROR_ENUM_LOCK_REQUIRED,		"lock-required"},
 	{0, NULL}
 };
 

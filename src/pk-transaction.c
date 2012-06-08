@@ -90,6 +90,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
+	gboolean		 exclusive;
 	PkHintEnum		 background;
 	PkHintEnum		 interactive;
 	gchar			*locale;
@@ -139,6 +140,7 @@ struct PkTransactionPrivate
 	PkProvidesEnum		 cached_provides;
 
 	guint			 signal_allow_cancel;
+	guint			 signal_locked_changed;
 	guint			 signal_distro_upgrade;
 	guint			 signal_finished;
 	guint			 signal_percentage;
@@ -490,6 +492,23 @@ pk_transaction_allow_cancel_cb (PkBackend *backend,
 }
 
 /**
+ * pk_transaction_locked_changed_cb:
+ **/
+static void
+pk_transaction_locked_changed_cb (PkBackend *backend,
+				gboolean locked,
+				PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_debug ("changing transaction exclusive-running state %i", locked);
+
+	/* if backend cache is locked, this transaction is running in exclusive mode */
+	transaction->priv->exclusive = locked;
+}
+
+/**
  * pk_transaction_details_cb:
  **/
 static void
@@ -571,8 +590,9 @@ pk_transaction_error_code_cb (PkBackend *backend,
 	/* add to results */
 	pk_results_set_error_code (transaction->priv->results, item);
 
-	/* emit */
-	pk_transaction_error_code_emit (transaction, code, details);
+	/* emit, if it is not the internally-handled LOCK_REQUIRED status */
+	if (code != PK_ERROR_ENUM_LOCK_REQUIRED)
+		pk_transaction_error_code_emit (transaction, code, details);
 
 	g_free (details);
 }
@@ -1207,6 +1227,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	else
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
 			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_string (exit_enum), time_ms);
+
+	/* we shouldn't be in exclusive-mode anymore, backend has finished */
+	transaction->priv->exclusive = FALSE;
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
@@ -2368,6 +2391,17 @@ pk_transaction_get_tid (PkTransaction *transaction)
 	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	return transaction->priv->tid;
+}
+
+/**
+ * pk_transaction_is_exclusive:
+ */
+gboolean
+pk_transaction_is_exclusive (PkTransaction *transaction)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+
+	return transaction->priv->exclusive;
 }
 
 /**
@@ -5644,6 +5678,10 @@ pk_transaction_init (PkTransaction *transaction)
 		g_error_free (error);
 	}
 
+	/* connect backend locked-changed signal */
+	transaction->priv->signal_locked_changed = g_signal_connect (transaction->priv->backend, "locked-changed",
+					G_CALLBACK (pk_transaction_locked_changed_cb), transaction);
+
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
 }
@@ -5729,6 +5767,13 @@ pk_transaction_finalize (GObject *object)
 		g_object_unref (transaction->priv->connection);
 	if (transaction->priv->introspection != NULL)
 		g_dbus_node_info_unref (transaction->priv->introspection);
+
+	/* disconnect backend locked-changed signal */
+	if (transaction->priv->signal_locked_changed > 0) {
+		g_signal_handler_disconnect (transaction->priv->backend,
+				transaction->priv->signal_locked_changed);
+		transaction->priv->signal_locked_changed = 0;
+	}
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);

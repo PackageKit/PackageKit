@@ -248,6 +248,8 @@ gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
 gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
 							 gboolean	 simultaneous);
+gboolean	 pk_backend_set_locked			(PkBackend	*backend,
+							 gboolean	 locked);
 gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
 gboolean	 pk_backend_set_frontend_socket		(PkBackend	*backend,
