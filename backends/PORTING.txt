@@ -29,3 +29,16 @@ Guide to porting backends from 0.7.x to 0.8.x
 
  * Remove any calls to pk_backend_set_sub_percentage() and replace them
    with calls to pk_backend_set_item_progress(package)
+
+ * Add calls to pk_backend_set_locked() to declare when your backend holds
+   write-lock on it's database. PackageKit will spawn multiple transactions
+   which can read the database at any time. Not using this method will cause
+   your backend to fail, as we then try to create multiple write transactions
+   too.
+
+ * Fail any transactions which requires lock with PK_ERROR_ENUM_LOCK_REQUIRED.
+   PackageKit will then requeue the transaction as soon as another transaction
+   releases lock. If the transaction fails multiple times, PK will emit the
+   PK_ERROR_ENUM_CANNOT_GET_LOCK signal to frontends. If you continue to use
+   this in your backends directly, your backend won't work properly with
+   parallel transactions.
