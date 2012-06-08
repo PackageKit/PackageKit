@@ -1041,7 +1041,7 @@ pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag)
 /**
  * pk_info_enum_to_localised_text:
  * @info: The enumerated type value
- * 
+ *
  * Converts a enumerated type to its localized description
  *
  * Return Value: the translated text
@@ -1100,7 +1100,7 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 /**
  * pk_info_enum_to_localised_present:
  * @info: The enumerated type value
- * 
+ *
  * Converts a enumerated type to its localized description
  *
  * Return Value: the translated text
@@ -1149,7 +1149,7 @@ pk_info_enum_to_localised_present (PkInfoEnum info)
 /**
  * pk_info_enum_to_localised_past:
  * @info: The enumerated type value
- * 
+ *
  * Converts a enumerated type to its localized description
  *
  * Return Value: the translated text
@@ -1198,7 +1198,7 @@ pk_info_enum_to_localised_past (PkInfoEnum info)
 /**
  * pk_role_enum_to_localised_present:
  * @role: The enumerated type value
- * 
+ *
  * Converts a enumerated type to its localized description
  *
  * Return Value: the translated text
