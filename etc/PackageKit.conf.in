@@ -136,6 +136,13 @@ ScanDesktopFiles=true
 # default=true
 UpdatePackageCache=true
 
+# Update the package list on PackageKit transactions
+#
+# NOTE: Don't enable this for backends that are slow doing GetPackages()
+#
+# default=true
+UpdatePackageList=true
+
 # Check for running processes when we update packages
 #
 # NOTE: Don't enable this for backends that are slow doing GetFiles() on

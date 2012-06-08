@@ -219,13 +219,15 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	gchar **package_ids;
 	PkPackage *package;
 	uint i;
+
+	gboolean update_cache;
+	gboolean update_list;
 	PkPluginPrivate *priv = plugin->priv;
 
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
-	ret = pk_conf_get_bool (conf, "UpdatePackageCache");
-	if (!ret)
-		goto out;
+	update_cache = pk_conf_get_bool (conf, "UpdatePackageCache");
+	update_list = pk_conf_get_bool (conf, "UpdatePackageList");
 
 	/* check the role */
 	role = pk_transaction_get_role (transaction);
@@ -278,6 +280,17 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* update UI */
 	pk_backend_set_percentage (plugin->backend, 90);
 
+	/* create & save legacy package-list */
+	if (update_list)
+		pk_plugin_save_package_list (plugin, pkg_array);
+
+	if (!update_cache) {
+		/* update UI (finished) */
+		pk_backend_set_percentage (plugin->backend, 100);
+		pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_FINISHED);
+		goto out;
+	}
+
 	/* fetch package details too, if possible */
 	if (pk_backend_is_implemented (plugin->backend,
 	    PK_ROLE_ENUM_GET_DETAILS)) {
@@ -325,9 +338,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 			goto out;
 		}
 	}
-
-	/* create & save legacy package-list */
-	pk_plugin_save_package_list (plugin, pkg_array);
 
 	/* update UI (finished) */
 	pk_backend_set_percentage (plugin->backend, 100);
