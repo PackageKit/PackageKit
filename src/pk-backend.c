@@ -686,6 +686,12 @@ out:
 
 /**
  * pk_backend_set_vfunc:
+ * @backend: A valid PkBackend instance
+ * @signal_kind: Kind of the backend signal we want to connect
+ * @vfunc: (scope call): The function we want to call
+ * @user_data: User data we want to pass to the callback
+ *
+ * Connect backend
  **/
 void
 pk_backend_set_vfunc (PkBackend *backend,
