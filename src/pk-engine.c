@@ -57,6 +57,7 @@
 #include "pk-transaction-list.h"
 
 static void     pk_engine_finalize	(GObject       *object);
+static void	pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
@@ -166,8 +167,13 @@ static void
 pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engine)
 {
 	gchar **transaction_list;
+	gboolean locked;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* automatically locked if the transaction cannot be cancelled */
+	locked = pk_transaction_list_get_locked (tlist);
+	pk_engine_set_locked (engine, locked);
 
 	g_debug ("emitting transaction-list-changed");
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
@@ -290,18 +296,6 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 				       "UpdatesChanged",
 				       NULL,
 				       NULL);
-}
-
-/**
- * pk_engine_allow_cancel_cb:
- **/
-static void
-pk_engine_allow_cancel_cb (PkBackend *backend,
-			   gboolean allow_cancel,
-			   PkEngine *engine)
-{
-	/* automatically locked if the transaction cannot be cancelled */
-	pk_engine_set_locked (engine, !allow_cancel);
 }
 
 /**
@@ -1723,8 +1717,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend = pk_backend_new ();
 	g_signal_connect (engine->priv->backend, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
-	g_signal_connect (engine->priv->backend, "allow-cancel",
-			  G_CALLBACK (pk_engine_allow_cancel_cb), engine);
 
 	/* lock database */
 	ret = pk_backend_open (engine->priv->backend);

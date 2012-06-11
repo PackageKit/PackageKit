@@ -703,6 +703,30 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_get_locked:
+ *
+ * Return value: %TRUE if any of the transactions in progress are
+ * locking a database or resource and cannot be cancelled.
+ **/
+gboolean
+pk_transaction_list_get_locked (PkTransactionList *tlist)
+{
+	PkBackend *backend;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* anything running? : TODO, multiplex for parallel transactions */
+	item = pk_transaction_list_get_active_transaction (tlist);
+	if (item == NULL)
+		return FALSE;
+	backend = pk_transaction_get_backend (item->transaction);
+	if (item == NULL)
+		return FALSE;
+	return pk_backend_get_locked (backend);
+}
+
+/**
  * pk_transaction_list_get_state:
  **/
 gchar *
