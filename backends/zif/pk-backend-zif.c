@@ -1650,6 +1650,35 @@ pk_backend_speed_changed_cb (ZifState *state,
 }
 
 /**
+ * pk_backend_zif_lock_state_changed_cb:
+ **/
+static void
+pk_backend_zif_lock_state_changed_cb (ZifLock *lock,
+				      guint state_bitfield,
+				      PkBackend *backend)
+{
+	GString *str;
+	guint i;
+
+	/* tell the daemon the lock state; if any lock is taken then
+	 * this is going to run in exclusive mode */
+	pk_backend_set_locked (backend, state_bitfield != 0);
+
+	/* just print something pretty to the console */
+	str = g_string_new ("lock state: ");
+	for (i = 0; i < ZIF_LOCK_TYPE_LAST; i++) {
+		if (pk_bitfield_contain (state_bitfield, i)) {
+			g_string_append_printf (str, "%s ",
+						zif_lock_type_to_string (i));
+		}
+	}
+	if (state_bitfield == 0)
+		g_string_append (str, "none");
+	g_debug ("%s", str->str);
+	g_string_free (str, TRUE);
+}
+
+/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -1734,6 +1763,9 @@ pk_backend_initialize (PkBackend *backend)
 
 	/* ZifLock */
 	priv->lock = zif_lock_new ();
+	g_signal_connect (priv->lock, "state-changed",
+			  G_CALLBACK (pk_backend_zif_lock_state_changed_cb),
+			  backend);
 
 	/* ZifRelease */
 	priv->release = zif_release_new ();
