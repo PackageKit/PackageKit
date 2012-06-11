@@ -1681,7 +1681,6 @@ pk_engine_on_name_lost_cb (GDBusConnection *connection_,
 static void
 pk_engine_init (PkEngine *engine)
 {
-	gboolean ret;
 	gchar *filename;
 	gchar *root;
 	gchar *proxy_http;
@@ -1717,11 +1716,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend = pk_backend_new ();
 	g_signal_connect (engine->priv->backend, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
-
-	/* lock database */
-	ret = pk_backend_open (engine->priv->backend);
-	if (!ret)
-		g_error ("could not lock backend, you need to restart the daemon");
 
 	/* proxy the network state */
 	engine->priv->network = pk_network_new ();
@@ -1844,7 +1838,6 @@ static void
 pk_engine_finalize (GObject *object)
 {
 	PkEngine *engine;
-	gboolean ret;
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_ENGINE (object));
@@ -1856,11 +1849,6 @@ pk_engine_finalize (GObject *object)
 	/* run the plugins */
 	pk_engine_plugin_phase (engine,
 				PK_PLUGIN_PHASE_DESTROY);
-
-	/* unlock if we locked this */
-	ret = pk_backend_close (engine->priv->backend);
-	if (!ret)
-		g_warning ("couldn't unlock the backend");
 
 	/* if we set an state changed notifier, clear */
 	if (engine->priv->timeout_priority_id != 0) {

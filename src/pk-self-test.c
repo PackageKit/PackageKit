@@ -229,29 +229,24 @@ pk_test_backend_func (void)
 	g_assert (!ret);
 
 	/* load an invalid backend */
-	ret = pk_backend_set_name (backend, "invalid", &error);
+	conf = pk_conf_new ();
+	pk_conf_set_string (conf, "DefaultBackend", "invalid");
+	ret = pk_backend_load (backend, &error);
 	g_assert_error (error, 1, 0);
 	g_assert (!ret);
 	g_clear_error (&error);
 
 	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy", &error);
+	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	ret = pk_backend_load (backend, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* load an valid backend again */
-	ret = pk_backend_set_name (backend, "dummy", &error);
+	ret = pk_backend_load (backend, &error);
 	g_assert_error (error, 1, 0);
 	g_assert (!ret);
 	g_clear_error (&error);
-
-	/* lock an valid backend */
-	ret = pk_backend_open (backend);
-	g_assert (ret);
-
-	/* lock a backend again */
-	ret = pk_backend_open (backend);
-	g_assert (ret);
 
 	/* get backend name */
 	text = pk_backend_get_name (backend);
@@ -259,11 +254,11 @@ pk_test_backend_func (void)
 	g_free (text);
 
 	/* unlock an valid backend */
-	ret = pk_backend_close (backend);
+	ret = pk_backend_unload (backend);
 	g_assert (ret);
 
 	/* unlock an valid backend again */
-	ret = pk_backend_close (backend);
+	ret = pk_backend_unload (backend);
 	g_assert (ret);
 
 	/* check we are not finished */
@@ -274,11 +269,10 @@ pk_test_backend_func (void)
 	ret = pk_backend_has_set_error_code (backend);
 	g_assert (!ret);
 
-	/* lock again */
-	ret = pk_backend_open (backend);
-	g_assert (ret);
-
 	/* wait for a thread to return true */
+	ret = pk_backend_load (backend, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 	ret = pk_backend_thread_create (backend, pk_test_backend_func_true);
 	g_assert (ret);
 
@@ -327,14 +321,13 @@ pk_test_backend_func (void)
 	g_assert (ret);
 
 	/* if running in developer mode, then expect a Message */
-	conf = pk_conf_new ();
 	developer_mode = pk_conf_get_bool (conf, "DeveloperMode");
-	g_object_unref (conf);
 	if (developer_mode) {
 		/* check we enforce finished after error_code */
 		g_assert_cmpint (number_messages, ==, 1);
 	}
 
+	g_object_unref (conf);
 	g_object_unref (backend);
 }
 
@@ -365,6 +358,7 @@ pk_test_backend_spawn_func (void)
 {
 	PkBackendSpawn *backend_spawn;
 	PkBackend *backend;
+	PkConf *conf;
 	const gchar *text;
 	guint refcount;
 	gboolean ret;
@@ -393,9 +387,9 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpstr (text, ==, "test_spawn");
 
 	/* needed to avoid an error */
-	ret = pk_backend_set_name (backend, "test_spawn", NULL);
-	g_assert (ret);
-	ret = pk_backend_open (backend);
+	conf = pk_conf_new ();
+	pk_conf_set_string (conf, "DefaultBackend", "test_spawn");
+	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage1 */
@@ -471,7 +465,7 @@ pk_test_backend_spawn_func (void)
 	g_assert (ret);
 
 	/* manually unlock as we have no engine */
-	ret = pk_backend_close (backend);
+	ret = pk_backend_unload (backend);
 	g_assert (ret);
 
 	/* reset */
@@ -498,7 +492,7 @@ pk_test_backend_spawn_func (void)
 				backend_spawn);
 
 	/* needed to avoid an error */
-	ret = pk_backend_open (backend);
+	ret = pk_backend_load (backend, NULL);
 
 	/* test search-name.sh running */
 	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
@@ -511,7 +505,7 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpint (_backend_spawn_number_packages, ==, 2);
 
 	/* manually unlock as we have no engine */
-	ret = pk_backend_close (backend);
+	ret = pk_backend_unload (backend);
 	g_assert (ret);
 
 	/* done */
@@ -523,6 +517,7 @@ pk_test_backend_spawn_func (void)
 
 	/* we ref'd it manually for checking, so we need to unref it */
 	g_object_unref (backend);
+	g_object_unref (conf);
 }
 
 static void
@@ -1059,14 +1054,13 @@ pk_test_transaction_func (void)
 	gboolean ret;
 	GError *error = NULL;
 	PkBackend *backend;
+	PkConf *conf;
 
 	backend = pk_backend_new ();
 	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy", NULL);
-	g_assert (ret);
-
-	/* lock an valid backend */
-	ret = pk_backend_open (backend);
+	conf = pk_conf_new ();
+	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
 	/* get PkTransaction object */
@@ -1087,6 +1081,7 @@ pk_test_transaction_func (void)
 
 	g_object_unref (transaction);
 	g_object_unref (backend);
+	g_object_unref (conf);
 }
 
 static void
@@ -1283,6 +1278,7 @@ pk_test_transaction_list_func (void)
 	gchar *tid_item2;
 	gchar *tid_item3;
 	PkBackend *backend;
+	PkConf *conf;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1301,11 +1297,9 @@ pk_test_transaction_list_func (void)
 
 	/* try to load a valid backend */
 	backend = pk_backend_new ();
-	ret = pk_backend_set_name (backend, "dummy", NULL);
-	g_assert (ret);
-
-	/* lock an valid backend */
-	ret = pk_backend_open (backend);
+	conf = pk_conf_new ();
+	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
 	/* get a transaction list object */
@@ -1568,6 +1562,7 @@ pk_test_transaction_list_func (void)
 	g_object_unref (backend);
 	g_object_unref (cache);
 	g_object_unref (db);
+	g_object_unref (conf);
 }
 
 int

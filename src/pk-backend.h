@@ -92,15 +92,12 @@ typedef enum {
 
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-gboolean	 pk_backend_open			(PkBackend	*backend)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_close			(PkBackend	*backend)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_reset			(PkBackend	*backend);
-gboolean	 pk_backend_set_name			(PkBackend	*backend,
-							 const gchar	*name,
+gboolean	 pk_backend_load			(PkBackend	*backend,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_backend_unload			(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_backend_reset			(PkBackend	*backend);
 gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_http,
 							 const gchar	*proxy_https,
