@@ -1051,6 +1051,29 @@ out:
 }
 
 /**
+ * pk_engine_init:
+ **/
+gboolean
+pk_engine_load_backend (PkEngine *engine, GError **error)
+{
+	gboolean ret;
+	ret = pk_backend_load (engine->priv->backend, error);
+	if (!ret)
+		goto out;
+
+	/* create a new backend so we can get the static stuff */
+	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
+	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
+	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
+	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
+	engine->priv->backend_name = pk_backend_get_name (engine->priv->backend);
+	engine->priv->backend_description = pk_backend_get_description (engine->priv->backend);
+	engine->priv->backend_author = pk_backend_get_author (engine->priv->backend);
+out:
+	return ret;
+}
+
+/**
  * _g_variant_new_maybe_string:
  **/
 static GVariant *
@@ -1425,15 +1448,6 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
 	engine->priv->network_state = pk_network_get_network_state (engine->priv->network);
 
-	/* create a new backend so we can get the static stuff */
-	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
-	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
-	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
-	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
-	engine->priv->backend_name = pk_backend_get_name (engine->priv->backend);
-	engine->priv->backend_description = pk_backend_get_description (engine->priv->backend);
-	engine->priv->backend_author = pk_backend_get_author (engine->priv->backend);
-
 	/* try to get the distro id */
 	engine->priv->distro_id = pk_get_distro_id ();
 
@@ -1517,6 +1531,7 @@ pk_engine_init (PkEngine *engine)
 static void
 pk_engine_finalize (GObject *object)
 {
+	gboolean ret;
 	PkEngine *engine;
 
 	g_return_if_fail (object != NULL);
@@ -1539,6 +1554,11 @@ pk_engine_finalize (GObject *object)
 		g_source_remove (engine->priv->timeout_normal_id);
 		engine->priv->timeout_normal_id = 0;
 	}
+
+	/* unlock if we locked this */
+	ret = pk_backend_unload (engine->priv->backend);
+	if (!ret)
+		g_warning ("couldn't unload the backend");
 
 	/* unown */
 	if (engine->priv->owner_id > 0)

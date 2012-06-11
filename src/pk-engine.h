@@ -71,5 +71,7 @@ GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
 
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
+gboolean	 pk_engine_load_backend			(PkEngine	*engine,
+							 GError		**error);
 
 #endif /* __PK_ENGINE_H */

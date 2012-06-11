@@ -39,7 +39,6 @@
 #include "pk-engine.h"
 #include "pk-syslog.h"
 #include "pk-transaction.h"
-#include "pk-backend.h"
 
 static guint exit_idle_time;
 static GMainLoop *loop;
@@ -204,7 +203,6 @@ main (int argc, char *argv[])
 	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
 	PkEngine *engine = NULL;
-	PkBackend *backend = NULL;
 	PkConf *conf = NULL;
 	PkSyslog *syslog = NULL;
 	GError *error = NULL;
@@ -318,22 +316,21 @@ main (int argc, char *argv[])
 		}
 	}
 
-	/* load */
-	backend = pk_backend_new ();
-	ret = pk_backend_load (backend, &error);
-	if (!ret) {
-		/* TRANSLATORS: cannot load the backend the user specified */
-		g_print ("%s: %s\n", _("Failed to load the backend:"),
-			 backend_name);
-		goto out;
-	}
-
 	loop = g_main_loop_new (NULL, FALSE);
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
 	g_signal_connect (engine, "quit",
 			  G_CALLBACK (pk_main_quit_cb), loop);
+
+	/* load the backend */
+	ret = pk_engine_load_backend (engine, &error);
+	if (!ret) {
+		/* TRANSLATORS: cannot load the backend the user specified */
+		g_print ("%s: %s\n", _("Failed to load the backend:"),
+			 backend_name);
+		goto out;
+	}
 
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
@@ -352,11 +349,6 @@ main (int argc, char *argv[])
 
 	/* run until quit */
 	g_main_loop_run (loop);
-
-	/* unlock if we locked this */
-	ret = pk_backend_unload (backend);
-	if (!ret)
-		g_warning ("couldn't unload the backend");
 out:
 	/* log the shutdown */
 	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon quit");
@@ -370,8 +362,6 @@ out:
 	g_object_unref (conf);
 	if (engine != NULL)
 		g_object_unref (engine);
-	if (backend != NULL)
-		g_object_unref (backend);
 	g_free (backend_name);
 
 exit_program:
