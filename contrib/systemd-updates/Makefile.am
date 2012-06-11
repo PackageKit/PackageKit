@@ -28,6 +28,7 @@ pk_offline_update_SOURCES =				\
 
 pk_offline_update_LDADD =				\
 	$(GLIB_LIBS)					\
+	$(GIO_LIBS)					\
 	$(PK_GLIB2_LIBS)
 
 pk_offline_update_CFLAGS =				\

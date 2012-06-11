@@ -21,6 +21,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 #include <packagekit-glib2/packagekit.h>
 #include <stdlib.h>
 
