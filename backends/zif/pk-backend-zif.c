@@ -230,6 +230,21 @@ pk_backend_convert_error (const GError *error)
 		default:
 			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
 		}
+	} else if (error->domain == ZIF_LOCK_ERROR) {
+		switch (error->code) {
+		case ZIF_LOCK_ERROR_PERMISSION:
+			error_code = PK_ERROR_ENUM_NOT_AUTHORIZED;
+			break;
+		case ZIF_LOCK_ERROR_FAILED:
+			error_code = PK_ERROR_ENUM_LOCK_REQUIRED;
+			break;
+		case ZIF_LOCK_ERROR_ALREADY_LOCKED:
+			error_code = PK_ERROR_ENUM_CANNOT_GET_LOCK;
+			break;
+		case ZIF_LOCK_ERROR_NOT_LOCKED:
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
 	}
 	if (error_code == PK_ERROR_ENUM_INTERNAL_ERROR) {
 		g_warning ("failed to match error: %s:%i: %s",
