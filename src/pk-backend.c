@@ -1579,6 +1579,16 @@ pk_backend_set_locked (PkBackend *backend, gboolean locked)
 }
 
 /**
+ * pk_backend_get_locked:
+ **/
+gboolean
+pk_backend_get_locked (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return backend->priv->locked;
+}
+
+/**
  * pk_backend_get_locale:
  *
  * Return value: session locale, e.g. en_GB

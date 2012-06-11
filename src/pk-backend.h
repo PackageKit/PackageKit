@@ -259,6 +259,7 @@ void		 pk_backend_set_cache_age		(PkBackend	*backend,
 
 /* get the state */
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
+gboolean	 pk_backend_get_locked			(PkBackend	*backend);
 gboolean         pk_backend_get_is_error_set		(PkBackend	*backend);
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
