@@ -172,7 +172,7 @@ pk_test_backend_func (void)
 {
 	PkBackend *backend;
 	PkConf *conf;
-	gchar *text;
+	const gchar *text;
 	gchar *text_safe;
 	gboolean ret;
 	const gchar *filename;
@@ -251,7 +251,6 @@ pk_test_backend_func (void)
 	/* get backend name */
 	text = pk_backend_get_name (backend);
 	g_assert_cmpstr (text, ==, "dummy");
-	g_free (text);
 
 	/* unlock an valid backend */
 	ret = pk_backend_unload (backend);

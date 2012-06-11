@@ -2678,36 +2678,36 @@ out:
 /**
  * pk_backend_get_name:
  **/
-gchar *
+const gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->priv->loaded, NULL);
-	return g_strdup (backend->priv->name);
+	return backend->priv->name;
 }
 
 /**
  * pk_backend_get_description:
  **/
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
 	g_return_val_if_fail (backend->priv->loaded, NULL);
-	return g_strdup (backend->priv->desc->description);
+	return backend->priv->desc->description;
 }
 
 /**
  * pk_backend_get_author:
  **/
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
 	g_return_val_if_fail (backend->priv->loaded, NULL);
-	return g_strdup (backend->priv->desc->author);
+	return backend->priv->desc->author;
 }
 
 /**

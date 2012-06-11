@@ -413,18 +413,18 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 /**
  * pk_backend_get_description:
  */
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("Ports");
+	return "Ports";
 }
 
 /**
  * pk_backend_get_author:
  */
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return g_strdup ("Anders F Björklund <afb@users.sourceforge.net>");
+	return "Anders F Björklund <afb@users.sourceforge.net>";
 }
 

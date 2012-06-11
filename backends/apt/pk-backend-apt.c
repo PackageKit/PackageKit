@@ -561,14 +561,14 @@ pk_backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return g_strdup ("Sebastian Heinlein <devel@glatzor.de>");
+	return "Sebastian Heinlein <devel@glatzor.de>";
 }
 
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("APT");
+	return "APT";
 }

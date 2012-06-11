@@ -2217,19 +2217,19 @@ poldek_reload (PkBackend *backend, gboolean load_packages) {
 /**
  * pk_backend_get_description:
  */
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("Poldek");
+	return "Poldek";
 }
 
 /**
  * pk_backend_get_author:
  */
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return g_strdup ("Marcin Banasiak <megabajt@pld-linux.org>");
+	return "Marcin Banasiak <megabajt@pld-linux.org>";
 }
 
 /**

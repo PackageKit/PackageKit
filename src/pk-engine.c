@@ -81,9 +81,9 @@ struct PkEnginePrivate
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			*mime_types;
-	gchar			*backend_name;
-	gchar			*backend_description;
-	gchar			*backend_author;
+	const gchar		*backend_name;
+	const gchar		*backend_description;
+	const gchar		*backend_author;
 	gchar			*distro_id;
 	guint			 timeout_priority;
 	guint			 timeout_normal;
@@ -1886,9 +1886,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->dbus);
 	g_ptr_array_unref (engine->priv->plugins);
 	g_free (engine->priv->mime_types);
-	g_free (engine->priv->backend_name);
-	g_free (engine->priv->backend_description);
-	g_free (engine->priv->backend_author);
 	g_free (engine->priv->distro_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);

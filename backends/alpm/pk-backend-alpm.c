@@ -41,20 +41,20 @@ gchar *xfercmd = NULL;
 alpm_list_t *holdpkgs = NULL;
 alpm_list_t *syncfirsts = NULL;
 
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *self)
 {
 	g_return_val_if_fail (self != NULL, NULL);
 
-	return g_strdup ("alpm");
+	return "alpm";
 }
 
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *self)
 {
 	g_return_val_if_fail (self != NULL, NULL);
 
-	return g_strdup ("Jonathan Conder <jonno.conder@gmail.com>");
+	return "Jonathan Conder <jonno.conder@gmail.com>";
 }
 
 static gboolean

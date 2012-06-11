@@ -50,7 +50,7 @@ static PkBackendYumPrivate *priv;
 /**
  * pk_backend_get_description:
  */
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return g_strdup ("Zif");
@@ -59,7 +59,7 @@ pk_backend_get_description (PkBackend *backend)
 /**
  * pk_backend_get_author:
  */
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	return g_strdup ("Richard Hughes <richard@hughsie.com>");

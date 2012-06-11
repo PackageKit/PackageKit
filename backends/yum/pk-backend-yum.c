@@ -47,20 +47,19 @@ static PkBackendYumPrivate *priv;
 /**
  * pk_backend_get_description:
  */
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("YUM");
+	return "YUM";
 }
 
 /**
  * pk_backend_get_author:
  */
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return g_strdup ("Tim Lauridsen <timlau@fedoraproject.org>, "
-			 "Richard Hughes <richard@hughsie.com>");
+	return "Richard Hughes <richard@hughsie.com>";
 }
 
 /**
