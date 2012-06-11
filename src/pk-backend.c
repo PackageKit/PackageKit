@@ -601,72 +601,64 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 		goto out;
 	}
 
-	/* first check for the table of vfuncs */
-	ret = g_module_symbol (handle, "pk_backend_desc", (gpointer) &func);
+	/* then check for the new style exported functions */
+	ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&func);
 	if (ret) {
-		g_warning ("using table-of-vfuncs compatibility mode");
-		backend->priv->desc = func;
+		PkBackendDesc *desc;
+		PkBackendGetCompatStringFunc backend_vfunc;
+		desc = g_new0 (PkBackendDesc, 1);
+
+		/* connect up exported methods */
+		g_module_symbol (handle, "pk_backend_cancel", (gpointer *)&desc->cancel);
+		g_module_symbol (handle, "pk_backend_destroy", (gpointer *)&desc->destroy);
+		g_module_symbol (handle, "pk_backend_download_packages", (gpointer *)&desc->download_packages);
+		g_module_symbol (handle, "pk_backend_get_categories", (gpointer *)&desc->get_categories);
+		g_module_symbol (handle, "pk_backend_get_depends", (gpointer *)&desc->get_depends);
+		g_module_symbol (handle, "pk_backend_get_details", (gpointer *)&desc->get_details);
+		g_module_symbol (handle, "pk_backend_get_distro_upgrades", (gpointer *)&desc->get_distro_upgrades);
+		g_module_symbol (handle, "pk_backend_get_files", (gpointer *)&desc->get_files);
+		g_module_symbol (handle, "pk_backend_get_filters", (gpointer *)&desc->get_filters);
+		g_module_symbol (handle, "pk_backend_get_groups", (gpointer *)&desc->get_groups);
+		g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *)&desc->get_mime_types);
+		g_module_symbol (handle, "pk_backend_get_packages", (gpointer *)&desc->get_packages);
+		g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *)&desc->get_repo_list);
+		g_module_symbol (handle, "pk_backend_get_requires", (gpointer *)&desc->get_requires);
+		g_module_symbol (handle, "pk_backend_get_roles", (gpointer *)&desc->get_roles);
+		g_module_symbol (handle, "pk_backend_get_update_detail", (gpointer *)&desc->get_update_detail);
+		g_module_symbol (handle, "pk_backend_get_updates", (gpointer *)&desc->get_updates);
+		g_module_symbol (handle, "pk_backend_initialize", (gpointer *)&desc->initialize);
+		g_module_symbol (handle, "pk_backend_install_files", (gpointer *)&desc->install_files);
+		g_module_symbol (handle, "pk_backend_install_packages", (gpointer *)&desc->install_packages);
+		g_module_symbol (handle, "pk_backend_install_signature", (gpointer *)&desc->install_signature);
+		g_module_symbol (handle, "pk_backend_refresh_cache", (gpointer *)&desc->refresh_cache);
+		g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
+		g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
+		g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
+		g_module_symbol (handle, "pk_backend_resolve", (gpointer *)&desc->resolve);
+		g_module_symbol (handle, "pk_backend_search_details", (gpointer *)&desc->search_details);
+		g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
+		g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
+		g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
+		g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
+		g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
+		g_module_symbol (handle, "pk_backend_transaction_reset", (gpointer *)&desc->transaction_reset);
+		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
+		g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
+		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
+		g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
+		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
+
+		/* get old static string data */
+		ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
+		if (ret)
+			desc->author = backend_vfunc (backend);
+		ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&backend_vfunc);
+		if (ret)
+			desc->description = backend_vfunc (backend);
+
+		/* make available */
+		backend->priv->desc = desc;
 	} else {
-		/* then check for the new style exported functions */
-		ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&func);
-		if (ret) {
-			PkBackendDesc *desc;
-			PkBackendGetCompatStringFunc backend_vfunc;
-			desc = g_new0 (PkBackendDesc, 1);
-
-			/* connect up exported methods */
-			g_module_symbol (handle, "pk_backend_cancel", (gpointer *)&desc->cancel);
-			g_module_symbol (handle, "pk_backend_destroy", (gpointer *)&desc->destroy);
-			g_module_symbol (handle, "pk_backend_download_packages", (gpointer *)&desc->download_packages);
-			g_module_symbol (handle, "pk_backend_get_categories", (gpointer *)&desc->get_categories);
-			g_module_symbol (handle, "pk_backend_get_depends", (gpointer *)&desc->get_depends);
-			g_module_symbol (handle, "pk_backend_get_details", (gpointer *)&desc->get_details);
-			g_module_symbol (handle, "pk_backend_get_distro_upgrades", (gpointer *)&desc->get_distro_upgrades);
-			g_module_symbol (handle, "pk_backend_get_files", (gpointer *)&desc->get_files);
-			g_module_symbol (handle, "pk_backend_get_filters", (gpointer *)&desc->get_filters);
-			g_module_symbol (handle, "pk_backend_get_groups", (gpointer *)&desc->get_groups);
-			g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *)&desc->get_mime_types);
-			g_module_symbol (handle, "pk_backend_get_packages", (gpointer *)&desc->get_packages);
-			g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *)&desc->get_repo_list);
-			g_module_symbol (handle, "pk_backend_get_requires", (gpointer *)&desc->get_requires);
-			g_module_symbol (handle, "pk_backend_get_roles", (gpointer *)&desc->get_roles);
-			g_module_symbol (handle, "pk_backend_get_update_detail", (gpointer *)&desc->get_update_detail);
-			g_module_symbol (handle, "pk_backend_get_updates", (gpointer *)&desc->get_updates);
-			g_module_symbol (handle, "pk_backend_initialize", (gpointer *)&desc->initialize);
-			g_module_symbol (handle, "pk_backend_install_files", (gpointer *)&desc->install_files);
-			g_module_symbol (handle, "pk_backend_install_packages", (gpointer *)&desc->install_packages);
-			g_module_symbol (handle, "pk_backend_install_signature", (gpointer *)&desc->install_signature);
-			g_module_symbol (handle, "pk_backend_refresh_cache", (gpointer *)&desc->refresh_cache);
-			g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
-			g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
-			g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
-			g_module_symbol (handle, "pk_backend_resolve", (gpointer *)&desc->resolve);
-			g_module_symbol (handle, "pk_backend_search_details", (gpointer *)&desc->search_details);
-			g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
-			g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
-			g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
-			g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
-			g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
-			g_module_symbol (handle, "pk_backend_transaction_reset", (gpointer *)&desc->transaction_reset);
-			g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
-			g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
-			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
-			g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
-			g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
-
-			/* get old static string data */
-			ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
-			if (ret)
-				desc->author = backend_vfunc (backend);
-			ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&backend_vfunc);
-			if (ret)
-				desc->description = backend_vfunc (backend);
-
-			/* make available */
-			backend->priv->desc = desc;
-		}
-	}
-	if (!ret) {
 		g_module_close (handle);
 		g_set_error (error, 1, 0, "could not find description in plugin %s, not loading", backend_name);
 		goto out;
