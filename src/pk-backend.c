@@ -922,20 +922,54 @@ pk_backend_close (PkBackend *backend)
 	return TRUE;
 }
 
+/* used to call vfuncs in the main daemon thread */
+typedef struct {
+	PkBackend	*backend;
+	PkBackendSignal	 signal_kind;
+	GObject		*object;
+} PkBackendVFuncHelper;
+
+/**
+ * pk_backend_call_vfunc_idle_cb:
+ **/
+static gboolean
+pk_backend_call_vfunc_idle_cb (gpointer user_data)
+{
+	PkBackendVFuncHelper *helper = (PkBackendVFuncHelper *) user_data;
+	PkBackendVFuncItem *item;
+
+	/* call transaction vfunc on main thread */
+	item = &helper->backend->priv->vfunc_items[helper->signal_kind];
+	item->vfunc (helper->backend, helper->object, item->user_data);
+	g_free (helper);
+	return FALSE;
+}
+
 /**
  * pk_backend_call_vfunc:
+ *
+ * This method can be called in any thread, and the vfunc is guaranteed
+ * to be called idle in the main thread.
  **/
 static void
 pk_backend_call_vfunc (PkBackend *backend,
 		       PkBackendSignal signal_kind,
 		       GObject *object)
 {
+	PkBackendVFuncHelper *helper;
 	PkBackendVFuncItem *item;
 
 	/* call transaction vfunc if not disabled and set */
 	item = &backend->priv->vfunc_items[signal_kind];
-	if (item->enabled && item->vfunc != NULL)
-		item->vfunc (backend, object, item->user_data);
+	if (!item->enabled || item->vfunc == NULL)
+		return;
+
+	/* emit idle, TODO: do we ever need to cancel this? */
+	helper = g_new0 (PkBackendVFuncHelper, 1);
+	helper->backend = backend;
+	helper->signal_kind = signal_kind;
+	helper->object = object;
+	g_idle_add (pk_backend_call_vfunc_idle_cb, helper);
 }
 
 /**
