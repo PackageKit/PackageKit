@@ -398,22 +398,9 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 			      const gchar *no_proxy,
 			      const gchar *pac)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	guint uid;
 	gchar *session = NULL;
-
-	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (engine->priv->backend,
-				    proxy_http,
-				    proxy_https,
-				    proxy_ftp,
-				    proxy_socks,
-				    no_proxy,
-				    pac);
-	if (!ret) {
-		g_warning ("setting the proxy failed");
-		goto out;
-	}
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
@@ -505,7 +492,8 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 	}
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (state->engine, state->sender,
+	ret = pk_engine_set_proxy_internal (state->engine,
+					    state->sender,
 					    state->value1,
 					    state->value2,
 					    state->value3,
@@ -1405,11 +1393,6 @@ pk_engine_init (PkEngine *engine)
 {
 	gchar *filename;
 	gchar *proxy_http;
-	gchar *proxy_https;
-	gchar *proxy_ftp;
-	gchar *proxy_socks;
-	gchar *no_proxy;
-	gchar *pac;
 	GError *error = NULL;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
@@ -1487,29 +1470,10 @@ pk_engine_init (PkEngine *engine)
 
 	/* set the default proxy */
 	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
-	proxy_https = pk_conf_get_string (engine->priv->conf, "ProxyHTTPS");
-	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
-	proxy_socks = pk_conf_get_string (engine->priv->conf, "ProxySOCKS");
-	no_proxy = pk_conf_get_string (engine->priv->conf, "NoProxy");
-	pac = pk_conf_get_string (engine->priv->conf, "PAC");
-	pk_backend_set_proxy (engine->priv->backend,
-			      proxy_http,
-			      proxy_https,
-			      proxy_ftp,
-			      proxy_socks,
-			      no_proxy,
-			      pac);
 
-	/* if any of these is set, we ignore the users proxy setting */
-	if (proxy_http != NULL || proxy_https != NULL || proxy_ftp != NULL)
+	/* ignore the users proxy setting */
+	if (proxy_http != NULL)
 		engine->priv->using_hardcoded_proxy = TRUE;
-
-	g_free (proxy_http);
-	g_free (proxy_https);
-	g_free (proxy_ftp);
-	g_free (proxy_socks);
-	g_free (no_proxy);
-	g_free (pac);
 
 	/* get the StateHasChanged timeouts */
 	engine->priv->timeout_priority = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutPriority");
@@ -1542,6 +1506,8 @@ pk_engine_init (PkEngine *engine)
 	/* initialize plugins */
 	pk_engine_plugin_phase (engine,
 				PK_PLUGIN_PHASE_INIT);
+
+	g_free (proxy_http);
 }
 
 /**
