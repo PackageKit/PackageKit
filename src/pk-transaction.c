@@ -502,10 +502,11 @@ pk_transaction_locked_changed_cb (PkBackend *backend,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("changing transaction exclusive-running state %i", locked);
-
-	/* if backend cache is locked, this transaction is running in exclusive mode */
-	transaction->priv->exclusive = locked;
+	/* if backend cache is locked at some time, this transaction is running in exclusive mode */
+	if (locked) {
+		g_debug ("changing transaction to exclusive mode");
+		transaction->priv->exclusive = TRUE;
+	}
 }
 
 /**
@@ -1227,9 +1228,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	else
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
 			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_string (exit_enum), time_ms);
-
-	/* we shouldn't be in exclusive-mode anymore, backend has finished */
-	transaction->priv->exclusive = FALSE;
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
