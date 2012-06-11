@@ -217,6 +217,7 @@ main (int argc, char *argv[])
 
 	/* get values from the config file */
 	conf = pk_conf_new ();
+	pk_conf_set_bool (conf, "KeepEnvironment", keep_environment);
 
 	/* log the startup */
 	syslog = pk_syslog_new ();
@@ -254,8 +255,6 @@ main (int argc, char *argv[])
 			 backend_name);
 		goto out;
 	}
-
-	pk_backend_set_keep_environment (backend, keep_environment);
 
 	loop = g_main_loop_new (NULL, FALSE);
 

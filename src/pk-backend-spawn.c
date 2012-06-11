@@ -736,12 +736,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gboolean ret;
 	PkHintEnum interactive;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
-
-	gboolean keep_environment =
-		pk_backend_get_keep_environment (backend_spawn->priv->backend);
+	gboolean keep_environment;
 
 	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-
+	keep_environment = pk_conf_get_bool (backend_spawn->priv->conf,
+					     "KeepEnvironment");
 	g_debug ("keep_environment: %i", keep_environment);
 
 	if (keep_environment) {
