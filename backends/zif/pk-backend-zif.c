@@ -266,43 +266,35 @@ pk_backend_transaction_start (PkBackend *backend)
 	gchar *http_proxy = NULL;
 	GError *error = NULL;
 	guint cache_age;
-	guint i;
-	guint lock_delay;
-	guint lock_retries;
-	guint pid = 0;
 	guint uid;
 	gchar *cmdline = NULL;
 
-	/* only try a finite number of times */
-	lock_retries = zif_config_get_uint (priv->config, "lock_retries", NULL);
-	lock_delay = zif_config_get_uint (priv->config, "lock_delay", NULL);
-	for (i=0; i<lock_retries; i++) {
-
-		/* try to lock */
-		ret = zif_lock_set_locked (priv->lock, &pid, &error);
-		if (ret)
-			break;
-
-		/* we're now waiting */
-		pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
-
-		/* now wait */
-		g_debug ("Failed to lock on try %i of %i, already locked by PID %i "
-			 "(sleeping for %ims): %s\n",
-			   i+1, lock_retries,
-			   pid,
-			   lock_delay,
-			   error->message);
-		g_clear_error (&error);
-		g_usleep (lock_delay * 1000);
-	}
-
-	/* we failed to lock */
+	/* initially try to take all locks */
+	ret = zif_lock_take (priv->lock,
+			     ZIF_LOCK_TYPE_RPMDB_WRITE,
+			     &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
 				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
-				       "failed to get lock, held by PID: %i",
-				       pid);
+				       "failed to get rpmdb write lock");
+		goto out;
+	}
+	ret = zif_lock_take (priv->lock,
+			     ZIF_LOCK_TYPE_REPO_WRITE,
+			     &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
+				       "failed to get repo write lock");
+		goto out;
+	}
+	ret = zif_lock_take (priv->lock,
+			     ZIF_LOCK_TYPE_METADATA_WRITE,
+			     &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
+				       "failed to get metadata write lock");
 		goto out;
 	}
 
@@ -392,10 +384,28 @@ pk_backend_transaction_stop (PkBackend *backend)
 	gboolean ret;
 	GError *error = NULL;
 
-	/* try to unlock */
-	ret = zif_lock_set_unlocked (priv->lock, &error);
+	/* try to release all locks */
+	ret = zif_lock_release (priv->lock,
+				ZIF_LOCK_TYPE_RPMDB_WRITE,
+				&error);
 	if (!ret) {
-		g_warning ("failed to unlock: %s", error->message);
+		g_warning ("failed to release rpmdb write: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = zif_lock_release (priv->lock,
+				ZIF_LOCK_TYPE_REPO_WRITE,
+				&error);
+	if (!ret) {
+		g_warning ("failed to release repo write: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = zif_lock_release (priv->lock,
+				ZIF_LOCK_TYPE_METADATA_WRITE,
+				&error);
+	if (!ret) {
+		g_warning ("failed to release metadata write: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
