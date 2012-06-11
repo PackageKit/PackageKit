@@ -185,6 +185,7 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 						      transaction_list),
 				       NULL);
 	pk_engine_reset_timer (engine);
+
 	g_strfreev (transaction_list);
 }
 
@@ -295,21 +296,6 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 				       "UpdatesChanged",
 				       NULL,
 				       NULL);
-}
-
-/**
- * pk_engine_finished_cb:
- **/
-static void
-pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkEngine *engine)
-{
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	/* cannot be locked if the transaction is finished */
-	pk_engine_set_locked (engine, FALSE);
-
-	/* daemon is busy */
-	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -1449,8 +1435,6 @@ pk_engine_init (PkEngine *engine)
 
 	/* setup the backend backend */
 	engine->priv->backend = pk_backend_new ();
-	g_signal_connect (engine->priv->backend, "finished",
-			  G_CALLBACK (pk_engine_finished_cb), engine);
 
 	/* proxy the network state */
 	engine->priv->network = pk_network_new ();
