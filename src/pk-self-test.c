@@ -564,6 +564,12 @@ pk_test_conf_func (void)
 	value = pk_conf_get_int (conf, "FooBarBaz");
 	g_assert_cmpint (value, ==, PK_CONF_VALUE_INT_MISSING);
 
+	/* override a value */
+	pk_conf_set_string (conf, "FooBarBaz", "zif");
+	text = pk_conf_get_string (conf, "FooBarBaz");
+	g_assert_cmpstr (text, ==, "zif");
+	g_free (text);
+
 	g_object_unref (conf);
 }
 

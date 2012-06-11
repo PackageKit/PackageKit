@@ -64,6 +64,13 @@ gint		 pk_conf_get_int		(PkConf		*conf,
 gboolean	 pk_conf_get_bool		(PkConf		*conf,
 						 const gchar	*key);
 
+void		 pk_conf_set_bool		(PkConf		*conf,
+						 const gchar	*key,
+						 gboolean	 value);
+void		 pk_conf_set_string		(PkConf		*conf,
+						 const gchar	*key,
+						 const gchar	*value);
+
 G_END_DECLS
 
 #endif /* __PK_CONF_H */
