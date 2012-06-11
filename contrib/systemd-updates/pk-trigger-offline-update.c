@@ -19,17 +19,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
+
 #include <errno.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#define PK_OFFLINE_UPDATE_GENERATOR_FLAG	"/system-update"
+
 int
 main (int argc, char *argv[])
 {
 	int rc;
+	struct passwd *pw;
 
 	/* ensure root user */
 	if (getuid () != 0 || geteuid () != 0) {
@@ -38,11 +44,29 @@ main (int argc, char *argv[])
 	}
 
 	/* create symlink for the systemd-system-update-generator */
-	rc = symlink ("/var/cache", "/system-update");
+	rc = symlink ("/var/cache", PK_OFFLINE_UPDATE_GENERATOR_FLAG);
 	if (rc < 0) {
 		fprintf (stderr, "Failed to create symlink: %s\n",
 			 strerror (errno));
 		return EXIT_FAILURE;
 	}
+
+	/* get UID for username */
+	pw = getpwnam (PACKAGEKIT_USER);
+	if (pw == NULL) {
+		fprintf (stderr, "Failed to get PackageKit uid: %s\n",
+			 strerror (errno));
+		return EXIT_FAILURE;
+	}
+
+	/* change it to the PackageKit user so the daemon can delete
+	 * the file if any package state changes */
+	rc = lchown (PK_OFFLINE_UPDATE_GENERATOR_FLAG, pw->pw_uid, -1);
+	if (rc < 0) {
+		fprintf (stderr, "Failed to change owner of symlink: %s\n",
+			 strerror (errno));
+		return EXIT_FAILURE;
+	}
+
 	return EXIT_SUCCESS;
 }
