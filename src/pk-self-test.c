@@ -369,9 +369,8 @@ pk_test_backend_spawn_func (void)
 	g_assert (backend_spawn != NULL);
 
 	/* private copy for unref testing */
-	backend = pk_backend_spawn_get_backend (backend_spawn);
-	/* incr ref count so we don't kill the object */
-	g_object_ref (backend);
+	backend = pk_backend_new ();
+	pk_backend_spawn_set_backend (backend_spawn, backend);
 
 	/* get backend name */
 	text = pk_backend_spawn_get_name (backend_spawn);
@@ -476,6 +475,7 @@ pk_test_backend_spawn_func (void)
 
 	/* new */
 	backend_spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_backend (backend_spawn, backend);
 
 	/* set backend name */
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
