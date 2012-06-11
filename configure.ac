@@ -650,7 +650,7 @@ if test x$enable_zif = xyes; then
 	AC_ARG_ENABLE(zif, AS_HELP_STRING([--enable-zif],[Build ZIF experimental code]),
 		      enable_zif=$enableval,enable_zif=yes)
 	if test x$enable_zif = xyes; then
-		PKG_CHECK_MODULES(ZIF, zif >= 0.1.3,
+		PKG_CHECK_MODULES(ZIF, zif >= 0.2.8,
 			          build_zif=yes, build_zif=no)
 	fi
 	if test "x$build_zif" = "xyes"; then
