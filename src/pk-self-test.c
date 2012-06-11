@@ -1093,7 +1093,6 @@ pk_test_transaction_db_func (void)
 	gdouble ms;
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
-	gchar *root = NULL;
 	guint seconds;
 
 	/* remove the self check file */
@@ -1212,24 +1211,6 @@ pk_test_transaction_db_func (void)
 	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:80");
 	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");
 
-	/* can we set the root */
-	ret = pk_transaction_db_set_root (db, 500, "session1", "/mnt/chroot");
-	g_assert (ret);
-
-	/* can we set the root (overwrite) */
-	ret = pk_transaction_db_set_root (db, 500, "session1", "/mnt/chroot2");
-	g_assert (ret);
-
-	/* can we get the root (non-existant user) */
-	ret = pk_transaction_db_get_root (db, 501, "session1", &root);
-	g_assert (!ret);
-	g_assert_cmpstr (root, ==, NULL);
-
-	/* can we get the root (match) */
-	ret = pk_transaction_db_get_root (db, 500, "session1", &root);
-	g_assert_cmpstr (root, ==, "/mnt/chroot2");
-
-	g_free (root);
 	g_free (proxy_http);
 	g_free (proxy_ftp);
 	g_object_unref (db);

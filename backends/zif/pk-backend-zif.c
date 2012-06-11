@@ -306,16 +306,6 @@ pk_backend_transaction_start (PkBackend *backend)
 		goto out;
 	}
 
-	/* this backend does not support a relocatable root... yet */
-	root = pk_backend_get_root (backend);
-	if (g_strcmp0 (root, "/") != 0) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
-				       "backend does not support this root: '%s'",
-				       root);
-		goto out;
-	}
-
 	/* try to set, or re-set install root */
 	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
 					  root,

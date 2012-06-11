@@ -140,7 +140,6 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
-			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_ROOT, "CannotSetRoot"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "CannotAllocateTid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_CHECK_AUTH, "CannotCheckAuth"),
@@ -751,261 +750,6 @@ out:
 }
 
 /**
- * pk_engine_set_root_internal:
- **/
-static gboolean
-pk_engine_set_root_internal (PkEngine *engine, const gchar *root, const gchar *sender)
-{
-	gboolean ret;
-	guint uid;
-	gchar *session = NULL;
-
-	/* try to set the new root */
-	ret = pk_backend_set_root (engine->priv->backend, root);
-	if (!ret) {
-		g_warning ("setting the root failed");
-		goto out;
-	}
-
-	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
-	if (uid == G_MAXUINT) {
-		g_warning ("failed to get the uid");
-		goto out;
-	}
-
-	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, sender);
-	if (session == NULL) {
-		g_warning ("failed to get the session");
-		goto out;
-	}
-
-	/* save to database */
-	ret = pk_transaction_db_set_root (engine->priv->transaction_db, uid, session, root);
-	if (!ret) {
-		g_warning ("failed to save the root in the database");
-		goto out;
-	}
-out:
-	g_free (session);
-	return ret;
-}
-
-#ifdef USE_SECURITY_POLKIT
-/**
- * pk_engine_action_obtain_authorization:
- **/
-static void
-pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authority,
-							GAsyncResult *res,
-							PkEngineDbusState *state)
-{
-	PolkitAuthorizationResult *result;
-	GError *error_local = NULL;
-	GError *error;
-	gboolean ret;
-	PkEnginePrivate *priv = state->engine->priv;
-
-	/* finish the call */
-	result = polkit_authority_check_authorization_finish (priv->authority, res, &error_local);
-
-	/* failed */
-	if (result == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR,
-				     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
-				     "could not check for auth: %s",
-				     error_local->message);
-		g_dbus_method_invocation_return_gerror (state->context, error);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	/* did not auth */
-	if (!polkit_authorization_result_get_is_authorized (result)) {
-		error = g_error_new_literal (PK_ENGINE_ERROR,
-					     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
-					     "failed to obtain auth");
-		g_dbus_method_invocation_return_gerror (state->context, error);
-		goto out;
-	}
-
-	/* try to set the new root and save to database */
-	ret = pk_engine_set_root_internal (state->engine, state->value1, state->sender);
-	if (!ret) {
-		error = g_error_new_literal (PK_ENGINE_ERROR,
-					     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
-					     "setting the root failed");
-		g_dbus_method_invocation_return_gerror (state->context, error);
-		goto out;
-	}
-
-	/* save these so we can set them after the auth success */
-	g_debug ("changing root to %s for %s", state->value1, state->sender);
-
-	/* all okay */
-	g_dbus_method_invocation_return_value (state->context, NULL);
-out:
-	if (result != NULL)
-		g_object_unref (result);
-
-	/* unref state, we're done */
-	g_object_unref (state->engine);
-	g_free (state->sender);
-	g_free (state->value1);
-	g_free (state->value2);
-	g_free (state);
-}
-#endif
-
-/**
- * pk_engine_is_root_unchanged:
- **/
-static gboolean
-pk_engine_is_root_unchanged (PkEngine *engine, const gchar *sender, const gchar *root)
-{
-	guint uid;
-	gboolean ret = FALSE;
-	gchar *session = NULL;
-	gchar *root_tmp = NULL;
-
-	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
-	if (uid == G_MAXUINT) {
-		g_warning ("failed to get the uid for %s", sender);
-		goto out;
-	}
-
-	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, sender);
-	if (session == NULL) {
-		g_warning ("failed to get the session for %s", sender);
-		goto out;
-	}
-
-	/* find out if they are the same as what we tried to set before */
-	ret = pk_transaction_db_get_root (engine->priv->transaction_db, uid, session, &root_tmp);
-	if (!ret)
-		goto out;
-
-	/* are different? */
-	if (g_strcmp0 (root_tmp, root) != 0)
-		ret = FALSE;
-out:
-	g_free (session);
-	g_free (root_tmp);
-	return ret;
-}
-
-/**
- * pk_engine_set_root:
- **/
-static void
-pk_engine_set_root (PkEngine *engine,
-		    const gchar *root,
-		    GDBusMethodInvocation *context)
-{
-	guint len;
-	GError *error = NULL;
-	gboolean ret;
-	const gchar *sender;
-#ifdef USE_SECURITY_POLKIT
-	PolkitSubject *subject;
-	PkEngineDbusState *state;
-#endif
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	/* blank is default */
-	if (root == NULL ||
-	    root[0] == '\0')
-		root = "/";
-
-	g_debug ("SetRoot method called: %s", root);
-
-	/* check length of root */
-	len = pk_strlen (root, 1024);
-	if (len == 1024) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "root was too long: %s", root);
-		g_dbus_method_invocation_return_gerror (context, error);
-		goto out;
-	}
-
-	/* check prefix of root */
-	if (root[0] != '/') {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "root is not absolute: %s", root);
-		g_dbus_method_invocation_return_gerror (context, error);
-		goto out;
-	}
-
-	/* save sender */
-	sender = g_dbus_method_invocation_get_sender (context);
-
-	/* is exactly the same root? */
-	ret = pk_engine_is_root_unchanged (engine, sender, root);
-	if (ret) {
-		g_debug ("not changing root as the same as before");
-		g_dbus_method_invocation_return_value (context, NULL);
-		goto out;
-	}
-
-	/* '/' is the default root, which doesn't need additional authentication */
-	if (g_strcmp0 (root, "/") == 0) {
-		ret = pk_engine_set_root_internal (engine, root, sender);
-		if (ret) {
-			g_debug ("using default root, so no need to authenticate");
-			g_dbus_method_invocation_return_value (context, NULL);
-		} else {
-			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
-			g_dbus_method_invocation_return_gerror (context, error);
-		}
-		goto out;
-	}
-
-#ifdef USE_SECURITY_POLKIT
-	/* check subject */
-	subject = polkit_system_bus_name_new (sender);
-
-	/* cache state */
-	state = g_new0 (PkEngineDbusState, 1);
-	state->context = context;
-	state->engine = g_object_ref (engine);
-	state->sender = g_strdup (sender);
-	state->value1 = g_strdup (root);
-
-	/* do authorization async */
-	polkit_authority_check_authorization (engine->priv->authority, subject,
-					      "org.freedesktop.packagekit.system-change-install-root",
-					      NULL,
-					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
-					      NULL,
-					      (GAsyncReadyCallback) pk_engine_action_obtain_root_authorization_finished_cb,
-					      state);
-#else
-	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
-
-	/* try to set the new root and save to database */
-	ret = pk_engine_set_root_internal (engine, root, sender);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
-		g_dbus_method_invocation_return_gerror (context, error);
-		goto out;
-	}
-
-	/* all okay */
-	g_dbus_method_invocation_return_value (context, NULL);
-#endif
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-#ifdef USE_SECURITY_POLKIT
-	g_object_unref (subject);
-#endif
-out:
-	return;
-}
-
-/**
  * pk_engine_can_authorize:
  **/
 static PkAuthorizeEnum
@@ -1561,14 +1305,6 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 
-	if (g_strcmp0 (method_name, "SetRoot") == 0) {
-		g_variant_get (parameters, "(&s)", &tmp);
-		pk_engine_set_root (engine,
-				    tmp,
-				    invocation);
-		goto out;
-	}
-
 	if (g_strcmp0 (method_name, "SetProxy") == 0) {
 
 		array = g_new0 (gchar *, 7);
@@ -1682,7 +1418,6 @@ static void
 pk_engine_init (PkEngine *engine)
 {
 	gchar *filename;
-	gchar *root;
 	gchar *proxy_http;
 	gchar *proxy_https;
 	gchar *proxy_ftp;
@@ -1791,11 +1526,6 @@ pk_engine_init (PkEngine *engine)
 	g_free (proxy_socks);
 	g_free (no_proxy);
 	g_free (pac);
-
-	/* set the default root */
-	root = pk_conf_get_string (engine->priv->conf, "UseRoot");
-	pk_backend_set_root (engine->priv->backend, root);
-	g_free (root);
 
 	/* get the StateHasChanged timeouts */
 	engine->priv->timeout_priority = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutPriority");

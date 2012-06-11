@@ -746,24 +746,6 @@ pk_backend_get_pac (PkBackend *backend)
 }
 
 /**
- * pk_backend_set_root:
- **/
-gboolean
-pk_backend_set_root (PkBackend	*backend, const gchar *root)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	/* NULL is actually the default, which is '/' */
-	if (root == NULL)
-		root = "/";
-
-	g_free (backend->priv->root);
-	backend->priv->root = g_strdup (root);
-	g_debug ("install root now %s", backend->priv->root);
-	return TRUE;
-}
-
-/**
  * pk_backend_set_cmdline:
  **/
 gboolean
@@ -788,18 +770,6 @@ pk_backend_set_uid (PkBackend *backend, guint uid)
 	backend->priv->uid = uid;
 	g_debug ("install uid now %i", backend->priv->uid);
 	return TRUE;
-}
-
-/**
- * pk_backend_get_root:
- *
- * Return value: root to use for installing, or %NULL
- **/
-const gchar *
-pk_backend_get_root (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return backend->priv->root;
 }
 
 /**

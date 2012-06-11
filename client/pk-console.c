@@ -1264,7 +1264,6 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	gchar *options_help;
 	gchar *filter = NULL;
-	gchar *root = NULL;
 	gchar *summary = NULL;
 	const gchar *mode;
 	const gchar *http_proxy;
@@ -1283,9 +1282,6 @@ main (int argc, char *argv[])
 		{ "filter", '\0', 0, G_OPTION_ARG_STRING, &filter,
 			/* TRANSLATORS: command line argument, use a filter to narrow down results */
 			_("Set the filter, e.g. installed"), NULL},
-		{ "root", '\0', 0, G_OPTION_ARG_STRING, &root,
-			/* TRANSLATORS: command line argument, use a non-standard install prefix */
-			_("Set the install root, e.g. '/' or '/mnt/ltsp'"), NULL},
 		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
 			/* TRANSLATORS: command line argument, work asynchronously */
 			_("Exit without waiting for actions to complete"), NULL},
@@ -1402,18 +1398,6 @@ main (int argc, char *argv[])
 		if (!ret) {
 			/* TRANSLATORS: The user specified an incorrect filter */
 			error = g_error_new (1, 0, "%s: %s", _("The proxy could not be set"), error_local->message);
-			g_error_free (error_local);
-			retval = PK_EXIT_CODE_CANNOT_SETUP;
-			goto out;
-		}
-	}
-
-	/* set the install root if set */
-	if (root != NULL) {
-		ret = pk_control_set_root (control, root, NULL, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: The user specified an incorrect filter */
-			error = g_error_new (1, 0, "%s: %s", _("The install root could not be set"), error_local->message);
 			g_error_free (error_local);
 			retval = PK_EXIT_CODE_CANNOT_SETUP;
 			goto out;
@@ -1801,7 +1785,6 @@ out:
 
 	g_free (options_help);
 	g_free (filter);
-	g_free (root);
 	g_free (summary);
 	g_object_unref (progressbar);
 	g_object_unref (control);

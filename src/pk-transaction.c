@@ -1831,7 +1831,6 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	gchar *proxy_socks = NULL;
 	gchar *no_proxy = NULL;
 	gchar *pac = NULL;
-	gchar *root = NULL;
 	gchar *cmdline = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
@@ -1869,21 +1868,8 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* get from database */
-	ret = pk_transaction_db_get_root (priv->transaction_db, priv->uid, session, &root);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "failed to get the root from the database");
-		goto out;
-	}
-
-	/* try to set the new proxy */
-	ret = pk_backend_set_root (priv->backend, root);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "failed to set the root");
-		goto out;
-	}
-	g_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
-		   proxy_http, proxy_ftp, root, priv->uid, session);
+	g_debug ("using http_proxy=%s, ftp_proxy=%s, for %i:%s",
+		   proxy_http, proxy_ftp, priv->uid, session);
 
 	/* try to set the new uid and cmdline */
 	cmdline = g_strdup_printf ("PackageKit: %s",

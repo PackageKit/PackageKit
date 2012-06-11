@@ -105,8 +105,6 @@ gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_socks,
 							 const gchar	*no_proxy,
 							 const gchar	*pac);
-gboolean	 pk_backend_set_root			(PkBackend	*backend,
-							 const gchar	*root);
 gboolean	 pk_backend_set_uid			(PkBackend	*backend,
 							 guint		 uid);
 gboolean	 pk_backend_set_cmdline			(PkBackend	*backend,
@@ -262,7 +260,6 @@ gchar		*pk_backend_get_proxy_https		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_socks		(PkBackend	*backend);
 gchar		*pk_backend_get_no_proxy		(PkBackend	*backend);
 gchar		*pk_backend_get_pac			(PkBackend	*backend);
-const gchar	*pk_backend_get_root			(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
 gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
 guint		 pk_backend_get_cache_age		(PkBackend	*backend);
