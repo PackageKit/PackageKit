@@ -34,6 +34,7 @@ pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_backend (priv->spawn, backend);
 	pk_backend_spawn_set_name (spawn, "portage");
 	/* allowing sigkill as long as no one complain */
 	pk_backend_spawn_set_allow_sigkill (spawn, TRUE);

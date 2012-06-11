@@ -79,6 +79,18 @@ pk_backend_spawn_get_backend (PkBackendSpawn *backend_spawn)
 }
 
 /**
+ * pk_backend_spawn_set_backend:
+ **/
+void
+pk_backend_spawn_set_backend (PkBackendSpawn *backend_spawn,
+			      PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+	g_return_if_fail (backend_spawn->priv->backend == NULL);
+	backend_spawn->priv->backend = g_object_ref (backend);
+}
+
+/**
  * pk_backend_spawn_set_filter_stdout:
  **/
 gboolean
@@ -1049,12 +1061,20 @@ pk_backend_spawn_exit (PkBackendSpawn *backend_spawn)
 gboolean
 pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_element, ...)
 {
-	gboolean ret;
+	gboolean ret = FALSE;
 	va_list args;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	g_return_val_if_fail (first_element != NULL, FALSE);
 	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
+
+	/* ensure this has been set */
+	if (backend_spawn->priv->backend == NULL) {
+		g_critical ("no PkBackend set in PkBackendSpawn -- "
+			    "ensure you have used pk_backend_spawn_set_backend() "
+			    "in your pk_backend_initialize()");
+		goto out;
+	}
 
 	/* don't auto-kill this */
 	if (backend_spawn->priv->kill_id > 0) {
@@ -1066,7 +1086,7 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_eleme
 	va_start (args, first_element);
 	ret = pk_backend_spawn_helper_va_list (backend_spawn, first_element, &args);
 	va_end (args);
-
+out:
 	return ret;
 }
 
@@ -1142,7 +1162,6 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv->stderr_func = NULL;
 	backend_spawn->priv->finished = FALSE;
 	backend_spawn->priv->conf = pk_conf_new ();
-	backend_spawn->priv->backend = pk_backend_new ();
 	backend_spawn->priv->spawn = pk_spawn_new ();
 	g_signal_connect (backend_spawn->priv->spawn, "exit",
 			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
