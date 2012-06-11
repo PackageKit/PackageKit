@@ -5141,7 +5141,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(t&u^a&s)",
+	g_variant_get (params, "(tu^a&s)",
 		       &filter,
 		       &provides,
 		       &values);
