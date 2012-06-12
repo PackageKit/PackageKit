@@ -458,7 +458,7 @@ pk_control_get_tid_cb (GObject *source_object,
 	}
 
 	/* save results */
-	g_variant_get (value, "(s)", &state->tid);
+	g_variant_get (value, "(o)", &state->tid);
 
 	/* we're done */
 	pk_control_get_tid_state_finish (state, NULL);
@@ -474,7 +474,7 @@ static void
 pk_control_get_tid_internal (PkControlState *state)
 {
 	g_dbus_proxy_call (state->control->priv->proxy,
-			   "GetTid",
+			   "CreateTransaction",
 			   NULL,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,

@@ -758,13 +758,13 @@
     </para>
     <para>
       Each transaction is a new path on the <literal>org.freedesktop.PackageKit</literal>
-      service, and to create a path you have to call <literal>GetTid</literal> on the base
+      service, and to create a path you have to call <literal>CreateTransaction</literal> on the base
       interface which creates the new DBUS path, and returns the new path for you to connect to.
       In the libpackagekit binding, <literal>PkControl</literal> handles the base interface,
       whilst <literal>PkClient</literal> handles all the transaction interface stuff.
       The <literal>org.freedesktop.PackageKit.Transaction</literal> interface can be used
       on the newly created path, but only used once.
-      New methods require a new transaction path (i.e. another call to <literal>GetTid</literal>)
+      New methods require a new transaction path (i.e. another call to <literal>CreateTransaction</literal>)
       which is synchronous and thus very fast.
     </para>
 

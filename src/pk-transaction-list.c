@@ -839,7 +839,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 
 	/* role not set */
 	if (unknown_role != 0)
-		g_debug ("%i have an unknown role (GetTid then nothing?)", unknown_role);
+		g_debug ("%i have an unknown role (CreateTransaction then nothing?)", unknown_role);
 
 	/* some are not committed */
 	if (no_commit != 0)

@@ -195,20 +195,23 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="GetTid">
+    <method name="CreateTransaction">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
           <doc:para>
-            Gets a new transaction ID from the daemon
+            Creates a new transaction that can have operations done on
+            it.
+            Note: The dameon will automatically destroy this transaction
+            if it is not used after a few minutes.
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="tid" direction="out">
+      <arg type="o" name="object_path" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The tid, e.g. <doc:tt>45_dafeca_checkpoint32</doc:tt>
+              The object_path, e.g. <doc:tt>/45_dafeca</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>

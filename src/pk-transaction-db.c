@@ -565,7 +565,7 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 
 	/* make the tid */
 	rand_str = pk_transaction_db_get_random_hex_string (8);
-	tid = g_strdup_printf ("/%i_%s_data", tdb->priv->job_count, rand_str);
+	tid = g_strdup_printf ("/%i_%s", tdb->priv->job_count, rand_str);
 	g_free (rand_str);
 	return tid;
 }

@@ -5368,7 +5368,7 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	g_return_if_fail (transaction->priv->sender != NULL);
 
-	/* check is the same as the sender that did GetTid */
+	/* check is the same as the sender that did CreateTransaction */
 	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (!ret) {
 		g_dbus_method_invocation_return_error (invocation,

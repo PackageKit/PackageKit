@@ -142,7 +142,7 @@ Daemon::Authorize Daemon::canAuthorize(const QString &actionId)
 
 QString Daemon::getTid()
 {
-    return global()->d_ptr->daemon->GetTid();
+    return global()->d_ptr->daemon->CreateTransaction();
 }
 
 uint Daemon::getTimeSinceAction(Transaction::Role role)

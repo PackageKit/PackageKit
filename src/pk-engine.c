@@ -1202,9 +1202,9 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 
-	if (g_strcmp0 (method_name, "GetTid") == 0) {
+	if (g_strcmp0 (method_name, "CreateTransaction") == 0) {
 
-		g_debug ("GetTid method called");
+		g_debug ("CreateTransaction method called");
 		data = pk_transaction_db_generate_id (engine->priv->transaction_db);
 		g_assert (data != NULL);
 		ret = pk_transaction_list_create (engine->priv->transaction_list,
@@ -1220,8 +1220,8 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 			goto out;
 		}
 
-		g_debug ("sending tid: '%s'", data);
-		value = g_variant_new ("(s)", data);
+		g_debug ("sending object path: '%s'", data);
+		value = g_variant_new ("(o)", data);
 		g_dbus_method_invocation_return_value (invocation, value);
 		goto out;
 	}
