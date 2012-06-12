@@ -272,6 +272,8 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
+		gchar **updates;
+		gchar **obsoletes;
 		if (size != 13) {
 			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
 			ret = FALSE;
@@ -287,11 +289,23 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (sections[8], ";", '\n');
 		g_strdelimit (sections[9], ";", '\n');
-		pk_backend_update_detail (priv->backend, sections[1],
-					  sections[2], sections[3], sections[4],
-					  sections[5], sections[6], restart, sections[8],
-					  sections[9], update_state_enum,
-					  sections[11], sections[12]);
+		updates = g_strsplit (sections[2], "&", -1);
+		obsoletes = g_strsplit (sections[3], "&", -1);
+		pk_backend_update_detail (priv->backend,
+					  sections[1],
+					  updates,
+					  obsoletes,
+					  sections[4],
+					  sections[5],
+					  sections[6],
+					  restart,
+					  sections[8],
+					  sections[9],
+					  update_state_enum,
+					  sections[11],
+					  sections[12]);
+		g_strfreev (updates);
+		g_strfreev (obsoletes);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

@@ -1152,11 +1152,13 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
 		PkUpdateDetail *item;
+		gchar **updates;
+		gchar **obsoletes;
 		g_variant_get (parameters,
-			       "(&s&s&s&s&s&su&s&su&s&s)",
+			       "(&s^a&s^a&s&s&s&su&s&su&s&s)",
 			       &tmp_str[0],
-			       &tmp_str[1],
-			       &tmp_str[2],
+			       &updates,
+			       &obsoletes,
 			       &tmp_str[3],
 			       &tmp_str[4],
 			       &tmp_str[5],
@@ -1169,8 +1171,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		item = pk_update_detail_new ();
 		g_object_set (item,
 			      "package-id", tmp_str[0],
-			      "updates", tmp_str[1],
-			      "obsoletes", tmp_str[2],
+			      "updates", updates[0] != NULL ? updates : NULL,
+			      "obsoletes", obsoletes[0] != NULL ? obsoletes : NULL,
 			      "vendor-url", tmp_str[3],
 			      "bugzilla-url", tmp_str[4],
 			      "cve-url", tmp_str[5],

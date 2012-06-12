@@ -1242,12 +1242,18 @@ out:
  * pk_backend_update_detail:
  **/
 gboolean
-pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
-			  const gchar *updates, const gchar *obsoletes,
-			  const gchar *vendor_url, const gchar *bugzilla_url,
-			  const gchar *cve_url, PkRestartEnum restart,
-			  const gchar *update_text, const gchar	*changelog,
-			  PkUpdateStateEnum state, const gchar *issued_text,
+pk_backend_update_detail (PkBackend *backend,
+			  const gchar *package_id,
+			  gchar **updates,
+			  gchar **obsoletes,
+			  const gchar *vendor_url,
+			  const gchar *bugzilla_url,
+			  const gchar *cve_url,
+			  PkRestartEnum restart,
+			  const gchar *update_text,
+			  const gchar *changelog,
+			  PkUpdateStateEnum state,
+			  const gchar *issued_text,
 			  const gchar *updated_text)
 {
 	gchar *update_text_safe = NULL;

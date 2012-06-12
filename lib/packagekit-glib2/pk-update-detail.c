@@ -47,8 +47,8 @@ static void     pk_update_detail_finalize	(GObject     *object);
 struct _PkUpdateDetailPrivate
 {
 	gchar				*package_id;
-	gchar				*updates;
-	gchar				*obsoletes;
+	gchar				**updates;
+	gchar				**obsoletes;
 	gchar				*vendor_url;
 	gchar				*bugzilla_url;
 	gchar				*cve_url;
@@ -93,10 +93,10 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 		g_value_set_string (value, priv->package_id);
 		break;
 	case PROP_UPDATES:
-		g_value_set_string (value, priv->updates);
+		g_value_set_boxed (value, priv->updates);
 		break;
 	case PROP_OBSOLETES:
-		g_value_set_string (value, priv->obsoletes);
+		g_value_set_boxed (value, priv->obsoletes);
 		break;
 	case PROP_VENDOR_URL:
 		g_value_set_string (value, priv->vendor_url);
@@ -146,12 +146,12 @@ pk_update_detail_set_property (GObject *object, guint prop_id, const GValue *val
 		priv->package_id = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_UPDATES:
-		g_free (priv->updates);
-		priv->updates = g_strdup (g_value_get_string (value));
+		g_strfreev (priv->updates);
+		priv->updates = g_strdupv (g_value_get_boxed (value));
 		break;
 	case PROP_OBSOLETES:
-		g_free (priv->obsoletes);
-		priv->obsoletes = g_strdup (g_value_get_string (value));
+		g_strfreev (priv->obsoletes);
+		priv->obsoletes = g_strdupv (g_value_get_boxed (value));
 		break;
 	case PROP_VENDOR_URL:
 		g_free (priv->vendor_url);
@@ -218,21 +218,21 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	/**
 	 * PkUpdateDetail:updates:
 	 *
-	 * Since: 0.5.4
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("updates", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_boxed ("updates", NULL, NULL,
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATES, pspec);
 
 	/**
 	 * PkUpdateDetail:obsoletes:
 	 *
-	 * Since: 0.5.4
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("obsoletes", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_boxed ("obsoletes", NULL, NULL,
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_OBSOLETES, pspec);
 
 	/**
@@ -347,8 +347,8 @@ pk_update_detail_finalize (GObject *object)
 	PkUpdateDetailPrivate *priv = update_detail->priv;
 
 	g_free (priv->package_id);
-	g_free (priv->updates);
-	g_free (priv->obsoletes);
+	g_strfreev (priv->updates);
+	g_strfreev (priv->obsoletes);
 	g_free (priv->vendor_url);
 	g_free (priv->bugzilla_url);
 	g_free (priv->cve_url);

@@ -34,6 +34,10 @@ Guide to porting backends from 0.7.x to 0.8.x
    manually set the backend by using pk_backend_spawn_set_backend() in
    pk_backend_initialize().
 
+ * pk_backend_update_detail now takes a gchar** rather than a gchar* for
+   the updates and obsoletes fields. No change is required for spawned
+   backends.
+
  * Add calls to pk_backend_set_locked() to declare when your backend holds
    write-lock on it's database. PackageKit will spawn multiple transactions
    which can read the database at any time. Not using this method will cause

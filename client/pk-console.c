@@ -306,8 +306,8 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 {
 	gchar *package = NULL;
 	gchar *package_id;
-	gchar *updates;
-	gchar *obsoletes;
+	gchar **updates;
+	gchar **obsoletes;
 	gchar *vendor_url;
 	gchar *bugzilla_url;
 	gchar *cve_url;
@@ -317,6 +317,7 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	PkUpdateStateEnum state;
 	gchar *issued;
 	gchar *updated;
+	gchar *tmp;
 
 	/* get data */
 	g_object_get (item,
@@ -343,12 +344,16 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	/* TRANSLATORS: details about the update, package name and version */
 	g_print (" %s: %s\n", _("Package"), package);
 	if (updates != NULL) {
+		tmp = g_strjoinv (", ", updates);
 		/* TRANSLATORS: details about the update, any packages that this update updates */
-		g_print (" %s: %s\n", _("Updates"), updates);
+		g_print (" %s: %s\n", _("Updates"), tmp);
+		g_free (tmp);
 	}
 	if (obsoletes != NULL) {
+		tmp = g_strjoinv (", ", obsoletes);
 		/* TRANSLATORS: details about the update, any packages that this update obsoletes */
-		g_print (" %s: %s\n", _("Obsoletes"), obsoletes);
+		g_print (" %s: %s\n", _("Obsoletes"), tmp);
+		g_free (tmp);
 	}
 	if (vendor_url != NULL) {
 		/* TRANSLATORS: details about the update, the vendor URLs */
@@ -388,8 +393,8 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	}
 	g_free (package);
 	g_free (package_id);
-	g_free (updates);
-	g_free (obsoletes);
+	g_strfreev (updates);
+	g_strfreev (obsoletes);
 	g_free (vendor_url);
 	g_free (bugzilla_url);
 	g_free (cve_url);

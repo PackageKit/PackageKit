@@ -1744,9 +1744,10 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				 PkUpdateDetail *item,
 				 PkTransaction *transaction)
 {
+	gchar *empty[] = { NULL };
 	gchar *package_id;
-	gchar *updates;
-	gchar *obsoletes;
+	gchar **updates;
+	gchar **obsoletes;
 	gchar *vendor_url;
 	gchar *bugzilla_url;
 	gchar *cve_url;
@@ -1786,10 +1787,10 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "UpdateDetail",
-				       g_variant_new ("(ssssssussuss)",
+				       g_variant_new ("(s^as^assssussuss)",
 						      package_id,
-						      updates != NULL ? updates : "",
-						      obsoletes != NULL ? obsoletes : "",
+						      updates != NULL ? updates : empty,
+						      obsoletes != NULL ? obsoletes : empty,
 						      vendor_url != NULL ? vendor_url : "",
 						      bugzilla_url != NULL ? bugzilla_url : "",
 						      cve_url != NULL ? cve_url : "",
@@ -1802,8 +1803,8 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       NULL);
 
 	g_free (package_id);
-	g_free (updates);
-	g_free (obsoletes);
+	g_strfreev (updates);
+	g_strfreev (obsoletes);
 	g_free (vendor_url);
 	g_free (bugzilla_url);
 	g_free (cve_url);

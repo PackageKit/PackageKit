@@ -2238,22 +2238,20 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="updates" direction="out">
+      <arg type="as" name="updates" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be updated, seporated by <doc:tt>&amp;</doc:tt>.
-              This odd delimited was chosen as <doc:tt>\t</doc:tt> is already being used in the
-              spawned backends, and <doc:tt>&amp;</doc:tt> is a banned character in a package_id.
+              A list of package_id's that are to be updated.
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="obsoletes" direction="out">
+      <arg type="as" name="obsoletes" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A list of package_id's that are to be obsoleted, separated by <doc:tt>&amp;</doc:tt>
+              A list of package_id's that are to be obsoleted.
             </doc:para>
           </doc:summary>
         </doc:doc>
