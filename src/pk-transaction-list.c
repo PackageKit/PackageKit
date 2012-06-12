@@ -19,6 +19,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/**
+ * Transaction Commit Logic:
+ *
+ * State = COMMIT
+ * Transaction.Run()
+ * WHEN transaction finished:
+ * 	IF error = LOCK_REQUIRED
+ * 		IF number_of_tries > 4
+ * 			Fail the transaction with CANNOT_GET_LOCK
+ * 			Remove the transaction from the FIFO queue
+ * 		ELSE
+ * 			Reset transaction
+ * 			Transaction.Exclusive = TRUE
+ * 			number_of_tries++
+ * 			Leave transaction in the FIFO queue
+ *	ELSE
+ * 		State = Finished
+ * 		IF Transaction.Exclusive
+ * 			Take the first PK_TRANSACTION_STATE_READY transaction which has Transaction.Exclusive == TRUE
+ * 			from the list and run it. If there's none, just do nothing
+ * 		ELSE
+ * 			Do nothing
+ * 		Transaction.Destroy()
+**/
+
 #include "config.h"
 
 #include <stdlib.h>
