@@ -261,7 +261,6 @@ pk_backend_convert_error (const GError *error)
 void
 pk_backend_transaction_start (PkBackend *backend)
 {
-	const gchar *root;
 	gboolean ret = FALSE;
 	gchar *http_proxy = NULL;
 	GError *error = NULL;
@@ -300,7 +299,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* try to set, or re-set install root */
 	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
-					  root,
+					  NULL,
 					  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
