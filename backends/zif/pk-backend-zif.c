@@ -3525,44 +3525,35 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			gchar *changelog_text = NULL;
 			GPtrArray *array;
 			GPtrArray *changesets;
-			GString *string_cve;
-			GString *string_bugzilla;
-			GString *string_vendor;
+			GPtrArray *cve_urls;
+			GPtrArray *bugzilla_urls;
+			GPtrArray *vendor_urls;
 			ZifUpdateInfo *info;
 			array = zif_update_get_update_infos (update);
-			string_cve = g_string_new (NULL);
-			string_bugzilla = g_string_new (NULL);
-			string_vendor = g_string_new (NULL);
+			cve_urls = g_ptr_array_new ();
+			bugzilla_urls = g_ptr_array_new ();
+			vendor_urls = g_ptr_array_new ();
 			for (j=0; j<array->len; j++) {
 				info = g_ptr_array_index (array, j);
 				switch (zif_update_info_get_kind (info)) {
 				case ZIF_UPDATE_INFO_KIND_CVE:
-					g_string_append_printf (string_cve, "%s;%s;",
-								zif_update_info_get_url (info),
-								zif_update_info_get_title (info));
+					g_ptr_array_add (cve_urls, (gpointer) zif_update_info_get_url (info));
 					break;
 				case ZIF_UPDATE_INFO_KIND_BUGZILLA:
-					g_string_append_printf (string_bugzilla, "%s;%s;",
-								zif_update_info_get_url (info),
-								zif_update_info_get_title (info));
+					g_ptr_array_add (bugzilla_urls, (gpointer) zif_update_info_get_url (info));
 					break;
 				case ZIF_UPDATE_INFO_KIND_VENDOR:
-					g_string_append_printf (string_vendor, "%s;%s;",
-								zif_update_info_get_url (info),
-								zif_update_info_get_title (info));
+					g_ptr_array_add (vendor_urls, (gpointer) zif_update_info_get_url (info));
 					break;
 				default:
 					break;
 				}
 			}
 
-			/* remove trailing ';' */
-			if (string_cve->len > 0)
-				g_string_set_size (string_cve, string_cve->len - 1);
-			if (string_bugzilla->len > 0)
-				g_string_set_size (string_bugzilla, string_bugzilla->len - 1);
-			if (string_vendor->len > 0)
-				g_string_set_size (string_vendor, string_vendor->len - 1);
+			/* NULL terminate */
+			g_ptr_array_add (cve_urls, NULL);
+			g_ptr_array_add (bugzilla_urls, NULL);
+			g_ptr_array_add (vendor_urls, NULL);
 
 			/* format changelog */
 			changesets = zif_update_get_changelog (update);
@@ -3571,9 +3562,9 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
-						  string_vendor->str,
-						  string_bugzilla->str,
-						  string_cve->str,
+						  (gchar **) cve_urls->pdata,
+						  (gchar **) bugzilla_urls->pdata,
+						  (gchar **) vendor_urls->pdata,
 						  PK_RESTART_ENUM_NONE,
 						  zif_update_get_description (update),
 						  changelog_text,
@@ -3583,8 +3574,9 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			if (changesets != NULL)
 				g_ptr_array_unref (changesets);
 			g_ptr_array_unref (array);
-			g_string_free (string_cve, TRUE);
-			g_string_free (string_bugzilla, TRUE);
+			g_ptr_array_unref (cve_urls);
+			g_ptr_array_unref (bugzilla_urls);
+			g_ptr_array_unref (vendor_urls);
 			g_free (changelog_text);
 		}
 
