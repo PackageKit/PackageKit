@@ -256,7 +256,7 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="as" name="transactions" direction="out">
+      <arg type="ao" name="transactions" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

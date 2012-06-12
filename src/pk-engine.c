@@ -1227,7 +1227,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "GetTransactionList") == 0) {
 		transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
-		value = g_variant_new ("(^a&s)", transaction_list);
+		value = g_variant_new ("(^a&o)", transaction_list);
 		g_dbus_method_invocation_return_value (invocation, value);
 		goto out;
 	}

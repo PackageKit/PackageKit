@@ -1344,7 +1344,7 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 	}
 
 	/* unwrap data */
-	g_variant_get (value, "(^a&s)", &tlist_tmp);
+	g_variant_get (value, "(^a&o)", &tlist_tmp);
 	if (tlist_tmp == NULL) {
 		state->transaction_list = g_new0 (gchar *, 1);
 	} else {
