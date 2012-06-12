@@ -2145,7 +2145,7 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="old_tid" direction="out">
+      <arg type="o" name="object_path" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

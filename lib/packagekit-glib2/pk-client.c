@@ -1191,7 +1191,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "Transaction") == 0) {
 		PkTransactionPast *item;
 		g_variant_get (parameters,
-			       "(&s&sb&su&su&s)",
+			       "(&o&sb&su&su&s)",
 			       &tmp_str[0],
 			       &tmp_str[1],
 			       &tmp_bool,
