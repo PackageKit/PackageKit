@@ -438,6 +438,8 @@ else
 	build_gtk_module=no
 fi
 if test x$build_gtk_module = xyes; then
+	# this is needed to avoid the GTK2 warning
+	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK2, gtk+-2.0 gio-2.0)
 	GLIB_GSETTINGS
 fi
 AM_CONDITIONAL(PK_BUILD_GTK_MODULE, test $build_gtk_module = "yes")
