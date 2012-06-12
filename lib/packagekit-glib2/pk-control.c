@@ -1648,7 +1648,7 @@ pk_control_get_time_since_action_async (PkControl *control,
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
 	state->control = g_object_ref (control);
-	state->parameters = g_variant_new ("(s)", pk_role_enum_to_string (role));
+	state->parameters = g_variant_new ("(u)", role);
 	g_variant_ref_sink (state->parameters);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);

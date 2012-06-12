@@ -227,11 +227,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="role" direction="in">
+      <arg type="u" name="role" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The role, e.g. <doc:tt>update-system</doc:tt>
+              The role enum, e.g. <doc:tt>update-system</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
