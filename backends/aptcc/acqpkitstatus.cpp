@@ -31,8 +31,7 @@ AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackend *backend, bool 
     m_apt(apt),
     m_backend(backend),
     _cancelled(cancelled),
-    last_percent(PK_BACKEND_PERCENTAGE_INVALID),
-    last_sub_percent(PK_BACKEND_PERCENTAGE_INVALID)
+    m_lastPercent(PK_BACKEND_PERCENTAGE_INVALID)
 {
 }
 
@@ -48,7 +47,7 @@ void AcqPackageKitStatus::Start()
 // ---------------------------------------------------------------------
 void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
-    if (packages.size() == 0) {
+    if (m_packages.size() == 0) {
         pk_backend_repo_detail(m_backend,
                                "",
                                Itm.Description.c_str(),
@@ -89,7 +88,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 
     if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
     {
-        if (packages.size() == 0) {
+        if (m_packages.size() == 0) {
             pk_backend_repo_detail(m_backend,
                                    "",
                                    Itm.Description.c_str(),
@@ -111,17 +110,17 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 // ---------------------------------------------------------------------
 /* This prints out the bytes downloaded and the overall average line
    speed */
-void AcqPackageKitStatus::Stop()
-{
-    pkgAcquireStatus::Stop();
-    // the items that still on the set are finished
-    for (set<string>::iterator it = currentPackages.begin();
-         it != currentPackages.end();
-         it++ )
-    {
-        emit_package(*it, true);
-    }
-}
+// void AcqPackageKitStatus::Stop()
+// {
+//     pkgAcquireStatus::Stop();
+//     // the items that still on the set are finished
+//     for (set<string>::iterator it = m_currentPackages.begin();
+//          it != currentPackages.end();
+//          it++ )
+//     {
+//         emit_package(*it, true);
+//     }
+// }
 
 
 // AcqPackageKitStatus::Pulse - Regular event pulse
@@ -137,60 +136,56 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
     percent_done = long(double((CurrentBytes + CurrentItems)*100.0)/double(TotalBytes+TotalItems));
 
     // Emit the percent done
-    if (last_percent != percent_done) {
-        if (last_percent < percent_done) {
+    if (m_lastPercent != percent_done) {
+        if (m_lastPercent < percent_done) {
             pk_backend_set_percentage(m_backend, percent_done);
         } else {
             pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
             pk_backend_set_percentage(m_backend, percent_done);
         }
-        last_percent = percent_done;
+        m_lastPercent = percent_done;
     }
 
-    set<string> localCurrentPackages = currentPackages;;
     for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
          I = Owner->WorkerStep(I))
     {
         // Check if there is no item running or if we don't have
         // any packages set we are probably refreshing the cache
-        if (I->CurrentItem == 0 || packages.size() == 0)
-        {
+        if (I->CurrentItem == 0 || m_packages.size() == 0) {
             continue;
         }
-        emit_package(I->CurrentItem->ShortDesc, false);
-        localCurrentPackages.erase(I->CurrentItem->ShortDesc);
 
-        // Add the total size and percent
-        if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
-        {
-            unsigned long sub_percent;
-            // TODO PackageKit needs to emit package with progress.
-            sub_percent = long(double(I->CurrentSize*100.0)/double(I->TotalSize));
-            if (last_sub_percent != sub_percent) {
-                if (last_sub_percent < sub_percent) {
-                    pk_backend_set_sub_percentage(m_backend, sub_percent);
-                } else {
-                    pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
-                    pk_backend_set_sub_percentage(m_backend, sub_percent);
-                }
-                last_sub_percent = sub_percent;
+        // Try to find the package in question
+        pkgCache::VerIterator ver;
+        ver = findPackage(I->CurrentItem->ShortDesc);
+        if (ver.end() == true) {
+            continue;
+        }
+
+        if (I->CurrentItem->Owner->Complete == true) {
+            // emit the package as finished
+            m_apt->emitPackage(ver, PK_INFO_ENUM_FINISHED);
+        } else {
+            // emit the package
+            m_apt->emitPackage(ver, PK_INFO_ENUM_DOWNLOADING);
+
+            // Add the total size and percent
+            if (I->TotalSize > 0) {
+                unsigned long sub_percent;
+                sub_percent = long(double(I->CurrentSize*100.0)/double(I->TotalSize));
+
+                // Emit the individual progress
+                m_apt->emitPackageProgress(ver, static_cast<uint>(sub_percent));
             }
         }
     }
 
-    // the items that still on the set are finished
-    for (set<string>::iterator it = localCurrentPackages.begin();
-         it != localCurrentPackages.end();
-         it++ )
-    {
-        emit_package(*it, true);
-    }
-
+    // calculate the overall speed
     double localCPS = (CurrentCPS >= 0) ? CurrentCPS : -1 * CurrentCPS;
-    if (localCPS != last_CPS)
+    if (localCPS != m_lastCPS)
     {
-        last_CPS = localCPS;
-        pk_backend_set_speed(m_backend, (int) last_CPS);
+        m_lastCPS = localCPS;
+        pk_backend_set_speed(m_backend, static_cast<uint>(m_lastCPS));
     }
 
     Update = false;
@@ -228,31 +223,18 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 
 void AcqPackageKitStatus::addPackage(const pkgCache::VerIterator &ver)
 {
-    packages.push_back(ver);
+    m_packages.push_back(ver);
 }
 
-void AcqPackageKitStatus::emit_package(const string &name, bool finished)
+pkgCache::VerIterator AcqPackageKitStatus::findPackage(const std::string &name) const
 {
-    if (name.compare(last_package_name) != 0 && packages.size()) {
-        // find the package
-        for (PkgList::iterator it = packages.begin(); it != packages.end(); ++it) {
-            if (_cancelled) {
-                break;
-            }
-
-            // try to see if any package matches
-            if (name.compare(it->ParentPkg().Name()) == 0) {
-                m_apt->emitPackage(*it, finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
-                last_package_name = name;
-
-                // Find the downloading item
-                if (finished) {
-                    currentPackages.erase(name);
-                } else {
-                    currentPackages.insert(name);
-                }
-                break;
-            }
+    pkgCache::VerIterator ver;
+    for (PkgList::const_iterator i = m_packages.begin(); i != m_packages.end(); ++i) {
+        // try to see if any package matches
+        if (name.compare(i->ParentPkg().Name()) == 0) {
+            ver = *i;
+            break;
         }
     }
+    return ver;
 }

@@ -40,17 +40,17 @@ static PkBackendSpawn *spawn;
 /**
  * pk_backend_get_description:
  */
-gchar* pk_backend_get_description(PkBackend *backend)
+const gchar* pk_backend_get_description(PkBackend *backend)
 {
-    return g_strdup("APTcc");
+    return "APTcc";
 }
 
 /**
  * pk_backend_get_author:
  */
-gchar* pk_backend_get_author(PkBackend *backend)
+const gchar* pk_backend_get_author(PkBackend *backend)
 {
-    return g_strdup("Daniel Nicoletti <dantti12@gmail.com>");
+    return "Daniel Nicoletti <dantti12@gmail.com>";
 }
 
 /**
@@ -69,7 +69,7 @@ void pk_backend_initialize(PkBackend *backend)
     setenv("APT_LISTBUGS_FRONTEND", "none", 1);
 
     spawn = pk_backend_spawn_new();
-    pk_backend_spawn_set_backend (priv->spawn, backend);
+    pk_backend_spawn_set_backend(spawn, backend);
     pk_backend_spawn_set_name(spawn, "aptcc");
 }
 

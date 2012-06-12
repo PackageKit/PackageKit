@@ -147,6 +147,11 @@ public:
     void emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
     /**
+     *  Emits a package with the given percentage
+     */
+    void emitPackageProgress(const pkgCache::VerIterator &ver, uint percentage);
+
+    /**
       * Emits a list of packages that matches the given filters
       */
     void emitPackages(PkgList &output,
@@ -250,7 +255,7 @@ private:
     bool doAutomaticRemove(AptCacheFile &cache);
     bool removingEssentialPackages(AptCacheFile &cache);
     PkgList checkChangedPackages(AptCacheFile &cache, bool emitChanged);
-    void emitTransactionPackage(string name, PkInfoEnum state);
+    pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
     AptCacheFile *m_cache;
     PkBackend  *m_backend;

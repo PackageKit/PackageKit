@@ -346,6 +346,14 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
     g_free(package_id);
 }
 
+void AptIntf::emitPackageProgress(const pkgCache::VerIterator &ver, uint percentage)
+{
+    gchar *package_id;
+    package_id = utilBuildPackageId(ver);
+    pk_backend_set_item_progress(m_backend, package_id, percentage);
+    g_free(package_id);
+}
+
 void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state)
 {
     // Sort so we can remove the duplicated entries
@@ -1649,33 +1657,31 @@ PkgList AptIntf::checkChangedPackages(AptCacheFile &cache, bool emitChanged)
     return ret;
 }
 
-void AptIntf::emitTransactionPackage(string name, PkInfoEnum state)
+pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
 {
     for (PkgList::const_iterator it = m_pkgs.begin(); it != m_pkgs.end(); ++it) {
         if (it->ParentPkg().Name() == name) {
-            emitPackage(*it, state);
-            return;
+            return *it;
         }
     }
-
+    
     const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() == true ||
-            (pkg.VersionList().end() && pkg.ProvidesList().end())) {
-        return;
+        (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+        return pkgCache::VerIterator();
     }
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (ver.end() == false) {
-        emitPackage(ver, state);
+        return ver;
     }
 
     const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
-    // check to see if we found the package
-    if (candidateVer.end() == false) {
-        emitPackage(candidateVer, state);
-    }
+
+    // Return the last try anyway
+    return candidateVer;
 }
 
 void AptIntf::updateInterface(int fd, int writeFd)
@@ -1845,71 +1851,110 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 // Let's start parsing the status:
                 if (starts_with(str, "Preparing to configure")) {
                     // Preparing to Install/configure
-                    // 					cout << "Found Preparing to configure! " << line << endl;
+                    // cout << "Found Preparing to configure! " << line << endl;
                     // The next item might be Configuring so better it be 100
                     m_lastSubProgress = 100;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
-                    pk_backend_set_sub_percentage(m_backend, 75);
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_PREPARING);
+                        emitPackageProgress(ver, 75);
+                    }
                 } else if (starts_with(str, "Preparing for removal")) {
                     // Preparing to Install/configure
-                    // 					cout << "Found Preparing for removal! " << line << endl;
+                    // cout << "Found Preparing for removal! " << line << endl;
                     m_lastSubProgress = 50;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
-                    pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_REMOVING);
+                        emitPackageProgress(ver, m_lastSubProgress);
+                    }
                 } else if (starts_with(str, "Preparing")) {
                     // Preparing to Install/configure
-                    // 					cout << "Found Preparing! " << line << endl;
+                    // cout << "Found Preparing! " << line << endl;
                     // if last package is different then finish it
                     if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
-                        // 						cout << "FINISH the last package: " << m_lastPackage << endl;
-                        emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+                        // cout << "FINISH the last package: " << m_lastPackage << endl;
+                        const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                        if (!ver.end()) {
+                            emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                        }
                     }
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
-                    pk_backend_set_sub_percentage(m_backend, 25);
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_PREPARING);
+                        emitPackageProgress(ver, 25);
+                    }
                 } else if (starts_with(str, "Unpacking")) {
-                    // 					cout << "Found Unpacking! " << line << endl;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_DECOMPRESSING);
-                    pk_backend_set_sub_percentage(m_backend, 50);
+                    // cout << "Found Unpacking! " << line << endl;
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_DECOMPRESSING);
+                        emitPackageProgress(ver, 50);
+                    }
                 } else if (starts_with(str, "Configuring")) {
                     // Installing Package
-                    // 					cout << "Found Configuring! " << line << endl;
+                    // cout << "Found Configuring! " << line << endl;
                     if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
                         cout << "FINISH the last package: " << m_lastPackage << endl;
-                        emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+                        const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                        if (!ver.end()) {
+                            emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                        }
                         m_lastSubProgress = 0;
                     }
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
-                    pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
+
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_INSTALLING);
+                        emitPackageProgress(ver, m_lastSubProgress);
+                    }
                     m_lastSubProgress += 25;
                 } else if (starts_with(str, "Running dpkg")) {
-                    // 					cout << "Found Running dpkg! " << line << endl;
+                    // cout << "Found Running dpkg! " << line << endl;
                 } else if (starts_with(str, "Running")) {
-                    // 					cout << "Found Running! " << line << endl;
+                    // cout << "Found Running! " << line << endl;
                     pk_backend_set_status (m_backend, PK_STATUS_ENUM_COMMIT);
                 } else if (starts_with(str, "Installing")) {
-                    // 					cout << "Found Installing! " << line << endl;
+                    // cout << "Found Installing! " << line << endl;
                     // FINISH the last package
                     if (!m_lastPackage.empty()) {
-                        // 						cout << "FINISH the last package: " << m_lastPackage << endl;
-                        emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+                        // cout << "FINISH the last package: " << m_lastPackage << endl;
+                        const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                        if (!ver.end()) {
+                            emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                        }
                     }
                     m_lastSubProgress = 0;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
-                    pk_backend_set_sub_percentage(m_backend, 0);
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_INSTALLING);
+                        emitPackageProgress(ver, m_lastSubProgress);
+                    }
                 } else if (starts_with(str, "Removing")) {
-                    // 					cout << "Found Removing! " << line << endl;
+                    // cout << "Found Removing! " << line << endl;
                     if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
-                        // 						cout << "FINISH the last package: " << m_lastPackage << endl;
-                        emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+                        // cout << "FINISH the last package: " << m_lastPackage << endl;
+                        const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                        if (!ver.end()) {
+                            emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                        }
                     }
                     m_lastSubProgress += 25;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
-                    pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
+
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_REMOVING);
+                        emitPackageProgress(ver, m_lastSubProgress);
+                    }
                 } else if (starts_with(str, "Installed") ||
                            starts_with(str, "Removed")) {
-                    // 					cout << "Found FINISHED! " << line << endl;
+                    // cout << "Found FINISHED! " << line << endl;
                     m_lastSubProgress = 100;
-                    emitTransactionPackage(pkg, PK_INFO_ENUM_FINISHED);
+                    const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+                    if (!ver.end()) {
+                        emitPackage(ver, PK_INFO_ENUM_FINISHED);
+//                         emitPackageProgress(ver, m_lastSubProgress);
+                    }
                 } else {
                     cout << ">>>Unmaped value<<< :" << line << endl;
                 }
@@ -2557,7 +2602,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating, bool downloa
     // Download should be finished by now, changing it's status
     pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
     pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
-    pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
 
     // we could try to see if this is the case
     setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);

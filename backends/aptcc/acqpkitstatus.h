@@ -42,7 +42,7 @@ public:
     virtual void Done(pkgAcquire::ItemDesc &Itm);
     virtual void Fail(pkgAcquire::ItemDesc &Itm);
     virtual void Start();
-    virtual void Stop();
+//     virtual void Stop();
 
     bool Pulse(pkgAcquire *Owner);
 
@@ -53,16 +53,15 @@ private:
     unsigned long ID;
     bool &_cancelled;
 
-    unsigned long last_percent;
-    unsigned long last_sub_percent;
-    double        last_CPS;
-    string        last_package_name;
+    unsigned long m_lastPercent;
+    double        m_lastCPS;
+    string        m_lastPackageName;
     AptIntf       *m_apt;
 
-    PkgList packages;
-    set<string> currentPackages;
+    PkgList m_packages;
+//     set<string> m_currentPackages;
 
-    void emit_package(const string &name, bool finished);
+    pkgCache::VerIterator findPackage(const std::string &name) const;
 };
 
 #endif
