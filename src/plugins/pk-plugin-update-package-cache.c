@@ -179,7 +179,7 @@ pk_plugin_package_array_to_string (GPtrArray *array)
 }
 
 /**
- * pk_plugin_package_array_to_string:
+ * pk_plugin_save_package_list:
  **/
 static void
 pk_plugin_save_package_list (PkPlugin *plugin, GPtrArray *pkg_array)
@@ -281,6 +281,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	pk_backend_set_percentage (plugin->backend, 90);
 
 	/* create & save legacy package-list */
+	pkg_array = pk_package_sack_get_array (priv->sack);
 	if (update_list)
 		pk_plugin_save_package_list (plugin, pkg_array);
 
@@ -315,8 +316,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		g_error_free (error);
 		goto out;
 	}
-
-	pkg_array = pk_package_sack_get_array (priv->sack);
 
 	/* clear the cache, so we can recreate it */
 	g_clear_error (&error);
