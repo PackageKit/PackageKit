@@ -1057,6 +1057,8 @@ gboolean
 pk_engine_load_backend (PkEngine *engine, GError **error)
 {
 	gboolean ret;
+
+	/* load any backend init */
 	ret = pk_backend_load (engine->priv->backend, error);
 	if (!ret)
 		goto out;
@@ -1493,6 +1495,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->timeout_normal = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutNormal");
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
+	pk_transaction_list_set_backend (engine->priv->transaction_list,
+					 engine->priv->backend);
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 

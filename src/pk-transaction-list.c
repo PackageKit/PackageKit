@@ -56,6 +56,7 @@ struct PkTransactionListPrivate
 	guint			 unwedge2_id;
 	PkConf			*conf;
 	GPtrArray		*plugins;
+	PkBackend		*backend;
 };
 
 typedef struct {
@@ -283,14 +284,18 @@ static gboolean
 pk_transaction_list_run_idle_cb (PkTransactionItem *item)
 {
 	gboolean ret;
+	PkBackend *backend;
 
 	g_debug ("actually running %s", item->tid);
+	backend = pk_backend_new ();
+	pk_transaction_set_backend (item->transaction, backend);
 	ret = pk_transaction_run (item->transaction);
 	if (!ret)
 		g_error ("failed to run transaction (fatal)");
 
 	/* never try to idle add this again */
 	item->idle_id = 0;
+	g_object_unref (backend);
 	return FALSE;
 }
 
@@ -495,6 +500,12 @@ pk_transaction_list_create (PkTransactionList *tlist,
 		g_set_error (error, 1, 0, "failed to set sender: %s", tid);
 		goto out;
 	}
+
+	/* set the master PkBackend really early (i.e. before
+	 * pk_transaction_run is called) as transactions may want to check
+	 * to see if roles are possible before accepting actions */
+	pk_transaction_set_backend (item->transaction,
+				    tlist->priv->backend);
 
 	/* get the uid for the transaction */
 	item->uid = pk_transaction_get_uid (item->transaction);
@@ -914,7 +925,26 @@ void
 pk_transaction_list_set_plugins (PkTransactionList *tlist,
 				 GPtrArray *plugins)
 {
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 	tlist->priv->plugins = g_ptr_array_ref (plugins);
+}
+
+/**
+ * pk_transaction_list_set_backend:
+ *
+ * Note: this is the master PkBackend that is used when the transaction
+ * list is processing one transaction at a time.
+ * When parallel transactions are used, then another PkBackend will
+ * be instantiated if this PkBackend is busy.
+ */
+void
+pk_transaction_list_set_backend (PkTransactionList *tlist,
+				 PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (tlist->priv->backend == NULL);
+	tlist->priv->backend = g_object_ref (backend);
 }
 
 /**
@@ -978,6 +1008,8 @@ pk_transaction_list_finalize (GObject *object)
 	g_object_unref (tlist->priv->conf);
 	if (tlist->priv->plugins != NULL)
 		g_ptr_array_unref (tlist->priv->plugins);
+	if (tlist->priv->backend != NULL)
+		g_object_unref (tlist->priv->backend);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }

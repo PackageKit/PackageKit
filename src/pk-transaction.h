@@ -78,6 +78,8 @@ PkRoleEnum	 pk_transaction_get_role			(PkTransaction	*transaction);
 guint		 pk_transaction_get_uid				(PkTransaction	*transaction);
 PkConf		*pk_transaction_get_conf			(PkTransaction	*transaction);
 PkBackend	*pk_transaction_get_backend			(PkTransaction	*transaction);
+void		 pk_transaction_set_backend			(PkTransaction	*transaction,
+								 PkBackend	*backend);
 PkResults	*pk_transaction_get_results			(PkTransaction	*transaction);
 gchar		**pk_transaction_get_package_ids		(PkTransaction	*transaction);
 void		 pk_transaction_set_package_ids			(PkTransaction	*transaction,
@@ -95,6 +97,8 @@ gboolean	 pk_transaction_is_exclusive			(PkTransaction	*transaction);
 void		 pk_transaction_add_supported_content_type	(PkTransaction	*transaction,
 								 const gchar	*mime_type);
 void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
+								 GPtrArray	*plugins);
+void		 pk_transaction_set_supported_roles		(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
 void		 pk_transaction_set_signals			(PkTransaction *transaction,
 								 PkBitfield backend_signals);
