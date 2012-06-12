@@ -147,7 +147,6 @@ struct PkBackendPrivate
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
-static gpointer pk_backend_object = NULL;
 
 enum {
 	SIGNAL_ALLOW_CANCEL,
@@ -3602,12 +3601,8 @@ pk_backend_init (PkBackend *backend)
 PkBackend *
 pk_backend_new (void)
 {
-	if (pk_backend_object != NULL) {
-		g_object_ref (pk_backend_object);
-	} else {
-		pk_backend_object = g_object_new (PK_TYPE_BACKEND, NULL);
-		g_object_add_weak_pointer (pk_backend_object, &pk_backend_object);
-	}
-	return PK_BACKEND (pk_backend_object);
+	PkBackend *backend;
+	backend = g_object_new (PK_TYPE_BACKEND, NULL);
+	return PK_BACKEND (backend);
 }
 
