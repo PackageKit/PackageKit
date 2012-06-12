@@ -606,7 +606,6 @@ pk_transaction_files_cb (PkBackend *backend,
 			 PkFiles *item,
 			 PkTransaction *transaction)
 {
-	gchar *filelist = NULL;
 	guint i;
 	gchar *package_id;
 	gchar **files;
@@ -636,18 +635,16 @@ pk_transaction_files_cb (PkBackend *backend,
 	pk_results_add_files (transaction->priv->results, item);
 
 	/* emit */
-	filelist = g_strjoinv (";", files);
-	g_debug ("emitting files %s, %s", package_id, filelist);
+	g_debug ("emitting files %s", package_id);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Files",
-				       g_variant_new ("(ss)",
+				       g_variant_new ("(s^as)",
 						      package_id,
-						      filelist),
+						      files),
 				       NULL);
-	g_free (filelist);
 	g_free (package_id);
 	g_strfreev (files);
 }

@@ -1279,10 +1279,9 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		gchar **files;
 		PkFiles *item;
 		g_variant_get (parameters,
-			       "(&s&s)",
+			       "(&s^a&s)",
 			       &tmp_str[0],
-			       &tmp_str[1]);
-		files = g_strsplit (tmp_str[1], ";", -1);
+			       &files);
 		item = pk_files_new ();
 		g_object_set (item,
 			      "package-id", tmp_str[0],
@@ -1292,7 +1291,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      NULL);
 		pk_results_add_files (state->results, item);
 		g_object_unref (item);
-		g_strfreev (files);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RepoSignatureRequired") == 0) {

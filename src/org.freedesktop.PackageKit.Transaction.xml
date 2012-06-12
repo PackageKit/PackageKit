@@ -1716,11 +1716,11 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="file_list" direction="out">
+      <arg type="as" name="file_list" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The file list, with each file seporated with <doc:tt>;</doc:tt>.
+              The file list as an array.
             </doc:para>
           </doc:summary>
         </doc:doc>
