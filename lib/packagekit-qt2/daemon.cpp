@@ -56,8 +56,8 @@ Daemon::Daemon(QObject *parent) :
             this, SIGNAL(repoListChanged()));
     connect(d->daemon, SIGNAL(RestartSchedule()),
             this, SIGNAL(restartScheduled()));
-    connect(d->daemon, SIGNAL(TransactionListChanged(const QStringList&)),
-            this, SIGNAL(transactionListChanged(const QStringList&)));
+    connect(d->daemon, SIGNAL(TransactionListChanged(QStringList)),
+            this, SIGNAL(transactionListChanged(QStringList)));
     connect(d->daemon, SIGNAL(UpdatesChanged()),
             this, SIGNAL(updatesChanged()));
 
@@ -76,12 +76,10 @@ Daemon::~Daemon()
 
 Transaction::Roles Daemon::actions()
 {
-    QStringList roles = global()->d_ptr->daemon->roles().split(";");
+    qulonglong roles = global()->d_ptr->daemon->roles();
 
     Transaction::Roles flags;
-    foreach (const QString &role, roles) {
-        flags |= static_cast<Transaction::Role>(Util::enumFromString<Transaction>(role, "Role", "Role"));
-    }
+    flags |= static_cast<Transaction::Role>(roles);
     return flags;
 }
 
@@ -102,28 +100,17 @@ QString Daemon::backendAuthor()
 
 Transaction::Filters Daemon::filters()
 {
-    QStringList filters = global()->d_ptr->daemon->filters().split(";");
-
-    // Adapt a slight difference in the enum
-    if(filters.contains("none")) {
-        filters[filters.indexOf("none")] = "no-filter";
-    }
-
-    Transaction::Filters flags;
-    foreach (const QString &filter, filters) {
-        flags |= static_cast<Transaction::Filter>(Util::enumFromString<Transaction>(filter, "Filter", "Filter"));
-    }
-    return flags;
+    return static_cast<Transaction::Filter>(global()->d_ptr->daemon->filters());
 }
 
 Package::Groups Daemon::groups()
 {
-    QStringList groups = global()->d_ptr->daemon->groups().split(";");
+//     QStringList groups = global()->d_ptr->daemon->groups().split(";");
 
     Package::Groups flags;
-    foreach (const QString &group, groups) {
-        flags.insert(static_cast<Package::Group>(Util::enumFromString<Package>(group, "Group", "Group")));
-    }
+//     foreach (const QString &group, groups) {
+//         flags.insert(static_cast<Package::Group>(Util::enumFromString<Package>(group, "Group", "Group")));
+//     }
     return flags;
 }
 
@@ -139,8 +126,7 @@ QStringList Daemon::mimeTypes()
 
 Daemon::Network Daemon::networkState()
 {
-    QString state = global()->d_ptr->daemon->networkState();
-    return static_cast<Daemon::Network>(Util::enumFromString<Daemon>(state, "Network", "Network"));
+    return static_cast<Daemon::Network>(global()->d_ptr->daemon->networkState());
 }
 
 QString Daemon::distroId()

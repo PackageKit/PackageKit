@@ -103,45 +103,47 @@ void Transaction::init(const QString &tid)
 
     connect(d->p, SIGNAL(Changed()),
             this, SIGNAL(changed()));
-    connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)),
-            this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
+    connect(d->p, SIGNAL(Category(QString,QString,QString,QString,QString)),
+            this, SIGNAL(category(QString,QString,QString,QString,QString)));
     connect(d->p, SIGNAL(Destroy()),
             SLOT(destroy()));
-    connect(d->p, SIGNAL(Details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)),
-            SLOT(details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)));
-    connect(d->p, SIGNAL(DistroUpgrade(const QString&, const QString&, const QString&)),
-            SLOT(distroUpgrade(const QString&, const QString&, const QString&)));
-    connect(d->p, SIGNAL(ErrorCode(const QString&, const QString&)),
-            SLOT(errorCode(const QString&, const QString&)));
-    connect(d->p, SIGNAL(Files(const QString&, const QString&)),
-            SLOT(files(const QString&, const QString&)));
-    connect(d->p, SIGNAL(Finished(const QString&, uint)),
-            SLOT(finished(const QString&, uint)));
-    connect(d->p, SIGNAL(Message(const QString&, const QString&)),
-            SLOT(message(const QString&, const QString&)));
-    connect(d->p, SIGNAL(Package(const QString&, const QString&, const QString&)),
-            SLOT(package(const QString&, const QString&, const QString&)));
-    connect(d->p, SIGNAL(RepoDetail(const QString&, const QString&, bool)),
-            this, SIGNAL(repoDetail(const QString&, const QString&, bool)));
-    connect(d->p, SIGNAL(RepoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)),
-            SLOT(repoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
-    connect(d->p, SIGNAL(EulaRequired(const QString&, const QString&, const QString&, const QString&)),
-            SLOT(eulaRequired(const QString&, const QString&, const QString&, const QString&)));
-    connect(d->p, SIGNAL(MediaChangeRequired(const QString&, const QString&, const QString&)),
-            SLOT(mediaChangeRequired(const QString&, const QString&, const QString&)));
-    connect(d->p, SIGNAL(RequireRestart(const QString&, const QString&)),
-            SLOT(requireRestart(const QString&, const QString&)));
-    connect(d->p, SIGNAL(Transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)),
-            SLOT(transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)));
-    connect(d->p, SIGNAL(UpdateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)),
-            SLOT(updateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
+    connect(d->p, SIGNAL(Details(QString,QString,uint,QString,QString,qulonglong)),
+            SLOT(details(QString,QString,uint,QString,QString,qulonglong)));
+    connect(d->p, SIGNAL(DistroUpgrade(uint,QString,QString)),
+            SLOT(distroUpgrade(uint,QString,QString)));
+    connect(d->p, SIGNAL(ErrorCode(uint,QString)),
+            SLOT(errorCode(uint,QString)));
+    connect(d->p, SIGNAL(Files(QString,QString)),
+            SLOT(files(QString,QString)));
+    connect(d->p, SIGNAL(Finished(uint,uint)),
+            SLOT(finished(uint,uint)));
+    connect(d->p, SIGNAL(Message(uint,QString)),
+            SLOT(message(uint,QString)));
+    connect(d->p, SIGNAL(Package(uint,QString,QString)),
+            SLOT(package(uint,QString,QString)));
+    connect(d->p, SIGNAL(RepoDetail(QString,QString,bool)),
+            this, SIGNAL(repoDetail(QString,QString,bool)));
+    connect(d->p, SIGNAL(RepoSignatureRequired(QString,QString,QString,QString,QString, QString,QString,uint)),
+            SLOT(repoSignatureRequired(QString,QString,QString,QString,QString, QString,QString,uint)));
+    connect(d->p, SIGNAL(EulaRequired(QString,QString,QString,QString)),
+            SLOT(eulaRequired(QString,QString,QString,QString)));
+    connect(d->p, SIGNAL(MediaChangeRequired(uint,QString,QString)),
+            SLOT(mediaChangeRequired(uint,QString,QString)));
+    connect(d->p, SIGNAL(ItemProgress(QString,uint)),
+            SIGNAL(ItemProgress(QString,uint)));
+    connect(d->p, SIGNAL(RequireRestart(uint,QString)),
+            SLOT(requireRestart(uint,QString)));
+    connect(d->p, SIGNAL(Transaction(QString,QString,bool,uint,uint,QString,uint,QString)),
+            SLOT(transaction(QString,QString,bool,uint,uint,QString,uint,QString)));
+    connect(d->p, SIGNAL(UpdateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)),
+            SLOT(updateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)));
 
 }
 
 Transaction::Transaction(const QString &tid,
                          const QString &timespec,
                          bool succeeded,
-                         const QString &role,
+                         Role role,
                          uint duration,
                          const QString &data,
                          uint uid,
@@ -155,7 +157,7 @@ Transaction::Transaction(const QString &tid,
     d->tid = tid;
     d->timespec = QDateTime::fromString(timespec, Qt::ISODate);
     d->succeeded = succeeded;
-    d->role = static_cast<Transaction::Role>(Util::enumFromString<Transaction>(role, "Role", "Role"));
+    d->role = role;
     d->duration = duration;
     d->data = data;
     d->uid = uid;
@@ -267,9 +269,9 @@ Transaction::Role Transaction::role() const
     }
 
     if (d->destroyed) {
-        return Transaction::UnknownRole;
+        return Transaction::RoleUnknown;
     }
-    return static_cast<Transaction::Role>(Util::enumFromString<Transaction>(d->p->role(), "Role", "Role"));
+    return static_cast<Transaction::Role>(d->p->role());
 }
 
 void Transaction::setHints(const QStringList &hints)
@@ -289,9 +291,9 @@ Transaction::Status Transaction::status() const
 {
     Q_D(const Transaction);
     if (d->destroyed) {
-        return Transaction::UnknownStatus;
+        return Transaction::StatusUnknown;
     }
-    return static_cast<Transaction::Status>(Util::enumFromString<Transaction>(d->p->status(), "Status", "Status"));
+    return static_cast<Transaction::Status>(d->p->status());
 }
 
 QDateTime Transaction::timespec() const
@@ -355,7 +357,7 @@ void Transaction::getCategories()
 
 void Transaction::getDepends(const QList<Package> &packages, Transaction::Filters filters, bool recursive)
 {
-    RUN_TRANSACTION(GetDepends(TransactionPrivate::filtersToString(filters), Util::packageListToPids(packages), recursive))
+    RUN_TRANSACTION(GetDepends(filters, Util::packageListToPids(packages), recursive))
 }
 
 void Transaction::getDepends(const Package &package, Transaction::Filters filters, bool recursive)
@@ -390,17 +392,17 @@ void Transaction::getOldTransactions(uint number)
 
 void Transaction::getPackages(Transaction::Filters filters)
 {
-    RUN_TRANSACTION(GetPackages(TransactionPrivate::filtersToString(filters)))
+    RUN_TRANSACTION(GetPackages(filters))
 }
 
 void Transaction::getRepoList(Transaction::Filters filters)
 {
-    RUN_TRANSACTION(GetRepoList(TransactionPrivate::filtersToString(filters)))
+    RUN_TRANSACTION(GetRepoList(filters))
 }
 
 void Transaction::getRequires(const QList<Package> &packages, Transaction::Filters filters, bool recursive)
 {
-    RUN_TRANSACTION(GetRequires(TransactionPrivate::filtersToString(filters), Util::packageListToPids(packages), recursive))
+    RUN_TRANSACTION(GetRequires(filters, Util::packageListToPids(packages), recursive))
 }
 
 void Transaction::getRequires(const Package &package, Transaction::Filters filters, bool recursive)
@@ -420,7 +422,7 @@ void Transaction::getUpdateDetail(const Package &package)
 
 void Transaction::getUpdates(Transaction::Filters filters)
 {
-    RUN_TRANSACTION(GetUpdates(TransactionPrivate::filtersToString(filters)))
+    RUN_TRANSACTION(GetUpdates(filters))
 }
 
 void Transaction::getDistroUpgrades()
@@ -428,29 +430,29 @@ void Transaction::getDistroUpgrades()
     RUN_TRANSACTION(GetDistroUpgrades())
 }
 
-void Transaction::installFiles(const QStringList &files, bool onlyTrusted)
+void Transaction::installFiles(const QStringList &files, TransactionFlags flags)
 {
-    RUN_TRANSACTION(InstallFiles(onlyTrusted, files))
+    RUN_TRANSACTION(InstallFiles(flags, files))
 }
 
-void Transaction::installFile(const QString &file, bool onlyTrusted)
+void Transaction::installFile(const QString &file, TransactionFlags flags)
 {
-    installFiles(QStringList() << file, onlyTrusted);
+    installFiles(QStringList() << file, flags);
 }
 
-void Transaction::installPackages(const QList<Package> &packages, bool onlyTrusted)
+void Transaction::installPackages(const QList<Package> &packages, TransactionFlags flags)
 {
-    RUN_TRANSACTION(InstallPackages(onlyTrusted, Util::packageListToPids(packages)))
+    RUN_TRANSACTION(InstallPackages(flags, Util::packageListToPids(packages)))
 }
 
-void Transaction::installPackage(const Package &package, bool onlyTrusted)
+void Transaction::installPackage(const Package &package, TransactionFlags flags)
 {
-    installPackages(QList<Package>() << package, onlyTrusted);
+    installPackages(QList<Package>() << package, flags);
 }
 
 void Transaction::installSignature(const Signature &sig)
 {
-    RUN_TRANSACTION(InstallSignature(Util::enumToString<Signature>(sig.type, "Type", "Signature"),
+    RUN_TRANSACTION(InstallSignature(sig.type,
                                      sig.keyId,
                                      sig.package.id()))
 }
@@ -460,19 +462,19 @@ void Transaction::refreshCache(bool force)
     RUN_TRANSACTION(RefreshCache(force))
 }
 
-void Transaction::removePackages(const QList<Package> &packages, bool allowDeps, bool autoremove)
+void Transaction::removePackages(const QList<Package> &packages, bool allowDeps, bool autoremove, TransactionFlags flags)
 {
-    RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allowDeps, autoremove))
+    RUN_TRANSACTION(RemovePackages(flags, Util::packageListToPids(packages), allowDeps, autoremove))
 }
 
-void Transaction::removePackage(const Package &package, bool allowDeps, bool autoremove)
+void Transaction::removePackage(const Package &package, bool allowDeps, bool autoremove, TransactionFlags flags)
 {
-    removePackages(QList<Package>() << package, allowDeps, autoremove);
+    removePackages(QList<Package>() << package, allowDeps, autoremove, flags);
 }
 
-void Transaction::repairSystem(bool onlyTrusted)
+void Transaction::repairSystem(TransactionFlags flags)
 {
-    RUN_TRANSACTION(RepairSystem(onlyTrusted))
+    RUN_TRANSACTION(RepairSystem(flags))
 }
 
 void Transaction::repoEnable(const QString &repoId, bool enable)
@@ -487,7 +489,7 @@ void Transaction::repoSetData(const QString &repoId, const QString &parameter, c
 
 void Transaction::resolve(const QStringList &packageNames, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(Resolve(TransactionPrivate::filtersToString(filters), packageNames))
+    RUN_TRANSACTION(Resolve(filters, packageNames))
 }
 
 void Transaction::resolve(const QString &packageName, Transaction::Filters filters)
@@ -497,7 +499,7 @@ void Transaction::resolve(const QString &packageName, Transaction::Filters filte
 
 void Transaction::searchFiles(const QStringList &search, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(SearchFiles(TransactionPrivate::filtersToString(filters), search))
+    RUN_TRANSACTION(SearchFiles(filters, search))
 }
 
 void Transaction::searchFiles(const QString &search, Transaction::Filters filters)
@@ -507,7 +509,7 @@ void Transaction::searchFiles(const QString &search, Transaction::Filters filter
 
 void Transaction::searchDetails(const QStringList &search, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(SearchDetails(TransactionPrivate::filtersToString(filters), search))
+    RUN_TRANSACTION(SearchDetails(filters, search))
 }
 
 void Transaction::searchDetails(const QString &search, Transaction::Filters filters)
@@ -517,7 +519,7 @@ void Transaction::searchDetails(const QString &search, Transaction::Filters filt
 
 void Transaction::searchGroups(const QStringList &groups, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(SearchGroups(TransactionPrivate::filtersToString(filters), groups))
+    RUN_TRANSACTION(SearchGroups(filters, groups))
 }
 
 void Transaction::searchGroup(const QString &group, Transaction::Filters filters)
@@ -542,57 +544,12 @@ void Transaction::searchGroup(Package::Group group, Transaction::Filters filters
 
 void Transaction::searchNames(const QStringList &search, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(SearchNames(TransactionPrivate::filtersToString(filters), search))
+    RUN_TRANSACTION(SearchNames(filters, search))
 }
 
 void Transaction::searchNames(const QString &search, Transaction::Filters filters)
 {
     searchNames(QStringList() << search, filters);
-}
-
-void Transaction::simulateInstallFiles(const QStringList &files)
-{
-    RUN_TRANSACTION(SimulateInstallFiles(files))
-}
-
-void Transaction::simulateInstallFile(const QString &file)
-{
-    simulateInstallFiles(QStringList() << file);
-}
-
-void Transaction::simulateInstallPackages(const QList<Package> &packages)
-{
-    RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
-}
-
-void Transaction::simulateInstallPackage(const Package &package)
-{
-    simulateInstallPackages(QList<Package>() << package);
-}
-
-void Transaction::simulateRemovePackages(const QList<Package> &packages, bool autoremove)
-{
-    RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages), autoremove))
-}
-
-void Transaction::simulateRemovePackage(const Package &package, bool autoremove)
-{
-    simulateRemovePackages(QList<Package>() << package, autoremove);
-}
-
-void Transaction::simulateUpdatePackages(const QList<Package> &packages)
-{
-    RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
-}
-
-void Transaction::simulateUpdatePackage(const Package &package)
-{
-    simulateUpdatePackages(QList<Package>() << package);
-}
-
-void Transaction::simulateRepairSystem()
-{
-    RUN_TRANSACTION(SimulateRepairSystem())
 }
 
 void Transaction::updatePackages(const QList<Package> &packages, bool onlyTrusted)
@@ -612,12 +569,12 @@ void Transaction::updateSystem(bool onlyTrusted)
 
 void Transaction::upgradeSystem(const QString &distroId, UpgradeKind kind)
 {
-    RUN_TRANSACTION(UpgradeSystem(distroId, Util::enumToString<Transaction>(kind, "UpgradeKind", "UpgradeKind")))
+    RUN_TRANSACTION(UpgradeSystem(distroId, kind))
 }
 
 void Transaction::whatProvides(Transaction::Provides type, const QStringList &search, Transaction::Filters filters)
 {
-    RUN_TRANSACTION(WhatProvides(TransactionPrivate::filtersToString(filters), Util::enumToString<Transaction>(type, "Provides", "Provides"), search))
+    RUN_TRANSACTION(WhatProvides(filters, type, search))
 }
 
 void Transaction::whatProvides(Transaction::Provides type, const QString &search, Transaction::Filters filters)

@@ -36,7 +36,7 @@ public:
      * Describes a signature type
      */
     typedef enum {
-        UnknownType,
+        TypeUnknown,
         TypeGpg
     } Type;
 

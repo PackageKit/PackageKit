@@ -61,6 +61,7 @@ class Transaction : public QObject
     Q_ENUMS(MediaType)
     Q_ENUMS(Provides)
     Q_ENUMS(DistroUpgrade)
+    Q_ENUMS(TransactionFlag)
 public:
     /**
      * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
@@ -69,7 +70,7 @@ public:
      */
     typedef enum {
         NoInternalError = 0,
-        UnkownInternalError,
+        InternalErrorUnkown,
         InternalErrorFailed,
         InternalErrorFailedAuth,
         InternalErrorNoTid,
@@ -86,7 +87,7 @@ public:
      * Describes the role of the transaction
      */
     typedef enum {
-        UnknownRole,
+        RoleUnknown,
         RoleCancel,
         RoleGetDepends,
         RoleGetDetails,
@@ -116,19 +117,16 @@ public:
         RoleGetDistroUpgrades,
         RoleGetCategories,
         RoleGetOldTransactions,
-        RoleSimulateInstallFiles,
-        RoleSimulateInstallPackages,
-        RoleSimulateRemovePackages,
-        RoleSimulateUpdatePackages,
-        RoleUpgradeSystem // Since 0.6.11
+        RoleUpgradeSystem, // Since 0.6.11
+        RoleRepairSystem // Since 0.7.2
     } Role;
-    typedef Bitfield Roles;
+    Q_DECLARE_FLAGS(Roles, Role)
 
     /**
      * Describes the different types of error
      */
     typedef enum {
-        UnknownError,
+        ErrorUnknown,
         ErrorOom,
         ErrorNoNetwork,
         ErrorNotSupported,
@@ -202,7 +200,7 @@ public:
      * \sa Transaction::finished()
      */
     typedef enum {
-        UnknownExit,
+        ExitUnknown,
         ExitSuccess,
         ExitFailed,
         ExitCancelled,
@@ -219,7 +217,7 @@ public:
      * Describes the different package filters
      */
     typedef enum {
-        UnknownFilter        = 0x0000001,
+        FilterUnknown        = 0x0000001,
         FilterNone           = 0x0000002,
         FilterInstalled      = 0x0000004,
         FilterNotInstalled   = 0x0000008,
@@ -277,7 +275,7 @@ public:
      * Describes the current state of the transaction
      */
     typedef enum {
-        UnknownStatus,
+        StatusUnknown,
         StatusWait,
         StatusSetup,
         StatusRunning,
@@ -319,7 +317,7 @@ public:
      * Describes what kind of media is required
      */
     typedef enum {
-        UnknownMediaType,
+        MediaTypeUnknown,
         MediaTypeCd,
         MediaTypeDvd,
         MediaTypeDisc
@@ -330,7 +328,7 @@ public:
      * \sa whatProvides
      */
     typedef enum {
-        UnknownProvides,
+        ProvidesUnknown,
         ProvidesAny,
         ProvidesModalias,
         ProvidesCodec,
@@ -348,7 +346,7 @@ public:
      * Describes an distro upgrade state
      */
     typedef enum {
-        UnknownDistroUpgrade,
+        DistroUpgradeUnknown,
         DistroUpgradeStable,
         DistroUpgradeUnstable
     } DistroUpgrade;
@@ -358,11 +356,23 @@ public:
      * \sa upgradeSystem()
      */
     typedef enum {
-        UnknownUpgradeKind,
+        UpgradeKindUnknown,
         UpgradeKindMinimal,
-        upgradeKindDefault,
-        upgradeKindComplete
+        UpgradeKindDefault,
+        UpgradeKindComplete
     } UpgradeKind;
+
+    /**
+     * Describes the type of distribution upgrade to perform
+     * \sa upgradeSystem()
+     */
+    typedef enum {
+        TransactionFlagNone,        // Since: 0.8.1
+        TransactionFlagOnlyTrusted, // Since: 0.8.1
+        TransactionFlagSimulate,    // Since: 0.8.1
+        TransactionFlagOnlyDownload // Since: 0.8.1
+    } TransactionFlag;
+    Q_DECLARE_FLAGS(TransactionFlags, TransactionFlag)
 
     /**
      * Create a transaction object with a new transaction id
@@ -693,13 +703,13 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void installFiles(const QStringList &files, bool onlyTrusted = true);
+    void installFiles(const QStringList &files, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Convenience function to install a file
-     * \sa installFiles(const QStringList &files, bool onlyTrusted = true)
+     * \sa installFiles(const QStringList &files, TransactionFlags flags = TransactionFlagNone)
      */
-    void installFile(const QString &file, bool onlyTrusted = true);
+    void installFile(const QString &file, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Install the given \p packages
@@ -709,13 +719,13 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void installPackages(const QList<Package> &packages, bool onlyTrusted = true);
+    void installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Convenience function to install a package
-     * \sa installPackages(const QList<Package> &packages, bool onlyTrusted = true)
+     * \sa installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagNone)
      */
-    void installPackage(const Package &package, bool onlyTrusted = true);
+    void installPackage(const Package &package, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * \brief Installs a signature
@@ -741,19 +751,19 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false);
+    void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Convenience function to remove a package
      * \sa removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false)
      */
-    void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false);
+    void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Repairs a broken system
      * \sa simulateRepairSystem();
      */
-    void repairSystem(bool onlyTrusted = true);
+    void repairSystem(TransactionFlags flags = TransactionFlagNone);
 
     /**
      * Activates or disables a repository
@@ -856,86 +866,6 @@ public:
      * \sa searchNames(const QStringList &search, Filters filters = FilterNone)
      */
     void searchNames(const QString &search, Filters filters = FilterNone);
-
-    /**
-     * \brief Simulates an installation of \p files.
-     *
-     * You should call this method before installing \p files
-     * \note: This method typically emits package() and errorCode()
-     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
-     * REINSTALLING, OBSOLETING or UNTRUSTED status.
-     * The later is used to present the user untrusted packages
-     * that are about to be installed.
-     */
-    void simulateInstallFiles(const QStringList &files);
-
-    /**
-     * Convenience function to simulate the install of a file
-     * \sa simulateInstallFiles(const QStringList &files)
-     */
-    void simulateInstallFile(const QString &file);
-
-    /**
-     * \brief Simulates an installation of \p packages.
-     *
-     * You should call this method before installing \p packages
-     * \note: This method typically emits package() and errorCode()
-     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
-     * REINSTALLING, OBSOLETING or UNTRUSTED status.
-     * The later is used to present the user untrusted packages
-     * that are about to be installed.
-     */
-    void simulateInstallPackages(const QList<Package> &packages);
-
-    /**
-     * Convenience function to simulate the install of a package
-     * \sa simulateInstallPackages(const QList<Package> &packages)
-     */
-    void simulateInstallPackage(const Package &package);
-
-    /**
-     * \brief Simulates a removal of \p packages.
-     *
-     * You should call this method before removing \p packages
-     * \note: This method typically emits package() and errorCode()
-     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
-     * REINSTALLING, OBSOLETING or UNTRUSTED status.
-     * The later is used to present the user untrusted packages
-     * that are about to be installed.
-     */
-    void simulateRemovePackages(const QList<Package> &packages, bool autoRemove = false);
-
-    /**
-     * Convenience function to simulate the removal of a package
-     * \sa simulateRemovePackages(const QList<Package> &packages, bool autoRemove = false)
-     */
-    void simulateRemovePackage(const Package &package, bool autoRemove = false);
-
-    /**
-     * \brief Simulates an update of \p packages.
-     *
-     * You should call this method before updating \p packages
-     * \note: This method typically emits package() and errorCode()
-     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
-     * REINSTALLING, OBSOLETING or UNTRUSTED status.
-     * The later is used to present the user untrusted packages
-     * that are about to be installed.
-     */
-    void simulateUpdatePackages(const QList<Package> &packages);
-
-    /**
-     * Convenience function to simulate the update of a package
-     * \sa simulateUpdatePackages(const QList<Package> &packages)
-     */
-    void simulateUpdatePackage(const Package &package);
-
-    /**
-     * Tries to fix a broken system
-     * \note this function will emit packages that describe the actions
-     * the backend will take
-     * \sa repairSystem(bool);
-     */
-    void simulateRepairSystem();
 
     /**
      * Update the given \p packages
@@ -1053,6 +983,12 @@ Q_SIGNALS:
     void mediaChangeRequired(PackageKit::Transaction::MediaType type, const QString &id, const QString &text);
 
     /**
+     * Sends the \p item current progress \p percentage
+     * Currently only a package id is emitted
+     */
+    void ItemProgress(const QString &id, uint percentage);
+
+    /**
      * Sends the \p filenames contained in package \p package
      * \sa getFiles()
      */
@@ -1109,7 +1045,7 @@ private:
     Transaction(const QString &tid,
                 const QString &timespec,
                 bool succeeded,
-                const QString &role,
+                Role role,
                 uint duration,
                 const QString &data,
                 uint uid,
@@ -1117,19 +1053,19 @@ private:
                 QObject *parent);
     Q_DECLARE_PRIVATE(Transaction);
     Q_DISABLE_COPY(Transaction)
-    Q_PRIVATE_SLOT(d_ptr, void details(const QString& pid, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size));
-    Q_PRIVATE_SLOT(d_ptr, void distroUpgrade(const QString& type, const QString& name, const QString& description));
-    Q_PRIVATE_SLOT(d_ptr, void errorCode(const QString& error, const QString& details));
-    Q_PRIVATE_SLOT(d_ptr, void eulaRequired(const QString& eulaId, const QString& pid, const QString& vendor, const QString& licenseAgreement));
-    Q_PRIVATE_SLOT(d_ptr, void mediaChangeRequired(const QString& mediaType, const QString& mediaId, const QString& mediaText));
-    Q_PRIVATE_SLOT(d_ptr, void files(const QString& pid, const QString& filenames));
-    Q_PRIVATE_SLOT(d_ptr, void finished(const QString& exitCode, uint runtime));
-    Q_PRIVATE_SLOT(d_ptr, void message(const QString& type, const QString& message));
-    Q_PRIVATE_SLOT(d_ptr, void package(const QString& info, const QString& pid, const QString& summary));
-    Q_PRIVATE_SLOT(d_ptr, void repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString &keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type));
-    Q_PRIVATE_SLOT(d_ptr, void requireRestart(const QString& type, const QString& pid));
-    Q_PRIVATE_SLOT(d_ptr, void transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline));
-    Q_PRIVATE_SLOT(d_ptr, void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated));
+    Q_PRIVATE_SLOT(d_ptr, void details(const QString &pid, const QString &license, uint group, const QString &detail, const QString &url, qulonglong size));
+    Q_PRIVATE_SLOT(d_ptr, void distroUpgrade(uint type, const QString &name, const QString &description));
+    Q_PRIVATE_SLOT(d_ptr, void errorCode(uint error, const QString &details));
+    Q_PRIVATE_SLOT(d_ptr, void eulaRequired(const QString &eulaId, const QString &pid, const QString &vendor, const QString &licenseAgreement));
+    Q_PRIVATE_SLOT(d_ptr, void mediaChangeRequired(uint mediaType, const QString &mediaId, const QString &mediaText));
+    Q_PRIVATE_SLOT(d_ptr, void files(const QString &pid, const QString &filenames));
+    Q_PRIVATE_SLOT(d_ptr, void finished(uint exitCode, uint runtime));
+    Q_PRIVATE_SLOT(d_ptr, void message(uint type, const QString &message));
+    Q_PRIVATE_SLOT(d_ptr, void package(uint info, const QString &pid, const QString &summary));
+    Q_PRIVATE_SLOT(d_ptr, void repoSignatureRequired(const QString &pid, const QString &repoName, const QString &keyUrl, const QString &keyUserid, const QString &keyId, const QString &keyFingerprint, const QString &keyTimestamp, uint type));
+    Q_PRIVATE_SLOT(d_ptr, void requireRestart(uint type, const QString &pid));
+    Q_PRIVATE_SLOT(d_ptr, void transaction(const QString &oldTid, const QString &timespec, bool succeeded, uint role, uint duration, const QString &data, uint uid, const QString &cmdline));
+    Q_PRIVATE_SLOT(d_ptr, void updateDetail(const QString &pid, const QString &updates, const QString &obsoletes, const QString &vendorUrl, const QString &bugzillaUrl, const QString &cveUrl, uint restart, const QString &updateText, const QString &changelog, uint state, const QString &issued, const QString &updated));
     Q_PRIVATE_SLOT(d_ptr, void destroy());
     Q_PRIVATE_SLOT(d_ptr, void daemonQuit());
 };
