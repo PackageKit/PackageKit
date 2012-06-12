@@ -974,7 +974,9 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 			 function,
 			 g_module_name (plugin->module));
 		pk_transaction_set_signals (transaction, backend_signals);
+		plugin->backend = transaction->priv->backend;
 		plugin_func (plugin, transaction);
+		plugin->backend = NULL;
 	}
 out:
 	/* set this to a know state in case the plugin misbehaves */
@@ -1036,9 +1038,6 @@ void
 pk_transaction_set_backend (PkTransaction *transaction,
 			    PkBackend *backend)
 {
-	guint i;
-	PkPlugin *plugin;
-
 	/* save a reference */
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
@@ -1052,14 +1051,6 @@ pk_transaction_set_backend (PkTransaction *transaction,
 		g_signal_connect (transaction->priv->backend, "locked-changed",
 				  G_CALLBACK (pk_transaction_locked_changed_cb),
 				  transaction);
-
-	/* set the new backend on the plugins */
-	for (i = 0; i < transaction->priv->plugins->len; i++) {
-		plugin = g_ptr_array_index (transaction->priv->plugins, i);
-		if (plugin->backend != NULL)
-			g_object_unref (plugin->backend);
-		transaction->priv->backend = g_object_ref (backend);
-	}
 }
 
 /**

@@ -889,7 +889,6 @@ pk_engine_load_plugin (PkEngine *engine,
 	/* print what we know */
 	plugin = g_new0 (PkPlugin, 1);
 	plugin->module = module;
-	plugin->backend = g_object_ref (engine->priv->backend);
 	g_debug ("opened plugin %s: %s",
 		 filename, plugin_desc ());
 
@@ -950,7 +949,8 @@ static void
 pk_engine_plugin_free (PkPlugin *plugin)
 {
 	g_free (plugin->priv);
-	g_object_unref (plugin->backend);
+	if (plugin->backend != NULL)
+		g_object_unref (plugin->backend);
 	g_module_close (plugin->module);
 	g_free (plugin);
 }
@@ -994,7 +994,12 @@ pk_engine_plugin_phase (PkEngine *engine,
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
+
+		/* use the master PkBackend instance in case the plugin
+		 * wants to check if roles are supported in initialize */
+		plugin->backend = engine->priv->backend;
 		plugin_func (plugin);
+		plugin->backend = NULL;
 	}
 }
 
