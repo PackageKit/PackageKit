@@ -98,6 +98,7 @@ void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
 void		 pk_transaction_set_signals			(PkTransaction *transaction,
 								 PkBitfield backend_signals);
+void		 pk_transaction_reset_after_lock_error		(PkTransaction *transaction);
 
 G_END_DECLS
 
