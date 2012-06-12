@@ -308,9 +308,9 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	gchar *package_id;
 	gchar **updates;
 	gchar **obsoletes;
-	gchar *vendor_url;
-	gchar *bugzilla_url;
-	gchar *cve_url;
+	gchar **vendor_urls;
+	gchar **bugzilla_urls;
+	gchar **cve_urls;
 	PkRestartEnum restart;
 	gchar *update_text;
 	gchar *changelog;
@@ -324,9 +324,9 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 		      "package-id", &package_id,
 		      "updates", &updates,
 		      "obsoletes", &obsoletes,
-		      "vendor-url", &vendor_url,
-		      "bugzilla-url", &bugzilla_url,
-		      "cve-url", &cve_url,
+		      "vendor-urls", &vendor_urls,
+		      "bugzilla-urls", &bugzilla_urls,
+		      "cve-urls", &cve_urls,
 		      "restart", &restart,
 		      "update-text", &update_text,
 		      "changelog", &changelog,
@@ -355,17 +355,23 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 		g_print (" %s: %s\n", _("Obsoletes"), tmp);
 		g_free (tmp);
 	}
-	if (vendor_url != NULL) {
+	if (vendor_urls != NULL) {
+		tmp = g_strjoinv (", ", vendor_urls);
 		/* TRANSLATORS: details about the update, the vendor URLs */
-		g_print (" %s: %s\n", _("Vendor"), vendor_url);
+		g_print (" %s: %s\n", _("Vendor"), tmp);
+		g_free (tmp);
 	}
-	if (bugzilla_url != NULL) {
+	if (bugzilla_urls != NULL) {
+		tmp = g_strjoinv (", ", bugzilla_urls);
 		/* TRANSLATORS: details about the update, the bugzilla URLs */
-		g_print (" %s: %s\n", _("Bugzilla"), bugzilla_url);
+		g_print (" %s: %s\n", _("Bugzilla"), tmp);
+		g_free (tmp);
 	}
-	if (cve_url != NULL) {
+	if (cve_urls != NULL) {
+		tmp = g_strjoinv (", ", cve_urls);
 		/* TRANSLATORS: details about the update, the CVE URLs */
-		g_print (" %s: %s\n", _("CVE"), cve_url);
+		g_print (" %s: %s\n", _("CVE"), tmp);
+		g_free (tmp);
 	}
 	if (restart != PK_RESTART_ENUM_NONE) {
 		/* TRANSLATORS: details about the update, if the package requires a restart */
@@ -395,9 +401,9 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	g_free (package_id);
 	g_strfreev (updates);
 	g_strfreev (obsoletes);
-	g_free (vendor_url);
-	g_free (bugzilla_url);
-	g_free (cve_url);
+	g_strfreev (vendor_urls);
+	g_strfreev (bugzilla_urls);
+	g_strfreev (cve_urls);
 	g_free (update_text);
 	g_free (changelog);
 	g_free (issued);

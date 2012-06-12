@@ -2256,33 +2256,31 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="vendor_url" direction="out">
+      <arg type="as" name="vendor_urls" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A URL with more details on the update, e.g. a page with more
+              A list of URLs with more details on the update, e.g. a page with more
               information on the update.
-              The format of this command should be
-              <doc:tt>http://www.foo.org/page.html?4567;Update to SELinux</doc:tt>
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="bugzilla_url" direction="out">
+      <arg type="as" name="bugzilla_urls" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A bugzilla URL with more details on the update.
-              If no URL is available then this field should be left empty.
+              A list of bugzilla URL with more details on the update.
+              If no URLs are available then this field should be left empty.
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="cve_url" direction="out">
+      <arg type="as" name="cve_urls" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A CVE URL with more details on the security advisory.
+              A list of CVE URLs with more details on the security advisory.
             </doc:para>
           </doc:summary>
         </doc:doc>

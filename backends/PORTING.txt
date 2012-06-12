@@ -38,6 +38,11 @@ Guide to porting backends from 0.7.x to 0.8.x
    the updates and obsoletes fields. No change is required for spawned
    backends.
 
+ * pk_backend_update_detail now takes a gchar** rather than a gchar* for
+   the vendor_urls, bugzilla_urls and cve_urls fields.
+   All backends should remove any URL title (the bit before the ';') and
+   *just* send the array of raw URLs.
+
  * Add calls to pk_backend_set_locked() to declare when your backend holds
    write-lock on it's database. PackageKit will spawn multiple transactions
    which can read the database at any time. Not using this method will cause

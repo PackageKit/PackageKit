@@ -1748,9 +1748,9 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 	gchar *package_id;
 	gchar **updates;
 	gchar **obsoletes;
-	gchar *vendor_url;
-	gchar *bugzilla_url;
-	gchar *cve_url;
+	gchar **vendor_urls;
+	gchar **bugzilla_urls;
+	gchar **cve_urls;
 	gchar *update_text;
 	gchar *changelog;
 	gchar *issued;
@@ -1771,9 +1771,9 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 		      "package-id", &package_id,
 		      "updates", &updates,
 		      "obsoletes", &obsoletes,
-		      "vendor-url", &vendor_url,
-		      "bugzilla-url", &bugzilla_url,
-		      "cve-url", &cve_url,
+		      "vendor-urls", &vendor_urls,
+		      "bugzilla-urls", &bugzilla_urls,
+		      "cve-urls", &cve_urls,
 		      "update-text", &update_text,
 		      "changelog", &changelog,
 		      "issued", &issued,
@@ -1787,13 +1787,13 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "UpdateDetail",
-				       g_variant_new ("(s^as^assssussuss)",
+				       g_variant_new ("(s^as^as^as^as^asussuss)",
 						      package_id,
 						      updates != NULL ? updates : empty,
 						      obsoletes != NULL ? obsoletes : empty,
-						      vendor_url != NULL ? vendor_url : "",
-						      bugzilla_url != NULL ? bugzilla_url : "",
-						      cve_url != NULL ? cve_url : "",
+						      vendor_urls != NULL ? vendor_urls : empty,
+						      bugzilla_urls != NULL ? bugzilla_urls : empty,
+						      cve_urls != NULL ? cve_urls : empty,
 						      restart,
 						      update_text != NULL ? update_text : "",
 						      changelog != NULL ? changelog : "",
@@ -1805,9 +1805,9 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 	g_free (package_id);
 	g_strfreev (updates);
 	g_strfreev (obsoletes);
-	g_free (vendor_url);
-	g_free (bugzilla_url);
-	g_free (cve_url);
+	g_strfreev (vendor_urls);
+	g_strfreev (bugzilla_urls);
+	g_strfreev (cve_urls);
 	g_free (update_text);
 	g_free (changelog);
 	g_free (issued);

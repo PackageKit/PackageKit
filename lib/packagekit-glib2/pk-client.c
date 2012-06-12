@@ -1079,6 +1079,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 {
 	PkClientState *state = (PkClientState *) user_data;
 	gchar *tmp_str[12];
+	gchar **tmp_strv[5];
 	gboolean tmp_bool;
 	guint tmp_uint;
 	guint tmp_uint2;
@@ -1152,16 +1153,14 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
 		PkUpdateDetail *item;
-		gchar **updates;
-		gchar **obsoletes;
 		g_variant_get (parameters,
-			       "(&s^a&s^a&s&s&s&su&s&su&s&s)",
+			       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
 			       &tmp_str[0],
-			       &updates,
-			       &obsoletes,
-			       &tmp_str[3],
-			       &tmp_str[4],
-			       &tmp_str[5],
+			       &tmp_strv[0],
+			       &tmp_strv[1],
+			       &tmp_strv[2],
+			       &tmp_strv[3],
+			       &tmp_strv[4],
 			       &tmp_uint,
 			       &tmp_str[7],
 			       &tmp_str[8],
@@ -1171,11 +1170,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		item = pk_update_detail_new ();
 		g_object_set (item,
 			      "package-id", tmp_str[0],
-			      "updates", updates[0] != NULL ? updates : NULL,
-			      "obsoletes", obsoletes[0] != NULL ? obsoletes : NULL,
-			      "vendor-url", tmp_str[3],
-			      "bugzilla-url", tmp_str[4],
-			      "cve-url", tmp_str[5],
+			      "updates", tmp_strv[0][0] != NULL ? tmp_strv[0] : NULL,
+			      "obsoletes", tmp_strv[1][0] != NULL ? tmp_strv[1] : NULL,
+			      "vendor-urls", tmp_strv[2][0] != NULL ? tmp_strv[2] : NULL,
+			      "bugzilla-urls", tmp_strv[3][0] != NULL ? tmp_strv[3] : NULL,
+			      "cve-urls", tmp_strv[4][0] != NULL ? tmp_strv[4] : NULL,
 			      "restart", tmp_uint,
 			      "update-text", tmp_str[7],
 			      "changelog", tmp_str[8],

@@ -306,50 +306,80 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	pk_backend_set_percentage (backend, 0);
 	len = g_strv_length (_package_ids);
 	for (i=0; i<len; i++) {
-		const gchar *to_array[] = { NULL, NULL, NULL };
+		const gchar *to_array1[] = { NULL, NULL, NULL };
+		const gchar *to_array2[] = { NULL, NULL, NULL };
+		const gchar *to_array3[] = { NULL, NULL, NULL };
+		const gchar *to_array4[] = { NULL, NULL, NULL };
 		package_id = _package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
-			to_array[0] = "powertop;1.7-1.fc8;i386;installed";
+			to_array1[0] = "powertop;1.7-1.fc8;i386;installed";
+			to_array2[0] = "http://www.distro-update.org/page?moo";
+			to_array3[0] = "http://bgzilla.fd.org/result.php?#12344";
 			pk_backend_update_detail (backend, package_id,
-						  (gchar**) to_array, NULL,
-						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
-						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
-						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2009-11-17T09:19:00", "2009-11-19T09:19:00");
+						  (gchar**) to_array1,
+						  NULL,
+						  (gchar**) to_array2,
+						  (gchar**) to_array3,
+						  NULL,
+						  PK_RESTART_ENUM_NONE,
+						  "Update to newest upstream source",
+						  changelog, PK_UPDATE_STATE_ENUM_STABLE,
+						  "2009-11-17T09:19:00", "2009-11-19T09:19:00");
 		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
-			to_array[0] = "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed";
-			to_array[1] = "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed";
+			to_array1[0] = "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed";
+			to_array1[1] = "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed";
+			to_array2[0] = "http://www.distro-update.org/page?moo";
+			to_array3[0] = "http://bgzilla.fd.org/result.php?#12344";
+			to_array3[1] = "http://bgzilla.gnome.org/result.php?#9876";
+			to_array4[0] = "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381";
 			pk_backend_update_detail (backend, package_id,
-						  (gchar**) to_array, NULL,
-						  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
-						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
-						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-						  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
+						  (gchar**) to_array1,
+						  NULL,
+						  (gchar**) to_array2,
+						  (gchar**) to_array3,
+						  (gchar**) to_array4,
 						  PK_RESTART_ENUM_SYSTEM,
 						  "Update to newest upstream version.\n"
 						  "* This should fix many driver bugs when using nouveau\n"
 						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
-						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28T09:19:00", NULL);
+						  changelog,
+						  PK_UPDATE_STATE_ENUM_UNSTABLE,
+						  "2008-06-28T09:19:00",
+						  NULL);
 		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
-			to_array[0] = "gtkhtml2;2.18.1-22.fc8;i386;installed";
+			to_array1[0] = "gtkhtml2;2.18.1-22.fc8;i386;installed";
+			to_array2[0] = "http://www.distro-update.org/page?moo";
+			to_array3[0] = "http://bgzilla.gnome.org/result.php?#9876";
 			pk_backend_update_detail (backend, package_id,
-						  (gchar**) to_array, NULL,
-						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
-						  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
-						  NULL, PK_RESTART_ENUM_SESSION,
+						  (gchar**) to_array1,
+						  NULL,
+						  (gchar**) to_array2,
+						  (gchar**) to_array3,
+						  NULL,
+						  PK_RESTART_ENUM_SESSION,
 						  "Update to latest *whizz* **bang** version\n"
 						  "* support this new thing\n"
 						  "* something else\n"
 						  "- and that new thing",
-						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25T09:19:00", NULL);
+						  changelog,
+						  PK_UPDATE_STATE_ENUM_UNKNOWN,
+						  "2008-07-25T09:19:00",
+						  NULL);
 
 		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
-			to_array[0] = "vino;2.24.1.fc9;i386;fedora";
+			to_array1[0] = "vino;2.24.1.fc9;i386;fedora";
 			pk_backend_update_detail (backend, package_id,
-						  (gchar**) to_array, NULL,
-						  NULL, "", NULL, PK_RESTART_ENUM_NONE,
+						  (gchar**) to_array1,
+						  NULL,
+						  NULL,
+						  NULL,
+						  NULL,
+						  PK_RESTART_ENUM_NONE,
 						  "Cannot get update as update conflics with vncviewer",
-						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
+						  changelog,
+						  PK_UPDATE_STATE_ENUM_UNKNOWN,
+						  "2008-07-25",
+						  NULL);
 		} else {
 			/* signal to UI */
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);

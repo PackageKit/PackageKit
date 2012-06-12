@@ -274,6 +274,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
 		gchar **updates;
 		gchar **obsoletes;
+		gchar **vendor_urls;
+		gchar **bugzilla_urls;
+		gchar **cve_urls;
 		if (size != 13) {
 			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
 			ret = FALSE;
@@ -291,13 +294,16 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		g_strdelimit (sections[9], ";", '\n');
 		updates = g_strsplit (sections[2], "&", -1);
 		obsoletes = g_strsplit (sections[3], "&", -1);
+		vendor_urls = g_strsplit (sections[4], ";", -1);
+		bugzilla_urls = g_strsplit (sections[5], ";", -1);
+		cve_urls = g_strsplit (sections[6], ";", -1);
 		pk_backend_update_detail (priv->backend,
 					  sections[1],
 					  updates,
 					  obsoletes,
-					  sections[4],
-					  sections[5],
-					  sections[6],
+					  vendor_urls,
+					  bugzilla_urls,
+					  cve_urls,
 					  restart,
 					  sections[8],
 					  sections[9],
@@ -306,6 +312,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 					  sections[12]);
 		g_strfreev (updates);
 		g_strfreev (obsoletes);
+		g_strfreev (vendor_urls);
+		g_strfreev (bugzilla_urls);
+		g_strfreev (cve_urls);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
