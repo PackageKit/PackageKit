@@ -327,8 +327,9 @@ main (int argc, char *argv[])
 	ret = pk_engine_load_backend (engine, &error);
 	if (!ret) {
 		/* TRANSLATORS: cannot load the backend the user specified */
-		g_print ("%s: %s\n", _("Failed to load the backend:"),
-			 backend_name);
+		g_print ("Failed to load the backend: %s",
+			 error->message);
+		g_error_free (error);
 		goto out;
 	}
 
