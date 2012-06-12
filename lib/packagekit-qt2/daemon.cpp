@@ -48,7 +48,10 @@ Daemon::Daemon(QObject *parent) :
     d_ptr(new DaemonPrivate(this))
 {
     Q_D(Daemon);
-    d->daemon = new ::DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
+    d->daemon = new ::DaemonProxy(QLatin1String(PK_NAME),
+                                  QLatin1String(PK_PATH),
+                                  QDBusConnection::systemBus(),
+                                  this);
 
     connect(d->daemon, SIGNAL(Changed()),
             this, SIGNAL(changed()));
@@ -140,25 +143,24 @@ Daemon::Authorize Daemon::canAuthorize(const QString &actionId)
     return static_cast<Daemon::Authorize>(Util::enumFromString<Daemon>(result, "Authorize", "Authorize"));
 }
 
-QString Daemon::getTid()
+QDBusObjectPath Daemon::getTid()
 {
     return global()->d_ptr->daemon->CreateTransaction();
 }
 
 uint Daemon::getTimeSinceAction(Transaction::Role role)
 {
-    QString roleName = Util::enumToString<Transaction>(role, "Role", "Role");
-    return global()->d_ptr->daemon->GetTimeSinceAction(roleName);
+    return global()->d_ptr->daemon->GetTimeSinceAction(role);
 }
 
-QStringList Daemon::getTransactions()
+QList<QDBusObjectPath> Daemon::getTransactionList()
 {
     return global()->d_ptr->daemon->GetTransactionList();
 }
 
-QList<Transaction*> Daemon::getTransactionsObj(QObject *parent)
+QList<Transaction*> Daemon::getTransactionObjects(QObject *parent)
 {
-    return global()->d_ptr->transactions(getTransactions(), parent);
+    return global()->d_ptr->transactions(getTransactionList(), parent);
 }
 
 void Daemon::setHints(const QStringList& hints)

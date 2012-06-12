@@ -43,7 +43,7 @@ protected:
 
     QStringList hints;
 
-    QList<Transaction*> transactions(const QStringList &tids, QObject *parent);
+    QList<Transaction*> transactions(const QList<QDBusObjectPath> &tids, QObject *parent);
 
     /*
      * Describes the different errors that might happen on the bus

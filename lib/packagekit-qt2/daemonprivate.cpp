@@ -30,18 +30,18 @@ using namespace PackageKit;
 DaemonPrivate::DaemonPrivate(Daemon* parent) :
     q_ptr(parent)
 {
-    m_watcher = new QDBusServiceWatcher(PK_NAME,
+    m_watcher = new QDBusServiceWatcher(QLatin1String(PK_NAME),
                                         QDBusConnection::systemBus(),
                                         QDBusServiceWatcher::WatchForUnregistration,
                                         q_ptr);
-    q_ptr->connect(m_watcher, SIGNAL(serviceUnregistered(const QString &)),
+    q_ptr->connect(m_watcher, SIGNAL(serviceUnregistered(QString)),
                    SLOT(serviceUnregistered()));
 }
 
-QList<Transaction*> DaemonPrivate::transactions(const QStringList& tids, QObject *parent)
+QList<Transaction*> DaemonPrivate::transactions(const QList<QDBusObjectPath> &tids, QObject *parent)
 {
     QList<Transaction*> transactionList;
-    foreach (const QString &tid, tids) {
+    foreach (const QDBusObjectPath &tid, tids) {
         Transaction *transaction = new Transaction(tid, parent);
         transactionList << transaction;
     }

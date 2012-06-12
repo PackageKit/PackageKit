@@ -40,7 +40,7 @@ protected:
 
     static QString filtersToString(const QFlags<PackageKit::Transaction::Filter> &flags);
 
-    QString tid;
+    QDBusObjectPath tid;
     ::TransactionProxy* p;
     Transaction *q_ptr;
 
@@ -70,7 +70,7 @@ protected Q_SLOTS:
     void package(uint info, const QString& pid, const QString& summary);
     void repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, uint type);
     void requireRestart(uint type, const QString& pid);
-    void transaction(const QString& oldTid, const QString& timespec, bool succeeded, uint role, uint duration, const QString& data, uint uid, const QString& cmdline);
+    void transaction(const QDBusObjectPath& oldTid, const QString& timespec, bool succeeded, uint role, uint duration, const QString& data, uint uid, const QString& cmdline);
     void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, uint restart, const QString& updateText, const QString& changelog, uint state, const QString& issued, const QString& updated);
     void destroy();
     void daemonQuit();

@@ -167,7 +167,7 @@ void TransactionPrivate::requireRestart(uint type, const QString &pid)
     q->requireRestart(static_cast<Package::Restart>(type), Package(pid));
 }
 
-void TransactionPrivate::transaction(const QString &oldTid,
+void TransactionPrivate::transaction(const QDBusObjectPath &oldTid,
                                      const QString &timespec,
                                      bool succeeded,
                                      uint role,

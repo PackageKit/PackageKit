@@ -164,12 +164,12 @@ public:
      * is not useful as simply creating a \c Transaction object will
      * automatically create this path.
      */
-    static QString getTid();
+    static QDBusObjectPath getTid();
 
     /**
      * Returns the list of current transactions
      */
-    static QStringList getTransactions();
+    static QList<QDBusObjectPath> getTransactionList();
 
     /**
      * Convenience function
@@ -178,7 +178,7 @@ public:
      * You must delete these yourself or pass a
      * \p parent for these comming transactions
      */
-    static QList<Transaction*> getTransactionsObj(QObject *parent = 0);
+    static QList<Transaction*> getTransactionObjects(QObject *parent = 0);
 
     /**
      * \brief Sets a global hints for all the transactions to be created

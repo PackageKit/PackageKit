@@ -49,14 +49,14 @@ Transaction::Transaction(QObject *parent) :
     init();
 }
 
-Transaction::Transaction(const QString &tid, QObject *parent) :
+Transaction::Transaction(const QDBusObjectPath &tid, QObject *parent) :
     QObject(parent),
     d_ptr(new TransactionPrivate(this))
 {
     init(tid);
 }
 
-void Transaction::init(const QString &tid)
+void Transaction::init(const QDBusObjectPath &tid)
 {
     Q_D(Transaction);
 
@@ -66,21 +66,23 @@ void Transaction::init(const QString &tid)
 
     // If the user used a null tid
     // he want us to get it
-    if (tid.isNull()) {
+    if (tid.path().isNull()) {
         d->tid = Daemon::global()->getTid();
     }
 
     int retry = 0;
     do {
         delete d->p;
-        d->p = new TransactionProxy(PK_NAME, d->tid, QDBusConnection::systemBus(), this);
-        if (d->p->lastError().isValid()) {
-            qDebug() << "Error, cannot create transaction proxy";
-            qDebug() << d->p->lastError();
+        d->p = new TransactionProxy(QLatin1String(PK_NAME),
+                                    d->tid.path(),
+                                    QDBusConnection::systemBus(),
+                                    this);
+        if (!d->p->isValid()) {
+            qDebug() << "Error, cannot create transaction proxy" << d->p->lastError();
             QDBusMessage message;
-            message = QDBusMessage::createMethodCall("org.freedesktop.DBus",
-                                                     "/",
-                                                     "org.freedesktop.DBus",
+            message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.DBus"),
+                                                     QLatin1String("/"),
+                                                     QLatin1String("org.freedesktop.DBus"),
                                                      QLatin1String("StartServiceByName"));
             message << qVariantFromValue(QString("org.freedesktop.PackageKit"));
             message << qVariantFromValue((uint) 0);
@@ -91,7 +93,7 @@ void Transaction::init(const QString &tid)
         }
     } while (retry == 1);
 
-    if (d->tid.isEmpty()) {
+    if (d->tid.path().isEmpty()) {
         d->error = Transaction::InternalErrorDaemonUnreachable;
         return;
     } else {
@@ -133,14 +135,14 @@ void Transaction::init(const QString &tid)
             SIGNAL(ItemProgress(QString,uint)));
     connect(d->p, SIGNAL(RequireRestart(uint,QString)),
             SLOT(requireRestart(uint,QString)));
-    connect(d->p, SIGNAL(Transaction(QString,QString,bool,uint,uint,QString,uint,QString)),
-            SLOT(transaction(QString,QString,bool,uint,uint,QString,uint,QString)));
+    connect(d->p, SIGNAL(Transaction(QDBusObjectPath,QString,bool,uint,uint,QString,uint,QString)),
+            SLOT(transaction(QDBusObjectPath,QString,bool,uint,uint,QString,uint,QString)));
     connect(d->p, SIGNAL(UpdateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)),
             SLOT(updateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)));
 
 }
 
-Transaction::Transaction(const QString &tid,
+Transaction::Transaction(const QDBusObjectPath &tid,
                          const QString &timespec,
                          bool succeeded,
                          Role role,
@@ -173,7 +175,7 @@ Transaction::~Transaction()
     delete d;
 }
 
-QString Transaction::tid() const
+QDBusObjectPath Transaction::tid() const
 {
     Q_D(const Transaction);
     return d->tid;

@@ -23,6 +23,7 @@
 #define PACKAGEKIT_TRANSACTION_H
 
 #include <QtCore/QObject>
+#include <QtDBus/QDBusObjectPath>
 
 #include "bitfield.h"
 #include "package.h"
@@ -397,7 +398,7 @@ public:
      * \warning after creating the transaction object be sure
      * to verify if it doesn't have any error()
      */
-    Transaction(const QString &tid, QObject *parent = 0);
+    Transaction(const QDBusObjectPath &tid, QObject *parent = 0);
 
     /**
      * Destructor
@@ -411,7 +412,7 @@ public:
      *
      * \return the TID of the current transaction
      */
-    QString tid() const;
+    QDBusObjectPath tid() const;
 
     /**
      * \brief Returns the error status of the Transaction
@@ -1041,8 +1042,8 @@ protected:
     TransactionPrivate * const d_ptr;
 
 private:
-    void init(const QString &tid = QString());
-    Transaction(const QString &tid,
+    void init(const QDBusObjectPath &tid = QDBusObjectPath());
+    Transaction(const QDBusObjectPath &tid,
                 const QString &timespec,
                 bool succeeded,
                 Role role,
@@ -1064,7 +1065,7 @@ private:
     Q_PRIVATE_SLOT(d_ptr, void package(uint info, const QString &pid, const QString &summary));
     Q_PRIVATE_SLOT(d_ptr, void repoSignatureRequired(const QString &pid, const QString &repoName, const QString &keyUrl, const QString &keyUserid, const QString &keyId, const QString &keyFingerprint, const QString &keyTimestamp, uint type));
     Q_PRIVATE_SLOT(d_ptr, void requireRestart(uint type, const QString &pid));
-    Q_PRIVATE_SLOT(d_ptr, void transaction(const QString &oldTid, const QString &timespec, bool succeeded, uint role, uint duration, const QString &data, uint uid, const QString &cmdline));
+    Q_PRIVATE_SLOT(d_ptr, void transaction(const QDBusObjectPath &oldTid, const QString &timespec, bool succeeded, uint role, uint duration, const QString &data, uint uid, const QString &cmdline));
     Q_PRIVATE_SLOT(d_ptr, void updateDetail(const QString &pid, const QString &updates, const QString &obsoletes, const QString &vendorUrl, const QString &bugzillaUrl, const QString &cveUrl, uint restart, const QString &updateText, const QString &changelog, uint state, const QString &issued, const QString &updated));
     Q_PRIVATE_SLOT(d_ptr, void destroy());
     Q_PRIVATE_SLOT(d_ptr, void daemonQuit());
