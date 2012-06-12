@@ -50,12 +50,12 @@ void getChangelogFile(const string &filename,
 /**
   * Returns a list of links pairs url;description for CVEs
   */
-string getCVEUrls(const string &changelog);
+GPtrArray* getCVEUrls(const string &changelog);
 
 /**
   * Returns a list of links pairs url;description for Debian and Ubuntu bugs
   */
-string getBugzillaUrls(const string &changelog);
+GPtrArray* getBugzillaUrls(const string &changelog);
 
 /**
   * Return if the given string ends with the other

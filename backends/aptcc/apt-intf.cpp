@@ -908,13 +908,23 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
         restart = PK_RESTART_ENUM_SYSTEM;
     }
 
+    gchar **updates;
+    updates = (gchar **) g_malloc(2 * sizeof(gchar *));
+    updates[0] = current_package_id;
+    updates[1] = NULL;
+
+    GPtrArray *bugzilla_urls;
+    GPtrArray *cve_urls;
+    bugzilla_urls = getBugzillaUrls(changelog);
+    cve_urls = getCVEUrls(changelog);
+
     pk_backend_update_detail(m_backend,
                              package_id,
-                             current_package_id,//const gchar *updates
-                             "",//const gchar *obsoletes
-                             "",//const gchar *vendor_url
-                             getBugzillaUrls(changelog).c_str(),//const gchar *bugzilla_url
-                             getCVEUrls(changelog).c_str(),//const gchar *cve_url
+                             updates,//const gchar *updates
+                             NULL,//const gchar *obsoletes
+                             NULL,//const gchar *vendor_url
+                             (gchar **) bugzilla_urls->pdata,// gchar **bugzilla_urls
+                             (gchar **) cve_urls->pdata,// gchar **cve_urls
                              restart,//PkRestartEnum restart
                              update_text.c_str(),//const gchar *update_text
                              changelog.c_str(),//const gchar *changelog
@@ -922,8 +932,12 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                              issued.c_str(), //const gchar *issued_text
                              updated.c_str() //const gchar *updated_text
                              );
+
     g_free(current_package_id);
     g_free(package_id);
+    g_strfreev(updates);
+    g_ptr_array_unref(bugzilla_urls);
+    g_ptr_array_unref(cve_urls);
 }
 
 void AptIntf::emitUpdateDetails(const PkgList &pkgs)
@@ -1788,6 +1802,10 @@ void AptIntf::updateInterface(int fd, int writeFd)
 
                 int exit_code = WEXITSTATUS(exitStatus);
                 cout << filename << " " << exit_code << " ret: "<< ret << endl;
+
+                g_free(filename);
+                g_strfreev(argv);
+                g_strfreev(envp);
 
                 if (exit_code == 10) {
                     // 1 means the user wants the package config

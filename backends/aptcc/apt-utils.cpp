@@ -146,9 +146,10 @@ void getChangelogFile(const string &filename,
     out.close();
 }
 
-string getCVEUrls(const string &changelog)
+GPtrArray* getCVEUrls(const string &changelog)
 {
-    string ret;
+    GPtrArray *cve_urls = g_ptr_array_new();
+
     // Regular expression to find cve references
     GRegex *regex;
     GMatchInfo *match_info;
@@ -160,24 +161,26 @@ string getCVEUrls(const string &changelog)
     while (g_match_info_matches(match_info)) {
         gchar *cve = g_match_info_fetch (match_info, 0);
         gchar *cveLink;
-        if (!ret.empty()) {
-            ret.append(";");
-        }
-        cveLink = g_strdup_printf("http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s;%s", cve, cve);
-        ret.append(cveLink);
-        g_free(cveLink);
+
+        cveLink = g_strdup_printf("http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve);
+        g_ptr_array_add(cve_urls, (gpointer) cveLink);
+
         g_free(cve);
         g_match_info_next(match_info, NULL);
     }
     g_match_info_free(match_info);
     g_regex_unref(regex);
 
-    return ret;
+    // NULL terminate
+    g_ptr_array_add(cve_urls, NULL);
+
+    return cve_urls;
 }
 
-string getBugzillaUrls(const string &changelog)
+GPtrArray* getBugzillaUrls(const string &changelog)
 {
-    string ret;
+    GPtrArray *bugzilla_urls = g_ptr_array_new();
+
     // Matches Ubuntu bugs
     GRegex *regex;
     GMatchInfo *match_info;
@@ -189,12 +192,10 @@ string getBugzillaUrls(const string &changelog)
     while (g_match_info_matches(match_info)) {
         gchar *bug = g_match_info_fetch_named(match_info, "bug");
         gchar *bugLink;
-        if (!ret.empty()) {
-            ret.append(";");
-        }
-        bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s;Launchpad bug #%s", bug, bug);
-        ret.append(bugLink);
-        g_free(bugLink);
+
+        bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug);
+        g_ptr_array_add(bugzilla_urls, (gpointer) bugLink);
+        
         g_free(bug);
         g_match_info_next(match_info, NULL);
     }
@@ -214,30 +215,31 @@ string getBugzillaUrls(const string &changelog)
     while (g_match_info_matches(match_info)) {
         gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
         gchar *bugLink1;
-        if (!ret.empty()) {
-            ret.append(";");
-        }
-        bugLink1 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s;Debian bug #%s", bug1, bug1);
-        ret.append(bugLink1);
+
+        bugLink1 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1);
+        g_ptr_array_add(bugzilla_urls, (gpointer) bugLink1);
+
+        g_free(bug1);
 
         gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
-        if (!ret.empty() && bug2 != NULL) {
+        if (bug2 != NULL) {
             gchar *bugLink2;
-            ret.append(";");
-            bugLink2 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s;Debian bug #%s", bug1, bug1);
-            ret.append(bugLink2);
-            g_free(bugLink2);
+
+            bugLink2 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2);
+            g_ptr_array_add(bugzilla_urls, (gpointer) bugLink2);
+
             g_free(bug2);
         }
 
-        g_free(bugLink1);
-        g_free(bug1);
         g_match_info_next(match_info, NULL);
     }
     g_match_info_free(match_info);
     g_regex_unref(regex);
 
-    return ret;
+    // NULL terminate
+    g_ptr_array_add(bugzilla_urls, NULL);
+
+    return bugzilla_urls;
 }
 
 bool ends_with(const string &str, const char *end)
