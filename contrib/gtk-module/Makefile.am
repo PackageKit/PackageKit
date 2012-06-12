@@ -1,3 +1,5 @@
+SUBDIRS = gtk2
+
 if PK_BUILD_GTK_MODULE
 APP = gedit --new-window GLASS.txt
 
