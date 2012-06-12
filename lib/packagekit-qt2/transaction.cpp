@@ -552,14 +552,14 @@ void Transaction::searchNames(const QString &search, Transaction::Filters filter
     searchNames(QStringList() << search, filters);
 }
 
-void Transaction::updatePackages(const QList<Package> &packages, bool onlyTrusted)
+void Transaction::updatePackages(const QList<Package> &packages, TransactionFlags flags)
 {
-    RUN_TRANSACTION(UpdatePackages(onlyTrusted, Util::packageListToPids(packages)))
+    RUN_TRANSACTION(UpdatePackages(flags, Util::packageListToPids(packages)))
 }
 
-void Transaction::updatePackage(const Package &package, bool onlyTrusted)
+void Transaction::updatePackage(const Package &package, TransactionFlags flags)
 {
-    updatePackages(QList<Package>() << package, onlyTrusted);
+    updatePackages(QList<Package>() << package, flags);
 }
 
 void Transaction::updateSystem(bool onlyTrusted)

@@ -192,7 +192,8 @@ public:
         ErrorInstallRootInvalid,
         ErrorCannotFetchSources,
         ErrorCancelledPriority,
-        ErrorUnfinishedTransaction
+        ErrorUnfinishedTransaction,
+        ErrorLockRequired
     } Error;
 
     /**
@@ -378,7 +379,7 @@ public:
      * Create a transaction object with a new transaction id
      *
      * The transaction object \b cannot be reused
-     * (i.e. simulateInstallPackages then installPackages)
+     * (i.e. removePackages then installPackages)
      *
      * \warning after creating the transaction object be sure
      * to verify if it doesn't have any error()
@@ -391,7 +392,7 @@ public:
      * asks PackageKit for a tid
      *
      * The transaction object \b cannot be reused
-     * (i.e. simulateInstallPackages then installPackages)
+     * (i.e. removePackages then installPackages)
      *
      * \warning after creating the transaction object be sure
      * to verify if it doesn't have any error()
@@ -703,13 +704,13 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void installFiles(const QStringList &files, TransactionFlags flags = TransactionFlagNone);
+    void installFiles(const QStringList &files, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to install a file
-     * \sa installFiles(const QStringList &files, TransactionFlags flags = TransactionFlagNone)
+     * \sa installFiles(const QStringList &files, TransactionFlags flags)
      */
-    void installFile(const QString &file, TransactionFlags flags = TransactionFlagNone);
+    void installFile(const QString &file, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Install the given \p packages
@@ -719,13 +720,13 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagNone);
+    void installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to install a package
-     * \sa installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagNone)
+     * \sa installPackages(const QList<Package> &packages, TransactionFlags flags)
      */
-    void installPackage(const Package &package, TransactionFlags flags = TransactionFlagNone);
+    void installPackage(const Package &package, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * \brief Installs a signature
@@ -751,19 +752,18 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagNone);
+    void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to remove a package
-     * \sa removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false)
+     * \sa removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags)
      */
-    void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagNone);
+    void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Repairs a broken system
-     * \sa simulateRepairSystem();
      */
-    void repairSystem(TransactionFlags flags = TransactionFlagNone);
+    void repairSystem(TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Activates or disables a repository
@@ -863,7 +863,7 @@ public:
 
     /**
      * Convenience function to search by names
-     * \sa searchNames(const QStringList &search, Filters filters = FilterNone)
+     * \sa searchNames(const QStringList &search, Filters filters)
      */
     void searchNames(const QString &search, Filters filters = FilterNone);
 
@@ -874,13 +874,13 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void updatePackages(const QList<Package> &packages, bool onlyTrusted = true);
+    void updatePackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to update a package
-     * \sa updatePackages(const QList<Package> &packages, bool onlyTrusted = true)
+     * \sa updatePackages(const QList<Package> &packages, TransactionFlags flags)
      */
-    void updatePackage(const Package &package, bool onlyTrusted = true);
+    void updatePackage(const Package &package, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Updates the whole system

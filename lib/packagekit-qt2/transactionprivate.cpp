@@ -135,7 +135,7 @@ void TransactionPrivate::message(uint type, const QString &message)
 void TransactionPrivate::package(uint info, const QString &pid, const QString &summary)
 {
     Q_Q(Transaction);
-    q->package(Package(pid, static_cast<Package::Info>(info)));
+    q->package(Package(pid, static_cast<Package::Info>(info), summary));
 }
 
 void TransactionPrivate::repoSignatureRequired(const QString &pid,
