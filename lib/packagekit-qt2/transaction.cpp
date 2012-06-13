@@ -278,13 +278,16 @@ Transaction::Role Transaction::role() const
 {
     Q_D(const Transaction);
     if(d->oldtrans) {
-        return d->role;
+        uint role = 1 << d->role;
+        return static_cast<Transaction::Role>(role);
     }
 
     if (d->destroyed) {
         return Transaction::RoleUnknown;
     }
-    return static_cast<Transaction::Role>(d->p->role());
+
+    uint role = 1 << d->p->role();
+    return static_cast<Transaction::Role>(role);
 }
 
 void Transaction::setHints(const QStringList &hints)
