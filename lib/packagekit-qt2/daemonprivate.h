@@ -40,6 +40,7 @@ protected:
 
     Daemon *q_ptr;
     ::DaemonProxy *daemon;
+    QStringList hints;
 
     QList<Transaction*> transactions(const QList<QDBusObjectPath> &tids, QObject *parent);
 

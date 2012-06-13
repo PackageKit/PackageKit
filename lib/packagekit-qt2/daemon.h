@@ -181,6 +181,37 @@ public:
     static QList<Transaction*> getTransactionObjects(QObject *parent = 0);
 
     /**
+     * \brief Sets a global hints for all the transactions to be created
+     *
+     * This method allows the calling session to set transaction \p hints for
+     * the package manager which can change as the transaction runs.
+     *
+     * This method can be sent before the transaction has been run
+     * (by using Daemon::setHints) or whilst it is running
+     * (by using Transaction::setHints).
+     * There is no limit to the number of times this
+     * method can be sent, although some backends may only use the values
+     * that were set before the transaction was started.
+     *
+     * The \p hints can be filled with entries like these
+     * ('locale=en_GB.utf8','idle=true','interactive=false').
+     *
+     * \sa Transaction::setHints
+     */
+    static void setHints(const QStringList &hints);
+
+    /**
+     * Convenience function to set global hints
+     * \sa setHints(const QStringList &hints)
+     */
+    static void setHints(const QString &hints);
+
+    /**
+     * This method returns the current hints
+     */
+    static QStringList hints();
+
+    /**
      * Sets a proxy to be used for all the network operations
      */
     static Transaction::InternalError setProxy(const QString &http_proxy, const QString &https_proxy, const QString &ftp_proxy, const QString &socks_proxy, const QString &no_proxy, const QString &pac);

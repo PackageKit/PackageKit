@@ -98,6 +98,9 @@ void Transaction::init(const QDBusObjectPath &tid)
         return;
     } else {
         d->error = Transaction::InternalErrorNone;
+        if (!Daemon::hints().isEmpty()) {
+            setHints(Daemon::hints());
+        }
     }
 
     connect(Daemon::global(), SIGNAL(daemonQuit()), SLOT(daemonQuit()));

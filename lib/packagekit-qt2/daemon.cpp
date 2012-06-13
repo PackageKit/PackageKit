@@ -19,15 +19,11 @@
 * Boston, MA 02110-1301, USA.
 */
 
-#include <QtSql>
-
 #include "daemon.h"
 #include "daemonprivate.h"
 #include "daemonproxy.h"
 
 #include "common.h"
-
-#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
 
 using namespace PackageKit;
 
@@ -62,14 +58,6 @@ Daemon::Daemon(QObject *parent) :
             this, SIGNAL(transactionListChanged(QStringList)));
     connect(d->daemon, SIGNAL(UpdatesChanged()),
             this, SIGNAL(updatesChanged()));
-
-    // Set up database for desktop files
-    QSqlDatabase db;
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName (PK_DESKTOP_DEFAULT_DATABASE);
-    if (!db.open()) {
-        qDebug() << "Failed to initialize the desktop files database";
-    }
 }
 
 Daemon::~Daemon()
@@ -155,6 +143,21 @@ QList<QDBusObjectPath> Daemon::getTransactionList()
 QList<Transaction*> Daemon::getTransactionObjects(QObject *parent)
 {
     return global()->d_ptr->transactions(getTransactionList(), parent);
+}
+
+void Daemon::setHints(const QStringList& hints)
+{
+    global()->d_ptr->hints = hints;
+}
+
+void Daemon::setHints(const QString& hints)
+{
+    global()->d_ptr->hints = QStringList() << hints;
+}
+
+QStringList Daemon::hints()
+{
+    return global()->d_ptr->hints;
 }
 
 Transaction::InternalError Daemon::setProxy(const QString& http_proxy, const QString& https_proxy, const QString& ftp_proxy, const QString& socks_proxy, const QString& no_proxy, const QString& pac)
