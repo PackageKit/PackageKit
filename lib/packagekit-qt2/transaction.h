@@ -25,7 +25,6 @@
 #include <QtCore/QObject>
 #include <QtDBus/QDBusObjectPath>
 
-#include "bitfield.h"
 #include "package.h"
 #include "packagedetails.h"
 #include "packageupdatedetails.h"
@@ -72,7 +71,7 @@ public:
      * \sa Transaction::error
      */
     typedef enum {
-        NoInternalError = 0,
+        InternalErrorNone = 0,
         InternalErrorUnkown,
         InternalErrorFailed,
         InternalErrorFailedAuth,
@@ -256,7 +255,7 @@ public:
      * Describes a message's type
      */
     typedef enum {
-        UnknownMessage,
+        MessageUnknown,
         MessageBrokenMirror,
         MessageConnectionRefused,
         MessageParameterInvalid,
@@ -571,11 +570,11 @@ public:
      * Download the given \p packages to a temp dir, if \p storeInCache is true
      * the download will be stored in the package manager cache
      */
-    void downloadPackages(const QList<Package> &packages, bool storeInCache = false);
+    void downloadPackages(const PackageList &packages, bool storeInCache = false);
 
     /**
      * This is a convenience function to download this \p package
-     * \sa downloadPackages(const QList<Package> &packages, bool storeInCache = false)
+     * \sa downloadPackages(const PackageList &packages, bool storeInCache = false)
      */
     void downloadPackage(const Package &package, bool storeInCache = false);
 
@@ -595,11 +594,11 @@ public:
      *
      * \note This method emits \sa package()
      */
-    void getDepends(const QList<Package> &packages, Filters filters, bool recursive = false);
+    void getDepends(const PackageList &packages, Filters filters, bool recursive = false);
 
     /**
      * Convenience function to get the dependencies of this \p package
-     * \sa getDetails(const QList<Package> &packages, Filters filters, bool recursive = false)
+     * \sa getDetails(const PackageList &packages, Filters filters, bool recursive = false)
      */
     void getDepends(const Package &package, Filters filters , bool recursive = false);
 
@@ -610,11 +609,11 @@ public:
      * \note This method emits \sa package()
      * with details set
      */
-    void getDetails(const QList<Package> &packages);
+    void getDetails(const PackageList &packages);
 
     /**
      * Convenience function to get the details about this \p package
-     * \sa getDetails(const QList<Package> &packages)
+     * \sa getDetails(const PackageList &packages)
      */
     void getDetails(const Package &package);
 
@@ -623,11 +622,11 @@ public:
      *
      * \note This method emits \sa files()
      */
-    void getFiles(const QList<Package> &packages);
+    void getFiles(const PackageList &packages);
 
     /**
      * Convenience function to get the files contained in this \p package
-     * \sa getRequires(const QList<Package> &packages)
+     * \sa getRequires(const PackageList &packages)
      */
     void getFiles(const Package &packages);
 
@@ -662,11 +661,11 @@ public:
      *
      * \note This method emits \sa package()
      */
-    void getRequires(const QList<Package> &packages, Filters filters, bool recursive = false);
+    void getRequires(const PackageList &packages, Filters filters, bool recursive = false);
 
     /**
      * Convenience function to get packages requiring this package
-     * \sa getRequires(const QList<Package> &packages, Filters filters, bool recursive = false)
+     * \sa getRequires(const PackageList &packages, Filters filters, bool recursive = false)
      */
     void getRequires(const Package &package, Filters filters, bool recursive = false);
 
@@ -675,11 +674,11 @@ public:
      *
      * \note This method emits \sa updateDetail()
      */
-    void getUpdatesDetails(const QList<Package> &packages);
+    void getUpdatesDetails(const PackageList &packages);
 
     /**
      * Convenience function to get update details
-     * \sa getUpdateDetail(const QList<Package> &packages)
+     * \sa getUpdateDetail(const PackageList &packages)
      */
     void getUpdateDetail(const Package &package);
 
@@ -723,11 +722,11 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void installPackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
+    void installPackages(const PackageList &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to install a package
-     * \sa installPackages(const QList<Package> &packages, TransactionFlags flags)
+     * \sa installPackages(const PackageList &packages, TransactionFlags flags)
      */
     void installPackage(const Package &package, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
@@ -755,11 +754,11 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagOnlyTrusted);
+    void removePackages(const PackageList  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to remove a package
-     * \sa removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags)
+     * \sa removePackages(const PackageList  &packages, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags)
      */
     void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
@@ -871,11 +870,11 @@ public:
      * \note This method emits \sa package()
      * and \sa changed()
      */
-    void updatePackages(const QList<Package> &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
+    void updatePackages(const PackageList &packages, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
     /**
      * Convenience function to update a package
-     * \sa updatePackages(const QList<Package> &packages, TransactionFlags flags)
+     * \sa updatePackages(const PackageList &packages, TransactionFlags flags)
      */
     void updatePackage(const Package &package, TransactionFlags flags = TransactionFlagOnlyTrusted);
 
@@ -1045,9 +1044,12 @@ Q_SIGNALS:
     void transaction(PackageKit::Transaction *transaction);
 
 protected:
+    static Transaction::InternalError parseError(const QString &errorName);
+
     TransactionPrivate * const d_ptr;
 
 private:
+    friend class Daemon;
     void init(const QDBusObjectPath &tid = QDBusObjectPath());
     Transaction(const QDBusObjectPath &tid,
                 const QString &timespec,

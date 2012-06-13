@@ -26,7 +26,6 @@
 #include "daemonproxy.h"
 
 #include "common.h"
-#include "util.h"
 
 #define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
 
@@ -118,7 +117,7 @@ bool Daemon::locked()
 
 QStringList Daemon::mimeTypes()
 {
-    return global()->d_ptr->daemon->mimeTypes().split(";");
+    return global()->d_ptr->daemon->mimeTypes();
 }
 
 Daemon::Network Daemon::networkState()
@@ -133,8 +132,9 @@ QString Daemon::distroId()
 
 Daemon::Authorize Daemon::canAuthorize(const QString &actionId)
 {
-    QString result = global()->d_ptr->daemon->CanAuthorize(actionId);
-    return static_cast<Daemon::Authorize>(Util::enumFromString<Daemon>(result, "Authorize", "Authorize"));
+    uint ret;
+    ret = global()->d_ptr->daemon->CanAuthorize(actionId);
+    return static_cast<Daemon::Authorize>(ret);
 }
 
 QDBusObjectPath Daemon::getTid()
@@ -157,34 +157,14 @@ QList<Transaction*> Daemon::getTransactionObjects(QObject *parent)
     return global()->d_ptr->transactions(getTransactionList(), parent);
 }
 
-void Daemon::setHints(const QStringList& hints)
-{
-    global()->d_ptr->hints = hints;
-}
-
-void Daemon::setHints(const QString& hints)
-{
-    global()->d_ptr->hints = QStringList() << hints;
-}
-
-QStringList Daemon::hints()
-{
-    return global()->d_ptr->hints;
-}
-
-Transaction::InternalError Daemon::setProxy(const QString& http_proxy, const QString& ftp_proxy)
-{
-    return Daemon::setProxy(http_proxy, QString(), ftp_proxy, QString(), QString(), QString());
-}
-
 Transaction::InternalError Daemon::setProxy(const QString& http_proxy, const QString& https_proxy, const QString& ftp_proxy, const QString& socks_proxy, const QString& no_proxy, const QString& pac)
 {
     QDBusPendingReply<> r = global()->d_ptr->daemon->SetProxy(http_proxy, https_proxy, ftp_proxy, socks_proxy, no_proxy, pac);
     r.waitForFinished();
     if (r.isError ()) {
-        return Util::errorFromString(r.error().name());
+        return Transaction::parseError(r.error().name());
     } else {
-        return Transaction::NoInternalError;
+        return Transaction::InternalErrorNone;
     }
 }
 

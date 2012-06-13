@@ -51,7 +51,7 @@ public:
  *
  * \note All Package objects should be deleted by the user.
  */
-class Package : protected QString
+class Package : public QString
 {
 public:
     /**

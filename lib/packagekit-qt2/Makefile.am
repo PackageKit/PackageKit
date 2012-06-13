@@ -44,7 +44,6 @@ libpackagekit_qt2_include_HEADERS =				\
 	packagedetails.h					\
 	PackageUpdateDetails					\
 	packageupdatedetails.h					\
-	bitfield.h						\
 	$(NULL)
 
 libpackagekit_qt2_la_SOURCES =					\
@@ -70,10 +69,6 @@ libpackagekit_qt2_la_SOURCES =					\
 	daemonproxy.cpp						\
 	daemon.h						\
 	daemon.cpp						\
-	util.h							\
-	util.cpp						\
-	bitfield.h						\
-	bitfield.cpp						\
 	common.h						\
 	dbus_proxies.stamp					\
 	$(NULL)

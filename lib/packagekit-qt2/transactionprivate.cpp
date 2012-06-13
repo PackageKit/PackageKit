@@ -26,7 +26,6 @@
 #include "package.h"
 #include "signature.h"
 #include "eula.h"
-#include "util.h"
 
 using namespace PackageKit;
 
@@ -197,4 +196,13 @@ void TransactionPrivate::updateDetail(const QString &package_id,
                                  QDateTime::fromString(updated, Qt::ISODate));
 
     q->packageUpdateDetails(package);
+}
+
+QStringList TransactionPrivate::packageListToPids(const PackageList &packages) const
+{
+    QStringList pids;
+    foreach (const Package &package, packages) {
+        pids << package;
+    }
+    return pids;
 }

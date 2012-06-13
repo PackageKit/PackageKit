@@ -38,6 +38,8 @@ protected:
     TransactionPrivate(Transaction *parent);
     virtual ~TransactionPrivate() {};
 
+    QStringList packageListToPids(const PackageList &packages) const;
+
     QDBusObjectPath tid;
     ::TransactionProxy* p;
     Transaction *q_ptr;
