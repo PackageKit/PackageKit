@@ -90,6 +90,8 @@ pk_network_stack_nm_get_active_connection_type_for_device (PkNetworkStackNm *nst
 		goto out;
 	}
 	value = g_dbus_proxy_get_cached_property (proxy, "DeviceType");
+	if (value == NULL)
+		goto out;
 	type = g_variant_get_uint32 (value);
 	g_debug ("type: %i", type);
 out:
@@ -132,6 +134,8 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 		goto out;
 	}
 	value_default = g_dbus_proxy_get_cached_property (proxy, "Default");
+	if (value_default == NULL)
+		goto out;
 	is_default = g_variant_get_boolean (value_default);
 	g_debug ("is_default: %i", is_default);
 	if (!is_default) {
@@ -141,6 +145,8 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 
 	/* get the physical devices for the connection */
 	value_devices = g_dbus_proxy_get_cached_property (proxy, "Devices");
+	if (value_devices == NULL)
+		goto out;
 	g_variant_get (value_devices, "ao", &iter);
 
 	/* find the types of the active connection */
@@ -191,6 +197,8 @@ pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 		goto out;
 	}
 	value = g_dbus_proxy_get_cached_property (proxy, "ActiveConnections");
+	if (value == NULL)
+		goto out;
 	g_variant_get (value, "ao", &iter);
 
 	/* find the active connection */
