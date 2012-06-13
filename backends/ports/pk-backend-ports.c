@@ -109,11 +109,14 @@ pk_backend_get_filters (PkBackend *backend)
 /**
  * pk_backend_get_mime_types:
  */
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-compressed-tar;"	/* .tgz */
-	                 "application/x-bzip-compressed-tar"	/* .tbz */);
+	const gchar *mime_types[] = {
+				"application/x-compressed-tar",		/* .tgz */
+				"application/x-bzip-compressed-tar",	/* .tbz */
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 /**

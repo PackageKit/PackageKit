@@ -109,11 +109,12 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <property name="MimeTypes" type="s" access="read">
+    <property name="MimeTypes" type="as" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
-            The mime-types the backend supports, e.g. <doc:tt>"application/x-rpm;application/x-deb"</doc:tt>.
+            The mime-types the backend supports, e.g.
+            <doc:tt>['application/x-rpm;', 'application/x-deb']</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>

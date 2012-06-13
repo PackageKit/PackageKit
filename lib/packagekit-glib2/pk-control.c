@@ -62,7 +62,7 @@ struct _PkControlPrivate
 	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
-	gchar			*mime_types;
+	gchar			**mime_types;
 	gboolean		 connected;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
@@ -159,6 +159,25 @@ pk_control_fixup_dbus_error (GError *error)
 		error->code = PK_CONTROL_ERROR_FAILED;
 }
 
+static gboolean
+_g_strvcmp0 (gchar **one, gchar **two)
+{
+	guint i;
+	if (one == two)
+		return TRUE;
+	if (one == NULL && two != NULL)
+		return FALSE;
+	if (one != NULL && two == NULL)
+		return FALSE;
+	if (g_strv_length (one) != g_strv_length (two))
+		return FALSE;
+	for (i = 0; one[i] != NULL; i++) {
+		if (g_strcmp0 (one[i], two[i]) != 0)
+			return FALSE;
+	}
+	return TRUE;
+}
+
 /**
  * pk_control_set_property_value:
  **/
@@ -168,6 +187,7 @@ pk_control_set_property_value (PkControl *control,
 			       GVariant *value)
 {
 	const gchar *tmp_str;
+	gchar **tmp_strv = NULL;
 	gboolean tmp_bool;
 	guint tmp_uint;
 	PkBitfield tmp_bitfield;
@@ -224,13 +244,13 @@ pk_control_set_property_value (PkControl *control,
 		return;
 	}
 	if (g_strcmp0 (key, "MimeTypes") == 0) {
-		tmp_str = g_variant_get_string (value, NULL);
-		if (g_strcmp0 (control->priv->mime_types, tmp_str) == 0)
-			return;
-		g_free (control->priv->mime_types);
-		control->priv->mime_types = g_strdup (tmp_str);
+		tmp_strv = (gchar **) g_variant_get_strv (value, NULL);
+		if (_g_strvcmp0 (control->priv->mime_types, tmp_strv) == 0)
+			goto out;
+		g_strfreev (control->priv->mime_types);
+		control->priv->mime_types = g_strdupv (tmp_strv);
 		g_object_notify (G_OBJECT(control), "mime-types");
-		return;
+		goto out;
 	}
 	if (g_strcmp0 (key, "Roles") == 0) {
 		tmp_bitfield = g_variant_get_uint64 (value);
@@ -285,6 +305,8 @@ pk_control_set_property_value (PkControl *control,
 		return;
 	}
 	g_warning ("unhandled property '%s'", key);
+out:
+	g_free (tmp_strv);
 }
 
 /**
@@ -2143,7 +2165,7 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		g_value_set_uint64 (value, priv->filters);
 		break;
 	case PROP_MIME_TYPES:
-		g_value_set_string (value, priv->mime_types);
+		g_value_set_boxed (value, priv->mime_types);
 		break;
 	case PROP_LOCKED:
 		g_value_set_boolean (value, priv->locked);
@@ -2282,11 +2304,11 @@ pk_control_class_init (PkControlClass *klass)
 	/**
 	 * PkControl:mime-types:
 	 *
-	 * Since: 0.5.2
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("mime-types", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_boxed ("mime-types", NULL, NULL,
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/**
@@ -2476,7 +2498,7 @@ pk_control_finalize (GObject *object)
 	g_free (priv->backend_name);
 	g_free (priv->backend_description);
 	g_free (priv->backend_author);
-	g_free (priv->mime_types);
+	g_strfreev (priv->mime_types);
 	g_free (priv->distro_id);
 	g_ptr_array_unref (priv->calls);
 

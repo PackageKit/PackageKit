@@ -122,7 +122,7 @@ typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
-gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
+gchar		**pk_backend_get_mime_types		(PkBackend	*backend);
 gboolean	 pk_backend_has_set_error_code		(PkBackend	*backend);
 gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
 							 PkRoleEnum	 role);
@@ -410,7 +410,7 @@ typedef struct {
 	PkBitfield	(*get_groups)			(PkBackend	*backend);
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	PkBitfield	(*get_roles)			(PkBackend	*backend);
-	gchar		*(*get_mime_types)		(PkBackend	*backend);
+	gchar		**(*get_mime_types)		(PkBackend	*backend);
 	void		(*cancel)			(PkBackend	*backend);
 	void		(*download_packages)		(PkBackend	*backend,
 							 gchar		**package_ids,

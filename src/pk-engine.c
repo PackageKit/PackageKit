@@ -80,7 +80,7 @@ struct PkEnginePrivate
 	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
-	gchar			*mime_types;
+	gchar			**mime_types;
 	const gchar		*backend_name;
 	const gchar		*backend_description;
 	const gchar		*backend_author;
@@ -1143,7 +1143,7 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "MimeTypes") == 0) {
-		retval = g_variant_new_string (engine->priv->mime_types);
+		retval = g_variant_new_strv ((const gchar * const *) engine->priv->mime_types, -1);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Locked") == 0) {
@@ -1593,7 +1593,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
 	g_ptr_array_unref (engine->priv->plugins);
-	g_free (engine->priv->mime_types);
+	g_strfreev (engine->priv->mime_types);
 	g_free (engine->priv->distro_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);

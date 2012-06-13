@@ -79,10 +79,11 @@ pk_backend_get_filters (PkBackend *backend)
 /**
  * pk_backend_get_mime_types:
  */
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("");
+	const gchar *mime_types[] = { NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 /**

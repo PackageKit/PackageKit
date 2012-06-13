@@ -2310,10 +2310,13 @@ pk_backend_get_filters (PkBackend *backend)
 /**
  * pk_backend_get_mime_types:
  */
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-rpm");
+	const gchar *mime_types[] = {
+				"application/x-rpm",
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 /**

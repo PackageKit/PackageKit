@@ -163,10 +163,14 @@ pk_backend_get_roles (PkBackend *backend)
 /**
  * pk_backend_get_mime_types:
  */
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-    return g_strdup ("application/entropy-package;application/entropy-webinstall");
+	const gchar *mime_types[] = {
+				"application/entropy-package",
+				"application/entropy-webinstall",
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 /**

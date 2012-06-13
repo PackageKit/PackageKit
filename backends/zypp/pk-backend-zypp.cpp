@@ -2053,10 +2053,13 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
 
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-rpm");
+	const gchar *mime_types[] = {
+				"application/x-rpm",
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 static gboolean

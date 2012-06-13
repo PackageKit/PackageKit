@@ -1004,18 +1004,14 @@ static void
 pk_transaction_setup_mime_types (PkTransaction *transaction)
 {
 	guint i;
-	gchar *mime_types_str;
 	gchar **mime_types;
 
 	/* get list of mime types supported by backends */
-	mime_types_str = pk_backend_get_mime_types (transaction->priv->backend);
-	mime_types = g_strsplit (mime_types_str, ";", -1);
-	for (i=0; mime_types[i] != NULL; i++) {
+	mime_types = pk_backend_get_mime_types (transaction->priv->backend);
+	for (i = 0; mime_types[i] != NULL; i++) {
 		g_ptr_array_add (transaction->priv->supported_content_types,
 				 g_strdup (mime_types[i]));
 	}
-
-	g_free (mime_types_str);
 	g_strfreev (mime_types);
 }
 

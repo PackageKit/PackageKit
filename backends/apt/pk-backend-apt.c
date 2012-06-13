@@ -77,10 +77,13 @@ pk_backend_destroy (PkBackend *backend)
 /**
  * backend_get_mime_types:
  */
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
-	return g_strdup ("application/x-deb");
+	const gchar *mime_types[] = {
+				"application/x-deb",
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 /**
