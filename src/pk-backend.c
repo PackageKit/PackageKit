@@ -151,7 +151,6 @@ G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 enum {
 	SIGNAL_ALLOW_CANCEL,
 	SIGNAL_LOCKED_CHANGED,
-	SIGNAL_CHANGE_TRANSACTION_DATA,
 	SIGNAL_STATUS_CHANGED,
 	SIGNAL_ITEM_PROGRESS,
 	SIGNAL_FINISHED,
@@ -1409,26 +1408,6 @@ out:
 	if (item != NULL)
 		g_object_unref (item);
 	return ret;
-}
-
-/**
- * pk_backend_set_transaction_data:
- **/
-gboolean
-pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_CHANGE_TRANSACTION_DATA], 0, data);
-	return TRUE;
 }
 
 /**
@@ -3045,11 +3024,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals[SIGNAL_CHANGE_TRANSACTION_DATA] =
-		g_signal_new ("change-transaction-data",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals[SIGNAL_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -412,13 +412,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		g_strdelimit (text, ";", '\n');
 		pk_backend_message (priv->backend, message_enum, text);
 		g_free (text);
-	} else if (g_strcmp0 (command, "change-transaction-data") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
-		}
-		pk_backend_set_transaction_data (priv->backend, sections[1]);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
