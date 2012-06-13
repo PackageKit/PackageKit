@@ -106,15 +106,9 @@ Transaction::Filters Daemon::filters()
     return static_cast<Transaction::Filter>(global()->d_ptr->daemon->filters());
 }
 
-Package::Groups Daemon::groups()
+PackageDetails::Groups Daemon::groups()
 {
-//     QStringList groups = global()->d_ptr->daemon->groups().split(";");
-
-    Package::Groups flags;
-//     foreach (const QString &group, groups) {
-//         flags.insert(static_cast<Package::Group>(Util::enumFromString<Package>(group, "Group", "Group")));
-//     }
-    return flags;
+    return global()->d_ptr->daemon->groups();
 }
 
 bool Daemon::locked()

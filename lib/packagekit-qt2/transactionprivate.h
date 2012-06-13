@@ -38,8 +38,6 @@ protected:
     TransactionPrivate(Transaction *parent);
     virtual ~TransactionPrivate() {};
 
-    static QString filtersToString(const QFlags<PackageKit::Transaction::Filter> &flags);
-
     QDBusObjectPath tid;
     ::TransactionProxy* p;
     Transaction *q_ptr;
@@ -62,16 +60,16 @@ protected Q_SLOTS:
     void details(const QString &pid, const QString &license, uint group, const QString &detail, const QString &url, qulonglong size);
     void distroUpgrade(uint type, const QString &name, const QString &description);
     void errorCode(uint error, const QString &details);
-    void eulaRequired(const QString &eulaId, const QString &pid, const QString& vendor, const QString& licenseAgreement);
-    void mediaChangeRequired(uint mediaType, const QString& mediaId, const QString& mediaText);
-    void files(const QString& pid, const QString& filenames);
+    void eulaRequired(const QString &eulaId, const QString &pid, const QString &vendor, const QString &licenseAgreement);
+    void mediaChangeRequired(uint mediaType, const QString &mediaId, const QString &mediaText);
+    void files(const QString &pid, const QStringList &file_list);
     void finished(uint exitCode, uint runtime);
-    void message(uint type, const QString& message);
-    void package(uint info, const QString& pid, const QString& summary);
-    void repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, uint type);
-    void requireRestart(uint type, const QString& pid);
-    void transaction(const QDBusObjectPath& oldTid, const QString& timespec, bool succeeded, uint role, uint duration, const QString& data, uint uid, const QString& cmdline);
-    void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, uint restart, const QString& updateText, const QString& changelog, uint state, const QString& issued, const QString& updated);
+    void message(uint type, const QString &message);
+    void package(uint info, const QString &pid, const QString &summary);
+    void repoSignatureRequired(const QString &pid, const QString &repoName, const QString &keyUrl, const QString &keyUserid, const QString &keyId, const QString &keyFingerprint, const QString &keyTimestamp, uint type);
+    void requireRestart(uint type, const QString &pid);
+    void transaction(const QDBusObjectPath &oldTid, const QString &timespec, bool succeeded, uint role, uint duration, const QString &data, uint uid, const QString &cmdline);
+    void updateDetail(const QString &package_id, const QStringList &updates, const QStringList &obsoletes, const QStringList &vendor_urls, const QStringList &bugzilla_urls, const QStringList &cve_urls, uint restart, const QString &update_text, const QString &changelog, uint state, const QString &issued, const QString &updated);
     void destroy();
     void daemonQuit();
 };

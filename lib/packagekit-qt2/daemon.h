@@ -116,7 +116,7 @@ public:
     /**
      * Returns the package groups supported by the current backend
      */
-    static Package::Groups groups();
+    static PackageDetails::Groups groups();
 
     /**
      * Set when the backend is locked and native tools would fail.

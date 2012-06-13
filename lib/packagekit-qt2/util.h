@@ -29,7 +29,6 @@
 
 namespace PackageKit {
 
-class Package;
 
 class Util
 {
@@ -79,44 +78,6 @@ public:
         }
         return enumValue;
     }
-
-    template<class T> static QString enumToString(int value, const char *enumName, const QString &prefix = QString())
-    {
-        int id = T::staticMetaObject.indexOfEnumerator(enumName);
-        QMetaEnum e = T::staticMetaObject.enumerator(id);
-        if (!e.isValid ()) {
-            qDebug () << "Invalid enum " << enumName;
-            return QString();
-        }
-        QString enumString = e.valueToKey(value);
-        if (enumString.isNull()) {
-            qDebug() << "Enum key not found while searching for value" << value << "in enum" << enumName;
-            return QString();
-        }
-
-        // Remove the prefix
-        if(!prefix.isNull() && enumString.indexOf(prefix) == 0)
-            enumString.remove(0, prefix.length());
-
-        QString pkName;
-        for(int i = 0 ; i < enumString.length() - 1 ; ++i) {
-            pkName += enumString[i];
-            if(enumString[i+1].isUpper())
-                pkName += QChar('-');
-        }
-        pkName += enumString[enumString.length() - 1];
-
-        if(enumName == QLatin1String("Filter")) {
-            if(pkName.indexOf("Not-") == 0) {
-                pkName = pkName.replace(0, 4, "~");
-            }
-//             if (pkName == QLatin1String("No-Filter")) {
-//                 pkName = "none";
-//             }
-        }
-
-        return pkName.toLower();
-    };
 
     static QStringList packageListToPids(const QList<Package> &packages);
 

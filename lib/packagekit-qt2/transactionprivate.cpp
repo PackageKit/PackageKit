@@ -45,26 +45,14 @@ void TransactionPrivate::details(const QString &pid,
                                  qulonglong size)
 {
     Q_Q(Transaction);
-    Package package(pid);
-    package.setLicense(license);
-    package.setGroup(static_cast<Package::Group>(group));
-    package.setDescription(detail);
-    package.setUrl(url);
-    package.setSize(size);
+    PackageDetails package(pid,
+                           license,
+                           group,
+                           detail,
+                           url,
+                           size);
 
-    q->package(package);
-}
-
-QString TransactionPrivate::filtersToString(const QFlags<PackageKit::Transaction::Filter> &flags)
-{
-    QStringList flagStrings;
-    for (int i = Transaction::FilterUnknown; i < Transaction::FilterLast; i *= 2) {
-        if (static_cast<Transaction::Filter>(i) & flags) {
-            flagStrings.append(Util::enumToString<Transaction>(static_cast<Transaction::Filter>(i), "Filter", "Filter"));
-        }
-    }
-
-    return flagStrings.join(";");
+    q->packageDetails(package);
 }
 
 void TransactionPrivate::distroUpgrade(uint type, const QString &name, const QString &description)
@@ -101,10 +89,10 @@ void TransactionPrivate::mediaChangeRequired(uint mediaType, const QString &medi
                            mediaText);
 }
 
-void TransactionPrivate::files(const QString &pid, const QString &filenames)
+void TransactionPrivate::files(const QString &pid, const QStringList &fileList)
 {
     Q_Q(Transaction);
-    q->files(Package(pid), filenames.split(";"));
+    q->files(Package(pid), fileList);
 }
 
 void TransactionPrivate::finished(uint exitCode, uint runtime)
@@ -164,7 +152,7 @@ void TransactionPrivate::repoSignatureRequired(const QString &pid,
 void TransactionPrivate::requireRestart(uint type, const QString &pid)
 {
     Q_Q(Transaction);
-    q->requireRestart(static_cast<Package::Restart>(type), Package(pid));
+    q->requireRestart(static_cast<PackageUpdateDetails::Restart>(type), Package(pid));
 }
 
 void TransactionPrivate::transaction(const QDBusObjectPath &oldTid,
@@ -180,14 +168,14 @@ void TransactionPrivate::transaction(const QDBusObjectPath &oldTid,
     q->transaction(new Transaction(oldTid, timespec, succeeded, static_cast<Transaction::Role>(role), duration, data, uid, cmdline, q->parent()));
 }
 
-void TransactionPrivate::updateDetail(const QString &pid,
-                                      const QString &updates,
-                                      const QString &obsoletes,
-                                      const QString &vendorUrl,
-                                      const QString &bugzillaUrl,
-                                      const QString &cveUrl,
+void TransactionPrivate::updateDetail(const QString &package_id,
+                                      const QStringList &updates,
+                                      const QStringList &obsoletes,
+                                      const QStringList &vendor_urls,
+                                      const QStringList &bugzilla_urls,
+                                      const QStringList &cve_urls,
                                       uint restart,
-                                      const QString &updateText,
+                                      const QString &update_text,
                                       const QString &changelog,
                                       uint state,
                                       const QString &issued,
@@ -195,30 +183,18 @@ void TransactionPrivate::updateDetail(const QString &pid,
 {
     Q_Q(Transaction);
 
-    Package package(pid);
-    if (!updates.isEmpty()) {
-        QList<Package> updatesList;
-        foreach (const QString &pid, updates.split("&")) {
-            updatesList << Package(pid);
-        }
-        package.setUpdates(updatesList);
-    }
-    if( !obsoletes.isEmpty() ) {
-        QList<Package> obsoletesList;
-        foreach (const QString &pid, obsoletes.split("&")) {
-            obsoletesList << Package(pid);
-        }
-        package.setObsoletes(obsoletesList);
-    }
-    package.setVendorUrl(vendorUrl);
-    package.setBugzillaUrl(bugzillaUrl);
-    package.setCveUrl(cveUrl);
-    package.setRestart(static_cast<Package::Restart>(restart));
-    package.setUpdateText(updateText);
-    package.setChangelog(changelog);
-    package.setState(static_cast<Package::UpdateState>(state));
-    package.setIssued(QDateTime::fromString(issued, Qt::ISODate));
-    package.setUpdated(QDateTime::fromString(updated, Qt::ISODate));
+    PackageUpdateDetails package(package_id,
+                                 updates,
+                                 obsoletes,
+                                 vendor_urls,
+                                 bugzilla_urls,
+                                 cve_urls,
+                                 restart,
+                                 update_text,
+                                 changelog,
+                                 state,
+                                 QDateTime::fromString(issued, Qt::ISODate),
+                                 QDateTime::fromString(updated, Qt::ISODate));
 
-    q->package(package);
+    q->packageUpdateDetails(package);
 }

@@ -27,6 +27,8 @@
 
 #include "bitfield.h"
 #include "package.h"
+#include "packagedetails.h"
+#include "packageupdatedetails.h"
 
 namespace PackageKit {
 
@@ -87,40 +89,40 @@ public:
     /**
      * Describes the role of the transaction
      */
-    typedef enum {
-        RoleUnknown,
-        RoleCancel,
-        RoleGetDepends,
-        RoleGetDetails,
-        RoleGetFiles,
-        RoleGetPackages,
-        RoleGetRepoList,
-        RoleGetRequires,
-        RoleGetUpdateDetail,
-        RoleGetUpdates,
-        RoleInstallFiles,
-        RoleInstallPackages,
-        RoleInstallSignature,
-        RoleRefreshCache,
-        RoleRemovePackages,
-        RoleRepoEnable,
-        RoleRepoSetData,
-        RoleResolve,
-        RoleSearchDetails,
-        RoleSearchFile,
-        RoleSearchGroup,
-        RoleSearchName,
-        RoleUpdatePackages,
-        RoleUpdateSystem,
-        RoleWhatProvides,
-        RoleAcceptEula,
-        RoleDownloadPackages,
-        RoleGetDistroUpgrades,
-        RoleGetCategories,
-        RoleGetOldTransactions,
-        RoleUpgradeSystem, // Since 0.6.11
-        RoleRepairSystem // Since 0.7.2
-    } Role;
+    enum Role {
+        RoleUnknown            = 1 << 0,
+        RoleCancel             = 1 << 1,
+        RoleGetDepends         = 1 << 2,
+        RoleGetDetails         = 1 << 3,
+        RoleGetFiles           = 1 << 4,
+        RoleGetPackages        = 1 << 5,
+        RoleGetRepoList        = 1 << 6,
+        RoleGetRequires        = 1 << 7,
+        RoleGetUpdateDetail    = 1 << 8,
+        RoleGetUpdates         = 1 << 9,
+        RoleInstallFiles       = 1 << 10,
+        RoleInstallPackages    = 1 << 11,
+        RoleInstallSignature   = 1 << 12,
+        RoleRefreshCache       = 1 << 13,
+        RoleRemovePackages     = 1 << 14,
+        RoleRepoEnable         = 1 << 15,
+        RoleRepoSetData        = 1 << 16,
+        RoleResolve            = 1 << 17,
+        RoleSearchDetails      = 1 << 18,
+        RoleSearchFile         = 1 << 19,
+        RoleSearchGroup        = 1 << 20,
+        RoleSearchName         = 1 << 21,
+        RoleUpdatePackages     = 1 << 22,
+        RoleUpdateSystem       = 1 << 23,
+        RoleWhatProvides       = 1 << 24,
+        RoleAcceptEula         = 1 << 25,
+        RoleDownloadPackages   = 1 << 26,
+        RoleGetDistroUpgrades  = 1 << 27,
+        RoleGetCategories      = 1 << 28,
+        RoleGetOldTransactions = 1 << 29,
+        RoleUpgradeSystem      = 1 << 30, // Since 0.6.11
+        RoleRepairSystem       = 1 << 31 // Since 0.7.2
+    };
     Q_DECLARE_FLAGS(Roles, Role)
 
     /**
@@ -845,13 +847,7 @@ public:
      *
      * \note This method emits \sa package()
      */
-    void searchGroups(Package::Groups group, Filters filters = FilterNone);
-
-    /**
-     * Convenience function to search by group
-     * \sa searchGroups(Package::Groups group, Filters filters = FilterNone)
-     */
-    void searchGroup(Package::Group group, Filters filters = FilterNone);
+    void searchGroups(PackageDetails::Groups group, Filters filters = FilterNone);
 
     /**
      * \brief Search in the packages names
@@ -1015,6 +1011,16 @@ Q_SIGNALS:
     void package(const PackageKit::Package &package);
 
     /**
+     * Emitted when the transaction sends a new package
+     */
+    void packageDetails(const PackageKit::PackageDetails &package);
+
+    /**
+     * Emitted when the transaction sends a new package
+     */
+    void packageUpdateDetails(const PackageKit::PackageUpdateDetails &package);
+
+    /**
       * Sends some additional details about a software repository
       * \sa getRepoList()
       */
@@ -1030,7 +1036,7 @@ Q_SIGNALS:
      * Indicates that a restart is required
      * \p package is the package who triggered the restart signal
      */
-    void requireRestart(PackageKit::Package::Restart type, const PackageKit::Package &package);
+    void requireRestart(PackageKit::PackageUpdateDetails::Restart type, const PackageKit::Package &package);
 
     /**
      * Sends an old transaction
@@ -1059,14 +1065,14 @@ private:
     Q_PRIVATE_SLOT(d_ptr, void errorCode(uint error, const QString &details));
     Q_PRIVATE_SLOT(d_ptr, void eulaRequired(const QString &eulaId, const QString &pid, const QString &vendor, const QString &licenseAgreement));
     Q_PRIVATE_SLOT(d_ptr, void mediaChangeRequired(uint mediaType, const QString &mediaId, const QString &mediaText));
-    Q_PRIVATE_SLOT(d_ptr, void files(const QString &pid, const QString &filenames));
+    Q_PRIVATE_SLOT(d_ptr, void files(const QString &pid, const QStringList &filenames));
     Q_PRIVATE_SLOT(d_ptr, void finished(uint exitCode, uint runtime));
     Q_PRIVATE_SLOT(d_ptr, void message(uint type, const QString &message));
     Q_PRIVATE_SLOT(d_ptr, void package(uint info, const QString &pid, const QString &summary));
     Q_PRIVATE_SLOT(d_ptr, void repoSignatureRequired(const QString &pid, const QString &repoName, const QString &keyUrl, const QString &keyUserid, const QString &keyId, const QString &keyFingerprint, const QString &keyTimestamp, uint type));
     Q_PRIVATE_SLOT(d_ptr, void requireRestart(uint type, const QString &pid));
     Q_PRIVATE_SLOT(d_ptr, void transaction(const QDBusObjectPath &oldTid, const QString &timespec, bool succeeded, uint role, uint duration, const QString &data, uint uid, const QString &cmdline));
-    Q_PRIVATE_SLOT(d_ptr, void updateDetail(const QString &pid, const QString &updates, const QString &obsoletes, const QString &vendorUrl, const QString &bugzillaUrl, const QString &cveUrl, uint restart, const QString &updateText, const QString &changelog, uint state, const QString &issued, const QString &updated));
+    Q_PRIVATE_SLOT(d_ptr, void updateDetail(const QString &package_id, const QStringList &updates, const QStringList &obsoletes, const QStringList &vendor_urls, const QStringList &bugzilla_urls, const QStringList &cve_urls, uint restart, const QString &update_text, const QString &changelog, uint state, const QString &issued, const QString &updated));
     Q_PRIVATE_SLOT(d_ptr, void destroy());
     Q_PRIVATE_SLOT(d_ptr, void daemonQuit());
 };

@@ -1,7 +1,7 @@
 /*
  * This file is part of the QPackageKit project
  * Copyright (C) 2008 Adrien Bustany <madcat@mymadcat.com>
- * Copyright (C) 2010-2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (C) 2010-2012 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,16 +22,28 @@
 #ifndef PACKAGEKIT_PACKAGE_H
 #define PACKAGEKIT_PACKAGE_H
 
+#include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
-#include <QtCore/QDateTime>
 #include <QtCore/QSet>
 
 namespace PackageKit {
 
+class PackagePrivate : public QSharedData
+{
+public:
+    PackagePrivate() : info(1) { }
+    PackagePrivate(const PackagePrivate &other) :
+        QSharedData(other),
+        info(other.info),
+        summary(other.summary) { }
+    ~PackagePrivate() { }
+    uint info;
+    QString summary;
+};
 /**
  * \class Package package.h Package
  * \author Adrien Bustany \e <madcat@mymadcat.com>
- * \author Daniel Nicoletti \e <dantti85-pk@yahoo.com.br>
+ * \author Daniel Nicoletti \e <dantti12@gmail.com>
  *
  * \brief Represents a software package
  *
@@ -39,20 +51,14 @@ namespace PackageKit {
  *
  * \note All Package objects should be deleted by the user.
  */
-class PackagePrivate;
-class Package
+class Package : protected QString
 {
-    Q_GADGET
-    Q_ENUMS(Info)
-    Q_ENUMS(Group)
-    Q_ENUMS(UpdateState)
-    Q_ENUMS(Restart)
 public:
     /**
      * Describes the state of a package
      */
     typedef enum {
-        UnknownInfo,
+        InfoUnknown,
         InfoInstalled,
         InfoAvailable,
         InfoLow,
@@ -80,74 +86,9 @@ public:
     } Info;
 
     /**
-     * Describes the different package groups
-     */
-    typedef enum {
-        UnknownGroup,
-        GroupAccessibility,
-        GroupAccessories,
-        GroupAdminTools,
-        GroupCommunication,
-        GroupDesktopGnome,
-        GroupDesktopKde,
-        GroupDesktopOther,
-        GroupDesktopXfce,
-        GroupEducation,
-        GroupFonts,
-        GroupGames,
-        GroupGraphics,
-        GroupInternet,
-        GroupLegacy,
-        GroupLocalization,
-        GroupMaps,
-        GroupMultimedia,
-        GroupNetwork,
-        GroupOffice,
-        GroupOther,
-        GroupPowerManagement,
-        GroupProgramming,
-        GroupPublishing,
-        GroupRepos,
-        GroupSecurity,
-        GroupServers,
-        GroupSystem,
-        GroupVirtualization,
-        GroupScience,
-        GroupDocumentation,
-        GroupElectronics,
-        GroupCollections,
-        GroupVendor,
-        GroupNewest
-    } Group;
-    typedef QSet<Group> Groups;
-
-    /**
-     * Describes an update's state
-     */
-    typedef enum {
-        UnknownUpdateState,
-        UpdateStateStable,
-        UpdateStateUnstable,
-        UpdateStateTesting,
-    } UpdateState;
-
-    /**
-     * Describes a restart type
-     */
-    typedef enum {
-        UnknownRestart,
-        RestartNone,
-        RestartApplication,
-        RestartSession,
-        RestartSystem,
-        RestartSecuritySession, /* a library that is being used by this package has been updated for security */
-        RestartSecuritySystem
-    } Restart;
-
-    /**
      * Constructs package
      */
-    Package(const QString &packageId, Info info = UnknownInfo, const QString &summary = QString());
+    Package(const QString &packageId, Info info = InfoUnknown, const QString &summary = QString());
 
     /**
      * Constructs a copy of other.
@@ -163,6 +104,11 @@ public:
      * Destructor
      */
     ~Package();
+
+    /**
+     * Return true is the package id is valid
+     */
+    bool isValid() const;
 
     /**
      * \brief Returns the package ID
@@ -202,209 +148,6 @@ public:
     Info info() const;
 
     /**
-     * Checks weither the package has details or not
-     * \sa Transaction::getDetails()
-    */
-    bool hasDetails() const;
-
-    /**
-     * Returns the package's license
-     * \note this will only return a valid value if hasDetails() returns true
-     */
-    QString license() const;
-
-    /**
-     * Define the package's license
-     * \note this will make hasDetails() return true
-     */
-    void setLicense(const QString &license);
-
-    /**
-     * Returns the package's group (for example Multimedia, Editors...)
-     * \note this will only return a valid value if hasDetails() returns true
-     */
-    Group group() const;
-
-    /**
-     * Define the package's group
-     * \note this will make hasDetails() return true
-     */
-    void setGroup(Group group);
-
-    /**
-     * Returns the package's long description
-     * \note this will only return a valid value if hasDetails() returns true
-     */
-    QString description() const;
-
-    /**
-     * Define the package's long description
-     * \note this will make hasDetails() return true
-     */
-    void setDescription(const QString &description);
-
-    /**
-     * Returns the software's homepage url
-     * \note this will only return a valid value if hasDetails() returns true
-     */
-    QString url() const;
-
-    /**
-     * Define the package's url
-     * \note this will make hasDetails() return true
-     */
-    void setUrl(const QString &url);
-
-    /**
-     * Returns the package's size
-     * \note this will only return a valid value if hasDetails() returns true
-     */
-    qulonglong size() const;
-
-    /**
-     * Define the package's size
-     * \note this will make hasDetails() return true
-     */
-    void setSize(qulonglong size);
-
-    /**
-     * Returns if the package has update details
-     */
-    bool hasUpdateDetails() const;
-
-    /**
-     * Returns the package list of packages that will be updated by updating this package
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QList<Package> updates() const;
-
-    /**
-     * Define the list of packages that will be updated by updating this package
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setUpdates(const QList<Package> &updates);
-
-    /**
-     * Returns the package list of packages that will be obsoleted by this update
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QList<Package> obsoletes() const;
-
-    /**
-     * Define the list of packages that will be obsoleted by updating this package
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setObsoletes(const QList<Package> &obsoletes);
-
-    /**
-     * Returns the verdor URL of this update
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QString vendorUrl() const;
-
-    /**
-     * Define the vendor URL
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setVendorUrl(const QString &vendorUrl);
-
-    /**
-     * Returns the bugzilla URL of this update
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QString bugzillaUrl() const;
-
-    /**
-     * Define the bugzilla URL
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setBugzillaUrl(const QString &bugzillaUrl);
-
-    /**
-     * Returns the CVE (Common Vulnerabilities and Exposures) URL of this update
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QString cveUrl() const;
-
-    /**
-     * Define the CVE (Common Vulnerabilities and Exposures) URL
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setCveUrl(const QString &cveUrl);
-
-    /**
-     * Returns the what kind of restart will be required after this update
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    Package::Restart restart() const;
-
-    /**
-     * Define the restart type
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setRestart(Package::Restart restart);
-
-    /**
-     * Returns the update description's
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QString updateText() const;
-
-    /**
-     * Define the update description's
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setUpdateText(const QString &updateText);
-
-    /**
-     * Returns the update changelog's
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QString changelog() const;
-
-    /**
-     * Define the update changelog's
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setChangelog(const QString &changelog);
-
-    /**
-     * Returns the category of the update, eg. stable or testing
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    UpdateState state() const;
-
-    /**
-     * Define the update changelog's
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setState(UpdateState state);
-
-    /**
-     * Returns the date and time when this update was first issued
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QDateTime issued() const;
-
-    /**
-     * Define the date and time when this update was first issued
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setIssued(const QDateTime &issued);
-
-    /**
-     * Returns the date and time when this updated was updated
-     * \note this will only return a valid value if hasUpdateDetails() returns true
-     */
-    QDateTime updated() const;
-
-    /**
-     * Define the date and time when this updated was updated
-     * \note this will make hasUpdateDetails() return true
-     */
-    void setUpdated(const QDateTime &updated);
-
-    /**
      * Returns the path to the package icon, if known
      * \return A QString holding the path to the package icon if known, an empty QString else
      */
@@ -421,11 +164,9 @@ public:
     Package& operator=(const Package &package);
 
 private:
-    PackagePrivate * const d_ptr;
-
-private:
-    Q_DECLARE_PRIVATE(Package);
+    QSharedDataPointer<PackagePrivate> d;
 };
+typedef QList<Package> PackageList;
 
 } // End namespace PackageKit
 

@@ -68,6 +68,7 @@ void Transaction::init(const QDBusObjectPath &tid)
     // he want us to get it
     if (tid.path().isNull()) {
         d->tid = Daemon::global()->getTid();
+        qDebug() << "packagekit-qt:" << d->tid.path();
     }
 
     int retry = 0;
@@ -115,8 +116,8 @@ void Transaction::init(const QDBusObjectPath &tid)
             SLOT(distroUpgrade(uint,QString,QString)));
     connect(d->p, SIGNAL(ErrorCode(uint,QString)),
             SLOT(errorCode(uint,QString)));
-    connect(d->p, SIGNAL(Files(QString,QString)),
-            SLOT(files(QString,QString)));
+    connect(d->p, SIGNAL(Files(QString,QStringList)),
+            SLOT(files(QString,QStringList)));
     connect(d->p, SIGNAL(Finished(uint,uint)),
             SLOT(finished(uint,uint)));
     connect(d->p, SIGNAL(Message(uint,QString)),
@@ -137,8 +138,8 @@ void Transaction::init(const QDBusObjectPath &tid)
             SLOT(requireRestart(uint,QString)));
     connect(d->p, SIGNAL(Transaction(QDBusObjectPath,QString,bool,uint,uint,QString,uint,QString)),
             SLOT(transaction(QDBusObjectPath,QString,bool,uint,uint,QString,uint,QString)));
-    connect(d->p, SIGNAL(UpdateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)),
-            SLOT(updateDetail(QString,QString,QString,QString,QString,QString, uint,QString,QString,uint,QString,QString)));
+    connect(d->p, SIGNAL(UpdateDetail(QString,QStringList,QStringList,QStringList,QStringList,QStringList, uint,QString,QString,uint,QString,QString)),
+            SLOT(updateDetail(QString,QStringList,QStringList,QStringList,QStringList,QStringList, uint,QString,QString,uint,QString,QString)));
 
 }
 
@@ -529,19 +530,9 @@ void Transaction::searchGroup(const QString &group, Transaction::Filters filters
     searchGroups(QStringList() << group, filters);
 }
 
-void Transaction::searchGroups(Package::Groups groups, Transaction::Filters filters)
+void Transaction::searchGroups(PackageDetails::Groups groups, Transaction::Filters filters)
 {
-    QStringList groupsSL;
-    foreach (const Package::Group &group, groups) {
-        groupsSL << Util::enumToString<Package>(group, "Group", "Group");
-    }
-
-    searchGroups(groupsSL, filters);
-}
-
-void Transaction::searchGroup(Package::Group group, Transaction::Filters filters)
-{
-    searchGroups(Package::Groups() << group, filters);
+    searchGroups(groups, filters);
 }
 
 void Transaction::searchNames(const QStringList &search, Transaction::Filters filters)
