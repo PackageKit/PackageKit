@@ -199,7 +199,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Build PackageKit-Qt
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt],[Build PackageKit-Qt]),
-	      enable_qt=$enableval,enable_qt=no)
+	      enable_qt=$enableval,enable_qt=yes)
 if test x$enable_qt = xyes; then
 	PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
 	PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
