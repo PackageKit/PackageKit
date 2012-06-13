@@ -83,6 +83,7 @@ struct PkTransactionPrivate
 	guint			 elapsed_time;
 	guint			 remaining_time;
 	guint			 speed;
+	guint			 download_size_remaining;
 	gboolean		 finished;
 	gboolean		 allow_cancel;
 	gboolean		 waiting_for_auth;
@@ -147,6 +148,7 @@ struct PkTransactionPrivate
 	guint			 signal_remaining;
 	guint			 signal_status_changed;
 	guint			 signal_speed;
+	guint			 signal_download_size_remaining;
 	guint			 signal_item_progress;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
@@ -1968,6 +1970,24 @@ pk_transaction_speed_cb (GObject *object,
 }
 
 /**
+ * pk_transaction_speed_cb:
+ **/
+static void
+pk_transaction_download_size_remaining_cb (GObject *object,
+					   GParamSpec *pspec,
+					    PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "download_size_remaining", &transaction->priv->download_size_remaining,
+		      NULL);
+	/* emit */
+	pk_transaction_emit_property_changed (transaction,
+					      "DownloadSizeRemaining",
+					      g_variant_new_uint32 (transaction->priv->download_size_remaining));
+	pk_transaction_emit_changed (transaction);
+}
+
+/**
  * pk_transaction_percentage_cb:
  **/
 static void
@@ -2161,6 +2181,19 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 			g_signal_handler_disconnect (priv->backend,
 					priv->signal_speed);
 			priv->signal_speed = 0;
+		}
+	}
+
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_DOWNLOAD_SIZE_REMAINING)) {
+		if (priv->signal_download_size_remaining == 0)
+			priv->signal_download_size_remaining =
+				g_signal_connect (priv->backend, "notify::download-size-remaining",
+						G_CALLBACK (pk_transaction_download_size_remaining_cb), transaction);
+	} else {
+		if (priv->signal_download_size_remaining > 0) {
+			g_signal_handler_disconnect (priv->backend,
+					priv->signal_download_size_remaining);
+			priv->signal_download_size_remaining = 0;
 		}
 	}
 
@@ -5400,6 +5433,10 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	}
 	if (g_strcmp0 (property_name, "Speed") == 0) {
 		retval = g_variant_new_uint32 (priv->speed);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0) {
+		retval = g_variant_new_uint32 (priv->download_size_remaining);
 		goto out;
 	}
 out:

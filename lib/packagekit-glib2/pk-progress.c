@@ -56,6 +56,7 @@ struct _PkProgressPrivate
 	guint				 elapsed_time;
 	guint				 remaining_time;
 	guint				 speed;
+	guint64				 download_size_remaining;
 	guint				 uid;
 	PkPackage			*package;
 };
@@ -72,6 +73,7 @@ enum {
 	PROP_ELAPSED_TIME,
 	PROP_REMAINING_TIME,
 	PROP_SPEED,
+	PROP_DOWNLOAD_SIZE_REMAINING,
 	PROP_UID,
 	PROP_PACKAGE,
 	PROP_ITEM_PROGRESS_ID,
@@ -125,6 +127,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_SPEED:
 		g_value_set_uint (value, progress->priv->speed);
+		break;
+	case PROP_DOWNLOAD_SIZE_REMAINING:
+		g_value_set_uint64 (value, progress->priv->download_size_remaining);
 		break;
 	case PROP_UID:
 		g_value_set_uint (value, progress->priv->uid);
@@ -393,6 +398,27 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 }
 
 /**
+ * pk_progress_set_speed:
+ *
+ * Since: 0.8.0
+ **/
+gboolean
+pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_size_remaining)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->download_size_remaining == download_size_remaining)
+		return FALSE;
+
+	/* new value */
+	progress->priv->download_size_remaining = download_size_remaining;
+	g_object_notify (G_OBJECT(progress), "download-size-remaining");
+
+	return TRUE;
+}
+
+/**
  * pk_progress_set_uid:
  *
  * Since: 0.5.2
@@ -600,6 +626,16 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SPEED, pspec);
+	
+	/**
+	 * PkProgress:download-size-remaining:
+	 *
+	 * Since: 0.8.0
+	 */
+	pspec = g_param_spec_uint ("download-size-remaining", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
 
 	/**
 	 * PkProgress:uid:

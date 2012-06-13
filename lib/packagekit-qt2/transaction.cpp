@@ -265,6 +265,15 @@ uint Transaction::speed() const
     return d->p->speed();
 }
 
+qulonglong Transaction::downloadSizeRemaining() const
+{
+    Q_D(const Transaction);
+    if (d->destroyed) {
+        return 0;
+    }
+    return d->p->downloadSizeRemaining();
+}    
+
 Transaction::Role Transaction::role() const
 {
     Q_D(const Transaction);

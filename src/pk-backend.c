@@ -121,6 +121,7 @@ struct PkBackendPrivate
 	guint			 signal_error_timeout;
 	guint			 signal_finished;
 	guint			 speed;
+	guint64			 download_size_remaining;
 	GHashTable		*eulas;
 	GModule			*handle;
 	GThread			*thread;
@@ -954,6 +955,35 @@ pk_backend_set_speed (PkBackend *backend, guint speed)
 	/* set new value */
 	backend->priv->speed = speed;
 	g_object_notify (G_OBJECT (backend), "speed");
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_download_size_remaining:
+ **/
+gboolean
+pk_backend_set_download_size_remaining (PkBackend *backend, guint64 download_size_remaining)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->loaded, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		// TODO find out how to print the number
+		g_warning ("already set error, cannot process: download-size-remaining");
+		return FALSE;
+	}
+
+	/* set the same twice? */
+	if (backend->priv->download_size_remaining == download_size_remaining) {
+		// TODO find out how to print the number
+		g_debug ("duplicate set of download_size_remaining");
+		return FALSE;
+	}
+
+	/* set new value */
+	backend->priv->download_size_remaining = download_size_remaining;
+	g_object_notify (G_OBJECT (backend), "download-size-remaining");
 	return TRUE;
 }
 

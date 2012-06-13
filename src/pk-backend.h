@@ -79,6 +79,7 @@ typedef enum {
 	PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
 	PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
 	PK_BACKEND_SIGNAL_NOTIFY_SPEED,
+	PK_BACKEND_SIGNAL_NOTIFY_DOWNLOAD_SIZE_REMAINING,
 	PK_BACKEND_SIGNAL_REPO_DETAIL,
 	PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
 	PK_BACKEND_SIGNAL_EULA_REQUIRED,
@@ -234,6 +235,8 @@ gboolean	 pk_backend_set_item_progress		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_speed			(PkBackend	*backend,
 							 guint		 speed);
+gboolean	 pk_backend_set_download_size_remaining	(PkBackend	*backend,
+							 guint64	 download_size_remaining);
 gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
 gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,

@@ -76,6 +76,7 @@ typedef enum {
 	PK_PROGRESS_TYPE_ELAPSED_TIME,
 	PK_PROGRESS_TYPE_REMAINING_TIME,
 	PK_PROGRESS_TYPE_SPEED,
+	PK_PROGRESS_TYPE_DOWNLOAD_SIZE_REMAINING,
 	PK_PROGRESS_TYPE_UID,
 	PK_PROGRESS_TYPE_PACKAGE,
 	PK_PROGRESS_TYPE_ITEM_PROGRESS,
@@ -109,6 +110,8 @@ gboolean	 pk_progress_set_remaining_time		(PkProgress		*progress,
 							 guint			 remaining_time);
 gboolean	 pk_progress_set_speed			(PkProgress		*progress,
 							 guint			 speed);
+gboolean	 pk_progress_set_download_size_remaining(PkProgress		*progress,
+							 guint64		 download_size_remaining);
 gboolean	 pk_progress_set_uid			(PkProgress		*progress,
 							 guint			 uid);
 gboolean	 pk_progress_set_package		(PkProgress		*progress,

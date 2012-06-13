@@ -109,6 +109,15 @@
         </doc:description>
       </doc:doc>
     </property>
+    <property name="DownloadSizeRemaining" type="t" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The number of bytes remaining to download, 0 if nothing is left to download.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
 
     <!--*****************************************************************************************-->
     <method name="SetHints">

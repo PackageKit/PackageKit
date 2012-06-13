@@ -171,6 +171,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 	gchar *text;
 	gboolean ret = TRUE;
 	guint64 speed;
+	guint64 download_size_remaining;
 	PkInfoEnum info;
 	PkRestartEnum restart;
 	PkGroupEnum group;
@@ -440,6 +441,21 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 		pk_backend_set_speed (priv->backend, speed);
+	} else if (g_strcmp0 (command, "download-size-remaining") == 0) {
+		if (size != 2) {
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+		ret = pk_strtouint64 (sections[1], &download_size_remaining);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "failed to parse download_size_remaining: '%s'",
+				     sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_set_download_size_remaining (priv->backend, download_size_remaining);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

@@ -474,6 +474,13 @@ public:
      * \return speed bits per second, or 0 if not known.
      */
     uint speed() const;
+    
+    /**
+     * Returns the number of bytes remaining to download
+     * \return bytes to download, or 0 if nothing is left to download.
+     */
+    Q_PROPERTY(qulonglong DownloadSizeRemaining READ downloadSizeRemaining)
+    qulonglong downloadSizeRemaining() const;
 
     /**
      * Returns information describing the transaction
