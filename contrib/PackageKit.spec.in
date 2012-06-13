@@ -388,7 +388,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files qt
 %defattr(-,root,root,-)
-#%{_libdir}/*packagekit-qt*.so.*
+%{_libdir}/*packagekit-qt*.so.*
 
 %files cron
 %defattr(-,root,root,-)
@@ -439,10 +439,10 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files qt-devel
 %defattr(-,root,root,-)
-#%{_libdir}/libpackagekit-qt*.so
-#%{_includedir}/PackageKit/packagekit-qt2/*
-#%{_libdir}/pkgconfig/packagekit-qt2.pc
-#%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
+%{_libdir}/libpackagekit-qt*.so
+%{_includedir}/PackageKit/packagekit-qt2/*
+%{_libdir}/pkgconfig/packagekit-qt2.pc
+%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)
