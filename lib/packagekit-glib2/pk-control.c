@@ -1787,7 +1787,6 @@ pk_control_can_authorize_cb (GObject *source_object,
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkControlState *state = (PkControlState *) user_data;
 	GVariant *value;
-	const gchar *authorize_state = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -1800,8 +1799,7 @@ pk_control_can_authorize_cb (GObject *source_object,
 	}
 
 	/* save data */
-	g_variant_get (value, "(&s)", &authorize_state);
-	state->authorize = pk_authorize_type_enum_from_string (authorize_state);
+	g_variant_get (value, "(u)", &state->authorize);
 	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
 		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_can_authorize_state_finish (state, error);

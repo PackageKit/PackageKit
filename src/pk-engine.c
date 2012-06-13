@@ -1348,7 +1348,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		}
 
 		/* all okay */
-		value = g_variant_new ("(s)", pk_authorize_type_enum_to_string (result_enum));
+		value = g_variant_new ("(u)", result_enum);
 		g_dbus_method_invocation_return_value (invocation, value);
 		goto out;
 	}

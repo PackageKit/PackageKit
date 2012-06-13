@@ -184,7 +184,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="result" direction="out">
+      <arg type="u" name="result" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
