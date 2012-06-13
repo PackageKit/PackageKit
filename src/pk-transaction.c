@@ -1035,6 +1035,10 @@ pk_transaction_set_backend (PkTransaction *transaction,
 			    PkBackend *backend)
 {
 	/* save a reference */
+	if (transaction->priv->signal_locked_changed != 0) {
+		g_signal_handler_disconnect (transaction->priv->backend,
+					     transaction->priv->signal_locked_changed);
+	}
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
 	transaction->priv->backend = g_object_ref (backend);
