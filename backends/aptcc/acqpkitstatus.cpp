@@ -146,6 +146,9 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
         m_lastPercent = percent_done;
     }
 
+    // Emit the download remaining size
+    pk_backend_set_download_size_remaining(m_backend, TotalBytes - CurrentBytes);
+
     for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
          I = Owner->WorkerStep(I))
     {

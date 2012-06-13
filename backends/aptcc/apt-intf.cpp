@@ -2489,12 +2489,53 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating, bool downloa
     // get a fetcher
     pkgAcquire fetcher;
     fetcher.Setup(&Stat);
+    
+    // Read the source list
+    if (m_cache->BuildSourceList() == false) {
+        return false;
+    }
+    pkgSourceList *List = m_cache->GetSourceList();
 
     // Create the package manager and prepare to download
     SPtr<pkgPackageManager> PM = _system->CreatePM(cache);
-    if (PM->GetArchives(&fetcher, m_cache->GetSourceList(), &Recs) == false ||
+    if (PM->GetArchives(&fetcher, List, &Recs) == false ||
             _error->PendingError() == true) {
         return false;
+    }
+    
+    // Display statistics
+    double FetchBytes = fetcher.FetchNeeded();
+    double FetchPBytes = fetcher.PartialPresent();
+    double DebBytes = fetcher.TotalNeeded();
+    if (DebBytes != cache->DebSize()) {
+        cout << DebBytes << ',' << cache->DebSize() << endl;
+        cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
+    }
+
+    // Number of bytes
+    if (FetchBytes != 0) {
+        // Emit the remainig download size
+        pk_backend_set_download_size_remaining(m_backend, FetchBytes);
+    }
+
+    /* Check for enough free space */
+    struct statvfs Buf;
+    string OutputDir = _config->FindDir("Dir::Cache::Archives");
+    if (statvfs(OutputDir.c_str(),&Buf) != 0) {
+        return _error->Errno("statvfs",
+                             "Couldn't determine free space in %s",
+                             OutputDir.c_str());
+    }
+    if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize) {
+        struct statfs Stat;
+        if (statfs(OutputDir.c_str(), &Stat) != 0 ||
+                unsigned(Stat.f_type)            != RAMFS_MAGIC) {
+            pk_backend_error_code(m_backend,
+                                  PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+                                  string("You don't have enough free space in ").append(OutputDir).c_str());
+            return _error->Error("You don't have enough free space in %s.",
+                                 OutputDir.c_str());
+        }
     }
 
     // Generate the list of affected packages
@@ -2524,56 +2565,12 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating, bool downloa
         Stat.addPackage(ver);
     }
 
-    // Display statistics
-    double FetchBytes = fetcher.FetchNeeded();
-    double FetchPBytes = fetcher.PartialPresent();
-    double DebBytes = fetcher.TotalNeeded();
-    if (DebBytes != cache->DebSize()) {
-        cout << DebBytes << ',' << cache->DebSize() << endl;
-        cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
-    }
-
-    // Number of bytes
-    // 	if (DebBytes != FetchBytes)
-    // 	    ioprintf(c1out, "Need to get %sB/%sB of archives.\n",
-    // 		    SizeToStr(FetchBytes).c_str(),SizeToStr(DebBytes).c_str());
-    // 	else if (DebBytes != 0)
-    // 	    ioprintf(c1out, "Need to get %sB of archives.\n",
-    // 		    SizeToStr(DebBytes).c_str());
-
-    // Size delta
-    // 	if (Cache->UsrSize() >= 0)
-    // 	    ioprintf(c1out, "After this operation, %sB of additional disk space will be used.\n",
-    // 		    SizeToStr(Cache->UsrSize()).c_str());
-    // 	else
-    // 	    ioprintf(c1out, "After this operation, %sB disk space will be freed.\n",
-    // 		    SizeToStr(-1*Cache->UsrSize()).c_str());
-
     if (_error->PendingError() == true) {
         cout << "PendingError " << endl;
         return false;
     }
 
-    /* Check for enough free space */
-    struct statvfs Buf;
-    string OutputDir = _config->FindDir("Dir::Cache::Archives");
-    if (statvfs(OutputDir.c_str(),&Buf) != 0) {
-        return _error->Errno("statvfs",
-                             "Couldn't determine free space in %s",
-                             OutputDir.c_str());
-    }
-    if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize) {
-        struct statfs Stat;
-        if (statfs(OutputDir.c_str(), &Stat) != 0 ||
-                unsigned(Stat.f_type)            != RAMFS_MAGIC) {
-            pk_backend_error_code(m_backend,
-                                  PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
-                                  string("You don't have enough free space in ").append(OutputDir).c_str());
-            return _error->Error("You don't have enough free space in %s.",
-                                 OutputDir.c_str());
-        }
-    }
-
+    // Make sure we are not installing any untrusted package is untrusted is not set
     if ((!checkTrusted(fetcher, simulating)) && (!simulating)) {
         return false;
     }
@@ -2581,6 +2578,7 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating, bool downloa
     if (simulating) {
         // Print out a list of packages that are going to be installed extra
         checkChangedPackages(cache, true);
+
         return true;
     } else {
         // Store the packages that are going to change
