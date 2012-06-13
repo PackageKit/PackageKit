@@ -166,6 +166,7 @@ enum {
 	PROP_ROLE,
 	PROP_TRANSACTION_ID,
 	PROP_SPEED,
+	PROP_DOWNLOAD_SIZE_REMAINING,
 	PROP_PERCENTAGE,
 	PROP_REMAINING,
 	PROP_UID,
@@ -2879,6 +2880,9 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_SPEED:
 		g_value_set_uint (value, priv->speed);
 		break;
+	case PROP_DOWNLOAD_SIZE_REMAINING:
+		g_value_set_uint64 (value, priv->download_size_remaining);
+		break;
 	case PROP_PERCENTAGE:
 		g_value_set_uint (value, priv->percentage);
 		break;
@@ -2926,6 +2930,9 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_SPEED:
 		priv->speed = g_value_get_uint (value);
+		break;
+	case PROP_DOWNLOAD_SIZE_REMAINING:
+		priv->download_size_remaining = g_value_get_uint64 (value);
 		break;
 	case PROP_PERCENTAGE:
 		priv->percentage = g_value_get_uint (value);
@@ -3034,6 +3041,14 @@ pk_backend_class_init (PkBackendClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SPEED, pspec);
+	
+	/**
+	 * PkBackend:download-size-remaining:
+	 */
+	pspec = g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
+				   0, G_MAXUINT64, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
 
 	/**
 	 * PkBackend:percentage:
