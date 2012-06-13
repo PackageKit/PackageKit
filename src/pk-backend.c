@@ -849,6 +849,14 @@ pk_backend_call_vfunc (PkBackend *backend,
 	if (!item->enabled || item->vfunc == NULL)
 		return;
 
+	/* if we're in the main thread already, don't bother with the
+	 * idle add and do the vfunc now */
+	if (backend->priv->thread == NULL ||
+	    g_thread_self () == backend->priv->thread) {
+		item->vfunc (backend, object, item->user_data);
+		return;
+	}
+
 	/* emit idle, TODO: do we ever need to cancel this? */
 	helper = g_new0 (PkBackendVFuncHelper, 1);
 	helper->backend = backend;
