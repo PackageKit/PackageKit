@@ -378,6 +378,6 @@ pk_backend_finish (PkBackend *self, GError *error)
 		pk_backend_set_status (self, PK_STATUS_ENUM_CANCEL);
 	}
 
-	pk_backend_thread_finished (self);
+	pk_backend_finished (self);
 	return (error == NULL);
 }

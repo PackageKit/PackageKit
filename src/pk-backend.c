@@ -819,8 +819,14 @@ pk_backend_call_vfunc_idle_cb (gpointer user_data)
 
 	/* call transaction vfunc on main thread */
 	item = &helper->backend->priv->vfunc_items[helper->signal_kind];
-	item->vfunc (helper->backend, helper->object, item->user_data);
-	g_free (helper);
+	if (item != NULL) {
+		item->vfunc (helper->backend,
+			     helper->object,
+			     item->user_data);
+	} else {
+		g_warning ("tried to do signal %i when no longer connected",
+			   helper->signal_kind);
+	}
 	return FALSE;
 }
 
@@ -848,7 +854,10 @@ pk_backend_call_vfunc (PkBackend *backend,
 	helper->backend = backend;
 	helper->signal_kind = signal_kind;
 	helper->object = object;
-	g_idle_add (pk_backend_call_vfunc_idle_cb, helper);
+	g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+			 pk_backend_call_vfunc_idle_cb,
+			 helper,
+			 g_free);
 }
 
 /**
@@ -2361,10 +2370,10 @@ pk_backend_finished_delay (gpointer data)
 }
 
 /**
- * pk_backend_finished:
+ * pk_backend_finished_real:
  **/
-gboolean
-pk_backend_finished (PkBackend *backend)
+static gboolean
+pk_backend_finished_real (PkBackend *backend)
 {
 	const gchar *role_text;
 
@@ -2395,10 +2404,6 @@ pk_backend_finished (PkBackend *backend)
 		g_warning ("already finished");
 		return FALSE;
 	}
-
-	/* ensure threaded backends get stop vfuncs fired */
-	if (backend->priv->thread != NULL)
-		pk_backend_transaction_stop (backend);
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
@@ -2454,24 +2459,31 @@ pk_backend_finished (PkBackend *backend)
 }
 
 /**
- * pk_backend_thread_finished_cb:
+ * pk_backend_finished_cb:
  **/
 static gboolean
-pk_backend_thread_finished_cb (PkBackend *backend)
+pk_backend_finished_cb (PkBackend *backend)
 {
-	pk_backend_finished (backend);
+	pk_backend_finished_real (backend);
 	return FALSE;
 }
 
 /**
- * pk_backend_thread_finished:
+ * pk_backend_finished:
  **/
 void
-pk_backend_thread_finished (PkBackend *backend)
+pk_backend_finished (PkBackend *backend)
 {
 	guint idle_id;
-	idle_id = g_idle_add ((GSourceFunc) pk_backend_thread_finished_cb, backend);
-	g_source_set_name_by_id (idle_id, "[PkBackend] finished");
+
+	/* we in the helper thread */
+	if (g_thread_self () == backend->priv->thread) {
+		pk_backend_transaction_stop (backend);
+		idle_id = g_idle_add ((GSourceFunc) pk_backend_finished_cb, backend);
+		g_source_set_name_by_id (idle_id, "[PkBackend] finished");
+	} else {
+		pk_backend_finished_real (backend);
+	}
 }
 
 /**

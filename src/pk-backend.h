@@ -272,7 +272,7 @@ void		 pk_backend_set_vfunc			(PkBackend	*backend,
 							 gpointer	 user_data);
 
 /* signal helpers */
-gboolean	 pk_backend_finished			(PkBackend	*backend);
+void		 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 PkInfoEnum	 info,
 							 const gchar	*package_id,
@@ -384,7 +384,6 @@ gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
 							 PkBackendThreadFunc func);
-void		 pk_backend_thread_finished		(PkBackend	*backend);
 
 gboolean	 pk_backend_is_online			(PkBackend	*backend);
 gboolean	 pk_backend_use_background		(PkBackend	*backend);
