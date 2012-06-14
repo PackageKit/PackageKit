@@ -26,34 +26,43 @@
 static PkBackendSpawn *spawn;
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_initialize (PkBackend *backend)
+pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
+
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_backend (priv->spawn, backend);
 	pk_backend_spawn_set_name (spawn, "pisi");
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_destroy (PkBackend *backend)
+pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
 static PkBitfield
-backend_get_groups (PkBackend *backend)
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_GROUP_ENUM_ACCESSORIES,
@@ -80,10 +89,10 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
 static PkBitfield
-backend_get_filters (PkBackend *backend)
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums(
 		PK_FILTER_ENUM_GUI,
@@ -95,17 +104,17 @@ backend_get_filters (PkBackend *backend)
  * pk_backend_cancel:
  */
 static void
-backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -117,10 +126,10 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
 static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -129,10 +138,10 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
 static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -141,10 +150,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -156,10 +165,10 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -168,10 +177,10 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
 static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -189,10 +198,10 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 }
 
 /**
- * backend_install_files:
+ * pk_backend_install_files:
  */
 static void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 
@@ -203,10 +212,10 @@ backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_p
 }
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
 static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -222,7 +231,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_packages:
  */
 static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
@@ -236,7 +245,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -251,7 +260,7 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_search_files:
  */
 static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -266,7 +275,7 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_search_groups:
  */
 static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -281,7 +290,7 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_search_names:
  */
 static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -296,7 +305,7 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -317,7 +326,7 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
  * pk_backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
@@ -326,7 +335,7 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -341,7 +350,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
@@ -353,56 +362,25 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
  * pk_backend_repo_set_data:
  */
 static void
-backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+pk_backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "repo-set-data", rid, parameter, value, NULL);
 }
 
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-PK_BACKEND_OPTIONS (
-	"PiSi",					/* description */
-	"S.Çağlar Onur <caglar@pardus.org.tr>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	backend_get_depends,			/* get_depends */
-	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
-	backend_get_files,			/* get_files */
-	NULL,					/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
-	NULL,					/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_files,			/* install_files */
-	backend_install_packages,		/* install_packages */
-	NULL,					/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	NULL,					/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_resolve,			/* resolve */
-	backend_search_details,			/* search_details */
-	backend_search_files,			/* search_files */
-	backend_search_groups,			/* search_groups */
-	backend_search_names,			/* search_names */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	NULL,					/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* upgrade_system */
-	NULL,					/* repair_system */
-	NULL,					/* simulate_repair_system */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
+/**
+ * pk_backend_get_description:
+ */
+const gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return "PiSi";
+}
 
+/**
+ * pk_backend_get_author:
+ */
+const gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return "S.Çağlar Onur <caglar@pardus.org.tr>";
+}
