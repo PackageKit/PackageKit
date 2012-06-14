@@ -118,7 +118,7 @@ typedef enum {
 
 /* I need this to avoid showing error messages more than once.
  * It's initalized by backend_initalize() and destroyed by
- * backend_destroy(), but every method should clean it at the
+ * pk_backend_destroy(), but every method should clean it at the
  * end. */
 typedef struct {
 	PbRpmState	rpmstate;
@@ -2242,6 +2242,14 @@ pk_backend_initialize (PkBackend *backend)
 
 	clv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify)n_array_free);
 
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+
 	pberror = g_new0 (PbError, 1);
 	pberror->tslog = g_string_new ("");
 
@@ -2971,7 +2979,7 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
@@ -3178,7 +3186,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
@@ -3198,7 +3206,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
  * pk_backend_update_system:
  **/
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update system when offline!");
@@ -3414,4 +3422,3 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_string (backend, "command", "cd /all-avail; upgrade --test");
 	pk_backend_thread_create (backend, do_simulate_packages);
 }
-
