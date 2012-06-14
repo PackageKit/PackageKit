@@ -1975,15 +1975,15 @@ pk_transaction_speed_cb (GObject *object,
 static void
 pk_transaction_download_size_remaining_cb (GObject *object,
 					   GParamSpec *pspec,
-					    PkTransaction *transaction)
+					   PkTransaction *transaction)
 {
 	g_object_get (object,
-		      "download_size_remaining", &transaction->priv->download_size_remaining,
+		      "download-size-remaining", &transaction->priv->download_size_remaining,
 		      NULL);
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
 					      "DownloadSizeRemaining",
-					      g_variant_new_uint32 (transaction->priv->download_size_remaining));
+					      g_variant_new_uint64 (transaction->priv->download_size_remaining));
 	pk_transaction_emit_changed (transaction);
 }
 
