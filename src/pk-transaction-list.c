@@ -841,30 +841,6 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 }
 
 /**
- * pk_transaction_list_get_locked:
- *
- * Return value: %TRUE if any of the transactions in progress are
- * locking a database or resource and cannot be cancelled.
- **/
-gboolean
-pk_transaction_list_get_locked (PkTransactionList *tlist)
-{
-	PkBackend *backend;
-	PkTransactionItem *item;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-
-	/* anything running? : TODO, multiplex for parallel transactions */
-	item = pk_transaction_list_get_active_transaction (tlist);
-	if (item == NULL)
-		return FALSE;
-	backend = pk_transaction_get_backend (item->transaction);
-	if (item == NULL)
-		return FALSE;
-	return pk_backend_get_locked (backend);
-}
-
-/**
  * pk_transaction_list_get_state:
  **/
 gchar *
@@ -903,10 +879,6 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 					pk_transaction_state_to_string (state),
 					item->background);
 	}
-
-	/* more than one running */
-	if (running > 1)
-		g_string_append_printf (string, "ERROR: %i are running\n", running);
 
 	/* nothing running */
 	if (waiting == length)
@@ -984,9 +956,8 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		g_debug ("%i have not been committed and may be pending auth", no_commit);
 
 	/* more than one running */
-	if (running > 1) {
-		g_warning ("%i are running", running);
-		ret = FALSE;
+	if (running > 0) {
+		g_debug ("%i are running", running);
 	}
 
 	/* nothing running */
