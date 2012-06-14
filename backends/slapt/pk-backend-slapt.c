@@ -104,8 +104,8 @@ static const gchar *_config_file = "/etc/slapt-get/slapt-getrc";
 
 /* prototypes */
 static void _show_transaction(PkBackend *backend, slapt_transaction_t *transaction);
-static void _install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate);
-static void _update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate);
+static void _install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids, gboolean simulate);
+static void _update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids, gboolean simulate);
 static void _remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove, gboolean simulate);
 
 /* CURLOPT_PROGRESSFUNCTION */
@@ -134,6 +134,14 @@ void
 pk_backend_initialize (PkBackend *backend)
 {
 	struct category_map *catgroup;
+
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
 
 	_config = slapt_read_rc_config(_config_file);
 	if (_config == NULL)
@@ -733,7 +741,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	_install_packages (backend, only_trusted, package_ids, FALSE);
 }
@@ -748,7 +756,7 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 static void
-_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate)
+_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids, gboolean simulate)
 {
 	guint i;
 	guint len;
@@ -1138,7 +1146,7 @@ out:
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	_update_packages (backend, only_trusted, package_ids, FALSE);
 }
@@ -1153,7 +1161,7 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 static void
-_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids, gboolean simulate)
+_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids, gboolean simulate)
 {
 	guint i;
 	guint len;
