@@ -363,6 +363,32 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
 }
 
 /**
+ * pk_transaction_list_get_active_transactions:
+ *
+ **/
+static GPtrArray *
+pk_transaction_list_get_active_transactions (PkTransactionList *tlist)
+{
+	guint i;
+	GPtrArray *array;
+	GPtrArray *res;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
+
+	/* create array to store the results */
+	res = g_ptr_array_new ();
+
+	/* find the runner with the transaction ID */
+	array = tlist->priv->array;
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_RUNNING)
+			g_ptr_array_add (res, item);
+	}
+
+	return res;
+}
  * pk_transaction_list_get_next_item:
  **/
 static PkTransactionItem *
@@ -587,25 +613,40 @@ out:
 }
 
 /**
- * pk_transaction_list_get_active_transaction:
+ * pk_transaction_list_get_locked:
+ *
+ * Return value: %TRUE if any of the transactions in progress are
+ * locking a database or resource and cannot be cancelled.
  **/
-static PkTransactionItem *
-pk_transaction_list_get_active_transaction (PkTransactionList *tlist)
+gboolean
+pk_transaction_list_get_locked (PkTransactionList *tlist)
 {
-	guint i;
-	GPtrArray *array;
+	PkBackend *backend;
 	PkTransactionItem *item;
+	GPtrArray *array;
+	guint i;
+	gboolean ret = FALSE;
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	/* find the runner with the transaction ID */
-	array = tlist->priv->array;
+	/* anything running? */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0)
+		goto out;
+
+	/* check if any backend in running transaction is locked at time */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_RUNNING)
-			return item;
+
+		backend = pk_transaction_get_backend (item->transaction);
+		ret = pk_backend_get_locked (backend);
+		if (ret)
+			goto out;
 	}
-	return NULL;
+
+out:
+	g_ptr_array_free (array, TRUE);
+	return ret;
 }
 
 /**
