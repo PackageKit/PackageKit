@@ -43,6 +43,22 @@ typedef struct {
 	PkBackend *backend;
 } SearchParams;
 
+
+/**
+ * pk_pk_backend_initialize:
+ */
+void
+pk_pk_backend_initialize (PkBackend *backend)
+{
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+}
+
 static void
 opkg_unknown_error (PkBackend *backend, gint error_code, const gchar *failed_cmd)
 {
@@ -145,10 +161,10 @@ handle_install_error (PkBackend *backend, int err)
 }
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  */
 static void
-backend_initialize (PkBackend *backend)
+pk_backend_initialize (PkBackend *backend)
 {
 	int opkg = opkg_new ();
 
@@ -167,10 +183,10 @@ backend_initialize (PkBackend *backend)
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  */
 static void
-backend_destroy (PkBackend *backend)
+pk_backend_destroy (PkBackend *backend)
 {
 	opkg_free ();
 }
@@ -236,10 +252,10 @@ backend_refresh_cache_thread (PkBackend *backend)
 }
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
 static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -345,7 +361,7 @@ backend_search_thread (PkBackend *backend)
 }
 
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, gchar **search)
+pk_backend_search_name (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	SearchParams *params;
 
@@ -363,10 +379,10 @@ backend_search_name (PkBackend *backend, PkBitfield filters, gchar **search)
 }
 
 /**
- * backend_search_description:
+ * pk_backend_search_description:
  */
 static void
-backend_search_description (PkBackend *backend, PkBitfield filters, gchar **search)
+pk_backend_search_description (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	SearchParams *params;
 
@@ -384,7 +400,7 @@ backend_search_description (PkBackend *backend, PkBitfield filters, gchar **sear
 }
 
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, gchar **search)
+pk_backend_search_group (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	SearchParams *params;
 
@@ -432,7 +448,7 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
@@ -493,7 +509,7 @@ backend_remove_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gpointer *params;
 
@@ -514,10 +530,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
 static PkBitfield
-backend_get_filters (PkBackend *backend)
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_INSTALLED,
@@ -542,7 +558,7 @@ backend_update_system_thread (PkBackend *backend)
 }
 
 static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -582,7 +598,7 @@ backend_update_package_thread (PkBackend *backend)
 }
 
 static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gint i;
 
@@ -596,7 +612,7 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
 
 static void
@@ -627,7 +643,7 @@ backend_get_updates_thread (PkBackend *backend)
 }
 
 static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -636,10 +652,10 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
 static PkBitfield
-backend_get_groups (PkBackend *backend)
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_GROUP_ENUM_COMMUNICATION,
@@ -653,7 +669,7 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
 static gboolean
 backend_get_details_thread (PkBackend *backend)
@@ -690,7 +706,7 @@ backend_get_details_thread (PkBackend *backend)
 	if (pkg->tags) {
 		for (group_index = 0; group < PK_GROUP_ENUM_LAST; group_index++) {
 			group = 1 << group_index;
-			if (!(group & backend_get_groups(backend))) continue;
+			if (!(group & pk_backend_get_groups(backend))) continue;
 			if (opkg_check_tag(pkg, (const gchar *)pk_group_enum_to_string(group))) 
 				break;
 		}
@@ -703,57 +719,26 @@ backend_get_details_thread (PkBackend *backend)
 }
 
 static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-PK_BACKEND_OPTIONS (
-	"opkg",					/* description */
-	"Thomas Wood <thomas@openedhand.com>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	NULL,					/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	NULL,					/* get_depends */
-	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
-	NULL,					/* get_packages */
-	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	NULL,					/* install_files */
-	backend_install_packages,		/* install_packages */
-	NULL,					/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
-	backend_search_description,		/* search_details */
-	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	NULL,					/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* upgrade_system */
-	NULL,					/* repair_system */
-	NULL,					/* simulate_repair_system */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
+/**
+ * pk_backend_get_description:
+ */
+const gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return "opkg";
+}
 
+/**
+ * pk_backend_get_author:
+ */
+const gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return "Thomas Wood <thomas@openedhand.com>";
+}
