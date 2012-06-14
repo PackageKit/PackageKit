@@ -57,6 +57,15 @@ void
 pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
+
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_backend (priv->spawn, backend);
 	pk_backend_spawn_set_filter_stderr (spawn, pk_backend_stderr_cb);
@@ -64,7 +73,7 @@ pk_backend_initialize (PkBackend *backend)
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
 void
@@ -111,7 +120,7 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
 void
 pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
@@ -126,7 +135,7 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
 void
 pk_backend_get_details (PkBackend *backend, gchar **package_ids)
@@ -149,7 +158,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend)
 #endif /* HAVE_PYTHON_META_RELEASE */
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
 void
 pk_backend_get_files (PkBackend *backend, gchar **package_ids)
@@ -161,7 +170,7 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
 void
 pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
@@ -176,7 +185,7 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
 void
 pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
@@ -268,10 +277,10 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -282,10 +291,10 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 }
 
 /**
- * backend_install_files:
+ * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 
@@ -311,7 +320,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 } */
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
 void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
@@ -397,7 +406,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -411,7 +420,7 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
@@ -492,7 +501,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
  * pk_backend_repair_system:
  */
 void
-pk_backend_repair_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "repair-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
@@ -517,7 +526,7 @@ pk_backend_get_categories (PkBackend *backend)
 } */
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
@@ -549,7 +558,7 @@ pk_backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
