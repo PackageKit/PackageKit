@@ -268,35 +268,6 @@ pk_backend_transaction_start (PkBackend *backend)
 	guint uid;
 	gchar *cmdline = NULL;
 
-	/* initially try to take all locks */
-	ret = zif_lock_take (priv->lock,
-			     ZIF_LOCK_TYPE_RPMDB_WRITE,
-			     &error);
-	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
-				       "failed to get rpmdb write lock");
-		goto out;
-	}
-	ret = zif_lock_take (priv->lock,
-			     ZIF_LOCK_TYPE_REPO_WRITE,
-			     &error);
-	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
-				       "failed to get repo write lock");
-		goto out;
-	}
-	ret = zif_lock_take (priv->lock,
-			     ZIF_LOCK_TYPE_METADATA_WRITE,
-			     &error);
-	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_CANNOT_GET_LOCK,
-				       "failed to get metadata write lock");
-		goto out;
-	}
-
 	/* try to set, or re-set install root */
 	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
 					  NULL,
@@ -380,36 +351,6 @@ pk_backend_transaction_reset (PkBackend *backend)
 void
 pk_backend_transaction_stop (PkBackend *backend)
 {
-	gboolean ret;
-	GError *error = NULL;
-
-	/* try to release all locks */
-	ret = zif_lock_release (priv->lock,
-				ZIF_LOCK_TYPE_RPMDB_WRITE,
-				&error);
-	if (!ret) {
-		g_warning ("failed to release rpmdb write: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-	ret = zif_lock_release (priv->lock,
-				ZIF_LOCK_TYPE_REPO_WRITE,
-				&error);
-	if (!ret) {
-		g_warning ("failed to release repo write: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-	ret = zif_lock_release (priv->lock,
-				ZIF_LOCK_TYPE_METADATA_WRITE,
-				&error);
-	if (!ret) {
-		g_warning ("failed to release metadata write: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	return;
 }
 
 /**
