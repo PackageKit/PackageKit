@@ -735,6 +735,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	gboolean ret;
 	PkTransactionItem *item;
 	PkTransactionItem *item_active;
+	GPtrArray *array;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
@@ -770,12 +771,15 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* do the transaction now if we have no other in progress */
-	item_active = pk_transaction_list_get_active_transaction (tlist);
-	if (item_active == NULL) {
+	/* FIXME: Hack to keep this function working with get_active_transactions, adjustment to parallel transactions
+	 * is done in the para_processing branch right now. */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0) {
 		g_debug ("running %s as no others in progress", item->tid);
 		pk_transaction_list_run_item (tlist, item);
 		goto out;
 	}
+	item_active = (PkTransactionItem *) g_ptr_array_index (array, 0);
 
 	/* is the current running transaction backtround, and this new
 	 * transaction foreground? */
@@ -791,6 +795,9 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 		goto out;
 	}
 out:
+	if (array != NULL)
+		g_ptr_array_free (array, TRUE);
+
 	return TRUE;
 }
 
