@@ -127,6 +127,15 @@ pk_backend_initialize (PkBackend *backend)
 	/* create private area */
 	priv = new PkBackendZYppPrivate;
 	zypp_logging ();
+
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+
 	g_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	priv->eventDirectors[backend] = eventDirector;
