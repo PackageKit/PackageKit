@@ -1851,9 +1851,15 @@ pk_backend_get_groups (PkBackend *backend)
 	GPtrArray *array = NULL;
 	guint i;
 	PkBitfield groups = 0;
+	ZifState *state;
 
 	/* get the dynamic group list */
+	state = zif_state_new ();
+#if ZIF_CHECK_VERSION(0,3,1)
+	array = zif_groups_get_groups (priv->groups, state, &error);
+#else
 	array = zif_groups_get_groups (priv->groups, &error);
+#endif
 	if (array == NULL) {
 		pk_backend_error_code (backend,
 				       PK_ERROR_ENUM_GROUP_LIST_INVALID,
@@ -1874,6 +1880,7 @@ pk_backend_get_groups (PkBackend *backend)
 	pk_bitfield_add (groups, PK_GROUP_ENUM_COLLECTIONS);
 	pk_bitfield_add (groups, PK_GROUP_ENUM_NEWEST);
 out:
+	g_object_unref (state);
 	return groups;
 }
 
