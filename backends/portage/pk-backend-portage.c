@@ -33,6 +33,15 @@ void
 pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
+
+	/* BACKEND MAINTAINER: feel free to remove this when you've
+	 * added support for ONLY_DOWNLOAD and merged the simulate
+	 * methods as specified in backends/PORTING.txt */
+	pk_backend_error_code (backend,
+			       PK_ERROR_ENUM_NOT_SUPPORTED,
+			       "Backend needs to be ported to 0.8.x -- "
+			       "see backends/PORTING.txt for details");
+
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_backend (priv->spawn, backend);
 	pk_backend_spawn_set_name (spawn, "portage");
@@ -251,7 +260,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -338,7 +347,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 }
 
 /**
- * backend_search_files:
+ * pk_backend_search_files:
  */
 void
 pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
@@ -386,7 +395,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -442,7 +451,7 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 {
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
