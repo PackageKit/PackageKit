@@ -742,6 +742,10 @@ fi
 
 if test x$enable_zypp = xyes; then
 	PKG_CHECK_MODULES(ZYPP, libzypp >= 6.16.0)
+	PKG_CHECK_EXISTS(libzypp >= 11.4.0, [ ZYPP_RETURN_BYTES="yes" ], [ ZYPP_RETURN_BYTES="no" ])
+	if test "x$ZYPP_RETURN_BYTES" = "xyes"; then
+	    AC_DEFINE(ZYPP_RETURN_BYTES, 1, [define if libzypp returns package size in bytes])
+	fi
 fi
 
 if test x$enable_slapt = xyes; then

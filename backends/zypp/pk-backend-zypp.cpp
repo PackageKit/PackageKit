@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
+
 #include <gmodule.h>
 #include <glib.h>
 #include <pk-backend.h>
@@ -580,7 +582,11 @@ backend_get_details_thread (PkBackend *backend)
 						    group,
 						    package.lookupStrAttribute (sat::SolvAttr::description).c_str (),
 						    package.lookupStrAttribute (sat::SolvAttr::url).c_str (),
+#ifdef ZYPP_RETURN_BYTES
+						    size);
+#else
 						    size * 1024);
+#endif
 			}
 
 		} catch (const target::rpm::RpmException &ex) {
