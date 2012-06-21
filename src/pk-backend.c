@@ -244,11 +244,7 @@ struct PkBackendPrivate
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 
 enum {
-	SIGNAL_ALLOW_CANCEL,
 	SIGNAL_LOCKED_CHANGED,
-	SIGNAL_STATUS_CHANGED,
-	SIGNAL_ITEM_PROGRESS,
-	SIGNAL_FINISHED,
 	SIGNAL_LAST
 };
 
@@ -903,7 +899,7 @@ pk_backend_unload (PkBackend *backend)
 typedef struct {
 	PkBackend	*backend;
 	PkBackendSignal	 signal_kind;
-	GObject		*object;
+	gpointer	 object;
 } PkBackendVFuncHelper;
 
 /**
@@ -937,7 +933,7 @@ pk_backend_call_vfunc_idle_cb (gpointer user_data)
 static void
 pk_backend_call_vfunc (PkBackend *backend,
 		       PkBackendSignal signal_kind,
-		       GObject *object)
+		       gpointer object)
 {
 	PkBackendVFuncHelper *helper;
 	PkBackendVFuncItem *item;
@@ -1008,7 +1004,9 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 
 	/* save in case we need this from coldplug */
 	backend->priv->percentage = percentage;
-	g_object_notify (G_OBJECT (backend), "percentage");
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_PERCENTAGE,
+			       GUINT_TO_POINTER (percentage));
 
 	/* only compute time if we have data */
 	if (percentage != PK_BACKEND_PERCENTAGE_INVALID) {
@@ -1022,7 +1020,9 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		/* value cached from config file */
 		if (backend->priv->use_time)
 			backend->priv->remaining = remaining;
-		g_object_notify (G_OBJECT (backend), "remaining");
+		pk_backend_call_vfunc (backend,
+				       PK_BACKEND_SIGNAL_REMAINING,
+				       GUINT_TO_POINTER (remaining));
 	}
 
 	return TRUE;
@@ -1051,7 +1051,9 @@ pk_backend_set_speed (PkBackend *backend, guint speed)
 
 	/* set new value */
 	backend->priv->speed = speed;
-	g_object_notify (G_OBJECT (backend), "speed");
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_SPEED,
+			       GUINT_TO_POINTER (speed));
 	return TRUE;
 }
 
@@ -1080,7 +1082,9 @@ pk_backend_set_download_size_remaining (PkBackend *backend, guint64 download_siz
 
 	/* set new value */
 	backend->priv->download_size_remaining = download_size_remaining;
-	g_object_notify (G_OBJECT (backend), "download-size-remaining");
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
+			       GUINT_TO_POINTER (download_size_remaining));
 	return TRUE;
 }
 
@@ -1121,8 +1125,9 @@ pk_backend_set_item_progress (PkBackend *backend,
 	}
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_ITEM_PROGRESS], 0,
-		       package_id, percentage);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+			       (gpointer) package_id); //FIXME
 	return TRUE;
 }
 
@@ -1159,14 +1164,18 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
 			/* emit */
-			g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
+			pk_backend_call_vfunc (backend,
+					       PK_BACKEND_SIGNAL_STATUS_CHANGED,
+					       GUINT_TO_POINTER (PK_STATUS_ENUM_RUNNING));
 		}
 	}
 
 	backend->priv->status = status;
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, status);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_STATUS_CHANGED,
+			       GUINT_TO_POINTER (status));
 	return TRUE;
 }
 
@@ -2288,7 +2297,9 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	}
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+			       GUINT_TO_POINTER (allow_cancel));
 	backend->priv->allow_cancel = allow_cancel;
 	return TRUE;
 }
@@ -2332,7 +2343,9 @@ pk_backend_set_role_internal (PkBackend *backend, PkRoleEnum role)
 	g_debug ("setting role to %s", pk_role_enum_to_string (role));
 	backend->priv->role = role;
 	backend->priv->status = PK_STATUS_ENUM_WAIT;
-	g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, backend->priv->status);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_STATUS_CHANGED,
+			       GUINT_TO_POINTER (backend->priv->status));
 	return TRUE;
 }
 
@@ -2499,7 +2512,9 @@ pk_backend_finished_delay (gpointer data)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
 	/* emit */
-	g_signal_emit (backend, signals[SIGNAL_FINISHED], 0, backend->priv->exit);
+	pk_backend_call_vfunc (backend,
+			       PK_BACKEND_SIGNAL_FINISHED,
+			       GUINT_TO_POINTER (backend->priv->exit));
 	backend->priv->signal_finished = 0;
 	return FALSE;
 }
@@ -3096,54 +3111,6 @@ pk_backend_class_init (PkBackendClass *klass)
 	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
 
 	/**
-	 * PkBackend:status:
-	 */
-	pspec = g_param_spec_uint ("status", NULL, NULL,
-				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_STATUS, pspec);
-
-	/**
-	 * PkBackend:role:
-	 */
-	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_ROLE, pspec);
-
-	/**
-	 * PkBackend:speed:
-	 */
-	pspec = g_param_spec_uint ("speed", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_SPEED, pspec);
-	
-	/**
-	 * PkBackend:download-size-remaining:
-	 */
-	pspec = g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
-				   0, G_MAXUINT64, 0,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
-
-	/**
-	 * PkBackend:percentage:
-	 */
-	pspec = g_param_spec_uint ("percentage", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
-
-	/**
-	 * PkBackend:remaining:
-	 */
-	pspec = g_param_spec_uint ("remaining", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_REMAINING, pspec);
-
-	/**
 	 * PkBackend:uid:
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
@@ -3159,33 +3126,11 @@ pk_backend_class_init (PkBackendClass *klass)
 				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
-	/* properties */
-
-	signals[SIGNAL_STATUS_CHANGED] =
-		g_signal_new ("status-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals[SIGNAL_FINISHED] =
-		g_signal_new ("finished",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals[SIGNAL_ALLOW_CANCEL] =
-		g_signal_new ("allow-cancel",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals[SIGNAL_LOCKED_CHANGED] =
 		g_signal_new ("locked-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals[SIGNAL_ITEM_PROGRESS] =
-		g_signal_new ("item-progress",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }

@@ -136,7 +136,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	gchar *package_id_tmp;
 	GPtrArray *array = NULL;
 	GPtrArray *list = NULL;
-	guint finished_id = 0;
 	guint i;
 	PkConf *conf;
 	PkPackage *item;
@@ -161,9 +160,14 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	finished_id = g_signal_connect (plugin->backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), plugin);
-	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FILES,
+			      (PkBackendVFunc) pk_plugin_files_cb,
+			      plugin);
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -206,8 +210,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 
 out:
 	g_strfreev (package_ids);
-	if (finished_id > 0)
-		g_signal_handler_disconnect (plugin->backend, finished_id);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (list != NULL)

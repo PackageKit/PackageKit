@@ -72,8 +72,6 @@ static void     pk_transaction_dispose		(GObject	    *object);
 /* when the UID is invalid or not known */
 #define PK_TRANSACTION_UID_INVALID		G_MAXUINT
 
-static void pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction);
-
 struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
@@ -139,17 +137,7 @@ struct PkTransactionPrivate
 	gchar			*cached_directory;
 	gchar			*cached_cat_id;
 	PkProvidesEnum		 cached_provides;
-
-	guint			 signal_allow_cancel;
 	guint			 signal_locked_changed;
-	guint			 signal_distro_upgrade;
-	guint			 signal_finished;
-	guint			 signal_percentage;
-	guint			 signal_remaining;
-	guint			 signal_status_changed;
-	guint			 signal_speed;
-	guint			 signal_download_size_remaining;
-	guint			 signal_item_progress;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
@@ -902,13 +890,13 @@ static void
 pk_transaction_plugin_phase (PkTransaction *transaction,
 			     PkPluginPhase phase)
 {
-	guint i;
 	const gchar *function = NULL;
-	gboolean ret;
 	gboolean ran_one = FALSE;
+	gboolean ret;
+	guint i;
 	PkBitfield backend_signals = PK_BACKEND_SIGNAL_LAST;
-	PkPluginTransactionFunc plugin_func = NULL;
 	PkPlugin *plugin;
+	PkPluginTransactionFunc plugin_func = NULL;
 
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
@@ -1945,17 +1933,15 @@ out:
  * pk_transaction_speed_cb:
  **/
 static void
-pk_transaction_speed_cb (GObject *object,
-			 GParamSpec *pspec,
+pk_transaction_speed_cb (PkBackend *backend,
+			 guint speed,
 			 PkTransaction *transaction)
 {
-	g_object_get (object,
-		      "speed", &transaction->priv->speed,
-		      NULL);
 	/* emit */
+	transaction->priv->speed = speed;
 	pk_transaction_emit_property_changed (transaction,
 					      "Speed",
-					      g_variant_new_uint32 (transaction->priv->speed));
+					      g_variant_new_uint32 (speed));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1963,17 +1949,15 @@ pk_transaction_speed_cb (GObject *object,
  * pk_transaction_speed_cb:
  **/
 static void
-pk_transaction_download_size_remaining_cb (GObject *object,
-					   GParamSpec *pspec,
+pk_transaction_download_size_remaining_cb (PkBackend *backend,
+					   guint64 download_size_remaining,
 					   PkTransaction *transaction)
 {
-	g_object_get (object,
-		      "download-size-remaining", &transaction->priv->download_size_remaining,
-		      NULL);
 	/* emit */
+	transaction->priv->download_size_remaining = download_size_remaining;
 	pk_transaction_emit_property_changed (transaction,
 					      "DownloadSizeRemaining",
-					      g_variant_new_uint64 (transaction->priv->download_size_remaining));
+					      g_variant_new_uint64 (download_size_remaining));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1981,17 +1965,15 @@ pk_transaction_download_size_remaining_cb (GObject *object,
  * pk_transaction_percentage_cb:
  **/
 static void
-pk_transaction_percentage_cb (GObject *object,
-			      GParamSpec *pspec,
+pk_transaction_percentage_cb (PkBackend *backend,
+			      guint percentage,
 			      PkTransaction *transaction)
 {
-	g_object_get (object,
-		      "percentage", &transaction->priv->percentage,
-		      NULL);
 	/* emit */
+	transaction->priv->percentage = percentage;
 	pk_transaction_emit_property_changed (transaction,
 					      "Percentage",
-					      g_variant_new_uint32 (transaction->priv->percentage));
+					      g_variant_new_uint32 (percentage));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -1999,17 +1981,15 @@ pk_transaction_percentage_cb (GObject *object,
  * pk_transaction_remaining_cb:
  **/
 static void
-pk_transaction_remaining_cb (GObject *object,
-			     GParamSpec *pspec,
+pk_transaction_remaining_cb (PkBackend *backend,
+			     guint remaining_time,
 			     PkTransaction *transaction)
 {
-	g_object_get (object,
-		      "remaining", &transaction->priv->remaining_time,
-		      NULL);
 	/* emit */
+	transaction->priv->remaining_time = remaining_time;
 	pk_transaction_emit_property_changed (transaction,
 					      "RemainingTime",
-					      g_variant_new_uint32 (transaction->priv->remaining_time));
+					      g_variant_new_uint32 (remaining_time));
 	pk_transaction_emit_changed (transaction);
 }
 
@@ -2020,21 +2000,21 @@ pk_transaction_remaining_cb (GObject *object,
  * disconnect everthing else not mentioned there.
  **/
 void
-pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signals)
+pk_transaction_set_signals (PkTransaction *transaction,
+			    PkBitfield backend_signals)
 {
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL)) {
-		if (priv->signal_allow_cancel == 0)
-			priv->signal_allow_cancel =
-				g_signal_connect (priv->backend, "allow-cancel",
-						G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+					(PkBackendVFunc) pk_transaction_allow_cancel_cb,
+					transaction);
 	} else {
-		if (priv->signal_allow_cancel > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_allow_cancel);
-			priv->signal_allow_cancel = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS)) {
@@ -2086,16 +2066,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED)) {
-		if (priv->signal_finished == 0)
-			priv->signal_finished =
-				g_signal_connect (priv->backend, "finished",
-						G_CALLBACK (pk_transaction_finished_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_FINISHED,
+					(PkBackendVFunc) pk_transaction_finished_cb,
+					transaction);
 	} else {
-		if (priv->signal_finished > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_finished);
-			priv->signal_finished = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_FINISHED,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE)) {
@@ -2123,68 +2102,63 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS)) {
-		if (priv->signal_item_progress == 0)
-			priv->signal_item_progress =
-				g_signal_connect (priv->backend, "item-progress",
-						G_CALLBACK (pk_transaction_item_progress_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+					(PkBackendVFunc) pk_transaction_item_progress_cb,
+					transaction);
 	} else {
-		if (priv->signal_item_progress > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_item_progress);
-			priv->signal_item_progress = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PERCENTAGE)) {
-		if (priv->signal_percentage == 0)
-			priv->signal_percentage =
-				g_signal_connect (priv->backend, "notify::percentage",
-						G_CALLBACK (pk_transaction_percentage_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_PERCENTAGE,
+					(PkBackendVFunc) pk_transaction_percentage_cb,
+					transaction);
 	} else {
-		if (priv->signal_percentage > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_percentage);
-			priv->signal_percentage = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_PERCENTAGE,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REMAINING)) {
-		if (priv->signal_remaining == 0)
-			priv->signal_remaining =
-				g_signal_connect (priv->backend, "notify::remaining",
-						G_CALLBACK (pk_transaction_remaining_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REMAINING,
+					(PkBackendVFunc) pk_transaction_remaining_cb,
+					transaction);
 	} else {
-		if (priv->signal_remaining > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_remaining);
-			priv->signal_remaining = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_REMAINING,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_SPEED)) {
-		if (priv->signal_speed == 0)
-			priv->signal_speed =
-				g_signal_connect (priv->backend, "notify::speed",
-						G_CALLBACK (pk_transaction_speed_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_SPEED,
+					(PkBackendVFunc) pk_transaction_speed_cb,
+					transaction);
 	} else {
-		if (priv->signal_speed > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_speed);
-			priv->signal_speed = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_SPEED,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)) {
-		if (priv->signal_download_size_remaining == 0)
-			priv->signal_download_size_remaining =
-				g_signal_connect (priv->backend, "notify::download-size-remaining",
-						G_CALLBACK (pk_transaction_download_size_remaining_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
+					(PkBackendVFunc) pk_transaction_download_size_remaining_cb,
+					transaction);
 	} else {
-		if (priv->signal_download_size_remaining > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_download_size_remaining);
-			priv->signal_download_size_remaining = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL)) {
@@ -2248,16 +2222,15 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED)) {
-		if (priv->signal_status_changed == 0)
-			priv->signal_status_changed =
-				g_signal_connect (priv->backend, "status-changed",
-						G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_STATUS_CHANGED,
+					(PkBackendVFunc) pk_transaction_status_changed_cb,
+					transaction);
 	} else {
-		if (priv->signal_status_changed > 0) {
-			g_signal_handler_disconnect (priv->backend,
-					priv->signal_status_changed);
-			priv->signal_status_changed = 0;
-		}
+		pk_backend_set_vfunc (priv->backend,
+					PK_BACKEND_SIGNAL_STATUS_CHANGED,
+					NULL,
+					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL)) {

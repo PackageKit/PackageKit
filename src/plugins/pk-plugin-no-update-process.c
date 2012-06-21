@@ -161,7 +161,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	gchar **files = NULL;
 	gchar **package_ids;
 	gchar *process = NULL;
-	guint finished_id = 0;
 	PkConf *conf;
 	PkRoleEnum role;
 
@@ -210,9 +209,14 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	pk_backend_set_status (plugin->backend,
 			       PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 
-	pk_backend_set_vfunc (plugin->backend, PK_BACKEND_SIGNAL_FILES, (PkBackendVFunc) pk_plugin_files_cb, plugin);
-	finished_id = g_signal_connect (plugin->backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FILES,
+			      (PkBackendVFunc) pk_plugin_files_cb,
+			      plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      plugin);
 
 	/* get all the files touched in the packages we just updated */
 	package_ids = pk_transaction_get_package_ids (transaction);
@@ -232,8 +236,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		goto out;
 	}
 out:
-	if (finished_id > 0)
-		g_signal_handler_disconnect (plugin->backend, finished_id);
 	g_strfreev (files);
 	g_free (process);
 }

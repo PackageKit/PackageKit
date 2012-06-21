@@ -461,7 +461,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	gfloat step;
 	gint rc;
 	GPtrArray *array = NULL;
-	guint finished_id = 0;
 	guint i;
 	PkRoleEnum role;
 
@@ -484,8 +483,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		g_debug ("cannot search files");
 		goto out;
 	}
-	finished_id = g_signal_connect (plugin->backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      plugin);
 	pk_backend_set_vfunc (plugin->backend,
 				PK_BACKEND_SIGNAL_PACKAGE,
 				(PkBackendVFunc) pk_plugin_package_cb,
@@ -540,8 +541,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	if (finished_id > 0)
-		g_signal_handler_disconnect (plugin->backend, finished_id);
 }
 
 /**
@@ -605,7 +604,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	gchar *package_id_tmp;
 	GPtrArray *array = NULL;
 	GPtrArray *list = NULL;
-	guint finished_id = 0;
 	guint i;
 	PkInfoEnum info;
 	PkPackage *item;
@@ -631,8 +629,10 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	finished_id = g_signal_connect (plugin->backend, "finished",
-					G_CALLBACK (pk_plugin_finished_cb), plugin);
+	pk_backend_set_vfunc (plugin->backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      plugin);
 	pk_backend_set_vfunc (plugin->backend,
 			      PK_BACKEND_SIGNAL_FILES,
 			      (PkBackendVFunc) pk_plugin_files_cb,
@@ -675,8 +675,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 
 	pk_backend_set_percentage (plugin->backend, 100);
 out:
-	if (finished_id > 0)
-		g_signal_handler_disconnect (plugin->backend, finished_id);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (list != NULL)
