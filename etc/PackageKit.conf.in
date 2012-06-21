@@ -287,19 +287,6 @@ UseIdleBandwidth=true
 # default=/usr/lib*/*/firefox
 NoUpdateProcessList=
 
-# If the backend should use threads to avoid blocking the daemon for other users
-#
-# The daemon, packagekitd, is shared by multiple users. Users are allowed to
-# create and send transactions when other transactions are being processed.
-# To do this, the backend action is created in a thread, but some libraries
-# notably libdbus and dbus-glib, are less threadsafe then they probably should
-# be.
-#
-# Only developers need to change this value, normally for debugging purposes.
-#
-# default=true
-UseThreadsInBackend=true
-
 # If a custom root should be used when installing packages
 #
 # A custom route can be used to install to a LTSP instance or a virtual machine

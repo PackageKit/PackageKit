@@ -101,7 +101,6 @@ struct PkBackendPrivate
 	gboolean		 simultaneous;
 	gboolean		 locked;
 	gboolean		 use_time;
-	gboolean		 use_threads;
 	gchar			*transaction_id;
 	gchar			*locale;
 	gchar			*frontend_socket;
@@ -2649,13 +2648,6 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 		return FALSE;
 	}
 
-	/* backend isn't threadsafe */
-	if (!backend->priv->use_threads) {
-		g_warning ("not using threads, so daemon will block");
-		func (backend);
-		goto out;
-	}
-
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendThreadHelper, 1);
 	helper->backend = g_object_ref (backend);
@@ -3628,7 +3620,6 @@ pk_backend_init (PkBackend *backend)
 	/* do we use time estimation? */
 	conf = pk_conf_new ();
 	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
-	backend->priv->use_threads = pk_conf_get_bool (conf, "UseThreadsInBackend");
 	g_object_unref (conf);
 
 	pk_backend_reset (backend);
