@@ -41,9 +41,9 @@ typedef struct {
 	ZifState	*state;
 	ZifStore	*store_local;
 	ZifTransaction	*transaction;
-} PkBackendYumPrivate;
+} PkBackendZifPrivate;
 
-static PkBackendYumPrivate *priv;
+static PkBackendZifPrivate *priv;
 
 static void pk_backend_enable_media_repo (gboolean enabled);
 
@@ -1618,7 +1618,7 @@ pk_backend_initialize (PkBackend *backend)
 	pk_debug_add_log_domain ("Zif");
 
 	/* create private area */
-	priv = g_new0 (PkBackendYumPrivate, 1);
+	priv = g_new0 (PkBackendZifPrivate, 1);
 
 	/* coldplug the mounts */
 	priv->volume_monitor = g_volume_monitor_get ();
