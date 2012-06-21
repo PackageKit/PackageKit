@@ -36,8 +36,6 @@ typedef struct {
 	PkBackendSpawn	*spawn;
 	GFileMonitor	*monitor;
 	GCancellable	*cancellable;
-	guint		 signal_finished;
-	guint		 signal_status;
 	GTimer		*timer;
 	GVolumeMonitor	*volume_monitor;
 } PkBackendYumPrivate;
@@ -193,29 +191,6 @@ out:
 }
 
 /**
- * pk_backend_finished_cb:
- **/
-static void
-pk_backend_finished_cb (PkBackend *backend, PkExitEnum exit_enum, gpointer user_data)
-{
-	/* disable media repo */
-	pk_backend_enable_media_repo (FALSE);
-}
-
-/**
- * pk_backend_status_changed_cb:
- **/
-static void
-pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer user_data)
-{
-	if (status != PK_STATUS_ENUM_WAIT)
-		return;
-
-	/* enable media repo */
-	pk_backend_enable_media_repo (TRUE);
-}
-
-/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -235,14 +210,6 @@ pk_backend_initialize (PkBackend *backend)
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
-
-	/* connect to finished, so we can clean up */
-	priv->signal_finished =
-		g_signal_connect (backend, "finished",
-				  G_CALLBACK (pk_backend_finished_cb), NULL);
-	priv->signal_status =
-		g_signal_connect (backend, "status-changed",
-				  G_CALLBACK (pk_backend_status_changed_cb), NULL);
 
 	g_debug ("backend: initialize");
 	priv->spawn = pk_backend_spawn_new ();
@@ -298,11 +265,37 @@ pk_backend_destroy (PkBackend *backend)
 	g_object_unref (priv->spawn);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
-	g_signal_handler_disconnect (backend, priv->signal_finished);
-	g_signal_handler_disconnect (backend, priv->signal_status);
 	if (priv->volume_monitor != NULL)
 		g_object_unref (priv->volume_monitor);
 	g_free (priv);
+}
+
+static gboolean _backend_busy = FALSE;
+
+/**
+ * pk_backend_job_start:
+ */
+void
+pk_backend_job_start (PkBackend *backend)
+{
+	if (_backend_busy) {
+		pk_backend_error_code (backend,
+					   PK_ERROR_ENUM_LOCK_REQUIRED,
+					   "spawned backend requires lock");
+		return;
+	}
+	_backend_busy = TRUE;
+	pk_backend_enable_media_repo (TRUE);
+}
+
+/**
+ * pk_backend_job_stop:
+ */
+void
+pk_backend_job_stop (PkBackend *backend)
+{
+	pk_backend_enable_media_repo (FALSE);
+	_backend_busy = FALSE;
 }
 
 /**
