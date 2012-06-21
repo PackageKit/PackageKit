@@ -581,9 +581,9 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
 		g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
 		g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
-		g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
-		g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
-		g_module_symbol (handle, "pk_backend_transaction_reset", (gpointer *)&desc->transaction_reset);
+		g_module_symbol (handle, "pk_backend_job_start", (gpointer *)&desc->job_start);
+		g_module_symbol (handle, "pk_backend_job_stop", (gpointer *)&desc->job_stop);
+		g_module_symbol (handle, "pk_backend_job_reset", (gpointer *)&desc->job_reset);
 		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 		g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
@@ -2290,99 +2290,99 @@ pk_backend_get_exit_code (PkBackend *backend)
 }
 
 /**
- * pk_backend_transaction_start:
+ * pk_backend_job_start:
  *
  * This is called just before the threaded transaction method, and in
  * the newly created thread context. e.g.
  *
- * >>> desc->transaction_start(backend)
+ * >>> desc->job_start(backend)
  *     (locked backend)
- * >>> desc->transaction_reset(backend)
+ * >>> desc->job_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::Package(PK_INFO_ENUM_INSTALLING,"hal;0.1.1;i386;fedora","Hardware Stuff")
- * >>> desc->transaction_stop(backend)
+ * >>> desc->job_stop(backend)
  *     (unlocked backend)
  * <<< ::Finished()
  *
  * or in the case of backend_method_we_want_to_run() failure:
- * >>> desc->transaction_start(backend)
+ * >>> desc->job_start(backend)
  *     (locked backend)
- * >>> desc->transaction_reset(backend)
+ * >>> desc->job_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_FIND,"no package")
- * >>> desc->transaction_stop(backend)
+ * >>> desc->job_stop(backend)
  *     (unlocked backend)
  * <<< ::Finished()
  *
- * or in the case of transaction_start() failure:
- * >>> desc->transaction_start(backend)
+ * or in the case of job_start() failure:
+ * >>> desc->job_start(backend)
  *     (failed to lock backend)
  * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_LOCK,"no pid file")
- * >>> desc->transaction_stop(backend)
+ * >>> desc->job_stop(backend)
  * <<< ::Finished()
  *
  * It is *not* called for non-threaded backends, as multiple processes
  * would be inherently racy.
  */
 void
-pk_backend_transaction_start (PkBackend *backend)
+pk_backend_job_start (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
 	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->transaction_start == NULL) {
+	if (backend->priv->desc->job_start == NULL) {
 		g_debug ("no transaction start vfunc");
 		return;
 	}
 
 	/* run the transaction setup */
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->transaction_start (backend);
+	pk_backend_job_reset (backend);
+	backend->priv->desc->job_start (backend);
 }
 
 /**
- * pk_backend_transaction_stop:
+ * pk_backend_job_stop:
  *
- * Always run for each transaction, *even* when the transaction_start()
+ * Always run for each transaction, *even* when the job_start()
  * vfunc fails.
  *
  * This method has no return value as the ErrorCode should have already
  * been set.
  */
 void
-pk_backend_transaction_stop (PkBackend *backend)
+pk_backend_job_stop (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
 	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->transaction_stop == NULL) {
+	if (backend->priv->desc->job_stop == NULL) {
 		g_debug ("no transaction stop vfunc");
 		goto out;
 	}
 
 	/* run the transaction setup */
-	pk_backend_transaction_reset (backend);
-	backend->priv->desc->transaction_stop (backend);
+	pk_backend_job_reset (backend);
+	backend->priv->desc->job_stop (backend);
 out:
 	return;
 }
 
 /**
- * pk_backend_transaction_reset:
+ * pk_backend_job_reset:
  */
 void
-pk_backend_transaction_reset (PkBackend *backend)
+pk_backend_job_reset (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
 	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->transaction_reset == NULL) {
+	if (backend->priv->desc->job_reset == NULL) {
 		g_debug ("no transaction reset vfunc");
 		goto out;
 	}
 
 	/* run the transaction setup */
-	backend->priv->desc->transaction_reset (backend);
+	backend->priv->desc->job_reset (backend);
 out:
 	return;
 }
@@ -2516,7 +2516,7 @@ pk_backend_finished (PkBackend *backend)
 
 	/* we in the helper thread */
 	if (g_thread_self () == backend->priv->thread) {
-		pk_backend_transaction_stop (backend);
+		pk_backend_job_stop (backend);
 		idle_id = g_idle_add ((GSourceFunc) pk_backend_finished_cb, backend);
 		g_source_set_name_by_id (idle_id, "[PkBackend] finished");
 	} else {
@@ -2614,13 +2614,13 @@ pk_backend_thread_setup (gpointer thread_data)
 	PkBackendThreadHelper *helper = (PkBackendThreadHelper *) thread_data;
 
 	/* call setup */
-	pk_backend_transaction_start (helper->backend);
+	pk_backend_job_start (helper->backend);
 
 	/* run original function */
 	helper->func (helper->backend, helper->user_data);
 	if (pk_backend_get_is_error_set (helper->backend)) {
 		g_debug ("transaction setup failed, going straight to finished");
-		pk_backend_transaction_stop (helper->backend);
+		pk_backend_job_stop (helper->backend);
 	}
 
 	/* destroy helper */
@@ -3200,7 +3200,7 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_string (backend->priv->store, "directory", directory);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->download_packages (backend, package_ids, directory);
 }
 
@@ -3213,7 +3213,7 @@ pk_backend_get_categories (PkBackend *backend)
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_categories != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_CATEGORIES);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_categories (backend);
 }
 
@@ -3229,7 +3229,7 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "recursive", recursive);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_depends (backend, filters, package_ids, recursive);
 }
 
@@ -3243,7 +3243,7 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_details != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DETAILS);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_details (backend, package_ids);
 }
 
@@ -3256,7 +3256,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend)
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_distro_upgrades != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_distro_upgrades (backend);
 }
 
@@ -3270,7 +3270,7 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_FILES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_files (backend, package_ids);
 }
 
@@ -3286,7 +3286,7 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "recursive", recursive);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_requires (backend, filters, package_ids, recursive);
 }
 
@@ -3300,7 +3300,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend->priv->desc->get_update_detail != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_update_detail (backend, package_ids);
 }
 
@@ -3314,7 +3314,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_updates != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_updates (backend, filters);
 }
 
@@ -3329,7 +3329,7 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->install_packages (backend, transaction_flags, package_ids);
 }
 
@@ -3344,7 +3344,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	pk_store_set_string (backend->priv->store, "key_id", key_id);
 	pk_store_set_string (backend->priv->store, "package_id", package_id);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->install_signature (backend, type, key_id, package_id);
 }
 
@@ -3359,7 +3359,7 @@ pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gcha
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_FILES);
 	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->install_files (backend, transaction_flags, full_paths);
 }
 
@@ -3373,7 +3373,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend->priv->desc->refresh_cache != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_store_set_bool (backend->priv->store, "force", force);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->refresh_cache (backend, force);
 }
 
@@ -3394,7 +3394,7 @@ pk_backend_remove_packages (PkBackend *backend,
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "allow_deps", allow_deps);
 	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->remove_packages (backend,
 					      transaction_flags,
 					      package_ids,
@@ -3413,7 +3413,7 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_RESOLVE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->resolve (backend, filters, package_ids);
 }
 
@@ -3428,7 +3428,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_DETAILS);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->search_details (backend, filters, values);
 }
 
@@ -3443,7 +3443,7 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_FILE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->search_files (backend, filters, values);
 }
 
@@ -3458,7 +3458,7 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_GROUP);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->search_groups (backend, filters, values);
 }
 
@@ -3473,7 +3473,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_NAME);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->search_names (backend, filters, values);
 }
 
@@ -3488,7 +3488,7 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->update_packages (backend, transaction_flags, package_ids);
 }
 
@@ -3502,7 +3502,7 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 	g_return_if_fail (backend->priv->desc->update_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->update_system (backend, transaction_flags);
 }
 
@@ -3516,7 +3516,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_repo_list != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REPO_LIST);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_repo_list (backend, filters);
 }
 
@@ -3531,7 +3531,7 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabl
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_ENABLE);
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_bool (backend->priv->store, "enabled", enabled);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->repo_enable (backend, repo_id, enabled);
 }
 
@@ -3547,7 +3547,7 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_string (backend->priv->store, "parameter", parameter);
 	pk_store_set_string (backend->priv->store, "value", value);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->repo_set_data (backend, repo_id, parameter, value);
 }
 
@@ -3563,7 +3563,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_uint (backend->priv->store, "provides", provides);
 	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->what_provides (backend, filters, provides, values);
 }
 
@@ -3577,7 +3577,7 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 	g_return_if_fail (backend->priv->desc->get_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_PACKAGES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->get_packages (backend, filters);
 }
 
@@ -3592,7 +3592,7 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
 	pk_store_set_uint (backend->priv->store, "upgrade_kind", upgrade_kind);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->upgrade_system (backend, distro_id, upgrade_kind);
 }
 
@@ -3606,7 +3606,7 @@ pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 	g_return_if_fail (backend->priv->desc->repair_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_backend_transaction_reset (backend);
+	pk_backend_job_reset (backend);
 	backend->priv->desc->repair_system (backend, transaction_flags);
 }
 

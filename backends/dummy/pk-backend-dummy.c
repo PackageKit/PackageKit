@@ -1439,10 +1439,10 @@ pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 }
 
 /**
- * pk_backend_transaction_start:
+ * pk_backend_job_start:
  */
 void
-pk_backend_transaction_start (PkBackend *backend)
+pk_backend_job_start (PkBackend *backend)
 {
 	/* here you would lock the backend */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "backend is crap");
@@ -1451,10 +1451,10 @@ pk_backend_transaction_start (PkBackend *backend)
 }
 
 /**
- * pk_backend_transaction_stop:
+ * pk_backend_job_stop:
  */
 void
-pk_backend_transaction_stop (PkBackend *backend)
+pk_backend_job_stop (PkBackend *backend)
 {
 	/* here you would unlock the backend */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "backend is crap");
@@ -1464,7 +1464,7 @@ pk_backend_transaction_stop (PkBackend *backend)
 	 * even then it's probably just best to clean up silently */
 
 	/* you cannot do pk_backend_finished() here as well as this is
-	 * needed to fire the transaction_stop() vfunc */
+	 * needed to fire the job_stop() vfunc */
 }
 
 /**

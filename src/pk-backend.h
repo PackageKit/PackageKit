@@ -136,9 +136,9 @@ void		pk_backend_download_packages		(PkBackend	*backend,
 							 const gchar	*directory);
 void		pk_backend_initialize			(PkBackend	*backend);
 void		pk_backend_destroy			(PkBackend	*backend);
-void		pk_backend_transaction_start		(PkBackend	*backend);
-void		pk_backend_transaction_stop		(PkBackend	*backend);
-void		pk_backend_transaction_reset		(PkBackend	*backend);
+void		pk_backend_job_start			(PkBackend	*backend);
+void		pk_backend_job_stop			(PkBackend	*backend);
+void		pk_backend_job_reset			(PkBackend	*backend);
 void		pk_backend_get_categories		(PkBackend	*backend);
 void		pk_backend_get_depends			(PkBackend	*backend,
 							 PkBitfield	 filters,
@@ -488,12 +488,12 @@ typedef struct {
 							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 gchar		**values);
-	void		(*transaction_start)		(PkBackend	*backend);
-	void		(*transaction_stop)		(PkBackend	*backend);
+	void		(*job_start)		(PkBackend	*backend);
+	void		(*job_stop)		(PkBackend	*backend);
 	void		(*upgrade_system)		(PkBackend	*backend,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
-	void		(*transaction_reset)		(PkBackend	*backend);
+	void		(*job_reset)		(PkBackend	*backend);
 	void		(*repair_system)		(PkBackend	*backend,
 							 PkBitfield	 transaction_flags);
 	gpointer	padding[20];

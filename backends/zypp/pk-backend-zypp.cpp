@@ -2171,10 +2171,10 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 }
 
 /**
- * pk_backend_transaction_start:
+ * pk_backend_job_start:
  */
 void
-pk_backend_transaction_start (PkBackend *backend)
+pk_backend_job_start (PkBackend *backend)
 {
 	gchar *locale;
 	gchar *proxy_http;
@@ -2246,10 +2246,10 @@ pk_backend_transaction_start (PkBackend *backend)
 }
 
 /**
- * pk_backend_transaction_stop:
+ * pk_backend_job_stop:
  */
 void
-pk_backend_transaction_stop (PkBackend *backend)
+pk_backend_job_stop (PkBackend *backend)
 {
 	/* unset proxy info for this transaction */
 	g_unsetenv ("http_proxy");

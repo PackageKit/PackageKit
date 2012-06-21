@@ -256,10 +256,10 @@ pk_backend_convert_error (const GError *error)
 }
 
 /**
- * pk_backend_transaction_start:
+ * pk_backend_job_start:
  */
 void
-pk_backend_transaction_start (PkBackend *backend)
+pk_backend_job_start (PkBackend *backend)
 {
 	gboolean ret = FALSE;
 	gchar *http_proxy = NULL;
@@ -333,10 +333,10 @@ out:
 }
 
 /**
- * pk_backend_transaction_reset:
+ * pk_backend_job_reset:
  */
 void
-pk_backend_transaction_reset (PkBackend *backend)
+pk_backend_job_reset (PkBackend *backend)
 {
 	/* setup state */
 	zif_state_reset (priv->state);
@@ -346,10 +346,10 @@ pk_backend_transaction_reset (PkBackend *backend)
 }
 
 /**
- * pk_backend_transaction_stop:
+ * pk_backend_job_stop:
  */
 void
-pk_backend_transaction_stop (PkBackend *backend)
+pk_backend_job_stop (PkBackend *backend)
 {
 }
 
