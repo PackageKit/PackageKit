@@ -2610,15 +2610,14 @@ typedef struct {
 static gpointer
 pk_backend_thread_setup (gpointer thread_data)
 {
-	gboolean ret;
 	PkBackendThreadHelper *helper = (PkBackendThreadHelper *) thread_data;
 
 	/* call setup */
 	pk_backend_transaction_start (helper->backend);
 
 	/* run original function */
-	ret = helper->func (helper->backend);
-	if (!ret) {
+	helper->func (helper->backend);
+	if (pk_backend_get_is_error_set (helper->backend)) {
 		g_debug ("transaction setup failed, going straight to finished");
 		pk_backend_transaction_stop (helper->backend);
 	}
@@ -2653,7 +2652,7 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 	/* backend isn't threadsafe */
 	if (!backend->priv->use_threads) {
 		g_warning ("not using threads, so daemon will block");
-		ret = func (backend);
+		func (backend);
 		goto out;
 	}
 

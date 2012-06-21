@@ -384,7 +384,7 @@ gpointer	 pk_backend_get_pointer			(PkBackend	*backend,
 const gchar	*pk_backend_bool_to_string		(gboolean	 value);
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
-typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
+typedef void	(*PkBackendThreadFunc)			(PkBackend	*backend);
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
 							 PkBackendThreadFunc func);
 
