@@ -79,6 +79,8 @@ shared_SOURCES =					\
 	pk-transaction-private.h			\
 	pk-backend.c					\
 	pk-backend.h					\
+	pk-backend-job.c				\
+	pk-backend-job.h				\
 	pk-network.c					\
 	pk-network.h					\
 	pk-shared.c					\
