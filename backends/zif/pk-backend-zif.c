@@ -1141,7 +1141,7 @@ out:
 /**
  * pk_backend_search_thread:
  */
-static gboolean
+static void
 pk_backend_search_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -1363,7 +1363,6 @@ out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1870,7 +1869,7 @@ pk_backend_cancel (PkBackend *backend)
 /**
  * pk_backend_download_packages_thread:
  */
-static gboolean
+static void
 pk_backend_download_packages_thread (PkBackend *backend)
 {
 	const gchar *directory = pk_backend_get_string (backend, "directory");
@@ -2085,13 +2084,12 @@ out:
 		g_ptr_array_unref (packages);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_depends_thread:
  */
-static gboolean
+static void
 pk_backend_get_depends_thread (PkBackend *backend)
 {
 	const gchar *id;
@@ -2307,13 +2305,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_requires_thread:
  */
-static gboolean
+static void
 pk_backend_get_requires_thread (PkBackend *backend)
 {
 	const gchar *id;
@@ -2532,13 +2529,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_details_thread:
  */
-static gboolean
+static void
 pk_backend_get_details_thread (PkBackend *backend)
 {
 	const gchar *description;
@@ -2779,13 +2775,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
   * pk_backend_get_distro_upgrades_thread:
   */
-static gboolean
+static void
 pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 {
 	gchar *distro_id;
@@ -2824,7 +2819,6 @@ out:
 	pk_backend_finished (backend);
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	return TRUE;
 }
 
 /**
@@ -2839,7 +2833,7 @@ pk_backend_sort_string_cb (const gchar **a, const gchar **b)
 /**
  * pk_backend_get_files_thread:
  */
-static gboolean
+static void
 pk_backend_get_files_thread (PkBackend *backend)
 {
 	const gchar *file;
@@ -2974,13 +2968,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_updates_thread:
  */
-static gboolean
+static void
 pk_backend_get_updates_thread (PkBackend *backend)
 {
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
@@ -3301,7 +3294,6 @@ out:
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 	g_strfreev (search);
-	return TRUE;
 }
 
 /**
@@ -3359,7 +3351,7 @@ pk_backend_sort_stores_cb (ZifStore **a, ZifStore **b)
 /**
  * pk_backend_get_update_detail_thread:
  */
-static gboolean
+static void
 pk_backend_get_update_detail_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -3580,7 +3572,6 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
@@ -3854,7 +3845,7 @@ out:
 /**
  * pk_backend_remove_packages_thread:
  */
-static gboolean
+static void
 pk_backend_remove_packages_thread (PkBackend *backend)
 {
 	gboolean autoremove;
@@ -3963,13 +3954,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_update_packages_thread:
  */
-static gboolean
+static void
 pk_backend_update_packages_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -4101,13 +4091,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_update_system_thread:
  */
-static gboolean
+static void
 pk_backend_update_system_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -4240,13 +4229,12 @@ out:
 		g_ptr_array_unref (updates);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_install_packages_thread:
  */
-static gboolean
+static void
 pk_backend_install_packages_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -4378,13 +4366,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_install_files_thread:
  */
-static gboolean
+static void
 pk_backend_install_files_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -4513,13 +4500,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_refresh_cache_thread:
  */
-static gboolean
+static void
 pk_backend_refresh_cache_thread (PkBackend *backend)
 {
 	gboolean force = pk_backend_get_bool (backend, "force");
@@ -4592,13 +4578,12 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_repo_list_thread:
  */
-static gboolean
+static void
 pk_backend_get_repo_list_thread (PkBackend *backend)
 {
 	gboolean ret;
@@ -4759,13 +4744,12 @@ out:
 	pk_backend_finished (backend);
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	return TRUE;
 }
 
 /**
  * pk_backend_repo_enable_thread:
  */
-static gboolean
+static void
 pk_backend_repo_enable_thread (PkBackend *backend)
 {
 	ZifStoreRemote *repo = NULL;
@@ -4853,13 +4837,12 @@ out:
 	g_free (warning);
 	if (repo != NULL)
 		g_object_unref (repo);
-	return TRUE;
 }
 
 /**
  * pk_backend_get_categories_thread:
  */
-static gboolean
+static void
 pk_backend_get_categories_thread (PkBackend *backend)
 {
 	const gchar *name;
@@ -5099,13 +5082,12 @@ out:
 		g_ptr_array_unref (array);
 	if (stores != NULL)
 		g_ptr_array_unref (stores);
-	return TRUE;
 }
 
 /**
   * pk_backend_upgrade_system_thread:
   */
-static gboolean
+static void
 pk_backend_upgrade_system_thread (PkBackend *backend)
 {
 	gchar **distro_id_split = NULL;
@@ -5159,7 +5141,6 @@ pk_backend_upgrade_system_thread (PkBackend *backend)
 out:
 	pk_backend_finished (backend);
 	g_strfreev (distro_id_split);
-	return TRUE;
 }
 
 /**
