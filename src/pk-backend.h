@@ -119,7 +119,6 @@ const gchar	*pk_backend_get_description		(PkBackend	*backend)
 const gchar	*pk_backend_get_author			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 
-typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);

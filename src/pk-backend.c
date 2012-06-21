@@ -598,6 +598,8 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 	return path;
 }
 
+typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
+
 /**
  * pk_backend_load:
  *
