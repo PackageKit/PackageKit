@@ -32,8 +32,6 @@
 typedef struct {
 	GCancellable	*cancellable;
 	GFileMonitor	*monitor;
-	guint		 signal_finished;
-	guint		 signal_status;
 	GVolumeMonitor	*volume_monitor;
 	ZifConfig	*config;
 	ZifGroups	*groups;
@@ -46,6 +44,8 @@ typedef struct {
 } PkBackendYumPrivate;
 
 static PkBackendYumPrivate *priv;
+
+static void pk_backend_enable_media_repo (gboolean enabled);
 
 /**
  * pk_backend_get_description:
@@ -268,6 +268,9 @@ pk_backend_job_start (PkBackend *backend)
 	guint uid;
 	gchar *cmdline = NULL;
 
+	/* enable media repo */
+	pk_backend_enable_media_repo (TRUE);
+
 	/* try to set, or re-set install root */
 	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
 					  NULL,
@@ -351,6 +354,8 @@ pk_backend_job_reset (PkBackend *backend)
 void
 pk_backend_job_stop (PkBackend *backend)
 {
+	/* disable media repo */
+	pk_backend_enable_media_repo (FALSE);
 }
 
 /**
@@ -1449,29 +1454,6 @@ out:
 }
 
 /**
- * pk_backend_finished_cb:
- **/
-static void
-pk_backend_finished_cb (PkBackend *backend, PkExitEnum exit_enum, gpointer user_data)
-{
-	/* disable media repo */
-	pk_backend_enable_media_repo (FALSE);
-}
-
-/**
- * pk_backend_status_changed_cb:
- **/
-static void
-pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer user_data)
-{
-	if (status != PK_STATUS_ENUM_WAIT)
-		return;
-
-	/* enable media repo */
-	pk_backend_enable_media_repo (TRUE);
-}
-
-/**
  * pk_backend_state_action_changed_cb:
  **/
 static void
@@ -1638,14 +1620,6 @@ pk_backend_initialize (PkBackend *backend)
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
 
-	/* connect to finished, so we can clean up */
-	priv->signal_finished =
-		g_signal_connect (backend, "finished",
-				  G_CALLBACK (pk_backend_finished_cb), NULL);
-	priv->signal_status =
-		g_signal_connect (backend, "status-changed",
-				  G_CALLBACK (pk_backend_status_changed_cb), NULL);
-
 	/* coldplug the mounts */
 	priv->volume_monitor = g_volume_monitor_get ();
 	mounts = g_volume_monitor_get_mounts (priv->volume_monitor);
@@ -1757,8 +1731,6 @@ pk_backend_destroy (PkBackend *backend)
 {
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
-	g_signal_handler_disconnect (backend, priv->signal_finished);
-	g_signal_handler_disconnect (backend, priv->signal_status);
 	if (priv->config != NULL)
 		g_object_unref (priv->config);
 	if (priv->release != NULL)
