@@ -28,29 +28,31 @@
 
 #include <pk-backend.h>
 
-/* static bodges */
-static guint _progress_percentage = 0;
-static gulong _signal_timeout = 0;
-static gchar **_package_ids;
-static gchar **_values;
-static guint _package_current = 0;
-static gboolean _repo_enabled_local = FALSE;
-static gboolean _repo_enabled_fedora = TRUE;
-static gboolean _repo_enabled_devel = TRUE;
-static gboolean _repo_enabled_livna = TRUE;
-static gboolean _updated_gtkhtml = FALSE;
-static gboolean _updated_kernel = FALSE;
-static gboolean _updated_powertop = FALSE;
-static gboolean _has_signature = FALSE;
-static gboolean _use_blocked = FALSE;
-static gboolean _use_eula = FALSE;
-static gboolean _use_media = FALSE;
-static gboolean _use_gpg = FALSE;
-static gboolean _use_trusted = TRUE;
-static gboolean _use_distro_upgrade = FALSE;
-static PkBitfield _filters = 0;
-static GSocket *_socket = NULL;
-static guint _socket_listen_id = 0;
+typedef struct {
+	gboolean	 has_signature;
+	gboolean	 repo_enabled_devel;
+	gboolean	 repo_enabled_fedora;
+	gboolean	 repo_enabled_livna;
+	gboolean	 repo_enabled_local;
+	gboolean	 updated_gtkhtml;
+	gboolean	 updated_kernel;
+	gboolean	 updated_powertop;
+	gboolean	 use_blocked;
+	gboolean	 use_distro_upgrade;
+	gboolean	 use_eula;
+	gboolean	 use_gpg;
+	gboolean	 use_media;
+	gboolean	 use_trusted;
+	gchar		**package_ids;
+	gchar		**values;
+	GSocket		*socket;
+	guint		 progress_percentage;
+	guint		 socket_listen_id;
+	gulong		 signal_timeout;
+	PkBitfield	 filters;
+} PkBackendDummyPrivate;
+
+static PkBackendDummyPrivate *priv;
 
 /**
  * pk_backend_initialize:
@@ -58,7 +60,12 @@ static guint _socket_listen_id = 0;
 void
 pk_backend_initialize (PkBackend *backend)
 {
-	_progress_percentage = 0;
+	/* create private area */
+	priv = g_new0 (PkBackendDummyPrivate, 1);
+	priv->repo_enabled_fedora = TRUE;
+	priv->repo_enabled_devel = TRUE;
+	priv->repo_enabled_livna = TRUE;
+	priv->use_trusted = TRUE;
 }
 
 /**
@@ -67,6 +74,7 @@ pk_backend_initialize (PkBackend *backend)
 void
 pk_backend_destroy (PkBackend *backend)
 {
+	g_free (priv);
 }
 
 /**
@@ -115,7 +123,7 @@ pk_backend_cancel_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 
 	/* we can now cancel again */
-	_signal_timeout = 0;
+	priv->signal_timeout = 0;
 
 	/* now mark as finished */
 	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
@@ -131,8 +139,8 @@ void
 pk_backend_cancel (PkBackend *backend)
 {
 	/* cancel the timeout */
-	if (_signal_timeout != 0) {
-		g_source_remove (_signal_timeout);
+	if (priv->signal_timeout != 0) {
+		g_source_remove (priv->signal_timeout);
 
 		/* emulate that it takes us a few ms to cancel */
 		g_timeout_add (1500, pk_backend_cancel_timeout, backend);
@@ -224,7 +232,7 @@ void
 pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (!_use_distro_upgrade)
+	if (!priv->use_distro_upgrade)
 		goto out;
 	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE,
 				   "fedora-9", "Fedora 9");
@@ -308,13 +316,13 @@ pk_backend_get_update_detail_timeout (gpointer data)
 
 	/* each one has a different detail for testing */
 	pk_backend_set_percentage (backend, 0);
-	len = g_strv_length (_package_ids);
+	len = g_strv_length (priv->package_ids);
 	for (i=0; i<len; i++) {
 		const gchar *to_array1[] = { NULL, NULL, NULL };
 		const gchar *to_array2[] = { NULL, NULL, NULL };
 		const gchar *to_array3[] = { NULL, NULL, NULL };
 		const gchar *to_array4[] = { NULL, NULL, NULL };
-		package_id = _package_ids[i];
+		package_id = priv->package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
 			to_array1[0] = "powertop;1.7-1.fc8;i386;installed";
 			to_array2[0] = "http://www.distro-update.org/page?moo";
@@ -391,7 +399,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	}
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
-	_signal_timeout = 0;
+	priv->signal_timeout = 0;
 	return FALSE;
 }
 
@@ -402,8 +410,8 @@ void
 pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_package_ids = package_ids;
-	_signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, backend);
+	priv->package_ids = package_ids;
+	priv->signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, backend);
 }
 
 /**
@@ -414,30 +422,30 @@ pk_backend_get_updates_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
-	if (_use_blocked) {
-		if (!_updated_powertop && !_updated_kernel && !_updated_gtkhtml) {
+	if (priv->use_blocked) {
+		if (!priv->updated_powertop && !priv->updated_kernel && !priv->updated_gtkhtml) {
 			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 					    "vino;2.24.2.fc9;i386;fedora",
 					    "Remote desktop server for the desktop");
 		}
 	}
-	if (!_updated_powertop) {
+	if (!priv->updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
 	}
-	if (!_updated_kernel) {
+	if (!priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_BUGFIX,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	if (!_updated_gtkhtml) {
+	if (!priv->updated_gtkhtml) {
 		pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_finished (backend);
-	_signal_timeout = 0;
+	priv->signal_timeout = 0;
 	return FALSE;
 }
 
@@ -455,7 +463,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 		pk_backend_finished (backend);
 		return;
 	}
-	_signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, backend);
+	priv->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, backend);
 }
 
 static gboolean
@@ -463,18 +471,18 @@ pk_backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
-	if (_progress_percentage == 100) {
+	if (priv->progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 30) {
+	if (priv->progress_percentage == 30) {
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
-	if (_progress_percentage == 50) {
+	if (priv->progress_percentage == 50) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
@@ -483,8 +491,8 @@ pk_backend_install_timeout (gpointer data)
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
-	_progress_percentage += 1;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 1;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -531,7 +539,7 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 	}
 
 	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
-		if (_use_gpg && !_has_signature) {
+		if (priv->use_gpg && !priv->has_signature) {
 			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
 							    "Test Key (Fedora) fedora@example.com",
@@ -545,7 +553,7 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 		}
 		eula_id = "eula_hughsie_dot_com";
 		has_eula = pk_backend_is_eula_valid (backend, eula_id);
-		if (_use_eula && !has_eula) {
+		if (priv->use_eula && !has_eula) {
 			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
 					    "Captain: What happen ?\n"
 					    "Mechanic: Somebody set up us the bomb.\n\n"
@@ -571,8 +579,8 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 			pk_backend_finished (backend);
 			return;
 		}
-		if (_use_media) {
-			_use_media = FALSE;
+		if (priv->use_media) {
+			priv->use_media = FALSE;
 			pk_backend_media_change_required (backend, PK_MEDIA_TYPE_ENUM_DVD, "linux-disk-1of7", "Linux Disc 1 of 7");
 			pk_backend_error_code (backend, PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
 					       "additional media linux-disk-1of7 required");
@@ -581,7 +589,7 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 		}
 	}
 
-	if (_use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+	if (priv->use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
 				       "Can't install as untrusted");
 		pk_backend_finished (backend);
@@ -589,11 +597,11 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 	}
 
 	pk_backend_set_allow_cancel (backend, TRUE);
-	_progress_percentage = 0;
+	priv->progress_percentage = 0;
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	_signal_timeout = g_timeout_add (100, pk_backend_install_timeout, backend);
+	priv->signal_timeout = g_timeout_add (100, pk_backend_install_timeout, backend);
 }
 
 /**
@@ -608,7 +616,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 	    /* egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") && */
 	    g_strcmp0 (key_id, "BB7576AC") == 0) {
 		g_debug ("installed signature %s for %s", key_id, package_id);
-		_has_signature = TRUE;
+		priv->has_signature = TRUE;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
 				       "GPG key %s not recognised for package_id %s",
@@ -636,7 +644,7 @@ pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gcha
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	pk_backend_set_percentage (backend, 101);
-	_signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, backend);
+	priv->signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, backend);
 }
 
 /**
@@ -646,14 +654,14 @@ static gboolean
 pk_backend_refresh_cache_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
+	if (priv->progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 80)
+	if (priv->progress_percentage == 80)
 		pk_backend_set_allow_cancel (backend, FALSE);
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 10;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -663,16 +671,16 @@ pk_backend_refresh_cache_timeout (gpointer data)
 void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	_progress_percentage = 0;
+	priv->progress_percentage = 0;
 
 	/* reset */
-	_updated_gtkhtml = FALSE;
-	_updated_kernel = FALSE;
-	_updated_powertop = FALSE;
+	priv->updated_gtkhtml = FALSE;
+	priv->updated_kernel = FALSE;
+	priv->updated_powertop = FALSE;
 
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	_signal_timeout = g_timeout_add (500, pk_backend_refresh_cache_timeout, backend);
+	priv->signal_timeout = g_timeout_add (500, pk_backend_refresh_cache_timeout, backend);
 }
 
 /**
@@ -684,7 +692,7 @@ pk_backend_resolve_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	guint i;
 	guint len;
-	gchar **packages = _package_ids;
+	gchar **packages = priv->package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -693,12 +701,12 @@ pk_backend_resolve_timeout (gpointer data)
 	len = g_strv_length (packages);
 	for (i=0; i<len; i++) {
 		if (g_strcmp0 (packages[i], "vips-doc") == 0 || g_strcmp0 (packages[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
-			if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_INSTALLED)) {
+			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 						    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 			}
 		} else if (g_strcmp0 (packages[i], "glib2") == 0 || g_strcmp0 (packages[i], "glib2;2.14.0;i386;fedora") == 0) {
-			if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 						    "glib2;2.14.0;i386;fedora", "The GLib library");
 			}
@@ -725,9 +733,9 @@ pk_backend_resolve_timeout (gpointer data)
 void
 pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
-	_filters = filters;
-	_package_ids = packages;
-	_signal_timeout = g_timeout_add (20, pk_backend_resolve_timeout, backend);
+	priv->filters = filters;
+	priv->package_ids = packages;
+	priv->signal_timeout = g_timeout_add (20, pk_backend_resolve_timeout, backend);
 }
 
 /**
@@ -837,7 +845,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_signal_timeout = g_timeout_add (2000, pk_backend_search_name_timeout, backend);
+	priv->signal_timeout = g_timeout_add (2000, pk_backend_search_name_timeout, backend);
 }
 
 /**
@@ -848,17 +856,17 @@ pk_backend_update_packages_download_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
-	if (_progress_percentage == 100) {
-		if (_use_blocked) {
+	if (priv->progress_percentage == 100) {
+		if (priv->use_blocked) {
 			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
-			_updated_gtkhtml = FALSE;
+			priv->updated_gtkhtml = FALSE;
 		}
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 0 && !_updated_powertop) {
+	if (priv->progress_percentage == 0 && !priv->updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
@@ -866,7 +874,7 @@ pk_backend_update_packages_download_timeout (gpointer data)
 					      "powertop;1.8-1.fc8;i386;fedora",
 					      0);
 	}
-	if (_progress_percentage == 20 && !_updated_kernel) {
+	if (priv->progress_percentage == 20 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
@@ -875,23 +883,23 @@ pk_backend_update_packages_download_timeout (gpointer data)
 					      0);
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	}
-	if (_progress_percentage == 30 && !_updated_gtkhtml) {
+	if (priv->progress_percentage == 30 && !priv->updated_gtkhtml) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		if (!_use_blocked) {
+		if (!priv->use_blocked) {
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
-			_updated_gtkhtml = TRUE;
+			priv->updated_gtkhtml = TRUE;
 		}
 		pk_backend_set_item_progress (backend,
 					      "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					      0);
 	}
-	if (_progress_percentage == 40 && !_updated_powertop) {
+	if (priv->progress_percentage == 40 && !priv->updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
@@ -900,21 +908,21 @@ pk_backend_update_packages_download_timeout (gpointer data)
 		pk_backend_set_item_progress (backend,
 					      "powertop;1.8-1.fc8;i386;fedora",
 					      0);
-		_updated_powertop = TRUE;
+		priv->updated_powertop = TRUE;
 	}
-	if (_progress_percentage == 60 && !_updated_kernel) {
+	if (priv->progress_percentage == 60 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 		pk_backend_set_item_progress (backend,
 					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 					      0);
-		_updated_kernel = TRUE;
+		priv->updated_kernel = TRUE;
 		pk_backend_set_item_progress (backend,
 					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 					      0);
 	}
-	if (_progress_percentage == 80 && !_updated_kernel) {
+	if (priv->progress_percentage == 80 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
@@ -922,8 +930,8 @@ pk_backend_update_packages_download_timeout (gpointer data)
 					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 					      0);
 	}
-	_progress_percentage += 1;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 1;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -939,7 +947,7 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 
 	/* FIXME: support only_trusted */
         PkRoleEnum role = pk_backend_get_role (backend);
-        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && _use_gpg && !_has_signature) {
+        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_gpg && !priv->has_signature) {
 		pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 						    "http://example.com/gpgkey",
 						    "Test Key (Fedora) fedora@example.com",
@@ -953,7 +961,7 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 	}
 	eula_id = "eula_hughsie_dot_com";
 	has_eula = pk_backend_is_eula_valid (backend, eula_id);
-        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && _use_eula && !has_eula) {
+        if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_eula && !has_eula) {
 		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
 				    "Captain: What happen ?\n"
 				    "Mechanic: Somebody set up us the bomb.\n\n"
@@ -980,79 +988,78 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 		return;
 	}
 
-	_package_ids = package_ids;
-	_package_current = 0;
-	_progress_percentage = 0;
+	priv->package_ids = package_ids;
+	priv->progress_percentage = 0;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	_signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, backend);
+	priv->signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, backend);
 }
 
 static gboolean
 pk_backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
+	if (priv->progress_percentage == 100) {
 
 		/* cleanup socket stuff */
-		if (_socket != NULL)
-			g_object_unref (_socket);
-		if (_socket_listen_id != 0)
-			g_source_remove (_socket_listen_id);
+		if (priv->socket != NULL)
+			g_object_unref (priv->socket);
+		if (priv->socket_listen_id != 0)
+			g_source_remove (priv->socket_listen_id);
 
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 0 && !_updated_powertop) {
+	if (priv->progress_percentage == 0 && !priv->updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
 	}
-	if (_progress_percentage == 20 && !_updated_kernel) {
+	if (priv->progress_percentage == 20 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	if (_progress_percentage == 30 && !_updated_gtkhtml) {
+	if (priv->progress_percentage == 30 && !priv->updated_gtkhtml) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		if (_use_blocked) {
+		if (priv->use_blocked) {
 			pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
-			_updated_gtkhtml = FALSE;
+			priv->updated_gtkhtml = FALSE;
 		} else {
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					    "An HTML widget for GTK+ 2.0");
-			_updated_gtkhtml = TRUE;
+			priv->updated_gtkhtml = TRUE;
 		}
 	}
-	if (_progress_percentage == 40 && !_updated_powertop) {
+	if (priv->progress_percentage == 40 && !priv->updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
-		_updated_powertop = TRUE;
+		priv->updated_powertop = TRUE;
 	}
-	if (_progress_percentage == 60 && !_updated_kernel) {
+	if (priv->progress_percentage == 60 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
-		_updated_kernel = TRUE;
+		priv->updated_kernel = TRUE;
 	}
-	if (_progress_percentage == 80 && !_updated_kernel) {
+	if (priv->progress_percentage == 80 && !priv->updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	_progress_percentage += 1;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 1;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -1097,7 +1104,7 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 			pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, buffer);
 
 			/* verify we can write into the socket */
-			wrote = g_socket_send (_socket, "invalid\n", 8, NULL, &error);
+			wrote = g_socket_send (priv->socket, "invalid\n", 8, NULL, &error);
 			if (error != NULL) {
 				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 						       "failed to write to socket: %s", error->message);
@@ -1116,7 +1123,7 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 		} else {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "unexpected data: %s", buffer);
-			g_source_remove (_signal_timeout);
+			g_source_remove (priv->signal_timeout);
 			pk_backend_finished (backend);
 			goto out;
 		}
@@ -1140,10 +1147,10 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	_progress_percentage = 0;
+	priv->progress_percentage = 0;
 
-	_socket = NULL;
-	_socket_listen_id = 0;
+	priv->socket = NULL;
+	priv->socket_listen_id = 0;
 
 	/* make sure we can contact the frontend */
 	frontend_socket = pk_backend_get_frontend_socket (backend);
@@ -1155,20 +1162,20 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 	}
 
 	/* create socket */
-	_socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
-	if (_socket == NULL) {
+	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
+	if (priv->socket == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "failed to create socket: %s", error->message);
 		pk_backend_finished (backend);
 		g_error_free (error);
 		goto out;
 	}
-	g_socket_set_blocking (_socket, FALSE);
-	g_socket_set_keepalive (_socket, TRUE);
+	g_socket_set_blocking (priv->socket, FALSE);
+	g_socket_set_keepalive (priv->socket, TRUE);
 
 	/* connect to it */
 	address = g_unix_socket_address_new (frontend_socket);
-	ret = g_socket_connect (_socket, address, NULL, &error);
+	ret = g_socket_connect (priv->socket, address, NULL, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "failed to open socket: %s", error->message);
@@ -1178,12 +1185,12 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 	}
 
 	/* socket has data */
-	source = g_socket_create_source (_socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
+	source = g_socket_create_source (priv->socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
 	g_source_set_callback (source, (GSourceFunc) pk_backend_socket_has_data_cb, backend, NULL);
-	_socket_listen_id = g_source_attach (source, NULL);
+	priv->socket_listen_id = g_source_attach (source, NULL);
 
 	/* send some data */
-	wrote = g_socket_send (_socket, "ping\n", 5, NULL, &error);
+	wrote = g_socket_send (priv->socket, "ping\n", 5, NULL, &error);
 	if (wrote != 5) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "failed to write, only %i bytes", wrote);
@@ -1193,7 +1200,7 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 
 	/* FIXME: support only_trusted */
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-	_signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, backend);
+	priv->signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, backend);
 out:
 	if (address != NULL)
 		g_object_unref (address);
@@ -1208,13 +1215,13 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_repo_detail (backend, "fedora",
-				"Fedora - 9", _repo_enabled_fedora);
+				"Fedora - 9", priv->repo_enabled_fedora);
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 		pk_backend_repo_detail (backend, "development",
-					"Fedora - Development", _repo_enabled_devel);
+					"Fedora - Development", priv->repo_enabled_devel);
 	}
 	pk_backend_repo_detail (backend, "livna-development",
-				"Livna for Fedora Core 8 - i386 - Development Tree", _repo_enabled_livna);
+				"Livna for Fedora Core 8 - i386 - Development Tree", priv->repo_enabled_livna);
 	pk_backend_finished (backend);
 }
 
@@ -1228,16 +1235,16 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 
 	if (g_strcmp0 (rid, "local") == 0) {
 		g_debug ("local repo: %i", enabled);
-		_repo_enabled_local = enabled;
+		priv->repo_enabled_local = enabled;
 	} else if (g_strcmp0 (rid, "development") == 0) {
 		g_debug ("devel repo: %i", enabled);
-		_repo_enabled_devel = enabled;
+		priv->repo_enabled_devel = enabled;
 	} else if (g_strcmp0 (rid, "fedora") == 0) {
 		g_debug ("fedora repo: %i", enabled);
-		_repo_enabled_fedora = enabled;
+		priv->repo_enabled_fedora = enabled;
 	} else if (g_strcmp0 (rid, "livna-development") == 0) {
 		g_debug ("livna repo: %i", enabled);
-		_repo_enabled_livna = enabled;
+		priv->repo_enabled_livna = enabled;
 	} else {
 		g_warning ("unknown repo: %s", rid);
 	}
@@ -1254,17 +1261,17 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *par
 	g_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 
 	if (g_strcmp0 (parameter, "use-blocked") == 0)
-		_use_blocked = atoi (value);
+		priv->use_blocked = atoi (value);
 	else if (g_strcmp0 (parameter, "use-eula") == 0)
-		_use_eula = atoi (value);
+		priv->use_eula = atoi (value);
 	else if (g_strcmp0 (parameter, "use-media") == 0)
-		_use_media = atoi (value);
+		priv->use_media = atoi (value);
 	else if (g_strcmp0 (parameter, "use-gpg") == 0)
-		_use_gpg = atoi (value);
+		priv->use_gpg = atoi (value);
 	else if (g_strcmp0 (parameter, "use-trusted") == 0)
-		_use_trusted = atoi (value);
+		priv->use_trusted = atoi (value);
 	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)
-		_use_distro_upgrade = atoi (value);
+		priv->use_distro_upgrade = atoi (value);
 	else
 		pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "invalid parameter %s", parameter);
 	pk_backend_finished (backend);
@@ -1277,24 +1284,24 @@ static gboolean
 pk_backend_what_provides_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
-		if (g_strcmp0 (_values[0], "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)") == 0) {
+	if (priv->progress_percentage == 100) {
+		if (g_strcmp0 (priv->values[0], "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;available",
 					    "GStreamer streaming media framework \"bad\" plug-ins");
-		} else if (g_strcmp0 (_values[0], "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
+		} else if (g_strcmp0 (priv->values[0], "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
 					    "MPEG demuxer for GStreamer");
 		} else {
 			/* pkcon install vips-doc says it's installed cause evince is INSTALLED */
-			if (g_strcmp0 (_values[0], "vips-doc") != 0) {
-				if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (g_strcmp0 (priv->values[0], "vips-doc") != 0) {
+				if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 					pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 							    "evince;0.9.3-5.fc8;i386;installed",
 							    "PDF Document viewer");
 				}
-				if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_INSTALLED)) {
+				if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
 					pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 							    "scribus;1.3.4-1.fc8;i386;fedora",
 							    "Scribus is an desktop open source page layout program");
@@ -1304,8 +1311,8 @@ pk_backend_what_provides_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	_progress_percentage += 10;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 10;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -1315,13 +1322,13 @@ pk_backend_what_provides_timeout (gpointer data)
 void
 pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
-	_progress_percentage = 0;
-	_values = values;
-	_signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, backend);
-	_filters = filters;
+	priv->progress_percentage = 0;
+	priv->values = values;
+	priv->signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, backend);
+	priv->filters = filters;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_set_percentage (backend, _progress_percentage);
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 }
 
 /**
@@ -1370,43 +1377,43 @@ static gboolean
 pk_backend_upgrade_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (_progress_percentage == 100) {
+	if (priv->progress_percentage == 100) {
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 0) {
+	if (priv->progress_percentage == 0) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO);
 	}
-	if (_progress_percentage == 20) {
+	if (priv->progress_percentage == 20) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	if (_progress_percentage == 30) {
+	if (priv->progress_percentage == 30) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 	}
-	if (_progress_percentage == 40) {
+	if (priv->progress_percentage == 40) {
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
 	}
-	if (_progress_percentage == 60) {
+	if (priv->progress_percentage == 60) {
 		pk_backend_set_allow_cancel (backend, TRUE);
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	if (_progress_percentage == 80) {
+	if (priv->progress_percentage == 80) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
 	}
-	_progress_percentage += 1;
-	pk_backend_set_percentage (backend, _progress_percentage);
+	priv->progress_percentage += 1;
+	pk_backend_set_percentage (backend, priv->progress_percentage);
 	return TRUE;
 }
 
@@ -1418,8 +1425,8 @@ pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgrade
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	_progress_percentage = 0;
-	_signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, backend);
+	priv->progress_percentage = 0;
+	priv->signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, backend);
 }
 
 /**
