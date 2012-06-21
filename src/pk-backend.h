@@ -384,9 +384,12 @@ gpointer	 pk_backend_get_pointer			(PkBackend	*backend,
 const gchar	*pk_backend_bool_to_string		(gboolean	 value);
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
-typedef void	(*PkBackendThreadFunc)			(PkBackend	*backend);
+typedef void	(*PkBackendThreadFunc)			(PkBackend	*backend,
+							 gpointer	 user_data);
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
-							 PkBackendThreadFunc func);
+							 PkBackendThreadFunc func,
+							 gpointer	 user_data,
+							 GDestroyNotify	 destroy_func);
 
 gboolean	 pk_backend_is_online			(PkBackend	*backend);
 gboolean	 pk_backend_use_background		(PkBackend	*backend);

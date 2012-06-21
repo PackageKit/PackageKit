@@ -2601,6 +2601,8 @@ pk_backend_use_background (PkBackend *backend)
 typedef struct {
 	PkBackend		*backend;
 	PkBackendThreadFunc	 func;
+	gpointer		 user_data;
+	GDestroyNotify		 destroy_func;
 } PkBackendThreadHelper;
 
 /**
@@ -2615,13 +2617,15 @@ pk_backend_thread_setup (gpointer thread_data)
 	pk_backend_transaction_start (helper->backend);
 
 	/* run original function */
-	helper->func (helper->backend);
+	helper->func (helper->backend, helper->user_data);
 	if (pk_backend_get_is_error_set (helper->backend)) {
 		g_debug ("transaction setup failed, going straight to finished");
 		pk_backend_transaction_stop (helper->backend);
 	}
 
 	/* destroy helper */
+	if (helper->destroy_func != NULL)
+		helper->destroy_func (helper->user_data);
 	g_object_unref (helper->backend);
 	g_free (helper);
 
@@ -2635,7 +2639,10 @@ pk_backend_thread_setup (gpointer thread_data)
  * @func: (scope call):
  **/
 gboolean
-pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
+pk_backend_thread_create (PkBackend *backend,
+			  PkBackendThreadFunc func,
+			  gpointer user_data,
+			  GDestroyNotify destroy_func)
 {
 	gboolean ret = TRUE;
 	PkBackendThreadHelper *helper = NULL;
@@ -2652,6 +2659,8 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 	helper = g_new0 (PkBackendThreadHelper, 1);
 	helper->backend = g_object_ref (backend);
 	helper->func = func;
+	helper->user_data = user_data;
+	helper->destroy_func = destroy_func;
 
 	/* create a thread */
 #if GLIB_CHECK_VERSION(2,31,0)

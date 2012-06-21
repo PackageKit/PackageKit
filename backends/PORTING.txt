@@ -27,6 +27,10 @@ Guide to porting backends from 0.7.x to 0.8.x
 
  * Remove any references to Rollback, it's no longer available.
 
+ * pk_backend_job_thread_create now takes an additional user_data and
+   GDestroyNotify parameter. The thread functions themselves now return
+   void, rather than gboolean.
+
  * Remove any calls to pk_backend_set_sub_percentage() and replace them
    with calls to pk_backend_set_item_progress(package)
 
