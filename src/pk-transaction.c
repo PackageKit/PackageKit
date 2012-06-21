@@ -942,8 +942,8 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		backend_signals = pk_bitfield_from_enums (
 			PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 			PK_BACKEND_SIGNAL_MESSAGE,
-			PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE,
-			PK_BACKEND_SIGNAL_NOTIFY_REMAINING,
+			PK_BACKEND_SIGNAL_PERCENTAGE,
+			PK_BACKEND_SIGNAL_REMAINING,
 			PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 			PK_BACKEND_SIGNAL_STATUS_CHANGED,
 			PK_BACKEND_SIGNAL_ITEM_PROGRESS,
@@ -2145,7 +2145,7 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 		}
 	}
 
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_PERCENTAGE)) {
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PERCENTAGE)) {
 		if (priv->signal_percentage == 0)
 			priv->signal_percentage =
 				g_signal_connect (priv->backend, "notify::percentage",
@@ -2158,7 +2158,7 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 		}
 	}
 
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_REMAINING)) {
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REMAINING)) {
 		if (priv->signal_remaining == 0)
 			priv->signal_remaining =
 				g_signal_connect (priv->backend, "notify::remaining",
@@ -2171,7 +2171,7 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 		}
 	}
 
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_SPEED)) {
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_SPEED)) {
 		if (priv->signal_speed == 0)
 			priv->signal_speed =
 				g_signal_connect (priv->backend, "notify::speed",
@@ -2184,7 +2184,7 @@ pk_transaction_set_signals (PkTransaction *transaction, PkBitfield backend_signa
 		}
 	}
 
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_NOTIFY_DOWNLOAD_SIZE_REMAINING)) {
+	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)) {
 		if (priv->signal_download_size_remaining == 0)
 			priv->signal_download_size_remaining =
 				g_signal_connect (priv->backend, "notify::download-size-remaining",
