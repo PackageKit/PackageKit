@@ -45,9 +45,9 @@ typedef struct {
 	ZifState	*state;
 	ZifStore	*store_local;
 	ZifTransaction	*transaction;
-} PkBackendYumPrivate;
+} PkBackendZifPrivate;
 
-static PkBackendYumPrivate *priv;
+static PkBackendZifPrivate *priv;
 
 /**
  * pk_backend_get_description:
@@ -1679,7 +1679,7 @@ pk_backend_initialize (PkBackend *backend)
 	pk_debug_add_log_domain ("Zif");
 
 	/* create private area */
-	priv = g_new0 (PkBackendYumPrivate, 1);
+	priv = g_new0 (PkBackendZifPrivate, 1);
 
 	/* connect to finished, so we can clean up */
 	priv->signal_finished =
