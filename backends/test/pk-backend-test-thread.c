@@ -59,7 +59,7 @@ pk_backend_destroy (PkBackend *backend)
  * pk_backend_search_groups_thread:
  */
 static void
-pk_backend_search_groups_thread (PkBackend *backend)
+pk_backend_search_groups_thread (PkBackend *backend, gpointer user_data)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -77,14 +77,14 @@ pk_backend_search_groups_thread (PkBackend *backend)
 void
 pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_groups_thread);
+	pk_backend_thread_create (backend, pk_backend_search_groups_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_names_thread:
  */
 static void
-pk_backend_search_names_thread (PkBackend *backend)
+pk_backend_search_names_thread (PkBackend *backend, gpointer user_data)
 {
 	GTimer *timer;
 	guint percentage;
@@ -130,7 +130,7 @@ pk_backend_search_names_thread (PkBackend *backend)
 void
 pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_names_thread);
+	pk_backend_thread_create (backend, pk_backend_search_names_thread, NULL, NULL);
 }
 
 /**
