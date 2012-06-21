@@ -197,7 +197,6 @@ struct PkBackendPrivate
 	gboolean		 simultaneous;
 	gboolean		 locked;
 	gboolean		 use_time;
-	gchar			*transaction_id;
 	gchar			*locale;
 	gchar			*frontend_socket;
 	guint			 cache_age;
@@ -2641,9 +2640,6 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	g_return_val_if_fail (method != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->loaded, FALSE);
 
-	/* this function is only valid when we have a running transaction */
-	if (backend->priv->transaction_id != NULL)
-		g_warning ("only valid when we have a running transaction");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
 	pk_backend_finished_delay (backend);
@@ -2970,9 +2966,6 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_ROLE:
 		g_value_set_uint (value, priv->role);
 		break;
-	case PROP_TRANSACTION_ID:
-		g_value_set_string (value, priv->transaction_id);
-		break;
 	case PROP_SPEED:
 		g_value_set_uint (value, priv->speed);
 		break;
@@ -3019,11 +3012,6 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_ROLE:
 		priv->role = g_value_get_uint (value);
 		break;
-	case PROP_TRANSACTION_ID:
-		g_free (priv->transaction_id);
-		priv->transaction_id = g_value_dup_string (value);
-		g_debug ("setting backend tid as %s", priv->transaction_id);
-		break;
 	case PROP_SPEED:
 		priv->speed = g_value_get_uint (value);
 		break;
@@ -3064,7 +3052,6 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
 	g_free (backend->priv->frontend_socket);
-	g_free (backend->priv->transaction_id);
 	g_object_unref (backend->priv->results);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
@@ -3121,14 +3108,6 @@ pk_backend_class_init (PkBackendClass *klass)
 				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
-
-	/**
-	 * PkBackend:transaction-id:
-	 */
-	pspec = g_param_spec_string ("transaction-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
 
 	/**
 	 * PkBackend:speed:
@@ -3219,7 +3198,7 @@ pk_backend_reset (PkBackend *backend)
 
 	/* we can't reset when we are running */
 	if (backend->priv->status == PK_STATUS_ENUM_RUNNING) {
-		g_warning ("cannot reset %s when running", backend->priv->transaction_id);
+		g_warning ("cannot reset when running");
 		return FALSE;
 	}
 

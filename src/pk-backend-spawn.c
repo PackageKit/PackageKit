@@ -790,16 +790,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		g_strfreev (environ);
 	}
 
-	/* don't do this for all backends as it's a performance penalty */
-	if (FALSE) {
-		/* transaction_id */
-		g_object_get (priv->backend,
-			      "transaction-id", &transaction_id,
-			      NULL);
-		g_hash_table_replace (env_table, g_strdup ("transaction_id"),
-				g_strdup (transaction_id));
-	}
-
 	/* accepted eulas */
 	eulas = pk_backend_get_accepted_eula_string (priv->backend);
 	if (eulas != NULL)

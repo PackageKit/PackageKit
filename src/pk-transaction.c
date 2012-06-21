@@ -275,18 +275,9 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 static gboolean
 pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
-	gchar *transaction_id;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-
-	g_object_get (priv->backend,
-		      "transaction-id", &transaction_id,
-		      NULL);
-	if (transaction_id == NULL) {
-		g_warning ("could not get current tid from backend");
-		return FALSE;
-	}
 
 	/* copy this into the cache */
 	pk_cache_set_results (priv->cache, priv->role, priv->results);
@@ -307,7 +298,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		pk_notify_wait_updates_changed (priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
-	g_free (transaction_id);
 	return TRUE;
 }
 
@@ -2317,7 +2307,6 @@ pk_transaction_run (PkTransaction *transaction)
 	g_object_set (priv->backend,
 		      "background", priv->background,
 		      "interactive", priv->interactive,
-		      "transaction-id", priv->tid,
 		      NULL);
 
 	/* if we didn't set a locale for this transaction, we would reuse the
