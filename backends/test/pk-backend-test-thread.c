@@ -58,7 +58,7 @@ pk_backend_destroy (PkBackend *backend)
 /**
  * pk_backend_search_groups_thread:
  */
-static gboolean
+static void
 pk_backend_search_groups_thread (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -69,7 +69,6 @@ pk_backend_search_groups_thread (PkBackend *backend)
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -84,7 +83,7 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values
 /**
  * pk_backend_search_names_thread:
  */
-static gboolean
+static void
 pk_backend_search_names_thread (PkBackend *backend)
 {
 	GTimer *timer;
@@ -108,7 +107,7 @@ pk_backend_search_names_thread (PkBackend *backend)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "The thread was stopped successfully");
 			pk_backend_finished (backend);
-			return TRUE;
+			return;
 		}
 		pk_backend_set_percentage (backend, percentage);
 		percentage += 10;
@@ -123,7 +122,6 @@ pk_backend_search_names_thread (PkBackend *backend)
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
