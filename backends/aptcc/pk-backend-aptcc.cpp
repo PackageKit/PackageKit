@@ -155,7 +155,7 @@ void pk_backend_cancel(PkBackend *backend)
     }
 }
 
-static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
+static void backend_get_depends_or_requires_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **package_ids;
     PkBitfield filters;
@@ -173,7 +173,7 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     bool depends = pk_backend_get_bool(backend, "get_depends");
@@ -190,7 +190,7 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                   pi);
             delete apt;
-            return false;
+            return;
         }
 
         const pkgCache::VerIterator &ver = apt->findPackageId(pi);
@@ -199,7 +199,7 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                   "Couldn't find package");
             delete apt;
-            return false;
+            return;
         }
 
         if (depends) {
@@ -213,7 +213,6 @@ static gboolean backend_get_depends_or_requires_thread(PkBackend *backend)
     apt->emitPackages(output, filters);
 
     delete apt;
-    return true;
 }
 
 /**
@@ -223,7 +222,7 @@ void pk_backend_get_depends(PkBackend *backend, PkBitfield filters, gchar **pack
 {
     pk_backend_set_bool(backend, "get_depends", true);
     pk_backend_set_bool(backend, "recursive", recursive);
-    pk_backend_thread_create(backend, backend_get_depends_or_requires_thread);
+    pk_backend_thread_create(backend, backend_get_depends_or_requires_thread, NULL, NULL);
 }
 
 /**
@@ -233,7 +232,7 @@ void pk_backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **pac
 {
     pk_backend_set_bool(backend, "get_depends", false);
     pk_backend_set_bool(backend, "recursive", recursive);
-    pk_backend_thread_create(backend, backend_get_depends_or_requires_thread);
+    pk_backend_thread_create(backend, backend_get_depends_or_requires_thread, NULL, NULL);
 }
 
 /**
@@ -244,7 +243,7 @@ void pk_backend_get_distro_upgrades(PkBackend *backend)
     pk_backend_spawn_helper(spawn, "get-distro-upgrade.py", "get-distro-upgrades", NULL);
 }
 
-static gboolean backend_get_files_thread(PkBackend *backend)
+static void backend_get_files_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **package_ids;
     gchar *pi;
@@ -255,7 +254,7 @@ static gboolean backend_get_files_thread(PkBackend *backend)
                               PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                               "Invalid package id");
         pk_backend_finished(backend);
-        return false;
+        return;
     }
 
     AptIntf *apt = new AptIntf(backend, _cancel);
@@ -263,7 +262,7 @@ static gboolean backend_get_files_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -274,21 +273,20 @@ static gboolean backend_get_files_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                   pi);
             delete apt;
-            return false;
+            return;
         }
 
         const pkgCache::VerIterator &ver = apt->findPackageId(pi);
         if (ver.end()) {
             pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
             delete apt;
-            return false;
+            return;
         }
 
         apt->emitPackageFiles(pi);
     }
 
     delete apt;
-    return true;
 }
 
 /**
@@ -296,10 +294,10 @@ static gboolean backend_get_files_thread(PkBackend *backend)
  */
 void pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 {
-    pk_backend_thread_create(backend, backend_get_files_thread);
+    pk_backend_thread_create(backend, backend_get_files_thread, NULL, NULL);
 }
 
-static gboolean backend_get_details_thread(PkBackend *backend)
+static void backend_get_details_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **package_ids;
 
@@ -311,7 +309,7 @@ static gboolean backend_get_details_thread(PkBackend *backend)
                               PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                               "Invalid package id");
         pk_backend_finished(backend);
-        return false;
+        return;
     }
 
     AptIntf *apt = new AptIntf(backend, _cancel);
@@ -319,7 +317,7 @@ static gboolean backend_get_details_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug ("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     if (updateDetail) {
@@ -338,7 +336,6 @@ static gboolean backend_get_details_thread(PkBackend *backend)
     }
 
     delete apt;
-    return true;
 }
 
 /**
@@ -346,7 +343,7 @@ static gboolean backend_get_details_thread(PkBackend *backend)
  */
 void pk_backend_get_update_detail(PkBackend *backend, gchar **package_ids)
 {
-    pk_backend_thread_create(backend, backend_get_details_thread);
+    pk_backend_thread_create(backend, backend_get_details_thread, NULL, NULL);
 }
 
 /**
@@ -354,10 +351,10 @@ void pk_backend_get_update_detail(PkBackend *backend, gchar **package_ids)
  */
 void pk_backend_get_details(PkBackend *backend, gchar **package_ids)
 {
-    pk_backend_thread_create(backend, backend_get_details_thread);
+    pk_backend_thread_create(backend, backend_get_details_thread, NULL, NULL);
 }
 
-static gboolean backend_get_or_update_system_thread(PkBackend *backend)
+static void backend_get_or_update_system_thread(PkBackend *backend, gpointer user_data)
 {
     PkBitfield filters;
     bool getUpdates;
@@ -370,7 +367,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -384,7 +381,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_NO_CACHE,
                                   "Could not open package cache.");
             delete apt;
-            return false;
+            return;
         } else {
             pk_backend_set_status(backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
             sleep(1);
@@ -397,7 +394,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
         cache.ShowBroken(false);
         g_debug("Internal error, DistUpgrade broke stuff");
         delete apt;
-        return false;
+        return;
     }
 
     bool res = true;
@@ -437,7 +434,6 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
     }
 
     delete apt;
-    return res;
 }
 
 /**
@@ -446,7 +442,7 @@ static gboolean backend_get_or_update_system_thread(PkBackend *backend)
 void pk_backend_get_updates(PkBackend *backend, PkBitfield filters)
 {
     pk_backend_set_bool(backend, "getUpdates", true);
-    pk_backend_thread_create(backend, backend_get_or_update_system_thread);
+    pk_backend_thread_create(backend, backend_get_or_update_system_thread, NULL, NULL);
 }
 
 /**
@@ -455,10 +451,10 @@ void pk_backend_get_updates(PkBackend *backend, PkBitfield filters)
 void pk_backend_update_system(PkBackend *backend, PkBitfield transaction_flags)
 {
     pk_backend_set_bool(backend, "getUpdates", false);
-    pk_backend_thread_create(backend, backend_get_or_update_system_thread);
+    pk_backend_thread_create(backend, backend_get_or_update_system_thread, NULL, NULL);
 }
 
-static gboolean backend_what_provides_thread(PkBackend *backend)
+static void backend_what_provides_thread(PkBackend *backend, gpointer user_data)
 {
     PkProvidesEnum provides;
     PkBitfield filters;
@@ -483,7 +479,7 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
             g_debug("Failed to create apt cache");
             g_strfreev(values);
             delete apt;
-            return false;
+            return;
         }
 
         pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -514,8 +510,6 @@ static gboolean backend_what_provides_thread(PkBackend *backend)
                               provides_text);
         pk_backend_finished(backend);
     }
-
-    return true;
 }
 
 /**
@@ -526,13 +520,13 @@ void pk_backend_what_provides(PkBackend *backend,
                               PkProvidesEnum provide,
                               gchar **values)
 {
-    pk_backend_thread_create(backend, backend_what_provides_thread);
+    pk_backend_thread_create(backend, backend_what_provides_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_download_packages_thread:
  */
-static gboolean pk_backend_download_packages_thread(PkBackend *backend)
+static void pk_backend_download_packages_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **package_ids;
     string directory;
@@ -546,7 +540,7 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -586,7 +580,7 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                   pi);
             delete apt;
-            return false;
+            return;
         }
 
         if (_cancel) {
@@ -627,14 +621,13 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
         // We failed and we did not cancel
         show_errors(backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         delete apt;
-        return _cancel;
+        return;
     }
 
     // send the filelist
     pk_backend_files(backend, NULL, filelist.c_str());
 
     delete apt;
-    return true;
 }
 
 /**
@@ -642,13 +635,13 @@ static gboolean pk_backend_download_packages_thread(PkBackend *backend)
  */
 void pk_backend_download_packages(PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
-    pk_backend_thread_create(backend, pk_backend_download_packages_thread);
+    pk_backend_thread_create(backend, pk_backend_download_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_refresh_cache_thread:
  */
-static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
+static void pk_backend_refresh_cache_thread(PkBackend *backend, gpointer user_data)
 {
     pk_backend_set_allow_cancel(backend, true);
 
@@ -682,7 +675,7 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
             show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
         }
         delete apt;
-        return false;
+        return;
     }
 
     // missing repo gpg signature would appear here
@@ -692,7 +685,6 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
     }
 
     delete apt;
-    return true;
 }
 
 /**
@@ -700,10 +692,10 @@ static gboolean pk_backend_refresh_cache_thread(PkBackend *backend)
  */
 void pk_backend_refresh_cache(PkBackend *backend, gboolean force)
 {
-    pk_backend_thread_create(backend, pk_backend_refresh_cache_thread);
+    pk_backend_thread_create(backend, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
-static gboolean pk_backend_resolve_thread(PkBackend *backend)
+static void pk_backend_resolve_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **package_ids;
     PkBitfield filters;
@@ -717,7 +709,7 @@ static gboolean pk_backend_resolve_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     PkgList pkgs = apt->resolvePackageIds(package_ids);
@@ -726,7 +718,6 @@ static gboolean pk_backend_resolve_thread(PkBackend *backend)
     apt->emitPackages(pkgs, filters);
 
     delete apt;
-    return true;
 }
 
 /**
@@ -734,10 +725,10 @@ static gboolean pk_backend_resolve_thread(PkBackend *backend)
  */
 void pk_backend_resolve(PkBackend *backend, PkBitfield filters, gchar **packages)
 {
-    pk_backend_thread_create(backend, pk_backend_resolve_thread);
+    pk_backend_thread_create(backend, pk_backend_resolve_thread, NULL, NULL);
 }
 
-static gboolean pk_backend_search_files_thread(PkBackend *backend)
+static void pk_backend_search_files_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **values;
     PkBitfield filters;
@@ -754,7 +745,7 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
         if (apt->init()) {
             g_debug("Failed to create apt cache");
             delete apt;
-            return false;
+            return;
         }
 
         pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -768,8 +759,6 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
     } else {
         pk_backend_finished(backend);
     }
-
-    return true;
 }
 
 /**
@@ -777,10 +766,10 @@ static gboolean pk_backend_search_files_thread(PkBackend *backend)
  */
 void pk_backend_search_files(PkBackend *backend, PkBitfield filters, gchar **values)
 {
-    pk_backend_thread_create(backend, pk_backend_search_files_thread);
+    pk_backend_thread_create(backend, pk_backend_search_files_thread, NULL, NULL);
 }
 
-static gboolean backend_search_groups_thread(PkBackend *backend)
+static void backend_search_groups_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **values;
     PkBitfield filters;
@@ -793,7 +782,7 @@ static gboolean backend_search_groups_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -805,7 +794,6 @@ static gboolean backend_search_groups_thread(PkBackend *backend)
 
     pk_backend_set_percentage(backend, 100);
     delete apt;
-    return true;
 }
 
 /**
@@ -813,10 +801,10 @@ static gboolean backend_search_groups_thread(PkBackend *backend)
  */
 void pk_backend_search_groups(PkBackend *backend, PkBitfield filters, gchar **values)
 {
-    pk_backend_thread_create(backend, backend_search_groups_thread);
+    pk_backend_thread_create(backend, backend_search_groups_thread, NULL, NULL);
 }
 
-static gboolean backend_search_package_thread(PkBackend *backend)
+static void backend_search_package_thread(PkBackend *backend, gpointer user_data)
 {
     gchar **values;
     gchar *search;
@@ -832,13 +820,13 @@ static gboolean backend_search_package_thread(PkBackend *backend)
         g_debug("Failed to create apt cache");
         g_free(search);
         delete apt;
-        return false;
+        return;
     }
 
     if (_error->PendingError() == true) {
         g_free(search);
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -858,7 +846,6 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 
     pk_backend_set_percentage(backend, 100);
     delete apt;
-    return true;
 }
 
 /**
@@ -867,7 +854,7 @@ static gboolean backend_search_package_thread(PkBackend *backend)
 void pk_backend_search_names(PkBackend *backend, PkBitfield filters, gchar **values)
 {
     pk_backend_set_bool(backend, "search_details", false);
-    pk_backend_thread_create(backend, backend_search_package_thread);
+    pk_backend_thread_create(backend, backend_search_package_thread, NULL, NULL);
 }
 
 /**
@@ -876,10 +863,10 @@ void pk_backend_search_names(PkBackend *backend, PkBitfield filters, gchar **val
 void pk_backend_search_details(PkBackend *backend, PkBitfield filters, gchar **values)
 {
     pk_backend_set_bool(backend, "search_details", true);
-    pk_backend_thread_create(backend, backend_search_package_thread);
+    pk_backend_thread_create(backend, backend_search_package_thread, NULL, NULL);
 }
 
-static gboolean backend_manage_packages_thread(PkBackend *backend)
+static void backend_manage_packages_thread(PkBackend *backend, gpointer user_data)
 {
     // Get the transaction flags
     PkBitfield transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
@@ -920,7 +907,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -935,13 +922,13 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_NOT_SUPPORTED,
                                   "The backend can only proccess one file at time.");
             delete apt;
-            return false;
+            return;
         }
 
         // get the list of packages to install
         if (!apt->markFileForInstall(full_paths[0], installPkgs, removePkgs)) {
             delete apt;
-            return false;
+            return;
         }
 
         cout << "installPkgs.size: " << installPkgs.size() << endl;
@@ -961,7 +948,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
                                   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                   "Could not find package(s)");
             delete apt;
-            return false;
+            return;
         }
     }
 
@@ -993,13 +980,12 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
             if (!apt->installFile(path, simulate)) {
                 cout << "Installation of DEB file " << path << " failed." << endl;
                 delete apt;
-                return false;
+                return;
             }
         }
     }
 
     delete apt;
-    return true;
 }
 
 /**
@@ -1007,7 +993,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
  */
 void pk_backend_install_packages(PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
+    pk_backend_thread_create(backend, backend_manage_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1015,7 +1001,7 @@ void pk_backend_install_packages(PkBackend *backend, PkBitfield transaction_flag
  */
 void pk_backend_update_packages(PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
 {
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
+    pk_backend_thread_create(backend, backend_manage_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1023,7 +1009,7 @@ void pk_backend_update_packages(PkBackend *backend, PkBitfield transaction_flags
  */
 void pk_backend_install_files(PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
 {
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
+    pk_backend_thread_create(backend, backend_manage_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1035,7 +1021,7 @@ void pk_backend_remove_packages(PkBackend *backend,
                                 gboolean allow_deps,
                                 gboolean autoremove)
 {
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
+    pk_backend_thread_create(backend, backend_manage_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1043,10 +1029,10 @@ void pk_backend_remove_packages(PkBackend *backend,
  */
 void pk_backend_repair_system(PkBackend *backend, PkBitfield transaction_flags)
 {
-    pk_backend_thread_create(backend, backend_manage_packages_thread);
+    pk_backend_thread_create(backend, backend_manage_packages_thread, NULL, NULL);
 }
 
-static gboolean backend_repo_manager_thread(PkBackend *backend)
+static void backend_repo_manager_thread(PkBackend *backend, gpointer user_data)
 {
     // list
     PkBitfield filters;
@@ -1080,7 +1066,7 @@ static gboolean backend_repo_manager_thread(PkBackend *backend)
         _error->Error("Cannot read vendors.list file");
         show_errors(backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
         pk_backend_finished(backend);
-        return false;
+        return;
     }
 
     for (SourcesListIter it = _lst.SourceRecords.begin();
@@ -1144,7 +1130,6 @@ static gboolean backend_repo_manager_thread(PkBackend *backend)
         }
     }
     pk_backend_finished(backend);
-    return true;
 }
 
 /**
@@ -1153,7 +1138,7 @@ static gboolean backend_repo_manager_thread(PkBackend *backend)
 void pk_backend_get_repo_list(PkBackend *backend, PkBitfield filters)
 {
     pk_backend_set_bool(backend, "list", true);
-    pk_backend_thread_create(backend, backend_repo_manager_thread);
+    pk_backend_thread_create(backend, backend_repo_manager_thread, NULL, NULL);
 }
 
 /**
@@ -1162,10 +1147,10 @@ void pk_backend_get_repo_list(PkBackend *backend, PkBitfield filters)
 void pk_backend_repo_enable(PkBackend *backend, const gchar *rid, gboolean enabled)
 {
     pk_backend_set_bool(backend, "list", false);
-    pk_backend_thread_create(backend, backend_repo_manager_thread);
+    pk_backend_thread_create(backend, backend_repo_manager_thread, NULL, NULL);
 }
 
-static gboolean backend_get_packages_thread(PkBackend *backend)
+static void backend_get_packages_thread(PkBackend *backend, gpointer user_data)
 {
     PkBitfield filters;
     filters = (PkBitfield) pk_backend_get_uint(backend, "filters");
@@ -1176,7 +1161,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
@@ -1187,7 +1172,6 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
     apt->emitPackages(output, filters);
 
     delete apt;
-    return true;
 }
 
 /**
@@ -1195,7 +1179,7 @@ static gboolean backend_get_packages_thread(PkBackend *backend)
  */
 void pk_backend_get_packages(PkBackend *backend, PkBitfield filter)
 {
-    pk_backend_thread_create(backend, backend_get_packages_thread);
+    pk_backend_thread_create(backend, backend_get_packages_thread, NULL, NULL);
 }
 
 
@@ -1206,7 +1190,7 @@ void pk_backend_get_packages(PkBackend *backend, PkBitfield filter)
 void
 pk_backend_get_categories (PkBackend *backend)
 {
-    pk_backend_thread_create (backend, pk_backend_get_categories_thread);
+    pk_backend_thread_create (backend, pk_backend_get_categories_thread, NULL, NULL);
 }
 */
 
