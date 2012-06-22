@@ -233,8 +233,8 @@ pk_opkg_progress_cb (const opkg_progress_data_t *pdata, void *data)
 	}
 }
 
-static gboolean
-backend_refresh_cache_thread (PkBackend *backend)
+static void
+backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 {
 	int ret;
 
@@ -247,8 +247,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 			opkg_unknown_error (backend, ret, "Refreshing cache");
 	}
 	pk_backend_finished (backend);
-
-	return (ret == 0);
 }
 
 /**
@@ -260,7 +258,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
@@ -343,8 +341,8 @@ end_handle:
 
 }
 
-static gboolean
-backend_search_thread (PkBackend *backend)
+static void
+backend_search_thread (PkBackend *backend, gpointer user_data)
 {
 	SearchParams *params;
 
@@ -356,8 +354,6 @@ backend_search_thread (PkBackend *backend)
 
 	g_free (params->needle);
 	g_free (params);
-
-	return TRUE;
 }
 
 static void
@@ -375,7 +371,7 @@ pk_backend_search_name (PkBackend *backend, PkBitfield filters, gchar **search)
 	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, backend_search_thread, NULL, NULL);
 }
 
 /**
@@ -396,7 +392,7 @@ pk_backend_search_description (PkBackend *backend, PkBitfield filters, gchar **s
 	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, backend_search_thread, NULL, NULL);
 }
 
 static void
@@ -414,11 +410,11 @@ pk_backend_search_group (PkBackend *backend, PkBitfield filters, gchar **search)
 	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, backend_search_thread, NULL, NULL);
 }
 
-static gboolean
-backend_install_packages_thread (PkBackend *backend)
+static void
+backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	gint err, i;
 	gchar **package_ids;
@@ -444,7 +440,6 @@ backend_install_packages_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return (err == 0);
 }
 
 static void
@@ -455,11 +450,11 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 
 	pk_backend_set_strv (backend, "pkids", package_ids);
 
-	pk_backend_thread_create (backend, backend_install_packages_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_remove_packages_thread (PkBackend *backend)
+static void
+backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	gint err, i;
 	gchar **package_ids;
@@ -505,7 +500,6 @@ backend_remove_packages_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return (err == 0);
 }
 
 static void
@@ -525,7 +519,7 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
 
 	pk_backend_set_pointer (backend, "remove-params", params);
 
-	pk_backend_thread_create (backend, backend_remove_packages_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread, NULL, NULL);
 
 }
 
@@ -542,8 +536,8 @@ pk_backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-static gboolean
-backend_update_system_thread (PkBackend *backend)
+static void
+backend_update_system_thread (PkBackend *backend, gpointer user_data)
 {
 	gint err;
 
@@ -554,7 +548,6 @@ backend_update_system_thread (PkBackend *backend)
 		opkg_unknown_error (backend, err, "Upgrading system");
 
 	pk_backend_finished (backend);
-	return (err != 0);
 }
 
 static void
@@ -563,14 +556,14 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	pk_backend_thread_create (backend, backend_update_system_thread);
+	pk_backend_thread_create (backend, backend_update_system_thread, NULL, NULL);
 }
 
 /**
  * backend_update_package:
  */
-static gboolean
-backend_update_package_thread (PkBackend *backend)
+static void
+backend_update_package_thread (PkBackend *backend, gpointer user_data)
 {
         gchar **parts;
 	gint err = 0;
@@ -594,7 +587,6 @@ backend_update_package_thread (PkBackend *backend)
 
 	g_strfreev (parts);
 	pk_backend_finished (backend);
-	return (err != 0);
 }
 
 static void
@@ -607,7 +599,7 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 
 	for (i = 0; package_ids[i]; i++) {
 		pk_backend_set_string (backend, "pkgid", package_ids[i]);
-		pk_backend_thread_create (backend, backend_update_package_thread);
+		pk_backend_thread_create (backend, backend_update_package_thread, NULL, NULL);
 	}
 }
 
@@ -634,12 +626,11 @@ pk_opkg_list_upgradable_cb (pkg_t *pkg, void *data)
 	g_free(uid);
 }
 
-static gboolean
-backend_get_updates_thread (PkBackend *backend)
+static void
+backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 {
 	opkg_list_upgradable_packages (pk_opkg_list_upgradable_cb, backend);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 static void
@@ -648,7 +639,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	pk_backend_thread_create (backend, backend_get_updates_thread);
+	pk_backend_thread_create (backend, backend_get_updates_thread, NULL, NULL);
 }
 
 /**
@@ -671,8 +662,8 @@ pk_backend_get_groups (PkBackend *backend)
 /**
  * pk_backend_get_details:
  */
-static gboolean
-backend_get_details_thread (PkBackend *backend)
+static void
+backend_get_details_thread (PkBackend *backend, gpointer user_data)
 {
 	gchar **package_ids;
         gchar **parts;
@@ -688,7 +679,7 @@ backend_get_details_thread (PkBackend *backend)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	pkg = opkg_find_package (parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_VERSION], parts[PK_PACKAGE_ID_ARCH], parts[PK_PACKAGE_ID_DATA]);
@@ -698,7 +689,7 @@ backend_get_details_thread (PkBackend *backend)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	newid = g_strdup_printf ("%s;%s;%s;%s", pkg->name, pkg->version, pkg->architecture, pkg->src->name);
@@ -715,14 +706,13 @@ backend_get_details_thread (PkBackend *backend)
 	pk_backend_details (backend, newid, NULL, group, pkg->description, NULL, pkg->size);
 	g_free (newid);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 static void
 pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	pk_backend_thread_create (backend, backend_get_details_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread, NULL, NULL);
 }
 
 /**
