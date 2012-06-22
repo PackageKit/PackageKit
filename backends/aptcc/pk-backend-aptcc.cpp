@@ -650,7 +650,7 @@ static void pk_backend_refresh_cache_thread(PkBackend *backend, gpointer user_da
     if (apt->init()) {
         g_debug("Failed to create apt cache");
         delete apt;
-        return false;
+        return;
     }
 
     pk_backend_set_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
@@ -661,7 +661,7 @@ static void pk_backend_refresh_cache_thread(PkBackend *backend, gpointer user_da
         if (_error->PendingError() == true) {
             pk_backend_error_code(backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "Unable to lock the list directory");
             delete apt;
-            return false;
+            return;
             // 	 return _error->Error(_("Unable to lock the list directory"));
         }
     }
@@ -965,7 +965,7 @@ static void backend_manage_packages_thread(PkBackend *backend, gpointer user_dat
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
         delete apt;
-        return false;
+        return;
     }
 
     if (fileInstall) {
