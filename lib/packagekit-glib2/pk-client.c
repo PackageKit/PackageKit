@@ -1093,6 +1093,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	gchar *tmp_str[12];
 	gchar **tmp_strv[5];
 	gboolean tmp_bool;
+	gboolean ret;
 	guint tmp_uint;
 	guint tmp_uint2;
 	guint tmp_uint3;
@@ -1412,10 +1413,25 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
+		PkItemProgress *item;
 		g_variant_get (parameters,
 			       "(&su)",
 			       &tmp_str[0],
 			       &tmp_uint);
+		item = pk_item_progress_new ();
+		g_object_set (item,
+			      "package-id", tmp_str[0],
+			      "percentage", tmp_uint,
+			      "transaction-id", state->transaction_id,
+			      NULL);
+		ret = pk_progress_set_item_progress (state->progress,
+						     item);
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_ITEM_PROGRESS,
+						  state->progress_user_data);
+		}
+		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Changed") == 0) {

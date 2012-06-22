@@ -46,6 +46,7 @@
 #include <packagekit-glib2/pk-files.h>
 #include <packagekit-glib2/pk-media-change-required.h>
 #include <packagekit-glib2/pk-message.h>
+#include <packagekit-glib2/pk-item-progress.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-package-sack.h>

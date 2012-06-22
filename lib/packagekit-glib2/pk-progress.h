@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-package.h>
+#include <packagekit-glib2/pk-item-progress.h>
 
 G_BEGIN_DECLS
 
@@ -90,8 +91,7 @@ typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
 							 const gchar		*package_id);
 gboolean	 pk_progress_set_item_progress		(PkProgress		*progress,
-							 const gchar		*package_id,
-							 guint			 percentage);
+							 PkItemProgress		*item_progress);
 gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
 							 const gchar		*package_id);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,

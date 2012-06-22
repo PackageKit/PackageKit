@@ -54,6 +54,7 @@ HEADER_FILES =							\
 	pk-files.h						\
 	pk-media-change-required.h				\
 	pk-message.h						\
+	pk-item-progress.h					\
 	pk-package.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
@@ -123,6 +124,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-media-change-required.h				\
 	pk-message.c						\
 	pk-message.h						\
+	pk-item-progress.c					\
+	pk-item-progress.h					\
 	pk-package.c						\
 	pk-package.h						\
 	pk-package-id.c						\

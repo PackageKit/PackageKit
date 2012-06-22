@@ -47,8 +47,6 @@ struct _PkProgressPrivate
 	gchar				*package_id;
 	gchar				*transaction_id;
 	gint				 percentage;
-	guint				 item_progress_value;
-	gchar				*item_progress_id;
 	gboolean			 allow_cancel;
 	PkRoleEnum			 role;
 	PkStatusEnum			 status;
@@ -58,6 +56,7 @@ struct _PkProgressPrivate
 	guint				 speed;
 	guint64				 download_size_remaining;
 	guint				 uid;
+	PkItemProgress			*item_progress;
 	PkPackage			*package;
 };
 
@@ -76,8 +75,7 @@ enum {
 	PROP_DOWNLOAD_SIZE_REMAINING,
 	PROP_UID,
 	PROP_PACKAGE,
-	PROP_ITEM_PROGRESS_ID,
-	PROP_ITEM_PROGRESS_VALUE,
+	PROP_ITEM_PROGRESS,
 	PROP_LAST
 };
 
@@ -101,11 +99,8 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 	case PROP_PERCENTAGE:
 		g_value_set_int (value, progress->priv->percentage);
 		break;
-	case PROP_ITEM_PROGRESS_VALUE:
-		g_value_set_int (value, progress->priv->item_progress_value);
-		break;
-	case PROP_ITEM_PROGRESS_ID:
-		g_value_set_string (value, progress->priv->item_progress_id);
+	case PROP_ITEM_PROGRESS:
+		g_value_set_object (value, progress->priv->item_progress);
 		break;
 	case PROP_ALLOW_CANCEL:
 		g_value_set_boolean (value, progress->priv->allow_cancel);
@@ -176,32 +171,23 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
  * pk_progress_set_item_progress:
  * @progress: a valid #PkProgress instance
  *
- * Since: 0.7.0
+ * Since: 0.8.1
  **/
 gboolean
 pk_progress_set_item_progress (PkProgress *progress,
-			       const gchar *package_id,
-			       guint percentage)
+			       PkItemProgress *item_progress)
 {
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
-	/* valid? */
-	if (!pk_package_id_check (package_id)) {
-		g_warning ("invalid package_id %s", package_id);
+	/* the same as before? */
+	if (progress->priv->item_progress == item_progress)
 		return FALSE;
-	}
 
 	/* new value */
-	if (g_strcmp0 (progress->priv->item_progress_id, package_id) != 0) {
-		g_free (progress->priv->item_progress_id);
-		progress->priv->item_progress_id = g_strdup (package_id);
-		g_object_notify (G_OBJECT(progress), "item-progress-id");
-	}
-	if (progress->priv->item_progress_value != percentage) {
-		progress->priv->item_progress_value = percentage;
-		g_object_notify (G_OBJECT(progress), "item-progress-value");
-	}
-
+	if (progress->priv->item_progress != NULL)
+		g_object_unref (progress->priv->item_progress);
+	progress->priv->item_progress = g_object_ref (item_progress);
+	g_object_notify (G_OBJECT(progress), "item-progress");
 	return TRUE;
 }
 
@@ -507,6 +493,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	case PROP_PACKAGE:
 		pk_progress_set_package (progress, g_value_get_object (value));
 		break;
+	case PROP_ITEM_PROGRESS:
+		pk_progress_set_item_progress (progress, g_value_get_object (value));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -660,22 +649,12 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:item-progress-id:
 	 *
-	 * Since: 0.7.0
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("item-progress-id", NULL, NULL,
-				     NULL,
+	pspec = g_param_spec_object ("item-progress", NULL, NULL,
+				     PK_TYPE_ITEM_PROGRESS,
 				     G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_ITEM_PROGRESS_ID, pspec);
-
-	/**
-	 * PkProgress:item-progress-value:
-	 *
-	 * Since: 0.7.0
-	 */
-	pspec = g_param_spec_int ("item-progress-value", NULL, NULL,
-				  -1, G_MAXINT, -1,
-				  G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_ITEM_PROGRESS_VALUE, pspec);
+	g_object_class_install_property (object_class, PROP_ITEM_PROGRESS, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }
@@ -699,8 +678,9 @@ pk_progress_finalize (GObject *object)
 
 	if (progress->priv->package != NULL)
 		g_object_unref (progress->priv->package);
+	if (progress->priv->item_progress != NULL)
+		g_object_unref (progress->priv->item_progress);
 
-	g_free (progress->priv->item_progress_id);
 	g_free (progress->priv->package_id);
 	g_free (progress->priv->transaction_id);
 
