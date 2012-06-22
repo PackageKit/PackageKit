@@ -1561,8 +1561,8 @@ do_search_details (const gchar *tree, gchar **values)
 /**
  * search_package_thread:
  */
-static gboolean
-search_package_thread (PkBackend *backend)
+static void
+search_package_thread (PkBackend *backend, gpointer user_data)
 {
 	PkBitfield		filters;
 	PkProvidesEnum		provides;
@@ -1785,11 +1785,10 @@ search_package_thread (PkBackend *backend)
 
 out:
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
-static gboolean
-update_packages_thread (PkBackend *backend)
+static void
+update_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	struct vf_progress	vf_progress;
 	gboolean		update_system;
@@ -1805,7 +1804,7 @@ update_packages_thread (PkBackend *backend)
 	if (update_system == FALSE && package_ids == NULL) {
 		g_warning ("package_ids cannot be NULL in UpdatePackages method.");
 		pk_backend_finished (backend);
-		return TRUE;
+		return;
 	}
 
 	setup_vf_progress (&vf_progress, backend);
@@ -1866,7 +1865,6 @@ update_packages_thread (PkBackend *backend)
 	g_free (command);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 static void
@@ -2339,10 +2337,10 @@ pk_backend_cancel (PkBackend *backend)
 }
 
 /**
- * pk_backend_download_packages:
+ * backend_download_packages_thread:
  */
-static gboolean
-backend_download_packages_thread (PkBackend *backend)
+static void
+backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	PercentageData *pd = pk_backend_get_pointer (backend, "percentage_ptr");
 	struct poldek_ts *ts;
@@ -2404,8 +2402,6 @@ backend_download_packages_thread (PkBackend *backend)
 	poldek_backend_percentage_data_destroy (backend);
 
 	pk_backend_finished (backend);
-
-	return TRUE;
 }
 
 void
@@ -2417,14 +2413,14 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids,
 	pb_error_clean ();
 
 	poldek_backend_percentage_data_create (backend);
-	pk_backend_thread_create (backend, backend_download_packages_thread);
+	pk_backend_thread_create (backend, backend_download_packages_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_depends:
+ * backend_get_depends_thread:
  */
-static gboolean
-backend_get_depends_thread (PkBackend *backend)
+static void
+backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 {
 	struct pkg	*pkg;
 	tn_array	*deppkgs, *available, *installed;
@@ -2458,7 +2454,6 @@ backend_get_depends_thread (PkBackend *backend)
 	n_array_free (installed);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2468,14 +2463,14 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_depends_thread);
+	pk_backend_thread_create (backend, backend_get_depends_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_details:
+ * backend_get_details_thread:
  */
-static gboolean
-backend_get_details_thread (PkBackend *backend)
+static void
+backend_get_details_thread (PkBackend *backend, gpointer user_data)
 {
 	gchar **package_ids;
 	guint n;
@@ -2517,7 +2512,6 @@ backend_get_details_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2527,14 +2521,14 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_details_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_files:
+ * backend_get_files_thread:
  */
-static gboolean
-backend_get_files_thread (PkBackend *backend)
+static void
+backend_get_files_thread (PkBackend *backend, gpointer user_data)
 {
 	gchar **package_ids;
 	size_t n;
@@ -2594,7 +2588,6 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2604,14 +2597,14 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_files_thread);
+	pk_backend_thread_create (backend, backend_get_files_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_packages:
+ * backend_get_packages_thread:
  */
-static gboolean
-backend_get_packages_thread (PkBackend *backend)
+static void
+backend_get_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	PkBitfield	filters;
 	tn_array       *installed = NULL;
@@ -2662,7 +2655,6 @@ backend_get_packages_thread (PkBackend *backend)
 	n_array_cfree (&packages);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2672,14 +2664,14 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_packages_thread);
+	pk_backend_thread_create (backend, backend_get_packages_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_requires:
+ * backend_get_requires_thread:
  */
-static gboolean
-backend_get_requires_thread (PkBackend *backend)
+static void
+backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 {
 	struct pkg	*pkg;
 	tn_array	*reqpkgs, *available, *installed;
@@ -2711,7 +2703,6 @@ backend_get_requires_thread (PkBackend *backend)
 	n_array_free (available);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2721,7 +2712,7 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_requires_thread);
+	pk_backend_thread_create (backend, backend_get_requires_thread, NULL, NULL);
 }
 
 /**
@@ -2764,8 +2755,8 @@ get_obsoletedby_pkg (struct pkg *pkg)
 	return obsoletes ? g_string_free (obsoletes, FALSE) : NULL;
 }
 
-static gboolean
-backend_get_update_detail_thread (PkBackend *backend)
+static void
+backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 {
 	gchar **package_ids = NULL;
 	guint n;
@@ -2860,7 +2851,6 @@ backend_get_update_detail_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2870,14 +2860,14 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_update_detail_thread);
+	pk_backend_thread_create (backend, backend_get_update_detail_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_get_updates:
+ * backend_get_updates_thread:
  */
-static gboolean
-backend_get_updates_thread (PkBackend *backend)
+static void
+backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 {
 	tn_array *packages = NULL;
 
@@ -2915,7 +2905,6 @@ backend_get_updates_thread (PkBackend *backend)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2925,14 +2914,14 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_updates_thread);
+	pk_backend_thread_create (backend, backend_get_updates_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_install_packages:
+ * backend_install_packages_thread:
  */
-static gboolean
-backend_install_packages_thread (PkBackend *backend)
+static void
+backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	gchar			*command;
 	struct vf_progress	vf_progress;
@@ -2975,7 +2964,6 @@ backend_install_packages_thread (PkBackend *backend)
 	poldek_backend_percentage_data_destroy (backend);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -2991,15 +2979,15 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 	pb_error_clean ();
 
 	poldek_backend_percentage_data_create (backend);
-	pk_backend_thread_create (backend, backend_install_packages_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread, NULL, NULL);
 }
 
 /**
  * FIXME: force currently omited
  * pk_backend_refresh_cache:
  */
-static gboolean
-backend_refresh_cache_thread (PkBackend *backend)
+static void
+backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 {
 	tn_array		*sources = NULL;
 	struct vf_progress	vfpro;
@@ -3049,7 +3037,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 	poldek_backend_percentage_data_destroy (backend);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -3066,14 +3053,14 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 	pb_error_clean ();
 
 	poldek_backend_percentage_data_create (backend);
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
- * pk_backend_remove_packages:
+ * backend_remove_packages_thread:
  */
-static gboolean
-backend_remove_packages_thread (PkBackend *backend)
+static void
+backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	GString *cmd;
 	gchar *command;
@@ -3105,7 +3092,6 @@ backend_remove_packages_thread (PkBackend *backend)
 	g_free (command);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 void
@@ -3113,7 +3099,7 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
 {
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
-	pk_backend_thread_create (backend, backend_remove_packages_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread, NULL, NULL);
 }
 
 /**
@@ -3127,7 +3113,7 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_RESOLVE);
 	pk_backend_set_strv (backend, "search", packages);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 }
 
 /**
@@ -3140,7 +3126,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **searc
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_DETAILS);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 }
 
 /**
@@ -3153,7 +3139,7 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_FILE);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 }
 
 /**
@@ -3166,7 +3152,7 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_GROUP);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 }
 
 /**
@@ -3179,7 +3165,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_NAME);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 }
 
 /**
@@ -3199,7 +3185,7 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
 
 	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
-	pk_backend_thread_create (backend, update_packages_thread);
+	pk_backend_thread_create (backend, update_packages_thread, NULL, NULL);
 }
 
 /**
@@ -3220,7 +3206,7 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
 	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
 	pk_backend_set_bool (backend, "update_system", TRUE);
-	pk_backend_thread_create (backend, update_packages_thread);
+	pk_backend_thread_create (backend, update_packages_thread, NULL, NULL);
 }
 
 /**
@@ -3293,7 +3279,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 
 	search = pk_ptr_array_to_strv (array);
 	pk_backend_set_strv (backend, "search", search);
-	pk_backend_thread_create (backend, search_package_thread);
+	pk_backend_thread_create (backend, search_package_thread, NULL, NULL);
 	g_strfreev (search);
 	g_ptr_array_unref (array);
 }
@@ -3380,8 +3366,6 @@ static gboolean do_simulate_packages (PkBackend *backend)
 	poldek_ts_free (ts);
 
 	pk_backend_finished (backend);
-
-	return TRUE;
 }
 
 /**
