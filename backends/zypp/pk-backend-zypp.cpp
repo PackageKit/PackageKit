@@ -166,8 +166,8 @@ pk_backend_destroy (PkBackend *backend)
 /**
   * backend_get_requires_thread:
   */
-static gboolean
-backend_get_requires_thread (PkBackend *backend)
+static void
+backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -177,13 +177,14 @@ backend_get_requires_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -242,9 +243,10 @@ backend_get_requires_thread (PkBackend *backend)
 			for (list<ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
 				g_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 				"Resolution failed");
+			return;
 		}
 
 		// look for packages which would be uninstalled
@@ -260,7 +262,6 @@ backend_get_requires_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -269,7 +270,7 @@ backend_get_requires_thread (PkBackend *backend)
 void
 pk_backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_thread_create (backend, backend_get_requires_thread);
+	pk_backend_thread_create (backend, backend_get_requires_thread, NULL, NULL);
 }
 
 /**
@@ -325,8 +326,8 @@ zypp_is_no_solvable (const sat::Solvable &solv)
  * "what packages are required for these packages" - but,
  * clearly often there is no simple answer.
  */
-static gboolean
-backend_get_depends_thread (PkBackend *backend)
+static void
+backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -337,16 +338,17 @@ backend_get_depends_thread (PkBackend *backend)
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 			"invalid package id");
+		return;
 	}
 
 	ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	g_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
@@ -384,9 +386,10 @@ backend_get_depends_thread (PkBackend *backend)
 		pk_backend_set_percentage (backend, 40);
 
 		if (!pool_item_found) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 				"Did not find the specified package.");
+			return;
 		}
 
 		// Gather up any dependencies
@@ -480,15 +483,16 @@ backend_get_depends_thread (PkBackend *backend)
 
 		pk_backend_set_percentage (backend, 100);
 	} catch (const repo::RepoNotFoundException &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+		return;
 	} catch (const Exception &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+		return;
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -497,11 +501,11 @@ backend_get_depends_thread (PkBackend *backend)
 void
 pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_thread_create (backend, backend_get_depends_thread);
+	pk_backend_thread_create (backend, backend_get_depends_thread, NULL, NULL);
 }
 
-static gboolean
-backend_get_details_thread (PkBackend *backend)
+static void
+backend_get_details_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -510,13 +514,14 @@ backend_get_details_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -590,16 +595,17 @@ backend_get_details_thread (PkBackend *backend)
 			}
 
 		} catch (const target::rpm::RpmException &ex) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+			return;
 		} catch (const Exception &ex) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			return;
 		}
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -608,7 +614,7 @@ backend_get_details_thread (PkBackend *backend)
 void
 pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_get_details_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread, NULL, NULL);
 }
 
 static gboolean
@@ -620,20 +626,21 @@ backend_get_distro_upgrades_thread(PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// refresh the repos before checking for updates
 	if (!zypp_refresh_cache (backend, FALSE)) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	vector<parser::ProductFileData> result;
 	if (!parser::ProductFileReader::scanDir (functor::getAll (back_inserter (result)), "/etc/products.d")) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not parse /etc/products.d");
+		return;
 	}
 
 	for (vector<parser::ProductFileData>::iterator it = result.begin (); it != result.end (); it++) {
@@ -655,7 +662,6 @@ backend_get_distro_upgrades_thread(PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -664,17 +670,16 @@ backend_get_distro_upgrades_thread(PkBackend *backend)
 void
 pk_backend_get_distro_upgrades (PkBackend *backend)
 {
-	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
+	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread, NULL, NULL);
 }
 
-static gboolean
-backend_refresh_cache_thread (PkBackend *backend)
+static void
+backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gboolean force = pk_backend_get_bool(backend, "force");
 	zypp_refresh_cache (backend, force);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -684,7 +689,7 @@ void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	MIL << endl;
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL, NULL);
 }
 
 /* If a critical self update (see qualifying steps below) is available then only show/install that update first.
@@ -713,8 +718,8 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 	return FALSE;
 }*/
 
-static gboolean
-backend_get_updates_thread (PkBackend *backend)
+static void
+backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
@@ -723,7 +728,7 @@ backend_get_updates_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	typedef set<PoolItem>::iterator pi_it_t;
@@ -734,7 +739,7 @@ backend_get_updates_thread (PkBackend *backend)
 	// refresh the repos before checking for updates
 	if (!zypp_refresh_cache (backend, FALSE)) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	ResPool pool = zypp_build_pool (backend, TRUE);
@@ -781,7 +786,6 @@ backend_get_updates_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -790,11 +794,11 @@ backend_get_updates_thread (PkBackend *backend)
 void
 pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	pk_backend_thread_create (backend, backend_get_updates_thread);
+	pk_backend_thread_create (backend, backend_get_updates_thread, NULL, NULL);
 }
 
-static gboolean
-backend_install_files_thread (PkBackend *backend)
+static void
+backend_install_files_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **full_paths;
@@ -804,7 +808,7 @@ backend_install_files_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	full_paths = pk_backend_get_strv (backend, "full_paths");
@@ -832,9 +836,10 @@ backend_install_files_thread (PkBackend *backend)
 		// copy the rpm into tmpdir
 		string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
 		if (filesystem::copy (full_paths[i], tempDest) != 0) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
 				"Could not copy the rpm-file into the temp-dir");
+			return;
 		}
 	}
 
@@ -854,14 +859,16 @@ backend_install_files_thread (PkBackend *backend)
 		manager.addRepository (tmpRepo);
 
 		if (!zypp_refresh_meta_and_cache (manager, tmpRepo)) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 			  backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't refresh repositories");
+			return;
 		}
 		zypp_build_pool (backend, true);
 
 	} catch (const Exception &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+		return;
 	}
 
 	bool error = false;
@@ -885,7 +892,6 @@ backend_install_files_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return !error;
 }
 
 /**
@@ -894,7 +900,7 @@ backend_install_files_thread (PkBackend *backend)
 void
 pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
-	pk_backend_thread_create (backend, backend_install_files_thread);
+	pk_backend_thread_create (backend, backend_install_files_thread, NULL, NULL);
 }
 
 /**
@@ -903,11 +909,11 @@ pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **ful
 void
 pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 {
-	pk_backend_thread_create (backend, backend_install_files_thread);
+	pk_backend_thread_create (backend, backend_install_files_thread, NULL, NULL);
 }
 
-static gboolean
-backend_get_update_detail_thread (PkBackend *backend)
+static void
+backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -916,13 +922,14 @@ backend_get_update_detail_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (package_ids == NULL) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -993,7 +1000,6 @@ backend_get_update_detail_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1002,11 +1008,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 void
 pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_get_update_detail_thread);
+	pk_backend_thread_create (backend, backend_get_update_detail_thread, NULL, NULL);
 }
 
-static gboolean
-backend_update_system_thread (PkBackend *backend)
+static void
+backend_update_system_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	ZYpp::Ptr zypp;
@@ -1014,7 +1020,7 @@ backend_update_system_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -1042,9 +1048,10 @@ backend_update_system_thread (PkBackend *backend)
 	}
 
 	if (!zypp_perform_execution (backend, UPDATE, FALSE)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_TRANSACTION_ERROR,
 			"Couldn't perform the installation.");
+		return;
 	}
 
 	if (restart != PK_RESTART_ENUM_NONE)
@@ -1052,7 +1059,6 @@ backend_update_system_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1061,11 +1067,11 @@ backend_update_system_thread (PkBackend *backend)
 void
 pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
-	pk_backend_thread_create (backend, backend_update_system_thread);
+	pk_backend_thread_create (backend, backend_update_system_thread, NULL, NULL);
 }
 
-static gboolean
-backend_install_packages_thread (PkBackend *backend)
+static void
+backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	PoolStatusSaver saver;
@@ -1074,7 +1080,7 @@ backend_install_packages_thread (PkBackend *backend)
 	// refresh the repos before installing packages
 	if (!zypp_refresh_cache (backend, FALSE)) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1084,13 +1090,14 @@ backend_install_packages_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 	/* FIXME: support only_trusted */
 
@@ -1144,9 +1151,10 @@ backend_install_packages_thread (PkBackend *backend)
 				}
 				if (!hit) {
 					g_strfreev (id_parts);
-					return zypp_backend_finished_error (
+					zypp_backend_finished_error (
 						backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						"Couldn't find the package '%s'.", package_ids[i]);
+					return;
 				}
 
 			}
@@ -1170,19 +1178,19 @@ backend_install_packages_thread (PkBackend *backend)
 			}
 			delete (items);
 			pk_backend_finished (backend);
-			return FALSE;
+			return;
 		}
 		delete (items);
 
 		pk_backend_set_percentage (backend, 100);
 
 	} catch (const Exception &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+		return;
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1193,7 +1201,7 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 {
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
-	pk_backend_thread_create (backend, backend_install_packages_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1202,11 +1210,11 @@ pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **
 void
 pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_install_packages_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_install_signature_thread (PkBackend *backend)
+static void
+backend_install_signature_thread (PkBackend *backend, gpointer user_data)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_SIG_CHECK);
 	const gchar *key_id = pk_backend_get_string (backend, "key_id");
@@ -1214,7 +1222,6 @@ backend_install_signature_thread (PkBackend *backend)
 	priv->signatures[backend]->push_back ((string)(key_id));
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1223,11 +1230,11 @@ backend_install_signature_thread (PkBackend *backend)
 void
 pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
 {
-	pk_backend_thread_create (backend, backend_install_signature_thread);
+	pk_backend_thread_create (backend, backend_install_signature_thread, NULL, NULL);
 }
 
-static gboolean
-backend_remove_packages_thread (PkBackend *backend)
+static void
+backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	PoolStatusSaver saver;
@@ -1243,7 +1250,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	autoremove = pk_backend_get_bool (backend, "autoremove");
 	zypp->resolver()->setCleandepsOnRemove(autoremove);
@@ -1256,8 +1263,9 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 	for (guint i = 0; package_ids[i]; i++) {
 		gchar **id_parts = pk_package_id_split (package_ids[i]);
@@ -1287,24 +1295,26 @@ backend_remove_packages_thread (PkBackend *backend)
 				it->statusReset();
 			}
 			delete (items);
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_TRANSACTION_ERROR,
 				"Couldn't remove the package");
+			return;
 		}
 
 		delete (items);
 		pk_backend_set_percentage (backend, 100);
 
 	} catch (const repo::RepoNotFoundException &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+		return;
 	} catch (const Exception &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+		return;
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1313,17 +1323,17 @@ backend_remove_packages_thread (PkBackend *backend)
 void
 pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_thread_create (backend, backend_remove_packages_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread, NULL, NULL);
 }
 
 void
 pk_backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
-	pk_backend_thread_create (backend, backend_remove_packages_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_resolve_thread (PkBackend *backend)
+static void
+backend_resolve_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -1333,7 +1343,7 @@ backend_resolve_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1388,7 +1398,6 @@ backend_resolve_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1397,11 +1406,11 @@ backend_resolve_thread (PkBackend *backend)
 void
 pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_resolve_thread);
+	pk_backend_thread_create (backend, backend_resolve_thread, NULL, NULL);
 }
 
-static gboolean
-backend_find_packages_thread (PkBackend *backend)
+static void
+backend_find_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **values;
@@ -1412,13 +1421,13 @@ backend_find_packages_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	// refresh the repos before searching
 	if (!zypp_refresh_cache (backend, FALSE)) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	values = pk_backend_get_strv (backend, "search");
@@ -1472,7 +1481,6 @@ backend_find_packages_thread (PkBackend *backend)
 	zypp_emit_filtered_packages_in_list (backend, v);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1482,7 +1490,7 @@ void
 pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
-	pk_backend_thread_create (backend, backend_find_packages_thread);
+	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1492,11 +1500,11 @@ void
 pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
-	pk_backend_thread_create (backend, backend_find_packages_thread);
+	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_search_group_thread (PkBackend *backend)
+static void
+backend_search_group_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **values;
@@ -1506,15 +1514,16 @@ backend_search_group_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	values = pk_backend_get_strv (backend, "search");
 	group = values[0];  //Fixme - add support for possible multiple values.
 
 	if (group == NULL) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
+		return;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1541,7 +1550,6 @@ backend_search_group_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1550,7 +1558,7 @@ backend_search_group_thread (PkBackend *backend)
 void
 pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_search_group_thread);
+	pk_backend_thread_create (backend, backend_search_group_thread, NULL, NULL);
 }
 
 /**
@@ -1560,7 +1568,7 @@ void
 pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
-	pk_backend_thread_create (backend, backend_find_packages_thread);
+	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1655,8 +1663,8 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	pk_backend_finished (backend);
 }
 
-static gboolean
-backend_get_files_thread (PkBackend *backend)
+static void
+backend_get_files_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -1665,13 +1673,14 @@ backend_get_files_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 
 	for (uint i = 0; package_ids[i]; i++) {
@@ -1699,9 +1708,10 @@ backend_get_files_thread (PkBackend *backend)
 		g_strfreev (id_parts);
 
 		if (package == NULL) {
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"couldn't find package");
+			return;
 		}
 
 		string temp;
@@ -1716,9 +1726,10 @@ backend_get_files_thread (PkBackend *backend)
 				}
 
 			} catch (const target::rpm::RpmException &ex) {
-				return zypp_backend_finished_error (
+				zypp_backend_finished_error (
 					backend, PK_ERROR_ENUM_REPO_NOT_FOUND,
 					 "Couldn't open rpm-database");
+					return;
 			}
 		} else {
 			temp = "Only available for installed packages";
@@ -1728,7 +1739,6 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -1737,11 +1747,11 @@ backend_get_files_thread (PkBackend *backend)
 void
 pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_get_files_thread);
+	pk_backend_thread_create (backend, backend_get_files_thread, NULL, NULL);
 }
 
-static gboolean
-backend_get_packages_thread (PkBackend *backend)
+static void
+backend_get_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	ZYpp::Ptr zypp;
@@ -1749,7 +1759,7 @@ backend_get_packages_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1764,7 +1774,6 @@ backend_get_packages_thread (PkBackend *backend)
 	zypp_emit_filtered_packages_in_list (backend, v);
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 /**
   * pk_backend_get_packages:
@@ -1772,11 +1781,11 @@ backend_get_packages_thread (PkBackend *backend)
 void
 pk_backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
-	pk_backend_thread_create (backend, backend_get_packages_thread);
+	pk_backend_thread_create (backend, backend_get_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_update_packages_thread (PkBackend *backend)
+static void
+backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	PoolStatusSaver saver;
@@ -1787,7 +1796,7 @@ backend_update_packages_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	ResPool pool = zypp_build_pool (backend, TRUE);
 	/* FIXME: support only_trusted */
@@ -1835,7 +1844,7 @@ backend_update_packages_thread (PkBackend *backend)
 void
 pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_update_packages_thread);
+	pk_backend_thread_create (backend, backend_update_packages_thread, NULL, NULL);
 }
 
 /**
@@ -1844,11 +1853,11 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 void
 pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, backend_update_packages_thread);
+	pk_backend_thread_create (backend, backend_update_packages_thread, NULL, NULL);
 }
 
-static gboolean
-backend_repo_set_data_thread (PkBackend *backend)
+static void
+backend_repo_set_data_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	const gchar *repo_id;
@@ -1859,7 +1868,7 @@ backend_repo_set_data_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	repo_id = pk_backend_get_string (backend, "repo_id");
@@ -1870,15 +1879,13 @@ backend_repo_set_data_thread (PkBackend *backend)
 	RepoManager manager;
 	RepoInfo repo;
 
-	gboolean bReturn = TRUE;
-
 	try {
 		pk_backend_set_status(backend, PK_STATUS_ENUM_SETUP);
 		if (g_ascii_strcasecmp (parameter, "add") != 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			if (!zypp_is_valid_repo (backend, repo)){
 				pk_backend_finished (backend);
-				return FALSE;
+				return;
 			}
 		}
 		// add a new repo
@@ -1902,7 +1909,6 @@ backend_repo_set_data_thread (PkBackend *backend)
 				repo.setAutorefresh (FALSE);
 			} else {
 				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Autorefresh a repo: Enter true or false");
-				bReturn = FALSE;
 			}
 
 			manager.modifyRepository (repo_id, repo);
@@ -1957,28 +1963,21 @@ backend_repo_set_data_thread (PkBackend *backend)
 
 		} else {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "Valid parameters for set_repo_data are remove/add/refresh/prio/keep/url/name");
-			bReturn = FALSE;
 		}
 
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
-		bReturn = FALSE;
 	} catch (const repo::RepoAlreadyExistsException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "This repo already exists");
-		bReturn = FALSE;
 	} catch (const repo::RepoUnknownTypeException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Type of the repo can't be determined");
-		bReturn = FALSE;
 	} catch (const repo::RepoException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't access the given URL");
-		bReturn = FALSE;
 	} catch (const Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asString ().c_str ());
-		bReturn = FALSE;
 	}
 
 	pk_backend_finished (backend);
-	return bReturn;
 }
 
 /**
@@ -1987,11 +1986,11 @@ backend_repo_set_data_thread (PkBackend *backend)
 void
 pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
-	pk_backend_thread_create (backend, backend_repo_set_data_thread);
+	pk_backend_thread_create (backend, backend_repo_set_data_thread, NULL, NULL);
 }
 
-static gboolean
-backend_what_provides_thread (PkBackend *backend)
+static void
+backend_what_provides_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	ZYpp::Ptr zypp;
@@ -1999,7 +1998,7 @@ backend_what_provides_thread (PkBackend *backend)
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	gchar **values = pk_backend_get_strv (backend, "search");
@@ -2019,8 +2018,9 @@ backend_what_provides_thread (PkBackend *backend)
 				g_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			solver.setIgnoreAlreadyRecommended (FALSE);
-			return zypp_backend_finished_error (
+			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+			return;
 		}
 
 		// look for packages which would be installed
@@ -2056,7 +2056,6 @@ backend_what_provides_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -2065,7 +2064,7 @@ backend_what_provides_thread (PkBackend *backend)
 void
 pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_what_provides_thread);
+	pk_backend_thread_create (backend, backend_what_provides_thread, NULL, NULL);
 }
 
 gchar **
@@ -2078,7 +2077,7 @@ pk_backend_get_mime_types (PkBackend *backend)
 }
 
 static gboolean
-backend_download_packages_thread (PkBackend *backend)
+backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 {
 	MIL << endl;
 	gchar **package_ids;
@@ -2086,20 +2085,21 @@ backend_download_packages_thread (PkBackend *backend)
 
 	if (!zypp_refresh_cache (backend, FALSE)) {
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
 	if (zypp == NULL){
 		pk_backend_finished (backend);
-		return FALSE;
+		return;
 	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return;
 	}
 
 	try
@@ -2128,7 +2128,7 @@ backend_download_packages_thread (PkBackend *backend)
 				pk_backend_error_code (backend, PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
 					"Insufficient space in download directory '%s'.", pk_backend_get_root (backend));
 				pk_backend_finished (backend);
-				return FALSE;
+				return;
 			}
 
 			sat::Solvable solvable = item.resolvable()->satSolvable();
@@ -2153,12 +2153,12 @@ backend_download_packages_thread (PkBackend *backend)
 			g_strfreev (id_parts);
 		}
 	} catch (const Exception &ex) {
-		return zypp_backend_finished_error (
+		zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str());
+		return;
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
 /**
@@ -2167,7 +2167,7 @@ backend_download_packages_thread (PkBackend *backend)
 void
 pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
-	pk_backend_thread_create (backend, backend_download_packages_thread);
+	pk_backend_thread_create (backend, backend_download_packages_thread, NULL, NULL);
 }
 
 /**
