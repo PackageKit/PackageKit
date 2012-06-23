@@ -613,7 +613,7 @@ if test x$with_default_backend = x; then
 	elif test -f /usr/lib/libalpm.so; then
 		with_default_backend=alpm
 	elif test -f /usr/bin/apt-get ; then
-		with_default_backend=apt
+		with_default_backend=aptcc
 	elif test -f /usr/bin/conary ; then
 		with_default_backend=conary
 	elif test -f /usr/bin/box-repos ; then
@@ -665,7 +665,7 @@ if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
 		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
-			       "Meta release is available"), 
+			       "Meta release is available"),
 		     AC_MSG_WARN([Distro upgrade notification not supported]))
 	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
 		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
