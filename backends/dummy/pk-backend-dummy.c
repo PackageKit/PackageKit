@@ -1450,9 +1450,6 @@ pk_backend_job_start (PkBackend *backend)
 void
 pk_backend_job_stop (PkBackend *backend)
 {
-	/* here you would unlock the backend */
-	pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "backend is crap");
-
 	/* you *cannot* use pk_backend_error_code() here,
 	 * unless pk_backend_get_is_error_set() returns FALSE, and
 	 * even then it's probably just best to clean up silently */
