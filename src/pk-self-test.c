@@ -139,22 +139,21 @@ pk_test_backend_watch_file_cb (PkBackend *backend, gpointer user_data)
 	_g_test_loop_quit ();
 }
 
-static gboolean
-pk_test_backend_func_true (PkBackend *backend)
+static void
+pk_test_backend_func_true (PkBackend *backend, gpointer user_data)
 {
 	g_usleep (1000*1000);
+	g_assert_cmpint (GPOINTER_TO_INT (user_data), ==, 999);
 	/* trigger duplicate test */
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 	pk_backend_finished (backend);
-	return TRUE;
 }
 
-static gboolean
-pk_test_backend_func_immediate_false (PkBackend *backend)
+static void
+pk_test_backend_func_immediate_false (PkBackend *backend, gpointer user_data)
 {
 	pk_backend_finished (backend);
-	return FALSE;
 }
 
 /**
@@ -272,7 +271,10 @@ pk_test_backend_func (void)
 	ret = pk_backend_load (backend, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-	ret = pk_backend_thread_create (backend, pk_test_backend_func_true);
+	ret = pk_backend_thread_create (backend,
+					pk_test_backend_func_true,
+					GINT_TO_POINTER (999),
+					NULL);
 	g_assert (ret);
 
 	/* wait for Finished */
@@ -285,7 +287,10 @@ pk_test_backend_func (void)
 	pk_backend_reset (backend);
 
 	/* wait for a thread to return false (straight away) */
-	ret = pk_backend_thread_create (backend, pk_test_backend_func_immediate_false);
+	ret = pk_backend_thread_create (backend,
+					pk_test_backend_func_immediate_false,
+					NULL,
+					NULL);
 	g_assert (ret);
 
 	/* wait for Finished */
