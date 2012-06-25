@@ -68,6 +68,10 @@ void pk_backend_initialize(PkBackend *backend)
     // Disable apt-listbugs as it freezes PK
     setenv("APT_LISTBUGS_FRONTEND", "none", 1);
 
+    // Set apt-listchanges frontend to "debconf" to make it's output visible
+    // (without using the debconf frontend, PK will freeze)
+    setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
+
     spawn = pk_backend_spawn_new();
     pk_backend_spawn_set_backend(spawn, backend);
     pk_backend_spawn_set_name(spawn, "aptcc");
@@ -422,10 +426,10 @@ static void backend_get_or_update_system_thread(PkBackend *backend, gpointer use
 
         apt->emitUpdates(updates, filters);
         apt->emitPackages(kept, filters, PK_INFO_ENUM_BLOCKED);
-    } else { 
+    } else {
         PkBitfield transaction_flags;
         bool downloadOnly;
-        transaction_flags = pk_backend_get_uint(backend, "transaction_flags");        
+        transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
         downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 
         // TODO there should be a simulate upgrade system,
@@ -870,11 +874,11 @@ static void backend_manage_packages_thread(PkBackend *backend, gpointer user_dat
 {
     // Get the transaction flags
     PkBitfield transaction_flags = pk_backend_get_uint(backend, "transaction_flags");
-    
+
     // Check if we should only simulate the install (calculate dependencies)
     bool simulate;
     simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
-    
+
     // Check if we should only download all the required packages for this transaction
     bool downloadOnly;
     downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
@@ -892,7 +896,7 @@ static void backend_manage_packages_thread(PkBackend *backend, gpointer user_dat
         full_paths = pk_backend_get_strv(backend, "full_paths");
         fileInstall = true;
     }
-    
+
     // Check if we should fix broken packages
     bool fixBroken = false;
     if (role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
