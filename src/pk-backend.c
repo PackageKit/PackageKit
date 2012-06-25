@@ -2627,7 +2627,7 @@ pk_backend_finished (PkBackend *backend)
 	guint idle_id;
 
 	/* we in the helper thread */
-	if (g_thread_self () == backend->priv->thread) {
+	if (g_thread_self () != backend->priv->thread) {
 		pk_backend_job_stop (backend);
 		idle_id = g_idle_add ((GSourceFunc) pk_backend_finished_cb, backend);
 		g_source_set_name_by_id (idle_id, "[PkBackend] finished");
