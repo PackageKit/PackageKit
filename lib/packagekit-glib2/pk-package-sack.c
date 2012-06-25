@@ -235,8 +235,11 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 
 	/* add to array */
-	g_ptr_array_add (sack->priv->array, g_object_ref (package));
-	g_hash_table_insert (sack->priv->table, g_strdup (pk_package_get_id (package)), g_object_ref (package));
+	g_ptr_array_add (sack->priv->array,
+			 g_object_ref (package));
+	g_hash_table_insert (sack->priv->table,
+			     g_strdup (pk_package_get_id (package)),
+			     g_object_ref (package));
 
 	return TRUE;
 }
@@ -254,7 +257,9 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
  * Since: 0.5.2
  **/
 gboolean
-pk_package_sack_add_package_by_id (PkPackageSack *sack, const gchar *package_id, GError **error)
+pk_package_sack_add_package_by_id (PkPackageSack *sack,
+				   const gchar *package_id,
+				   GError **error)
 {
 	PkPackage *package;
 	gboolean ret;
@@ -280,7 +285,9 @@ out:
  * pk_package_sack_add_packages_from_line:
  **/
 static void
-pk_package_sack_add_packages_from_line (PkPackageSack *sack, const gchar *package_str, GError **error)
+pk_package_sack_add_packages_from_line (PkPackageSack *sack,
+					const gchar *package_str,
+					GError **error)
 {
 	GError *error_local = NULL;
 	gboolean ret;
@@ -329,7 +336,9 @@ out:
  *
  **/
 gboolean
-pk_package_sack_add_packages_from_file (PkPackageSack *sack, GFile *file, GError **error)
+pk_package_sack_add_packages_from_file (PkPackageSack *sack,
+					GFile *file,
+					GError **error)
 {
 	GError *error_local = NULL;
 	gboolean ret = TRUE;
@@ -409,7 +418,8 @@ pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
  * Since: 0.5.2
  **/
 gboolean
-pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_id)
+pk_package_sack_remove_package_by_id (PkPackageSack *sack,
+				      const gchar *package_id)
 {
 	PkPackage *package;
 	const gchar *id;
@@ -448,7 +458,9 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
  * Since: 0.6.3
  **/
 gboolean
-pk_package_sack_remove_by_filter (PkPackageSack *sack, PkPackageSackFilterFunc filter_cb, gpointer user_data)
+pk_package_sack_remove_by_filter (PkPackageSack *sack,
+				  PkPackageSackFilterFunc filter_cb,
+				  gpointer user_data)
 {
 	gboolean ret = FALSE;
 	PkPackage *package;
