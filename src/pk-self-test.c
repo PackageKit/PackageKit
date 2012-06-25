@@ -1057,15 +1057,6 @@ pk_test_transaction_func (void)
 	PkTransaction *transaction = NULL;
 	gboolean ret;
 	GError *error = NULL;
-	PkBackend *backend;
-	PkConf *conf;
-
-	backend = pk_backend_new ();
-	/* try to load a valid backend */
-	conf = pk_conf_new ();
-	pk_conf_set_string (conf, "DefaultBackend", "dummy");
-	ret = pk_backend_load (backend, NULL);
-	g_assert (ret);
 
 	/* get PkTransaction object */
 	transaction = pk_transaction_new ();
@@ -1084,8 +1075,6 @@ pk_test_transaction_func (void)
 	g_clear_error (&error);
 
 	g_object_unref (transaction);
-	g_object_unref (backend);
-	g_object_unref (conf);
 }
 
 static void
