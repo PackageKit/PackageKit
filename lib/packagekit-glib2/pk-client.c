@@ -1532,7 +1532,6 @@ pk_client_set_hints_cb (GObject *source_object,
 	GError *error = NULL;
 	GVariant *value;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkBitfield transaction_flags = 0;
 	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
@@ -1774,7 +1773,7 @@ pk_client_set_hints_cb (GObject *source_object,
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		g_dbus_proxy_call (state->proxy, "InstallPackages",
 				   g_variant_new ("(t^a&s)",
-						  transaction_flags,
+						  state->transaction_flags,
 						  state->package_ids),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
