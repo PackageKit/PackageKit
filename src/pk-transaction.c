@@ -5398,7 +5398,7 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0) {
-		retval = g_variant_new_uint32 (priv->download_size_remaining);
+		retval = g_variant_new_uint64 (priv->download_size_remaining);
 		goto out;
 	}
 out:
