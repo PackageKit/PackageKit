@@ -68,6 +68,7 @@ EXTRA_DIST =						\
 DISTCHECK_CONFIGURE_FLAGS = 				\
 	--enable-gtk-doc				\
 	--with-security-framework=dummy			\
+	--with-systemdsystemunitdir=/tmp		\
 	--disable-tests
 
 distclean-local:

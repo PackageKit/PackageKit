@@ -43,7 +43,7 @@ $(systemdservice_DATA): $(systemdservice_in_files) Makefile
 
 EXTRA_DIST = $(systemdservice_in_files)
 
-MAINTAINERCLEANFILES =					\
+DISTCLEANFILES =					\
 	$(systemdservice_DATA)
 
 -include $(top_srcdir)/git.mk
