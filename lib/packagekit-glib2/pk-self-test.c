@@ -928,6 +928,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	PkBitfield roles;
 	PkBitfield filters;
 	PkBitfield groups;
+	gchar **mime_types;
 	gchar *text;
 
 	/* get the result */
@@ -937,15 +938,17 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* get values */
 	g_object_get (control,
-		      "mime-types", &text,
+		      "mime-types", &mime_types,
 		      "roles", &roles,
 		      "filters", &filters,
 		      "groups", &groups,
 		      NULL);
 
 	/* check mime_types */
+	text = g_strjoinv (";", mime_types);
 	g_assert_cmpstr (text, ==, "application/x-rpm;application/x-deb");
 	g_free (text);
+	g_strfreev (mime_types);
 
 	/* check roles */
 	text = pk_role_bitfield_to_string (roles);
@@ -953,9 +956,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
-		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages;upgrade-system;"
-		     "repair-system;simulate-repair-system");
+		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");
 	g_free (text);
 
 	/* check filters */
@@ -1098,9 +1099,7 @@ pk_test_control_func (void)
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
-		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages;upgrade-system;"
-		     "repair-system;simulate-repair-system");
+		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");
 	g_free (text);
 
 	g_object_unref (control);
