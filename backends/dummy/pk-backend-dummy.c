@@ -522,12 +522,6 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
 		pk_backend_package (backend, PK_INFO_ENUM_REINSTALLING,
 				    "libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
 
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-				    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
-
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-				    "glib2;2.14.0;i386;fedora", "The GLib library");
-
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNGRADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
 
