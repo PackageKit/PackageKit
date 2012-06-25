@@ -245,7 +245,7 @@ pk_control_set_property_value (PkControl *control,
 	}
 	if (g_strcmp0 (key, "MimeTypes") == 0) {
 		tmp_strv = (gchar **) g_variant_get_strv (value, NULL);
-		if (_g_strvcmp0 (control->priv->mime_types, tmp_strv) == 0)
+		if (_g_strvcmp0 (control->priv->mime_types, tmp_strv))
 			goto out;
 		g_strfreev (control->priv->mime_types);
 		control->priv->mime_types = g_strdupv (tmp_strv);
