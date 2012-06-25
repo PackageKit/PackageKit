@@ -208,8 +208,14 @@ pk_test_backend_func (void)
 	ret = g_unlink (filename);
 	g_assert (!ret);
 
-	pk_backend_set_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, (PkBackendVFunc) pk_test_backend_message_cb, NULL);
-	g_signal_connect (backend, "finished", G_CALLBACK (pk_test_backend_finished_cb), NULL);
+	pk_backend_set_vfunc (backend,
+			      PK_BACKEND_SIGNAL_MESSAGE,
+			      (PkBackendVFunc) pk_test_backend_message_cb,
+			      NULL);
+	pk_backend_set_vfunc (backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_test_backend_finished_cb,
+			      NULL);
 
 	/* get eula that does not exist */
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
@@ -487,13 +493,16 @@ pk_test_backend_spawn_func (void)
 	g_assert (ret);
 
 	/* so we can spin until we finish */
-	g_signal_connect (backend, "finished",
-			  G_CALLBACK (pk_test_backend_spawn_finished_cb), backend_spawn);
+	pk_backend_set_vfunc (backend,
+			      PK_BACKEND_SIGNAL_FINISHED,
+			      (PkBackendVFunc) pk_test_backend_spawn_finished_cb,
+			      backend_spawn);
+
 	/* so we can count the returned packages */
 	pk_backend_set_vfunc (backend,
-				PK_BACKEND_SIGNAL_PACKAGE,
-				(PkBackendVFunc) pk_test_backend_spawn_package_cb,
-				backend_spawn);
+			      PK_BACKEND_SIGNAL_PACKAGE,
+			      (PkBackendVFunc) pk_test_backend_spawn_package_cb,
+			      backend_spawn);
 
 	/* needed to avoid an error */
 	ret = pk_backend_load (backend, NULL);
