@@ -270,7 +270,7 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack, const gchar *package_id,
 		goto out;
 
 	/* add to array, array will own object */
-	g_ptr_array_add (sack->priv->array, g_object_ref (package));
+	pk_package_sack_add_package (sack, package);
 out:
 	g_object_unref (package);
 	return ret;
