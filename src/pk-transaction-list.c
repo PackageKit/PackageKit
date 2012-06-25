@@ -556,8 +556,10 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	/* set the master PkBackend really early (i.e. before
 	 * pk_transaction_run is called) as transactions may want to check
 	 * to see if roles are possible before accepting actions */
-	pk_transaction_set_backend (item->transaction,
-				    tlist->priv->backend);
+	if (tlist->priv->backend != NULL) {
+		pk_transaction_set_backend (item->transaction,
+					    tlist->priv->backend);
+	}
 
 	/* get the uid for the transaction */
 	item->uid = pk_transaction_get_uid (item->transaction);

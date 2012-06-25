@@ -5824,7 +5824,8 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);
 	g_object_unref (transaction->priv->cache);
-	g_object_unref (transaction->priv->backend);
+	if (transaction->priv->backend != NULL)
+		g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);

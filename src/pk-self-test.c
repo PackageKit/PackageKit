@@ -1292,6 +1292,7 @@ pk_test_transaction_list_func (void)
 	g_assert (tlist != NULL);
 
 	/* make sure we get a valid tid */
+	pk_transaction_list_set_backend (tlist, backend);
 	tid = pk_transaction_db_generate_id (db);
 	g_assert (tid != NULL);
 
