@@ -3141,6 +3141,8 @@ pk_backend_class_init (PkBackendClass *klass)
 gboolean
 pk_backend_reset (PkBackend *backend)
 {
+	PkBackendVFuncItem *item;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* we can't reset when we are running */
@@ -3152,8 +3154,13 @@ pk_backend_reset (PkBackend *backend)
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
-		g_debug ("doing unref quickly delay");
-		pk_backend_finished_delay (backend);
+		item = &backend->priv->vfunc_items[PK_BACKEND_SIGNAL_FINISHED];
+		if (item != NULL && item->enabled && item->vfunc != NULL) {
+			g_debug ("doing unref quickly delay");
+			item->vfunc (backend,
+				     GUINT_TO_POINTER (backend->priv->exit),
+				     item->user_data);
+		}
 	}
 
 	/* if we set an error code notifier, clear */
