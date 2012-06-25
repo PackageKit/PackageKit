@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012.
 # Richard Hughes <richard@hughsie.com>, 2011.
 # Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>, 2011.
 # Ville Skyttä <ville.skytta@iki.fi>, 2011.
@@ -10,10 +11,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-10 19:50+0000\n"
-"PO-Revision-Date: 2011-11-10 19:50+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Finnish (http://www.transifex.net/projects/p/freedesktop/team/fi/)\n"
+"POT-Creation-Date: 2012-04-24 09:13+0100\n"
+"PO-Revision-Date: 2012-05-22 21:28+0000\n"
+"Last-Translator: Jiri Grönroos <jiri.gronroos@iki.fi>\n"
+"Language-Team: Finnish (http://www.transifex.net/projects/p/freedesktop/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,114 +23,114 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
-#: ../client/pk-console.c:174 ../client/pk-console.c:596
+#: ../client/pk-console.c:173 ../client/pk-console.c:595
 msgid "Transaction"
 msgstr "Transaktio"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
-#: ../client/pk-console.c:176
+#: ../client/pk-console.c:175
 msgid "System time"
 msgstr "Järjestelmän aika"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "Succeeded"
 msgstr "Onnistui"
 
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "True"
 msgstr "Tosi"
 
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "False"
 msgstr "Epätosi"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
-#: ../client/pk-console.c:180
+#: ../client/pk-console.c:179
 msgid "Role"
 msgstr "Rooli"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:185
+#: ../client/pk-console.c:184
 msgid "Duration"
 msgstr "Kesto"
 
-#: ../client/pk-console.c:185
+#: ../client/pk-console.c:184
 msgid "(seconds)"
 msgstr "(sekuntia)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:189
+#: ../client/pk-console.c:188
 msgid "Command line"
 msgstr "Komentorivi"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:191
+#: ../client/pk-console.c:190
 msgid "User ID"
 msgstr "Käyttäjän tunniste"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:198
+#: ../client/pk-console.c:197
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:202
+#: ../client/pk-console.c:201
 msgid "Real name"
 msgstr "Oikea nimi"
 
-#: ../client/pk-console.c:210
+#: ../client/pk-console.c:209
 msgid "Affected packages:"
 msgstr "Käsiteltävät paketit:"
 
-#: ../client/pk-console.c:212
+#: ../client/pk-console.c:211
 msgid "Affected packages: None"
 msgstr "Käsiteltävät paketit: Ei yhtään"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:247
+#: ../client/pk-console.c:246
 msgid "Distribution"
 msgstr "Jakeluversio"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:249
+#: ../client/pk-console.c:248
 msgid "Type"
 msgstr "Tyyppi"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:251 ../client/pk-console.c:290
+#: ../client/pk-console.c:250 ../client/pk-console.c:289
 msgid "Summary"
 msgstr "Yhteenveto"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:279
+#: ../client/pk-console.c:278
 msgid "Category"
 msgstr "Luokka"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:281
+#: ../client/pk-console.c:280
 msgid "ID"
 msgstr "Tunniste"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:284
+#: ../client/pk-console.c:283
 msgid "Parent"
 msgstr "Pääluokka"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:287
+#: ../client/pk-console.c:286
 msgid "Name"
 msgstr "Nimi"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:293
+#: ../client/pk-console.c:292
 msgid "Icon"
 msgstr "Kuvake"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:339
+#: ../client/pk-console.c:338
 msgid "Details about the update:"
 msgstr "Tietoja päivityksestä:"
 
@@ -137,7 +138,7 @@ msgstr "Tietoja päivityksestä:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:345 ../client/pk-console.c:615
+#: ../client/pk-console.c:344 ../client/pk-console.c:614
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
@@ -145,218 +146,212 @@ msgstr "Paketit"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
-#: ../client/pk-console.c:348
+#: ../client/pk-console.c:347
 msgid "Updates"
 msgstr "Päivitykset"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. obsoletes
-#: ../client/pk-console.c:352
+#: ../client/pk-console.c:351
 msgid "Obsoletes"
 msgstr "Vanhentaa"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:356 ../lib/packagekit-glib2/pk-task-text.c:209
+#: ../client/pk-console.c:355 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "Toimittaja"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:359
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:364
+#: ../client/pk-console.c:363
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:368
+#: ../client/pk-console.c:367
 msgid "Restart"
 msgstr "Uudelleenkäynnistys"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:372
+#: ../client/pk-console.c:371
 msgid "Update text"
 msgstr "Päivityksen kuvaus"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:375
 msgid "Changes"
 msgstr "Muutokset"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:380
+#: ../client/pk-console.c:379
 msgid "State"
 msgstr "Tila"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:383
 msgid "Issued"
 msgstr "Julkaistu"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:559
+#: ../client/pk-console.c:387 ../lib/packagekit-glib2/pk-enum.c:1137
 msgid "Updated"
 msgstr "Päivitetty"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:424
+#: ../client/pk-console.c:423
 msgid "Enabled"
 msgstr "Käytössä"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:427
+#: ../client/pk-console.c:426
 msgid "Disabled"
 msgstr "Poissa käytöstä"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:459
+#: ../client/pk-console.c:458
 msgid "System restart required by:"
 msgstr "Järjestelmän uudelleenkäynnistyksen tarvitsee:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:462
+#: ../client/pk-console.c:461
 msgid "Session restart required:"
 msgstr "Istunnon uudelleenkäynnistyksen tarvitsee"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a
 #. security update
-#: ../client/pk-console.c:465
+#: ../client/pk-console.c:464
 msgid "System restart (security) required by:"
 msgstr "Järjestelmän uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a
 #. security update
-#: ../client/pk-console.c:468
+#: ../client/pk-console.c:467
 msgid "Session restart (security) required:"
 msgstr "Istunnon uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:471
+#: ../client/pk-console.c:470
 msgid "Application restart required by:"
 msgstr "Sovelluksen uudelleenkäynnistyksen tarvitsee"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:506
+#: ../client/pk-console.c:505
 msgid "Package description"
 msgstr "Paketin kuvaus"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest)
 #. from the transaction
-#: ../client/pk-console.c:537
+#: ../client/pk-console.c:536
 msgid "Message:"
 msgstr "Viesti:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:558
+#: ../client/pk-console.c:557
 msgid "No files"
 msgstr "Ei tiedostoja"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:563
+#: ../client/pk-console.c:562
 msgid "Package files"
 msgstr "Paketin tiedostot"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:631
+#: ../client/pk-console.c:630
 msgid "Percentage"
 msgstr "Prosentti"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:649
+#: ../client/pk-console.c:648
 msgid "Status"
 msgstr "Tila"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:678
+#: ../client/pk-console.c:677
 msgid "Results:"
 msgstr "Tulokset:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:685
+#: ../client/pk-console.c:684
 msgid "Fatal error"
 msgstr "Vakava virhe"
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
-#: ../client/pk-console.c:701
+#: ../client/pk-console.c:700
 msgid "There are no packages to update."
 msgstr "Yhtään päivitystä ei ole saatavilla."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:704
+#: ../client/pk-console.c:703
 #: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr "Transaktio epäonnistui"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:733
+#: ../client/pk-console.c:732
 msgid "There are no updates available at this time."
 msgstr "Päivityksiä ei ole saatavilla tällä hetkellä."
 
-#: ../client/pk-console.c:756
+#: ../client/pk-console.c:755
 msgid "There are no upgrades available at this time."
 msgstr "Päivityksiä ei ole saatavilla tällä hetkellä."
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:823
+#: ../client/pk-console.c:822
 msgid "Please restart the computer to complete the update."
 msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:826
+#: ../client/pk-console.c:825
 msgid "Please logout and login to complete the update."
 msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:829
+#: ../client/pk-console.c:828
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr ""
-"Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi, tärkeitä "
-"turvallisuuspäivityksiä on asennettu."
+msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:832
+#: ../client/pk-console.c:831
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr ""
-"Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi, tärkeitä "
-"turvallisuuspäivityksiä on asennettu."
+msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
-#: ../client/pk-console.c:858
+#: ../client/pk-console.c:857
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr ""
-"Odotettiin paketin nimeä, mutta saatiin tiedosto. Kokeile komennon ”pkcon "
-"install-local %s” käyttämistä."
+msgstr "Odotettiin paketin nimeä, mutta saatiin tiedosto. Kokeile komennon ”pkcon install-local %s” käyttämistä."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:871
+#: ../client/pk-console.c:870
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Tämä työkalu ei löytänyt saatavilla olevaa pakettia: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:899
+#: ../client/pk-console.c:898
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Tämä työkalu ei löytänyt asennettua pakettia: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:927 ../client/pk-console.c:955
+#: ../client/pk-console.c:926 ../client/pk-console.c:954
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Tämä työkalu ei löytänyt pakettia: %s"
@@ -369,254 +364,245 @@ msgstr "Tämä työkalu ei löytänyt pakettia: %s"
 #. detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The
 #. detailed error follows
-#: ../client/pk-console.c:983 ../client/pk-console.c:1011
-#: ../client/pk-console.c:1039 ../client/pk-console.c:1067
-#: ../client/pk-console.c:1095
+#: ../client/pk-console.c:982 ../client/pk-console.c:1010
+#: ../client/pk-console.c:1038 ../client/pk-console.c:1066
+#: ../client/pk-console.c:1094
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Tämä työkalu ei löytänyt paketteja: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
-#: ../client/pk-console.c:1124
+#: ../client/pk-console.c:1123
 msgid "The daemon crashed mid-transaction!"
 msgstr "Taustaprosessi kaatui kesken toimenpiteen"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1158
+#: ../client/pk-console.c:1157
 msgid "PackageKit Console Interface"
 msgstr "PackageKitin konsolikäyttöliittymä"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1160
+#: ../client/pk-console.c:1159
 msgid "Subcommands:"
 msgstr "Alikomennot:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1240
+#: ../client/pk-console.c:1241
 msgid "Failed to get the time since this action was last completed"
 msgstr "Tämän toiminnon edellisen suorittamisen aikaa ei saatu"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1282 ../client/pk-monitor.c:371
+#: ../client/pk-console.c:1283 ../client/pk-monitor.c:370
 msgid "Show the program version and exit"
 msgstr "Näytä ohjelman versio ja lopeta"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1285
+#: ../client/pk-console.c:1286
 msgid "Set the filter, e.g. installed"
 msgstr "Aseta suodin, esim. asennettu"
 
 #. TRANSLATORS: command line argument, use a non-standard install prefix
-#: ../client/pk-console.c:1288
+#: ../client/pk-console.c:1289
 msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
 msgstr "Aseta asennuksen juurihakemisto, esimerkiksi ”/” tai ”/mnt/ltsp”"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1291
+#: ../client/pk-console.c:1292
 msgid "Exit without waiting for actions to complete"
 msgstr "Lopeta odottamatta toimintojen valmistumista"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1294
+#: ../client/pk-console.c:1295
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "Asenna paketit kysymättä vahvistusta"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1297
+#: ../client/pk-console.c:1298
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Suorita komento käyttäen ylimääräistä verkon kaistanleveyttä ja tavallista "
-"vähemmän virtaa"
+msgstr "Suorita komento käyttäen ylimääräistä verkon kaistanleveyttä ja tavallista vähemmän virtaa"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1300
+#: ../client/pk-console.c:1301
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr ""
-"Tulosta näytölle koneellisesti luettava tuloste animoitujen elementtien "
-"käyttämisen sijaan"
+msgstr "Tulosta näytölle koneellisesti luettava tuloste animoitujen elementtien käyttämisen sijaan"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1303
+#: ../client/pk-console.c:1304
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "Suurin metatietojen välimuistin ikä. Arvo -1 tarkoittaa ”ei koskaan”."
 
 #. TRANSLATORS: command line argument, --help
-#: ../client/pk-console.c:1306
+#: ../client/pk-console.c:1307
 msgid "Show help options."
-msgstr ""
+msgstr "Näytä ohjevalinnat."
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1336
+#: ../client/pk-console.c:1338
 msgid "Failed to parse command line"
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1348
 msgid "Failed to contact PackageKit"
 msgstr "PackageKitiin ei saatu yhteyttä"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1399
+#: ../client/pk-console.c:1401
 msgid "The proxy could not be set"
 msgstr "Välityspalvelinta ei voitu asettaa"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1411
+#: ../client/pk-console.c:1413
 msgid "The install root could not be set"
 msgstr "Asennuksen juurihakemistoa ei voitu asettaa"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1423
+#: ../client/pk-console.c:1425
 msgid "The filter specified was invalid"
 msgstr "Annettu suodin oli virheellinen"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1442
+#: ../client/pk-console.c:1444
 msgid "A search type is required, e.g. name"
 msgstr "Haun tyyppi tarvitaan, esim. nimi"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1449 ../client/pk-console.c:1461
-#: ../client/pk-console.c:1473 ../client/pk-console.c:1485
+#: ../client/pk-console.c:1451 ../client/pk-console.c:1463
+#: ../client/pk-console.c:1475 ../client/pk-console.c:1487
 msgid "A search term is required"
 msgstr "Hakutermi on annettava"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1495
+#: ../client/pk-console.c:1497
 msgid "Invalid search type"
 msgstr "Virheellinen haun tyyppi"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1501
+#: ../client/pk-console.c:1503
 msgid "A package name to install is required"
 msgstr "Asennettavan paketin nimi on annettava"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1510
+#: ../client/pk-console.c:1512
 msgid "A filename to install is required"
 msgstr "Asennettavan tiedoston nimi on annettava"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1521
+#: ../client/pk-console.c:1523
 msgid "A type, key_id and package_id are required"
 msgstr "Tyyppi, key_id ja package_id on annettava"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1534
 msgid "A package name to remove is required"
 msgstr "Poistettavan paketin nimi on annettava"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1541
+#: ../client/pk-console.c:1543
 msgid "A destination directory and the package names to download are required"
 msgstr "Kohdehakemisto ja ladattavien pakettien nimet paketit on annettava"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1548
+#: ../client/pk-console.c:1550
 msgid "Directory not found"
 msgstr "Hakemistoa ei löytynyt"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1557
+#: ../client/pk-console.c:1559
 msgid "A licence identifier (eula-id) is required"
 msgstr "Lisenssin tunniste (eula-id) on annettava"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1568
+#: ../client/pk-console.c:1570
 msgid "A transaction identifier (tid) is required"
 msgstr "Transaktion tunniste (tid) on annettava"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1589
+#: ../client/pk-console.c:1591
 msgid "A package name to resolve is required"
 msgstr "Ratkaistavan paketin nimi on annettava"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1600 ../client/pk-console.c:1611
+#: ../client/pk-console.c:1602 ../client/pk-console.c:1613
 msgid "A repository name is required"
 msgstr "Asennuslähteen nimi on annettava"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1622
+#: ../client/pk-console.c:1624
 msgid "A repo name, parameter and value are required"
 msgstr "Asennuslähteen nimi, parametri ja arvo on annettava"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1639
+#: ../client/pk-console.c:1641
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Toiminto, esim. ”update-system” on annettava"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1646
+#: ../client/pk-console.c:1648
 msgid "A correct role is required"
 msgstr "Sopiva rooli on annettava"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1656 ../client/pk-console.c:1670
-#: ../client/pk-console.c:1679 ../client/pk-console.c:1699
-#: ../client/pk-console.c:1708 ../client/pk-generate-pack.c:314
+#: ../client/pk-console.c:1658 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1681 ../client/pk-console.c:1701
+#: ../client/pk-console.c:1710 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr "Paketin nimi on annettava"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1688
+#: ../client/pk-console.c:1690
 msgid "A package provide string is required"
 msgstr "Paketin tarjoaja-merkkijono on annettava"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1732
+#: ../client/pk-console.c:1734
 msgid "A distribution name is required"
 msgstr "Jakelun nimi on annettava"
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1738
+#: ../client/pk-console.c:1740
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-"Päivityksen tyyppi on annettava, esimerkiksi ”minimal”, ”default” tai "
-"”complete”"
+msgstr "Päivityksen tyyppi on annettava, esimerkiksi ”minimal”, ”default” tai ”complete”"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1788
+#: ../client/pk-console.c:1795
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Valitsinta ”%s” ei tueta"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1798
+#: ../client/pk-console.c:1805
 msgid "Command failed"
 msgstr "Komento epäonnistui"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
 #. exist on the target
-#: ../client/pk-generate-pack.c:253
+#: ../client/pk-generate-pack.c:252
 msgid "Set the file name of dependencies to be excluded"
-msgstr ""
-"Aseta pois jätettävien riippuvuuksien luettelon sisältävän tiedoston nimi"
+msgstr "Aseta pois jätettävien riippuvuuksien luettelon sisältävän tiedoston nimi"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:256
+#: ../client/pk-generate-pack.c:255
 msgid ""
 "The output file or directory (the current directory is used if omitted)"
-msgstr ""
-"Kohdetiedosto tai -hakemisto. Jos jätetään tyhjäksi, valitaan "
-"automaattisesti nykyinen hakemisto."
+msgstr "Kohdetiedosto tai -hakemisto. Jos jätetään tyhjäksi, valitaan automaattisesti nykyinen hakemisto."
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:259
+#: ../client/pk-generate-pack.c:258
 msgid "The package to be put into the service pack"
 msgstr "Paketti joka laitetaan huoltopakkaukseen"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:262
+#: ../client/pk-generate-pack.c:261
 msgid "Put all updates available in the service pack"
 msgstr "Laita kaikki saatavilla olevat päivitykset huoltopakkaukseen"
 
@@ -655,9 +641,7 @@ msgstr "Paketinhallinta ei voi suorittaa tämäntyyppistä toimintoa."
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr ""
-"Huoltopakkauksia ei voi luoda, koska PackageKitiä ei käännetty libarchive-"
-"tuella."
+msgstr "Huoltopakkauksia ei voi luoda, koska PackageKitiä ei käännetty libarchive-tuella."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -717,11 +701,11 @@ msgstr "Huoltopakkaus ”%s” on luotu"
 msgid "Failed to create '%s': %s"
 msgstr "Huoltopakkauksen ”%s” luominen epäonnistui: %s"
 
-#: ../client/pk-monitor.c:284
+#: ../client/pk-monitor.c:283
 msgid "Failed to get daemon state"
 msgstr "Taustaprosessin tilaa ei saatu"
 
-#: ../client/pk-monitor.c:349
+#: ../client/pk-monitor.c:348
 msgid "Failed to get properties"
 msgstr "Ominaisuuksia ei saatu"
 
@@ -827,58 +811,58 @@ msgstr "Pakettien asennus epäonnistui"
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:723
+#: ../contrib/command-not-found/pk-command-not-found.c:725
 msgid "command not found"
 msgstr "komentoa ei löytynyt"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:743
 msgid "Similar command is:"
 msgstr "Samankaltainen komento on:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:755
+#: ../contrib/command-not-found/pk-command-not-found.c:757
 msgid "Run similar command:"
 msgstr "Suorita samankaltainen komento:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:769
-#: ../contrib/command-not-found/pk-command-not-found.c:778
+#: ../contrib/command-not-found/pk-command-not-found.c:771
+#: ../contrib/command-not-found/pk-command-not-found.c:780
 msgid "Similar commands are:"
 msgstr "Samankaltaisia komentoja ovat:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:785
+#: ../contrib/command-not-found/pk-command-not-found.c:787
 msgid "Please choose a command to run"
 msgstr "Valitse suoritettava komento"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:805
 msgid "The package providing this file is:"
 msgstr "Tämän tiedoston tarjoava paketti on:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:810
+#: ../contrib/command-not-found/pk-command-not-found.c:812
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Asennetaanko paketti ”%s”, joka tarjoaa komennon ”%s”"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:837
+#: ../contrib/command-not-found/pk-command-not-found.c:839
 msgid "Packages providing this file are:"
 msgstr "Tämän tiedoston tarjoavat paketit ovat:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:847
+#: ../contrib/command-not-found/pk-command-not-found.c:849
 msgid "Suitable packages are:"
 msgstr "Sopivat paketit ovat:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:856
+#: ../contrib/command-not-found/pk-command-not-found.c:858
 msgid "Please choose a package to install"
 msgstr "Valitse asennettava paketti"
 
@@ -912,172 +896,172 @@ msgid "Do not display information or progress"
 msgstr "Älä näytä tietoja tai edistymistä"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:542
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKitin debuginfo-asennin"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the
 #. command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "VIRHE: Asennettavien pakettien nimet on annettava"
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:592
 #, c-format
 msgid "Getting sources list"
 msgstr "Haetaan lähdeluetteloa"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:602
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:677
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:805
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:872
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:916
 msgid "FAILED."
 msgstr "EPÄONNISTUI."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:617
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:692
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:776
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:820
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:620
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Löydettiin %i käytössä olevaa ja %i käytöstä poistettua lähdettä."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:627
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Etsitään virheenjäljityslähteitä"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:660
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Löydettiin %i käytöstä poistettua debuginfo-asennuslähdettä."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:667
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Otetaan virheenjäljityslähteet käyttöön"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:695
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Otettiin %i virheenjäljityslähdettä käyttöön."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:702
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Etsitään virheenjäljityspaketteja"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:714
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Pakettia ”%s” ei löytynyt: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Debuginfo-pakettia ”%s” ei löytynyt: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:765
 #, c-format
 msgid "Found no packages to install."
 msgstr "Yhtään asennettavaa pakettia ei löytynyt."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:779
 #, c-format
 msgid "Found %i packages:"
 msgstr "Löytyi %i pakettia:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Etsitään näistä paketeista riippuvia paketteja"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
-msgid "Could not find dependant packages: %s"
-msgstr "Riippuvia paketteja ei löytynyt: %s"
+msgid "Could not find dependent packages: %s"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Löydettiin %i lisäpakettia."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
 #, c-format
 msgid "No extra packages required."
 msgstr "Lisäpaketteja ei tarvita."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list
 #. them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Löydettiin %i asennettavaa pakettia:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the
 #. action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:850
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Simulointitilassa ei asenneta paketteja"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:862
 #: ../lib/packagekit-glib2/pk-console-shared.c:331
 #, c-format
 msgid "Installing packages"
 msgstr "Asennetaan paketteja"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:875
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Paketteja ei voitu asentaa: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Poistetaan käytöstä aiemmin käyttöönotetut lähteet"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
 #. error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:919
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Virheenjäljityslähteitä ei voitu poistaa käytöstä: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:934
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Poistettiin käytöstä %i virheenjäljityslähdettä."
@@ -1241,7 +1225,7 @@ msgstr "Poistetaan paketteja"
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:327
-#: ../lib/packagekit-glib2/pk-console-shared.c:705
+#: ../lib/packagekit-glib2/pk-enum.c:1290
 msgid "Downloading packages"
 msgstr "Ladataan paketteja"
 
@@ -1280,7 +1264,7 @@ msgstr "Tarkistetaan allekirjoituksia"
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:359
-#: ../lib/packagekit-glib2/pk-console-shared.c:665
+#: ../lib/packagekit-glib2/pk-enum.c:1250
 msgid "Rolling back"
 msgstr "Peruutetaan"
 
@@ -1395,268 +1379,6 @@ msgstr "Etsitään käytössä olevia kirjastoja"
 msgid "Copying files"
 msgstr "Kopioidaan tiedostoja"
 
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:461
-msgid "Trivial"
-msgstr "Vähäpätöinen"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:465
-msgid "Normal"
-msgstr "Tavallinen"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:469
-msgid "Important"
-msgstr "Tärkeä"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:473
-msgid "Security"
-msgstr "Turvallisuus"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:477
-msgid "Bug fix "
-msgstr "Virhekorjaus"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:481
-msgid "Enhancement"
-msgstr "Kehittävä"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:485
-msgid "Blocked"
-msgstr "Estetty"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:490
-#: ../lib/packagekit-glib2/pk-console-shared.c:563
-msgid "Installed"
-msgstr "Asennettu"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-console-shared.c:495
-msgid "Available"
-msgstr "Saatavilla"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:513
-msgid "Downloading"
-msgstr "Ladataan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:517
-msgid "Updating"
-msgstr "Päivitetään"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:521
-#: ../lib/packagekit-glib2/pk-console-shared.c:641
-msgid "Installing"
-msgstr "Asennetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:525
-#: ../lib/packagekit-glib2/pk-console-shared.c:637
-msgid "Removing"
-msgstr "Poistetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:529
-msgid "Cleaning up"
-msgstr "Siivotaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:533
-msgid "Obsoleting"
-msgstr "Vanhennetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:537
-msgid "Reinstalling"
-msgstr "Asennetaan uudelleen"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:555
-msgid "Downloaded"
-msgstr "Ladattu"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:567
-msgid "Removed"
-msgstr "Poistettu"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:571
-msgid "Cleaned up"
-msgstr "Siivottu"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:575
-msgid "Obsoleted"
-msgstr "Vanhennettu"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:579
-msgid "Reinstalled"
-msgstr "Asennettu uudelleen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:597
-msgid "Unknown role type"
-msgstr "Tuntematon roolityyppi"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:601
-msgid "Getting dependencies"
-msgstr "Haetaan riippuvuuksia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:605
-msgid "Getting update details"
-msgstr "Haetaan päivitystietoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:609
-msgid "Getting details"
-msgstr "Haetaan tietoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:613
-msgid "Getting requires"
-msgstr "Haetaan vaatimuksia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:617
-msgid "Getting updates"
-msgstr "Haetaan päivityksiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:621
-msgid "Searching by details"
-msgstr "Etsitään tietojen perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:625
-msgid "Searching by file"
-msgstr "Etsitään tiedoston perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:629
-msgid "Searching groups"
-msgstr "Etsitään ryhmiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:633
-msgid "Searching by name"
-msgstr "Etsitään nimen perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:645
-msgid "Installing files"
-msgstr "Asennetaan tiedostoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:649
-msgid "Refreshing cache"
-msgstr "Virkistetään välimuistia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:653
-msgid "Updating packages"
-msgstr "Päivitetään paketteja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:657
-msgid "Updating system"
-msgstr "Päivitetään järjestelmää"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:661
-msgid "Canceling"
-msgstr "Perutaan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:669
-msgid "Getting repositories"
-msgstr "Haetaan asennuslähteitä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:673
-msgid "Enabling repository"
-msgstr "Otetaan asennuslähde käyttöön"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:677
-msgid "Setting data"
-msgstr "Asetetaan dataa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:681
-msgid "Resolving"
-msgstr "Ratkaistaan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:685
-msgid "Getting file list"
-msgstr "Haetaan tiedostoluetteloa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:689
-msgid "Getting provides"
-msgstr "Haetaan tarjoajia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:693
-msgid "Installing signature"
-msgstr "Asennetaan allekirjoitusta"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:697
-msgid "Getting packages"
-msgstr "Haetaan paketteja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:701
-msgid "Accepting EULA"
-msgstr "Hyväksytään käyttöoikeussopimusta"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:709
-msgid "Getting upgrades"
-msgstr "Haetaan päivityksiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:713
-msgid "Getting categories"
-msgstr "Haetaan kategorioita"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:717
-msgid "Getting transactions"
-msgstr "Haetaan transaktioita"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:721
-#: ../lib/packagekit-glib2/pk-console-shared.c:725
-msgid "Simulating install"
-msgstr "Simuloidaan asennusta"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:729
-msgid "Simulating remove"
-msgstr "Simuloidaan poistoa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:733
-msgid "Simulating update"
-msgstr "Simuloidaan päivitystä"
-
 #. TRANSLATORS: turn on all debugging
 #: ../lib/packagekit-glib2/pk-debug.c:133
 msgid "Show debugging information for all files"
@@ -1669,6 +1391,268 @@ msgstr "Virheenjäljitysvalitsimet"
 #: ../lib/packagekit-glib2/pk-debug.c:201
 msgid "Show debugging options"
 msgstr "Näytä virheenjäljitysvalitsimet"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1025
+msgid "Trivial"
+msgstr "Vähäpätöinen"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1029
+msgid "Normal"
+msgstr "Tavallinen"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1033
+msgid "Important"
+msgstr "Tärkeä"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1037
+msgid "Security"
+msgstr "Turvallisuus"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1041
+msgid "Bug fix "
+msgstr "Virhekorjaus"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1045
+msgid "Enhancement"
+msgstr "Kehittävä"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1049
+msgid "Blocked"
+msgstr "Estetty"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1054
+#: ../lib/packagekit-glib2/pk-enum.c:1141
+msgid "Installed"
+msgstr "Asennettu"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-enum.c:1059
+msgid "Available"
+msgstr "Saatavilla"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1084
+msgid "Downloading"
+msgstr "Ladataan"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1088
+msgid "Updating"
+msgstr "Päivitetään"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1092
+#: ../lib/packagekit-glib2/pk-enum.c:1226
+msgid "Installing"
+msgstr "Asennetaan"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1096
+#: ../lib/packagekit-glib2/pk-enum.c:1222
+msgid "Removing"
+msgstr "Poistetaan"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1100
+msgid "Cleaning up"
+msgstr "Siivotaan"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1104
+msgid "Obsoleting"
+msgstr "Vanhennetaan"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1108
+msgid "Reinstalling"
+msgstr "Asennetaan uudelleen"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1133
+msgid "Downloaded"
+msgstr "Ladattu"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1145
+msgid "Removed"
+msgstr "Poistettu"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1149
+msgid "Cleaned up"
+msgstr "Siivottu"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1153
+msgid "Obsoleted"
+msgstr "Vanhennettu"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1157
+msgid "Reinstalled"
+msgstr "Asennettu uudelleen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1182
+msgid "Unknown role type"
+msgstr "Tuntematon roolityyppi"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1186
+msgid "Getting dependencies"
+msgstr "Haetaan riippuvuuksia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1190
+msgid "Getting update details"
+msgstr "Haetaan päivitystietoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1194
+msgid "Getting details"
+msgstr "Haetaan tietoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1198
+msgid "Getting requires"
+msgstr "Haetaan vaatimuksia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1202
+msgid "Getting updates"
+msgstr "Haetaan päivityksiä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1206
+msgid "Searching by details"
+msgstr "Etsitään tietojen perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1210
+msgid "Searching by file"
+msgstr "Etsitään tiedoston perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1214
+msgid "Searching groups"
+msgstr "Etsitään ryhmiä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1218
+msgid "Searching by name"
+msgstr "Etsitään nimen perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1230
+msgid "Installing files"
+msgstr "Asennetaan tiedostoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1234
+msgid "Refreshing cache"
+msgstr "Virkistetään välimuistia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1238
+msgid "Updating packages"
+msgstr "Päivitetään paketteja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1242
+msgid "Updating system"
+msgstr "Päivitetään järjestelmää"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1246
+msgid "Canceling"
+msgstr "Perutaan"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1254
+msgid "Getting repositories"
+msgstr "Haetaan asennuslähteitä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1258
+msgid "Enabling repository"
+msgstr "Otetaan asennuslähde käyttöön"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1262
+msgid "Setting data"
+msgstr "Asetetaan dataa"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1266
+msgid "Resolving"
+msgstr "Ratkaistaan"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1270
+msgid "Getting file list"
+msgstr "Haetaan tiedostoluetteloa"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1274
+msgid "Getting provides"
+msgstr "Haetaan tarjoajia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1278
+msgid "Installing signature"
+msgstr "Asennetaan allekirjoitusta"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1282
+msgid "Getting packages"
+msgstr "Haetaan paketteja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1286
+msgid "Accepting EULA"
+msgstr "Hyväksytään käyttöoikeussopimusta"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1294
+msgid "Getting upgrades"
+msgstr "Haetaan päivityksiä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1298
+msgid "Getting categories"
+msgstr "Haetaan kategorioita"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1302
+msgid "Getting transactions"
+msgstr "Haetaan transaktioita"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1306
+#: ../lib/packagekit-glib2/pk-enum.c:1310
+msgid "Simulating install"
+msgstr "Simuloidaan asennusta"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1314
+msgid "Simulating remove"
+msgstr "Simuloidaan poistoa"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1318
+msgid "Simulating update"
+msgstr "Simuloidaan päivitystä"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1820,114 +1804,18 @@ msgid "The transaction did not proceed."
 msgstr "Transaktiota ei jatkettu."
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Accept EULA"
-msgstr "Hyväksytään käyttöoikeussopimusta"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to accept a EULA"
-msgstr "Käyttöoikeussopimuksen hyväksyminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Tunnistautuminen vaaditaan, jotta voit perua tehtävän, jota et aloittanut"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to change software source parameters"
-msgstr "Ohjelmistolähdeasetusten muuttaminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to change the location used to decompress "
-"packages"
-msgstr ""
-"Pakettien purkamiseen käytettävän sijainnin vaihtaminen vaatii "
-"tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-"Pakettien allekirjoittamiseen käytettyyn avaimeen luottaminen vaatii "
-"tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Authentication is required to install a signed package"
-msgstr "Allekirjoitetun paketin asentaminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Authentication is required to install an untrusted package"
-msgstr ""
-"Tunnistautuminen vaaditaan, jotta voidaan asentaa paketti, johon ei luoteta"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to refresh the system sources"
-msgstr "Järjestelmälähteiden virkistäminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Authentication is required to reload the device with a new driver"
-msgstr ""
-"Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Authentication is required to remove packages"
-msgstr "Pakettien poistaminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Authentication is required to rollback a transaction"
-msgstr "Transaktion peruuttaminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-"Pakettien lataamiseen käytettävän välipalvelimen asettaminen vaatii "
-"tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Authentication is required to update packages"
-msgstr "Pakettien päivittäminen vaatii tunnistautumisen"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:21
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Käyttöjärjestelmän päivittäminen vaatii tunnistautumisen"
-
-#. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:27
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Cancel foreign task"
 msgstr "Peru tuntematon tehtävä"
 
-#. SECURITY:
-#. - This is used when users want to install to a different prefix, for
-#. instance to a LTSP image or a virtual machine.
-#. - This could be used to overwrite files not owned by the user using
-#. a carefully created package file.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:34
-msgid "Change location that packages are installed"
-msgstr "Vaihda sijaintia, johon paketit asennetaan"
-
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
-#. install different versions of software.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:40
-msgid "Change software source parameters"
-msgstr "Muuta ohjelmistolähdeasetuksia"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "Tunnistautuminen vaaditaan, jotta voit perua tehtävän, jota et aloittanut"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1935,9 +1823,13 @@ msgstr "Muuta ohjelmistolähdeasetuksia"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:47
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Install signed package"
 msgstr "Asenna allekirjoitettu paketti"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Authentication is required to install a signed package"
+msgstr "Allekirjoitetun paketin asentaminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1945,28 +1837,43 @@ msgstr "Asenna allekirjoitettu paketti"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:54
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
 msgid "Install untrusted local file"
 msgstr "Asenna paikallinen tiedosto, johon ei luoteta"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:59
-msgid "Refresh system sources"
-msgstr "Virkistä järjestelmälähteet"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:23
+msgid "Authentication is required to install an untrusted package"
+msgstr "Tunnistautuminen vaaditaan, jotta voidaan asentaa paketti, johon ei luoteta"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:67
-msgid "Reload a device"
-msgstr "Lataa laite uudelleen"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:30
+msgid "Trust a key used for signing packages"
+msgstr "Luota pakettien allekirjoittamiseen käytettyyn avaimeen"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "Pakettien allekirjoittamiseen käytettyyn avaimeen luottaminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+msgid "Accept EULA"
+msgstr "Hyväksytään käyttöoikeussopimusta"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
+msgid "Authentication is required to accept a EULA"
+msgstr "Käyttöoikeussopimuksen hyväksyminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1977,36 +1884,13 @@ msgstr "Lataa laite uudelleen"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:77
+#: ../policy/org.freedesktop.packagekit.policy.in.h:49
 msgid "Remove package"
 msgstr "Poista paketti"
 
-#. SECURITY:
-#. - Normal users require admin authentication to rollback system state
-#. as this will change a large number of packages, and could expose the
-#. system to previously patched security vulnerabilities.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:83
-msgid "Rollback to a previous transaction"
-msgstr "Peruuta edelliseen transaktioon"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:88
-msgid "Set network proxy"
-msgstr "Aseta välipalvelin"
-
-#. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:95
-msgid "Trust a key used for signing packages"
-msgstr "Luota pakettien allekirjoittamiseen käytettyyn avaimeen"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+msgid "Authentication is required to remove packages"
+msgstr "Pakettien poistaminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -2015,18 +1899,122 @@ msgstr "Luota pakettien allekirjoittamiseen käytettyyn avaimeen"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:103
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update packages"
 msgstr "Päivitä paketteja"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:59
+msgid "Authentication is required to update packages"
+msgstr "Pakettien päivittäminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rollback system state
+#. as this will change a large number of packages, and could expose the
+#. system to previously patched security vulnerabilities.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:65
+msgid "Rollback to a previous transaction"
+msgstr "Peruuta edelliseen transaktioon"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
+msgid "Authentication is required to rollback a transaction"
+msgstr "Transaktion peruuttaminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software sources as this can be used to enable new updates or
+#. install different versions of software.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:72
+msgid "Change software source parameters"
+msgstr "Muuta ohjelmistolähdeasetuksia"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:73
+msgid "Authentication is required to change software source parameters"
+msgstr "Ohjelmistolähdeasetusten muuttaminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:78
+msgid "Refresh system sources"
+msgstr "Virkistä järjestelmälähteet"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+msgid "Authentication is required to refresh the system sources"
+msgstr "Järjestelmälähteiden virkistäminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:84
+msgid "Set network proxy"
+msgstr "Aseta välipalvelin"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:85
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "Pakettien lataamiseen käytettävän välipalvelimen asettaminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:92
+msgid "Change location that packages are installed"
+msgstr "Vaihda sijaintia, johon paketit asennetaan"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:93
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr "Pakettien purkamiseen käytettävän sijainnin vaihtaminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:101
+msgid "Reload a device"
+msgstr "Lataa laite uudelleen"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+#: ../policy/org.freedesktop.packagekit.policy.in.h:108
 msgid "Upgrade System"
 msgstr "Tee käyttöjärjestelmäpäivitys"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Käyttöjärjestelmän päivittäminen vaatii tunnistautumisen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+msgid "Repair System"
+msgstr "Korjaa järjestelmä"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:116
+msgid "Authentication is required to repair the installed software"
+msgstr "Asennettujen ohjelmistojen korjaus vaatii tunnistautumisen"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:149
@@ -2073,24 +2061,22 @@ msgid "Failed to load any of the specified backends:"
 msgstr ""
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2696
+#: ../src/pk-transaction.c:2972
 msgid "The software is not from a trusted source."
 msgstr "Tämä ohjelmisto ei tule luotetusta lähteestä."
 
-#: ../src/pk-transaction.c:2704
+#: ../src/pk-transaction.c:2980
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Älä päivitä tätä pakettia ellet ole varma, että se on turvallista."
 
-#: ../src/pk-transaction.c:2705
+#: ../src/pk-transaction.c:2981
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Älä päivitä näitä paketteja ellet ole varma, että se on turvallista."
 
-#: ../src/pk-transaction.c:2715
+#: ../src/pk-transaction.c:2991
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Älä asenna tätä pakettia ellet ole varma, että se on turvallista."
 
-#: ../src/pk-transaction.c:2716
+#: ../src/pk-transaction.c:2992
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Älä asenna näitä paketteja ellet ole varma, että se on turvallista."
-
-

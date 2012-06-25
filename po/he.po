@@ -4,14 +4,15 @@
 # 
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011.
+# Yaron Shahrabani <sh.yaron@gmail.com>, 2012.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-10 19:50+0000\n"
-"PO-Revision-Date: 2011-11-10 19:50+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Hebrew (http://www.transifex.net/projects/p/freedesktop/team/he/)\n"
+"POT-Creation-Date: 2012-04-24 09:13+0100\n"
+"PO-Revision-Date: 2012-06-10 13:15+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"Language-Team: Hebrew (http://www.transifex.net/projects/p/freedesktop/language/he/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,114 +21,114 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
-#: ../client/pk-console.c:174 ../client/pk-console.c:596
+#: ../client/pk-console.c:173 ../client/pk-console.c:595
 msgid "Transaction"
 msgstr "פעולה"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
-#: ../client/pk-console.c:176
+#: ../client/pk-console.c:175
 msgid "System time"
 msgstr "שעת המערכת"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "Succeeded"
 msgstr "הצליח"
 
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "True"
 msgstr "אמת"
 
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:177
 msgid "False"
 msgstr "שקר"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
-#: ../client/pk-console.c:180
+#: ../client/pk-console.c:179
 msgid "Role"
 msgstr "תפקיד"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:185
+#: ../client/pk-console.c:184
 msgid "Duration"
 msgstr "משך"
 
-#: ../client/pk-console.c:185
+#: ../client/pk-console.c:184
 msgid "(seconds)"
 msgstr "(שניות)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:189
+#: ../client/pk-console.c:188
 msgid "Command line"
 msgstr "שורת פקודה"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:191
+#: ../client/pk-console.c:190
 msgid "User ID"
 msgstr "זיהוי משתמש"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:198
+#: ../client/pk-console.c:197
 msgid "Username"
 msgstr "שם משתמש"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:202
+#: ../client/pk-console.c:201
 msgid "Real name"
 msgstr "שם אמיתי"
 
-#: ../client/pk-console.c:210
+#: ../client/pk-console.c:209
 msgid "Affected packages:"
 msgstr "חבילות מושפעות:"
 
-#: ../client/pk-console.c:212
+#: ../client/pk-console.c:211
 msgid "Affected packages: None"
 msgstr "חבילות שהושפעו: אין"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:247
+#: ../client/pk-console.c:246
 msgid "Distribution"
 msgstr "הפצה"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:249
+#: ../client/pk-console.c:248
 msgid "Type"
 msgstr "סוג"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:251 ../client/pk-console.c:290
+#: ../client/pk-console.c:250 ../client/pk-console.c:289
 msgid "Summary"
 msgstr "תיאור"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:279
+#: ../client/pk-console.c:278
 msgid "Category"
 msgstr "קטגוריה"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:281
+#: ../client/pk-console.c:280
 msgid "ID"
 msgstr "מזהה קבוצה"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:284
+#: ../client/pk-console.c:283
 msgid "Parent"
 msgstr "קבוצה"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:287
+#: ../client/pk-console.c:286
 msgid "Name"
 msgstr "שם"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:293
+#: ../client/pk-console.c:292
 msgid "Icon"
 msgstr "סמליל"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:339
+#: ../client/pk-console.c:338
 msgid "Details about the update:"
 msgstr "פרטי העדכון:"
 
@@ -135,7 +136,7 @@ msgstr "פרטי העדכון:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:345 ../client/pk-console.c:615
+#: ../client/pk-console.c:344 ../client/pk-console.c:614
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
@@ -143,193 +144,189 @@ msgstr "חבילות"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
-#: ../client/pk-console.c:348
+#: ../client/pk-console.c:347
 msgid "Updates"
 msgstr "עדכונים"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. obsoletes
-#: ../client/pk-console.c:352
+#: ../client/pk-console.c:351
 msgid "Obsoletes"
 msgstr "מיישן"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:356 ../lib/packagekit-glib2/pk-task-text.c:209
+#: ../client/pk-console.c:355 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "ספק"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:359
 msgid "Bugzilla"
 msgstr "באגזילה"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:364
+#: ../client/pk-console.c:363
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:368
+#: ../client/pk-console.c:367
 msgid "Restart"
 msgstr "הפעל מחדש"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:372
+#: ../client/pk-console.c:371
 msgid "Update text"
 msgstr "פרטי עדכון"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:375
 msgid "Changes"
 msgstr "שינויים"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:380
+#: ../client/pk-console.c:379
 msgid "State"
 msgstr "מצב"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:383
 msgid "Issued"
 msgstr "הונפק"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:559
+#: ../client/pk-console.c:387 ../lib/packagekit-glib2/pk-enum.c:1137
 msgid "Updated"
 msgstr "עודכן"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:424
+#: ../client/pk-console.c:423
 msgid "Enabled"
 msgstr "פעיל"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:427
+#: ../client/pk-console.c:426
 msgid "Disabled"
 msgstr "לא פעיל"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:459
+#: ../client/pk-console.c:458
 msgid "System restart required by:"
 msgstr "נדרש אתחול מחדש של המערכת ע\"י:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:462
+#: ../client/pk-console.c:461
 msgid "Session restart required:"
 msgstr "נדרשת התחברות מחדש ע\"י:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a
 #. security update
-#: ../client/pk-console.c:465
+#: ../client/pk-console.c:464
 msgid "System restart (security) required by:"
 msgstr "נדרש אתחול של המערכת ע\"י:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a
 #. security update
-#: ../client/pk-console.c:468
+#: ../client/pk-console.c:467
 msgid "Session restart (security) required:"
 msgstr "נדרשת התחברות מחדש ע\"י:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:471
+#: ../client/pk-console.c:470
 msgid "Application restart required by:"
 msgstr "נדרשת הפעלה מחדש של תוכנה ע\"י:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:506
+#: ../client/pk-console.c:505
 msgid "Package description"
 msgstr "תיאור חבילה"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest)
 #. from the transaction
-#: ../client/pk-console.c:537
+#: ../client/pk-console.c:536
 msgid "Message:"
 msgstr "הודעה:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:558
+#: ../client/pk-console.c:557
 msgid "No files"
 msgstr "אין קבצים"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:563
+#: ../client/pk-console.c:562
 msgid "Package files"
 msgstr "קבצי החבילה"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:631
+#: ../client/pk-console.c:630
 msgid "Percentage"
 msgstr "אחוזים"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:649
+#: ../client/pk-console.c:648
 msgid "Status"
 msgstr "מצב"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:678
+#: ../client/pk-console.c:677
 msgid "Results:"
 msgstr "תוצאות:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:685
+#: ../client/pk-console.c:684
 msgid "Fatal error"
 msgstr "שגיאה פאטלית"
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
-#: ../client/pk-console.c:701
+#: ../client/pk-console.c:700
 msgid "There are no packages to update."
-msgstr ""
+msgstr "אין חבילות לעדכון."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:704
+#: ../client/pk-console.c:703
 #: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr "הרצת הפעולה נכשלה"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:733
+#: ../client/pk-console.c:732
 msgid "There are no updates available at this time."
 msgstr "אין עדכונים זמינים כרגע"
 
-#: ../client/pk-console.c:756
+#: ../client/pk-console.c:755
 msgid "There are no upgrades available at this time."
-msgstr ""
+msgstr "אין שדרוגים זמינים נכון לעכשיו."
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:823
+#: ../client/pk-console.c:822
 msgid "Please restart the computer to complete the update."
 msgstr "נא להפעיל את המחשב מחדש לצורך השלמת העדכון."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:826
+#: ../client/pk-console.c:825
 msgid "Please logout and login to complete the update."
 msgstr "נא לצאת (logout) מהמחשב לצורך השלמת העדכון."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:829
+#: ../client/pk-console.c:828
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr ""
-"נא להפעיל את המחשב מחדש לצורך השלמת העדכון, מכיוון שעדכוני אבטחה חשובים "
-"התוקנו."
+msgstr "נא להפעיל את המחשב מחדש לצורך השלמת העדכון, מכיוון שעדכוני אבטחה חשובים התוקנו."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:832
+#: ../client/pk-console.c:831
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr ""
-"נא לצאת (logout) מהמחשב לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה "
-"חשובים."
+msgstr "נא לצאת (logout) מהמחשב לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה חשובים."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
-#: ../client/pk-console.c:858
+#: ../client/pk-console.c:857
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
@@ -338,21 +335,21 @@ msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:871
+#: ../client/pk-console.c:870
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "הכלי הזה לא הצליח למצוא אף חבילה זמינה: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:899
+#: ../client/pk-console.c:898
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "הכלי הזה לא הצליח למצוא את החבילה המותקנת: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:927 ../client/pk-console.c:955
+#: ../client/pk-console.c:926 ../client/pk-console.c:954
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "הכלי הזה לא הצליח למצוא את החבילה: %s"
@@ -365,245 +362,245 @@ msgstr "הכלי הזה לא הצליח למצוא את החבילה: %s"
 #. detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The
 #. detailed error follows
-#: ../client/pk-console.c:983 ../client/pk-console.c:1011
-#: ../client/pk-console.c:1039 ../client/pk-console.c:1067
-#: ../client/pk-console.c:1095
+#: ../client/pk-console.c:982 ../client/pk-console.c:1010
+#: ../client/pk-console.c:1038 ../client/pk-console.c:1066
+#: ../client/pk-console.c:1094
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "הכלי הזה לא הצליח למצוא את כל החבילות: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
-#: ../client/pk-console.c:1124
+#: ../client/pk-console.c:1123
 msgid "The daemon crashed mid-transaction!"
 msgstr "תכנית השירות (daemon) התרסקה באמצע טראנזקציה!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1158
+#: ../client/pk-console.c:1157
 msgid "PackageKit Console Interface"
 msgstr "מנשק שורת פקודה של PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1160
+#: ../client/pk-console.c:1159
 msgid "Subcommands:"
 msgstr "תת-פקודות:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1240
+#: ../client/pk-console.c:1241
 msgid "Failed to get the time since this action was last completed"
 msgstr "נכשל בקבלת הזמן שעבר מאז שהפעולה הושלמה"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1282 ../client/pk-monitor.c:371
+#: ../client/pk-console.c:1283 ../client/pk-monitor.c:370
 msgid "Show the program version and exit"
 msgstr "הצג את גרסת התוכנה וסיים"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1285
+#: ../client/pk-console.c:1286
 msgid "Set the filter, e.g. installed"
 msgstr "קבע את המסנן, למשל, מותקנות"
 
 #. TRANSLATORS: command line argument, use a non-standard install prefix
-#: ../client/pk-console.c:1288
+#: ../client/pk-console.c:1289
 msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
 msgstr ""
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1291
+#: ../client/pk-console.c:1292
 msgid "Exit without waiting for actions to complete"
 msgstr "צא ללא המתנה לסיום הפעולות"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1294
+#: ../client/pk-console.c:1295
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "התקן את החבילה הזאת מבלי לבקש אישור"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1297
+#: ../client/pk-console.c:1298
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "הרץ את הפקודה הזאת תוך שימוש ברוחב פס סרק וגם השתמש בפחות כוח"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1300
+#: ../client/pk-console.c:1301
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "הדפס למסך פלט לקריאה ע\"י מכונה במקום ווידג'טים מונפשים"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1303
+#: ../client/pk-console.c:1304
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr ""
 
 #. TRANSLATORS: command line argument, --help
-#: ../client/pk-console.c:1306
+#: ../client/pk-console.c:1307
 msgid "Show help options."
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1336
+#: ../client/pk-console.c:1338
 msgid "Failed to parse command line"
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1348
 msgid "Failed to contact PackageKit"
 msgstr "נכשל ביצירת קשר עם שירות הרקע של Packagekit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1399
+#: ../client/pk-console.c:1401
 msgid "The proxy could not be set"
 msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1411
+#: ../client/pk-console.c:1413
 msgid "The install root could not be set"
 msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1423
+#: ../client/pk-console.c:1425
 msgid "The filter specified was invalid"
 msgstr "מסנן החיפוש לא תקין"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1442
+#: ../client/pk-console.c:1444
 msgid "A search type is required, e.g. name"
 msgstr "סוג חיפוש דרוש, למשל name"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1449 ../client/pk-console.c:1461
-#: ../client/pk-console.c:1473 ../client/pk-console.c:1485
+#: ../client/pk-console.c:1451 ../client/pk-console.c:1463
+#: ../client/pk-console.c:1475 ../client/pk-console.c:1487
 msgid "A search term is required"
 msgstr "נדרשת מחרוזת לחיפוש"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1495
+#: ../client/pk-console.c:1497
 msgid "Invalid search type"
 msgstr "סוג חיפוש לא תקין"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1501
+#: ../client/pk-console.c:1503
 msgid "A package name to install is required"
 msgstr "שם חבילה להתקנה נדרש"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1510
+#: ../client/pk-console.c:1512
 msgid "A filename to install is required"
 msgstr "שם קובץ להתקנה נדרש"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1521
+#: ../client/pk-console.c:1523
 msgid "A type, key_id and package_id are required"
 msgstr "סוג, זיהוי מפתח וזיהוי חבילה נדרשים"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1532
+#: ../client/pk-console.c:1534
 msgid "A package name to remove is required"
 msgstr "שם חבילה להסרה נדרש"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1541
+#: ../client/pk-console.c:1543
 msgid "A destination directory and the package names to download are required"
 msgstr "יש לקבוע תיקיית יעד וחבילות להורדה"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1548
+#: ../client/pk-console.c:1550
 msgid "Directory not found"
 msgstr "תיקייה לא נמצאה"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1557
+#: ../client/pk-console.c:1559
 msgid "A licence identifier (eula-id) is required"
 msgstr "יש לציין זיהוי של הסכם משתמש הקצה (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1568
+#: ../client/pk-console.c:1570
 msgid "A transaction identifier (tid) is required"
 msgstr "מזהה פעולה (tid) נדרש"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1589
+#: ../client/pk-console.c:1591
 msgid "A package name to resolve is required"
 msgstr "שם חבילה להצגת התלויות שלה"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1600 ../client/pk-console.c:1611
+#: ../client/pk-console.c:1602 ../client/pk-console.c:1613
 msgid "A repository name is required"
 msgstr "נדרש שם מאגר"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1622
+#: ../client/pk-console.c:1624
 msgid "A repo name, parameter and value are required"
 msgstr "יש לציין שם מאגר תכנה או פרמטר וערך"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1639
+#: ../client/pk-console.c:1641
 msgid "An action, e.g. 'update-system' is required"
 msgstr "יש לציין את הפעולה, למשל 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1646
+#: ../client/pk-console.c:1648
 msgid "A correct role is required"
 msgstr "תפקיד נוכחי נדרש"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1656 ../client/pk-console.c:1670
-#: ../client/pk-console.c:1679 ../client/pk-console.c:1699
-#: ../client/pk-console.c:1708 ../client/pk-generate-pack.c:314
+#: ../client/pk-console.c:1658 ../client/pk-console.c:1672
+#: ../client/pk-console.c:1681 ../client/pk-console.c:1701
+#: ../client/pk-console.c:1710 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr "נרש שם חבילה"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1688
+#: ../client/pk-console.c:1690
 msgid "A package provide string is required"
 msgstr "מחרוזת 'מספק את' של חבילה נדרשת"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1732
+#: ../client/pk-console.c:1734
 msgid "A distribution name is required"
 msgstr ""
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1738
+#: ../client/pk-console.c:1740
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1788
+#: ../client/pk-console.c:1795
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "אפשרות '%s' לא נתמכת"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1798
+#: ../client/pk-console.c:1805
 msgid "Command failed"
 msgstr "פעולה נכשלה"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
 #. exist on the target
-#: ../client/pk-generate-pack.c:253
+#: ../client/pk-generate-pack.c:252
 msgid "Set the file name of dependencies to be excluded"
 msgstr "קבע שמות קובץ של תלויות שלא יכללו"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:256
+#: ../client/pk-generate-pack.c:255
 msgid ""
 "The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:259
+#: ../client/pk-generate-pack.c:258
 msgid "The package to be put into the service pack"
 msgstr "החבילה שתתווסף לחבילת השירות"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:262
+#: ../client/pk-generate-pack.c:261
 msgid "Put all updates available in the service pack"
 msgstr "שים את כל העדכונים הזמינים בחבילת שירות"
 
@@ -642,8 +639,7 @@ msgstr "מנוע ניהול החבילות לא יכול לבצע סוג זה ש
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr ""
-"לא ניתן ליצור חבילות שירות מכיוון שPackageKit לא הודר עם תמיכה בlibarchive."
+msgstr "לא ניתן ליצור חבילות שירות מכיוון שPackageKit לא הודר עם תמיכה בlibarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -703,11 +699,11 @@ msgstr "חבילת שירות נוצרה '%s'"
 msgid "Failed to create '%s': %s"
 msgstr "כישלון ביצירת '%s':‏ %s"
 
-#: ../client/pk-monitor.c:284
+#: ../client/pk-monitor.c:283
 msgid "Failed to get daemon state"
 msgstr "לא ניתן לקבל מצב שירות הרקע"
 
-#: ../client/pk-monitor.c:349
+#: ../client/pk-monitor.c:348
 msgid "Failed to get properties"
 msgstr ""
 
@@ -813,58 +809,58 @@ msgstr "כישלון בהתקנת החבילות: %s"
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:723
+#: ../contrib/command-not-found/pk-command-not-found.c:725
 msgid "command not found"
 msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:743
 msgid "Similar command is:"
 msgstr "פקודה דומה:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:755
+#: ../contrib/command-not-found/pk-command-not-found.c:757
 msgid "Run similar command:"
 msgstr "הרץ פקודה דומה:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:769
-#: ../contrib/command-not-found/pk-command-not-found.c:778
+#: ../contrib/command-not-found/pk-command-not-found.c:771
+#: ../contrib/command-not-found/pk-command-not-found.c:780
 msgid "Similar commands are:"
 msgstr "פקודות דומות:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:785
+#: ../contrib/command-not-found/pk-command-not-found.c:787
 msgid "Please choose a command to run"
 msgstr "אנא בחר פקודה להרצה"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:803
+#: ../contrib/command-not-found/pk-command-not-found.c:805
 msgid "The package providing this file is:"
 msgstr "החבילה המספקת את הקובץ הזה:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:810
+#: ../contrib/command-not-found/pk-command-not-found.c:812
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "להתקין את החבילה '%s' כדי לספק את הפקודה '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:837
+#: ../contrib/command-not-found/pk-command-not-found.c:839
 msgid "Packages providing this file are:"
 msgstr "חבילות שמספקות את הקובץ הזה:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:847
+#: ../contrib/command-not-found/pk-command-not-found.c:849
 msgid "Suitable packages are:"
 msgstr "חבילות מתאימות:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:856
+#: ../contrib/command-not-found/pk-command-not-found.c:858
 msgid "Please choose a package to install"
 msgstr "אנא בחר חבילה להתקנה"
 
@@ -898,172 +894,172 @@ msgid "Do not display information or progress"
 msgstr "אל תציג מידע או התקדמות"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:542
 msgid "PackageKit Debuginfo Installer"
 msgstr "מתקין מידע ניפוי השגיאות של PackageKit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the
 #. command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "שגיאה: ספק שם חבילה להתקנה"
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:592
 #, c-format
 msgid "Getting sources list"
 msgstr "מקבל רשימת מקורות"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:602
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:677
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:805
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:872
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:916
 msgid "FAILED."
 msgstr "נכשל."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:617
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:692
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:776
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:820
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "OK."
 msgstr "הצליח"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:620
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "נמצאו %i מקורות פעילים ו-%i מקורות מנוטרלים"
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:627
 #, c-format
 msgid "Finding debugging sources"
 msgstr "מחפש מקורות ניפוי שגיאות"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:660
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "נמצאו %i מקורות ניפוי שגיאות מנוטרלים"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:667
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "מאפשר מקורות ניפוי שגיאות"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:695
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "איפשר %i מקורות ניפוי שגיאות."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:702
 #, c-format
 msgid "Finding debugging packages"
 msgstr "מחפש חבילות ניפוי שגיאות"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:714
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "לא נמצאה החבילה %s:‏ %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "לא נמצאה חבילת ניפוי השגיאות %s:‏ %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:765
 #, c-format
 msgid "Found no packages to install."
 msgstr "לא נמצאו חבילות להתקנה."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:779
 #, c-format
 msgid "Found %i packages:"
 msgstr "נמצאו %i חבילות:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "מחפש חבילות שתלויות בחבילות אלו"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
-msgid "Could not find dependant packages: %s"
-msgstr "לא ניתן למצוא חבילה: %s"
+msgid "Could not find dependent packages: %s"
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
 #, c-format
 msgid "Found %i extra packages."
 msgstr "מצאו %i חבילות נוספות."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
 #, c-format
 msgid "No extra packages required."
 msgstr "לא נדרשות חבילות נוספות"
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list
 #. them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "נמצאו %i חבילות להתקנה"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the
 #. action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:850
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "לא מתקין חבילות במצב הדמייה"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:862
 #: ../lib/packagekit-glib2/pk-console-shared.c:331
 #, c-format
 msgid "Installing packages"
 msgstr "מתקין חבילות"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:875
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "כישלון בהתקנת החבילות: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "מנטרל מקורות שהופעלו קודם"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
 #. error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:919
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "לא ניתן לנטרל מקורות ניפוי שיגאות: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:934
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "ניטרל %i מקורות ניפוי שגיאות"
@@ -1227,7 +1223,7 @@ msgstr "מסיר חבילות"
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:327
-#: ../lib/packagekit-glib2/pk-console-shared.c:705
+#: ../lib/packagekit-glib2/pk-enum.c:1290
 msgid "Downloading packages"
 msgstr "מוריד חבילות"
 
@@ -1266,7 +1262,7 @@ msgstr "בודק חתימות"
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:359
-#: ../lib/packagekit-glib2/pk-console-shared.c:665
+#: ../lib/packagekit-glib2/pk-enum.c:1250
 msgid "Rolling back"
 msgstr "מחזיר אחורה"
 
@@ -1381,268 +1377,6 @@ msgstr "בודק אחר ספריות תוכנה שכרגע בשימוש"
 msgid "Copying files"
 msgstr "מעתיק קבצים"
 
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:461
-msgid "Trivial"
-msgstr "עדכון שטחי"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:465
-msgid "Normal"
-msgstr "רגיל"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:469
-msgid "Important"
-msgstr "חשוב"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:473
-msgid "Security"
-msgstr "אבטחה"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:477
-msgid "Bug fix "
-msgstr "תיקון באג"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:481
-msgid "Enhancement"
-msgstr "שיפור"
-
-#. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:485
-msgid "Blocked"
-msgstr "חסום"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:490
-#: ../lib/packagekit-glib2/pk-console-shared.c:563
-msgid "Installed"
-msgstr "הותקן"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-console-shared.c:495
-msgid "Available"
-msgstr "זמין"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:513
-msgid "Downloading"
-msgstr "מוריד מהאינטרנט"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:517
-msgid "Updating"
-msgstr "מעדכן"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:521
-#: ../lib/packagekit-glib2/pk-console-shared.c:641
-msgid "Installing"
-msgstr "מתקין"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:525
-#: ../lib/packagekit-glib2/pk-console-shared.c:637
-msgid "Removing"
-msgstr "מסיר"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:529
-msgid "Cleaning up"
-msgstr "מנקה"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:533
-msgid "Obsoleting"
-msgstr "מיישן"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:537
-msgid "Reinstalling"
-msgstr "מתקין מחדש"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:555
-msgid "Downloaded"
-msgstr "ירד"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:567
-msgid "Removed"
-msgstr "הוסר"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:571
-msgid "Cleaned up"
-msgstr "נוקה"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:575
-msgid "Obsoleted"
-msgstr "יושן"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:579
-msgid "Reinstalled"
-msgstr "הותקן מחדש"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:597
-msgid "Unknown role type"
-msgstr "סוג תפקיד לא ידוע"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:601
-msgid "Getting dependencies"
-msgstr "מקבל תלויות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:605
-msgid "Getting update details"
-msgstr "מקבל פרטי עדכון"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:609
-msgid "Getting details"
-msgstr "מקבל פרטים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:613
-msgid "Getting requires"
-msgstr "מקבל דרישות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:617
-msgid "Getting updates"
-msgstr "מקבל עדכונים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:621
-msgid "Searching by details"
-msgstr "מחפש לפי פרטים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:625
-msgid "Searching by file"
-msgstr "מחפש לפי קובץ"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:629
-msgid "Searching groups"
-msgstr "מחפש קבוצות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:633
-msgid "Searching by name"
-msgstr "מחפש לפי שם"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:645
-msgid "Installing files"
-msgstr "מתקין קבצים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:649
-msgid "Refreshing cache"
-msgstr "מרענן מטמון"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:653
-msgid "Updating packages"
-msgstr "מעדכן חבילות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:657
-msgid "Updating system"
-msgstr "מעדכן מערכת"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:661
-msgid "Canceling"
-msgstr "מבטל"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:669
-msgid "Getting repositories"
-msgstr "מקבל מאגרים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:673
-msgid "Enabling repository"
-msgstr "מאפשר מאגר"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:677
-msgid "Setting data"
-msgstr "מגדיר מידע"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:681
-msgid "Resolving"
-msgstr "פותר"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:685
-msgid "Getting file list"
-msgstr "מקבל רשימת קבצים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:689
-msgid "Getting provides"
-msgstr "מקבל 'מה מספק'"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:693
-msgid "Installing signature"
-msgstr "מתקין חתימה"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:697
-msgid "Getting packages"
-msgstr "מקבל חבילות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:701
-msgid "Accepting EULA"
-msgstr "מאשר רשיון משתמש הקצה (EULA)"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:709
-msgid "Getting upgrades"
-msgstr "מקבל שדרוגים"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:713
-msgid "Getting categories"
-msgstr "מקבל קטגוריות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:717
-msgid "Getting transactions"
-msgstr "מקבל פעולות ישנות"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:721
-#: ../lib/packagekit-glib2/pk-console-shared.c:725
-msgid "Simulating install"
-msgstr "מדמה התקנה"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:729
-msgid "Simulating remove"
-msgstr "מדמה הסרה"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:733
-msgid "Simulating update"
-msgstr "מדמה עדכון"
-
 #. TRANSLATORS: turn on all debugging
 #: ../lib/packagekit-glib2/pk-debug.c:133
 msgid "Show debugging information for all files"
@@ -1655,6 +1389,268 @@ msgstr "מידע ניפוי שגיאות"
 #: ../lib/packagekit-glib2/pk-debug.c:201
 msgid "Show debugging options"
 msgstr "הצג אפשרויות ניפוי באגים"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1025
+msgid "Trivial"
+msgstr "עדכון שטחי"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1029
+msgid "Normal"
+msgstr "רגיל"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1033
+msgid "Important"
+msgstr "חשוב"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1037
+msgid "Security"
+msgstr "אבטחה"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1041
+msgid "Bug fix "
+msgstr "תיקון באג"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1045
+msgid "Enhancement"
+msgstr "שיפור"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-enum.c:1049
+msgid "Blocked"
+msgstr "חסום"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1054
+#: ../lib/packagekit-glib2/pk-enum.c:1141
+msgid "Installed"
+msgstr "הותקן"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-enum.c:1059
+msgid "Available"
+msgstr "זמין"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1084
+msgid "Downloading"
+msgstr "מוריד מהאינטרנט"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1088
+msgid "Updating"
+msgstr "מעדכן"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1092
+#: ../lib/packagekit-glib2/pk-enum.c:1226
+msgid "Installing"
+msgstr "מתקין"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1096
+#: ../lib/packagekit-glib2/pk-enum.c:1222
+msgid "Removing"
+msgstr "מסיר"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1100
+msgid "Cleaning up"
+msgstr "מנקה"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1104
+msgid "Obsoleting"
+msgstr "מיישן"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1108
+msgid "Reinstalling"
+msgstr "מתקין מחדש"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1133
+msgid "Downloaded"
+msgstr "ירד"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1145
+msgid "Removed"
+msgstr "הוסר"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1149
+msgid "Cleaned up"
+msgstr "נוקה"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1153
+msgid "Obsoleted"
+msgstr "יושן"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-enum.c:1157
+msgid "Reinstalled"
+msgstr "הותקן מחדש"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1182
+msgid "Unknown role type"
+msgstr "סוג תפקיד לא ידוע"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1186
+msgid "Getting dependencies"
+msgstr "מקבל תלויות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1190
+msgid "Getting update details"
+msgstr "מקבל פרטי עדכון"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1194
+msgid "Getting details"
+msgstr "מקבל פרטים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1198
+msgid "Getting requires"
+msgstr "מקבל דרישות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1202
+msgid "Getting updates"
+msgstr "מקבל עדכונים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1206
+msgid "Searching by details"
+msgstr "מחפש לפי פרטים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1210
+msgid "Searching by file"
+msgstr "מחפש לפי קובץ"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1214
+msgid "Searching groups"
+msgstr "מחפש קבוצות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1218
+msgid "Searching by name"
+msgstr "מחפש לפי שם"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1230
+msgid "Installing files"
+msgstr "מתקין קבצים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1234
+msgid "Refreshing cache"
+msgstr "מרענן מטמון"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1238
+msgid "Updating packages"
+msgstr "מעדכן חבילות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1242
+msgid "Updating system"
+msgstr "מעדכן מערכת"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1246
+msgid "Canceling"
+msgstr "מבטל"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1254
+msgid "Getting repositories"
+msgstr "מקבל מאגרים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1258
+msgid "Enabling repository"
+msgstr "מאפשר מאגר"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1262
+msgid "Setting data"
+msgstr "מגדיר מידע"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1266
+msgid "Resolving"
+msgstr "פותר"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1270
+msgid "Getting file list"
+msgstr "מקבל רשימת קבצים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1274
+msgid "Getting provides"
+msgstr "מקבל 'מה מספק'"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1278
+msgid "Installing signature"
+msgstr "מתקין חתימה"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1282
+msgid "Getting packages"
+msgstr "מקבל חבילות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1286
+msgid "Accepting EULA"
+msgstr "מאשר רשיון משתמש הקצה (EULA)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1294
+msgid "Getting upgrades"
+msgstr "מקבל שדרוגים"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1298
+msgid "Getting categories"
+msgstr "מקבל קטגוריות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1302
+msgid "Getting transactions"
+msgstr "מקבל פעולות ישנות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1306
+#: ../lib/packagekit-glib2/pk-enum.c:1310
+msgid "Simulating install"
+msgstr "מדמה התקנה"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1314
+msgid "Simulating remove"
+msgstr "מדמה הסרה"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-enum.c:1318
+msgid "Simulating update"
+msgstr "מדמה עדכון"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1806,105 +1802,18 @@ msgid "The transaction did not proceed."
 msgstr "הפעולה לא המשיכה."
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Accept EULA"
-msgstr "קבל רשיון משתמש הקצה (EULA)"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to accept a EULA"
-msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "אימות נדרש כדי לבטל משימה שלא התחלת בעצמך"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to change software source parameters"
-msgstr "אימות נדרש כדי לשנות פרמטרים של מקורות תוכנה"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to change the location used to decompress "
-"packages"
-msgstr ""
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "אימות נדרש כדי לסמן מפתח המשתמש לחתימה על חבילות כמהימן"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Authentication is required to install a signed package"
-msgstr "אימות נדרש כדי להתקין חבילה חתומה"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Authentication is required to install an untrusted package"
-msgstr "אימות נדרש כדי להתקין חבילה לא מהימנה"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to refresh the system sources"
-msgstr "אימות נדרש כדי לרענן את מקורות המערכת"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "אימות נדרש כדי לטעון מחדש התקן עם מנהל התקן חדש"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Authentication is required to remove packages"
-msgstr "אימות נדרש כדי להסיר חבילות"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Authentication is required to rollback a transaction"
-msgstr "אימות נדרש כדי לגלגל אחורנית טרנסאקציה"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "אימות נדרש כדי להגדיר את שרת הproxy המשמש להורדת החבילות"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Authentication is required to update packages"
-msgstr "אימות נדרש כדי לעדכן חבילות"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:21
-msgid "Authentication is required to upgrade the operating system"
-msgstr ""
-
-#. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:27
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Cancel foreign task"
 msgstr "בטל משימה זרה"
 
-#. SECURITY:
-#. - This is used when users want to install to a different prefix, for
-#. instance to a LTSP image or a virtual machine.
-#. - This could be used to overwrite files not owned by the user using
-#. a carefully created package file.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:34
-msgid "Change location that packages are installed"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
-#. install different versions of software.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:40
-msgid "Change software source parameters"
-msgstr "שנה פרמטרים של מקורות תוכנה"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "אימות נדרש כדי לבטל משימה שלא התחלת בעצמך"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1912,9 +1821,13 @@ msgstr "שנה פרמטרים של מקורות תוכנה"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:47
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Install signed package"
 msgstr "התקן חבילה חתומה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Authentication is required to install a signed package"
+msgstr "אימות נדרש כדי להתקין חבילה חתומה"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1922,28 +1835,43 @@ msgstr "התקן חבילה חתומה"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:54
+#: ../policy/org.freedesktop.packagekit.policy.in.h:22
 msgid "Install untrusted local file"
 msgstr "התקן קובץ מקומי לא מהימן"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:59
-msgid "Refresh system sources"
-msgstr "רענן את מקודות המערכת"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:23
+msgid "Authentication is required to install an untrusted package"
+msgstr "אימות נדרש כדי להתקין חבילה לא מהימנה"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:67
-msgid "Reload a device"
-msgstr "טען התקן מחדש"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:30
+msgid "Trust a key used for signing packages"
+msgstr "תן אמון במפתח המשתמש לחתימת חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr "אימות נדרש כדי לסמן מפתח המשתמש לחתימה על חבילות כמהימן"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+msgid "Accept EULA"
+msgstr "קבל רשיון משתמש הקצה (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
+msgid "Authentication is required to accept a EULA"
+msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1954,36 +1882,13 @@ msgstr "טען התקן מחדש"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:77
+#: ../policy/org.freedesktop.packagekit.policy.in.h:49
 msgid "Remove package"
 msgstr "הסר חבילה"
 
-#. SECURITY:
-#. - Normal users require admin authentication to rollback system state
-#. as this will change a large number of packages, and could expose the
-#. system to previously patched security vulnerabilities.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:83
-msgid "Rollback to a previous transaction"
-msgstr "גלגל אחרונית לטרהסאקציה קודמת"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:88
-msgid "Set network proxy"
-msgstr "הגדר שרת proxy"
-
-#. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:95
-msgid "Trust a key used for signing packages"
-msgstr "תן אמון במפתח המשתמש לחתימת חבילות"
+#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+msgid "Authentication is required to remove packages"
+msgstr "אימות נדרש כדי להסיר חבילות"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1992,17 +1897,121 @@ msgstr "תן אמון במפתח המשתמש לחתימת חבילות"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:103
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update packages"
 msgstr "עדכן חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:59
+msgid "Authentication is required to update packages"
+msgstr "אימות נדרש כדי לעדכן חבילות"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rollback system state
+#. as this will change a large number of packages, and could expose the
+#. system to previously patched security vulnerabilities.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:65
+msgid "Rollback to a previous transaction"
+msgstr "גלגל אחרונית לטרהסאקציה קודמת"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
+msgid "Authentication is required to rollback a transaction"
+msgstr "אימות נדרש כדי לגלגל אחורנית טרנסאקציה"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software sources as this can be used to enable new updates or
+#. install different versions of software.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:72
+msgid "Change software source parameters"
+msgstr "שנה פרמטרים של מקורות תוכנה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:73
+msgid "Authentication is required to change software source parameters"
+msgstr "אימות נדרש כדי לשנות פרמטרים של מקורות תוכנה"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:78
+msgid "Refresh system sources"
+msgstr "רענן את מקודות המערכת"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+msgid "Authentication is required to refresh the system sources"
+msgstr "אימות נדרש כדי לרענן את מקורות המערכת"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:84
+msgid "Set network proxy"
+msgstr "הגדר שרת proxy"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:85
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr "אימות נדרש כדי להגדיר את שרת הproxy המשמש להורדת החבילות"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:92
+msgid "Change location that packages are installed"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:93
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:101
+msgid "Reload a device"
+msgstr "טען התקן מחדש"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "אימות נדרש כדי לטעון מחדש התקן עם מנהל התקן חדש"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+#: ../policy/org.freedesktop.packagekit.policy.in.h:108
 msgid "Upgrade System"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+msgid "Repair System"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:116
+msgid "Authentication is required to repair the installed software"
 msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
@@ -2050,24 +2059,22 @@ msgid "Failed to load any of the specified backends:"
 msgstr ""
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2696
+#: ../src/pk-transaction.c:2972
 msgid "The software is not from a trusted source."
 msgstr "התוכנה הזאת לא הגיעה ממקור מהימן"
 
-#: ../src/pk-transaction.c:2704
+#: ../src/pk-transaction.c:2980
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "אל תעדכן את החבילה הזאת אלא אם אתה בטוח שזה בטוח לעשות זאת"
 
-#: ../src/pk-transaction.c:2705
+#: ../src/pk-transaction.c:2981
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "אל תעדכן את החבילות האלו אלא אם אתה בטוח שזה בטוח לעשות זאת"
 
-#: ../src/pk-transaction.c:2715
+#: ../src/pk-transaction.c:2991
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "אל תתתקין את החבילה הזאת אלא אם אתה בטוח שזה בטוח לעשות זאת"
 
-#: ../src/pk-transaction.c:2716
+#: ../src/pk-transaction.c:2992
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "אל תתתקין את החבילות הזאת האלו אלא אם אתה בטוח שזה בטוח לעשות זאת"
-
-

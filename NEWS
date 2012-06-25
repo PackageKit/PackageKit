@@ -1,3 +1,153 @@
+Version 0.8.1
+~~~~~~~~~~~~~
+Released: 2012-06-25
+
+Notes:
+ - We've broken a lot of API in this release. A LOT. If you're using the
+   systemd D-Bus interface of PackageKit, then it's likely you'll have
+   to spend a few minutes converting to the new interfaces.
+   If you use the packagekit-glib or packagekit-qt bindings they'll
+   be the odd change too, but nothing quite as drastic.
+ - Both the client libraries broke ABI, so there's a soname bump.
+ - Needless to say, it's probably not a good idea to push all this new
+   and broken code into your super-stable paid-for-support distro.
+ - If anyone has questions about porting, grab one of us developers on
+   the PackageKit mailing list.
+
+Libraries:
+ - qt: Fix updatePackages() and Package() creating to keep store the summary (Daniel Nicoletti)
+ - qt: Globaly opening the sqlite desktop db is also usefull (Daniel Nicoletti)
+ - qt: Make the returned role match to our bitwise enum (Daniel Nicoletti)
+ - qt: Split Package class in three and update API to match current (Daniel Nicoletti)
+ - qt: Turns out global setHints is quite usefull (Daniel Nicoletti)
+ - qt: update it to use QDBusObjectPath (Daniel Nicoletti)
+ - qt: Update to the new API (Daniel Nicoletti)
+ - qt: Use QStringList for mimetypes and uit for canAuthorize, also drop utils and bitfield classes (Daniel Nicoletti)
+ - glib: Add a PkItemProgress helper object to remove the workaround in PkProgress (Richard Hughes)
+ - glib: Make the 'update-vendor-urls' property have a proper char** type (Richard Hughes)
+ - glib: Make the updates and obsoletes items in Transaction::UpdateDetail actual arrays (Richard Hughes)
+ - glib: Make the URL items in Transaction::UpdateDetail actual arrays (Richard Hughes)
+
+Backends:
+ - alpm: Do not return a value from the thread functions (Richard Hughes)
+ - aptcc: Add suport for PREPARE flag (Daniel Nicoletti)
+ - aptcc: Add support to DownloadSizeRemaining (Daniel Nicoletti)
+ - aptcc: Do not return a value from the thread functions (Richard Hughes)
+ - aptcc: do the porting to the flags bitfield (Daniel Nicoletti)
+ - aptcc: Ported to the new emitItemProgress() signal (Daniel Nicoletti)
+ - apt: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - box: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - box: Do not return a value from the thread functions (Richard Hughes)
+ - conary: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - dummy: Do not use the deprecated pk_backend_set_sub_percentage() (Richard Hughes)
+ - dummy: don't emit an extra backend message, it breaks the self tests (Richard Hughes)
+ - dummy: Only show action enums when simulating (Richard Hughes)
+ - dummy: Port to the new PkTransactionFlags API (Richard Hughes)
+ - entropy: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - opkg: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - opkg: Do not return a value from the thread functions (Richard Hughes)
+ - pisi: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - poldek: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - poldek: Do not return a value from the thread functions (Richard Hughes)
+ - portage: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - ports: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - slapt: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - smart: Fix crasher with the get-packages method (Anders F Bjorklund)
+ - smart: port to 0.8.x (Anders F Bjorklund)
+ - test: Convert to the modified thread helper API (Richard Hughes)
+ - test: Do not return TRUE from the thread functions (Richard Hughes)
+ - test: Port to the new PkTransactionFlags API (Richard Hughes)
+ - urpmi: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - yum: Do not try to set the transaction sub-percentage anymore (Richard Hughes)
+ - yum: Port to the new PkTransactionFlags API (Richard Hughes)
+ - yum: Use job_start() and job_stop() to set the media repo options (Richard Hughes)
+ - zif: add suport for PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD (Richard Hughes)
+ - zif: Add the custom ZifLock error domain and codes (Richard Hughes)
+ - zif: call pk_backend_set_locked() when locked and show a message on the console (Richard Hughes)
+ - zif: Convert to the modified thread helper API (Richard Hughes)
+ - zif: Do not return TRUE from the thread functions (Richard Hughes)
+ - zif: Do not use deprecated libzif API (Richard Hughes)
+ - zif: Do not use the deprecated pk_backend_set_sub_percentage() (Richard Hughes)
+ - zif: Only emit a Package() when the package_id hint is valid (Richard Hughes)
+ - zif: Port to the new pk_backend_update_detail() API (Richard Hughes)
+ - zif: Port to the new PkTransactionFlags API (Richard Hughes)
+ - zif: Raise the required version of libzif to remove a ton of #ifdef's (Richard Hughes)
+ - zif: Use job_start() and job_stop() to set the media repo options (Richard Hughes)
+ - zif: Use the default root set in Zif.conf (Richard Hughes)
+ - zypp: Disable the backend until support for simulate and only-download are added (Richard Hughes)
+ - zypp: Do not return a value from the thread functions (Richard Hughes)
+ - zypp: Fix calculation of package size with recent versions of libzypp (Max Lin)
+
+New Features:
+ - Add a dummy GTK+2 module to avoid a warning when starting GTK+2 applications (Richard Hughes)
+ - Add an optional binary to update the system when offline (Richard Hughes)
+ - Add an optional pkexec binary to create the system-update symlink (Richard Hughes)
+ - Add a --only-download option to pkcon for testing (Richard Hughes)
+ - Added Transaction property DownloadSizeRemaining, so backends can tell how much download is left to do (Daniel Nicoletti)
+ - Add logind support which is enabled by default (Richard Hughes)
+ - Add method to check if an exclusive transaction is running (Matthias Klumpp)
+ - Add pkexec executable pk-clear-offline-update to be able to clear the offline-update message (Richard Hughes)
+ - Allow backends to declare when they've locked the database (Matthias Klumpp)
+ - Handle LOCK_REQUIRED signal in transactions & allow transaction reset (Matthias Klumpp)
+
+Notable API Breaks:
+ - Add a PkBitfield of the transaction_flags for Transacton.RemovePackages to allow simulate (Richard Hughes)
+ - Add a PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD option for all transactions (Richard Hughes)
+ - Allow a user_data parameter to be passed to the backend thread functions (Richard Hughes)
+ - Convert the Daemon.MimeTypes property into an array (Richard Hughes)
+ - Do not return a boolean from the backend thread functions (Richard Hughes)
+ - Make the result parameter of CanAuthorize an enumerated value (Richard Hughes)
+ - Make the transaction ID in Transaction::Transaction() a DBus object path, not a string (Richard Hughes)
+ - Make Transaction::Files return an array of strings (Richard Hughes)
+ - Make transactions in Daemon::GetTransactionList() a DBus object path array, not a string array (Richard Hughes)
+ - Remove Daemon.SetRoot(), nothing uses it (Richard Hughes)
+ - Remove Message(UntrustedPackage) as it's no longer used and deprecated (Richard Hughes)
+ - Remove support for the deprecated Transaction.Subpercentage property (Richard Hughes)
+ - Remove support for the table-of-vfuncs backend compatibility mode (Richard Hughes)
+ - Remove the only_trusted flag and Simulate* methods in favour of using transaction flags (Richard Hughes)
+ - Remove the Transaction.Rollback method, nothing uses it (Richard Hughes)
+ - Rename GetTid() to CreateTransaction() and make it return an object path (Richard Hughes)
+ - Use an enumerated value for the base.NetworkState property (Richard Hughes)
+ - Use a PkBitfield for the base.Filters property (Richard Hughes)
+ - Use a PkBitfield for the base.Groups property (Richard Hughes)
+ - Use a PkBitfield for the base.Roles property (Richard Hughes)
+ - Use a uint64 bitfield for the filter argument in methods (Richard Hughes)
+ - Use enumerated values for the code field in ::ErrorCode() (Richard Hughes)
+ - Use enumerated values for the exit field in ::Finished() (Richard Hughes)
+ - Use enumerated values for the group field in ::Details() (Richard Hughes)
+ - Use enumerated values for the info field in ::Package() (Richard Hughes)
+ - Use enumerated values for the media-code field in ::MediaChangeRequired() (Richard Hughes)
+ - Use enumerated values for the restart field in ::RequireRestart() (Richard Hughes)
+ - Use enumerated values for the restart field in ::UpdateDetail() (Richard Hughes)
+ - Use enumerated values for the role field in ::Transaction() (Richard Hughes)
+ - Use enumerated values for the sig_type argument in ::InstallSignature() (Richard Hughes)
+ - Use enumerated values for the state field in ::UpdateDetail() (Richard Hughes)
+ - Use enumerated values for the Transaction.Role property (Richard Hughes)
+ - Use enumerated values for the Transaction.Status property (Richard Hughes)
+ - Use enumerated values for the type argument in ::WhatProvides() (Richard Hughes)
+ - Use enumerated values for the type field in ::Message() (Richard Hughes)
+ - Use enumerated values for the type field in ::RepoSignatureRequired() (Richard Hughes)
+ - Use enumerated values for the upgrade_kind argument in Transaction.UpgradeSystem() (Richard Hughes)
+
+Bugfixes:
+ - Add the pkg to the PkPackageSack hash when using pk_package_sack_add_package_by_id() (Richard Hughes)
+ - Allow using package-cache and cached list independently (Matthias Klumpp)
+ - Always call the backend vfuncs that call into the daemon in the main thread (Richard Hughes)
+ - cache-plugin: Add functionality of the update-package list plugin & remove it (Matthias Klumpp)
+ - Change the role parameter of GetTimeSinceAction() to an enumerated value (Richard Hughes)
+ - Convert the python spawned backend helper to PkTransactionFlags (Richard Hughes)
+ - Convert various backend signals to vfunc (Matthias Klumpp)
+ - Do not set the name and load the backend in two seporate steps (Richard Hughes)
+ - Drop the unused polkit-backend-1 check from configure as it's gone upstream (Richard Hughes)
+ - Fix a crash where NetworkManager is restarted whilst packagekitd is running (Richard Hughes)
+ - Fix undefined reference to 'g_bus_get_sync' adding GIO library to linker (Alejandro Leiva)
+ - Implement get_active_transactions to get all running transactions (Matthias Klumpp)
+ - Make PkBackend a non-singleton and load new instances when required (Richard Hughes)
+ - Pause the plymouth progress when applying offline updates (Richard Hughes)
+ - plugin-cache: Limit package cache to GUI packages only (Matthias Klumpp)
+ - plugin-cache: Only use on setting to enable/disable plugin (Matthias Klumpp)
+ - Restore the backend signals to a known state in case a plugin misbehaves (Richard Hughes)
+
 Version 0.7.4
 ~~~~~~~~~~~~~
 Released: 2012-04-24
