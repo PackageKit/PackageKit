@@ -68,6 +68,10 @@ void pk_backend_initialize(PkBackend *backend)
     // Disable apt-listbugs as it freezes PK
     setenv("APT_LISTBUGS_FRONTEND", "none", 1);
 
+    // Set apt-listchanges frontend to "debconf" to make it's output visible
+    // (without using the debconf frontend, PK will freeze)
+    setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
+
     spawn = pk_backend_spawn_new();
     pk_backend_spawn_set_name(spawn, "aptcc");
 }
