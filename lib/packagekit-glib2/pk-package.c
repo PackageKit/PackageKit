@@ -59,9 +59,9 @@ struct _PkPackagePrivate
 	guint64			 size;
 	gchar			*update_updates;
 	gchar			*update_obsoletes;
-	gchar			*update_vendor_url;
-	gchar			*update_bugzilla_url;
-	gchar			*update_cve_url;
+	gchar			**update_vendor_urls;
+	gchar			**update_bugzilla_urls;
+	gchar			**update_cve_urls;
 	PkRestartEnum		 update_restart;
 	gchar			*update_text;
 	gchar			*update_changelog;
@@ -87,9 +87,9 @@ enum {
 	PROP_SIZE,
 	PROP_UPDATE_UPDATES,
 	PROP_UPDATE_OBSOLETES,
-	PROP_UPDATE_VENDOR_URL,
-	PROP_UPDATE_BUGZILLA_URL,
-	PROP_UPDATE_CVE_URL,
+	PROP_UPDATE_VENDOR_URLS,
+	PROP_UPDATE_BUGZILLA_URLS,
+	PROP_UPDATE_CVE_URLS,
 	PROP_UPDATE_RESTART,
 	PROP_UPDATE_UPDATE_TEXT,
 	PROP_UPDATE_CHANGELOG,
@@ -377,14 +377,14 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_UPDATE_OBSOLETES:
 		g_value_set_string (value, priv->update_obsoletes);
 		break;
-	case PROP_UPDATE_VENDOR_URL:
-		g_value_set_string (value, priv->update_vendor_url);
+	case PROP_UPDATE_VENDOR_URLS:
+		g_value_set_boxed (value, priv->update_vendor_urls);
 		break;
-	case PROP_UPDATE_BUGZILLA_URL:
-		g_value_set_string (value, priv->update_bugzilla_url);
+	case PROP_UPDATE_BUGZILLA_URLS:
+		g_value_set_boxed (value, priv->update_bugzilla_urls);
 		break;
-	case PROP_UPDATE_CVE_URL:
-		g_value_set_string (value, priv->update_cve_url);
+	case PROP_UPDATE_CVE_URLS:
+		g_value_set_boxed (value, priv->update_cve_urls);
 		break;
 	case PROP_UPDATE_RESTART:
 		g_value_set_uint (value, priv->update_restart);
@@ -453,17 +453,17 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		g_free (priv->update_obsoletes);
 		priv->update_obsoletes = g_strdup (g_value_get_string (value));
 		break;
-	case PROP_UPDATE_VENDOR_URL:
-		g_free (priv->update_vendor_url);
-		priv->update_vendor_url = g_strdup (g_value_get_string (value));
+	case PROP_UPDATE_VENDOR_URLS:
+		g_strfreev (priv->update_vendor_urls);
+		priv->update_vendor_urls = g_strdupv (g_value_get_boxed (value));
 		break;
-	case PROP_UPDATE_BUGZILLA_URL:
-		g_free (priv->update_bugzilla_url);
-		priv->update_bugzilla_url = g_strdup (g_value_get_string (value));
+	case PROP_UPDATE_BUGZILLA_URLS:
+		g_strfreev (priv->update_bugzilla_urls);
+		priv->update_bugzilla_urls = g_strdupv (g_value_get_boxed (value));
 		break;
-	case PROP_UPDATE_CVE_URL:
-		g_free (priv->update_cve_url);
-		priv->update_cve_url = g_strdup (g_value_get_string (value));
+	case PROP_UPDATE_CVE_URLS:
+		g_strfreev (priv->update_cve_urls);
+		priv->update_cve_urls = g_strdupv (g_value_get_boxed (value));
 		break;
 	case PROP_UPDATE_RESTART:
 		priv->update_restart = g_value_get_uint (value);
@@ -617,37 +617,37 @@ pk_package_class_init (PkPackageClass *klass)
 	g_object_class_install_property (object_class, PROP_UPDATE_OBSOLETES, pspec);
 
 	/**
-	 * PkPackage:update-vendor-url:
+	 * PkPackage:update-vendor-urls:
 	 *
-	 * Since: 0.5.4
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("update-vendor-url", NULL,
-				     "The update vendor URL",
-				     NULL,
-				     G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_UPDATE_VENDOR_URL, pspec);
+	pspec = g_param_spec_boxed ("update-vendor-urls", NULL,
+				    "The update vendor URLs",
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_VENDOR_URLS, pspec);
 
 	/**
-	 * PkPackage:update-bugzilla-url:
+	 * PkPackage:update-bugzilla-urls:
 	 *
-	 * Since: 0.5.4
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("update-bugzilla-url", NULL,
-				     "The update bugzilla URL",
-				     NULL,
-				     G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_UPDATE_BUGZILLA_URL, pspec);
+	pspec = g_param_spec_boxed ("update-bugzilla-urls", NULL,
+				    "The update bugzilla URLs",
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_BUGZILLA_URLS, pspec);
 
 	/**
-	 * PkPackage:update-cve-url:
+	 * PkPackage:update-cve-urls:
 	 *
-	 * Since: 0.5.4
+	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("update-cve-url", NULL,
-				     "The update CVE URL",
-				     NULL,
-				     G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_UPDATE_CVE_URL, pspec);
+	pspec = g_param_spec_boxed ("update-cve-urls", NULL,
+				    "The update CVE URLs",
+				    G_TYPE_STRV,
+				    G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_CVE_URLS, pspec);
 
 	/**
 	 * PkPackage:update-restart:
@@ -758,9 +758,9 @@ pk_package_finalize (GObject *object)
 	g_free (priv->url);
 	g_free (priv->update_updates);
 	g_free (priv->update_obsoletes);
-	g_free (priv->update_vendor_url);
-	g_free (priv->update_bugzilla_url);
-	g_free (priv->update_cve_url);
+	g_strfreev (priv->update_vendor_urls);
+	g_strfreev (priv->update_bugzilla_urls);
+	g_strfreev (priv->update_cve_urls);
 	g_free (priv->update_text);
 	g_free (priv->update_changelog);
 	g_free (priv->update_issued);

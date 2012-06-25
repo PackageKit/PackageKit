@@ -1452,6 +1452,7 @@ pk_test_package_sack_func (void)
 	PkPackageSack *sack;
 	PkPackage *package;
 	gchar *text;
+	gchar **strv;
 	guint size;
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 	guint64 bytes;
@@ -1529,11 +1530,12 @@ pk_test_package_sack_func (void)
 
 	/* check new vendor url */
 	g_object_get (package,
-		      "update-vendor-url", &text,
+		      "update-vendor-urls", &strv,
 		      NULL);
-	g_assert_cmpstr (text, ==, "http://www.distro-update.org/page?moo;Bugfix release for powertop");
+	g_assert (strv != NULL);
+	g_assert_cmpstr (strv[0], ==, "http://www.distro-update.org/page?moo");
+	g_strfreev (strv);
 
-	g_free (text);
 	g_object_unref (package);
 
 	/* chck size in bytes */

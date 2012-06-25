@@ -988,9 +988,9 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	gchar *package_id;
 	gchar *updates;
 	gchar *obsoletes;
-	gchar *vendor_url;
-	gchar *bugzilla_url;
-	gchar *cve_url;
+	gchar **vendor_urls;
+	gchar **bugzilla_urls;
+	gchar **cve_urls;
 	PkRestartEnum restart;
 	gchar *update_text;
 	gchar *changelog;
@@ -1023,9 +1023,9 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      "package-id", &package_id,
 			      "updates", &updates,
 			      "obsoletes", &obsoletes,
-			      "vendor-url", &vendor_url,
-			      "bugzilla-url", &bugzilla_url,
-			      "cve-url", &cve_url,
+			      "vendor-urls", &vendor_urls,
+			      "bugzilla-urls", &bugzilla_urls,
+			      "cve-urls", &cve_urls,
 			      "restart", &restart,
 			      "update-text", &update_text,
 			      "changelog", &changelog,
@@ -1045,9 +1045,9 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 		g_object_set (package,
 			      "update-updates", updates,
 			      "update-obsoletes", obsoletes,
-			      "update-vendor-url", vendor_url,
-			      "update-bugzilla-url", bugzilla_url,
-			      "update-cve-url", cve_url,
+			      "update-vendor-urls", vendor_urls,
+			      "update-bugzilla-urls", bugzilla_urls,
+			      "update-cve-urls", cve_urls,
 			      "update-restart", restart,
 			      "update-text", update_text,
 			      "update-changelog", changelog,
@@ -1060,9 +1060,9 @@ skip:
 		g_free (package_id);
 		g_free (updates);
 		g_free (obsoletes);
-		g_free (vendor_url);
-		g_free (bugzilla_url);
-		g_free (cve_url);
+		g_strfreev (vendor_urls);
+		g_strfreev (bugzilla_urls);
+		g_strfreev (cve_urls);
 		g_free (update_text);
 		g_free (changelog);
 		g_free (issued);
