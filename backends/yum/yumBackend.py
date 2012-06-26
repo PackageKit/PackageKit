@@ -2421,6 +2421,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.percentage(100)
             return
 
+        if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
+            package_list = []
+            for txmbr in self.yumbase.tsInfo:
+                if txmbr.output_state in (TS_UPDATE, TS_INSTALL):
+                    self._show_package(txmbr.po, INFO_DOWNLOADING)
+                    repo = self.yumbase.repos.getRepo(txmbr.po.repoid)
+                    try:
+                        path = repo.getPackage(txmbr.po)
+                    except IOError, e:
+                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
+                        return
+            self.percentage(100)
+            return
+
         try:
             rpmDisplay = PackageKitCallback(self)
             callback = ProcessTransPackageKitCallback(self)
