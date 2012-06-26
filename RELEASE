@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_7_4.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_7_5.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.7.5
+Version 0.7.6
 ~~~~~~~~~~~~~
 Released: 2012-xx-xx
 
@@ -20,19 +20,12 @@ New Features:
 Bugfixes:
 --------------------------------------------------------------------------------
 
-2. Add download date to docs/html/pk-download.html, save file.
-
-2.5. Update translations and commit them with sign-off:
-
-tx pull --all
-git add po/*.po
-
 3. Update library version if new ABI or API in configure.ac
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.7.5"
-git tag -s -f -m "Release 0.7.5" PACKAGEKIT_0_7_5
+git commit -a -m "Release version 0.7.6"
+git tag -s -f -m "Release 0.7.6" PACKAGEKIT_0_7_6
 <gpg password>
 git push --tags
 git push
@@ -51,14 +44,11 @@ scp *.tar.* packagekit.org:/srv/www/html/releases/
 
 git commit -a -m "trivial: post release version bump"
 git push
-tx push --source
-
-9. Upload new html sources
 
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 0.7.5 released!
+PackageKit 0.7.6 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
