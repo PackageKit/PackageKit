@@ -1787,7 +1787,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
                     self._show_package(pkg, INFO_UNTRUSTED)
                 try:
-                    self._runYumTransaction(allow_skip_broken=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                    self._runYumTransaction(transaction_flags, allow_skip_broken=True)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -2020,7 +2020,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     return
                 self._show_package(pkg, INFO_UNTRUSTED)
             try:
-                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                self._runYumTransaction(transaction_flags)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
@@ -2203,7 +2203,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 return
 
             try:
-                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                self._runYumTransaction(transaction_flags)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
                 return
@@ -2231,7 +2231,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if not self.yumbase.tsInfo.pkgSack:
                                 self.yumbase.tsInfo.pkgSack = MetaSack()
                             try:
-                                self._runYumTransaction(only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                                self._runYumTransaction(transaction_flags)
                             except PkError, e:
                                 self.error(e.code, e.details, exit=False)
                                 return
@@ -2344,7 +2344,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
                     self._show_package(pkg, INFO_UNTRUSTED)
                 try:
-                    self._runYumTransaction(allow_skip_broken=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                    self._runYumTransaction(transaction_flags, allow_skip_broken=True)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -2361,7 +2361,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
 
-    def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False, only_simulate=False):
+    def _runYumTransaction(self, transaction_flags, allow_remove_deps=None, allow_skip_broken=False):
         '''
         Run the yum Transaction
         This will only work with yum 3.2.4 or higher
@@ -2409,7 +2409,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_TRANSACTION_ERROR, message)
 
         # abort now we have the package list
-        if only_simulate:
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             package_list = []
             for txmbr in self.yumbase.tsInfo:
                 if txmbr.output_state in TransactionsInfoMap.keys():
@@ -2529,9 +2529,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         return
             try:
                 if not allowdep:
-                    self._runYumTransaction(allow_remove_deps=False, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                    self._runYumTransaction(transaction_flags, allow_remove_deps=False)
                 else:
-                    self._runYumTransaction(allow_remove_deps=True, only_simulate=TRANSACTION_FLAG_SIMULATE in transaction_flags)
+                    self._runYumTransaction(transaction_flags, allow_remove_deps=True)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
