@@ -35,7 +35,7 @@ AC_SUBST(PK_MINOR_VERSION)
 AC_SUBST(PK_MICRO_VERSION)
 AC_SUBST(PK_VERSION)
 
-# libtool versioning - this applies to libpackagekit
+# libtool versioning - this applies to libpackagekit-glib2
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
 #
@@ -53,7 +53,7 @@ AC_SUBST(PK_VERSION)
 #   fixed, change:
 #      REVISION += 1
 LT_CURRENT=14
-LT_REVISION=13
+LT_REVISION=14
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)

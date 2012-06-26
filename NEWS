@@ -1,3 +1,39 @@
+Version 0.7.5
+~~~~~~~~~~~~~
+Released: 2012-06-26
+
+Notes:
+ - Lots of nice bugfixes, and a very good idea for stable distros that
+   are already shipping PackageKit 0.7.x
+
+Libraries:
+ - glib: Allow adding packages to PkPackageSack from package-list files (Matthias Klumpp)
+ - glib: More GIR annotations (Matthias Klumpp)
+ - glib: Use the correct user-cache directory (Richard Hughes)
+
+Backends:
+ - apt: Allow spaces in what-provides modalias queries (Martin Pitt)
+ - apt: Update what-provides MODALIAS to documented syntax (Martin Pitt)
+ - aptcc: Don't freeze if apt-listchanges is installed (Matthias Klumpp)
+ - aptcc: Make get-distro-upgrades.py helper work with Python3 (Sebastian Heinlein)
+ - aptcc: save the changelog to a random directory (Daniel Nicoletti)
+ - yum: Add support for the 'application' filter (Richard Hughes)
+ - yum: Disable async parallel downloading to prevent a hard to debug infinate loop (Richard Hughes)
+ - yum: don't perceive all updates as untrusted (Nils Philippsen)
+ - zif: Add support for the 'application' filter (Richard Hughes)
+
+New Features:
+ - Add a dummy GTK+2 module to avoid a warning when starting GTK+2 applications (Richard Hughes)
+
+Bugfixes:
+ - Add the pkg to the PkPackageSack hash when using pk_package_sack_add_package_by_id() (Richard Hughes)
+ - Automatically set the Locked property true if allow cancel is set to false (Richard Hughes)
+ - Clarify message for org.freedesktop.packagekit.package-install (Nils Philippsen)
+ - Document HARDWARE_DRIVER (Martin Pitt)
+ - Document MODALIAS (Martin Pitt)
+ - Don't show a warning on refresh if /var/run/PackageKit/udev does not exist (Richard Hughes)
+ - Fix importing GPG signatures (Richard Hughes)
+
 Version 0.7.4
 ~~~~~~~~~~~~~
 Released: 2012-04-24
