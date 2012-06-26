@@ -3173,6 +3173,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # default to 100% unless method overrides
         self.yumbase.conf.throttle = "90%"
 
+        # do not use parallel downloading
+        self.yumbase.conf.async = False
+
     def _setup_yum(self):
         try:
             # setup Yum Config
