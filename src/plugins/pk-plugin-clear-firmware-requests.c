@@ -51,6 +51,8 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* clear the firmware requests directory */
 	filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
+	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+		goto out;
 	g_debug ("clearing udev firmware requests at %s", filename);
 	ret = pk_directory_remove_contents (filename);
 	if (!ret)
