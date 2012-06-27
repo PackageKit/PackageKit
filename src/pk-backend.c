@@ -1109,6 +1109,8 @@ pk_backend_set_item_progress (PkBackend *backend,
 			      const gchar *package_id,
 			      guint percentage)
 {
+	PkItemProgress *item;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->loaded, FALSE);
 
@@ -1125,9 +1127,15 @@ pk_backend_set_item_progress (PkBackend *backend,
 	}
 
 	/* emit */
+	item = pk_item_progress_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "percentage", percentage,
+		      NULL);
 	pk_backend_call_vfunc (backend,
 			       PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-			       (gpointer) package_id); //FIXME
+			       item);
+	g_object_unref (item);
 	return TRUE;
 }
 
