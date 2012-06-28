@@ -266,6 +266,10 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 {
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
+	/* ignore unknown as we don't want to replace a valid value */
+	if (role == PK_ROLE_ENUM_UNKNOWN)
+		return FALSE;
+
 	/* the same as before? */
 	if (progress->priv->role == role)
 		return FALSE;
