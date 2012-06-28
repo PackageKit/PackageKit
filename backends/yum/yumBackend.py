@@ -3377,6 +3377,7 @@ class PackageKitCallback(RPMBaseCallback):
         # do percentage
         if ts_total > 0:
             div = (100 - pct_start) / ts_total
+            val = (te_current*100L)/te_total
             pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
             self.base.percentage(pct)
 
