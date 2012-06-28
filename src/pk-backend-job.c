@@ -857,7 +857,7 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: item-percentage %i", percentage);
+		g_warning ("already set error, cannot process: item-progress %i", percentage);
 		return;
 	}
 
