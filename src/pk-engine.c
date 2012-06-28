@@ -1017,8 +1017,6 @@ static void
 pk_engine_plugin_free (PkPlugin *plugin)
 {
 	g_free (plugin->priv);
-	if (plugin->backend != NULL)
-		g_object_unref (plugin->backend);
 	g_module_close (plugin->module);
 	g_free (plugin);
 }

@@ -65,7 +65,7 @@ pk_plugin_destroy (PkPlugin *plugin)
  * pk_plugin_finished_cb:
  **/
 static void
-pk_plugin_finished_cb (PkBackend *backend,
+pk_plugin_finished_cb (PkBackendJob *job,
 		       PkExitEnum exit_enum,
 		       PkPlugin *plugin)
 {
@@ -78,7 +78,7 @@ pk_plugin_finished_cb (PkBackend *backend,
  * pk_plugin_files_cb:
  **/
 static void
-pk_plugin_files_cb (PkBackend *backend,
+pk_plugin_files_cb (PkBackendJob *job,
 		    PkFiles *files,
 		    PkPlugin *plugin)
 {
@@ -116,7 +116,7 @@ pk_plugin_files_cb (PkBackend *backend,
 		/* send signal about session restart */
 		g_debug ("package %s updated, and %s is running",
 			 package_id, filenames[i]);
-		pk_backend_require_restart (backend,
+		pk_backend_job_require_restart (job,
 					    PK_RESTART_ENUM_SESSION,
 					    package_id);
 	}
@@ -160,13 +160,13 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	pk_backend_set_vfunc (plugin->backend,
+	pk_backend_job_set_vfunc (plugin->job,
 			      PK_BACKEND_SIGNAL_FINISHED,
-			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      (PkBackendJobVFunc) pk_plugin_finished_cb,
 			      plugin);
-	pk_backend_set_vfunc (plugin->backend,
+	pk_backend_job_set_vfunc (plugin->job,
 			      PK_BACKEND_SIGNAL_FILES,
-			      (PkBackendVFunc) pk_plugin_files_cb,
+			      (PkBackendJobVFunc) pk_plugin_files_cb,
 			      plugin);
 
 	/* get results */
@@ -197,16 +197,16 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	pk_proc_refresh (plugin->priv->proc);
 
 	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (plugin->backend);
-	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
-	pk_backend_set_percentage (plugin->backend, 101);
+	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_status (plugin->job, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
+	pk_backend_job_set_percentage (plugin->job, 101);
 	package_ids = pk_ptr_array_to_strv (list);
-	pk_backend_get_files (plugin->backend, package_ids);
+	pk_backend_get_files (plugin->backend, plugin->job, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
 
-	pk_backend_set_percentage (plugin->backend, 100);
+	pk_backend_job_set_percentage (plugin->job, 100);
 
 out:
 	g_strfreev (package_ids);

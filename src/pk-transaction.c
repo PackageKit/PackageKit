@@ -98,6 +98,7 @@ struct PkTransactionPrivate
 	guint			 uid;
 	guint			 watch_id;
 	PkBackend		*backend;
+	PkBackendJob		*job;
 	PkCache			*cache;
 	PkConf			*conf;
 	PkNotify		*notify;
@@ -254,7 +255,7 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
 	g_return_val_if_fail (transaction->priv->tid != NULL, 0);
-	return pk_backend_get_runtime (transaction->priv->backend);
+	return pk_backend_job_get_runtime (transaction->priv->job);
 }
 
 /**
@@ -460,7 +461,7 @@ pk_transaction_error_code_emit (PkTransaction *transaction,
  * pk_transaction_allow_cancel_cb:
  **/
 static void
-pk_transaction_allow_cancel_cb (PkBackend *backend,
+pk_transaction_allow_cancel_cb (PkBackendJob *job,
 				gboolean allow_cancel,
 				PkTransaction *transaction)
 {
@@ -471,11 +472,12 @@ pk_transaction_allow_cancel_cb (PkBackend *backend,
 	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
 }
 
+#if 0
 /**
  * pk_transaction_locked_changed_cb:
  **/
 static void
-pk_transaction_locked_changed_cb (PkBackend *backend,
+pk_transaction_locked_changed_cb (PkBackendJob *job,
 				gboolean locked,
 				PkTransaction *transaction)
 {
@@ -488,12 +490,13 @@ pk_transaction_locked_changed_cb (PkBackend *backend,
 		transaction->priv->exclusive = TRUE;
 	}
 }
+#endif
 
 /**
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend,
+pk_transaction_details_cb (PkBackendJob *job,
 			   PkDetails *item,
 			   PkTransaction *transaction)
 {
@@ -546,7 +549,7 @@ pk_transaction_details_cb (PkBackend *backend,
  * pk_transaction_error_code_cb:
  **/
 static void
-pk_transaction_error_code_cb (PkBackend *backend,
+pk_transaction_error_code_cb (PkBackendJob *job,
 			      PkError *item,
 			      PkTransaction *transaction)
 {
@@ -563,7 +566,7 @@ pk_transaction_error_code_cb (PkBackend *backend,
 		      NULL);
 
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
-		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+		pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "%s emitted 'unknown error' rather than a specific error "
 				    "- this is a backend problem and should be fixed!", pk_role_enum_to_string (transaction->priv->role));
 	}
@@ -587,7 +590,7 @@ pk_transaction_error_code_cb (PkBackend *backend,
  * pk_transaction_files_cb:
  **/
 static void
-pk_transaction_files_cb (PkBackend *backend,
+pk_transaction_files_cb (PkBackendJob *job,
 			 PkFiles *item,
 			 PkTransaction *transaction)
 {
@@ -609,7 +612,7 @@ pk_transaction_files_cb (PkBackend *backend,
 	    transaction->priv->cached_directory != NULL) {
 		for (i=0; files[i] != NULL; i++) {
 			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
-				pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+				pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
 						    "%s does not have the correct prefix (%s)",
 						    files[i], transaction->priv->cached_directory);
 			}
@@ -638,7 +641,7 @@ pk_transaction_files_cb (PkBackend *backend,
  * pk_transaction_category_cb:
  **/
 static void
-pk_transaction_category_cb (PkBackend *backend,
+pk_transaction_category_cb (PkBackendJob *job,
 			    PkCategory *item,
 			    PkTransaction *transaction)
 {
@@ -688,7 +691,7 @@ pk_transaction_category_cb (PkBackend *backend,
  * pk_transaction_item_progress_cb:
  **/
 static void
-pk_transaction_item_progress_cb (PkBackend *backend,
+pk_transaction_item_progress_cb (PkBackendJob *job,
 				 PkItemProgress *item_progress,
 				 PkTransaction *transaction)
 {
@@ -714,7 +717,7 @@ pk_transaction_item_progress_cb (PkBackend *backend,
  * pk_transaction_distro_upgrade_cb:
  **/
 static void
-pk_transaction_distro_upgrade_cb (PkBackend *backend,
+pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 				  PkDistroUpgrade *item,
 				  PkTransaction *transaction)
 {
@@ -895,6 +898,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	gboolean ran_one = FALSE;
 	gboolean ret;
 	guint i;
+	PkBackendJob *job;
 	PkBitfield backend_signals = PK_BACKEND_SIGNAL_LAST;
 	PkPlugin *plugin;
 	PkPluginTransactionFunc plugin_func = NULL;
@@ -909,7 +913,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
-		function = "pk_plugin_transaction_started";
+		function = "pk_plugin_transaction_start";
 		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
@@ -954,14 +958,23 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
-		pk_transaction_set_signals (transaction, backend_signals);
+		job = pk_backend_job_new ();
+		pk_backend_start_job (transaction->priv->backend, job);
+		pk_transaction_set_signals (transaction, job, backend_signals);
+		plugin->job = job;
 		plugin->backend = transaction->priv->backend;
 		plugin_func (plugin, transaction);
+		pk_backend_stop_job (transaction->priv->backend, job);
+		plugin->job = NULL;
 		plugin->backend = NULL;
 	}
 out:
 	/* set this to a know state in case the plugin misbehaves */
-	pk_transaction_set_signals (transaction, backend_signals);
+	if (transaction->priv->job != NULL) {
+		pk_transaction_set_signals (transaction,
+					    transaction->priv->job,
+					    backend_signals);
+	}
 	if (!ran_one)
 		g_debug ("no plugins provided %s", function);
 }
@@ -1016,22 +1029,12 @@ pk_transaction_set_backend (PkTransaction *transaction,
 			    PkBackend *backend)
 {
 	/* save a reference */
-	if (transaction->priv->signal_locked_changed != 0) {
-		g_signal_handler_disconnect (transaction->priv->backend,
-					     transaction->priv->signal_locked_changed);
-	}
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
 	transaction->priv->backend = g_object_ref (backend);
 
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
-
-	/* connect backend locked-changed signal */
-	transaction->priv->signal_locked_changed =
-		g_signal_connect (transaction->priv->backend, "locked-changed",
-				  G_CALLBACK (pk_transaction_locked_changed_cb),
-				  transaction);
 }
 
 /**
@@ -1122,7 +1125,7 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
  * pk_transaction_finished_cb:
  **/
 static void
-pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransaction *transaction)
+pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransaction *transaction)
 {
 	guint time_ms;
 	gchar *packages;
@@ -1241,6 +1244,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
 			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_string (exit_enum), time_ms);
 
+	/* destroy the job */
+	pk_backend_stop_job (transaction->priv->backend, transaction->priv->job);
+	g_object_unref (transaction->priv->job);
+	transaction->priv->job = NULL;
+
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
 }
@@ -1324,7 +1332,7 @@ pk_transaction_package_cb (PkBackend *backend,
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_message (transaction->priv->backend,
+			pk_backend_job_message (transaction->priv->job,
 					    PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action", role_text);
@@ -1336,7 +1344,7 @@ pk_transaction_package_cb (PkBackend *backend,
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+			pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was installed when "
 					    "the ~installed filter is in place", role_text);
 			return;
@@ -1345,7 +1353,7 @@ pk_transaction_package_cb (PkBackend *backend,
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
 		if (info == PK_INFO_ENUM_AVAILABLE) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+			pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was ~installed when "
 					    "the installed filter is in place", role_text);
 			return;
@@ -1657,7 +1665,7 @@ pk_transaction_require_restart_cb (PkBackend *backend,
  * pk_transaction_status_changed_cb:
  **/
 static void
-pk_transaction_status_changed_cb (PkBackend *backend,
+pk_transaction_status_changed_cb (PkBackendJob *job,
 				  PkStatusEnum status,
 				  PkTransaction *transaction)
 {
@@ -1869,26 +1877,19 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	}
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (priv->backend,
+	pk_backend_job_set_proxy (priv->job,
 				    proxy_http,
 				    proxy_https,
 				    proxy_ftp,
 				    proxy_socks,
 				    no_proxy,
 				    pac);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "failed to set the proxy");
-		goto out;
-	}
-
-	g_debug ("using http_proxy=%s, ftp_proxy=%s, for %i:%s",
-		   proxy_http, proxy_ftp, priv->uid, session);
 
 	/* try to set the new uid and cmdline */
 	cmdline = g_strdup_printf ("PackageKit: %s",
 				   pk_role_enum_to_string (priv->role));
-	pk_backend_set_uid (priv->backend, priv->uid);
-	pk_backend_set_cmdline (priv->backend, cmdline);
+	pk_backend_job_set_uid (priv->job, priv->uid);
+	pk_backend_job_set_cmdline (priv->job, cmdline);
 out:
 	g_free (cmdline);
 	g_free (proxy_http);
@@ -1905,7 +1906,7 @@ out:
  * pk_transaction_speed_cb:
  **/
 static void
-pk_transaction_speed_cb (PkBackend *backend,
+pk_transaction_speed_cb (PkBackendJob *job,
 			 guint speed,
 			 PkTransaction *transaction)
 {
@@ -1921,7 +1922,7 @@ pk_transaction_speed_cb (PkBackend *backend,
  * pk_transaction_speed_cb:
  **/
 static void
-pk_transaction_download_size_remaining_cb (PkBackend *backend,
+pk_transaction_download_size_remaining_cb (PkBackendJob *job,
 					   guint64 download_size_remaining,
 					   PkTransaction *transaction)
 {
@@ -1937,7 +1938,7 @@ pk_transaction_download_size_remaining_cb (PkBackend *backend,
  * pk_transaction_percentage_cb:
  **/
 static void
-pk_transaction_percentage_cb (PkBackend *backend,
+pk_transaction_percentage_cb (PkBackendJob *job,
 			      guint percentage,
 			      PkTransaction *transaction)
 {
@@ -1953,7 +1954,7 @@ pk_transaction_percentage_cb (PkBackend *backend,
  * pk_transaction_remaining_cb:
  **/
 static void
-pk_transaction_remaining_cb (PkBackend *backend,
+pk_transaction_remaining_cb (PkBackendJob *job,
 			     guint remaining_time,
 			     PkTransaction *transaction)
 {
@@ -1973,257 +1974,259 @@ pk_transaction_remaining_cb (PkBackend *backend,
  **/
 void
 pk_transaction_set_signals (PkTransaction *transaction,
+			    PkBackendJob *job,
 			    PkBitfield backend_signals)
 {
-	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-					(PkBackendVFunc) pk_transaction_allow_cancel_cb,
+					(PkBackendJobVFunc) pk_transaction_allow_cancel_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 				      PK_BACKEND_SIGNAL_DETAILS,
-				      (PkBackendVFunc) pk_transaction_details_cb,
+				      (PkBackendJobVFunc) pk_transaction_details_cb,
 				      transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 				      PK_BACKEND_SIGNAL_DETAILS,
 				      NULL,
 				      transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ERROR_CODE)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ERROR_CODE,
-					(PkBackendVFunc) pk_transaction_error_code_cb,
+					(PkBackendJobVFunc) pk_transaction_error_code_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ERROR_CODE,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FILES)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_FILES,
-					(PkBackendVFunc) pk_transaction_files_cb,
+					(PkBackendJobVFunc) pk_transaction_files_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_FILES,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DISTRO_UPGRADE)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
-					(PkBackendVFunc) pk_transaction_distro_upgrade_cb,
+					(PkBackendJobVFunc) pk_transaction_distro_upgrade_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_FINISHED,
-					(PkBackendVFunc) pk_transaction_finished_cb,
+					(PkBackendJobVFunc) pk_transaction_finished_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_FINISHED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_MESSAGE,
-					(PkBackendVFunc) pk_transaction_message_cb,
+					(PkBackendJobVFunc) pk_transaction_message_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_MESSAGE,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_PACKAGE,
-					(PkBackendVFunc) pk_transaction_package_cb,
+					(PkBackendJobVFunc) pk_transaction_package_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_PACKAGE,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-					(PkBackendVFunc) pk_transaction_item_progress_cb,
+					(PkBackendJobVFunc) pk_transaction_item_progress_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PERCENTAGE)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_PERCENTAGE,
-					(PkBackendVFunc) pk_transaction_percentage_cb,
+					(PkBackendJobVFunc) pk_transaction_percentage_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_PERCENTAGE,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REMAINING)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REMAINING,
-					(PkBackendVFunc) pk_transaction_remaining_cb,
+					(PkBackendJobVFunc) pk_transaction_remaining_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REMAINING,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_SPEED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_SPEED,
-					(PkBackendVFunc) pk_transaction_speed_cb,
+					(PkBackendJobVFunc) pk_transaction_speed_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_SPEED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-					(PkBackendVFunc) pk_transaction_download_size_remaining_cb,
+					(PkBackendJobVFunc) pk_transaction_download_size_remaining_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REPO_DETAIL,
-					(PkBackendVFunc) pk_transaction_repo_detail_cb,
+					(PkBackendJobVFunc) pk_transaction_repo_detail_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REPO_DETAIL,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
-					(PkBackendVFunc) pk_transaction_repo_signature_required_cb,
+					(PkBackendJobVFunc) pk_transaction_repo_signature_required_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_EULA_REQUIRED,
-					(PkBackendVFunc) pk_transaction_eula_required_cb,
+					(PkBackendJobVFunc) pk_transaction_eula_required_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_EULA_REQUIRED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-					(PkBackendVFunc) pk_transaction_media_change_required_cb,
+					(PkBackendJobVFunc) pk_transaction_media_change_required_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REQUIRE_RESTART)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-					(PkBackendVFunc) pk_transaction_require_restart_cb,
+					(PkBackendJobVFunc) pk_transaction_require_restart_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_STATUS_CHANGED,
-					(PkBackendVFunc) pk_transaction_status_changed_cb,
+					(PkBackendJobVFunc) pk_transaction_status_changed_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_STATUS_CHANGED,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-					(PkBackendVFunc) pk_transaction_update_detail_cb,
+					(PkBackendJobVFunc) pk_transaction_update_detail_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 					NULL,
 					transaction);
 	}
 
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY)) {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_CATEGORY,
-					(PkBackendVFunc) pk_transaction_category_cb,
+					(PkBackendJobVFunc) pk_transaction_category_cb,
 					transaction);
 	} else {
-		pk_backend_set_vfunc (priv->backend,
+		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_CATEGORY,
 					NULL,
 					transaction);
@@ -2245,29 +2248,29 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
 	g_return_val_if_fail (transaction->priv->backend != NULL, FALSE);
 
-	/* prepare for use; the transaction list ensures this is safe */
-	pk_backend_reset (priv->backend);
-
-	/* assign */
-	g_object_set (priv->backend,
-		      "background", priv->background,
-		      "interactive", priv->interactive,
-		      NULL);
+	/* create main job for transaction, which is *not* used
+	 * for plugins */
+	priv->job = pk_backend_job_new ();
+	pk_backend_job_set_background (priv->job, priv->background);
+	pk_backend_job_set_interactive (priv->job, priv->interactive);
 
 	/* if we didn't set a locale for this transaction, we would reuse the
 	 * last set locale in the backend, or NULL if it was not ever set.
 	 * in this case use the C locale */
 	if (priv->locale == NULL)
-		pk_backend_set_locale (priv->backend, "C");
+		pk_backend_job_set_locale (priv->job, "C");
 	else
-		pk_backend_set_locale (priv->backend, priv->locale);
+		pk_backend_job_set_locale (priv->job, priv->locale);
 
 	/* set the frontend socket if it exists */
-	pk_backend_set_frontend_socket (priv->backend, priv->frontend_socket);
+	pk_backend_job_set_frontend_socket (priv->job, priv->frontend_socket);
 
 	/* set the cache-age */
 	if (priv->cache_age > 0)
-		pk_backend_set_cache_age (priv->backend, priv->cache_age);
+		pk_backend_job_set_cache_age (priv->job, priv->cache_age);
+
+	/* we are no longer waiting, we are setting up */
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
 
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
@@ -2278,17 +2281,14 @@ pk_transaction_run (PkTransaction *transaction)
 		g_clear_error (&error);
 	}
 
-	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
-	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
-
 	/* run the plugins */
+	pk_backend_start_job (priv->backend, priv->job);
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
 
 	/* is an error code set? */
-	if (pk_backend_get_is_error_set (priv->backend)) {
-		exit_status = pk_backend_get_exit_code (priv->backend);
+	if (pk_backend_job_get_is_error_set (priv->job)) {
+		exit_status = pk_backend_job_get_exit_code (priv->job);
 		pk_transaction_finished_emit (transaction, exit_status, 0);
 
 		/* do not fail the transaction */
@@ -2297,7 +2297,7 @@ pk_transaction_run (PkTransaction *transaction)
 	}
 
 	/* check if we should skip this transaction */
-	if (pk_backend_get_exit_code (priv->backend) == PK_EXIT_ENUM_SKIP_TRANSACTION) {
+	if (pk_backend_job_get_exit_code (priv->job) == PK_EXIT_ENUM_SKIP_TRANSACTION) {
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
 
 		/* do not fail the transaction */
@@ -2305,11 +2305,8 @@ pk_transaction_run (PkTransaction *transaction)
 		goto out;
 	}
 
-	/* might have to reset again if we used the backend */
-	pk_backend_reset (priv->backend);
-
 	/* set the role */
-	pk_backend_set_role (priv->backend, priv->role);
+	pk_backend_job_set_role (priv->job, priv->role);
 	g_debug ("setting role for %s to %s",
 		 priv->tid,
 		 pk_role_enum_to_string (priv->role));
@@ -2319,7 +2316,7 @@ pk_transaction_run (PkTransaction *transaction)
 				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
 
 	/* check again if we should skip this transaction */
-	exit_status = pk_backend_get_exit_code (priv->backend);
+	exit_status = pk_backend_job_get_exit_code (priv->job);
 	if (exit_status == PK_EXIT_ENUM_SKIP_TRANSACTION) {
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
 
@@ -2339,65 +2336,65 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->allow_cancel = FALSE;
 
 	/* reset after the pre-transaction checks */
-	pk_backend_set_percentage (priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
-		pk_backend_get_depends (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
+		pk_backend_get_depends (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
-		pk_backend_get_update_detail (priv->backend, priv->cached_package_ids);
+		pk_backend_get_update_detail (priv->backend, priv->job, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
-		pk_backend_resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
+		pk_backend_resolve (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
-		pk_backend_download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
+		pk_backend_download_packages (priv->backend, priv->job, priv->cached_package_ids, priv->cached_directory);
 	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
-		pk_backend_get_details (priv->backend, priv->cached_package_ids);
+		pk_backend_get_details (priv->backend, priv->job, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
-		pk_backend_get_distro_upgrades (priv->backend);
+		pk_backend_get_distro_upgrades (priv->backend, priv->job);
 	else if (priv->role == PK_ROLE_ENUM_GET_FILES)
-		pk_backend_get_files (priv->backend, priv->cached_package_ids);
+		pk_backend_get_files (priv->backend, priv->job, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
-		pk_backend_get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
+		pk_backend_get_requires (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES)
-		pk_backend_what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_values);
+		pk_backend_what_provides (priv->backend, priv->job, priv->cached_filters, priv->cached_provides, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
-		pk_backend_get_updates (priv->backend, priv->cached_filters);
+		pk_backend_get_updates (priv->backend, priv->job, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES)
-		pk_backend_get_packages (priv->backend, priv->cached_filters);
+		pk_backend_get_packages (priv->backend, priv->job, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
-		pk_backend_search_details (priv->backend, priv->cached_filters, priv->cached_values);
+		pk_backend_search_details (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		pk_backend_search_files (priv->backend, priv->cached_filters, priv->cached_values);
+		pk_backend_search_files (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
-		pk_backend_search_groups (priv->backend, priv->cached_filters, priv->cached_values);
+		pk_backend_search_groups (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
-		pk_backend_search_names (priv->backend,priv->cached_filters,priv->cached_values);
+		pk_backend_search_names (priv->backend, priv->job, priv->cached_filters,priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		pk_backend_install_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids);
+		pk_backend_install_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
-		pk_backend_install_files (priv->backend, priv->cached_transaction_flags, priv->cached_full_paths);
+		pk_backend_install_files (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
-		pk_backend_install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
+		pk_backend_install_signature (priv->backend, priv->job, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
-		pk_backend_refresh_cache (priv->backend,  priv->cached_force);
+		pk_backend_refresh_cache (priv->backend, priv->job,  priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
-		pk_backend_remove_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
+		pk_backend_remove_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		pk_backend_update_packages (priv->backend, priv->cached_transaction_flags, priv->cached_package_ids);
+		pk_backend_update_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		pk_backend_update_system (priv->backend, priv->cached_transaction_flags);
+		pk_backend_update_system (priv->backend, priv->job, priv->cached_transaction_flags);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
-		pk_backend_get_categories (priv->backend);
+		pk_backend_get_categories (priv->backend, priv->job);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
-		pk_backend_get_repo_list (priv->backend, priv->cached_filters);
+		pk_backend_get_repo_list (priv->backend, priv->job, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE)
-		pk_backend_repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
+		pk_backend_repo_enable (priv->backend, priv->job, priv->cached_repo_id, priv->cached_enabled);
 	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
-		pk_backend_repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
+		pk_backend_repo_set_data (priv->backend, priv->job, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
 	else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		pk_backend_upgrade_system (priv->backend, priv->cached_value, priv->cached_provides);
+		pk_backend_upgrade_system (priv->backend, priv->job, priv->cached_value, priv->cached_provides);
 	} else if (priv->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-		pk_backend_repair_system (priv->backend, priv->cached_transaction_flags);
+		pk_backend_repair_system (priv->backend, priv->job, priv->cached_transaction_flags);
 	} else {
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
@@ -3087,14 +3084,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 	}
 
 	g_debug ("AcceptEula method called: %s", eula_id);
-	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "EULA failed to be added");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
+	pk_backend_accept_eula (transaction->priv->backend, eula_id);
 
 	/* we are done */
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
@@ -3129,16 +3119,16 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	}
 
 	/* set the state, as cancelling might take a few seconds */
-	pk_backend_set_status (transaction->priv->backend, PK_STATUS_ENUM_CANCEL);
+	pk_backend_job_set_status (transaction->priv->job, PK_STATUS_ENUM_CANCEL);
 
 	/* we don't want to cancel twice */
-	pk_backend_set_allow_cancel (transaction->priv->backend, FALSE);
+	pk_backend_job_set_allow_cancel (transaction->priv->job, FALSE);
 
 	/* we need ::finished to not return success or failed */
-	pk_backend_set_exit_code (transaction->priv->backend, PK_EXIT_ENUM_CANCELLED_PRIORITY);
+	pk_backend_job_set_exit_code (transaction->priv->job, PK_EXIT_ENUM_CANCELLED_PRIORITY);
 
 	/* actually run the method */
-	pk_backend_cancel (transaction->priv->backend);
+	pk_backend_cancel (transaction->priv->backend, transaction->priv->job);
 out:
 	return;
 }
@@ -3232,16 +3222,16 @@ skip_uid:
 	}
 
 	/* set the state, as cancelling might take a few seconds */
-	pk_backend_set_status (transaction->priv->backend, PK_STATUS_ENUM_CANCEL);
+	pk_backend_job_set_status (transaction->priv->job, PK_STATUS_ENUM_CANCEL);
 
 	/* we don't want to cancel twice */
-	pk_backend_set_allow_cancel (transaction->priv->backend, FALSE);
+	pk_backend_job_set_allow_cancel (transaction->priv->job, FALSE);
 
 	/* we need ::finished to not return success or failed */
-	pk_backend_set_exit_code (transaction->priv->backend, PK_EXIT_ENUM_CANCELLED);
+	pk_backend_job_set_exit_code (transaction->priv->job, PK_EXIT_ENUM_CANCELLED);
 
 	/* actually run the method */
-	pk_backend_cancel (transaction->priv->backend);
+	pk_backend_cancel (transaction->priv->backend, transaction->priv->job);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5813,13 +5803,6 @@ pk_transaction_finalize (GObject *object)
 		g_object_unref (transaction->priv->connection);
 	if (transaction->priv->introspection != NULL)
 		g_dbus_node_info_unref (transaction->priv->introspection);
-
-	/* disconnect backend locked-changed signal */
-	if (transaction->priv->signal_locked_changed > 0) {
-		g_signal_handler_disconnect (transaction->priv->backend,
-				transaction->priv->signal_locked_changed);
-		transaction->priv->signal_locked_changed = 0;
-	}
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);

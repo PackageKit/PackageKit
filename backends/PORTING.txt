@@ -31,18 +31,27 @@ Guide to porting backends from 0.7.x to 0.8.x
    GDestroyNotify parameter. The thread functions themselves now return
    void, rather than gboolean.
 
+ * All the pk_backend_foo() backend functions that are intended to be
+   run in a transaction take an additional PkBackendJob parameter after
+   the PkBackend. Hopefully I've done a lot of the heavy lifting, but
+   you might have to change a few (backend) to (job)'s yourself.
+
+ * The pk_backend_get_uint() functions are removed, and threaded
+   backends should now parse the GVariant params which is specific to
+   the job, not the backend.
+
  * Remove any calls to pk_backend_set_sub_percentage() and replace them
-   with calls to pk_backend_set_item_progress(package)
+   with calls to pk_backend_job_set_item_progress(package)
 
  * Spawned backends (i.e. those using pk_backend_spawn_new) *must* now
    manually set the backend by using pk_backend_spawn_set_backend() in
    pk_backend_initialize().
 
- * pk_backend_update_detail now takes a gchar** rather than a gchar* for
+ * pk_backend_job_update_detail now takes a gchar** rather than a gchar* for
    the updates and obsoletes fields. No change is required for spawned
    backends.
 
- * pk_backend_update_detail now takes a gchar** rather than a gchar* for
+ * pk_backend_job_update_detail now takes a gchar** rather than a gchar* for
    the vendor_urls, bugzilla_urls and cve_urls fields.
    All backends should remove any URL title (the bit before the ';') and
    *just* send the array of raw URLs.
@@ -52,6 +61,9 @@ Guide to porting backends from 0.7.x to 0.8.x
    which can read the database at any time. Not using this method will cause
    your backend to fail, as we then try to create multiple write transactions
    too.
+
+IN THE FUTURE, NOT YET:
+
 
  * Fail any transactions which requires lock with PK_ERROR_ENUM_LOCK_REQUIRED.
    PackageKit will then requeue the transaction as soon as another transaction

@@ -30,7 +30,6 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <gmodule.h>
-#include <glib/gprintf.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
@@ -40,9 +39,7 @@
 #include "pk-marshal.h"
 #include "pk-backend.h"
 #include "pk-conf.h"
-#include "pk-store.h"
 #include "pk-shared.h"
-#include "pk-time.h"
 #include "pk-notify.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -56,40 +53,6 @@
 #define PK_BACKEND_PERCENTAGE_DEFAULT		102
 
 /**
- * PK_BACKEND_FINISHED_ERROR_TIMEOUT:
- *
- * The time in ms the backend has to call Finished() after ErrorCode()
- * If backends do not do this, they will be Finished() manually,
- * and a Message() will be sent to warn the developer
- */
-#define PK_BACKEND_FINISHED_ERROR_TIMEOUT	2000 /* ms */
-
-/**
- * PK_BACKEND_FINISHED_TIMEOUT_GRACE:
- *
- * The time in ms the backend waits after receiving Finished() before
- * propagating the signal to the other components.
- * This delay is required as some threads may take some time to cancel or a
- * spawned executable to disappear of the system DBUS.
- */
-#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
-
-/**
- * PK_BACKEND_CANCEL_ACTION_TIMEOUT:
- *
- * The time in ms we cancel the transaction ourselves if the backend is ignoring
- * us. This means the backend will still be running, but results will not be
- * sent over the dbus interface.
- */
-#define PK_BACKEND_CANCEL_ACTION_TIMEOUT	2000 /* ms */
-
-typedef struct {
-	gboolean		 enabled;
-	PkBackendVFunc		 vfunc;
-	gpointer		 user_data;
-} PkBackendVFuncItem;
-
-/**
  * PkBackendDesc:
  */
 typedef struct {
@@ -101,170 +64,141 @@ typedef struct {
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	PkBitfield	(*get_roles)			(PkBackend	*backend);
 	gchar		**(*get_mime_types)		(PkBackend	*backend);
-	void		(*job_start)			(PkBackend	*backend);
-	void		(*job_stop)			(PkBackend	*backend);
-	void		(*job_reset)			(PkBackend	*backend);
-	void		(*cancel)			(PkBackend	*backend);
+	void		(*job_start)			(PkBackend	*backend,
+							 PkBackendJob	*job);
+	void		(*job_reset)			(PkBackend	*backend,
+							 PkBackendJob	*job);
+	void		(*job_stop)			(PkBackend	*backend,
+							 PkBackendJob	*job);
+	void		(*cancel)			(PkBackend	*backend,
+							 PkBackendJob	*job);
 	void		(*download_packages)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 gchar		**package_ids,
 							 const gchar	*directory);
-	void		(*get_categories)		(PkBackend	*backend);
+	void		(*get_categories)		(PkBackend	*backend,
+							 PkBackendJob	*job);
 	void		(*get_depends)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_details)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 gchar		**package_ids);
-	void		(*get_distro_upgrades)		(PkBackend	*backend);
+	void		(*get_distro_upgrades)		(PkBackend	*backend,
+							 PkBackendJob	*job);
 	void		(*get_files)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 gchar		**package_ids);
 	void		(*get_packages)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters);
 	void		(*get_repo_list)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters);
 	void		(*get_requires)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**package_ids,
 							 gboolean	 recursive);
 	void		(*get_update_detail)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 gchar		**package_ids);
 	void		(*get_updates)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters);
 	void		(*install_files)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**full_paths);
 	void		(*install_packages)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 	void		(*install_signature)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkSigTypeEnum	 type,
 							 const gchar	*key_id,
 							 const gchar	*package_id);
 	void		(*refresh_cache)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 gboolean	 force);
 	void		(*remove_packages)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
 	void		(*repo_enable)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 const gchar	*repo_id,
 							 gboolean	 enabled);
 	void		(*repo_set_data)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value);
 	void		(*resolve)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**packages);
 	void		(*search_details)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**values);
 	void		(*search_files)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**values);
 	void		(*search_groups)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**values);
 	void		(*search_names)			(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**values);
 	void		(*update_packages)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
 	void		(*update_system)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags);
 	void		(*what_provides)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
 							 gchar		**values);
 	void		(*upgrade_system)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
 	void		(*repair_system)		(PkBackend	*backend,
+							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags);
 } PkBackendDesc;
 
 struct PkBackendPrivate
 {
 	gboolean		 during_initialize;
-	gboolean		 finished;
-	gboolean		 has_sent_package;
 	gboolean		 loaded;
-	gboolean		 set_error;
-	gboolean		 set_eula;
-	gboolean		 set_signature;
 	gboolean		 simultaneous;
 	gboolean		 locked;
-	gboolean		 use_time;
-	gchar			*locale;
-	gchar			*frontend_socket;
-	guint			 cache_age;
 	gchar			*name;
-	gchar			*proxy_http;
-	gchar			*proxy_https;
-	gchar			*proxy_ftp;
-	gchar			*proxy_socks;
-	gchar			*no_proxy;
-	gchar			*pac;
-	gchar			*root;
 	gpointer		 file_changed_data;
-	guint			 download_files;
-	guint			 percentage;
-	guint			 remaining;
-	guint			 signal_error_timeout;
-	guint			 signal_finished;
-	guint			 speed;
-	guint64			 download_size_remaining;
 	GHashTable		*eulas;
 	GModule			*handle;
-	GThread			*thread;
 	PkBackendDesc		*desc;
 	PkBackendFileChanged	 file_changed_func;
-	PkHintEnum		 background;
-	PkHintEnum		 interactive;
-	PkHintEnum		 allow_cancel;
 	PkBitfield		 roles;
 	PkConf			*conf;
-	PkExitEnum		 exit;
 	GFileMonitor		*monitor;
-	PkPackage		*last_package;
 	PkNetwork		*network;
-	PkResults		*results;
-	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
-	PkRoleEnum		 transaction_role;
-	PkStatusEnum		 status; /* this changes */
-	PkStore			*store;
-	PkTime			*time;
-	guint			 uid;
-	gchar			*cmdline;
-	PkBackendVFuncItem	 vfunc_items[PK_BACKEND_SIGNAL_LAST];
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
-
-enum {
-	SIGNAL_LOCKED_CHANGED,
-	SIGNAL_LAST
-};
-
-enum {
-	PROP_0,
-	PROP_BACKGROUND,
-	PROP_INTERACTIVE,
-	PROP_STATUS,
-	PROP_ROLE,
-	PROP_TRANSACTION_ID,
-	PROP_SPEED,
-	PROP_DOWNLOAD_SIZE_REMAINING,
-	PROP_PERCENTAGE,
-	PROP_REMAINING,
-	PROP_UID,
-	PROP_CMDLINE,
-	PROP_LAST
-};
-
-static guint signals[SIGNAL_LAST] = { 0 };
 
 /**
  * pk_backend_get_groups:
@@ -311,16 +245,6 @@ pk_backend_get_filters (PkBackend *backend)
 	if (backend->priv->desc->get_filters == NULL)
 		return PK_FILTER_ENUM_UNKNOWN;
 	return backend->priv->desc->get_filters (backend);
-}
-
-/**
- * pk_backend_get_role:
- **/
-PkRoleEnum
-pk_backend_get_role (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	return backend->priv->role;
 }
 
 /**
@@ -431,130 +355,6 @@ pk_backend_implement (PkBackend *backend, PkRoleEnum role)
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (role != PK_ROLE_ENUM_UNKNOWN);
 	pk_bitfield_add (backend->priv->roles, role);
-}
-
-/**
- * pk_backend_set_string:
- **/
-gboolean
-pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_string (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_set_strv:
- **/
-gboolean
-pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_strv (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_set_array:
- **/
-gboolean
-pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_array (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_set_uint:
- **/
-gboolean
-pk_backend_set_uint (PkBackend *backend, const gchar *key, guint data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_uint (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_set_bool:
- **/
-gboolean
-pk_backend_set_bool (PkBackend *backend, const gchar *key, gboolean data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_bool (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_set_pointer:
- **/
-gboolean
-pk_backend_set_pointer (PkBackend *backend, const gchar *key, gpointer data)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_set_pointer (backend->priv->store, key, data);
-}
-
-/**
- * pk_backend_get_string:
- **/
-const gchar *
-pk_backend_get_string (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return pk_store_get_string (backend->priv->store, key);
-}
-
-/**
- * pk_backend_get_strv:
- *
- * Returns: (transfer none):
- **/
-gchar **
-pk_backend_get_strv (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return pk_store_get_strv (backend->priv->store, key);
-}
-
-/**
- * pk_backend_get_array:
- **/
-const GPtrArray *
-pk_backend_get_array (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return pk_store_get_array (backend->priv->store, key);
-}
-
-/**
- * pk_backend_get_uint:
- **/
-guint
-pk_backend_get_uint (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
-	return pk_store_get_uint (backend->priv->store, key);
-}
-
-/**
- * pk_backend_get_bool:
- **/
-gboolean
-pk_backend_get_bool (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return pk_store_get_bool (backend->priv->store, key);
-}
-
-/**
- * pk_backend_get_pointer:
- *
- * Returns: (transfer none):
- **/
-gpointer
-pk_backend_get_pointer (PkBackend *backend, const gchar *key)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return pk_store_get_pointer (backend->priv->store, key);
 }
 
 /**
@@ -718,155 +518,6 @@ out:
 }
 
 /**
- * pk_backend_set_vfunc:
- * @backend: A valid PkBackend instance
- * @signal_kind: Kind of the backend signal we want to connect
- * @vfunc: (scope call): The function we want to call
- * @user_data: User data we want to pass to the callback
- *
- * Connect backend
- **/
-void
-pk_backend_set_vfunc (PkBackend *backend,
-		      PkBackendSignal signal_kind,
-		      PkBackendVFunc vfunc,
-		      gpointer user_data)
-{
-	PkBackendVFuncItem *item;
-	item = &backend->priv->vfunc_items[signal_kind];
-	item->enabled = TRUE;
-	item->vfunc = vfunc;
-	item->user_data = user_data;
-}
-
-/**
- * pk_backend_set_proxy:
- **/
-gboolean
-pk_backend_set_proxy (PkBackend	*backend,
-		      const gchar *proxy_http,
-		      const gchar *proxy_https,
-		      const gchar *proxy_ftp,
-		      const gchar *proxy_socks,
-		      const gchar *no_proxy,
-		      const gchar *pac)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_free (backend->priv->proxy_http);
-	g_free (backend->priv->proxy_https);
-	g_free (backend->priv->proxy_ftp);
-	g_free (backend->priv->proxy_socks);
-	g_free (backend->priv->no_proxy);
-	g_free (backend->priv->pac);
-	backend->priv->proxy_http = g_strdup (proxy_http);
-	backend->priv->proxy_https = g_strdup (proxy_https);
-	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
-	backend->priv->proxy_socks = g_strdup (proxy_socks);
-	backend->priv->no_proxy = g_strdup (no_proxy);
-	backend->priv->pac = g_strdup (pac);
-	return TRUE;
-}
-
-/**
- * pk_backend_get_proxy_http:
- *
- * Return value: proxy string in the form username:password@server:port
- **/
-gchar *
-pk_backend_get_proxy_http (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->proxy_http);
-}
-
-/**
- * pk_backend_get_proxy_https:
- *
- * Return value: proxy string in the form username:password@server:port
- **/
-gchar *
-pk_backend_get_proxy_https (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->proxy_https);
-}
-
-/**
- * pk_backend_get_proxy_ftp:
- *
- * Return value: proxy string in the form username:password@server:port
- **/
-gchar *
-pk_backend_get_proxy_ftp (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->proxy_ftp);
-}
-
-/**
- * pk_backend_get_proxy_socks:
- *
- * Return value: proxy string in the form username:password@server:port
- **/
-gchar *
-pk_backend_get_proxy_socks (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->proxy_socks);
-}
-
-/**
- * pk_backend_get_no_proxy:
- *
- * Return value: comma seporated value of proxy exlude string
- **/
-gchar *
-pk_backend_get_no_proxy (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->no_proxy);
-}
-
-/**
- * pk_backend_get_pac:
- *
- * Return value: proxy PAC filename
- **/
-gchar *
-pk_backend_get_pac (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->pac);
-}
-
-/**
- * pk_backend_set_cmdline:
- **/
-gboolean
-pk_backend_set_cmdline (PkBackend *backend, const gchar *cmdline)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	g_free (backend->priv->cmdline);
-	backend->priv->cmdline = g_strdup (cmdline);
-	g_debug ("install cmdline now %s", backend->priv->cmdline);
-	return TRUE;
-}
-
-/**
- * pk_backend_set_uid:
- **/
-gboolean
-pk_backend_set_uid (PkBackend *backend, guint uid)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	backend->priv->uid = uid;
-	g_debug ("install uid now %i", backend->priv->uid);
-	return TRUE;
-}
-
-/**
  * pk_backend_unload:
  *
  * Responsible for finalising the external backend object.
@@ -895,695 +546,28 @@ pk_backend_unload (PkBackend *backend)
 	return TRUE;
 }
 
-/* used to call vfuncs in the main daemon thread */
-typedef struct {
-	PkBackend	*backend;
-	PkBackendSignal	 signal_kind;
-	gpointer	 object;
-} PkBackendVFuncHelper;
-
-/**
- * pk_backend_call_vfunc_idle_cb:
- **/
-static gboolean
-pk_backend_call_vfunc_idle_cb (gpointer user_data)
-{
-	PkBackendVFuncHelper *helper = (PkBackendVFuncHelper *) user_data;
-	PkBackendVFuncItem *item;
-
-	/* call transaction vfunc on main thread */
-	item = &helper->backend->priv->vfunc_items[helper->signal_kind];
-	if (item != NULL) {
-		item->vfunc (helper->backend,
-			     helper->object,
-			     item->user_data);
-	} else {
-		g_warning ("tried to do signal %i when no longer connected",
-			   helper->signal_kind);
-	}
-	return FALSE;
-}
-
-/**
- * pk_backend_call_vfunc:
- *
- * This method can be called in any thread, and the vfunc is guaranteed
- * to be called idle in the main thread.
- **/
-static void
-pk_backend_call_vfunc (PkBackend *backend,
-		       PkBackendSignal signal_kind,
-		       gpointer object)
-{
-	PkBackendVFuncHelper *helper;
-	PkBackendVFuncItem *item;
-
-	/* call transaction vfunc if not disabled and set */
-	item = &backend->priv->vfunc_items[signal_kind];
-	if (!item->enabled || item->vfunc == NULL)
-		return;
-
-	/* if we're in the main thread already, don't bother with the
-	 * idle add and do the vfunc now */
-	if (backend->priv->thread == NULL ||
-	    g_thread_self () == backend->priv->thread) {
-		item->vfunc (backend, object, item->user_data);
-		return;
-	}
-
-	/* emit idle, TODO: do we ever need to cancel this? */
-	helper = g_new0 (PkBackendVFuncHelper, 1);
-	helper->backend = backend;
-	helper->signal_kind = signal_kind;
-	helper->object = object;
-	g_idle_add_full (G_PRIORITY_HIGH_IDLE,
-			 pk_backend_call_vfunc_idle_cb,
-			 helper,
-			 g_free);
-}
-
-/**
- * pk_backend_set_percentage:
- **/
-gboolean
-pk_backend_set_percentage (PkBackend *backend, guint percentage)
-{
-	guint remaining;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: percentage %i", percentage);
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->percentage == percentage) {
-		g_debug ("duplicate set of %i", percentage);
-		return FALSE;
-	}
-
-	/* check over */
-	if (percentage > PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "percentage value is invalid: %i", percentage);
-		return FALSE;
-	}
-
-	/* check under */
-	if (percentage < 100 &&
-	    backend->priv->percentage < 100 &&
-	    percentage < backend->priv->percentage) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "percentage value is going down to %i from %i",
-				    percentage, backend->priv->percentage);
-		return FALSE;
-	}
-
-	/* save in case we need this from coldplug */
-	backend->priv->percentage = percentage;
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_PERCENTAGE,
-			       GUINT_TO_POINTER (percentage));
-
-	/* only compute time if we have data */
-	if (percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		/* needed for time remaining calculation */
-		pk_time_add_data (backend->priv->time, percentage);
-
-		/* lets try this and print as debug */
-		remaining = pk_time_get_remaining (backend->priv->time);
-		g_debug ("this will now take ~%i seconds", remaining);
-
-		/* value cached from config file */
-		if (backend->priv->use_time)
-			backend->priv->remaining = remaining;
-		pk_backend_call_vfunc (backend,
-				       PK_BACKEND_SIGNAL_REMAINING,
-				       GUINT_TO_POINTER (remaining));
-	}
-
-	return TRUE;
-}
-
-/**
- * pk_backend_set_speed:
- **/
-gboolean
-pk_backend_set_speed (PkBackend *backend, guint speed)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: speed %i", speed);
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->speed == speed) {
-		g_debug ("duplicate set of %i", speed);
-		return FALSE;
-	}
-
-	/* set new value */
-	backend->priv->speed = speed;
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_SPEED,
-			       GUINT_TO_POINTER (speed));
-	return TRUE;
-}
-
-/**
- * pk_backend_set_download_size_remaining:
- **/
-gboolean
-pk_backend_set_download_size_remaining (PkBackend *backend, guint64 download_size_remaining)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		// TODO find out how to print the number
-		g_warning ("already set error, cannot process: download-size-remaining");
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->download_size_remaining == download_size_remaining) {
-		// TODO find out how to print the number
-		g_debug ("duplicate set of download_size_remaining");
-		return FALSE;
-	}
-
-	/* set new value */
-	backend->priv->download_size_remaining = download_size_remaining;
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-			       GUINT_TO_POINTER (download_size_remaining));
-	return TRUE;
-}
-
-/**
- * pk_backend_get_runtime:
- *
- * Returns time running in ms
- */
-guint
-pk_backend_get_runtime (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
-	g_return_val_if_fail (backend->priv->loaded, 0);
-	return pk_time_get_elapsed (backend->priv->time);
-}
-
-/**
- * pk_backend_set_item_progress:
- **/
-gboolean
-pk_backend_set_item_progress (PkBackend *backend,
-			      const gchar *package_id,
-			      guint percentage)
-{
-	PkItemProgress *item;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: item-percentage %i", percentage);
-		return FALSE;
-	}
-
-	/* invalid number? */
-	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		g_debug ("invalid number %i", percentage);
-		return FALSE;
-	}
-
-	/* emit */
-	item = pk_item_progress_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "percentage", percentage,
-		      NULL);
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-			       item);
-	g_object_unref (item);
-	return TRUE;
-}
-
-/**
- * pk_backend_set_status:
- **/
-gboolean
-pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* already this? */
-	if (backend->priv->status == status) {
-		g_debug ("already set same status");
-		return TRUE;
-	}
-
-	/* have we already set an error? */
-	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
-		g_warning ("already set error, cannot process: status %s", pk_status_enum_to_string (status));
-		return FALSE;
-	}
-
-	/* backends don't do this */
-	if (status == PK_STATUS_ENUM_WAIT) {
-		g_warning ("backend tried to WAIT, only the runner should set this value");
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s shouldn't use STATUS_WAIT", pk_role_enum_to_string (backend->priv->role));
-		return FALSE;
-	}
-
-	/* do we have to enumate a running call? */
-	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
-		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-			/* emit */
-			pk_backend_call_vfunc (backend,
-					       PK_BACKEND_SIGNAL_STATUS_CHANGED,
-					       GUINT_TO_POINTER (PK_STATUS_ENUM_RUNNING));
-		}
-	}
-
-	backend->priv->status = status;
-
-	/* emit */
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_STATUS_CHANGED,
-			       GUINT_TO_POINTER (status));
-	return TRUE;
-}
-
-/**
- * pk_backend_package_emulate_finished:
- **/
-static gboolean
-pk_backend_package_emulate_finished (PkBackend *backend)
-{
-	gboolean ret = FALSE;
-	PkPackage *item;
-	PkInfoEnum info;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
-
-	/* simultaneous handles this on it's own */
-	if (backend->priv->simultaneous)
-		goto out;
-
-	/* first package in transaction */
-	item = backend->priv->last_package;
-	if (item == NULL)
-		goto out;
-
-	/* get data */
-	g_object_get (item,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
-
-	/* already finished */
-	if (info == PK_INFO_ENUM_FINISHED)
-		goto out;
-
-	/* only makes sense for some values */
-	if (info == PK_INFO_ENUM_DOWNLOADING ||
-	    info == PK_INFO_ENUM_UPDATING ||
-	    info == PK_INFO_ENUM_INSTALLING ||
-	    info == PK_INFO_ENUM_REMOVING ||
-	    info == PK_INFO_ENUM_CLEANUP ||
-	    info == PK_INFO_ENUM_OBSOLETING ||
-	    info == PK_INFO_ENUM_REINSTALLING ||
-	    info == PK_INFO_ENUM_DOWNGRADING) {
-		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, summary);
-		ret = TRUE;
-	}
-out:
-	g_free (package_id);
-	g_free (summary);
-	return ret;
-}
-
-/**
- * pk_backend_package_emulate_finished_for_package:
- **/
-static gboolean
-pk_backend_package_emulate_finished_for_package (PkBackend *backend, PkPackage *item)
-{
-	gboolean ret = FALSE;
-
-	/* simultaneous handles this on it's own */
-	if (backend->priv->simultaneous) {
-		g_debug ("backend handling finished");
-		goto out;
-	}
-
-	/* first package in transaction */
-	if (backend->priv->last_package == NULL) {
-		g_debug ("first package, so no finished");
-		goto out;
-	}
-
-	/* same package, just info change */
-	if (pk_package_equal_id (backend->priv->last_package, item)) {
-		g_debug ("same package_id, ignoring");
-		goto out;
-	}
-
-	/* emit the old package as finished */
-	ret = pk_backend_package_emulate_finished (backend);
-out:
-	return ret;
-}
-
-/**
- * pk_backend_strsafe:
- * @text: The input text to make safe
- *
- * Replaces chars in the text that may be dangerous, or that may print
- * incorrectly. These chars include new lines, tabs and line feed, and are
- * replaced by spaces.
- *
- * Return value: the new string with no insane chars
- **/
-static gchar *
-pk_backend_strsafe (const gchar *text)
-{
-	gchar *text_safe;
-	gboolean ret;
-	const gchar *delimiters;
-
-	if (text == NULL)
-		return NULL;
-
-	/* is valid UTF8? */
-	ret = g_utf8_validate (text, -1, NULL);
-	if (!ret) {
-		g_warning ("text '%s' was not valid UTF8!", text);
-		return NULL;
-	}
-
-	/* rip out any insane characters */
-	delimiters = "\\\f\r\t";
-	text_safe = g_strdup (text);
-	g_strdelimit (text_safe, delimiters, ' ');
-	return text_safe;
-}
-
-/**
- * pk_backend_package:
- **/
-gboolean
-pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
-{
-	gchar *summary_safe = NULL;
-	PkPackage *item = NULL;
-	gboolean ret;
-	GError *error = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* check we are valid */
-	item = pk_package_new ();
-	ret = pk_package_set_id (item, package_id, &error);
-	if (!ret) {
-		g_warning ("package_id %s invalid and cannot be processed: %s",
-			   package_id, error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* replace unsafe chars */
-	summary_safe = pk_backend_strsafe (summary);
-
-	/* create a new package object AFTER we emulate the info value */
-	g_object_set (item,
-		      "info", info,
-		      "summary", summary_safe,
-		      NULL);
-
-	/* is it the same? */
-	ret = (backend->priv->last_package != NULL && pk_package_equal (backend->priv->last_package, item));
-	if (ret) {
-		g_debug ("skipping duplicate %s", package_id);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* simulate the finish here when required */
-	if (info != PK_INFO_ENUM_FINISHED)
-		pk_backend_package_emulate_finished_for_package (backend, item);
-
-	/* update the 'last' package */
-	if (backend->priv->last_package != NULL)
-		g_object_unref (backend->priv->last_package);
-	backend->priv->last_package = g_object_ref (item);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: package %s", package_id);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* we automatically set the transaction status for some PkInfoEnums if running
-	 * in non-simultaneous transaction mode */
-	if (!backend->priv->simultaneous) {
-		if (info == PK_INFO_ENUM_DOWNLOADING)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-		else if (info == PK_INFO_ENUM_UPDATING)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		else if (info == PK_INFO_ENUM_INSTALLING)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-		else if (info == PK_INFO_ENUM_REMOVING)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-		else if (info == PK_INFO_ENUM_CLEANUP)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
-		else if (info == PK_INFO_ENUM_OBSOLETING)
-			pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
-	}
-
-	/* we've sent a package for this transaction */
-	backend->priv->has_sent_package = TRUE;
-
-	/* emit */
-	pk_backend_call_vfunc (backend,
-				PK_BACKEND_SIGNAL_PACKAGE,
-				G_OBJECT (item));
-
-	/* add to results if meaningful */
-	if (info != PK_INFO_ENUM_FINISHED)
-		pk_results_add_package (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (summary_safe);
-	return ret;
-}
-
-/**
- * pk_backend_update_detail:
- **/
-gboolean
-pk_backend_update_detail (PkBackend *backend,
-			  const gchar *package_id,
-			  gchar **updates,
-			  gchar **obsoletes,
-			  gchar **vendor_urls,
-			  gchar **bugzilla_urls,
-			  gchar **cve_urls,
-			  PkRestartEnum restart,
-			  const gchar *update_text,
-			  const gchar *changelog,
-			  PkUpdateStateEnum state,
-			  const gchar *issued_text,
-			  const gchar *updated_text)
-{
-	gchar *update_text_safe = NULL;
-	PkUpdateDetail *item = NULL;
-	GTimeVal timeval;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: update_detail %s", package_id);
-		goto out;
-	}
-
-	/* check the dates are not empty */
-	if (issued_text != NULL && issued_text[0] == '\0')
-		issued_text = NULL;
-	if (updated_text != NULL && updated_text[0] == '\0')
-		updated_text = NULL;
-
-	/* check the issued dates are valid */
-	if (issued_text != NULL) {
-		ret = g_time_val_from_iso8601 (issued_text, &timeval);
-		if (!ret)
-			g_warning ("failed to parse issued '%s'", issued_text);
-	}
-	if (updated_text != NULL) {
-		ret = g_time_val_from_iso8601 (updated_text, &timeval);
-		if (!ret)
-			g_warning ("failed to parse updated '%s'", updated_text);
-	}
-
-	/* replace unsafe chars */
-	update_text_safe = pk_backend_strsafe (update_text);
-
-	/* form PkUpdateDetail struct */
-	item = pk_update_detail_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "updates", updates,
-		      "obsoletes", obsoletes,
-		      "vendor-urls", vendor_urls,
-		      "bugzilla-urls", bugzilla_urls,
-		      "cve-urls", cve_urls,
-		      "restart", restart,
-		      "update-text", update_text_safe,
-		      "changelog", changelog,
-		      "state", state,
-		      "issued", issued_text,
-		      "updated", updated_text,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_UPDATE_DETAIL, G_OBJECT (item));
-	pk_results_add_update_detail (backend->priv->results, item);
-
-	/* we parsed okay */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (update_text_safe);
-	return ret;
-}
-
-/**
- * pk_backend_require_restart:
- **/
-gboolean
-pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
-{
-	gboolean ret = FALSE;
-	PkRequireRestart *item = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_string (restart));
-		goto out;
-	}
-
-	/* check we are valid */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
-		g_warning ("package_id invalid and cannot be processed: %s", package_id);
-		goto out;
-	}
-
-	/* form PkRequireRestart struct */
-	item = pk_require_restart_new ();
-	g_object_set (item,
-		      "restart", restart,
-		      "package-id", package_id,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REQUIRE_RESTART, G_OBJECT (item));
-	pk_results_add_require_restart (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
-/**
- * pk_backend_message:
- **/
-gboolean
-pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *format, ...)
-{
-	gboolean ret = FALSE;
-	va_list args;
-	gchar *buffer = NULL;
-	PkMessage *item = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		g_warning ("already set error, cannot process: message %s", pk_message_enum_to_string (message));
-		goto out;
-	}
-
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-
-	/* form PkMessage struct */
-	item = pk_message_new ();
-	g_object_set (item,
-		      "type", message,
-		      "details", buffer,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
-	pk_results_add_message (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	g_free (buffer);
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
 /**
  * pk_backend_set_simultaneous_mode:
  **/
-gboolean
+void
 pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
 {
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->loaded);
 
 	backend->priv->simultaneous = simultaneous;
 	if (simultaneous)
 		g_warning ("simultaneous mode is not well tested, use with caution");
-	return TRUE;
+}
+
+/**
+ * pk_backend_get_simultaneous_mode:
+ **/
+gboolean
+pk_backend_get_simultaneous_mode (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return backend->priv->simultaneous;
 }
 
 /**
@@ -1592,16 +576,14 @@ pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
  * Set if your backend currently locks the cache, so no other tool will have write
  * access on it. (read-only transactions will still be permitted)
  **/
-gboolean
+void
 pk_backend_set_locked (PkBackend *backend, gboolean locked)
 {
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->loaded);
 
 	backend->priv->locked = locked;
-	g_signal_emit (backend, signals[SIGNAL_LOCKED_CHANGED], 0, locked);
-
-	return TRUE;
+//	g_signal_emit (backend, signals[SIGNAL_LOCKED_CHANGED], 0, locked);
 }
 
 /**
@@ -1612,496 +594,6 @@ pk_backend_get_locked (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	return backend->priv->locked;
-}
-
-/**
- * pk_backend_get_locale:
- *
- * Return value: session locale, e.g. en_GB
- **/
-gchar *
-pk_backend_get_locale (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->locale);
-}
-
-/**
- * pk_backend_set_locale:
- **/
-gboolean
-pk_backend_set_locale (PkBackend *backend, const gchar *code)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (code != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	g_debug ("locale changed to %s", code);
-	g_free (backend->priv->locale);
-	backend->priv->locale = g_strdup (code);
-
-	return TRUE;
-}
-
-/**
- * pk_backend_get_frontend_socket:
- *
- * Return value: session frontend_socket, e.g. /tmp/socket.345
- **/
-gchar *
-pk_backend_get_frontend_socket (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->frontend_socket);
-}
-
-/**
- * pk_backend_set_frontend_socket:
- **/
-gboolean
-pk_backend_set_frontend_socket (PkBackend *backend, const gchar *frontend_socket)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	g_debug ("frontend_socket changed to %s", frontend_socket);
-	g_free (backend->priv->frontend_socket);
-	backend->priv->frontend_socket = g_strdup (frontend_socket);
-
-	return TRUE;
-}
-
-/**
- * pk_backend_get_cache_age:
- *
- * Gets the maximum cache age in seconds.
- *
- * Return value: the cache age in seconds, or 0 for unset or %G_MAXUINT for 'infinity'
- **/
-guint
-pk_backend_get_cache_age (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
-	return backend->priv->cache_age;
-}
-
-/**
- * pk_backend_set_cache_age:
- **/
-void
-pk_backend_set_cache_age (PkBackend *backend, guint cache_age)
-{
-	const guint cache_age_offset = 60 * 30;
-
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->loaded != FALSE);
-
-	/* We offset the cache age by 30 minutes if possible to
-	 * account for the possible delay in running the transaction,
-	 * for example:
-	 *
-	 * Update check set to once per 3 days
-	 * GUI starts checking for updates on Monday at 12:00
-	 * Update check completes on Monday at 12:01
-	 * GUI starts checking for updates on Thursday at 12:00 (exactly 3 days later)
-	 * Cache is 2 days 23 hours 59 minutes old
-	 * Backend sees it's not 3 days old, does nothing
-	 */
-	if (cache_age > cache_age_offset)
-		cache_age -= cache_age_offset;
-
-	g_debug ("cache-age changed to %i", cache_age);
-	backend->priv->cache_age = cache_age;
-}
-
-/**
- * pk_backend_details:
- **/
-gboolean
-pk_backend_details (PkBackend *backend, const gchar *package_id,
-		    const gchar *license, PkGroupEnum group,
-		    const gchar *description, const gchar *url, gulong size)
-{
-	gchar *description_safe = NULL;
-	PkDetails *item = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: details %s", package_id);
-		goto out;
-	}
-
-	/* replace unsafe chars */
-	description_safe = pk_backend_strsafe (description);
-
-	/* form PkDetails struct */
-	item = pk_details_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "license", license,
-		      "group", group,
-		      "description", description_safe,
-		      "url", url,
-		      "size", (guint64) size,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_DETAILS,
-			       G_OBJECT (item));
-	pk_results_add_details (backend->priv->results, item);
-
-	/* we parsed okay */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (description_safe);
-	return ret;
-}
-
-/**
- * pk_backend_files:
- *
- * package_id is NULL when we are using this as a calback from DownloadPackages
- **/
-gboolean
-pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
-{
-	gboolean ret;
-	PkFiles *item = NULL;
-	gchar **files = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (filelist != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: files %s", package_id);
-		return FALSE;
-	}
-
-	/* check we are valid */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
-		g_warning ("package_id invalid and cannot be processed: %s", package_id);
-		goto out;
-	}
-
-	/* form PkFiles struct */
-	files = g_strsplit (filelist, ";", -1);
-	item = pk_files_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "files", files,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_FILES, G_OBJECT (item));
-	pk_results_add_files (backend->priv->results, item);
-
-	/* success */
-	backend->priv->download_files++;
-	ret = TRUE;
-out:
-	g_strfreev (files);
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
-/**
- * pk_backend_distro_upgrade:
- **/
-gboolean
-pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum state, const gchar *name, const gchar *summary)
-{
-	gboolean ret = FALSE;
-	gchar *name_safe = NULL;
-	gchar *summary_safe = NULL;
-	PkDistroUpgrade *item = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (state != PK_DISTRO_UPGRADE_ENUM_UNKNOWN, FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
-	g_return_val_if_fail (summary != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: distro-upgrade");
-		goto out;
-	}
-
-	/* replace unsafe chars */
-	name_safe = pk_backend_strsafe (name);
-	summary_safe = pk_backend_strsafe (summary);
-
-	/* form PkDistroUpgrade struct */
-	item = pk_distro_upgrade_new ();
-	g_object_set (item,
-		      "state", state,
-		      "name", name_safe,
-		      "summary", summary_safe,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_DISTRO_UPGRADE, G_OBJECT (item));
-	pk_results_add_distro_upgrade (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (name_safe);
-	g_free (summary_safe);
-	return ret;
-}
-
-/**
- * pk_backend_repo_signature_required:
- **/
-gboolean
-pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
-				    const gchar *repository_name, const gchar *key_url,
-				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
-				    const gchar *key_timestamp, PkSigTypeEnum type)
-{
-	gboolean ret = FALSE;
-	PkRepoSignatureRequired *item = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (repository_name != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: repo-sig-reqd");
-		goto out;
-	}
-
-	/* check we don't do this more than once */
-	if (backend->priv->set_signature) {
-		g_warning ("already asked for a signature, cannot process");
-		goto out;
-	}
-
-	/* form PkRepoSignatureRequired struct */
-	item = pk_repo_signature_required_new ();
-	g_object_set (item,
-		      "package-id", package_id,
-		      "repository-name", repository_name,
-		      "key-url", key_url,
-		      "key-userid", key_userid,
-		      "key-id", key_id,
-		      "key-fingerprint", key_fingerprint,
-		      "key-timestamp", key_timestamp,
-		      "type", type,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED, G_OBJECT (item));
-	pk_results_add_repo_signature_required (backend->priv->results, item);
-
-	/* success */
-	backend->priv->set_signature = TRUE;
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
-/**
- * pk_backend_eula_required:
- **/
-gboolean
-pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
-			  const gchar *vendor_name, const gchar *license_agreement)
-{
-	PkEulaRequired *item = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (eula_id != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (vendor_name != NULL, FALSE);
-	g_return_val_if_fail (license_agreement != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: eula required");
-		goto out;
-	}
-
-	/* check we don't do this more than once */
-	if (backend->priv->set_eula) {
-		g_warning ("already asked for a signature, cannot process");
-		goto out;
-	}
-
-	/* form PkEulaRequired struct */
-	item = pk_eula_required_new ();
-	g_object_set (item,
-		      "eula-id", eula_id,
-		      "package-id", package_id,
-		      "vendor-name", vendor_name,
-		      "license-agreement", license_agreement,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_EULA_REQUIRED, G_OBJECT (item));
-	pk_results_add_eula_required (backend->priv->results, item);
-
-	/* success */
-	backend->priv->set_eula = TRUE;
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
-/**
- * pk_backend_media_change_required:
- **/
-gboolean
-pk_backend_media_change_required (PkBackend *backend,
-				  PkMediaTypeEnum media_type,
-				  const gchar *media_id,
-				  const gchar *media_text)
-{
-	PkMediaChangeRequired *item = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (media_id != NULL, FALSE);
-	g_return_val_if_fail (media_text != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: media change required");
-		goto out;
-	}
-
-	/* form PkMediaChangeRequired struct */
-	item = pk_media_change_required_new ();
-	g_object_set (item,
-		      "media-type", media_type,
-		      "media-id", media_id,
-		      "media-text", media_text,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED, G_OBJECT (item));
-	pk_results_add_media_change_required (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	return ret;
-}
-
-/**
- * pk_backend_repo_detail:
- **/
-gboolean
-pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
-			const gchar *description, gboolean enabled)
-{
-	gchar *description_safe = NULL;
-	PkRepoDetail *item = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (repo_id != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: repo-detail %s", repo_id);
-		goto out;
-	}
-
-	/* replace unsafe chars */
-	description_safe = pk_backend_strsafe (description);
-
-	/* form PkRepoDetail struct */
-	item = pk_repo_detail_new ();
-	g_object_set (item,
-		      "repo-id", repo_id,
-		      "description", description,
-		      "enabled", enabled,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_REPO_DETAIL, G_OBJECT (item));
-	pk_results_add_repo_detail (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (description_safe);
-	return ret;
-}
-
-/**
- * pk_backend_category:
- **/
-gboolean
-pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *cat_id, const gchar *name, const gchar *summary, const gchar *icon)
-{
-	gchar *summary_safe = NULL;
-	PkCategory *item = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (cat_id != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		g_warning ("already set error, cannot process: category %s", cat_id);
-		goto out;
-	}
-
-	/* replace unsafe chars */
-	summary_safe = pk_backend_strsafe (summary);
-
-	/* form PkCategory struct */
-	item = pk_category_new ();
-	g_object_set (item,
-		      "parent-id", parent_id,
-		      "cat-id", cat_id,
-		      "name", name,
-		      "summary", summary,
-		      "icon", icon,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_CATEGORY, G_OBJECT (item));
-	pk_results_add_category (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (summary_safe);
-	return ret;
 }
 
 /**
@@ -2123,299 +615,13 @@ pk_backend_repo_list_changed (PkBackend *backend)
 }
 
 /**
- * pk_backend_get_is_finished:
- **/
-gboolean
-pk_backend_get_is_finished (PkBackend *backend)
-{
-	return backend->priv->finished;
-}
-
-/**
- * pk_backend_get_is_error_set:
- **/
-gboolean
-pk_backend_get_is_error_set (PkBackend *backend)
-{
-	return backend->priv->set_error;
-}
-
-/**
- * pk_backend_error_timeout_delay_cb:
- *
- * We have to call Finished() within PK_BACKEND_FINISHED_ERROR_TIMEOUT of ErrorCode(), enforce this.
- **/
-static gboolean
-pk_backend_error_timeout_delay_cb (gpointer data)
-{
-	PkBackend *backend = PK_BACKEND (data);
-	PkMessage *item = NULL;
-
-	/* check we have not already finished */
-	if (backend->priv->finished) {
-		g_warning ("consistency error");
-		goto out;
-	}
-
-	/* form PkMessage struct */
-	item = pk_message_new ();
-	g_object_set (item,
-		      "type", PK_MESSAGE_ENUM_BACKEND_ERROR,
-		      "details", "ErrorCode() has to be followed immediately with Finished()!\n"
-		      "Failure to do so, results in PK assuming the thread has hung, and desparately "
-		      " starting another backend thread to process future requests: be warned, "
-		      " your code is about to break in exotic ways.",
-		      NULL);
-
-	/* warn the backend developer that they've done something worng
-	 * - we can't use pk_backend_message here as we have already set
-	 * backend->priv->set_error to TRUE and hence the message would be ignored */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_MESSAGE, G_OBJECT (item));
-
-	pk_backend_finished (backend);
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	backend->priv->signal_error_timeout = 0;
-	return FALSE;
-}
-
-/**
- * pk_backend_error_code_is_need_untrusted:
- **/
-static gboolean
-pk_backend_error_code_is_need_untrusted (PkErrorEnum error_code)
-{
-	gboolean ret = FALSE;
-	switch (error_code) {
-		case PK_ERROR_ENUM_GPG_FAILURE:
-		case PK_ERROR_ENUM_BAD_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_MISSING_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED:
-		case PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED:
-			ret = TRUE;
-			break;
-		default:
-			break;
-	}
-	return ret;
-}
-
-/**
- * pk_backend_error_code:
- **/
-gboolean
-pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *format, ...)
-{
-	va_list args;
-	gchar *buffer;
-	gboolean ret = TRUE;
-	gboolean need_untrusted;
-	PkError *item = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	va_start (args, format);
-	buffer = g_strdup_vprintf (format, args);
-	va_end (args);
-
-	/* check we are not doing Init() */
-	if (backend->priv->during_initialize) {
-		g_warning ("set during init: %s", buffer);
-		ret = FALSE;
-		goto out;
-	}
-
-	/* did we set a duplicate error? */
-	if (backend->priv->set_error) {
-		g_warning ("More than one error emitted! You tried to set '%s'", buffer);
-		ret = FALSE;
-		goto out;
-	}
-	backend->priv->set_error = TRUE;
-
-	/* we only allow a short time to send finished after error_code */
-	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_FINISHED_ERROR_TIMEOUT,
-							     pk_backend_error_timeout_delay_cb, backend);
-	g_source_set_name_by_id (backend->priv->signal_error_timeout, "[PkBackend] error-code");
-
-	/* some error codes have a different exit code */
-	need_untrusted = pk_backend_error_code_is_need_untrusted (error_code);
-	if (need_untrusted)
-		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_NEED_UNTRUSTED);
-	else if (error_code == PK_ERROR_ENUM_CANCELLED_PRIORITY)
-		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_CANCELLED_PRIORITY);
-	else
-		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
-
-	/* set the hint that RepairSystem is needed */
-	if (error_code == PK_ERROR_ENUM_UNFINISHED_TRANSACTION) {
-		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_REPAIR_REQUIRED);
-	}
-
-	/* form PkError struct */
-	item = pk_error_new ();
-	g_object_set (item,
-		      "code", error_code,
-		      "details", buffer,
-		      NULL);
-
-	/* emit */
-	pk_backend_call_vfunc (backend, PK_BACKEND_SIGNAL_ERROR_CODE, G_OBJECT (item));
-	pk_results_set_error_code (backend->priv->results, item);
-
-	/* success */
-	ret = TRUE;
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_free (buffer);
-	return ret;
-}
-
-/**
- * pk_backend_has_set_error_code:
- **/
-gboolean
-pk_backend_has_set_error_code (PkBackend *backend)
-{
-	return backend->priv->set_error;
-}
-
-/**
- * pk_backend_set_allow_cancel:
- **/
-gboolean
-pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error && allow_cancel) {
-		g_warning ("already set error, cannot process: allow-cancel %i", allow_cancel);
-		return FALSE;
-	}
-
-	/* same as last state? */
-	if (backend->priv->allow_cancel == (PkHintEnum) allow_cancel) {
-		g_debug ("ignoring same allow-cancel state");
-		return FALSE;
-	}
-
-	/* emit */
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-			       GUINT_TO_POINTER (allow_cancel));
-	backend->priv->allow_cancel = allow_cancel;
-	return TRUE;
-}
-
-/**
- * pk_backend_get_allow_cancel:
- **/
-gboolean
-pk_backend_get_allow_cancel (PkBackend *backend)
-{
-	gboolean allow_cancel = FALSE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* return FALSE if we never set state */
-	if (backend->priv->allow_cancel != PK_HINT_ENUM_UNSET)
-		allow_cancel = backend->priv->allow_cancel;
-
-	return allow_cancel;
-}
-
-/**
- * pk_backend_set_role_internal:
- **/
-static gboolean
-pk_backend_set_role_internal (PkBackend *backend, PkRoleEnum role)
-{
-	/* Should only be called once... */
-	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN &&
-	    backend->priv->role != role) {
-		g_warning ("cannot set role to %s, already %s",
-			     pk_role_enum_to_string (role),
-			     pk_role_enum_to_string (backend->priv->role));
-		return FALSE;
-	}
-
-	/* reset the timer */
-	pk_time_reset (backend->priv->time);
-
-	g_debug ("setting role to %s", pk_role_enum_to_string (role));
-	backend->priv->role = role;
-	backend->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_STATUS_CHANGED,
-			       GUINT_TO_POINTER (backend->priv->status));
-	return TRUE;
-}
-
-/**
- * pk_backend_set_role:
- **/
-gboolean
-pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* the role of the transaction can be different to the role of the backend if:
-	 * - we reuse the backend for instance searching for files before UpdatePackages
-	 * - we are simulating the SimulateInstallPackages with a GetDepends call */
-	g_debug ("setting transaction role to %s", pk_role_enum_to_string (role));
-	backend->priv->transaction_role = role;
-	return pk_backend_set_role_internal (backend, role);
-}
-
-/**
- * pk_backend_set_exit_code:
- *
- * Should only be used internally, or from PkRunner when setting CANCELLED.
- **/
-gboolean
-pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
-		g_warning ("already set exit status: old=%s, new=%s",
-			    pk_exit_enum_to_string (backend->priv->exit),
-			    pk_exit_enum_to_string (exit_enum));
-		return FALSE;
-	}
-
-	/* new value */
-	backend->priv->exit = exit_enum;
-	return TRUE;
-}
-
-/**
- * pk_backend_get_exit_code:
- **/
-PkExitEnum
-pk_backend_get_exit_code (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_EXIT_ENUM_UNKNOWN);
-	return backend->priv->exit;
-}
-
-/**
- * pk_backend_job_start:
+ * pk_backend_start_job:
  *
  * This is called just before the threaded transaction method, and in
  * the newly created thread context. e.g.
  *
  * >>> desc->job_start(backend)
  *     (locked backend)
- * >>> desc->job_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::Package(PK_INFO_ENUM_INSTALLING,"hal;0.1.1;i386;fedora","Hardware Stuff")
  * >>> desc->job_stop(backend)
@@ -2425,7 +631,6 @@ pk_backend_get_exit_code (PkBackend *backend)
  * or in the case of backend_method_we_want_to_run() failure:
  * >>> desc->job_start(backend)
  *     (locked backend)
- * >>> desc->job_reset(backend)
  * >>> desc->backend_method_we_want_to_run(backend)
  * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_FIND,"no package")
  * >>> desc->job_stop(backend)
@@ -2443,23 +648,41 @@ pk_backend_get_exit_code (PkBackend *backend)
  * would be inherently racy.
  */
 void
-pk_backend_job_start (PkBackend *backend)
+pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
-	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->job_start == NULL) {
-		g_debug ("no transaction start vfunc");
-		return;
-	}
+	/* common stuff */
+	pk_backend_job_set_backend (job, backend);
 
-	/* run the transaction setup */
-	pk_backend_job_reset (backend);
-	backend->priv->desc->job_start (backend);
+	/* optional */
+	if (backend->priv->desc->job_start != NULL)
+		backend->priv->desc->job_start (backend, job);
 }
 
 /**
- * pk_backend_job_stop:
+ * pk_backend_reset_job:
+ **/
+void
+pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* optional */
+	if (backend->priv->desc->job_reset != NULL) {
+		backend->priv->desc->job_reset (backend, job);
+	} else if (backend->priv->desc->job_stop != NULL &&
+		   backend->priv->desc->job_start != NULL) {
+		backend->priv->desc->job_stop (backend, job);
+		backend->priv->desc->job_start (backend, job);
+	}
+
+	/* bubble up */
+	pk_backend_job_reset (job);
+}
+
+/**
+ * pk_backend_stop_job:
  *
  * Always run for each transaction, *even* when the job_start()
  * vfunc fails.
@@ -2468,180 +691,13 @@ pk_backend_job_start (PkBackend *backend)
  * been set.
  */
 void
-pk_backend_job_stop (PkBackend *backend)
+pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
-	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->job_stop == NULL) {
-		g_debug ("no transaction stop vfunc");
-		goto out;
-	}
-
-	/* run the transaction setup */
-	pk_backend_job_reset (backend);
-	backend->priv->desc->job_stop (backend);
-out:
-	return;
-}
-
-/**
- * pk_backend_job_reset:
- */
-void
-pk_backend_job_reset (PkBackend *backend)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-
-	/* no transaction setup is perfectly fine */
-	if (backend->priv->desc->job_reset == NULL) {
-		g_debug ("no transaction reset vfunc");
-		goto out;
-	}
-
-	/* run the transaction setup */
-	backend->priv->desc->job_reset (backend);
-out:
-	return;
-}
-
-/**
- * pk_backend_finished_delay:
- *
- * We can call into this function if we *know* it's safe.
- **/
-static gboolean
-pk_backend_finished_delay (gpointer data)
-{
-	PkBackend *backend = PK_BACKEND (data);
-
-	/* this wasn't set otherwise, assume success */
-	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
-		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
-
-	/* emit */
-	pk_backend_call_vfunc (backend,
-			       PK_BACKEND_SIGNAL_FINISHED,
-			       GUINT_TO_POINTER (backend->priv->exit));
-	backend->priv->signal_finished = 0;
-	return FALSE;
-}
-
-/**
- * pk_backend_finished_real:
- **/
-static gboolean
-pk_backend_finished_real (PkBackend *backend)
-{
-	const gchar *role_text;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	/* check we are not doing Init() */
-	if (backend->priv->during_initialize) {
-		g_warning ("finished during init");
-		return FALSE;
-	}
-
-	/* safe to check now */
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	/* find out what we just did */
-	role_text = pk_role_enum_to_string (backend->priv->role);
-	g_debug ("finished role %s", role_text);
-
-	/* are we trying to finish in init? */
-	if (backend->priv->during_initialize) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s can't call pk_backend_finished in backend_initialize!", role_text);
-		return FALSE;
-	}
-
-	/* check we have not already finished */
-	if (backend->priv->finished) {
-		g_warning ("already finished");
-		return FALSE;
-	}
-
-	/* check we got a Package() else the UI will suck */
-	if (!backend->priv->set_error &&
-	    !backend->priv->has_sent_package &&
-	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send a Package() for %s!", role_text);
-	}
-
-	/* ensure the same number of ::Files() were sent as packages for DownloadPackages */
-	if (!backend->priv->set_error &&
-	    backend->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
-	    backend->priv->download_files == 0) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send multiple Files() for each package_id!");
-	}
-
-	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0) {
-		g_source_remove (backend->priv->signal_error_timeout);
-		backend->priv->signal_error_timeout = 0;
-	}
-
-	/* check we sent at least one status calls */
-	if (backend->priv->set_error == FALSE &&
-	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send status <value> signals for %s!", role_text);
-		g_warning ("GUI will remain unchanged!");
-	}
-
-	/* emulate the last finished package if not done already */
-	pk_backend_package_emulate_finished (backend);
-
-	/* make any UI insensitive */
-	pk_backend_set_allow_cancel (backend, FALSE);
-
-	/* mark as finished for the UI that might only be watching status */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
-
-	/* we can't ever be re-used */
-	backend->priv->finished = TRUE;
-
-	/* we have to run this idle as the command may finish before the transaction
-	 * has been sent to the client. I love async... */
-	g_debug ("adding finished %p to timeout loop", backend);
-	backend->priv->signal_finished = g_timeout_add (PK_BACKEND_FINISHED_TIMEOUT_GRACE,
-							pk_backend_finished_delay, backend);
-	g_source_set_name_by_id (backend->priv->signal_finished, "[PkBackend] finished");
-	return TRUE;
-}
-
-/**
- * pk_backend_finished_cb:
- **/
-static gboolean
-pk_backend_finished_cb (PkBackend *backend)
-{
-	pk_backend_finished_real (backend);
-	return FALSE;
-}
-
-/**
- * pk_backend_finished:
- **/
-void
-pk_backend_finished (PkBackend *backend)
-{
-	guint idle_id;
-
-	/* we in the helper thread */
-	if (g_thread_self () != backend->priv->thread) {
-		pk_backend_job_stop (backend);
-		idle_id = g_idle_add ((GSourceFunc) pk_backend_finished_cb, backend);
-		g_source_set_name_by_id (idle_id, "[PkBackend] finished");
-	} else {
-		pk_backend_finished_real (backend);
-	}
+	/* optional */
+	if (backend->priv->desc->job_stop != NULL)
+		backend->priv->desc->job_stop (backend, job);
 }
 
 /**
@@ -2653,22 +709,6 @@ pk_backend_bool_to_string (gboolean value)
 	if (value)
 		return "yes";
 	return "no";
-}
-
-/**
- * pk_backend_not_implemented_yet:
- **/
-gboolean
-pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (method != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
-
-	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
-	/* don't wait, do this now */
-	pk_backend_finished_delay (backend);
-	return TRUE;
 }
 
 /**
@@ -2686,117 +726,6 @@ pk_backend_is_online (PkBackend *backend)
 	    state == PK_NETWORK_ENUM_WIRED)
 		return TRUE;
 	return FALSE;
-}
-
-/**
- * pk_backend_use_background:
- **/
-gboolean
-pk_backend_use_background (PkBackend *backend)
-{
-	gboolean ret;
-
-	/* check we are allowed */
-	ret = pk_conf_get_bool (backend->priv->conf, "UseIdleBandwidth");
-	if (!ret)
-		return FALSE;
-
-	/* the session has set it one way or the other */
-	if (backend->priv->background == PK_HINT_ENUM_TRUE)
-		return TRUE;
-	if (backend->priv->background == PK_HINT_ENUM_FALSE)
-		return FALSE;
-
-	/* use a metric to try to guess a correct value */
-	if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES ||
-	    backend->priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
-		return TRUE;
-	return FALSE;
-}
-
-/* simple helper to work around the GThread one pointer limit */
-typedef struct {
-	PkBackend		*backend;
-	PkBackendThreadFunc	 func;
-	gpointer		 user_data;
-	GDestroyNotify		 destroy_func;
-} PkBackendThreadHelper;
-
-/**
- * pk_backend_thread_setup:
- **/
-static gpointer
-pk_backend_thread_setup (gpointer thread_data)
-{
-	PkBackendThreadHelper *helper = (PkBackendThreadHelper *) thread_data;
-
-	/* call setup */
-	pk_backend_job_start (helper->backend);
-
-	/* run original function */
-	helper->func (helper->backend, helper->user_data);
-	if (pk_backend_get_is_error_set (helper->backend)) {
-		g_debug ("transaction setup failed, going straight to finished");
-		pk_backend_job_stop (helper->backend);
-	}
-
-	/* destroy helper */
-	if (helper->destroy_func != NULL)
-		helper->destroy_func (helper->user_data);
-	g_object_unref (helper->backend);
-	g_free (helper);
-
-	/* no return value */
-	return NULL;
-}
-
-/**
- * pk_backend_thread_create:
- *
- * @func: (scope call):
- **/
-gboolean
-pk_backend_thread_create (PkBackend *backend,
-			  PkBackendThreadFunc func,
-			  gpointer user_data,
-			  GDestroyNotify destroy_func)
-{
-	gboolean ret = TRUE;
-	PkBackendThreadHelper *helper = NULL;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (func != NULL, FALSE);
-
-	if (backend->priv->thread != NULL) {
-		g_warning ("already has thread");
-		return FALSE;
-	}
-
-	/* create a helper object to allow us to call a _setup() function */
-	helper = g_new0 (PkBackendThreadHelper, 1);
-	helper->backend = g_object_ref (backend);
-	helper->func = func;
-	helper->user_data = user_data;
-	helper->destroy_func = destroy_func;
-
-	/* create a thread */
-#if GLIB_CHECK_VERSION(2,31,0)
-	backend->priv->thread = g_thread_new ("PK-Backend",
-					      pk_backend_thread_setup,
-					      helper);
-#else
-	backend->priv->thread = g_thread_create (pk_backend_thread_setup,
-						 helper,
-						 FALSE,
-						 NULL);
-#endif
-	if (backend->priv->thread == NULL) {
-		g_warning ("failed to create thread");
-		ret = FALSE;
-		goto out;
-	}
-out:
-	return ret;
 }
 
 /**
@@ -2837,23 +766,20 @@ pk_backend_get_author (PkBackend *backend)
 /**
  * pk_backend_accept_eula:
  */
-gboolean
+void
 pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
 {
 	gpointer present;
 
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (eula_id != NULL, FALSE);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_ACCEPT_EULA);
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (eula_id != NULL);
 
-	g_debug ("eula_id %s", eula_id);
 	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
 	if (present != NULL) {
 		g_debug ("already added %s to accepted list", eula_id);
-		return FALSE;
+		return;
 	}
 	g_hash_table_insert (backend->priv->eulas, g_strdup (eula_id), GINT_TO_POINTER (1));
-	return TRUE;
 }
 
 /**
@@ -2970,92 +896,6 @@ out:
 }
 
 /**
- * pk_backend_get_property:
- **/
-static void
-pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
-{
-	PkBackend *backend = PK_BACKEND (object);
-	PkBackendPrivate *priv = backend->priv;
-
-	switch (prop_id) {
-	case PROP_BACKGROUND:
-		g_value_set_uint (value, priv->background);
-		break;
-	case PROP_INTERACTIVE:
-		g_value_set_uint (value, priv->interactive);
-		break;
-	case PROP_STATUS:
-		g_value_set_uint (value, priv->status);
-		break;
-	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
-		break;
-	case PROP_SPEED:
-		g_value_set_uint (value, priv->speed);
-		break;
-	case PROP_DOWNLOAD_SIZE_REMAINING:
-		g_value_set_uint64 (value, priv->download_size_remaining);
-		break;
-	case PROP_PERCENTAGE:
-		g_value_set_uint (value, priv->percentage);
-		break;
-	case PROP_REMAINING:
-		g_value_set_uint (value, priv->remaining);
-		break;
-	case PROP_UID:
-		g_value_set_uint (value, priv->uid);
-		break;
-	case PROP_CMDLINE:
-		g_value_set_string (value, priv->cmdline);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
- * pk_backend_set_property:
- **/
-static void
-pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
-{
-	PkBackend *backend = PK_BACKEND (object);
-	PkBackendPrivate *priv = backend->priv;
-
-	switch (prop_id) {
-	case PROP_BACKGROUND:
-		priv->background = g_value_get_uint (value);
-		break;
-	case PROP_INTERACTIVE:
-		priv->interactive = g_value_get_uint (value);
-		break;
-	case PROP_STATUS:
-		priv->status = g_value_get_uint (value);
-		break;
-	case PROP_ROLE:
-		priv->role = g_value_get_uint (value);
-		break;
-	case PROP_SPEED:
-		priv->speed = g_value_get_uint (value);
-		break;
-	case PROP_DOWNLOAD_SIZE_REMAINING:
-		priv->download_size_remaining = g_value_get_uint64 (value);
-		break;
-	case PROP_PERCENTAGE:
-		priv->percentage = g_value_get_uint (value);
-		break;
-	case PROP_REMAINING:
-		priv->remaining = g_value_get_uint (value);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
  * pk_backend_finalize:
  **/
 static void
@@ -3065,22 +905,9 @@ pk_backend_finalize (GObject *object)
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
 
-	pk_backend_reset (backend);
-	g_free (backend->priv->proxy_http);
-	g_free (backend->priv->proxy_https);
-	g_free (backend->priv->proxy_ftp);
-	g_free (backend->priv->proxy_socks);
-	g_free (backend->priv->no_proxy);
-	g_free (backend->priv->pac);
-	g_free (backend->priv->root);
-	g_free (backend->priv->cmdline);
 	g_free (backend->priv->name);
-	g_free (backend->priv->locale);
-	g_free (backend->priv->frontend_socket);
-	g_object_unref (backend->priv->results);
-	g_object_unref (backend->priv->time);
+
 	g_object_unref (backend->priv->network);
-	g_object_unref (backend->priv->store);
 	g_object_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
@@ -3098,322 +925,238 @@ pk_backend_finalize (GObject *object)
 static void
 pk_backend_class_init (PkBackendClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_finalize;
-	object_class->get_property = pk_backend_get_property;
-	object_class->set_property = pk_backend_set_property;
-
-	/**
-	 * PkBackend:background:
-	 */
-	pspec = g_param_spec_uint ("background", NULL, NULL,
-				   PK_HINT_ENUM_FALSE, PK_HINT_ENUM_UNSET, PK_HINT_ENUM_UNSET,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
-
-	/**
-	 * PkBackend:interactive:
-	 */
-	pspec = g_param_spec_uint ("interactive", NULL, NULL,
-				   PK_HINT_ENUM_FALSE, PK_HINT_ENUM_UNSET, PK_HINT_ENUM_UNSET,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
-
-	/**
-	 * PkBackend:uid:
-	 */
-	pspec = g_param_spec_uint ("uid", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_UID, pspec);
-
-	/**
-	 * PkBackend:cmdline:
-	 */
-	pspec = g_param_spec_string ("cmdline", NULL, NULL,
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
-
-	signals[SIGNAL_LOCKED_CHANGED] =
-		g_signal_new ("locked-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
-}
-
-/**
- * pk_backend_reset:
- **/
-gboolean
-pk_backend_reset (PkBackend *backend)
-{
-	PkBackendVFuncItem *item;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	/* we can't reset when we are running */
-	if (backend->priv->status == PK_STATUS_ENUM_RUNNING) {
-		g_warning ("cannot reset when running");
-		return FALSE;
-	}
-
-	/* do finish now, as we might be unreffing quickly */
-	if (backend->priv->signal_finished != 0) {
-		g_source_remove (backend->priv->signal_finished);
-		item = &backend->priv->vfunc_items[PK_BACKEND_SIGNAL_FINISHED];
-		if (item != NULL && item->enabled && item->vfunc != NULL) {
-			g_debug ("doing unref quickly delay");
-			item->vfunc (backend,
-				     GUINT_TO_POINTER (backend->priv->exit),
-				     item->user_data);
-		}
-	}
-
-	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0) {
-		g_source_remove (backend->priv->signal_error_timeout);
-		backend->priv->signal_error_timeout = 0;
-	}
-
-	if (backend->priv->last_package != NULL) {
-		g_object_unref (backend->priv->last_package);
-		backend->priv->last_package = NULL;
-	}
-	backend->priv->set_error = FALSE;
-	backend->priv->set_signature = FALSE;
-	backend->priv->set_eula = FALSE;
-	backend->priv->finished = FALSE;
-	backend->priv->has_sent_package = FALSE;
-	backend->priv->download_files = 0;
-	backend->priv->thread = NULL;
-	backend->priv->last_package = NULL;
-	backend->priv->allow_cancel = PK_HINT_ENUM_UNSET;
-	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
-	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
-	backend->priv->transaction_role = PK_ROLE_ENUM_UNKNOWN;
-	backend->priv->remaining = 0;
-	backend->priv->percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
-	backend->priv->speed = 0;
-	pk_store_reset (backend->priv->store);
-	pk_time_reset (backend->priv->time);
-
-	/* unref then create rather then set zero size, as another object
-	 * might have a reference on the data */
-	g_object_unref (backend->priv->results);
-	backend->priv->results = pk_results_new ();
-
-	/* clear monitor */
-	if (backend->priv->monitor != NULL) {
-		g_object_unref (backend->priv->monitor);
-		backend->priv->monitor = NULL;
-	}
-
-	return TRUE;
 }
 
 /**
  * pk_backend_cancel:
  */
 void
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
 	/* call into the backend */
-	backend->priv->desc->cancel (backend);
+	backend->priv->desc->cancel (backend, job);
 }
 
 /**
  * pk_backend_download_packages:
  */
 void
-pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+pk_backend_download_packages (PkBackend *backend,
+			      PkBackendJob *job,
+			      gchar **package_ids,
+			      const gchar *directory)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->download_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_store_set_string (backend->priv->store, "directory", directory);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->download_packages (backend, package_ids, directory);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(^ass)",
+							   package_ids,
+							   directory));
+	backend->priv->desc->download_packages (backend, job, package_ids, directory);
 }
 
 /**
  * pk_pk_backend_get_categories:
  */
 void
-pk_backend_get_categories (PkBackend *backend)
+pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_categories != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_CATEGORIES);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_categories (backend);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_CATEGORIES);
+	backend->priv->desc->get_categories (backend, job);
 }
 
 /**
  * pk_backend_get_depends:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_depends (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield filters,
+			gchar **package_ids,
+			gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_depends != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DEPENDS);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_store_set_bool (backend->priv->store, "recursive", recursive);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_depends (backend, filters, package_ids, recursive);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DEPENDS);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^asb)",
+							   filters,
+							   package_ids,
+							   recursive));
+	backend->priv->desc->get_depends (backend, job, filters, package_ids, recursive);
 }
 
 /**
  * pk_backend_get_details:
  */
 void
-pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend,
+			PkBackendJob *job,
+			gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_details != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DETAILS);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_details (backend, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS);
+	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
+							   package_ids));
+	backend->priv->desc->get_details (backend, job, package_ids);
 }
 
 /**
  * pk_backend_get_distro_upgrades:
  */
 void
-pk_backend_get_distro_upgrades (PkBackend *backend)
+pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_distro_upgrades != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_distro_upgrades (backend);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	backend->priv->desc->get_distro_upgrades (backend, job);
 }
 
 /**
  * pk_backend_get_files:
  */
 void
-pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend,
+		      PkBackendJob *job,
+		      gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_files != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_FILES);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_files (backend, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_FILES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
+							   package_ids));
+	backend->priv->desc->get_files (backend, job, package_ids);
 }
 
 /**
  * pk_backend_get_requires:
  */
 void
-pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_requires (PkBackend *backend,
+			 PkBackendJob *job,
+			 PkBitfield filters,
+			 gchar **package_ids,
+			 gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_requires != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REQUIRES);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_store_set_bool (backend->priv->store, "recursive", recursive);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_requires (backend, filters, package_ids, recursive);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_REQUIRES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^asb)",
+							   filters,
+							   package_ids,
+							   recursive));
+	backend->priv->desc->get_requires (backend, job, filters, package_ids, recursive);
 }
 
 /**
  * pk_backend_get_update_detail:
  */
 void
-pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+pk_backend_get_update_detail (PkBackend *backend,
+			      PkBackendJob *job,
+			      gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_update_detail != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_update_detail (backend, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
+							   package_ids));
+	backend->priv->desc->get_update_detail (backend, job, package_ids);
 }
 
 /**
  * pk_backend_get_updates:
  */
 void
-pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_updates != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATES);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_updates (backend, filters);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
+							   filters));
+	backend->priv->desc->get_updates (backend, job, filters);
 }
 
 /**
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend,
+			     PkBackendJob *job,
+			     PkBitfield transaction_flags,
+			     gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_PACKAGES);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->install_packages (backend, transaction_flags, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_PACKAGES);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   transaction_flags,
+							   package_ids));
+	backend->priv->desc->install_packages (backend, job, transaction_flags, package_ids);
 }
 
 /**
  * pk_backend_install_signature:
  */
 void
-pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
+pk_backend_install_signature (PkBackend *backend,
+			      PkBackendJob *job,
+			      PkSigTypeEnum type,
+			      const gchar *key_id,
+			      const gchar *package_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_signature != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_SIGNATURE);
-	pk_store_set_string (backend->priv->store, "key_id", key_id);
-	pk_store_set_string (backend->priv->store, "package_id", package_id);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->install_signature (backend, type, key_id, package_id);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(ss)",
+							   key_id,
+							   package_id));
+	backend->priv->desc->install_signature (backend, job, type, key_id, package_id);
 }
 
 /**
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend,
+			  PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar **full_paths)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_files != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_FILES);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->install_files (backend, transaction_flags, full_paths);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_FILES);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   transaction_flags,
+							   full_paths));
+	backend->priv->desc->install_files (backend, job, transaction_flags, full_paths);
 }
 
 /**
  * pk_backend_refresh_cache:
  */
 void
-pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->refresh_cache != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REFRESH_CACHE);
-	pk_store_set_bool (backend->priv->store, "force", force);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->refresh_cache (backend, force);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REFRESH_CACHE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(b)",
+							   force));
+	backend->priv->desc->refresh_cache (backend, job, force);
 }
 
 /**
@@ -3421,6 +1164,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
  */
 void
 pk_backend_remove_packages (PkBackend *backend,
+			    PkBackendJob *job,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids,
 			    gboolean allow_deps,
@@ -3428,13 +1172,14 @@ pk_backend_remove_packages (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->remove_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REMOVE_PACKAGES);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_store_set_bool (backend->priv->store, "allow_deps", allow_deps);
-	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->remove_packages (backend,
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REMOVE_PACKAGES);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^asbb)",
+							   transaction_flags,
+							   package_ids,
+							   allow_deps,
+							   autoremove));
+	backend->priv->desc->remove_packages (backend, job,
 					      transaction_flags,
 					      package_ids,
 					      allow_deps,
@@ -3445,208 +1190,226 @@ pk_backend_remove_packages (PkBackend *backend,
  * pk_backend_resolve:
  */
 void
-pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+pk_backend_resolve (PkBackend *backend,
+		    PkBackendJob *job,
+		    PkBitfield filters,
+		    gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->resolve != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_RESOLVE);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->resolve (backend, filters, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_RESOLVE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   filters,
+							   package_ids));
+	backend->priv->desc->resolve (backend, job, filters, package_ids);
 }
 
 /**
  * pk_backend_search_details:
  */
 void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield filters,
+			   gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_details != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_DETAILS);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->search_details (backend, filters, values);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_DETAILS);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   filters,
+							   values));
+	backend->priv->desc->search_details (backend, job, filters, values);
 }
 
 /**
  * pk_backend_search_files:
  */
 void
-pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend,
+			 PkBackendJob *job,
+			 PkBitfield filters,
+			 gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_files != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_FILE);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->search_files (backend, filters, values);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_FILE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   filters,
+							   values));
+	backend->priv->desc->search_files (backend, job, filters, values);
 }
 
 /**
  * pk_backend_search_groups:
  */
 void
-pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend,
+			  PkBackendJob *job,
+			  PkBitfield filters,
+			  gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_groups != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_GROUP);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->search_groups (backend, filters, values);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_GROUP);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   filters,
+							   values));
+	backend->priv->desc->search_groups (backend, job, filters, values);
 }
 
 /**
  * pk_backend_search_names:
  */
 void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend,
+			 PkBackendJob *job,
+			 PkBitfield filters,
+			 gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_names != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_NAME);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->search_names (backend, filters, values);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_NAME);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   filters,
+							   values));
+	backend->priv->desc->search_names (backend, job, filters, values);
 }
 
 /**
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->update_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->update_packages (backend, transaction_flags, package_ids);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
+							   transaction_flags,
+							   package_ids));
+	backend->priv->desc->update_packages (backend, job, transaction_flags, package_ids);
 }
 
 /**
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
+pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->update_system != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->update_system (backend, transaction_flags);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPDATE_SYSTEM);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
+							   transaction_flags));
+	backend->priv->desc->update_system (backend, job, transaction_flags);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 void
-pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_repo_list != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REPO_LIST);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_repo_list (backend, filters);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_REPO_LIST);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
+							   filters));
+	backend->priv->desc->get_repo_list (backend, job, filters);
 }
 
 /**
  * pk_backend_repo_enable:
  */
 void
-pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
+pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repo_enable != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_ENABLE);
-	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
-	pk_store_set_bool (backend->priv->store, "enabled", enabled);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->repo_enable (backend, repo_id, enabled);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_ENABLE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(sb)",
+							   repo_id,
+							   enabled));
+	backend->priv->desc->repo_enable (backend, job, repo_id, enabled);
 }
 
 /**
  * pk_backend_repo_set_data:
  */
 void
-pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
+pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repo_set_data != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_SET_DATA);
-	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
-	pk_store_set_string (backend->priv->store, "parameter", parameter);
-	pk_store_set_string (backend->priv->store, "value", value);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->repo_set_data (backend, repo_id, parameter, value);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_SET_DATA);
+	pk_backend_job_set_parameters (job, g_variant_new ("(sss)",
+							   repo_id,
+							   parameter,
+							   value));
+	backend->priv->desc->repo_set_data (backend, job, repo_id, parameter, value);
 }
 
 /**
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->what_provides != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_WHAT_PROVIDES);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_uint (backend->priv->store, "provides", provides);
-	pk_store_set_strv (backend->priv->store, "search", values);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->what_provides (backend, filters, provides, values);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_WHAT_PROVIDES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(tu^as)",
+							   filters,
+							   provides,
+							   values));
+	backend->priv->desc->what_provides (backend, job, filters, provides, values);
 }
 
 /**
  * pk_backend_get_packages:
  */
 void
-pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_packages != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_PACKAGES);
-	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->get_packages (backend, filters);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_PACKAGES);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
+							   filters));
+	backend->priv->desc->get_packages (backend, job, filters);
 }
 
 /**
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
-	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
-	pk_store_set_uint (backend->priv->store, "upgrade_kind", upgrade_kind);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->upgrade_system (backend, distro_id, upgrade_kind);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+	pk_backend_job_set_parameters (job, g_variant_new ("(su)",
+							   distro_id,
+							   upgrade_kind));
+	backend->priv->desc->upgrade_system (backend, job, distro_id, upgrade_kind);
 }
 
 /**
  * pk_backend_repair_system:
  */
 void
-pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
+pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repair_system != NULL);
-	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPAIR_SYSTEM);
-	pk_store_set_uint (backend->priv->store, "transaction_flags", transaction_flags);
-	pk_backend_job_reset (backend);
-	backend->priv->desc->repair_system (backend, transaction_flags);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
+							   transaction_flags));
+	backend->priv->desc->repair_system (backend, job, transaction_flags);
 }
 
 /**
@@ -3655,22 +1418,10 @@ pk_backend_repair_system (PkBackend *backend, PkBitfield transaction_flags)
 static void
 pk_backend_init (PkBackend *backend)
 {
-	PkConf *conf;
-
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
 	backend->priv->conf = pk_conf_new ();
-	backend->priv->results = pk_results_new ();
-	backend->priv->store = pk_store_new ();
-	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
-	/* do we use time estimation? */
-	conf = pk_conf_new ();
-	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
-	g_object_unref (conf);
-
-	pk_backend_reset (backend);
 }
 
 /**

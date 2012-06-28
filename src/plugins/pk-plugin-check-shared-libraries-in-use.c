@@ -81,7 +81,7 @@ pk_plugin_destroy (PkPlugin *plugin)
  * pk_plugin_finished_cb:
  **/
 static void
-pk_plugin_finished_cb (PkBackend *backend,
+pk_plugin_finished_cb (PkBackendJob *job,
 		       PkExitEnum exit_enum,
 		       PkPlugin *plugin)
 {
@@ -103,9 +103,10 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 
 	/* use PK to find the correct package */
 	g_ptr_array_set_size (plugin->priv->list, 0);
-	pk_backend_reset (plugin->backend);
+	pk_backend_reset_job (plugin->backend, plugin->job);
 	filenames = g_strsplit (filename, "|||", -1);
 	pk_backend_search_files (plugin->backend,
+				 plugin->job,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 				 filenames);
 
@@ -133,7 +134,7 @@ out:
  * pk_plugin_files_cb:
  **/
 static void
-pk_plugin_files_cb (PkBackend *backend,
+pk_plugin_files_cb (PkBackendJob *job,
 		    PkFiles *files,
 		    PkPlugin *plugin)
 {
@@ -308,13 +309,13 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	pk_backend_set_vfunc (plugin->backend,
+	pk_backend_job_set_vfunc (plugin->job,
 			      PK_BACKEND_SIGNAL_FILES,
-			      (PkBackendVFunc) pk_plugin_files_cb,
+			      (PkBackendJobVFunc) pk_plugin_files_cb,
 			      plugin);
-	pk_backend_set_vfunc (plugin->backend,
+	pk_backend_job_set_vfunc (plugin->job,
 			      PK_BACKEND_SIGNAL_FINISHED,
-			      (PkBackendVFunc) pk_plugin_finished_cb,
+			      (PkBackendJobVFunc) pk_plugin_finished_cb,
 			      plugin);
 
 	/* do we have a cache */
@@ -391,8 +392,8 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* set status */
-	pk_backend_set_status (plugin->backend, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
-	pk_backend_set_percentage (plugin->backend, 101);
+	pk_backend_job_set_status (plugin->job, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
+	pk_backend_job_set_percentage (plugin->job, 101);
 
 	/* get list from lsof */
 	ret = pk_lsof_refresh (plugin->priv->lsof);
@@ -402,10 +403,12 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* get all the files touched in the packages we just updated */
-	pk_backend_reset (plugin->backend);
-	pk_backend_set_status (plugin->backend,
-			       PK_STATUS_ENUM_CHECK_LIBRARIES);
-	pk_backend_get_files (plugin->backend, package_ids_security);
+	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_status (plugin->job,
+				   PK_STATUS_ENUM_CHECK_LIBRARIES);
+	pk_backend_get_files (plugin->backend,
+			      plugin->job,
+			      package_ids_security);
 
 	/* wait for finished */
 	g_main_loop_run (plugin->priv->loop);
@@ -433,7 +436,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 	}
 
 	/* don't emit until we've run the transaction and it's success */
-	pk_backend_set_percentage (plugin->backend, 100);
+	pk_backend_job_set_percentage (plugin->job, 100);
 out:
 	g_strfreev (files);
 	if (updates != NULL)
@@ -493,7 +496,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		goto out;
 
 	/* set status */
-	pk_backend_set_status (plugin->backend,
+	pk_backend_job_set_status (plugin->job,
 			       PK_STATUS_ENUM_CHECK_LIBRARIES);
 
 	/* get user UID range */
@@ -546,9 +549,9 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_backend_require_restart (plugin->backend,
-					    PK_RESTART_ENUM_SECURITY_SESSION,
-					    pk_package_get_id (package));
+		pk_backend_job_require_restart (plugin->job,
+					        PK_RESTART_ENUM_SECURITY_SESSION,
+					        pk_package_get_id (package));
 	}
 
 	/* process all system restarts */
@@ -562,9 +565,9 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_backend_require_restart (plugin->backend,
-					    PK_RESTART_ENUM_SECURITY_SYSTEM,
-					    pk_package_get_id (package));
+		pk_backend_job_require_restart (plugin->job,
+					        PK_RESTART_ENUM_SECURITY_SYSTEM,
+					        pk_package_get_id (package));
 	}
 out:
 	if (files_session != NULL)

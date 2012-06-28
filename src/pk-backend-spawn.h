@@ -23,7 +23,7 @@
 #define __PK_BACKEND_SPAWN_H
 
 #include <glib-object.h>
-#include "pk-backend.h"
+#include "pk-backend-job.h"
 
 G_BEGIN_DECLS
 
@@ -53,7 +53,9 @@ typedef struct
 GType		 pk_backend_spawn_get_type		(void);
 PkBackendSpawn	*pk_backend_spawn_new			(void);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
+							 PkBackendJob	*job,
 							 const gchar	*first_element, ...);
+gboolean	 pk_backend_spawn_is_busy		(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_kill			(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_exit			(PkBackendSpawn	*backend_spawn);
 const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);
@@ -63,15 +65,13 @@ gboolean	 pk_backend_spawn_set_allow_sigkill	(PkBackendSpawn	*backend_spawn,
 							 gboolean	 allow_sigkill);
 
 PkBackend	*pk_backend_spawn_get_backend		(PkBackendSpawn	*backend_spawn);
-void		 pk_backend_spawn_set_backend		(PkBackendSpawn	*backend_spawn,
-							 PkBackend	*backend);
 gchar		*pk_backend_spawn_convert_uri		(const gchar	*proxy);
 gboolean	 pk_backend_spawn_inject_data		(PkBackendSpawn *backend_spawn,
 							 const gchar	*line,
 							 GError		**error);
 
 /* filtering */
-typedef gboolean (*PkBackendSpawnFilterFunc)		(PkBackend	*backend,
+typedef gboolean (*PkBackendSpawnFilterFunc)		(PkBackendJob	*job,
 							 const gchar	*data);
 gboolean	 pk_backend_spawn_set_filter_stderr	(PkBackendSpawn	*backend_spawn,
 							 PkBackendSpawnFilterFunc func);

@@ -67,7 +67,7 @@
 #include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
 
-static void     pk_transaction_list_finalize	(GObject        *object);
+static void     pk_transaction_list_finalize	(GObject	*object);
 
 #define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListPrivate))
 
