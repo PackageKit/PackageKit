@@ -2881,6 +2881,21 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 
 	g_return_val_if_fail (priv->sender != NULL, FALSE);
 
+	/* we don't need to authenticate at all to just download packages */
+	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		g_debug ("No authentication required for only-download");
+		ret = pk_transaction_commit (transaction);
+		if (!ret) {
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+					     "Could not commit to a transaction object");
+			pk_transaction_release_tid (transaction);
+			goto out;
+		}
+	}
+
 	/* we should always have subject */
 	if (priv->subject == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
