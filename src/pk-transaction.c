@@ -2863,8 +2863,8 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 					     "Could not commit to a transaction object");
 			pk_transaction_release_tid (transaction);
-			goto out;
 		}
+		goto out;
 	}
 
 	/* we should always have subject */
