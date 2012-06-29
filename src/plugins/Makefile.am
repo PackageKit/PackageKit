@@ -58,6 +58,7 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-update-package-cache.la		\
 	libpk_plugin-no-update-process.la		\
 	libpk_plugin-scan-desktop-files.la		\
+	libpk_plugin-systemd-updates.la			\
 	libpk_plugin-update-check-processes.la		\
 	libpk_plugin-check-shared-libraries-in-use.la	\
 	libpk_plugin-clear-system-update.la		\
@@ -67,6 +68,11 @@ libpk_plugin_example_la_SOURCES = pk-plugin-example.c
 libpk_plugin_example_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_example_la_LDFLAGS = -module -avoid-version
 libpk_plugin_example_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
+
+libpk_plugin_systemd_updates_la_SOURCES = pk-plugin-systemd-updates.c
+libpk_plugin_systemd_updates_la_LIBADD = $(PK_PLUGIN_LIBS)
+libpk_plugin_systemd_updates_la_LDFLAGS = -module -avoid-version
+libpk_plugin_systemd_updates_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
 libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)

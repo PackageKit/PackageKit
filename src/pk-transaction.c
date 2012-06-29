@@ -1059,6 +1059,18 @@ pk_transaction_get_package_ids (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_get_transaction_flags:
+ *
+ * Returns: transaction flags for the transaction
+ **/
+PkBitfield
+pk_transaction_get_transaction_flags (PkTransaction *transaction)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
+	return transaction->priv->cached_transaction_flags;
+}
+
+/**
  * pk_transaction_set_package_ids:
  **/
 void
@@ -1104,116 +1116,6 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_strfreev (transaction->priv->cached_full_paths);
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
-}
-
-/**
- * pk_transaction_get_existing_prepared_updates:
- **/
-static GPtrArray *
-pk_transaction_get_existing_prepared_updates (const gchar *filename)
-{
-	gboolean ret;
-	gchar **package_ids = NULL;
-	gchar *packages_data = NULL;
-	GError *error = NULL;
-	GPtrArray *packages;
-	guint i;
-
-	/* always return a valid array, even for failure */
-	packages = g_ptr_array_new_with_free_func (g_free);
-
-	/* does the file exist ? */
-	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-		goto out;
-
-	/* get the list of packages to update */
-	ret = g_file_get_contents (filename,
-				   &packages_data,
-				   NULL,
-				   &error);
-	if (!ret) {
-		g_warning ("failed to read: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* add them to the new array */
-	package_ids = g_strsplit (packages_data, "\n", -1);
-	for (i = 0; package_ids[i] != NULL; i++)
-		g_ptr_array_add (packages, g_strdup (package_ids[i]));
-out:
-	g_free (packages_data);
-	g_strfreev (package_ids);
-	return packages;
-}
-
-/**
- * pk_transaction_array_str_exists:
- **/
-static gboolean
-pk_transaction_array_str_exists (GPtrArray *array, const gchar *str)
-{
-	guint i;
-	const gchar *tmp;
-	for (i = 0; i < array->len; i++) {
-		tmp = g_ptr_array_index (array, i);
-		if (g_strcmp0 (tmp, str) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
- * pk_transaction_write_prepared_file:
- **/
-static void
-pk_transaction_write_prepared_file (PkTransaction *transaction)
-{
-	gboolean ret;
-	gchar **package_ids;
-	gchar *packages_str = NULL;
-	gchar *path;
-	GError *error = NULL;
-	GPtrArray *packages;
-	guint i;
-
-	/* not interesting to us */
-	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		return;
-	}
-
-	/* get the existing prepared updates */
-	path = g_build_filename (LOCALSTATEDIR,
-				 "lib",
-				 "PackageKit",
-				 "prepared-update",
-				 NULL);
-	packages = pk_transaction_get_existing_prepared_updates (path);
-
-	/* add any new ones */
-	package_ids = transaction->priv->cached_package_ids;
-	for (i = 0; package_ids[i] != NULL; i++) {
-		if (!pk_transaction_array_str_exists (packages, package_ids[i])) {
-			g_ptr_array_add (packages,
-					 g_strdup (package_ids[i]));
-		}
-	}
-	g_ptr_array_add (packages, NULL);
-
-	/* write filename */
-	packages_str = g_strjoinv ("\n", (gchar **) packages->pdata);
-	ret = g_file_set_contents (path,
-				   packages_str,
-				   -1,
-				   &error);
-	if (!ret) {
-		g_warning ("failed to write %s: %s",
-			   path, error->message);
-		g_error_free (error);
-	}
-	g_free (packages_str);
-	g_free (path);
 }
 
 /**
@@ -1320,13 +1222,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* only reset the time if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
-
-	/* write notification files if anything is pending */
-	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
-	    pk_bitfield_contain (transaction->priv->cached_transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		pk_transaction_write_prepared_file (transaction);
-	}
 
 	/* did we finish okay? */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
