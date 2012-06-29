@@ -39,6 +39,9 @@ pk_offline_update_set_plymouth_msg (const gchar *msg)
 	gchar *cmd;
 	GError *error = NULL;
 
+	/* allow testing without sending commands to plymouth */
+	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
 	cmd = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
 	ret = g_spawn_command_line_async (cmd, &error);
 	if (!ret) {
@@ -60,6 +63,9 @@ pk_offline_update_set_plymouth_mode (const gchar *mode)
 	GError *error = NULL;
 	gchar *cmdline;
 
+	/* allow testing without sending commands to plymouth */
+	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
 	cmdline = g_strdup_printf ("plymouth change-mode --%s", mode);
 	ret = g_spawn_command_line_async (cmdline, &error);
 	if (!ret) {
@@ -80,6 +86,9 @@ pk_offline_update_set_plymouth_percentage (guint percentage)
 	GError *error = NULL;
 	gchar *cmdline;
 
+	/* allow testing without sending commands to plymouth */
+	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
 	cmdline = g_strdup_printf ("plymouth system-update --progress=%i",
 				   percentage);
 	ret = g_spawn_command_line_async (cmdline, &error);
@@ -128,6 +137,10 @@ pk_offline_update_reboot (void)
 	GDBusConnection *connection;
 	GError *error = NULL;
 	GVariant *val = NULL;
+
+	/* allow testing without rebooting */
+	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
 
 	/* reboot using systemd */
 	pk_offline_update_set_plymouth_mode ("shutdown");
