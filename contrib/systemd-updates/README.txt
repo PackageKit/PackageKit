@@ -46,3 +46,36 @@ For success, the file will contain the following:
 Success=true
 Packages=upower;0.9.16-1.fc17;x86_64;updates,zif;0.3.0-1.fc17;x86_64;updates
 """
+
+________________________________________________________________________
+
+                    TESTING OFFLINE UPDATES
+
+ *  Ensure powertop and colorhug-client are installed and the system is
+    othewise up to date. Ensure PackageKit 0.8.1-3 or later is installed.
+ *  Downgrade the powertop and colorhug-client packages on your system so
+    that you have exactly two updates when you do "pkcon get-updates"
+ *  Download the new powertop update with:
+    pkcon --only-download update powertop
+ *  Observe there are no PolicyKit dialogs shown as the command completes
+ *  Ensure /var/lib/PackageKit/prepared-update contains just the powertop
+    package on a single line
+ *  Download the new colorhug-client update with:
+    pkcon --only-download update colorhug-client
+ *  Ensure /var/lib/PackageKit/prepared-update contains both powertop and
+    colorhug-client on two lines
+ *  Run pkexec /usr/libexec/pk-trigger-offline-update and confirm that
+    the system-update symlink exists on '/'.
+ *  Observe that pkexec ran without showing a PolicyKit dialog
+ *  Run sudo PK_OFFLINE_UPDATE_TEST=1 /usr/libexec/pk-offline-update and
+    observe that the two updates are applied
+ *  Confirm that /var/lib/PackageKit/prepared-update has been deleted
+ *  Confirm that /var/lib/PackageKit/offline-update-competed exists
+    and no error messages have been logged.
+ *  Downgrade powertop and colorhug-client again, and do:
+    pkcon --only-download update powertop colorhug-client
+    pkexec /usr/libexec/pk-trigger-offline-update
+ *  Reboot, and observe that the updates are applied in the special
+    system-update.service with plymouth going from 0% to 100%
+ *  Confirm that the system is rebooted into a running system that has
+    has the updates applied.
