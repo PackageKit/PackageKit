@@ -2560,7 +2560,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, PkBitfield flags, bool autore
     }
 
     PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
-    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD);
     pk_backend_set_simultaneous_mode(backend, true);
     // Download and check if we can continue
     if (fetcher.Run() != pkgAcquire::Continue
@@ -2592,7 +2591,6 @@ bool AptIntf::installPackages(AptCacheFile &cache, PkBitfield flags, bool autore
     pk_backend_job_set_allow_cancel (m_job, false);
 
     // Download should be finished by now, changing it's status
-    pk_backend_job_set_status (m_job, PK_STATUS_ENUM_RUNNING);
     pk_backend_job_set_percentage(m_job, PK_BACKEND_PERCENTAGE_INVALID);
 
     // we could try to see if this is the case

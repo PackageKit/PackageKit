@@ -39,7 +39,16 @@ AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackendJob *job) :
 // ---------------------------------------------------------------------
 void AcqPackageKitStatus::Start()
 {
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD);
     pkgAcquireStatus::Start();
+}
+
+// AcqPackageKitStatus::Stop - Downloading has stopped
+// ---------------------------------------------------------------------
+void AcqPackageKitStatus::Stop()
+{
+    pk_backend_job_set_status (m_job, PK_STATUS_ENUM_RUNNING);
+    pkgAcquireStatus::Stop();
 }
 
 // AcqPackageKitStatus::IMSHit - Called when an item got a HIT response	/*{{{*/
@@ -55,7 +64,6 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
     } else {
         updateStatus(Itm, 100);
     }
-    Update = true;
 }
 
 // AcqPackageKitStatus::Fetch - An item has started to download
@@ -65,8 +73,6 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
 {
     // Download queued
     updateStatus(Itm, 0);
-
-    Update = true;
 }
 
 // AcqPackageKitStatus::Done - Completed a download
@@ -76,8 +82,6 @@ void AcqPackageKitStatus::Done(pkgAcquire::ItemDesc &Itm)
 {
     // Download completed
     updateStatus(Itm, 100);
-
-    Update = true;
 }
 
 // AcqPackageKitStatus::Fail - Called when an item fails to download
@@ -109,8 +113,6 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
                       Itm.Description.c_str(),
                       Itm.Owner->ErrorText.c_str());
     }
-
-    Update = true;
 }
 
 // AcqPackageKitStatus::Pulse - Regular event pulse
@@ -172,9 +174,9 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 {
     pk_backend_job_media_change_required(m_job,
-                                     PK_MEDIA_TYPE_ENUM_DISC,
-                                     Media.c_str(),
-                                     Media.c_str());
+                                         PK_MEDIA_TYPE_ENUM_DISC,
+                                         Media.c_str(),
+                                         Media.c_str());
 
     char errorMsg[400];
     sprintf(errorMsg,
