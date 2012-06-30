@@ -370,10 +370,10 @@ public:
      * \sa upgradeSystem()
      */
     typedef enum {
-        TransactionFlagNone,        // Since: 0.8.1
-        TransactionFlagOnlyTrusted, // Since: 0.8.1
-        TransactionFlagSimulate,    // Since: 0.8.1
-        TransactionFlagOnlyDownload // Since: 0.8.1
+        TransactionFlagNone         = 1 << 0, // Since: 0.8.1
+        TransactionFlagOnlyTrusted  = 1 << 1, // Since: 0.8.1
+        TransactionFlagSimulate     = 1 << 2, // Since: 0.8.1
+        TransactionFlagOnlyDownload = 1 << 3  // Since: 0.8.1
     } TransactionFlag;
     Q_DECLARE_FLAGS(TransactionFlags, TransactionFlag)
 
