@@ -138,7 +138,7 @@ QString Package::iconPath() const
 
 bool Package::operator==(const Package &package) const
 {
-    return *this == package;
+    return id() == package.id() && info() == package.info();
 }
 
 Package& Package::operator=(const Package &package)
