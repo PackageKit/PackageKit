@@ -87,17 +87,7 @@ public:
     /** \return a short description string corresponding to the given
      *  version.
      */
-    std::string getDefaultShortDescription(const pkgCache::VerIterator &ver);
-
-    /** \return a short description string corresponding to the given
-     *  version.
-     */
     std::string getShortDescription(const pkgCache::VerIterator &ver);
-
-    /** \return a short description string corresponding to the given
-     *  version.
-     */
-    std::string getDefaultLongDescription(const pkgCache::VerIterator &ver);
 
     /** \return a short description string corresponding to the given
      *  version.
