@@ -978,6 +978,41 @@ out:
 }
 
 /**
+ * pk_console_update_system:
+ **/
+static gboolean
+pk_console_update_system (GError **error)
+{
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
+	PkPackageSack *sack = NULL;
+	PkResults *results;
+
+	/* get the current updates */
+	results = pk_task_get_updates_sync (PK_TASK (task), 0, cancellable,
+					    (PkProgressCallback) pk_console_progress_cb, NULL,
+					    error);
+	if (results == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* do the async action */
+	sack = pk_results_get_package_sack (results);
+	package_ids = pk_package_sack_get_ids (sack);
+	pk_task_update_packages_async (PK_TASK(task), package_ids, cancellable,
+				       (PkProgressCallback) pk_console_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
+	if (sack != NULL)
+		g_object_unref (sack);
+	if (results != NULL)
+		g_object_unref (results);
+	g_strfreev (package_ids);
+	return ret;
+}
+
+/**
  * pk_console_get_requires:
  **/
 static gboolean
@@ -1565,9 +1600,7 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			pk_task_update_system_async (PK_TASK(task), cancellable,
-						     (PkProgressCallback) pk_console_progress_cb, NULL,
-						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+			nowait = !pk_console_update_system (&error);
 		} else {
 			nowait = !pk_console_update_packages (argv+2, &error);
 		}
