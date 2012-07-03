@@ -97,6 +97,10 @@ struct PkEnginePrivate
 	guint			 owner_id;
 	GDBusNodeInfo		*introspection;
 	GDBusConnection		*connection;
+#ifdef PK_BUILD_SYSTEMD
+	GDBusProxy		*logind_proxy;
+	gint			 logind_fd;
+#endif
 };
 
 enum {
@@ -236,6 +240,65 @@ pk_engine_emit_property_changed (PkEngine *engine,
 }
 
 /**
+ * pk_engine_inhibit:
+ **/
+static void
+pk_engine_inhibit (PkEngine *engine)
+{
+#ifdef PK_BUILD_SYSTEMD
+	GVariant *res;
+	GError *error = NULL;
+
+	/* not yet connected */
+	if (engine->priv->logind_proxy == NULL) {
+		g_warning ("no logind connection to use");
+		return;
+	}
+
+	/* block shutdown and idle */
+	res = g_dbus_proxy_call_sync (engine->priv->logind_proxy,
+				      "Inhibit",
+				      g_variant_new ("ssss",
+						     "shutdown:idle",
+						     "Package Updater",
+						     "Package Update in Progress",
+						     "block"),
+				      G_DBUS_CALL_FLAGS_NONE,
+				      -1,
+				      NULL, /* GCancellable */
+				      &error);
+	if (res == NULL) {
+		g_warning ("Failed to Inhibit using logind: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* keep fd as cookie */
+	g_variant_get (res, "(h)", &engine->priv->logind_fd);
+	g_debug ("got logind cookie %i", engine->priv->logind_fd);
+out:
+	if (res != NULL)
+		g_variant_unref (res);
+#endif
+}
+
+/**
+ * pk_engine_uninhibit:
+ **/
+static void
+pk_engine_uninhibit (PkEngine *engine)
+{
+#ifdef PK_BUILD_SYSTEMD
+	if (engine->priv->logind_fd == 0) {
+		g_warning ("no fd to close");
+		return;
+	}
+	close (engine->priv->logind_fd);
+	engine->priv->logind_fd = 0;
+#endif
+}
+
+/**
  * pk_engine_set_locked:
  **/
 static void
@@ -246,8 +309,13 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 	/* already set */
 	if (engine->priv->locked == is_locked)
 		return;
-
 	engine->priv->locked = is_locked;
+
+	/* inhibit shutdown and suspend */
+	if (is_locked)
+		pk_engine_inhibit (engine);
+	else
+		pk_engine_uninhibit (engine);
 
 	/* emit */
 	pk_engine_emit_property_changed (engine,
@@ -1629,6 +1697,26 @@ out:
 	g_free (data);
 }
 
+#ifdef PK_BUILD_SYSTEMD
+/**
+ * pk_engine_proxy_logind_cb:
+ **/
+static void
+pk_engine_proxy_logind_cb (GObject *source_object,
+			   GAsyncResult *res,
+			   gpointer user_data)
+{
+	GError *error = NULL;
+	PkEngine *engine = PK_ENGINE (user_data);
+
+	engine->priv->logind_proxy = g_dbus_proxy_new_finish (res, &error);
+	if (engine->priv->logind_proxy == NULL) {
+		g_warning ("failed to connect to logind: %s", error->message);
+		g_error_free (error);
+	}
+}
+#endif
+
 /**
  * pk_engine_on_bus_acquired_cb:
  **/
@@ -1648,6 +1736,19 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 
 	/* save copy for emitting signals */
 	engine->priv->connection = g_object_ref (connection);
+
+#ifdef PK_BUILD_SYSTEMD
+	/* connect to logind */
+	g_dbus_proxy_new (connection,
+			  G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+			  NULL,
+			  "org.freedesktop.login1",
+			  "/org/freedesktop/login1",
+			  "org.freedesktop.login1.Manager",
+			  NULL, /* GCancellable */
+			  pk_engine_proxy_logind_cb,
+			  engine);
+#endif
 
 	/* register org.freedesktop.PackageKit */
 	registration_id = g_dbus_connection_register_object (connection,
@@ -1893,6 +1994,14 @@ pk_engine_finalize (GObject *object)
 		g_dbus_node_info_unref (engine->priv->introspection);
 	if (engine->priv->connection != NULL)
 		g_object_unref (engine->priv->connection);
+
+#ifdef PK_BUILD_SYSTEMD
+	/* uninhibit */
+	if (engine->priv->logind_fd != 0)
+		close (engine->priv->logind_fd);
+	if (engine->priv->logind_proxy != NULL)
+		g_object_unref (engine->priv->logind_proxy);
+#endif
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
