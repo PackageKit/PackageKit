@@ -153,7 +153,10 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
  * pk_backend_spawn_parse_stdout:
  **/
 static gboolean
-pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line, GError **error)
+pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
+			       PkBackendJob *job,
+			       const gchar *line,
+			       GError **error)
 {
 	gchar **sections;
 	guint size;
@@ -207,7 +210,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_package (priv->job, info, sections[2], sections[3]);
+		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 7) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -226,7 +229,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_details (priv->job, sections[1], sections[2],
+		pk_backend_job_details (job, sections[1], sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
@@ -235,7 +238,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_finished (priv->job);
+		pk_backend_job_finished (job);
 		priv->is_busy = FALSE;
 
 		/* from this point on, we can start the kill timer */
@@ -247,7 +250,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_files (priv->job, sections[1], sections[2]);
+		pk_backend_job_files (job, sections[1], sections[2]);
 	} else if (g_strcmp0 (command, "repo-detail") == 0) {
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -255,9 +258,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 		if (g_strcmp0 (sections[3], "true") == 0) {
-			pk_backend_job_repo_detail (priv->job, sections[1], sections[2], TRUE);
+			pk_backend_job_repo_detail (job, sections[1], sections[2], TRUE);
 		} else if (g_strcmp0 (sections[3], "false") == 0) {
-			pk_backend_job_repo_detail (priv->job, sections[1], sections[2], FALSE);
+			pk_backend_job_repo_detail (job, sections[1], sections[2], FALSE);
 		} else {
 			g_set_error (error, 1, 0, "invalid qualifier '%s'", sections[3]);
 			ret = FALSE;
@@ -289,7 +292,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		vendor_urls = g_strsplit (sections[4], ";", -1);
 		bugzilla_urls = g_strsplit (sections[5], ";", -1);
 		cve_urls = g_strsplit (sections[6], ";", -1);
-		pk_backend_job_update_detail (priv->job,
+		pk_backend_job_update_detail (job,
 					  sections[1],
 					  updates,
 					  obsoletes,
@@ -321,7 +324,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			g_set_error (error, 1, 0, "invalid percentage value %i", percentage);
 			ret = FALSE;
 		} else {
-			pk_backend_job_set_percentage (priv->job, percentage);
+			pk_backend_job_set_percentage (job, percentage);
 		}
 	} else if (g_strcmp0 (command, "item-progress") == 0) {
 		if (size != 4) {
@@ -351,7 +354,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_set_item_progress (priv->job,
+		pk_backend_job_set_item_progress (job,
 						  sections[1],
 						  status_enum,
 						  percentage);
@@ -376,7 +379,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		/* convert % else we try to format them */
 		g_strdelimit (text, "%", '$');
 
-		pk_backend_job_error_code (priv->job, error_enum, text);
+		pk_backend_job_error_code (job, error_enum, text);
 		g_free (text);
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
@@ -395,7 +398,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_require_restart (priv->job, restart_enum, sections[2]);
+		pk_backend_job_require_restart (job, restart_enum, sections[2]);
 	} else if (g_strcmp0 (command, "message") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -411,7 +414,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		text = g_strdup (sections[2]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_message (priv->job, message_enum, text);
+		pk_backend_job_message (job, message_enum, text);
 		g_free (text);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
@@ -425,7 +428,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_set_status (priv->job, status_enum);
+		pk_backend_job_set_status (job, status_enum);
 	} else if (g_strcmp0 (command, "speed") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -440,7 +443,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_set_speed (priv->job, speed);
+		pk_backend_job_set_speed (job, speed);
 	} else if (g_strcmp0 (command, "download-size-remaining") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -455,7 +458,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_set_download_size_remaining (priv->job, download_size_remaining);
+		pk_backend_job_set_download_size_remaining (job, download_size_remaining);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -463,9 +466,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 		if (g_strcmp0 (sections[1], "true") == 0) {
-			pk_backend_job_set_allow_cancel (priv->job, TRUE);
+			pk_backend_job_set_allow_cancel (job, TRUE);
 		} else if (g_strcmp0 (sections[1], "false") == 0) {
-			pk_backend_job_set_allow_cancel (priv->job, FALSE);
+			pk_backend_job_set_allow_cancel (job, FALSE);
 		} else {
 			g_set_error (error, 1, 0, "invalid section '%s'", sections[1]);
 			ret = FALSE;
@@ -477,7 +480,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
+		pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 	} else if (g_strcmp0 (command, "repo-signature-required") == 0) {
 
 		if (size != 9) {
@@ -504,7 +507,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		}
 
 		/* pass _all_ of the data */
-		pk_backend_job_repo_signature_required (priv->job, sections[1],
+		pk_backend_job_repo_signature_required (job, sections[1],
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
 		goto out;
@@ -535,7 +538,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 
-		pk_backend_job_eula_required (priv->job, sections[1], sections[2], sections[3], sections[4]);
+		pk_backend_job_eula_required (job, sections[1], sections[2], sections[3], sections[4]);
 		goto out;
 
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
@@ -553,7 +556,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 
-		pk_backend_job_media_change_required (priv->job, media_type_enum, sections[2], sections[3]);
+		pk_backend_job_media_change_required (job, media_type_enum, sections[2], sections[3]);
 		goto out;
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
@@ -570,7 +573,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 
-		pk_backend_job_distro_upgrade (priv->job, distro_upgrade_enum, sections[2], sections[3]);
+		pk_backend_job_distro_upgrade (job, distro_upgrade_enum, sections[2], sections[3]);
 		goto out;
 	} else if (g_strcmp0 (command, "category") == 0) {
 
@@ -604,7 +607,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_category (priv->job, sections[1], sections[2], sections[3], sections[4], sections[5]);
+		pk_backend_job_category (job, sections[1], sections[2], sections[3], sections[4], sections[5]);
 		goto out;
 	} else {
 		ret = FALSE;
@@ -655,19 +658,22 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
  * pk_backend_spawn_inject_data:
  **/
 gboolean
-pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn, const gchar *line, GError **error)
+pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
+			      PkBackendJob *job,
+			      const gchar *line,
+			      GError **error)
 {
 	gboolean ret;
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* do we ignore with a filter func ? */
 	if (backend_spawn->priv->stdout_func != NULL) {
-		ret = backend_spawn->priv->stdout_func (backend_spawn->priv->job, line);
+		ret = backend_spawn->priv->stdout_func (job, line);
 		if (!ret)
 			return TRUE;
 	}
 
-	return pk_backend_spawn_parse_stdout (backend_spawn, line, error);
+	return pk_backend_spawn_parse_stdout (backend_spawn, job, line, error);
 }
 
 /**
@@ -678,7 +684,10 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 {
 	gboolean ret;
 	GError *error = NULL;
-	ret = pk_backend_spawn_inject_data (backend_spawn, line, &error);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    backend_spawn->priv->job,
+					    line,
+					    &error);
 	if (!ret) {
 		pk_backend_job_message (backend_spawn->priv->job,
 					PK_MESSAGE_ENUM_BACKEND_ERROR,
@@ -1097,7 +1106,7 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
 	/* save this */
 	backend_spawn->priv->is_busy = TRUE;
 	backend_spawn->priv->job = job;
-	backend_spawn->priv->backend = pk_backend_job_get_backend (job);
+	backend_spawn->priv->backend = g_object_ref (pk_backend_job_get_backend (job));
 
 	/* don't auto-kill this */
 	if (backend_spawn->priv->kill_id > 0) {
@@ -1156,7 +1165,8 @@ pk_backend_spawn_finalize (GObject *object)
 	g_free (backend_spawn->priv->name);
 	g_object_unref (backend_spawn->priv->conf);
 	g_object_unref (backend_spawn->priv->spawn);
-	g_object_unref (backend_spawn->priv->backend);
+	if (backend_spawn->priv->backend != NULL)
+		g_object_unref (backend_spawn->priv->backend);
 
 	G_OBJECT_CLASS (pk_backend_spawn_parent_class)->finalize (object);
 }

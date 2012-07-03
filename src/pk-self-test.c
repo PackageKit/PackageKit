@@ -379,6 +379,7 @@ pk_test_backend_spawn_func (void)
 {
 	PkBackendSpawn *backend_spawn;
 	PkBackend *backend;
+	PkBackendJob *job;
 	PkConf *conf;
 	const gchar *text;
 	guint refcount;
@@ -392,7 +393,8 @@ pk_test_backend_spawn_func (void)
 
 	/* private copy for unref testing */
 	backend = pk_backend_new ();
-	pk_backend_spawn_set_backend (backend_spawn, backend);
+	job = pk_backend_job_new ();
+	pk_backend_job_set_backend (job, backend);
 
 	/* get backend name */
 	text = pk_backend_spawn_get_name (backend_spawn);
@@ -413,55 +415,55 @@ pk_test_backend_spawn_func (void)
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t0", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t0", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\tbrian", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\tbrian", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage3 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t12345", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t12345", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage4 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage5 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data NoPercentageUpdates");
-	ret = pk_backend_spawn_inject_data (backend_spawn, "no-percentage-updates", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "no-percentage-updates", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data failure */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "error\tnot-present-woohoo\tdescription text", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "error\tnot-present-woohoo\tdescription text", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Status */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "status\tquery", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "status\tquery", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tdetails about the restart", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tdetails about the restart", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\ttrue", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\ttrue", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\tbrian", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\tbrian", NULL);
 	g_assert (!ret);
 
 	/* convert proxy uri (bare) */
@@ -480,7 +482,7 @@ pk_test_backend_spawn_func (void)
 	g_free (uri);
 
 	/* test pk_backend_spawn_parse_common_out Package */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
 		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
 	g_assert (ret);
 
@@ -491,35 +493,30 @@ pk_test_backend_spawn_func (void)
 	/* reset */
 	g_object_unref (backend_spawn);
 
-	/* test we unref'd all but one of the PkBackend instances */
-	refcount = G_OBJECT(backend)->ref_count;
-	g_assert_cmpint (refcount, ==, 1);
-
 	/* new */
 	backend_spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_backend (backend_spawn, backend);
 
 	/* set backend name */
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
 	g_assert (ret);
 
 	/* so we can spin until we finish */
-	pk_backend_set_vfunc (backend,
-			      PK_BACKEND_SIGNAL_FINISHED,
-			      (PkBackendVFunc) pk_test_backend_spawn_finished_cb,
-			      backend_spawn);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  (PkBackendJobVFunc) pk_test_backend_spawn_finished_cb,
+				  backend_spawn);
 
 	/* so we can count the returned packages */
-	pk_backend_set_vfunc (backend,
-				PK_BACKEND_SIGNAL_PACKAGE,
-				(PkBackendJobVFunc) pk_test_backend_spawn_package_cb,
-				backend_spawn);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PACKAGE,
+				  (PkBackendJobVFunc) pk_test_backend_spawn_package_cb,
+				  backend_spawn);
 
 	/* needed to avoid an error */
 	ret = pk_backend_load (backend, NULL);
 
 	/* test search-name.sh running */
-	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
+	ret = pk_backend_spawn_helper (backend_spawn, job, "search-name.sh", "none", "bar", NULL);
 	g_assert (ret);
 
 	/* wait for finished */
@@ -535,11 +532,8 @@ pk_test_backend_spawn_func (void)
 	/* done */
 	g_object_unref (backend_spawn);
 
-	/* test we unref'd all but one of the PkBackend instances */
-	refcount = G_OBJECT(backend)->ref_count;
-	g_assert_cmpint (refcount, ==, 1);
-
 	/* we ref'd it manually for checking, so we need to unref it */
+	g_object_unref (job);
 	g_object_unref (backend);
 	g_object_unref (conf);
 }
