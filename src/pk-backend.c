@@ -3056,6 +3056,8 @@ pk_backend_finalize (GObject *object)
 	g_object_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
+	if (backend->priv->monitor != NULL)
+		g_object_unref (backend->priv->monitor);
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
 	g_debug ("parent_class->finalize");
