@@ -296,7 +296,7 @@ class PackageKitAcquireProgress(apt.progress.base.AcquireProgress):
                 continue
             item_id = "%s;;;" % worker.current_item.shortdesc
             item_percent = worker.current_size * 100 / worker.total_size
-            self._backend.item_percentage(item_id, item_percent)
+            self._backend.item_progress(item_id, item_percent)
         return True
 
     def fetch(self, item):
@@ -336,7 +336,7 @@ class PackageKitAcquireRepoProgress(PackageKitAcquireProgress):
         #        continue
         #    item_id = "%s;;;" % worker.current_item.shortdesc
         #    item_percent = worker.current_size * 100 / worker.total_size
-        #    self._backend.item_percentage(item_id, item_percent)
+        #    self._backend.item_progress(item_id, item_percent)
         return True
 
     def fetch(self, item):
@@ -448,7 +448,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
             # Emit a fake package
             id = "%s;;;" % pkg_name
             self._backend.package(id, info, "")
-            self._backend.item_percentage(id, item_percentage)
+            self._backend.item_progress(id, item_percentage)
         else:
             # Always use the candidate - except for removals
             self._backend._emit_package(pkg, info, not pkg.marked_delete)
@@ -457,7 +457,7 @@ class PackageKitInstallProgress(apt.progress.base.InstallProgress):
             else:
                 version = pkg.candidate
             id = self._backend._get_id_from_version(version)
-            self._backend.item_percentage(id, item_percentage)
+            self._backend.item_progress(id, item_percentage)
 
         self.last_pkg = pkg_name
         self.last_item_percentage = item_percentage
