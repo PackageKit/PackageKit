@@ -64,7 +64,7 @@ pk_backend_get_author (PkBackend *backend)
  * pk_backend_stderr_cb:
  */
 static gboolean
-pk_backend_stderr_cb (PkBackend *backend, const gchar *output)
+pk_backend_stderr_cb (PkBackendJob *job, const gchar *output)
 {
 	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
 	if (strstr (output, "NOKEY") != NULL)
@@ -80,7 +80,7 @@ pk_backend_stderr_cb (PkBackend *backend, const gchar *output)
  * pk_backend_stdout_cb:
  */
 static gboolean
-pk_backend_stdout_cb (PkBackend *backend, const gchar *output)
+pk_backend_stdout_cb (PkBackendJob *job, const gchar *output)
 {
 	return TRUE;
 }
@@ -213,7 +213,6 @@ pk_backend_initialize (PkBackend *backend)
 
 	g_debug ("backend: initialize");
 	priv->spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_backend (priv->spawn, backend);
 	pk_backend_spawn_set_filter_stderr (priv->spawn, pk_backend_stderr_cb);
 	pk_backend_spawn_set_filter_stdout (priv->spawn, pk_backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");
@@ -242,7 +241,7 @@ pk_backend_initialize (PkBackend *backend)
 	g_debug ("loading configuration from %s", config_file);
 	ret = g_key_file_load_from_file (key_file, config_file, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "failed to load Yum.conf: %s", error->message);
+		g_warning ("failed to load Yum.conf: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -270,32 +269,28 @@ pk_backend_destroy (PkBackend *backend)
 	g_free (priv);
 }
 
-static gboolean _backend_busy = FALSE;
-
 /**
- * pk_backend_job_start:
+ * pk_backend_start_job:
  */
 void
-pk_backend_job_start (PkBackend *backend)
+pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-	if (_backend_busy) {
-		pk_backend_error_code (backend,
+	if (pk_backend_spawn_is_busy (priv->spawn)) {
+		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_LOCK_REQUIRED,
 					   "spawned backend requires lock");
 		return;
 	}
-	_backend_busy = TRUE;
 	pk_backend_enable_media_repo (TRUE);
 }
 
 /**
- * pk_backend_job_stop:
+ * pk_backend_stop_job:
  */
 void
-pk_backend_job_stop (PkBackend *backend)
+pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_enable_media_repo (FALSE);
-	_backend_busy = FALSE;
 }
 
 /**
@@ -407,7 +402,7 @@ pk_backend_get_mime_types (PkBackend *backend)
  * pk_backend_cancel:
  */
 void
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (priv->spawn);
@@ -417,13 +412,13 @@ pk_backend_cancel (PkBackend *backend)
  * pk_backend_download_packages:
  */
 void
-pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "download-packages", directory, package_ids_temp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "download-packages", directory, package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -431,13 +426,13 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
  * pk_backend_get_depends:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -446,11 +441,11 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
  * pk_backend_get_details:
  */
 void
-pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -458,20 +453,20 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
  * pk_backend_get_distro_upgrades:
  */
 void
-pk_backend_get_distro_upgrades (PkBackend *backend)
+pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-distro-upgrades", NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-distro-upgrades", NULL);
 }
 
 /**
  * pk_backend_get_files:
  */
 void
-pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job,  "yumBackend.py", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -479,13 +474,13 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
  * pk_backend_get_requires:
  */
 void
-pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
 	gchar *filters_text;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -494,11 +489,11 @@ pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package
  * pk_backend_get_updates:
  */
 void
-pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-updates", filters_text, NULL);
+	pk_backend_spawn_helper (priv->spawn, job,  "yumBackend.py", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -506,11 +501,11 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_get_packages:
  */
 void
-pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-packages", filters_text, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-packages", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -518,11 +513,11 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
  * pk_backend_get_update_detail:
  */
 void
-pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -531,13 +526,13 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn,
+	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",
 				 "install-packages",
 				 transaction_flags_temp,
@@ -551,13 +546,13 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 	gchar *transaction_flags_temp;
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn,
+	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",
 				 "install-files",
 				 transaction_flags_temp,
@@ -571,29 +566,29 @@ pk_backend_install_files (PkBackend *backend, PkBitfield transaction_flags, gcha
  * pk_backend_install_signature:
  */
 void
-pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+pk_backend_install_signature (PkBackend *backend, PkBackendJob *job, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	const gchar *type_text;
 
 	type_text = pk_sig_type_enum_to_string (type);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "install-signature", type_text, key_id, package_id, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "install-signature", type_text, key_id, package_id, NULL);
 }
 
 /**
  * pk_backend_refresh_cache:
  */
 void
-pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
 /**
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend,
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids,
 			    gboolean allow_deps,
@@ -603,7 +598,7 @@ pk_backend_remove_packages (PkBackend *backend,
 	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn,
+	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",
 				 "remove-packages",
 				 transaction_flags_temp,
@@ -619,13 +614,13 @@ pk_backend_remove_packages (PkBackend *backend,
  * pk_backend_search_details:
  */
 void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-details", filters_text, search, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "search-details", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -634,13 +629,13 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
  * pk_backend_search_files:
  */
 void
-pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-file", filters_text, search, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "search-file", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -649,13 +644,13 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_search_groups:
  */
 void
-pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-group", filters_text, search, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "search-group", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -664,13 +659,13 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values
  * pk_backend_search_names:
  */
 void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-name", filters_text, search, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -679,13 +674,13 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	gchar *transaction_flags_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn,
+	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",
 				 "update-packages",
 				 transaction_flags_temp,
@@ -699,11 +694,11 @@ pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gc
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
+pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	gchar *transaction_flags_temp;
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn,
+	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",
 				 "update-system",
 				 transaction_flags_temp,
@@ -715,13 +710,13 @@ pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
  * pk_backend_resolve:
  */
 void
-pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	package_ids_temp = pk_package_ids_to_string (packages);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "resolve", filters_text, package_ids_temp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "resolve", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -730,11 +725,11 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
  * pk_backend_get_repo_list:
  */
 void
-pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-repo-list", filters_text, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-repo-list", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -742,12 +737,12 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
  * pk_backend_repo_enable:
  */
 void
-pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
+pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
 	if (enabled == TRUE) {
-		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "true", NULL);
+		pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "repo-enable", repo_id, "true", NULL);
 	} else {
-		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "false", NULL);
+		pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "repo-enable", repo_id, "false", NULL);
 	}
 }
 
@@ -755,7 +750,7 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabl
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	gchar *search_tmp;
 	gchar *filters_text;
@@ -764,7 +759,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
 	provides_text = pk_provides_enum_to_string (provides);
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search_tmp = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "what-provides", filters_text, provides_text, search_tmp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "what-provides", filters_text, provides_text, search_tmp, NULL);
 	g_free (filters_text);
 	g_free (search_tmp);
 }
@@ -773,16 +768,16 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum
  * pk_backend_get_categories:
  */
 void
-pk_backend_get_categories (PkBackend *backend)
+pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-categories", NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-categories", NULL);
 }
 
 /**
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "update-system", NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "update-system", NULL);
 }
