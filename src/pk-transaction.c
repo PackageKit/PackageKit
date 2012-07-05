@@ -1146,6 +1146,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		return;
 	}
 
+	/* save this so we know if the cache is valid */
+	pk_results_set_exit_code (transaction->priv->results, exit_enum);
+
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START);
@@ -1157,9 +1160,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END);
-
-	/* save this so we know if the cache is valid */
-	pk_results_set_exit_code (transaction->priv->results, exit_enum);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
