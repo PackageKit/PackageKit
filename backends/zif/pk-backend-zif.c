@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -30,7 +30,6 @@
 #define PACKAGE_MEDIA_REPO_FILENAME		"/etc/yum.repos.d/packagekit-media.repo"
 
 typedef struct {
-	GCancellable	*cancellable;
 	GFileMonitor	*monitor;
 	GVolumeMonitor	*volume_monitor;
 	ZifConfig	*config;
@@ -38,14 +37,17 @@ typedef struct {
 	ZifLock		*lock;
 	ZifRelease	*release;
 	ZifRepos	*repos;
-	ZifState	*state;
 	ZifStore	*store_local;
 	ZifTransaction	*transaction;
 } PkBackendZifPrivate;
 
 static PkBackendZifPrivate *priv;
 
-static void pk_backend_enable_media_repo (gboolean enabled);
+typedef struct {
+	GCancellable	*cancellable;
+	ZifState	*state;
+	ZifTransaction	*transaction;
+} PkBackendZifJobData;
 
 /**
  * pk_backend_get_description:
@@ -93,9 +95,9 @@ out:
 static void
 pk_backend_state_percentage_changed_cb (ZifState *state,
 					guint percentage,
-					PkBackend *backend)
+					PkBackendJob *job)
 {
-	pk_backend_set_percentage (backend, percentage);
+	pk_backend_job_set_percentage (job, percentage);
 }
 
 /**
@@ -256,113 +258,10 @@ pk_backend_convert_error (const GError *error)
 }
 
 /**
- * pk_backend_job_start:
- */
-void
-pk_backend_job_start (PkBackend *backend)
-{
-	gboolean ret = FALSE;
-	gchar *http_proxy = NULL;
-	GError *error = NULL;
-	guint cache_age;
-	guint uid;
-	gchar *cmdline = NULL;
-
-	/* enable media repo */
-	pk_backend_enable_media_repo (TRUE);
-
-	/* try to set, or re-set install root */
-	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
-					  NULL,
-					  &error);
-	if (!ret) {
-		pk_backend_error_code (backend,
-				       pk_backend_convert_error (error),
-				       "failed to set prefix: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get network state */
-	ret = pk_backend_is_online (backend);
-	if (!ret) {
-		zif_config_set_boolean (priv->config, "network",
-					FALSE, NULL);
-		goto out;
-	}
-
-	/* tell ZifConfig it's okay to contact the network */
-	zif_config_set_boolean (priv->config, "network",
-				TRUE, NULL);
-
-	/* set cache age */
-	cache_age = pk_backend_get_cache_age (backend);
-	if (cache_age > 0)
-		zif_config_set_uint (priv->config, "metadata_expire",
-				     cache_age, NULL);
-
-	/* set the proxy */
-	http_proxy = pk_backend_get_proxy_http (backend);
-	zif_config_set_string (priv->config, "http_proxy",
-			       http_proxy, NULL);
-
-	/* packages we can't remove */
-	zif_config_set_string (priv->config, "protected_packages",
-			       "PackageKit,zif,rpm,glibc", NULL);
-
-	/* always skip broken transactions */
-	zif_config_set_boolean (priv->config, "skip_broken",
-				TRUE, NULL);
-
-	/* set background mode */
-	zif_config_set_boolean (priv->config, "background",
-				pk_backend_use_background (backend), NULL);
-
-	/* start with a new transaction */
-	g_object_get (backend,
-		      "uid", &uid,
-		      NULL);
-	zif_transaction_set_euid (priv->transaction, uid);
-	g_object_get (backend,
-		      "cmdline", &cmdline,
-		      NULL);
-	zif_transaction_set_cmdline (priv->transaction, cmdline);
-	zif_transaction_reset (priv->transaction);
-out:
-	g_free (cmdline);
-	g_free (http_proxy);
-	return;
-}
-
-/**
- * pk_backend_job_reset:
- */
-void
-pk_backend_job_reset (PkBackend *backend)
-{
-	/* setup state */
-	zif_state_reset (priv->state);
-
-	/* allow cancelling again */
-	g_cancellable_reset (priv->cancellable);
-}
-
-/**
- * pk_backend_job_stop:
- */
-void
-pk_backend_job_stop (PkBackend *backend)
-{
-	/* disable media repo */
-	pk_backend_enable_media_repo (FALSE);
-}
-
-/**
- * pk_backend_package_is_application:
+ * pk_backend_job_package_is_application:
  **/
 static gboolean
-pk_backend_package_is_application (ZifPackage *package,
+pk_backend_job_package_is_application (ZifPackage *package,
 				   gboolean *is_application,
 				   ZifState *state,
 				   GError **error)
@@ -424,7 +323,7 @@ pk_backend_filter_package_array (GPtrArray *array,
 		for (i = 0; i < array->len; i++) {
 			package = g_ptr_array_index (array, i);
 			state_loop = zif_state_get_child (state_local);
-			ret = pk_backend_package_is_application (package,
+			ret = pk_backend_job_package_is_application (package,
 								 &is_application,
 								 state_loop,
 								 error);
@@ -547,7 +446,7 @@ out:
  * pk_backend_emit_package_array:
  **/
 static gboolean
-pk_backend_emit_package_array (PkBackend *backend,
+pk_backend_emit_package_array (PkBackendJob *job,
 			       GPtrArray *array,
 			       ZifState *state)
 {
@@ -584,7 +483,7 @@ pk_backend_emit_package_array (PkBackend *backend,
 			info = pk_info_enum_from_string (info_hint);
 		}
 
-		pk_backend_package (backend, info, package_id, summary);
+		pk_backend_job_package (job, info, package_id, summary);
 
 		/* done */
 		ret = zif_state_done (state_local, NULL);
@@ -599,7 +498,7 @@ out:
  * pk_backend_error_handler_cb:
  */
 static gboolean
-pk_backend_error_handler_cb (const GError *error, PkBackend *backend)
+pk_backend_error_handler_cb (const GError *error, PkBackendJob *job)
 {
 	/* if we try to do a comps search on a local store */
 	if (error->domain == ZIF_STORE_ERROR &&
@@ -610,10 +509,10 @@ pk_backend_error_handler_cb (const GError *error, PkBackend *backend)
 	}
 
 	/* emit a warning, this isn't fatal */
-	pk_backend_message (backend,
-			    PK_MESSAGE_ENUM_BROKEN_MIRROR,
-			    "%s",
-			    error->message);
+	pk_backend_job_message (job,
+				PK_MESSAGE_ENUM_BROKEN_MIRROR,
+				"%s",
+				error->message);
 	return TRUE;
 }
 
@@ -621,8 +520,7 @@ pk_backend_error_handler_cb (const GError *error, PkBackend *backend)
  * pk_backend_get_store_array_for_filter:
  */
 static GPtrArray *
-pk_backend_get_store_array_for_filter (PkBackend *backend,
-				       PkBitfield filters,
+pk_backend_get_store_array_for_filter (PkBitfield filters,
 				       ZifState *state,
 				       GError **error)
 {
@@ -1147,7 +1045,7 @@ out:
  * pk_backend_search_thread:
  */
 static void
-pk_backend_search_thread (PkBackend *backend, gpointer user_data)
+pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	gchar **search;
@@ -1160,15 +1058,23 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 	PkBitfield filters;
 	PkRoleEnum role;
 	ZifState *state_local;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	role = pk_backend_get_role (backend);
+	role = pk_backend_job_get_role (job);
+	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
+		g_variant_get (params, "(t)",
+			       &filters);
+	} else {
+		g_variant_get (params, "(t^a&s)",
+			       &filters,
+			       &search);
+	}
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get default stores */
 				   90, /* do the search */
@@ -1178,13 +1084,12 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 	g_assert (ret);
 
 	/* get default store_array */
-	state_local = zif_state_get_child (priv->state);
-	store_array = pk_backend_get_store_array_for_filter (backend,
-							     filters,
+	state_local = zif_state_get_child (job_data->state);
+	store_array = pk_backend_get_store_array_for_filter (filters,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get stores: %s",
 				       error->message);
@@ -1193,23 +1098,25 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
 		g_error_free (error);
 		goto out;
 	}
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
+	zif_state_set_error_handler (job_data->state,
+				     (ZifStateErrorHandlerCb) pk_backend_error_handler_cb,
+				     job);
 
 	/* do get action */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
-		state_local = zif_state_get_child (priv->state);
+		state_local = zif_state_get_child (job_data->state);
 		array = zif_store_array_get_packages (store_array, state_local, &error);
 		if (array == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 			g_error_free (error);
@@ -1217,9 +1124,8 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 		}
 	} else {
 		/* treat these all the same */
-		search = pk_backend_get_strv (backend, "search");
 		if (search == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "failed to get 'search' for %s", pk_role_enum_to_string (role));
 			goto out;
@@ -1227,7 +1133,7 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
 		/* do OR search */
-		state_local = zif_state_get_child (priv->state);
+		state_local = zif_state_get_child (job_data->state);
 		if (role == PK_ROLE_ENUM_SEARCH_NAME) {
 			array = zif_store_array_search_name (store_array, search, state_local, &error);
 		} else if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
@@ -1263,7 +1169,7 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 				recent = zif_config_get_uint (priv->config, "recent", &error);
 				array = pk_backend_search_newest (store_array, state_local, recent, &error);
 				if (array == NULL) {
-					pk_backend_error_code (backend,
+					pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 					g_error_free (error);
@@ -1272,7 +1178,7 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 			} else if (g_strcmp0 (search[0], "collections") == 0) {
 				array = pk_backend_search_collections (store_array, state_local, &error);
 				if (array == NULL) {
-					pk_backend_error_code (backend,
+					pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 					g_error_free (error);
@@ -1300,7 +1206,7 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 			array = pk_backend_what_provides_helper (store_array, search, state_local, &error);
 		}
 		if (array == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to search: %s", error->message);
 			g_error_free (error);
@@ -1309,56 +1215,56 @@ pk_backend_search_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					   "cancelled: %s",
+					   error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* filter */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	result = pk_backend_filter_package_array (array,
 						  filters,
 						  state_local,
 						  &error);
 	if (result == NULL) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
-				       "failed to filters: %s",
-				       error->message);
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_CANNOT_GET_FILELIST,
+					   "failed to filters: %s",
+					   error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					   "cancelled: %s",
+					   error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* done */
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_job_set_percentage (job, 100);
 
 	/* emit */
-	state_local = zif_state_get_child (priv->state);
-	pk_backend_emit_package_array (backend, result, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	pk_backend_emit_package_array (job, result, state_local);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					   "cancelled: %s",
+					   error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1367,23 +1273,24 @@ out:
 		g_ptr_array_unref (store_array);
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
  * pk_backend_enable_media_repo:
  */
 static void
-pk_backend_enable_media_repo (gboolean enabled)
+pk_backend_enable_media_repo (PkBackendJob *job, gboolean enabled)
 {
 	gboolean ret;
 	GError *error = NULL;
 	ZifState *state;
 	ZifStoreRemote *repo = NULL;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* find the right repo */
 	state = zif_state_new ();
-	zif_state_set_cancellable (state, zif_state_get_cancellable (priv->state));
+	zif_state_set_cancellable (state, zif_state_get_cancellable (job_data->state));
 	repo = zif_repos_get_store (priv->repos,
 				    "InstallMedia",
 				    state,
@@ -1460,7 +1367,7 @@ static void
 pk_backend_state_action_changed_cb (ZifState *state,
 				    ZifStateAction action,
 				    const gchar *action_hint,
-				    PkBackend *backend)
+				    PkBackendJob *job)
 {
 	PkStatusEnum status = PK_STATUS_ENUM_UNKNOWN;
 
@@ -1475,7 +1382,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_DOWNLOADING:
 		/* try to map the ZifStateAction to a PkStatusEnum */
 		if (zif_package_id_check (action_hint)) {
-			pk_backend_package (backend,
+			pk_backend_job_package (job,
 					    PK_INFO_ENUM_DOWNLOADING,
 					    action_hint,
 					    "");
@@ -1506,7 +1413,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 		/* package install */
 		status = PK_STATUS_ENUM_INSTALL;
 		if (zif_package_id_check (action_hint)) {
-			pk_backend_package (backend,
+			pk_backend_job_package (job,
 					    PK_INFO_ENUM_INSTALLING,
 					    action_hint,
 					    "");
@@ -1515,7 +1422,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_REMOVING:
 		status = PK_STATUS_ENUM_REMOVE;
 		if (zif_package_id_check (action_hint)) {
-			pk_backend_package (backend,
+			pk_backend_job_package (job,
 					    PK_INFO_ENUM_REMOVING,
 					    action_hint,
 					    "");
@@ -1524,7 +1431,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_UPDATING:
 		status = PK_STATUS_ENUM_UPDATE;
 		if (zif_package_id_check (action_hint)) {
-			pk_backend_package (backend,
+			pk_backend_job_package (job,
 					    PK_INFO_ENUM_UPDATING,
 					    action_hint,
 					    "");
@@ -1533,7 +1440,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	case ZIF_STATE_ACTION_CLEANING:
 		status = PK_STATUS_ENUM_CLEANUP;
 		if (zif_package_id_check (action_hint)) {
-			pk_backend_package (backend,
+			pk_backend_job_package (job,
 					    PK_INFO_ENUM_CLEANUP,
 					    action_hint,
 					    "");
@@ -1555,7 +1462,7 @@ pk_backend_state_action_changed_cb (ZifState *state,
 	 * unhandled enums by the compiler */
 	}
 	if (status != PK_STATUS_ENUM_UNKNOWN)
-		pk_backend_set_status (backend, status);
+		pk_backend_job_set_status (job, status);
 }
 
 /**
@@ -1564,10 +1471,10 @@ pk_backend_state_action_changed_cb (ZifState *state,
 static void
 pk_backend_speed_changed_cb (ZifState *state,
 			     GParamSpec *pspec,
-			     PkBackend *backend)
+			     PkBackendJob *job)
 {
-	pk_backend_set_speed (backend,
-			      zif_state_get_speed (state));
+	pk_backend_job_set_speed (job,
+				  zif_state_get_speed (state));
 }
 
 /**
@@ -1600,6 +1507,143 @@ pk_backend_zif_lock_state_changed_cb (ZifLock *lock,
 }
 
 /**
+ * pk_backend_start_job:
+ */
+void
+pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
+{
+	const gchar *http_proxy = NULL;
+	gboolean ret = FALSE;
+	GError *error = NULL;
+	guint cache_age;
+	PkBackendZifJobData *job_data;
+
+	/* create private state for this job */
+	job_data = g_new0 (PkBackendZifJobData, 1);
+	pk_backend_job_set_user_data (job, job_data);
+
+	/* TODO: hook up errors */
+	job_data->cancellable = g_cancellable_new ();
+
+	/* ZifState */
+	job_data->state = zif_state_new ();
+	zif_state_set_cancellable (job_data->state, job_data->cancellable);
+	g_signal_connect (job_data->state, "percentage-changed",
+			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
+			  job);
+	g_signal_connect (job_data->state, "action-changed",
+			  G_CALLBACK (pk_backend_state_action_changed_cb),
+			  job);
+	g_signal_connect (job_data->state, "notify::speed",
+			  G_CALLBACK (pk_backend_speed_changed_cb),
+			  job);
+
+	/* we don't want to enable this for normal runtime */
+	//zif_state_set_enable_profile (job_data->state, TRUE);
+
+	/* ZifTransaction */
+	job_data->transaction = zif_transaction_new ();
+	zif_transaction_set_store_local (job_data->transaction, priv->store_local);
+
+	/* enable media repo */
+	pk_backend_enable_media_repo (job, TRUE);
+
+	/* try to set, or re-set install root */
+	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local),
+					  NULL,
+					  &error);
+	if (!ret) {
+		pk_backend_job_error_code (job,
+				       pk_backend_convert_error (error),
+				       "failed to set prefix: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get network state */
+	ret = pk_backend_is_online (backend);
+	if (!ret) {
+		zif_config_set_boolean (priv->config, "network",
+					FALSE, NULL);
+		goto out;
+	}
+
+	/* tell ZifConfig it's okay to contact the network */
+	zif_config_set_boolean (priv->config, "network",
+				TRUE, NULL);
+
+	/* set cache age */
+	cache_age = pk_backend_job_get_cache_age (job);
+	if (cache_age > 0)
+		zif_config_set_uint (priv->config, "metadata_expire",
+				     cache_age, NULL);
+
+	/* set the proxy */
+	http_proxy = pk_backend_job_get_proxy_http (job);
+	zif_config_set_string (priv->config, "http_proxy",
+			       http_proxy, NULL);
+
+	/* packages we can't remove */
+	zif_config_set_string (priv->config, "protected_packages",
+			       "PackageKit,zif,rpm,glibc", NULL);
+
+	/* always skip broken transactions */
+	zif_config_set_boolean (priv->config, "skip_broken",
+				TRUE, NULL);
+
+	/* set background mode */
+	zif_config_set_boolean (priv->config, "background",
+				pk_backend_job_use_background (job),
+				NULL);
+
+	/* start with a new transaction */
+	zif_transaction_set_euid (job_data->transaction,
+				  pk_backend_job_get_uid (job));
+	zif_transaction_set_cmdline (job_data->transaction,
+				     pk_backend_job_get_cmdline (job));
+	zif_transaction_reset (job_data->transaction);
+out:
+	return;
+}
+
+/**
+ * pk_backend_reset_job:
+ */
+void
+pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
+{
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	/* setup state */
+	zif_state_reset (job_data->state);
+
+	/* allow cancelling again */
+	g_cancellable_reset (job_data->cancellable);
+}
+
+/**
+ * pk_backend_stop_job:
+ */
+void
+pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
+{
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	/* disable media repo */
+	pk_backend_enable_media_repo (job, FALSE);
+
+	if (job_data->transaction != NULL)
+		g_object_unref (job_data->transaction);
+	if (job_data->state != NULL)
+		g_object_unref (job_data->state);
+	g_free (job_data);
+
+	/* make debugging easier */
+	pk_backend_job_set_user_data (job, NULL);
+}
+
+/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -1627,33 +1671,12 @@ pk_backend_initialize (PkBackend *backend)
 	g_list_foreach (mounts, (GFunc) g_object_unref, NULL);
 	g_list_free (mounts);
 
-	/* TODO: hook up errors */
-	priv->cancellable = g_cancellable_new ();
-
-	/* ZifState */
-	priv->state = zif_state_new ();
-	zif_state_set_cancellable (priv->state, priv->cancellable);
-	g_signal_connect (priv->state, "percentage-changed",
-			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
-			  backend);
-	g_signal_connect (priv->state, "action-changed",
-			  G_CALLBACK (pk_backend_state_action_changed_cb),
-			  backend);
-	g_signal_connect (priv->state, "notify::speed",
-			  G_CALLBACK (pk_backend_speed_changed_cb),
-			  backend);
-
-	/* we don't want to enable this for normal runtime */
-	//zif_state_set_enable_profile (priv->state, TRUE);
-
 	/* ZifConfig */
 	priv->config = zif_config_new ();
 	ret = zif_config_set_filename (priv->config, NULL, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
-				       "failed to set config: %s",
-				       error->message);
+		g_warning ("failed to set config: %s",
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1686,18 +1709,12 @@ pk_backend_initialize (PkBackend *backend)
 	/* ZifStoreLocal */
 	priv->store_local = zif_store_local_new ();
 
-	/* ZifTransaction */
-	priv->transaction = zif_transaction_new ();
-	zif_transaction_set_store_local (priv->transaction, priv->store_local);
-
 	/* ZifRepos */
 	priv->repos = zif_repos_new ();
 	ret = zif_repos_set_repos_dir (priv->repos, NULL, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
-				       "failed to set repos dir: %s",
-				       error->message);
+		g_warning ("failed to set repos dir: %s",
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1708,10 +1725,8 @@ pk_backend_initialize (PkBackend *backend)
 					   DATADIR "/PackageKit/helpers/zif/zif-comps-groups.conf",
 					   &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_GROUP_LIST_INVALID,
-				       "failed to set mapping file: %s",
-				       error->message);
+		g_warning ("failed to set mapping file: %s",
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1735,10 +1750,6 @@ pk_backend_destroy (PkBackend *backend)
 		g_object_unref (priv->config);
 	if (priv->release != NULL)
 		g_object_unref (priv->release);
-	if (priv->transaction != NULL)
-		g_object_unref (priv->transaction);
-	if (priv->state != NULL)
-		g_object_unref (priv->state);
 	if (priv->repos != NULL)
 		g_object_unref (priv->repos);
 	if (priv->groups != NULL)
@@ -1773,10 +1784,8 @@ pk_backend_get_groups (PkBackend *backend)
 	array = zif_groups_get_groups (priv->groups, &error);
 #endif
 	if (array == NULL) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_GROUP_LIST_INVALID,
-				       "failed to get the list of groups: %s",
-				       error->message);
+		g_warning ("failed to get the list of groups: %s",
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1831,24 +1840,26 @@ pk_backend_get_mime_types (PkBackend *backend)
  * pk_backend_cancel:
  */
 void
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
 	/* try to cancel the thread */
 	g_debug ("cancelling transaction");
-	g_cancellable_cancel (priv->cancellable);
+	g_cancellable_cancel (job_data->cancellable);
 }
 
 /**
  * pk_backend_download_packages_thread:
  */
 static void
-pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
+pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	const gchar *directory = pk_backend_get_string (backend, "directory");
+	const gchar *directory;
 	const gchar *filename;
 	gboolean ret;
 	gchar *basename;
-	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	gchar **package_ids;
 	gchar *path;
 	GError *error = NULL;
 	GPtrArray *packages = NULL;
@@ -1858,8 +1869,13 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	ret = zif_state_set_steps (priv->state,
+	g_variant_get (params, "(^a&ss)",
+		       &package_ids,
+		       &directory);
+
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get default stores */
 				   8, /* find packages */
@@ -1869,13 +1885,13 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 
 	/* find all the packages */
 	packages = zif_object_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	store_array = zif_store_array_new ();
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -1884,9 +1900,9 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -1895,8 +1911,8 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* find */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	state_local = zif_state_get_child (priv->state);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 
@@ -1907,7 +1923,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 							state_loop,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find %s: %s",
 					       package_ids[i],
@@ -1919,7 +1935,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -1932,9 +1948,9 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -1943,8 +1959,8 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* download list */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	state_local = zif_state_get_child (priv->state);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, packages->len);
 	for (i=0; i<packages->len; i++) {
 		package = g_ptr_array_index (packages, i);
@@ -1963,7 +1979,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		state_tmp = zif_state_get_child (state_loop);
 		filename = zif_package_get_filename (package, state_tmp, &error);
 		if (filename == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to get filename for %s: %s",
 					       zif_package_get_printable (package),
@@ -1975,7 +1991,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -1990,7 +2006,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 						   state_tmp,
 						   &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to download %s: %s",
 					       filename,
@@ -2002,7 +2018,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2013,14 +2029,14 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		/* send a signal for the daemon so the file is copied */
 		basename = g_path_get_basename (filename);
 		path = g_build_filename (directory, basename, NULL);
-		pk_backend_files (backend, zif_package_get_id (package), path);
+		pk_backend_job_files (job, zif_package_get_id (package), path);
 		g_free (basename);
 		g_free (path);
 
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2031,7 +2047,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2041,9 +2057,9 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2051,7 +2067,7 @@ pk_backend_download_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
 	if (store_array != NULL)
@@ -2062,11 +2078,12 @@ out:
  * pk_backend_get_depends_thread:
  */
 static void
-pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *id;
+	gboolean recursive;
 	gboolean ret;
-	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	gchar **package_ids;
 	GError *error = NULL;
 	GPtrArray *array = NULL;
 	GPtrArray *provides;
@@ -2074,14 +2091,24 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	GPtrArray *result;
 	GPtrArray *store_array = NULL;
 	guint i, j;
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
 	ZifPackage *package;
 	ZifPackage *package_provide;
 	ZifState *state_local;
 	ZifState *state_loop;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(t^a&sb)",
+		       &filters,
+		       &package_ids,
+		       &recursive);
+
+	/* not supported yet */
+	if (recursive)
+		g_warning ("recursive is not implemented for GetDepends()");
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get stores */
 				   94, /* what requires + provides */
@@ -2091,13 +2118,12 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	g_assert (ret);
 
 	/* find all the packages */
-	state_local = zif_state_get_child (priv->state);
-	store_array = pk_backend_get_store_array_for_filter (backend,
-							     0,
+	state_local = zif_state_get_child (job_data->state);
+	store_array = pk_backend_get_store_array_for_filter (0,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -2105,9 +2131,9 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2118,12 +2144,12 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	/* new output array */
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = package_ids[i];
 
 		/* set up state */
-		state_local = zif_state_get_child (priv->state);
+		state_local = zif_state_get_child (job_data->state);
 		ret = zif_state_set_steps (state_local,
 					   NULL,
 					   50, /* find package */
@@ -2139,7 +2165,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 							state_loop,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find %s: %s",
 					       package_ids[i],
@@ -2151,7 +2177,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2163,7 +2189,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 		state_loop = zif_state_get_child (state_local);
 		requires = zif_package_get_requires (package, state_loop, &error);
 		if (requires == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to get requires for %s: %s",
 						       package_ids[i], error->message);
@@ -2174,7 +2200,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2186,7 +2212,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 		state_loop = zif_state_get_child (state_local);
 		provides = zif_store_array_what_provides (store_array, requires, state_loop, &error);
 		if (provides == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to find provide for %s: %s",
 						       zif_depend_get_name (g_ptr_array_index (requires, 0)),
@@ -2205,7 +2231,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2218,9 +2244,9 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2229,13 +2255,13 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* filter */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	result = pk_backend_filter_package_array (array,
 						  filters,
 						  state_local,
 						  &error);
 	if (result == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
 				       "failed to filter: %s",
 				       error->message);
@@ -2244,9 +2270,9 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2255,16 +2281,16 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* done */
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_job_set_percentage (job, 100);
 
 	/* emit */
-	state_local = zif_state_get_child (priv->state);
-	pk_backend_emit_package_array (backend, result, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	pk_backend_emit_package_array (job, result, state_local);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2274,7 +2300,7 @@ pk_backend_get_depends_thread (PkBackend *backend, gpointer user_data)
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -2283,11 +2309,12 @@ out:
  * pk_backend_get_requires_thread:
  */
 static void
-pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *id;
+	gboolean recursive;
 	gboolean ret;
-	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	gchar **package_ids;
 	GError *error = NULL;
 	GPtrArray *array = NULL;
 	GPtrArray *provides;
@@ -2295,14 +2322,20 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	GPtrArray *result;
 	GPtrArray *store_array = NULL;
 	guint i, j;
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
 	ZifPackage *package;
 	ZifPackage *package_provide;
 	ZifState *state_local;
 	ZifState *state_loop;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(t^a&sb)",
+		       &filters,
+		       &package_ids,
+		       &recursive);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get stores */
 				   94, /* what depends + provides */
@@ -2311,14 +2344,17 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 				   -1);
 	g_assert (ret);
 
+	/* not supported yet */
+	if (recursive)
+		g_warning ("recursive is not implemented for GetRequires()");
+
 	/* find all the packages */
-	state_local = zif_state_get_child (priv->state);
-	store_array = pk_backend_get_store_array_for_filter (backend,
-							     0,
+	state_local = zif_state_get_child (job_data->state);
+	store_array = pk_backend_get_store_array_for_filter (0,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -2326,9 +2362,9 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2339,12 +2375,12 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	/* new output array */
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = package_ids[i];
 
 		/* set up state */
-		state_local = zif_state_get_child (priv->state);
+		state_local = zif_state_get_child (job_data->state);
 		ret = zif_state_set_steps (state_local,
 					   NULL,
 					   50, /* find package */
@@ -2360,7 +2396,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 							state_loop,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find %s: %s",
 					       package_ids[i],
@@ -2372,7 +2408,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2384,7 +2420,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 		state_loop = zif_state_get_child (state_local);
 		requires = zif_package_get_provides (package, state_loop, &error);
 		if (requires == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to get requires for %s: %s",
 						       package_ids[i], error->message);
@@ -2395,7 +2431,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2410,7 +2446,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 							  state_loop,
 							  &error);
 		if (provides == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find provide for %s: %s",
 					       zif_depend_get_name (g_ptr_array_index (requires, 0)),
@@ -2429,7 +2465,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2442,9 +2478,9 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2453,13 +2489,13 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* filter */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	result = pk_backend_filter_package_array (array,
 						  filters,
 						  state_local,
 						  &error);
 	if (result == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
 				       "failed to filter: %s",
 				       error->message);
@@ -2468,9 +2504,9 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2479,16 +2515,16 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* done */
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_job_set_percentage (job, 100);
 
 	/* emit */
-	state_local = zif_state_get_child (priv->state);
-	pk_backend_emit_package_array (backend, result, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	pk_backend_emit_package_array (job, result, state_local);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2498,7 +2534,7 @@ pk_backend_get_requires_thread (PkBackend *backend, gpointer user_data)
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -2507,7 +2543,7 @@ out:
  * pk_backend_get_details_thread:
  */
 static void
-pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *description;
 	const gchar *group_str;
@@ -2515,7 +2551,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 	const gchar *license;
 	const gchar *url;
 	gboolean ret;
-	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	gchar **package_ids;
 	GError *error = NULL;
 	GPtrArray *store_array = NULL;
 	guint64 size;
@@ -2526,9 +2562,13 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   4, /* get stores */
 				   96, /* get details */
@@ -2536,15 +2576,14 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 	g_assert (ret);
 
 	/* find all the packages */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = pk_backend_get_store_array_for_filter (backend,
-							     filters,
+	store_array = pk_backend_get_store_array_for_filter (filters,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get stores: %s",
 				       error->message);
@@ -2553,9 +2592,9 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2563,10 +2602,10 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local,
 				    g_strv_length (package_ids));
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = package_ids[i];
 
@@ -2591,7 +2630,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 							state_tmp,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find %s: %s",
 					       package_ids[i],
@@ -2603,7 +2642,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2620,7 +2659,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2643,7 +2682,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2660,7 +2699,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2675,7 +2714,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2690,7 +2729,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2699,7 +2738,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* emit */
-		pk_backend_details (backend,
+		pk_backend_job_details (job,
 				    package_ids[i],
 				    license,
 				    group,
@@ -2710,7 +2749,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2721,7 +2760,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2734,9 +2773,9 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2744,7 +2783,7 @@ pk_backend_get_details_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -2753,21 +2792,22 @@ out:
   * pk_backend_get_distro_upgrades_thread:
   */
 static void
-pk_backend_get_distro_upgrades_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_distro_upgrades_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *distro_id;
 	GError *error = NULL;
 	GPtrArray *array = NULL;
 	guint i;
 	ZifUpgrade *upgrade;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* one shot */
-	zif_state_reset (priv->state);
+	zif_state_reset (job_data->state);
 
 	/* get the upgrades */
-	array = zif_release_get_upgrades_new (priv->release, priv->state, &error);
+	array = zif_release_get_upgrades_new (priv->release, job_data->state, &error);
 	if (array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 				       "could not get latest distro data : %s", error->message);
 		g_error_free (error);
@@ -2780,7 +2820,7 @@ pk_backend_get_distro_upgrades_thread (PkBackend *backend, gpointer user_data)
 		if (!zif_upgrade_get_enabled (upgrade))
 			continue;
 		distro_id = g_strdup_printf ("fedora-%i", zif_upgrade_get_version (upgrade));
-		pk_backend_distro_upgrade (backend,
+		pk_backend_job_distro_upgrade (job,
 					   zif_upgrade_get_stable (upgrade) ? PK_DISTRO_UPGRADE_ENUM_STABLE :
 									      PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
 					   distro_id,
@@ -2788,7 +2828,7 @@ pk_backend_get_distro_upgrades_thread (PkBackend *backend, gpointer user_data)
 		g_free (distro_id);
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 }
@@ -2806,12 +2846,12 @@ pk_backend_sort_string_cb (const gchar **a, const gchar **b)
  * pk_backend_get_files_thread:
  */
 static void
-pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *file;
 	const gchar *id;
 	gboolean ret;
-	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	gchar **package_ids;
 	GError *error = NULL;
 	GPtrArray *files;
 	GPtrArray *store_array = NULL;
@@ -2822,9 +2862,13 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get stores */
 				   98, /* get files */
@@ -2832,15 +2876,14 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 	g_assert (ret);
 
 	/* find all the packages */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = pk_backend_get_store_array_for_filter (backend,
-							     filters,
+	store_array = pk_backend_get_store_array_for_filter (filters,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -2848,9 +2891,9 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2858,9 +2901,9 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = package_ids[i];
 		state_loop = zif_state_get_child (state_local);
@@ -2879,7 +2922,7 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 							state_tmp,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find %s: %s",
 					       package_ids[i],
@@ -2891,7 +2934,7 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -2903,7 +2946,7 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 		state_tmp = zif_state_get_child (state_loop);
 		files = zif_package_get_files (package, state_tmp, &error);
 		if (files == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       pk_backend_convert_error (error),
 					       "no files for %s: %s",
 					       package_ids[i],
@@ -2920,12 +2963,12 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 			file = g_ptr_array_index (files, j);
 			g_string_append_printf (files_str, "%s\n", file);
 		}
-		pk_backend_files (backend, package_ids[i], files_str->str);
+		pk_backend_job_files (job, package_ids[i], files_str->str);
 
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -2937,7 +2980,7 @@ pk_backend_get_files_thread (PkBackend *backend, gpointer user_data)
 		g_object_unref (package);
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -2946,9 +2989,9 @@ out:
  * pk_backend_get_updates_thread:
  */
 static void
-pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
 	gboolean background;
 	gboolean ret;
 	gchar **search = NULL;
@@ -2967,13 +3010,17 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_loop;
 	ZifUpdateKind update_kind;
 	ZifUpdate *update;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	g_variant_get (params, "(t)",
+		       &filters);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	/* set steps */
 	background = zif_config_get_boolean (priv->config, "background", NULL);
 	if (!background) {
-		ret = zif_state_set_steps (priv->state,
+		ret = zif_state_set_steps (job_data->state,
 					   NULL,
 					   1, /* get remote stores */
 					   1, /* get installed packages */
@@ -2982,7 +3029,7 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 					   50, /* get updateinfo */
 					   -1);
 	} else {
-		ret = zif_state_set_steps (priv->state,
+		ret = zif_state_set_steps (job_data->state,
 					   NULL,
 					   1, /* get remote stores */
 					   1, /* get installed packages */
@@ -2996,12 +3043,12 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -3010,9 +3057,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3021,7 +3068,7 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* get all the installed packages */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	array = zif_store_get_packages (priv->store_local, state_local, &error);
 	if (array == NULL) {
 		g_debug ("failed to get local store: %s",
@@ -3032,9 +3079,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	g_debug ("searching for updates with %i packages", array->len);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3046,9 +3093,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	zif_package_array_filter_newest (array);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3062,13 +3109,13 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 		package = g_ptr_array_index (array, i);
 		search[i] = g_strdup (zif_package_get_name (package));
 	}
-	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state,
+	state_local = zif_state_get_child (job_data->state);
+	zif_state_set_error_handler (job_data->state,
 				     (ZifStateErrorHandlerCb) pk_backend_error_handler_cb,
-				     backend);
+				     job);
 	updates = zif_store_array_resolve (store_array, search, state_local, &error);
 	if (updates == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to get updates: %s", error->message);
 		g_error_free (error);
@@ -3103,9 +3150,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3114,7 +3161,7 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* setup steps on updatinfo state */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	if (updates_available->len > 0)
 		zif_state_set_number_steps (state_local, updates_available->len);
 
@@ -3132,7 +3179,7 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 			g_clear_error (&error);
 			ret = zif_state_finished (state_loop, NULL);
 			if (!ret) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						       "cancelled: %s",
 						       error->message);
@@ -3156,7 +3203,7 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3166,9 +3213,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3181,15 +3228,15 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	 * date, and the depends data calculated so the UI is snappy */
 	if (background) {
 		/* use these stores for the transaction */
-		zif_transaction_set_stores_remote (priv->transaction, store_array);
+		zif_transaction_set_stores_remote (job_data->transaction, store_array);
 
 		for (i=0; i<updates_available->len; i++) {
 			package = g_ptr_array_index (updates_available, i);
-			ret = zif_transaction_add_install_as_update (priv->transaction,
+			ret = zif_transaction_add_install_as_update (job_data->transaction,
 								     package,
 								     &error);
 			if (!ret) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "cannot add update: %s",
 						       error->message);
@@ -3200,18 +3247,18 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 
 		/* resolve this, which will take some time, as it's a
 		 * background action and thus throttled */
-		state_local = zif_state_get_child (priv->state);
-		ret = zif_transaction_resolve (priv->transaction, state_local, &error);
+		state_local = zif_state_get_child (job_data->state);
+		ret = zif_transaction_resolve (job_data->transaction, state_local, &error);
 		if (!ret) {
 			if (g_error_matches (error,
 					     ZIF_TRANSACTION_ERROR,
 					     ZIF_TRANSACTION_ERROR_NOTHING_TO_DO)) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
 						       "No transaction to process: %s",
 						       error->message);
 			} else {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 						       "Cannot resolve transaction: %s",
 						       error->message);
@@ -3221,9 +3268,9 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* this section done */
-		ret = zif_state_done (priv->state, &error);
+		ret = zif_state_done (job_data->state, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3233,13 +3280,13 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* filter */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	result = pk_backend_filter_package_array (updates_available,
 						  filters,
 						  state_local,
 						  &error);
 	if (result == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_CANNOT_GET_FILELIST,
 				       "failed to filter: %s",
 				       error->message);
@@ -3248,13 +3295,13 @@ pk_backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* done */
-	pk_backend_set_percentage (backend, 100);
+	pk_backend_job_set_percentage (job, 100);
 
 	/* emit */
-	state_local = zif_state_get_child (priv->state);
-	pk_backend_emit_package_array (backend, result, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	pk_backend_emit_package_array (job, result, state_local);
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (updates != NULL)
 		g_ptr_array_unref (updates);
 	if (updates_available != NULL)
@@ -3324,7 +3371,7 @@ pk_backend_sort_stores_cb (ZifStore **a, ZifStore **b)
  * pk_backend_get_update_detail_thread:
  */
 static void
-pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	gchar **package_ids;
@@ -3337,10 +3384,13 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_loop;
 	ZifState *state_tmp;
 	ZifUpdate *update;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(^a&s)",
+		       &package_ids);
 
 	/* get the data */
-	package_ids = pk_backend_get_strv (backend, "package_ids");
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   2, /* get stores */
 				   98, /* get update detail */
@@ -3349,12 +3399,12 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -3369,9 +3419,9 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 			  (GCompareFunc) pk_backend_sort_stores_cb);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3380,7 +3430,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* get the update info */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 
@@ -3399,7 +3449,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 							state_tmp,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
 					       package_ids[i],
@@ -3411,7 +3461,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3427,7 +3477,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 			g_debug ("failed to get updateinfo for %s",
 				 zif_package_get_id (package));
 			g_clear_error (&error);
-			pk_backend_update_detail (backend, package_ids[i],
+			pk_backend_job_update_detail (job, package_ids[i],
 						  NULL, NULL, NULL, NULL, NULL,
 						  PK_RESTART_ENUM_NONE,
 						  "",
@@ -3439,7 +3489,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 			 * carrying on */
 			ret = zif_state_finished (state_tmp, &error);
 			if (!ret) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						       "cancelled: %s",
 						       error->message);
@@ -3484,7 +3534,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 			changesets = zif_update_get_changelog (update);
 			if (changesets != NULL)
 				changelog_text = pk_backend_get_changelog_text (changesets);
-			pk_backend_update_detail (backend, package_ids[i],
+			pk_backend_job_update_detail (job, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
 						  (gchar **) cve_urls->pdata,
@@ -3510,7 +3560,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3521,7 +3571,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3531,9 +3581,9 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3541,7 +3591,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -3577,10 +3627,10 @@ pk_backend_convert_transaction_reason_to_info_enum (ZifTransactionReason reason)
 }
 
 /**
- * pk_backend_run_transaction:
+ * pk_backend_job_run_transaction:
  */
 static gboolean
-pk_backend_run_transaction (PkBackend *backend, ZifState *state)
+pk_backend_job_run_transaction (PkBackendJob *job, PkBitfield transaction_flags, ZifState *state)
 {
 	gboolean ret;
 	gboolean simulate;
@@ -3590,15 +3640,14 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	GPtrArray *install = NULL;
 	GPtrArray *simulate_array = NULL;
 	guint i, j;
-	PkBitfield transaction_flags;
 	PkInfoEnum info_enum;
 	ZifPackage *package;
 	ZifPackageTrustKind trust_kind;
 	ZifState *state_local;
 	ZifTransactionFlags flags = 0;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* set steps */
-	transaction_flags = pk_backend_get_uint (backend, "transaction_flags");
 	simulate = pk_bitfield_contain (transaction_flags,
 					PK_TRANSACTION_FLAG_ENUM_SIMULATE);
 	if (simulate) {
@@ -3629,17 +3678,17 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 
 	/* resolve the transaction */
 	state_local = zif_state_get_child (state);
-	ret = zif_transaction_resolve (priv->transaction,
+	ret = zif_transaction_resolve (job_data->transaction,
 				       state_local,
 				       &error);
 	if (!ret) {
 		if (error->domain == ZIF_TRANSACTION_ERROR &&
 		    error->code == ZIF_TRANSACTION_ERROR_NOTHING_TO_DO) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
 					       error->message);
 		} else {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 					       "failed to resolve transaction: %s",
 					       error->message);
@@ -3651,7 +3700,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* this section done */
 	ret = zif_state_done (state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3662,7 +3711,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* mark any explicitly-untrusted packages so that the
 	 * transaction skips straight to only_trusted=FALSE after
 	 * simulate */
-	install = zif_transaction_get_install (priv->transaction);
+	install = zif_transaction_get_install (job_data->transaction);
 	untrusted_array = g_ptr_array_new ();
 	for (i=0; i<install->len; i++) {
 		package = g_ptr_array_index (install, i);
@@ -3678,14 +3727,14 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 		}
 	}
 	state_local = zif_state_get_child (state);
-	pk_backend_emit_package_array (backend,
+	pk_backend_emit_package_array (job,
 				       untrusted_array,
 				       state_local);
 
 	/* this section done */
 	ret = zif_state_done (state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3700,7 +3749,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 			if (i == ZIF_TRANSACTION_REASON_REMOVE_FOR_UPDATE)
 				continue;
 			info_enum = pk_backend_convert_transaction_reason_to_info_enum (i);
-			array_tmp = zif_transaction_get_array_for_reason (priv->transaction, i);
+			array_tmp = zif_transaction_get_array_for_reason (job_data->transaction, i);
 			for (j=0; j<array_tmp->len; j++) {
 				package = g_ptr_array_index (array_tmp, j);
 				g_object_set_data (G_OBJECT(package),
@@ -3711,12 +3760,12 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 			g_ptr_array_unref (array_tmp);
 		}
 		state_local = zif_state_get_child (state);
-		pk_backend_emit_package_array (backend, simulate_array, state_local);
+		pk_backend_emit_package_array (job, simulate_array, state_local);
 
 		/* this section finished */
 		ret = zif_state_finished (state, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3728,11 +3777,11 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 
 	/* prepare the transaction */
 	state_local = zif_state_get_child (state);
-	ret = zif_transaction_prepare (priv->transaction,
+	ret = zif_transaction_prepare (job_data->transaction,
 				       state_local,
 				       &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 				       "failed to prepare transaction: %s",
 				       error->message);
@@ -3748,7 +3797,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 			trust_kind = zif_package_get_trust_kind (package);
 			if (trust_kind != ZIF_PACKAGE_TRUST_KIND_PUBKEY) {
 				ret = FALSE;
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_MISSING_GPG_SIGNATURE,
 						       "package %s is untrusted",
 						       zif_package_get_printable (package));
@@ -3760,7 +3809,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* this section done */
 	ret = zif_state_done (state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3781,12 +3830,12 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 				  PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		flags = ZIF_TRANSACTION_FLAG_ALLOW_UNTRUSTED;
 	}
-	ret = zif_transaction_commit_full (priv->transaction,
+	ret = zif_transaction_commit_full (job_data->transaction,
 					   flags,
 					   state_local,
 					   &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to commit transaction: %s",
 				       error->message);
@@ -3797,7 +3846,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 	/* this section done */
 	ret = zif_state_done (state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3818,8 +3867,9 @@ out:
  * pk_backend_remove_packages_thread:
  */
 static void
-pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
+pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	gboolean allow_deps;
 	gboolean autoremove;
 	gboolean ret;
 	gchar **package_ids;
@@ -3829,12 +3879,20 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
+	PkBitfield transaction_flags;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+
+	g_variant_get (params, "(t^a&sbb)",
+		       &transaction_flags,
+		       &package_ids,
+		       &allow_deps,
+		       &autoremove);
 
 	/* setup steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   10, /* find packages */
 				   90, /* run transaction */
@@ -3842,13 +3900,15 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 	g_assert (ret);
 
 	/* setup autoremove */
-	autoremove = pk_backend_get_bool (backend, "autoremove");
 	zif_config_set_boolean (priv->config,
 				"clean_requirements_on_remove",
 				autoremove, NULL);
 
-	state_local = zif_state_get_child (priv->state);
-	package_ids = pk_backend_get_strv (backend, "package_ids");
+	/* not supported */
+	if (!allow_deps)
+		g_warning ("!allow-deps not supported for RemovePackages()");
+
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 
@@ -3859,7 +3919,7 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 						  state_loop,
 						  &error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
 					       package_ids[i],
@@ -3869,12 +3929,12 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* add it as a remove to the transaction */
-		ret = zif_transaction_add_remove (priv->transaction,
+		ret = zif_transaction_add_remove (job_data->transaction,
 						   package,
 						   &error);
 		g_object_unref (package);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
 					       zif_package_get_printable (package),
@@ -3886,7 +3946,7 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -3896,9 +3956,9 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3907,15 +3967,15 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* run transaction */
-	state_local = zif_state_get_child (priv->state);
-	ret = pk_backend_run_transaction (backend, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
 	if (!ret)
 		goto out;
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3923,7 +3983,7 @@ pk_backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -3932,7 +3992,7 @@ out:
  * pk_backend_update_packages_thread:
  */
 static void
-pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
+pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	gchar **package_ids;
@@ -3942,12 +4002,18 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
+	PkBitfield transaction_flags;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
+		       &package_ids);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* setup steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   10, /* add remote */
 				   10, /* find packages */
@@ -3957,12 +4023,12 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -3971,12 +4037,12 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* use these stores for the transaction */
-	zif_transaction_set_stores_remote (priv->transaction, store_array);
+	zif_transaction_set_stores_remote (job_data->transaction, store_array);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -3984,8 +4050,7 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 
-	state_local = zif_state_get_child (priv->state);
-	package_ids = pk_backend_get_strv (backend, "package_ids");
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 
@@ -3996,7 +4061,7 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 							state_loop,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
 					       package_ids[i],
@@ -4006,12 +4071,12 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* add it as an update to the transaction */
-		ret = zif_transaction_add_install_as_update (priv->transaction,
+		ret = zif_transaction_add_install_as_update (job_data->transaction,
 							     package,
 							     &error);
 		g_object_unref (package);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
 					       zif_package_get_printable (package),
@@ -4023,7 +4088,7 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -4033,9 +4098,9 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4044,15 +4109,15 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* run transaction */
-	state_local = zif_state_get_child (priv->state);
-	ret = pk_backend_run_transaction (backend, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
 	if (!ret)
 		goto out;
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4060,7 +4125,7 @@ pk_backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -4069,7 +4134,7 @@ out:
  * pk_backend_update_system_thread:
  */
 static void
-pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
+pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -4079,12 +4144,17 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifStore *store_local = NULL;
+	PkBitfield transaction_flags;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(t)",
+		       &transaction_flags);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* setup steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   10, /* add remote */
 				   10, /* get updates */
@@ -4095,12 +4165,12 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -4109,12 +4179,12 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* use these stores for the transaction */
-	zif_transaction_set_stores_remote (priv->transaction, store_array);
+	zif_transaction_set_stores_remote (job_data->transaction, store_array);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4123,14 +4193,14 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* get all updates */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	store_local = zif_store_local_new ();
 	updates = zif_store_array_get_updates (store_array,
 					       store_local,
 					       state_local,
 					       &error);
 	if (updates == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_ERROR,
 				       "failed to get updates: %s",
 				       error->message);
@@ -4139,9 +4209,9 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4152,11 +4222,11 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	/* add them as an update to the transaction */
 	for (i = 0; i < updates->len; i++) {
 		package = g_ptr_array_index (updates, i);
-		ret = zif_transaction_add_install_as_update (priv->transaction,
+		ret = zif_transaction_add_install_as_update (job_data->transaction,
 							     package,
 							     &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_ERROR,
 					       "failed to add package %s: %s",
 					       zif_package_get_printable (package),
@@ -4167,9 +4237,9 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4178,15 +4248,15 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* run transaction */
-	state_local = zif_state_get_child (priv->state);
-	ret = pk_backend_run_transaction (backend, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
 	if (!ret)
 		goto out;
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4194,7 +4264,7 @@ pk_backend_update_system_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_local != NULL)
 		g_object_unref (store_local);
 	if (updates != NULL)
@@ -4207,7 +4277,7 @@ out:
  * pk_backend_install_packages_thread:
  */
 static void
-pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
+pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	gchar **package_ids;
@@ -4217,12 +4287,18 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
+	PkBitfield transaction_flags;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
+		       &package_ids);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* setup steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   10, /* add remote */
 				   10, /* find packages */
@@ -4232,12 +4308,12 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -4246,12 +4322,12 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* use these stores for the transaction */
-	zif_transaction_set_stores_remote (priv->transaction, store_array);
+	zif_transaction_set_stores_remote (job_data->transaction, store_array);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4259,8 +4335,7 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 
-	state_local = zif_state_get_child (priv->state);
-	package_ids = pk_backend_get_strv (backend, "package_ids");
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 
@@ -4271,7 +4346,7 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 							state_loop,
 							&error);
 		if (package == NULL) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
 					       package_ids[i],
@@ -4281,12 +4356,12 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* add it as an install to the transaction */
-		ret = zif_transaction_add_install (priv->transaction,
+		ret = zif_transaction_add_install (job_data->transaction,
 						   package,
 						   &error);
 		g_object_unref (package);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
 					       zif_package_get_printable (package),
@@ -4298,7 +4373,7 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -4308,9 +4383,9 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4319,15 +4394,15 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* run transaction */
-	state_local = zif_state_get_child (priv->state);
-	ret = pk_backend_run_transaction (backend, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
 	if (!ret)
 		goto out;
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4335,7 +4410,7 @@ pk_backend_install_packages_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -4344,7 +4419,7 @@ out:
  * pk_backend_install_files_thread:
  */
 static void
-pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
+pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
 	gchar **full_paths;
@@ -4353,12 +4428,18 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 	guint i;
 	ZifPackage *package;
 	ZifState *state_local;
+	PkBitfield transaction_flags;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
+		       &full_paths);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* setup steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   10, /* add remote */
 				   10, /* find packages */
@@ -4368,12 +4449,12 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -4382,12 +4463,12 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* use these stores for the transaction */
-	zif_transaction_set_stores_remote (priv->transaction, store_array);
+	zif_transaction_set_stores_remote (job_data->transaction, store_array);
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4395,8 +4476,7 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 
-	state_local = zif_state_get_child (priv->state);
-	full_paths = pk_backend_get_strv (backend, "full_paths");
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, g_strv_length (full_paths));
 	for (i=0; full_paths[i] != NULL; i++) {
 
@@ -4406,7 +4486,7 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 							   full_paths[i],
 							   &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to create package for %s: %s",
 					       full_paths[i], error->message);
@@ -4415,12 +4495,12 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		/* add it as an install to the transaction */
-		ret = zif_transaction_add_install (priv->transaction,
+		ret = zif_transaction_add_install (job_data->transaction,
 						   package,
 						   &error);
 		g_object_unref (package);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
 					       zif_package_get_printable (package),
@@ -4432,7 +4512,7 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -4442,9 +4522,9 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4453,15 +4533,15 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* run transaction */
-	state_local = zif_state_get_child (priv->state);
-	ret = pk_backend_run_transaction (backend, state_local);
+	state_local = zif_state_get_child (job_data->state);
+	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
 	if (!ret)
 		goto out;
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4469,7 +4549,7 @@ pk_backend_install_files_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -4478,33 +4558,37 @@ out:
  * pk_backend_refresh_cache_thread:
  */
 static void
-pk_backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
+pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	gboolean force = pk_backend_get_bool (backend, "force");
+	gboolean force;
 	gboolean ret;
 	GError *error = NULL;
 	GPtrArray *store_array = NULL;
 	ZifState *state_local;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(b)",
+		       &force);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   5, /* get stores */
 				   95, /* refresh them */
 				   -1);
 	g_assert (ret);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_array_add_remote_enabled (store_array,
 						  state_local,
 						  &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
@@ -4513,9 +4597,9 @@ pk_backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4524,11 +4608,11 @@ pk_backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* refresh all the repos */
-	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
+	state_local = zif_state_get_child (job_data->state);
+	zif_state_set_error_handler (job_data->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, job);
 	ret = zif_store_array_refresh (store_array, force, state_local, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to refresh: %s", error->message);
 		g_error_free (error);
@@ -4536,9 +4620,9 @@ pk_backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4547,7 +4631,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
 	}
 
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 }
@@ -4556,10 +4640,10 @@ out:
  * pk_backend_get_repo_list_thread:
  */
 static void
-pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	PkBitfield filters;
 	guint i;
 	GPtrArray *array = NULL;
 	ZifStoreRemote *store;
@@ -4571,22 +4655,26 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 	gboolean enabled;
 	gboolean devel;
 	GError *error = NULL;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(t)",
+		       &filters);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   50, /* get stores */
 				   50, /* process and emit */
 				   -1);
 	g_assert (ret);
 
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	array = zif_repos_get_stores (priv->repos, state_local, &error);
 	if (array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_REPO_NOT_FOUND,
 				       "failed to find repos: %s",
 				       error->message);
@@ -4596,16 +4684,16 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 
 	/* none? */
 	if (array->len == 0) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_REPO_NOT_FOUND,
 				       "failed to find any repos");
 		goto out;
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4614,7 +4702,7 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* looks at each store */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, array->len);
 	for (i=0; i<array->len; i++) {
 		store = g_ptr_array_index (array, i);
@@ -4640,7 +4728,7 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 			/* this section done */
 			ret = zif_state_done (state_loop, &error);
 			if (!ret) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						       "cancelled: %s",
 						       error->message);
@@ -4664,7 +4752,7 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4679,7 +4767,7 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4688,12 +4776,12 @@ pk_backend_get_repo_list_thread (PkBackend *backend, gpointer user_data)
 		}
 
 		repo_id = zif_store_get_id (ZIF_STORE (store));
-		pk_backend_repo_detail (backend, repo_id, name, enabled);
+		pk_backend_job_repo_detail (job, repo_id, name, enabled);
 skip:
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -4703,9 +4791,9 @@ skip:
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4713,7 +4801,7 @@ skip:
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 }
@@ -4722,29 +4810,34 @@ out:
  * pk_backend_repo_enable_thread:
  */
 static void
-pk_backend_repo_enable_thread (PkBackend *backend, gpointer user_data)
+pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	ZifStoreRemote *repo = NULL;
 	ZifState *state_local;
 	gboolean ret;
 	GError *error = NULL;
 	gchar *warning = NULL;
-	gboolean enabled = pk_backend_get_bool (backend, "enabled");
-	const gchar *repo_id = pk_backend_get_string (backend, "repo_id");
+	gboolean enabled;
+	const gchar *repo_id;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	g_variant_get (params, "(^sb)",
+		       &repo_id,
+		       &enabled);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set steps */
-	zif_state_set_number_steps (priv->state, 2);
+	zif_state_set_number_steps (job_data->state, 2);
 
 	/* find the right repo */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	repo = zif_repos_get_store (priv->repos,
 				    repo_id, state_local,
 				    &error);
 	if (repo == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_REPO_NOT_FOUND,
 				       "failed to find repo: %s",
 				       error->message);
@@ -4753,9 +4846,9 @@ pk_backend_repo_enable_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4764,13 +4857,13 @@ pk_backend_repo_enable_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* set the state */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	ret = zif_store_remote_set_enabled (repo,
 					    enabled,
 					    state_local,
 					    &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY,
 				       "failed to set enable: %s",
 				       error->message);
@@ -4779,9 +4872,9 @@ pk_backend_repo_enable_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4800,12 +4893,12 @@ pk_backend_repo_enable_thread (PkBackend *backend, gpointer user_data)
 					   "Fedora developers by testing these new development packages.\n\n"
 					   "If this is not correct, please disable the %s software source.",
 					   repo_id);
-		pk_backend_message (backend,
+		pk_backend_job_message (job,
 				    PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY,
 				    warning);
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	g_free (warning);
 	if (repo != NULL)
 		g_object_unref (repo);
@@ -4815,7 +4908,7 @@ out:
  * pk_backend_get_categories_thread:
  */
 static void
-pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
+pk_backend_get_categories_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *name;
 	const gchar *repo_id;
@@ -4832,9 +4925,10 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	ZifState *state_loop;
 	ZifState *state_tmp;
 	ZifStoreRemote *store;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
+	ret = zif_state_set_steps (job_data->state,
 				   NULL,
 				   25, /* get stores */
 				   50, /* get cats */
@@ -4844,16 +4938,16 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 				   -1);
 	g_assert (ret);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* get enabled repos */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	stores = zif_repos_get_stores_enabled (priv->repos,
 					       state_local,
 					       &error);
 	if (stores == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
 				       "failed to add remote stores: %s",
 				       error->message);
@@ -4862,9 +4956,9 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4873,13 +4967,13 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* get sorted list of unique categories */
-	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state,
+	state_local = zif_state_get_child (job_data->state);
+	zif_state_set_error_handler (job_data->state,
 				     (ZifStateErrorHandlerCb) pk_backend_error_handler_cb,
-				     backend);
+				     job);
 	array = zif_store_array_get_categories (stores, state_local, &error);
 	if (array == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_GROUP_LIST_INVALID,
 				       "failed to add get categories: %s",
 				       error->message);
@@ -4888,9 +4982,9 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4906,7 +5000,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 			cat_id = g_strdup_printf ("@%s", zif_category_get_id (cat));
 		else
 			cat_id = g_strdup (zif_category_get_id (cat));
-		pk_backend_category (backend,
+		pk_backend_job_category (job,
 				     zif_category_get_parent_id (cat),
 				     cat_id,
 				     zif_category_get_name (cat),
@@ -4916,9 +5010,9 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4927,16 +5021,16 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* add the repo category objects */
-	pk_backend_category (backend,
+	pk_backend_job_category (job,
 			     NULL,
 			     "repo:",
 			     "Software Sources",
 			     "Packages from specific software sources",
 			     "base-system");
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	repos = zif_repos_get_stores (priv->repos, state_local, &error);
 	if (repos == NULL) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_REPO_NOT_FOUND,
 				       "failed to find repos: %s",
 				       error->message);
@@ -4945,9 +5039,9 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -4956,7 +5050,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 	}
 
 	/* looks at each store */
-	state_local = zif_state_get_child (priv->state);
+	state_local = zif_state_get_child (job_data->state);
 	zif_state_set_number_steps (state_local, repos->len);
 	for (i=0; i<repos->len; i++) {
 		store = g_ptr_array_index (repos, i);
@@ -4977,7 +5071,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 		if (!enabled) {
 			ret = zif_state_finished (state_loop, &error);
 			if (!ret) {
-				pk_backend_error_code (backend,
+				pk_backend_job_error_code (job,
 						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						       "cancelled: %s",
 						       error->message);
@@ -4990,7 +5084,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -5005,7 +5099,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -5016,7 +5110,7 @@ pk_backend_get_categories_thread (PkBackend *backend, gpointer user_data)
 		/* emit */
 		repo_id = zif_store_get_id (ZIF_STORE (store));
 		cat_id = g_strdup_printf ("repo:%s", repo_id);
-		pk_backend_category (backend,
+		pk_backend_job_category (job,
 				     "repo:",
 				     cat_id,
 				     name,
@@ -5027,7 +5121,7 @@ skip:
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "cancelled: %s",
 					       error->message);
@@ -5037,9 +5131,9 @@ skip:
 	}
 
 	/* this section done */
-	ret = zif_state_done (priv->state, &error);
+	ret = zif_state_done (job_data->state, &error);
 	if (!ret) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "cancelled: %s",
 				       error->message);
@@ -5047,7 +5141,7 @@ skip:
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	if (repos != NULL)
 		g_ptr_array_unref (repos);
 	if (array != NULL)
@@ -5060,20 +5154,25 @@ out:
   * pk_backend_upgrade_system_thread:
   */
 static void
-pk_backend_upgrade_system_thread (PkBackend *backend, gpointer user_data)
+pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **distro_id_split = NULL;
 	guint version;
 	gboolean ret;
 	GError *error = NULL;
 	ZifReleaseUpgradeKind upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_DEFAULT;
-	PkUpgradeKindEnum upgrade_kind = pk_backend_get_uint (backend, "upgrade_kind");
-	const gchar *distro_id = pk_backend_get_string (backend, "distro_id");
+	PkUpgradeKindEnum upgrade_kind;
+	const gchar *distro_id;
+	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(^su)",
+		       &distro_id,
+		       &upgrade_kind);
 
 	/* check valid */
 	distro_id_split = g_strsplit (distro_id, "-", -1);
 	if (g_strv_length (distro_id_split) != 2) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 				       "distribution id %s invalid",
 				       distro_id);
@@ -5082,7 +5181,7 @@ pk_backend_upgrade_system_thread (PkBackend *backend, gpointer user_data)
 
 	/* check fedora */
 	if (g_strcmp0 (distro_id_split[0], "fedora") != 0) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 				       "only 'fedora' is supported");
 		goto out;
@@ -5099,11 +5198,11 @@ pk_backend_upgrade_system_thread (PkBackend *backend, gpointer user_data)
 	ret = zif_release_upgrade_version (priv->release,
 					   version,
 					   upgrade_kind_zif,
-					   priv->state,
+					   job_data->state,
 					   &error);
 	if (!ret) {
 		/* convert the ZifRelease error code into a PK error enum */
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       pk_backend_convert_error (error),
 				       "failed to upgrade: %s",
 				       error->message);
@@ -5111,7 +5210,7 @@ pk_backend_upgrade_system_thread (PkBackend *backend, gpointer user_data)
 		goto out;
 	}
 out:
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 	g_strfreev (distro_id_split);
 }
 
@@ -5119,245 +5218,244 @@ out:
  * pk_backend_download_packages:
  */
 void
-pk_backend_download_packages (PkBackend *backend, gchar **package_ids,
+pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids,
 			      const gchar *directory)
 {
-	pk_backend_thread_create (backend, pk_backend_download_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_categories:
  */
 void
-pk_backend_get_categories (PkBackend *backend)
+pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_thread_create (backend, pk_backend_get_categories_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_categories_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_depends:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBitfield filters,
+pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters,
 			gchar **package_ids, gboolean recursive)
 {
-	pk_backend_thread_create (backend, pk_backend_get_depends_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_depends_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_details:
  */
 void
-pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, pk_backend_get_details_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_details_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_distro_upgrades:
  */
 void
-pk_backend_get_distro_upgrades (PkBackend *backend)
+pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_thread_create (backend, pk_backend_get_distro_upgrades_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_distro_upgrades_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_files:
  */
 void
-pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, pk_backend_get_files_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_files_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_packages:
  */
 void
-pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 void
-pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_thread_create (backend, pk_backend_get_repo_list_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_repo_list_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_requires:
  */
 void
-pk_backend_get_requires (PkBackend *backend, PkBitfield filters,
+pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters,
 			 gchar **package_ids, gboolean recursive)
 {
-	pk_backend_thread_create (backend, pk_backend_get_requires_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_requires_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_update_detail:
  */
 void
-pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, pk_backend_get_update_detail_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_update_detail_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_updates:
  */
 void
-pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_thread_create (backend, pk_backend_get_updates_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_get_updates_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_install_files:
  */
 void
-pk_backend_install_files (PkBackend *backend,
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
 			  PkBitfield transaction_flags,
 			  gchar **full_paths)
 {
-	pk_backend_thread_create (backend, pk_backend_install_files_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_install_files_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_install_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend,
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job,
 			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
-	pk_backend_thread_create (backend, pk_backend_install_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_install_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_refresh_cache:
  */
 void
-pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend,
+		pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_NO_NETWORK,
 				       "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
+		pk_backend_job_finished (job);
 		return;
 	}
-	pk_backend_thread_create (backend, pk_backend_refresh_cache_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend,
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids,
 			    gboolean allow_deps,
 			    gboolean autoremove)
 {
-	pk_backend_thread_create (backend, pk_backend_remove_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_repo_enable:
  */
 void
-pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
+pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
-	pk_backend_thread_create (backend, pk_backend_repo_enable_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_repo_enable_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_resolve:
  */
 void
-pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
-	pk_backend_set_strv (backend, "search", packages);
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_details:
  */
 void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_files:
  */
 void
-pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_groups:
  */
 void
-pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_names:
  */
 void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_update_packages:
  */
 void
-pk_backend_update_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
-	pk_backend_thread_create (backend, pk_backend_update_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
+pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-	pk_backend_thread_create (backend, pk_backend_update_system_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_update_system_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend,
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job,
 			   const gchar *distro_id,
 			   PkUpgradeKindEnum upgrade_kind)
 {
-	pk_backend_thread_create (backend, pk_backend_upgrade_system_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_upgrade_system_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBitfield filters,
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters,
 			  PkProvidesEnum provides, gchar **values)
 {
 	guint i;
@@ -5401,7 +5499,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters,
 				g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
 			}
 		} else {
-			pk_backend_error_code (backend,
+			pk_backend_job_error_code (job,
 				       PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
 					       "provide type %s not supported", pk_provides_enum_to_string (provides));
 		}
@@ -5409,8 +5507,7 @@ pk_backend_what_provides (PkBackend *backend, PkBitfield filters,
 
 	/* set the search terms and run */
 	search = pk_ptr_array_to_strv (array);
-	pk_backend_set_strv (backend, "search", search);
-	pk_backend_thread_create (backend, pk_backend_search_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 	g_strfreev (search);
 	g_ptr_array_unref (array);
 }
