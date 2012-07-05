@@ -849,8 +849,9 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
  **/
 void
 pk_backend_job_set_item_progress (PkBackendJob *job,
-			      const gchar *package_id,
-			      guint percentage)
+				  const gchar *package_id,
+				  PkStatusEnum status,
+				  guint percentage)
 {
 	PkItemProgress *item;
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -870,6 +871,7 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 	/* emit */
 	item = g_object_new (PK_TYPE_ITEM_PROGRESS,
 			     "package-id", package_id,
+			     "status", status,
 			     "percentage", percentage,
 			     NULL);
 	pk_backend_job_call_vfunc (job,

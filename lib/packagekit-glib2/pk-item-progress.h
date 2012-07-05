@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-source.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -62,6 +63,7 @@ struct _PkItemProgressClass
 
 GType		 pk_item_progress_get_type		(void);
 PkItemProgress	*pk_item_progress_new			(void);
+PkStatusEnum	 pk_item_progress_get_status		(PkItemProgress	*item_progress);
 guint		 pk_item_progress_get_percentage	(PkItemProgress	*item_progress);
 const gchar	*pk_item_progress_get_package_id	(PkItemProgress	*item_progress);
 

@@ -1415,13 +1415,15 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
 		PkItemProgress *item;
 		g_variant_get (parameters,
-			       "(&su)",
+			       "(&suu)",
 			       &tmp_str[0],
-			       &tmp_uint);
+			       &tmp_uint,
+			       &tmp_uint2);
 		item = pk_item_progress_new ();
 		g_object_set (item,
 			      "package-id", tmp_str[0],
-			      "percentage", tmp_uint,
+			      "status", tmp_uint,
+			      "percentage", tmp_uint2,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		ret = pk_progress_set_item_progress (state->progress,

@@ -989,7 +989,7 @@ Q_SIGNALS:
      * Sends the \p item current progress \p percentage
      * Currently only a package id is emitted
      */
-    void ItemProgress(const QString &id, uint percentage);
+    void ItemProgress(const QString &id, uint status, uint percentage);
 
     /**
      * Sends the \p filenames contained in package \p package

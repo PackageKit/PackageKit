@@ -2418,6 +2418,15 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <arg type="u" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The status enumerated value that is being completed.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
       <arg type="u" name="percentage" direction="out">
         <doc:doc>
           <doc:summary>

@@ -133,8 +133,8 @@ void Transaction::init(const QDBusObjectPath &tid)
             SLOT(eulaRequired(QString,QString,QString,QString)));
     connect(d->p, SIGNAL(MediaChangeRequired(uint,QString,QString)),
             SLOT(mediaChangeRequired(uint,QString,QString)));
-    connect(d->p, SIGNAL(ItemProgress(QString,uint)),
-            SIGNAL(ItemProgress(QString,uint)));
+    connect(d->p, SIGNAL(ItemProgress(QString,uint,uint)),
+            SIGNAL(ItemProgress(QString,uint,uint)));
     connect(d->p, SIGNAL(RequireRestart(uint,QString)),
             SLOT(requireRestart(uint,QString)));
     connect(d->p, SIGNAL(Transaction(QDBusObjectPath,QString,bool,uint,uint,QString,uint,QString)),

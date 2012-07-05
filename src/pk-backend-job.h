@@ -236,6 +236,7 @@ void		 pk_backend_job_set_percentage		(PkBackendJob	*job,
 							 guint		 percentage);
 void		 pk_backend_job_set_item_progress	(PkBackendJob	*job,
 							 const gchar	*package_id,
+							 PkStatusEnum	 status,
 							 guint		 percentage);
 void		 pk_backend_job_set_speed		(PkBackendJob	*job,
 							 guint		 speed);

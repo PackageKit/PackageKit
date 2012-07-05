@@ -47,17 +47,28 @@ static void     pk_item_progress_finalize	(GObject     *object);
 struct _PkItemProgressPrivate
 {
 	gchar				*package_id;
+	PkStatusEnum			 status;
 	guint				 percentage;
 };
 
 enum {
 	PROP_0,
 	PROP_PACKAGE_ID,
+	PROP_STATUS,
 	PROP_PERCENTAGE,
 	PROP_LAST
 };
 
 G_DEFINE_TYPE (PkItemProgress, pk_item_progress, PK_TYPE_SOURCE)
+
+/**
+ * pk_item_progress_get_status:
+ **/
+guint
+pk_item_progress_get_status (PkItemProgress *item_progress)
+{
+	return item_progress->priv->status;
+}
 
 /**
  * pk_item_progress_get_percentage:
@@ -93,6 +104,9 @@ pk_item_progress_get_property (GObject *object, guint prop_id, GValue *value, GP
 	case PROP_PERCENTAGE:
 		g_value_set_uint (value, priv->percentage);
 		break;
+	case PROP_STATUS:
+		g_value_set_uint (value, priv->status);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -112,6 +126,9 @@ pk_item_progress_set_property (GObject *object, guint prop_id, const GValue *val
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
 		priv->package_id = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_STATUS:
+		priv->status = g_value_get_uint (value);
 		break;
 	case PROP_PERCENTAGE:
 		priv->percentage = g_value_get_uint (value);
@@ -143,6 +160,16 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
+
+	/**
+	 * PkItemProgress:status:
+	 *
+	 * Since: 0.8.2
+	 */
+	pspec = g_param_spec_uint ("status", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
 	/**
 	 * PkItemProgress:percentage:
