@@ -26,7 +26,7 @@
 class AptCacheFile : public pkgCacheFile
 {
 public:
-    AptCacheFile(PkBackend *backend);
+    AptCacheFile(PkBackendJob *job);
     ~AptCacheFile();
 
     /**
@@ -104,7 +104,7 @@ private:
     static std::string debParser(std::string descr);
 
     pkgRecords *m_packageRecords;
-    PkBackend  *m_backend;
+    PkBackendJob *m_job;
 };
 
 #endif // APTCACHEFILE_H

@@ -30,7 +30,7 @@
 class OpPackageKitProgress : public OpProgress
 {
 public:
-    OpPackageKitProgress(PkBackend *backend);
+    OpPackageKitProgress(PkBackendJob *job);
     virtual ~OpPackageKitProgress();
 
     virtual void Done();
@@ -39,7 +39,7 @@ protected:
     virtual void Update();
 
 private:
-    PkBackend  *m_backend;
+    PkBackendJob  *m_job;
 };
 
 #endif // OP_PACKAGEKIT_PROGRESS_H

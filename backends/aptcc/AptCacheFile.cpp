@@ -26,9 +26,9 @@
 #include <sstream>
 #include <cstdio>
 
-AptCacheFile::AptCacheFile(PkBackend *backend) :
+AptCacheFile::AptCacheFile(PkBackendJob *job) :
     m_packageRecords(0),
-    m_backend(backend)
+    m_job(job)
 {
 }
 
@@ -39,7 +39,7 @@ AptCacheFile::~AptCacheFile()
 
 bool AptCacheFile::Open(bool withLock)
 {
-    OpPackageKitProgress progress(m_backend);
+    OpPackageKitProgress progress(m_job);
     return pkgCacheFile::Open(&progress, withLock);
 }
 
@@ -58,7 +58,7 @@ void AptCacheFile::Close()
 
 bool AptCacheFile::BuildCaches(bool withLock)
 {
-    OpPackageKitProgress progress(m_backend);
+    OpPackageKitProgress progress(m_job);
     return pkgCacheFile::BuildCaches(&progress, withLock);
 }
 
@@ -230,7 +230,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
             }
         }
     }
-    pk_backend_error_code(m_backend, error, utf8(out.str().c_str()));
+    pk_backend_job_error_code(m_job, error, utf8(out.str().c_str()));
 }
 
 void AptCacheFile::buildPkgRecords()

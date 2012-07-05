@@ -43,11 +43,12 @@ class AptCacheFile;
 class AptIntf
 {
 public:
-    AptIntf(PkBackend *backend, bool &cancel);
+    AptIntf(PkBackendJob *job);
     ~AptIntf();
 
     bool init();
     void cancel();
+    bool cancelled() const;
 
     /**
      * Tries to find a package with the given packageId
@@ -100,7 +101,8 @@ public:
                         bool simulate,
                         bool markAuto,
                         bool fixBroken,
-                        bool downloadOnly);
+                        PkBitfield flags,
+                        bool autoremove);
 
     /**
      *  Get package depends
@@ -204,7 +206,7 @@ public:
     /**
       *  Download and install packages
       */
-    bool installPackages(AptCacheFile &cache, bool simulating, bool downloadOnly);
+    bool installPackages(AptCacheFile &cache, PkBitfield flags, bool autoremove);
 
     /**
      *  Install a DEB file
@@ -237,7 +239,7 @@ public:
                     std::string directory, std::string &StoreFilename);
 
 private:
-    bool checkTrusted(pkgAcquire &fetcher, bool simulating);
+    bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
     void tryToRemove(const pkgCache::VerIterator &ver,
                      pkgDepCache &Cache,
@@ -258,8 +260,8 @@ private:
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
     AptCacheFile *m_cache;
-    PkBackend  *m_backend;
-    bool       &m_cancel;
+    PkBackendJob  *m_job;
+    bool       m_cancel;
     struct stat m_restartStat;
 
     bool m_isMultiArch;

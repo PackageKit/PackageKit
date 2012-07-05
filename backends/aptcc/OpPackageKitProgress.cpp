@@ -20,11 +20,11 @@
 
 #include "OpPackageKitProgress.h"
 
-OpPackageKitProgress::OpPackageKitProgress(PkBackend *backend) :
-    m_backend(backend)
+OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job) :
+    m_job(job)
 {
     // Set PackageKit status
-    pk_backend_set_status(m_backend, PK_STATUS_ENUM_LOADING_CACHE);
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_LOADING_CACHE);
 }
 
 OpPackageKitProgress::~OpPackageKitProgress()
@@ -34,7 +34,7 @@ OpPackageKitProgress::~OpPackageKitProgress()
 
 void OpPackageKitProgress::Done()
 {
-    pk_backend_set_percentage(m_backend, 100);
+    pk_backend_job_set_percentage(m_job, 100);
 }
 
 void OpPackageKitProgress::Update()
@@ -45,5 +45,5 @@ void OpPackageKitProgress::Update()
     }
 
     // Set the new percent
-    pk_backend_set_percentage(m_backend, static_cast<unsigned int>(Percent));
+    pk_backend_job_set_percentage(m_job, static_cast<unsigned int>(Percent));
 }

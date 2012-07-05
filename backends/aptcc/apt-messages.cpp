@@ -30,7 +30,7 @@
 
 using namespace std;
 
-bool show_errors(PkBackend *backend, PkErrorEnum errorCode, bool errModify)
+bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
 {
     stringstream errors;
     stringstream messages;
@@ -56,15 +56,15 @@ bool show_errors(PkBackend *backend, PkErrorEnum errorCode, bool errModify)
     }
 
     if (!errors.str().empty()) {
-        pk_backend_error_code(backend, errorCode, utf8(errors.str().c_str()));
+        pk_backend_job_error_code(job, errorCode, utf8(errors.str().c_str()));
     }
 
     if ((errModify) && (!messages.str().empty())) {
-        pk_backend_message(backend, messageCode, utf8(messages.str().c_str()));
+        pk_backend_job_message(job, messageCode, utf8(messages.str().c_str()));
     }
 }
 
-bool show_warnings(PkBackend *backend, PkMessageEnum message)
+bool show_warnings(PkBackendJob *job, PkMessageEnum message)
 {
     stringstream warnings;
 
@@ -79,6 +79,6 @@ bool show_warnings(PkBackend *backend, PkMessageEnum message)
     }
 
     if (!warnings.str().empty()) {
-        pk_backend_message(backend, message, utf8(warnings.str().c_str()));
+        pk_backend_job_message(job, message, utf8(warnings.str().c_str()));
     }
 }
