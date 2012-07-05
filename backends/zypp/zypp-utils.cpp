@@ -78,26 +78,26 @@ ZYpp::Ptr
 get_zypp (PkBackend *backend)
 {
 	static gboolean initialized = FALSE;
-        ZYpp::Ptr zypp = NULL;
+	ZYpp::Ptr zypp = NULL;
 
-        try {
-	        zypp = ZYppFactory::instance ().getZYpp ();
+	try {
+		zypp = ZYppFactory::instance ().getZYpp ();
 
 		/* TODO: we need to lifecycle manage this, detect changes
 		   in the requested 'root' etc. */
-	        if (!initialized) {
+		if (!initialized) {
 			filesystem::Pathname pathname(pk_backend_get_root (backend));
-		        zypp->initializeTarget (pathname);
+			zypp->initializeTarget (pathname);
 
-		        initialized = TRUE;
-	        }
+			initialized = TRUE;
+		}
 	} catch (const ZYppFactoryException &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
 		return NULL;
-        } catch (const Exception &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+	} catch (const Exception &ex) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		return NULL;
-        }
+	}
 
 	return zypp;
 }
@@ -180,12 +180,12 @@ zypp_is_valid_repo (PkBackend *backend, RepoInfo repo)
 {
 
 	if (repo.alias().empty()){
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "Repository has no or invalid repo name defined.\n", repo.alias ().c_str ());
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "Repository has no or invalid repo name defined.\n", repo.alias ().c_str ());
 		return FALSE;
 	}
 
 	if (!repo.url().isValid()){
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: Repository has no or invalid url defined.\n", repo.alias ().c_str ());
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: Repository has no or invalid url defined.\n", repo.alias ().c_str ());
 		return FALSE;
 	}
 
@@ -230,23 +230,23 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 			// skip disabled repos
 			if (repo.enabled () == false)
 				continue;
-                        // skip not cached repos
-                        if (manager.isCached (repo) == false) {
-                                g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
-                                continue;
-                        }
-                        //FIXME see above, skip already cached repos
-                        if (sat::Pool::instance().reposFind( repo.alias ()) == Repository::noRepository)
-                                manager.loadFromCache (repo);
+			// skip not cached repos
+			if (manager.isCached (repo) == false) {
+				g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+				continue;
+			}
+			//FIXME see above, skip already cached repos
+			if (sat::Pool::instance().reposFind( repo.alias ()) == Repository::noRepository)
+				manager.loadFromCache (repo);
 
 		}
 		repos_loaded = true;
 	} catch (const repo::RepoNoAliasException &ex) {
-                g_error ("Can't figure an alias to look in cache");
-        } catch (const repo::RepoNotCachedException &ex) {
-                g_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
+		g_error ("Can't figure an alias to look in cache");
+	} catch (const repo::RepoNotCachedException &ex) {
+		g_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
 	} catch (const Exception &ex) {
-                g_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
+		g_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 	}
 
 	return zypp->pool ();
@@ -265,7 +265,7 @@ warn_outdated_repos(PkBackend *backend, const ResPool & pool)
 		if ( repo.maybeOutdated() )
 		{
 			// warn the user
-			pk_backend_message (backend,
+			pk_backend_job_message (job,
 					PK_MESSAGE_ENUM_BROKEN_MIRROR,
 					str::form("The repository %s seems to be outdated. You may want to try another mirror.",
 					repo.alias().c_str()).c_str() );
@@ -290,17 +290,17 @@ zypp_get_rpmHeader (const string &name, Edition edition)
 string
 zypp_get_group (sat::Solvable item)
 {
-        string group;
+	string group;
 
-        if (item.isSystem ()) {
+	if (item.isSystem ()) {
 
-                target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (item.name (), item.edition ());
-                group = rpmHeader->tag_group ();
+		target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (item.name (), item.edition ());
+		group = rpmHeader->tag_group ();
 
-        } else {
-                group = item.lookupStrAttribute (sat::SolvAttr::group);
-        }
-        return str::toLower(group);
+	} else {
+		group = item.lookupStrAttribute (sat::SolvAttr::group);
+	}
+	return str::toLower(group);
 }
 
 PkGroupEnum
@@ -308,51 +308,51 @@ get_enum_group (const string &group_)
 {
 	string group(str::toLower(group_));
 
-        if (group.find ("amusements") != string::npos) {
-                return PK_GROUP_ENUM_GAMES;
-        } else if (group.find ("development") != string::npos) {
-                return PK_GROUP_ENUM_PROGRAMMING;
-        } else if (group.find ("hardware") != string::npos) {
-                return PK_GROUP_ENUM_SYSTEM;
-        } else if (group.find ("archiving") != string::npos
-                  || group.find("clustering") != string::npos
-                  || group.find("system/monitoring") != string::npos
-                  || group.find("databases") != string::npos
-                  || group.find("system/management") != string::npos) {
-                return PK_GROUP_ENUM_ADMIN_TOOLS;
-        } else if (group.find ("graphics") != string::npos) {
-                return PK_GROUP_ENUM_GRAPHICS;
-        } else if (group.find ("multimedia") != string::npos) {
-                return PK_GROUP_ENUM_MULTIMEDIA;
-        } else if (group.find ("network") != string::npos) {
-                return PK_GROUP_ENUM_NETWORK;
-        } else if (group.find ("office") != string::npos
-                  || group.find("text") != string::npos
-                  || group.find("editors") != string::npos) {
-                return PK_GROUP_ENUM_OFFICE;
-        } else if (group.find ("publishing") != string::npos) {
-                return PK_GROUP_ENUM_PUBLISHING;
-        } else if (group.find ("security") != string::npos) {
-                return PK_GROUP_ENUM_SECURITY;
-        } else if (group.find ("telephony") != string::npos) {
-                return PK_GROUP_ENUM_COMMUNICATION;
-        } else if (group.find ("gnome") != string::npos) {
-                return PK_GROUP_ENUM_DESKTOP_GNOME;
-        } else if (group.find ("kde") != string::npos) {
-                return PK_GROUP_ENUM_DESKTOP_KDE;
-        } else if (group.find ("xfce") != string::npos) {
-                return PK_GROUP_ENUM_DESKTOP_XFCE;
-        } else if (group.find ("gui/other") != string::npos) {
-                return PK_GROUP_ENUM_DESKTOP_OTHER;
-        } else if (group.find ("localization") != string::npos) {
-                return PK_GROUP_ENUM_LOCALIZATION;
-        } else if (group.find ("system") != string::npos) {
-                return PK_GROUP_ENUM_SYSTEM;
-        } else if (group.find ("scientific") != string::npos) {
-                return PK_GROUP_ENUM_EDUCATION;
-        }
+	if (group.find ("amusements") != string::npos) {
+		return PK_GROUP_ENUM_GAMES;
+	} else if (group.find ("development") != string::npos) {
+		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.find ("hardware") != string::npos) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.find ("archiving") != string::npos
+		  || group.find("clustering") != string::npos
+		  || group.find("system/monitoring") != string::npos
+		  || group.find("databases") != string::npos
+		  || group.find("system/management") != string::npos) {
+		return PK_GROUP_ENUM_ADMIN_TOOLS;
+	} else if (group.find ("graphics") != string::npos) {
+		return PK_GROUP_ENUM_GRAPHICS;
+	} else if (group.find ("multimedia") != string::npos) {
+		return PK_GROUP_ENUM_MULTIMEDIA;
+	} else if (group.find ("network") != string::npos) {
+		return PK_GROUP_ENUM_NETWORK;
+	} else if (group.find ("office") != string::npos
+		  || group.find("text") != string::npos
+		  || group.find("editors") != string::npos) {
+		return PK_GROUP_ENUM_OFFICE;
+	} else if (group.find ("publishing") != string::npos) {
+		return PK_GROUP_ENUM_PUBLISHING;
+	} else if (group.find ("security") != string::npos) {
+		return PK_GROUP_ENUM_SECURITY;
+	} else if (group.find ("telephony") != string::npos) {
+		return PK_GROUP_ENUM_COMMUNICATION;
+	} else if (group.find ("gnome") != string::npos) {
+		return PK_GROUP_ENUM_DESKTOP_GNOME;
+	} else if (group.find ("kde") != string::npos) {
+		return PK_GROUP_ENUM_DESKTOP_KDE;
+	} else if (group.find ("xfce") != string::npos) {
+		return PK_GROUP_ENUM_DESKTOP_XFCE;
+	} else if (group.find ("gui/other") != string::npos) {
+		return PK_GROUP_ENUM_DESKTOP_OTHER;
+	} else if (group.find ("localization") != string::npos) {
+		return PK_GROUP_ENUM_LOCALIZATION;
+	} else if (group.find ("system") != string::npos) {
+		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.find ("scientific") != string::npos) {
+		return PK_GROUP_ENUM_EDUCATION;
+	}
 
-        return PK_GROUP_ENUM_UNKNOWN;
+	return PK_GROUP_ENUM_UNKNOWN;
 }
 
 void
@@ -364,10 +364,10 @@ zypp_get_packages_by_name (PkBackend *backend,
 {
 	ResPool pool(ResPool::instance());
 
-        for (ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
-                        it != pool.byIdentEnd (kind, package_name); it++) {
-                result.push_back (it->satSolvable ());
-        }
+	for (ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
+			it != pool.byIdentEnd (kind, package_name); it++) {
+		result.push_back (it->satSolvable ());
+	}
 }
 
 void
@@ -375,9 +375,9 @@ zypp_get_packages_by_file (PkBackend *backend,
 			   const gchar *search_file,
 			   vector<sat::Solvable> &ret)
 {
-        ResPool pool = zypp_build_pool (backend, TRUE);
+	ResPool pool = zypp_build_pool (backend, TRUE);
 
-        string file (search_file);
+	string file (search_file);
 
 	target::rpm::librpmDb::db_const_iterator it;
 	target::rpm::RpmHeader::constPtr result = new target::rpm::RpmHeader ();
@@ -443,7 +443,7 @@ zypp_get_Repository (PkBackend *backend, const gchar *alias)
 		RepoManager manager;
 		info = manager.getRepositoryInfo (alias);
 	} catch (const repo::RepoNotFoundException &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 		return RepoInfo ();
 	}
 
@@ -502,56 +502,56 @@ zypp_signature_required (PkBackend *backend, const PublicKey &key)
 	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), key.id ()) == priv->signatures[backend]->end ()) {
 		RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        _repoName,
-        	                info.baseUrlsBegin ()->asString ().c_str (),
-                	        key.name ().c_str (),
-                        	key.id ().c_str (),
-	                        key.fingerprint ().c_str (),
-        	                key.created ().asString ().c_str (),
-                	        PK_SIGTYPE_ENUM_GPG);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				_repoName,
+				info.baseUrlsBegin ()->asString ().c_str (),
+				key.name ().c_str (),
+				key.id ().c_str (),
+				key.fingerprint ().c_str (),
+				key.created ().asString ().c_str (),
+				PK_SIGTYPE_ENUM_GPG);
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
 					       "Signature verification for Repository %s failed", _repoName);
 		}
 		throw AbortTransactionException();
 	} else
 		ok = TRUE;
 
-        return ok;
+	return ok;
 }
 
 gboolean
 zypp_signature_required (PkBackend *backend, const string &file, const string &id)
 {
-        gboolean ok = FALSE;
+	gboolean ok = FALSE;
 
 	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), id) == priv->signatures[backend]->end ()) {
 		RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        _repoName,
-        	                info.baseUrlsBegin ()->asString ().c_str (),
-                	        id.c_str (),
-                        	id.c_str (),
-	                        "UNKNOWN",
-        	                "UNKNOWN",
-                	        PK_SIGTYPE_ENUM_GPG);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				_repoName,
+				info.baseUrlsBegin ()->asString ().c_str (),
+				id.c_str (),
+				id.c_str (),
+				"UNKNOWN",
+				"UNKNOWN",
+				PK_SIGTYPE_ENUM_GPG);
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
 					       "Signature verification for Repository %s failed", _repoName);
 		}
 		throw AbortTransactionException();
 	} else
 		ok = TRUE;
 
-        return ok;
+	return ok;
 }
 
 gboolean
@@ -560,28 +560,28 @@ zypp_signature_required (PkBackend *backend, const string &file)
 	gboolean ok = FALSE;
 
 	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), file) == priv->signatures[backend]->end ()) {
-        	RepoInfo info = zypp_get_Repository (backend, _repoName);
+		RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == repo::RepoType::NONE)
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        _repoName,
-        	                info.baseUrlsBegin ()->asString ().c_str (),
-	                        "UNKNOWN",
-        	                file.c_str (),
-                	        "UNKNOWN",
-                        	"UNKNOWN",
-	                        PK_SIGTYPE_ENUM_GPG);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				_repoName,
+				info.baseUrlsBegin ()->asString ().c_str (),
+				"UNKNOWN",
+				file.c_str (),
+				"UNKNOWN",
+				"UNKNOWN",
+				PK_SIGTYPE_ENUM_GPG);
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
 					       "Signature verification for Repository %s failed", _repoName);
 		}
 		throw AbortTransactionException();
 	} else
 		ok = TRUE;
 
-        return ok;
+	return ok;
 }
 
 gboolean
@@ -697,7 +697,7 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 		      const char *opt_summary)
 {
 	gchar *id = zypp_build_package_id_from_resolvable (pkg);
-	pk_backend_package (backend, info, id, opt_summary);
+	pk_backend_job_package (job, info, id, opt_summary);
 	g_free (id);
 }
 
@@ -708,21 +708,21 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 static void
 zypp_get_package_updates (string repo, set<PoolItem> &pks)
 {
-        ResPool pool = ResPool::instance ();
+	ResPool pool = ResPool::instance ();
 
-        ResObject::Kind kind = ResTraits<Package>::kind;
-        ResPool::byKind_iterator it = pool.byKindBegin (kind);
-        ResPool::byKind_iterator e = pool.byKindEnd (kind);
+	ResObject::Kind kind = ResTraits<Package>::kind;
+	ResPool::byKind_iterator it = pool.byKindBegin (kind);
+	ResPool::byKind_iterator e = pool.byKindEnd (kind);
 
 	getZYpp()->resolver()->doUpdate();
-        for (; it != e; ++it)
-       	        if (it->status().isToBeInstalled())
-                {
-	                ui::Selectable::constPtr s =
-	                ui::Selectable::get((*it)->kind(), (*it)->name());
-                        if (s->hasInstalledObj())
-                                pks.insert(*it);
-	        }
+	for (; it != e; ++it)
+       		if (it->status().isToBeInstalled())
+		{
+			ui::Selectable::constPtr s =
+			ui::Selectable::get((*it)->kind(), (*it)->name());
+			if (s->hasInstalledObj())
+				pks.insert(*it);
+		}
 }
 
 /**
@@ -733,15 +733,15 @@ zypp_get_patches (PkBackend *backend, set<PoolItem> &patches)
 {
 	_updating_self = FALSE;
 
-        ZYpp::Ptr zypp;
-        zypp = get_zypp (backend);
+	ZYpp::Ptr zypp;
+	zypp = get_zypp (backend);
 
 	zypp->resolver ()->resolvePool ();
 
-        for (ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<Patch>();
-                        it != zypp->poolProxy ().byKindEnd<Patch>(); it ++) {
-                // check if the patch is needed and not set to taboo
-                if((*it)->isNeeded() && !((*it)->candidateObj ().isUnwanted())) {
+	for (ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<Patch>();
+			it != zypp->poolProxy ().byKindEnd<Patch>(); it ++) {
+		// check if the patch is needed and not set to taboo
+		if((*it)->isNeeded() && !((*it)->candidateObj ().isUnwanted())) {
 			Patch::constPtr patch = asKind<Patch>((*it)->candidateObj ().resolvable ());
 			if (_updating_self) {
 				if (patch->restartSuggested ())
@@ -758,7 +758,7 @@ zypp_get_patches (PkBackend *backend, set<PoolItem> &patches)
 			}
 		}
 
-        }
+	}
 }
 
 void
@@ -849,22 +849,22 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 	gboolean ret = FALSE;
 	gboolean simulate = pk_backend_get_bool (backend, "hint:simulate");
 
-        try {
-                ZYpp::Ptr zypp = get_zypp (backend);
+	try {
+		ZYpp::Ptr zypp = get_zypp (backend);
 
-                if (force)
-                        zypp->resolver ()->setForceResolve (force);
+		if (force)
+			zypp->resolver ()->setForceResolve (force);
 		if (type == UPDATE) {
 			//zypp->resolver ()->setOnlyRequires (TRUE);
 			zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		}
 
-                // Gather up any dependencies
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		// Gather up any dependencies
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		if (!zypp->resolver ()->resolvePool ()) {
-                       // Manual intervention required to resolve dependencies
-                       // TODO: Figure out what we need to do with PackageKit
-                       // to pull off interactive problem solving.
+		       // Manual intervention required to resolve dependencies
+		       // TODO: Figure out what we need to do with PackageKit
+		       // to pull off interactive problem solving.
 
 			ResolverProblemList problems = zypp->resolver ()->problems ();
 			gchar * emsg = NULL, * tempmsg = NULL;
@@ -887,23 +887,23 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					it->statusReset ();
 			}
 
-			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
 			g_free (emsg);
 
 			goto exit;
 		}
 
-                switch (type) {
-                        case INSTALL:
-                                pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-                                break;
-                        case REMOVE:
-                                pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-                                break;
-                        case UPDATE:
-                                pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-                                break;
-                };
+		switch (type) {
+			case INSTALL:
+				pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+				break;
+			case REMOVE:
+				pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+				break;
+			case UPDATE:
+				pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+				break;
+		};
 
 		ResPool pool = ResPool::instance ();
 		if (simulate) {
@@ -932,12 +932,12 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
 				if (!has_eula) {
 					gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-					pk_backend_eula_required (backend,
+					pk_backend_job_eula_required (backend,
 							eula_id,
 							package_id,
 							(*it)->vendor ().c_str (),
 							it->satSolvable ().lookupStrAttribute (sat::SolvAttr::eula).c_str ());
-					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
+					pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 					g_free (package_id);
 					g_free (eula_id);
 					goto exit;
@@ -946,18 +946,18 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			}
 		}
 
-                // Perform the installation
+		// Perform the installation
 		gboolean only_trusted = pk_backend_get_bool (backend, "only_trusted");
-                ZYppCommitPolicy policy;
-                policy.restrictToMedia (0); // 0 == install all packages regardless to media
+		ZYppCommitPolicy policy;
+		policy.restrictToMedia (0); // 0 == install all packages regardless to media
 		policy.downloadMode (DownloadInHeaps);
 		policy.syncPoolAfterCommit (true);
 		if (only_trusted == FALSE)
 			policy.rpmNoSignature(true);
 
-                ZYppCommitResult result = zypp->commit (policy);
+		ZYppCommitResult result = zypp->commit (policy);
 
-                if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
+		if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
 
 			ZYppCommitResult::PoolItemList errors = result._errors;
 			gchar *emsg = NULL, *tmpmsg = NULL;
@@ -994,33 +994,33 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 				}
 			}
 
-                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_ERROR,
 					"Transaction could not be completed.\n Theses packages could not be installed: %s",
 					emsg);
 
 			g_free (emsg);
 			goto exit;
-                }
+		}
 
 		ret = TRUE;
-        } catch (const repo::RepoNotFoundException &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+	} catch (const repo::RepoNotFoundException &ex) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 	} catch (const target::rpm::RpmException &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
 	} catch (const Exception &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 	}
 
  exit:
 	/* reset the various options */
-        try {
-                ZYpp::Ptr zypp = get_zypp (backend);
+	try {
+		ZYpp::Ptr zypp = get_zypp (backend);
 		zypp->resolver ()->setForceResolve (FALSE);
 		if (type == UPDATE)
 			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);
 	} catch (const Exception &ex) { /* we tried */ }
 
-        return ret;
+	return ret;
 }
 
 gchar *
@@ -1049,15 +1049,15 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
 	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
 	ZYpp::Ptr zypp = get_zypp (backend);
-        if (zypp == NULL)
+	if (zypp == NULL)
 		return  FALSE;
 	filesystem::Pathname pathname(pk_backend_get_root (backend));
 	// This call is needed to refresh system rpmdb status while refresh cache
 	zypp->finishTarget ();
 	zypp->initializeTarget (pathname);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_job_set_percentage (job, 0);
 
 	RepoManager manager;
 	list <RepoInfo> repos;
@@ -1068,7 +1068,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	catch ( const Exception &e)
 	{
 		// FIXME: make sure this dumps out the right sring.
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
 		return FALSE;
 	}
 
@@ -1111,10 +1111,10 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 		}
 
 		// Update the percentage completed
-		pk_backend_set_percentage (backend, i >= num_of_repos ? 100 : (100 * i) / num_of_repos);
+		pk_backend_job_set_percentage (job, i >= num_of_repos ? 100 : (100 * i) / num_of_repos);
 	}
 	if (repo_messages != NULL)
-		pk_backend_message (backend, PK_MESSAGE_ENUM_CONNECTION_REFUSED, repo_messages);
+		pk_backend_job_message (job, PK_MESSAGE_ENUM_CONNECTION_REFUSED, repo_messages);
 
 	g_free (repo_messages);
 	return TRUE;
@@ -1132,11 +1132,11 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	buffer = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	pk_backend_error_code (backend, err_code, "%s", buffer);
+	pk_backend_job_error_code (job, err_code, "%s", buffer);
 
 	g_free (buffer);
 
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 
 	return FALSE;
 }
@@ -1160,7 +1160,7 @@ zypp_backend_pool_item_notify (PkBackend  *backend,
 		const string &name = item.satSolvable().name();
 		if (name == "glibc" || name == "PackageKit" ||
 		    name == "rpm" || name == "libzypp") {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
 					       "The package %s is essential to correct operation and cannot be removed using this tool.",
 					       name.c_str());
 			return FALSE;
