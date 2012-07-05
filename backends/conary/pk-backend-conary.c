@@ -3,7 +3,7 @@
  * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2007 Ken VanDine <ken@vandine.org>
  * Copyright (C) 2009-2010 Andres Vargas <zodman@foresightlinux.org>
- *                         Scott Parkerson <scott.parkerson@gmail.com>
+ *			 Scott Parkerson <scott.parkerson@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -46,6 +46,20 @@ pk_backend_get_author (PkBackend *backend)
 }
 
 /**
+ * pk_backend_start_job:
+ */
+void
+pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
+{
+	if (pk_backend_spawn_is_busy (spawn)) {
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_LOCK_REQUIRED,
+					   "spawned backend requires lock");
+		return;
+	}
+}
+
+/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -57,13 +71,10 @@ pk_backend_initialize (PkBackend *backend)
 	/* BACKEND MAINTAINER: feel free to remove this when you've
 	 * added support for ONLY_DOWNLOAD and merged the simulate
 	 * methods as specified in backends/PORTING.txt */
-	pk_backend_error_code (backend,
-			       PK_ERROR_ENUM_NOT_SUPPORTED,
-			       "Backend needs to be ported to 0.8.x -- "
-			       "see backends/PORTING.txt for details");
+	g_error ("Backend needs to be ported to 0.8.x -- "
+		 "see backends/PORTING.txt for details");
 
 	spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_backend (spawn, backend);
 	pk_backend_spawn_set_name (spawn, "conary");
 }
 
@@ -143,7 +154,7 @@ pk_backend_get_roles (PkBackend *backend)
  * pk_backend_cancel:
  */
 void
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
@@ -153,11 +164,11 @@ pk_backend_cancel (PkBackend *backend)
  * pk_backend_get_details:
  */
 void
-pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-details", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -165,11 +176,11 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
  * pk_backend_get_files:
  */
 void
-pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-files", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -177,11 +188,11 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
  * pk_backend_get_updates:
  */
 void
-pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-updates", filters_text, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
 
@@ -189,11 +200,11 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
  * pk_backend_get_update_detail:
  */
 void
-pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-update-detail", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 /**
@@ -201,20 +212,20 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 */
 
 void
-pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_job_finished (job);
 		return;
 	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -222,29 +233,29 @@ pk_backend_install_packages (PkBackend *backend, PkBitfield transaction_flags, g
  * pk_backend_refresh_cache:
  */
 void
-pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_job_finished (job);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
 /**
  * pk_backend_remove_packages:
  */
 void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string (autoremove), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string (autoremove), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -252,13 +263,13 @@ pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean al
  * pk_backend_search_names:
  */
 void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&",values);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-name", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -267,14 +278,14 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
  * pk_backend_search_groups
  */
 void
-pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&",values);
 
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-group", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "search-group", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -283,13 +294,13 @@ pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values
  * pk_backend_search_details
  */
 void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&",values);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-details", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "search-details", filters_text, search, NULL);
 	g_free (filters_text);
 	g_free (search);
 }
@@ -298,20 +309,20 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
  * pk_backend_update_system:
  */
 void
-pk_backend_update_system (PkBackend *backend, PkBitfield transaction_flags)
+pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 /**
  * pk_backend_resolve:
  */
 void
-pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "resolve", filters_text, package_ids[0], NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "resolve", filters_text, package_ids[0], NULL);
 	g_free (filters_text);
 }
 
@@ -319,11 +330,11 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
  * pk_backend_get_packages:
  */
 void
-pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     gchar *filters_text;
     filters_text = pk_filter_bitfield_to_string (filters);
-    pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-packages", filters_text, NULL);
+    pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-packages", filters_text, NULL);
     g_free (filters_text);
 }
 
@@ -331,7 +342,7 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
  * pk_backend_search_files:
  */
 void
-pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -339,19 +350,19 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 	search = g_strjoinv ("&",values);
 
 
-        pk_backend_spawn_helper (spawn, "conaryBackend.py", "search-file", filters_text, search, NULL);
-        g_free (filters_text);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "search-file", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 void
-pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     gchar *filters_text;
     filters_text = pk_filter_bitfield_to_string (filters);
-    pk_backend_spawn_helper (spawn, "conaryBackend.py", "get-repo-list", filters_text, NULL);
+    pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "get-repo-list", filters_text, NULL);
     g_free (filters_text);
 }
 
@@ -365,14 +376,14 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_job_finished (job);
 		return;
 	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-install-packages", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "simulate-install-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -386,6 +397,6 @@ pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gb
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "conaryBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
