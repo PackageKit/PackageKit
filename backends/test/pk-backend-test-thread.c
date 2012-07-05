@@ -59,85 +59,88 @@ pk_backend_destroy (PkBackend *backend)
  * pk_backend_search_groups_thread:
  */
 static void
-pk_backend_search_groups_thread (PkBackend *backend, gpointer user_data)
+pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	/* emit */
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
  * pk_backend_search_groups:
  */
 void
-pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_groups_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, pk_backend_search_groups_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_names_thread:
  */
 static void
-pk_backend_search_names_thread (PkBackend *backend, gpointer user_data)
+pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	GTimer *timer;
 	guint percentage;
 	PkBitfield filters;
 	gchar *filters_text;
-	const gchar *search;
+	gchar **search;
 
-	filters = pk_backend_get_uint (backend, "filters");
-	search = pk_backend_get_string (backend, "search");
+	g_variant_get (params, "(t^a&s)",
+		       &filters,
+		       &search);
 
 	filters_text = pk_filter_bitfield_to_string (filters);
-	g_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
+	g_debug ("started task (%p) search=%s filters=%s", job, search[0], filters_text);
 	g_free (filters_text);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
 	percentage = 0;
 	do {
 		/* now is a good time to see if we should cancel the thread */
 		if (is_cancelled) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "The thread was stopped successfully");
-			pk_backend_finished (backend);
+			pk_backend_job_finished (job);
 			return;
 		}
-		pk_backend_set_percentage (backend, percentage);
+		pk_backend_job_set_percentage (job, percentage);
 		percentage += 10;
 		g_usleep (1000*100);
 	} while (percentage < 100);
 	g_timer_destroy (timer);
-	pk_backend_set_percentage (backend, 100);
-	g_debug ("exited task (%p)", backend);
+	pk_backend_job_set_percentage (job, 100);
+	g_debug ("exited task (%p)", job);
 
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
  * pk_backend_search_names:
  */
 void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, pk_backend_search_names_thread, NULL, NULL);
+	pk_backend_job_thread_create (job,
+				      pk_backend_search_names_thread,
+				      NULL, NULL);
 }
 
 /**
  * pk_backend_cancel:
  */
 void
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	g_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
