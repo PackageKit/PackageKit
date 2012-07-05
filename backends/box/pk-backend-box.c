@@ -72,7 +72,7 @@ static void
 common_progress(int value, gpointer user_data)
 {
 	PkBackend* backend = (PkBackend *) user_data;
-	pk_backend_set_percentage (backend, value);
+	pk_backend_job_set_percentage (job, value);
 }
 
 static void
@@ -92,13 +92,13 @@ add_packages_from_list (PkBackend *backend, GList *list, gboolean updates)
 			info = PK_INFO_ENUM_INSTALLED;
 		else
 			info = PK_INFO_ENUM_AVAILABLE;
-		pk_backend_package (backend, info, pkg_string, package->description);
+		pk_backend_job_package (job, info, pkg_string, package->description);
 		g_free (pkg_string);
 	}
 }
 
 static void
-backend_find_packages_thread (PkBackend *backend, gpointer user_data)
+backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield filters;
 	const gchar *search;
@@ -114,7 +114,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer user_data)
 	/* FIXME: support multiple packages */
 	search = values[0];
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		filter_box = filter_box | PKG_INSTALLED;
@@ -138,7 +138,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer user_data)
 		filter_box = filter_box | PKG_SEARCH_DETAILS;
 	}
 
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 
 	db = db_open ();
 
@@ -170,7 +170,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_get_packages_thread (PkBackend *backend, gpointer user_data)
+backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield filters;
 	GList *list = NULL;
@@ -178,9 +178,9 @@ backend_get_packages_thread (PkBackend *backend, gpointer user_data)
 
 	filters = pk_backend_get_uint (backend, "filters");
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 
 	db = db_open();
 
@@ -203,12 +203,12 @@ backend_get_packages_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_get_updates_thread (PkBackend *backend, gpointer user_data)
+backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	db = db_open ();
 
@@ -221,46 +221,44 @@ backend_get_updates_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_update_system_thread (PkBackend *backend, gpointer user_data)
+backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	/* FIXME: support only_trusted */
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	box_upgrade_dist(ROOT_DIRECTORY, common_progress, backend);
 	pk_backend_finished (backend);
 }
 
 static void
-backend_install_packages_thread (PkBackend *backend, gpointer user_data)
+backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean result = TRUE;
 	gchar **package_ids;
 	size_t i;
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	/* FIXME: support only_trusted */
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
-        for (i = 0; i < g_strv_length (package_ids); i++) {
+	for (i = 0; i < g_strv_length (package_ids); i++) {
 		gchar **package_id_data = pk_package_id_split (package_ids[i]);
 		result = box_package_install (package_id_data[PK_PACKAGE_ID_NAME], ROOT_DIRECTORY, common_progress, backend, FALSE);
-        }
+	}
 
-	pk_backend_finished (backend);
-
-	return result;
+	pk_backend_job_finished (job);
 }
 
 static void
-backend_update_packages_thread (PkBackend *backend, gpointer user_data)
+backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean result = TRUE;
 	gchar **package_ids;
 	size_t i;
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
@@ -269,28 +267,27 @@ backend_update_packages_thread (PkBackend *backend, gpointer user_data)
 		result |= box_package_install (package_ids[i], ROOT_DIRECTORY, common_progress, backend, FALSE);
 	}
 
-	pk_backend_finished (backend);
-	return result;
+	pk_backend_job_finished (job);
 }
 
 static void
-backend_install_files_thread (PkBackend *backend, gpointer user_data)
+backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean result;
 	gchar **full_paths;
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	full_paths = pk_backend_get_strv (backend, "full_paths");
 	result = box_package_install (full_paths[0], ROOT_DIRECTORY, common_progress, backend, FALSE);
 
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 
 	return result;
 }
 
 static void
-backend_get_details_thread (PkBackend *backend, gpointer user_data)
+backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PackageSearch *ps;
 	GList *list;
@@ -304,19 +301,19 @@ backend_get_details_thread (PkBackend *backend, gpointer user_data)
 
 	db = db_open ();
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	/* only one element is returned */
 	list = box_db_repos_packages_search_by_data (db, package_id_data[PK_PACKAGE_ID_NAME], package_id_data[PK_PACKAGE_ID_VERSION]);
 
 	if (list == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
 		db_close (db);
 		return;
 	}
 	ps = (PackageSearch*) list->data;
 
-	pk_backend_details (backend, package_ids[0], "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
+	pk_backend_job_details (job, package_ids[0], "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
 
 	box_db_repos_package_list_free (list);
 
@@ -325,7 +322,7 @@ backend_get_details_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_get_files_thread (PkBackend *backend, gpointer user_data)
+backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *files;
 	sqlite3 *db;
@@ -337,10 +334,10 @@ backend_get_files_thread (PkBackend *backend, gpointer user_data)
 	/* FIXME: support multiple packages */
 	package_id_data = pk_package_id_split (package_ids[0]);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	files = box_db_repos_get_files_string (db, package_id_data[PK_PACKAGE_ID_NAME], package_id_data[PK_PACKAGE_ID_VERSION]);
-	pk_backend_files (backend, package_ids[0], files);
+	pk_backend_job_files (job, package_ids[0], files);
 
 	db_close (db);
 	g_free (files);
@@ -349,13 +346,13 @@ backend_get_files_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_get_depends_requires_thread (PkBackend *backend, gpointer user_data)
+backend_get_depends_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	GList *list = NULL;
 	sqlite3 *db;
 	gchar **package_ids;
 	int deps_type;
-        gchar **package_id_data;
+	gchar **package_id_data;
 
 	db = db_open ();
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -363,7 +360,7 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer user_data)
 	/* FIXME: support multiple packages */
 	package_id_data = pk_package_id_split (package_ids[0]);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	if (deps_type == DEPS_TYPE_DEPENDS)
 		list = box_db_repos_get_depends (db, package_id_data[PK_PACKAGE_ID_NAME]);
@@ -379,7 +376,7 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer user_data)
 }
 
 static void
-backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
+backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **package_ids;
 	gchar **package_id_data;
@@ -388,20 +385,20 @@ backend_remove_packages_thread (PkBackend *backend, gpointer user_data)
 	/* FIXME: support multiple packages */
 	package_id_data = pk_package_id_split (package_ids[0]);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
 
 	if (!box_package_uninstall (package_id_data[PK_PACKAGE_ID_NAME], ROOT_DIRECTORY, common_progress, backend, FALSE))
 	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
 	}
 
 	pk_backend_finished (backend);
 }
 
 static void
-backend_refresh_cache_thread (PkBackend *backend, gpointer user_data)
+backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	box_repos_sync(ROOT_DIRECTORY, common_progress, backend);
 	pk_backend_finished (backend);
@@ -444,244 +441,244 @@ pk_backend_get_filters (PkBackend *backend)
 static gchar *
 pk_backend_get_mime_types (PkBackend *backend)
 {
-        return g_strdup ("application/x-box-package");
+	return g_strdup ("application/x-box-package");
 }
 
 /**
  * pk_backend_get_depends:
  */
 static void
-pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_set_strv (backend, "package_ids", package_ids);
 	/* TODO: param recursive */
-	pk_backend_thread_create (backend, backend_get_depends_requires_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_depends_requires_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_details:
  */
 static void
-pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_set_strv (backend, "package_ids", package_ids);
-	pk_backend_thread_create (backend, backend_get_details_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_files:
  */
 static void
-pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_set_strv (backend, "package_ids", package_ids);
-	pk_backend_thread_create (backend, backend_get_files_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_files_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_packages:
  */
 static void
-pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	pk_backend_set_uint (backend, "filters", filters);
-	pk_backend_thread_create (backend, backend_get_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_requires:
  */
 static void
-pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_uint (backend, "type", DEPS_TYPE_REQUIRES);
 	pk_backend_set_strv (backend, "package_ids", package_ids);
 	/* TODO: param recursive */
-	pk_backend_thread_create (backend, backend_get_depends_requires_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_depends_requires_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_updates:
  */
 static void
-pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	/* TODO: filters */
-	pk_backend_thread_create (backend, backend_get_updates_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_updates_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_install_packages:
  */
 static void
-pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, gboolean only_trusted, gchar **package_ids)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_job_finished (job);
 		return;
 	}
 	pk_backend_set_strv (backend, "package_ids", package_ids);
 
-	pk_backend_thread_create (backend, backend_install_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_install_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_install_files:
  */
 static void
-pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job, gboolean only_trusted, gchar **full_paths)
 {
 	pk_backend_set_strv (backend, "full_paths", full_paths);
-	pk_backend_thread_create (backend, backend_install_files_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_install_files_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_refresh_cache:
  */
 static void
-pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_job_finished (job);
 		return;
 	}
 	/* FIXME: support force */
-	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_remove_packages:
  */
 static void
-pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_set_uint (backend, "type", DEPS_ALLOW);
 	pk_backend_set_strv (backend, "package_ids", package_ids);
-	pk_backend_thread_create (backend, backend_remove_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_remove_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_resolve:
  */
 static void
-pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_RESOLVE);
 	pk_backend_set_strv (backend, "search", packages);
-	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_details:
  */
 static void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_set_strv (backend, "search", values);
-	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_files:
  */
 static void
-pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_set_strv (backend, "search", values);
-	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_search_name:
  */
 static void
-pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_set_strv (backend, "search", values);
-	pk_backend_thread_create (backend, backend_find_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_update_packages:
  */
 static void
-pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, gboolean only_trusted, gchar **package_ids)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
+		pk_backend_job_finished (job);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_update_packages_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_update_packages_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_update_system:
  */
 static void
-pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+pk_backend_update_system (PkBackend *backend, PkBackendJob *job, gboolean only_trusted)
 {
-	pk_backend_thread_create (backend, backend_update_system_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_update_system_thread, NULL, NULL);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 static void
-pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	GList *list;
 	GList *li;
 	RepoInfo *repo;
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	list = box_repos_list_get ();
 	for (li = list; li != NULL; li=li->next)
 	{
 		repo = (RepoInfo*) li->data;
-		pk_backend_repo_detail (backend, repo->name, repo->description, repo->enabled);
+		pk_backend_job_repo_detail (job, repo->name, repo->description, repo->enabled);
 	}
 	box_repos_list_free (list);
 
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
  * pk_backend_repo_enable:
  */
 static void
-pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	box_repos_enable_repo(rid, enabled);
 
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
  * pk_backend_repo_set_data:
  */
 static void
-pk_backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *rid, const gchar *parameter, const gchar *value)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	if (!box_repos_set_param (rid, parameter, value)) {
 		g_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
 	}
 
-	pk_backend_finished (backend);
+	pk_backend_job_finished (job);
 }
 
 /**
