@@ -588,8 +588,7 @@ gboolean
 system_and_package_are_x86 (sat::Solvable item)
 {
 	// i586, i686, ... all should be considered the same arch for our comparison
-	return (!strcmp (item.arch ().asString ().c_str (), "i586") &&
-			!strcmp (ZConfig::defaultSystemArchitecture ().asString().c_str(), "i686"));
+	return ( item.arch() == Arch_i586 && ZConfig::defaultSystemArchitecture() == Arch_i686 );
 }
 
 static gboolean
