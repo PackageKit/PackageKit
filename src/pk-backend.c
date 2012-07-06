@@ -474,9 +474,9 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
 		g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
 		g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
-		g_module_symbol (handle, "pk_backend_job_start", (gpointer *)&desc->job_start);
-		g_module_symbol (handle, "pk_backend_job_stop", (gpointer *)&desc->job_stop);
-		g_module_symbol (handle, "pk_backend_job_reset", (gpointer *)&desc->job_reset);
+		g_module_symbol (handle, "pk_backend_start_job", (gpointer *)&desc->job_start);
+		g_module_symbol (handle, "pk_backend_stop_job", (gpointer *)&desc->job_stop);
+		g_module_symbol (handle, "pk_backend_reset_job", (gpointer *)&desc->job_reset);
 		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 		g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
