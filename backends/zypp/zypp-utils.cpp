@@ -956,48 +956,28 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 		ZYppCommitResult result = zypp->commit (policy);
 
-		if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
+		if ( ! result.allDone() )
+		{
+			std::ostringstream todolist;
+			char separator = '\0';
 
-			ZYppCommitResult::PoolItemList errors = result._errors;
-			gchar *emsg = NULL, *tmpmsg = NULL;
-
-			for (ZYppCommitResult::PoolItemList::iterator it = errors.begin (); it != errors.end (); ++it){
-				if (emsg == NULL) {
-					emsg = g_strdup ((*it)->name ().c_str ());
-				} else {
-					tmpmsg = emsg;
-					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
-					g_free (tmpmsg);
-				}
-			}
-
-			ZYppCommitResult::PoolItemList remaining = result._remaining;
-			for (ZYppCommitResult::PoolItemList::iterator it = remaining.begin (); it != remaining.end (); ++it){
-				if (emsg == NULL) {
-					emsg = g_strdup ((*it)->name ().c_str ());
-				} else {
-					tmpmsg = emsg;
-					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
-					g_free (tmpmsg);
-				}
-			}
-
-			ZYppCommitResult::PoolItemList srcremaining = result._srcremaining;
-			for (ZYppCommitResult::PoolItemList::iterator it = srcremaining.begin (); it != srcremaining.end (); ++it){
-				if (emsg == NULL) {
-					emsg = g_strdup ((*it)->name ().c_str ());
-				} else {
-					tmpmsg = emsg;
-					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
-					g_free (tmpmsg);
+			// process all steps not DONE (ERROR and TODO)
+			const sat::Transaction & trans( result.transaction() );
+			for_( it, trans.actionBegin(~sat::Transaction::STEP_DONE), trans.actionEnd() )
+			{
+				if ( separator )
+					todolist << separator << it->ident();
+				else
+				{
+					todolist << it->ident();
+					separator = '\n';
 				}
 			}
 
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_ERROR,
 					"Transaction could not be completed.\n Theses packages could not be installed: %s",
-					emsg);
+					todolist.str().c_str());
 
-			g_free (emsg);
 			goto exit;
 		}
 
