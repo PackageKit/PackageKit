@@ -146,33 +146,34 @@ zypp_is_changeable_media (PkBackend *backend, const Url &url)
 	return is_cd;
 }
 
+namespace {
+	/// Helper finding pattern at end or embedded in name.
+	/// E.g '-debug' in 'repo-debug' or 'repo-debug-update'
+	inline bool
+	name_ends_or_contains( const std::string & name_r, const std::string & pattern_r, const char sepchar_r = '-' )
+	{
+		if ( ! pattern_r.empty() )
+		{
+			for ( std::string::size_type pos = name_r.find( pattern_r );
+			      pos != std::string::npos;
+			      pos = name_r.find( pattern_r, pos + pattern_r.size() ) )
+			{
+				if ( pos + pattern_r.size() == name_r.size()		// at end
+				  || name_r[pos + pattern_r.size()] == sepchar_r )	// embedded
+					return true;
+			}
+		}
+		return false;
+	}
+}
+
 gboolean
 zypp_is_development_repo (PkBackend *backend, RepoInfo repo)
 {
-	string repo_debuginfo("-debuginfo");
-	string repo_debug("-debug");
-	string repo_development("-development");
-	string repo_source ("-source");
-
-	string repo_name(repo.name());
-
-	if (repo_name.length() > repo_debuginfo.length() &&
-	    repo_name.compare(repo_name.length() - repo_debuginfo.length(), repo_debuginfo.length(), repo_debuginfo) == 0)
-		return TRUE;
-
-	if (repo_name.length() > repo_debug.length() &&
-	    repo_name.compare(repo_name.length() - repo_debug.length(), repo_debug.length(), repo_debug) == 0)
-		return TRUE;
-
-	if (repo_name.length() > repo_development.length() &&
-	    repo_name.compare(repo_name.length() - repo_development.length(), repo_development.length(), repo_development) == 0)
-		return TRUE;
-
-	if (repo_name.length() > repo_source.length() &&
-	   repo_name.compare(repo_name.length() - repo_source.length(), repo_source.length(), repo_source) == 0)
-		return TRUE;
-
-	return FALSE;
+	return ( name_ends_or_contains( repo.alias(), "-debuginfo" )
+	      || name_ends_or_contains( repo.alias(), "-debug" )
+	      || name_ends_or_contains( repo.alias(), "-source" )
+	      || name_ends_or_contains( repo.alias(), "-development" ) );
 }
 
 gboolean
