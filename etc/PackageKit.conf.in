@@ -133,8 +133,8 @@ ScanDesktopFiles=true
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
 #       or GetDetails()
 #
-# default=true
-UpdatePackageCache=true
+# default=false
+UpdatePackageCache=false
 
 # Update the package list on PackageKit transactions
 #
