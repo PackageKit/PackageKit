@@ -175,6 +175,9 @@ struct ZyppBackendReceiver
 		_sub_percentage = 0;
 		pk_backend_set_sub_percentage (_backend, _sub_percentage);
 	}
+
+protected:
+	~ZyppBackendReceiver() {} // or a public virtual one
 };
 
 struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zypp::target::rpm::InstallResolvableReport>, ZyppBackendReceiver
