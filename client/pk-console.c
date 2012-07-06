@@ -1429,7 +1429,7 @@ main (int argc, char *argv[])
 	task = pk_task_text_new ();
 	g_object_set (task,
 		      "background", background,
-		      "simulate", !noninteractive,
+		      "simulate", !noninteractive && !only_download,
 		      "interactive", !noninteractive,
 		      "only-download", only_download,
 		      "cache-age", cache_age,
