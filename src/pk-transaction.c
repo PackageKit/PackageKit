@@ -471,7 +471,6 @@ pk_transaction_allow_cancel_cb (PkBackendJob *job,
 	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
 }
 
-#if 0
 /**
  * pk_transaction_locked_changed_cb:
  **/
@@ -489,7 +488,6 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 		transaction->priv->exclusive = TRUE;
 	}
 }
-#endif
 
 /**
  * pk_transaction_details_cb:
@@ -1981,6 +1979,8 @@ pk_transaction_set_signals (PkTransaction *transaction,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
+	/* NOTE: We never disconnect the LOCKED_CHANGED signal! */
+
 	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL)) {
 		pk_backend_job_set_vfunc (job,
 					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
@@ -2254,6 +2254,12 @@ pk_transaction_run (PkTransaction *transaction)
 	priv->job = pk_backend_job_new ();
 	pk_backend_job_set_background (priv->job, priv->background);
 	pk_backend_job_set_interactive (priv->job, priv->interactive);
+
+	/* connect signal to receive backend lock changes */
+	pk_backend_job_set_vfunc (priv->job,
+				PK_BACKEND_SIGNAL_LOCKED_CHANGED,
+				(PkBackendJobVFunc) pk_transaction_locked_changed_cb,
+				transaction);
 
 	/* if we didn't set a locale for this transaction, we would reuse the
 	 * last set locale in the backend, or NULL if it was not ever set.
