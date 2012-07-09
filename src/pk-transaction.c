@@ -138,7 +138,6 @@ struct PkTransactionPrivate
 	gchar			*cached_directory;
 	gchar			*cached_cat_id;
 	PkProvidesEnum		 cached_provides;
-	guint			 signal_locked_changed;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
@@ -1012,18 +1011,6 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_get_backend:
- *
- * Returns: (transfer none): PkBackend for this transaction
- **/
-PkBackend *
-pk_transaction_get_backend (PkTransaction *transaction)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	return transaction->priv->backend;
-}
-
-/**
  * pk_transaction_set_backend:
  **/
 void
@@ -1037,6 +1024,18 @@ pk_transaction_set_backend (PkTransaction *transaction,
 
 	/* setup supported mime types */
 	pk_transaction_setup_mime_types (transaction);
+}
+
+/**
+* pk_transaction_get_backend_job:
+*
+* Returns: (transfer none): Current PkBackendJob for this transaction
+**/
+PkBackendJob *
+pk_transaction_get_backend_job (PkTransaction *transaction)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
+	return transaction->priv->job;
 }
 
 /**

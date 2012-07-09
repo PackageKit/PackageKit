@@ -601,7 +601,7 @@ out:
 gboolean
 pk_transaction_list_get_locked (PkTransactionList *tlist)
 {
-	PkBackend *backend;
+	PkBackendJob *job;
 	PkTransactionItem *item;
 	GPtrArray *array;
 	guint i;
@@ -618,8 +618,11 @@ pk_transaction_list_get_locked (PkTransactionList *tlist)
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 
-		backend = pk_transaction_get_backend (item->transaction);
-		ret = pk_backend_get_locked (backend);
+		job = pk_transaction_get_backend_job (item->transaction);
+		if (job == NULL)
+			continue;
+
+		ret = pk_backend_job_get_locked (job);
 		if (ret)
 			goto out;
 	}

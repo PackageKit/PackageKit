@@ -77,9 +77,9 @@ void		 pk_transaction_cancel_bg			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_get_role			(PkTransaction	*transaction);
 guint		 pk_transaction_get_uid				(PkTransaction	*transaction);
 PkConf		*pk_transaction_get_conf			(PkTransaction	*transaction);
-PkBackend	*pk_transaction_get_backend			(PkTransaction	*transaction);
 void		 pk_transaction_set_backend			(PkTransaction	*transaction,
 								 PkBackend	*backend);
+PkBackendJob	*pk_transaction_get_backend_job 		(PkTransaction	*transaction);
 PkResults	*pk_transaction_get_results			(PkTransaction	*transaction);
 gchar		**pk_transaction_get_package_ids		(PkTransaction	*transaction);
 PkBitfield	 pk_transaction_get_transaction_flags		(PkTransaction	*transaction);
