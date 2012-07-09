@@ -59,6 +59,7 @@ typedef enum {
 	PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
 	PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 	PK_BACKEND_SIGNAL_STATUS_CHANGED,
+	PK_BACKEND_SIGNAL_LOCKED_CHANGED,
 	PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 	PK_BACKEND_SIGNAL_CATEGORY,
 	PK_BACKEND_SIGNAL_LAST
@@ -97,6 +98,9 @@ void		 pk_backend_job_set_background		(PkBackendJob	*job,
 PkHintEnum	 pk_backend_job_get_interactive		(PkBackendJob	*job);
 void		 pk_backend_job_set_interactive		(PkBackendJob	*job,
 							 PkHintEnum	 interactive);
+void		 pk_backend_job_set_locked		(PkBackendJob	*job,
+							 gboolean	 locked);
+gboolean	 pk_backend_job_get_locked		(PkBackendJob	*job);
 void		 pk_backend_job_set_role		(PkBackendJob	*job,
 							 PkRoleEnum	 role);
 PkRoleEnum	 pk_backend_job_get_role		(PkBackendJob	*job);

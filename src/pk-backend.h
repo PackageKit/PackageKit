@@ -229,9 +229,6 @@ gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
 void		 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
 							 gboolean	 simultaneous);
 gboolean	 pk_backend_get_simultaneous_mode	(PkBackend	*backend);
-void		 pk_backend_set_locked			(PkBackend	*backend,
-							 gboolean	 locked);
-gboolean	 pk_backend_get_locked			(PkBackend	*backend);
 
 G_END_DECLS
 

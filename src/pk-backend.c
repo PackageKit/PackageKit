@@ -185,7 +185,6 @@ struct PkBackendPrivate
 	gboolean		 during_initialize;
 	gboolean		 loaded;
 	gboolean		 simultaneous;
-	gboolean		 locked;
 	gchar			*name;
 	gpointer		 file_changed_data;
 	GHashTable		*eulas;
@@ -568,32 +567,6 @@ pk_backend_get_simultaneous_mode (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	return backend->priv->simultaneous;
-}
-
-/**
- * pk_backend_set_locked:
- *
- * Set if your backend currently locks the cache, so no other tool will have write
- * access on it. (read-only transactions will still be permitted)
- **/
-void
-pk_backend_set_locked (PkBackend *backend, gboolean locked)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->loaded);
-
-	backend->priv->locked = locked;
-//	g_signal_emit (backend, signals[SIGNAL_LOCKED_CHANGED], 0, locked);
-}
-
-/**
- * pk_backend_get_locked:
- **/
-gboolean
-pk_backend_get_locked (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return backend->priv->locked;
 }
 
 /**

@@ -104,6 +104,7 @@ struct PkBackendJobPrivate
 	PkHintEnum		 allow_cancel;
 	PkHintEnum		 background;
 	PkHintEnum		 interactive;
+	gboolean		 locked;
 	PkPackage		*last_package;
 	PkResults		*results;
 	PkRoleEnum		 role;
@@ -601,6 +602,31 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 }
 
 /**
+ * pk_backend_job_set_vfunc:
+ * @backend: A valid PkBackend instance
+ * @signal_kind: Kind of the backend signal we want to connect
+ * @vfunc: (scope call): The function we want to call
+ * @user_data: User data we want to pass to the callback
+ *
+ * Connect backend
+ **/
+void
+pk_backend_job_set_vfunc (PkBackendJob *job,
+			  PkBackendJobSignal signal_kind,
+			  PkBackendJobVFunc vfunc,
+			  gpointer user_data)
+{
+	PkBackendJobVFuncItem *item;
+
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+
+	item = &job->priv->vfunc_items[signal_kind];
+	item->enabled = TRUE;
+	item->vfunc = vfunc;
+	item->user_data = user_data;
+}
+
+/**
  * pk_backend_job_set_role:
  **/
 void
@@ -626,28 +652,30 @@ pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 }
 
 /**
- * pk_backend_job_set_vfunc:
- * @backend: A valid PkBackend instance
- * @signal_kind: Kind of the backend signal we want to connect
- * @vfunc: (scope call): The function we want to call
- * @user_data: User data we want to pass to the callback
+ * pk_backend_job_set_locked:
  *
- * Connect backend
+ * Set if your backend job currently locks the cache, so no other tool will
+ * have write  access on it. (read-only transactions will still be permitted)
  **/
 void
-pk_backend_job_set_vfunc (PkBackendJob *job,
-			  PkBackendJobSignal signal_kind,
-			  PkBackendJobVFunc vfunc,
-			  gpointer user_data)
+pk_backend_job_set_locked (PkBackendJob *job, gboolean locked)
 {
-	PkBackendJobVFuncItem *item;
-
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	item = &job->priv->vfunc_items[signal_kind];
-	item->enabled = TRUE;
-	item->vfunc = vfunc;
-	item->user_data = user_data;
+	job->priv->locked = locked;
+	pk_backend_job_call_vfunc (job,
+				   PK_BACKEND_SIGNAL_LOCKED_CHANGED,
+				   GUINT_TO_POINTER (job->priv->locked));
+}
+
+/**
+ * pk_backend_job_get_locked:
+ **/
+gboolean
+pk_backend_job_get_locked (PkBackendJob *job)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+	return job->priv->locked;
 }
 
 /* simple helper to work around the GThread one pointer limit */
