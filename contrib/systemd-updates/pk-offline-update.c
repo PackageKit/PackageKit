@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
+#define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
 #define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
 #define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
 
@@ -339,6 +340,9 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* always do this first to avoid a loop if this tool segfaults */
+	g_unlink (PK_OFFLINE_UPDATE_TRIGGER_FILENAME);
+
 	/* get the list of packages to update */
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				   &packages_data,
@@ -374,7 +378,6 @@ main (int argc, char *argv[])
 	g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	retval = EXIT_SUCCESS;
 out:
-	g_unlink ("/system-update");
 	pk_offline_update_reboot ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
