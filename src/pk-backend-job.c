@@ -593,14 +593,6 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 	if (!item->enabled || item->vfunc == NULL)
 		return;
 
-	/* if we're in the main thread already, don't bother with the
-	 * idle add and do the vfunc now */
-	if (job->priv->thread == NULL ||
-	    g_thread_self () == job->priv->thread) {
-		item->vfunc (job, object, item->user_data);
-		return;
-	}
-
 	/* emit idle, TODO: do we ever need to cancel this? */
 	helper = g_new0 (PkBackendJobVFuncHelper, 1);
 	helper->job = job;
