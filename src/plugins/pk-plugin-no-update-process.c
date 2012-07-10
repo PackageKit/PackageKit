@@ -220,7 +220,6 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 
 	/* get all the files touched in the packages we just updated */
 	package_ids = pk_transaction_get_package_ids (transaction);
-	pk_backend_reset_job (plugin->backend, plugin->job);
 	pk_backend_get_files (plugin->backend, plugin->job, package_ids);
 
 	/* wait for finished */

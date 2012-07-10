@@ -196,7 +196,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	pk_proc_refresh (plugin->priv->proc);
 
 	/* get all the files touched in the packages we just updated */
-	pk_backend_reset_job (plugin->backend, plugin->job);
 	pk_backend_job_set_status (plugin->job, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 	pk_backend_job_set_percentage (plugin->job, 101);
 	package_ids = pk_ptr_array_to_strv (list);

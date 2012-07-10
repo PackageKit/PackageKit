@@ -120,6 +120,9 @@ G_DEFINE_TYPE (PkBackendJob, pk_backend_job, G_TYPE_OBJECT)
 void
 pk_backend_job_reset (PkBackendJob *job)
 {
+	guint i;
+	PkBackendJobVFuncItem *item;
+
 	job->priv->finished = FALSE;
 	job->priv->has_sent_package = FALSE;
 	job->priv->set_error = FALSE;
@@ -128,6 +131,14 @@ pk_backend_job_reset (PkBackendJob *job)
 	job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	job->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	job->priv->status = PK_STATUS_ENUM_UNKNOWN;
+
+	/* reset the vfuncs too */
+	for (i = 0; i < PK_BACKEND_SIGNAL_LAST; i++) {
+		item = &job->priv->vfunc_items[i];
+		item->enabled = FALSE;
+		item->vfunc = NULL;
+		item->user_data = NULL;
+	}
 }
 
 /**

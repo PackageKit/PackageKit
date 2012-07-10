@@ -484,19 +484,19 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		g_debug ("cannot search files");
 		goto out;
 	}
-	pk_backend_job_set_vfunc (plugin->job,
-			      PK_BACKEND_SIGNAL_FINISHED,
-			      (PkBackendJobVFunc) pk_plugin_finished_cb,
-			      plugin);
-	pk_backend_job_set_vfunc (plugin->job,
-				PK_BACKEND_SIGNAL_PACKAGE,
-				(PkBackendJobVFunc) pk_plugin_package_cb,
-				plugin);
 
 	/* use a local backend instance */
 	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  (PkBackendJobVFunc) pk_plugin_finished_cb,
+				  plugin);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_PACKAGE,
+				  (PkBackendJobVFunc) pk_plugin_package_cb,
+				  plugin);
 	pk_backend_job_set_status (plugin->job,
-			       PK_STATUS_ENUM_SCAN_APPLICATIONS);
+				   PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
 	/* reset hash */
 	g_hash_table_remove_all (plugin->priv->hash);
@@ -630,14 +630,6 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 		g_debug ("cannot get files");
 		goto out;
 	}
-	pk_backend_job_set_vfunc (plugin->job,
-			      PK_BACKEND_SIGNAL_FINISHED,
-			      (PkBackendJobVFunc) pk_plugin_finished_cb,
-			      plugin);
-	pk_backend_job_set_vfunc (plugin->job,
-			      PK_BACKEND_SIGNAL_FILES,
-			      (PkBackendJobVFunc) pk_plugin_files_cb,
-			      plugin);
 
 	/* get results */
 	results = pk_transaction_get_results (transaction);
@@ -666,6 +658,14 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 
 	/* get all the files touched in the packages we just installed */
 	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  (PkBackendJobVFunc) pk_plugin_finished_cb,
+				  plugin);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_FILES,
+				  (PkBackendJobVFunc) pk_plugin_files_cb,
+				  plugin);
 	pk_backend_job_set_status (plugin->job, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 	pk_backend_job_set_percentage (plugin->job, 101);
 	package_ids = pk_ptr_array_to_strv (list);
