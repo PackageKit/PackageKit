@@ -1740,60 +1740,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if hasattr(repo, attrname):
                     setattr(repo, attrname, only_trusted)
 
-
-    def update_system(self, transaction_flags):
-        '''
-        Implement the update-system functionality
-        '''
-        try:
-            self._check_init()
-        except PkError, e:
-            self.error(e.code, e.details, exit=False)
-            return
-        self.yumbase.conf.cache = 0 # Allow new files
-        self.allow_cancel(True)
-        self.percentage(0)
-        self.status(STATUS_RUNNING)
-
-        self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags)
-
-        self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
-                                           # to avoid taking all the system's bandwidth.
-        try:
-            txmbr = self.yumbase.update() # Add all updates to Transaction
-        except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
-        except exceptions.IOError, e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        else:
-            if txmbr:
-                # check all the packages in the transaction if only-trusted
-                for t in txmbr:
-                    # ignore transactions that do not have to be checked, e.g. obsoleted
-                    if t.output_state not in self.transaction_sig_check_map:
-                        continue
-                    pkg = t.po
-                    try:
-                        signed = self._is_package_repo_signed(pkg)
-                    except PkError, e:
-                        self.error(e.code, e.details, exit=False)
-                        return
-                    if signed:
-                        continue
-                    if TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags:
-                        self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
-                        return
-                    self._show_package(pkg, INFO_UNTRUSTED)
-                try:
-                    self._runYumTransaction(transaction_flags, allow_skip_broken=True)
-                except PkError, e:
-                    self.error(e.code, e.details, exit=False)
-            else:
-                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Nothing to do", exit=False)
-                return
-
     def refresh_cache(self, force):
         '''
         Implement the refresh_cache functionality

@@ -372,7 +372,6 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_SEARCH_GROUP,
 		PK_ROLE_ENUM_SEARCH_NAME,
 		PK_ROLE_ENUM_UPDATE_PACKAGES,
-		PK_ROLE_ENUM_UPDATE_SYSTEM,
 		PK_ROLE_ENUM_GET_REPO_LIST,
 		PK_ROLE_ENUM_REPO_ENABLE,
 		PK_ROLE_ENUM_GET_CATEGORIES,
@@ -687,22 +686,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 				 package_ids_temp,
 				 NULL);
 	g_free (package_ids_temp);
-	g_free (transaction_flags_temp);
-}
-
-/**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	gchar *transaction_flags_temp;
-	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	pk_backend_spawn_helper (priv->spawn, job,
-				 "yumBackend.py",
-				 "update-system",
-				 transaction_flags_temp,
-				 NULL);
 	g_free (transaction_flags_temp);
 }
 
