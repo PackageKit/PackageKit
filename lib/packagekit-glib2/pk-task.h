@@ -117,12 +117,6 @@ void		 pk_task_install_files_async		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
-void		 pk_task_update_system_async		(PkTask			*task,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
 void		 pk_task_resolve_async			(PkTask			*task,
 							 PkBitfield		 filters,
 							 gchar			**packages,

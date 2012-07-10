@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -810,10 +810,13 @@ pk_test_client_func (void)
 	/* okay now */
 	g_cancellable_reset (cancellable);
 
-	/* do the update-system role to trigger the fake pipe stuff */
-	pk_client_update_system_async (client, TRUE, NULL,
-				       (PkProgressCallback) pk_test_client_progress_cb, NULL,
-				       (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb, NULL);
+	/* do the update-packages role to trigger the fake pipe stuff */
+	package_ids = pk_package_ids_from_string ("testsocket;0.1;i386;fedora");
+	pk_client_update_packages_async (client, 0, package_ids,
+					 NULL,
+					 (PkProgressCallback) pk_test_client_progress_cb, NULL,
+					 (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb, NULL);
+	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 
 	/* do downloads */
@@ -955,7 +958,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
+		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");
 	g_free (text);
 
@@ -1098,7 +1101,7 @@ pk_test_control_func (void)
 	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
+		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");
 	g_free (text);
 

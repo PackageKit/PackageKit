@@ -63,12 +63,6 @@ PkResults	*pk_task_install_files_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_task_update_system_sync		(PkTask			*task,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_task_resolve_sync			(PkTask			*task,
 							 PkBitfield		 filters,
 							 gchar			**packages,

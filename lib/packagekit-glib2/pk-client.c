@@ -1663,15 +1663,6 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state->cancellable,
 				   pk_client_method_cb,
 				   state);
-	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		g_dbus_proxy_call (state->proxy, "UpdateSystem",
-				   g_variant_new ("(t)",
-						  state->transaction_flags),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   state);
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
 		g_dbus_proxy_call (state->proxy, "GetDepends",
 				   g_variant_new ("(t^a&sb)",
@@ -2094,8 +2085,7 @@ pk_client_get_proxy_cb (GObject *object,
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
 	    state->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		hint = pk_client_create_helper_socket (state);
 		if (hint != NULL)
 			g_ptr_array_add (array, hint);
@@ -2845,78 +2835,6 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 							       NULL);
 	}
 	state->number = number;
-	state->progress_callback = progress_callback;
-	state->progress_user_data = progress_user_data;
-	state->progress = pk_progress_new ();
-
-	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* identify */
-	pk_client_set_role (state, state->role);
-
-	/* get tid */
-	pk_control_get_tid_async (client->priv->control,
-				  cancellable,
-				  (GAsyncReadyCallback) pk_client_get_tid_cb,
-				  state);
-out:
-	g_object_unref (res);
-}
-
-/**
- * pk_client_update_system_async:
- * @client: a valid #PkClient instance
- * @transaction_flags: a transaction type bitfield
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback_ready
- *
- * Update all the packages on the system with the highest versions found in all
- * repositories.
- * NOTE: you can't choose what repositories to update from, but you can do:
- * - pk_client_repo_disable()
- * - pk_client_update_system()
- * - pk_client_repo_enable()
- *
- * Since: 0.8.1
- **/
-void
-pk_client_update_system_async (PkClient *client, PkBitfield transaction_flags, GCancellable *cancellable,
-			       PkProgressCallback progress_callback, gpointer progress_user_data,
-			       GAsyncReadyCallback callback_ready, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkClientState *state;
-	GError *error = NULL;
-
-	g_return_if_fail (PK_IS_CLIENT (client));
-	g_return_if_fail (callback_ready != NULL);
-	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_update_system_async);
-
-	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
-	state->transaction_flags = transaction_flags;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();

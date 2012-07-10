@@ -208,10 +208,6 @@ pk_task_do_async_action (PkTaskState *state)
 						 state->progress_callback,
 						 state->progress_user_data,
 						 (GAsyncReadyCallback) pk_task_ready_cb, state);
-	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		pk_client_update_system_async (PK_CLIENT(state->task), transaction_flags,
-					       state->cancellable, state->progress_callback, state->progress_user_data,
-					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
 		pk_client_install_files_async (PK_CLIENT(state->task), transaction_flags, state->files,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -1147,59 +1143,6 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_task_update_system_async:
- * @task: a valid #PkTask instance
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback_ready
- *
- * Update all the packages on the system with the highest versions found in all
- * repositories.
- * NOTE: you can't choose what repositories to update from, but you can do:
- * - pk_task_repo_disable()
- * - pk_task_update_system()
- * - pk_task_repo_enable()
- *
- * Since: 0.5.2
- **/
-void
-pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkTaskState *state;
-
-	g_return_if_fail (PK_IS_CLIENT (task));
-	g_return_if_fail (callback_ready != NULL);
-	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-
-	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_system_async);
-
-	/* save state */
-	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
-	state->res = g_object_ref (res);
-	state->task = g_object_ref (task);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
-	state->progress_callback = progress_callback;
-	state->progress_user_data = progress_user_data;
-	state->request = pk_task_generate_request_id ();
-
-	g_debug ("adding state %p", state);
-	g_ptr_array_add (task->priv->array, state);
-
-	/* start trusted install async */
-	pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }

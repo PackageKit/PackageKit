@@ -105,13 +105,6 @@ PkResults	*pk_client_get_old_transactions		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_update_system		(PkClient		*client,
-							 PkBitfield		 transaction_flags,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_client_get_depends			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,

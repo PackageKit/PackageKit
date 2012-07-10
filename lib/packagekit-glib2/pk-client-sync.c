@@ -546,63 +546,6 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
 }
 
 /**
- * pk_client_update_system:
- * @client: a valid #PkClient instance
- * @transaction_flags: a transaction type bitfield
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @error: the #GError to store any failure, or %NULL
- *
- * Update all the packages on the system with the highest versions found in all
- * repositories.
- * NOTE: you can't choose what repositories to update from, but you can do:
- * - pk_client_repo_disable()
- * - pk_client_update_system()
- * - pk_client_repo_enable()
- *
- * Warning: this function is synchronous, and may block. Do not use it in GUI
- * applications.
- *
- * Return value: (transfer full): a %PkResults object, or NULL for error
- *
- * Since: 0.8.1
- **/
-PkResults *
-pk_client_update_system (PkClient *client,
-			 PkBitfield transaction_flags,
-			 GCancellable *cancellable,
-			 PkProgressCallback progress_callback,
-			 gpointer progress_user_data,
-			 GError **error)
-{
-	PkClientHelper *helper;
-	PkResults *results;
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
-
-	/* run async method */
-	pk_client_update_system_async (client, transaction_flags, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
-
-	g_main_loop_run (helper->loop);
-
-	results = helper->results;
-
-	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
-
-	return results;
-}
-
-/**
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
