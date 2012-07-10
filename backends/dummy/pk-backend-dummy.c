@@ -46,14 +46,14 @@ typedef struct {
 	gboolean	 use_trusted;
 	gchar		**package_ids;
 	gchar		**values;
-	GSocket		*socket;
-	guint		 socket_listen_id;
 	gulong		 signal_timeout;
 	PkBitfield	 filters;
 } PkBackendDummyPrivate;
 
 typedef struct {
 	guint		 progress_percentage;
+	GSocket		*socket;
+	guint		 socket_listen_id;
 } PkBackendDummyJobData;
 
 static PkBackendDummyPrivate *priv;
@@ -952,68 +952,6 @@ pk_backend_update_packages_download_timeout (gpointer data)
 	return TRUE;
 }
 
-/**
- * pk_backend_update_packages:
- */
-void
-pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
-{
-	const gchar *eula_id;
-	const gchar *license_agreement;
-	gboolean has_eula;
-	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
-
-	/* FIXME: support only_trusted */
-	PkRoleEnum role = pk_backend_job_get_role (job);
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_gpg && !priv->has_signature) {
-		pk_backend_job_repo_signature_required (job, package_ids[0], "updates",
-							"http://example.com/gpgkey",
-							"Test Key (Fedora) fedora@example.com",
-							"BB7576AC",
-							"D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
-							"2007-10-04", PK_SIGTYPE_ENUM_GPG);
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
-					   "GPG signed package could not be verified");
-		pk_backend_job_finished (job);
-		return;
-	}
-	eula_id = "eula_hughsie_dot_com";
-	has_eula = pk_backend_is_eula_valid (backend, eula_id);
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_eula && !has_eula) {
-		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
-				    "Captain: What happen ?\n"
-				    "Mechanic: Somebody set up us the bomb.\n\n"
-				    "Operator: We get signal.\n"
-				    "Captain: What !\n"
-				    "Operator: Main screen turn on.\n"
-				    "Captain: It's you !!\n"
-				    "CATS: How are you gentlemen !!\n"
-				    "CATS: All your base are belong to us.\n"
-				    "CATS: You are on the way to destruction.\n\n"
-				    "Captain: What you say !!\n"
-				    "CATS: You have no chance to survive make your time.\n"
-				    "CATS: Ha Ha Ha Ha ....\n\n"
-				    "Operator: Captain!! *\n"
-				    "Captain: Take off every 'ZIG' !!\n"
-				    "Captain: You know what you doing.\n"
-				    "Captain: Move 'ZIG'.\n"
-				    "Captain: For great justice.\n";
-		pk_backend_job_eula_required (job, eula_id, package_ids[0],
-					      "CATS Inc.", license_agreement);
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
-					   "licence not installed so cannot install");
-		pk_backend_job_finished (job);
-		return;
-	}
-
-	priv->package_ids = package_ids;
-	job_data->progress_percentage = 0;
-	pk_backend_job_set_allow_cancel (job, TRUE);
-	pk_backend_job_set_percentage (job, 0);
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
-	priv->signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, job);
-}
-
 static gboolean
 pk_backend_update_system_timeout (gpointer data)
 {
@@ -1022,10 +960,10 @@ pk_backend_update_system_timeout (gpointer data)
 	if (job_data->progress_percentage == 100) {
 
 		/* cleanup socket stuff */
-		if (priv->socket != NULL)
-			g_object_unref (priv->socket);
-		if (priv->socket_listen_id != 0)
-			g_source_remove (priv->socket_listen_id);
+		if (job_data->socket != NULL)
+			g_object_unref (job_data->socket);
+		if (job_data->socket_listen_id != 0)
+			g_source_remove (job_data->socket_listen_id);
 
 		pk_backend_job_finished (job);
 		return FALSE;
@@ -1082,18 +1020,20 @@ pk_backend_update_system_timeout (gpointer data)
 	return TRUE;
 }
 
-
 /**
  * pk_backend_socket_has_data_cb:
  **/
 static gboolean
-pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBackendJob *job)
+pk_backend_socket_has_data_cb (GSocket *socket,
+			       GIOCondition condition,
+			       PkBackendJob *job)
 {
 	GError *error = NULL;
 	gsize len;
 	gchar buffer[1024];
 	gboolean ret = TRUE;
 	gint wrote = 0;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
@@ -1123,7 +1063,7 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 			pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, buffer);
 
 			/* verify we can write into the socket */
-			wrote = g_socket_send (priv->socket, "invalid\n", 8, NULL, &error);
+			wrote = g_socket_send (job_data->socket, "invalid\n", 8, NULL, &error);
 			if (error != NULL) {
 				pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 							   "failed to write to socket: %s", error->message);
@@ -1152,73 +1092,137 @@ out:
 }
 
 /**
- * pk_backend_update_system:
+ * pk_backend_update_packages:
  */
 void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
+	const gchar *eula_id;
+	const gchar *license_agreement;
+	gboolean has_eula;
+	gboolean ret;
 	gchar *frontend_socket = NULL;
 	GError *error = NULL;
-	gboolean ret;
-	GSocketAddress *address = NULL;
 	gsize wrote;
+	GSocketAddress *address = NULL;
 	GSource *source;
-
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
-	pk_backend_job_set_allow_cancel (job, TRUE);
-
-	priv->socket = NULL;
-	priv->socket_listen_id = 0;
-
-	/* make sure we can contact the frontend */
-	frontend_socket = pk_backend_job_get_frontend_socket (job);
-	if (frontend_socket == NULL) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "failed to get frontend socket");
-		pk_backend_job_finished (job);
-		goto out;
-	}
-
-	/* create socket */
-	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
-	if (priv->socket == NULL) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "failed to create socket: %s", error->message);
-		pk_backend_job_finished (job);
-		g_error_free (error);
-		goto out;
-	}
-	g_socket_set_blocking (priv->socket, FALSE);
-	g_socket_set_keepalive (priv->socket, TRUE);
-
-	/* connect to it */
-	address = g_unix_socket_address_new (frontend_socket);
-	ret = g_socket_connect (priv->socket, address, NULL, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "failed to open socket: %s", error->message);
-		pk_backend_job_finished (job);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* socket has data */
-	source = g_socket_create_source (priv->socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
-	g_source_set_callback (source, (GSourceFunc) pk_backend_socket_has_data_cb, job, NULL);
-	priv->socket_listen_id = g_source_attach (source, NULL);
-
-	/* send some data */
-	wrote = g_socket_send (priv->socket, "ping\n", 5, NULL, &error);
-	if (wrote != 5) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "failed to write, only %i bytes", wrote);
-		pk_backend_job_finished (job);
-		goto out;
-	}
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+	PkRoleEnum role;
 
 	/* FIXME: support only_trusted */
-	pk_backend_job_require_restart (job, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-	priv->signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, job);
+	role = pk_backend_job_get_role (job);
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_gpg && !priv->has_signature) {
+		pk_backend_job_repo_signature_required (job, package_ids[0], "updates",
+							"http://example.com/gpgkey",
+							"Test Key (Fedora) fedora@example.com",
+							"BB7576AC",
+							"D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
+							"2007-10-04", PK_SIGTYPE_ENUM_GPG);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
+					   "GPG signed package could not be verified");
+		pk_backend_job_finished (job);
+		return;
+	}
+	eula_id = "eula_hughsie_dot_com";
+	has_eula = pk_backend_is_eula_valid (backend, eula_id);
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && priv->use_eula && !has_eula) {
+		license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
+				    "Captain: What happen ?\n"
+				    "Mechanic: Somebody set up us the bomb.\n\n"
+				    "Operator: We get signal.\n"
+				    "Captain: What !\n"
+				    "Operator: Main screen turn on.\n"
+				    "Captain: It's you !!\n"
+				    "CATS: How are you gentlemen !!\n"
+				    "CATS: All your base are belong to us.\n"
+				    "CATS: You are on the way to destruction.\n\n"
+				    "Captain: What you say !!\n"
+				    "CATS: You have no chance to survive make your time.\n"
+				    "CATS: Ha Ha Ha Ha ....\n\n"
+				    "Operator: Captain!! *\n"
+				    "Captain: Take off every 'ZIG' !!\n"
+				    "Captain: You know what you doing.\n"
+				    "Captain: Move 'ZIG'.\n"
+				    "Captain: For great justice.\n";
+		pk_backend_job_eula_required (job, eula_id, package_ids[0],
+					      "CATS Inc.", license_agreement);
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
+					   "licence not installed so cannot install");
+		pk_backend_job_finished (job);
+		return;
+	}
+
+	/* handle the socket test */
+	if (g_strcmp0 (package_ids[0], "testsocket;0.1;i386;fedora") == 0) {
+		job_data->socket = NULL;
+		job_data->socket_listen_id = 0;
+
+		/* make sure we can contact the frontend */
+		frontend_socket = pk_backend_job_get_frontend_socket (job);
+		if (frontend_socket == NULL) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "failed to get frontend socket");
+			pk_backend_job_finished (job);
+			goto out;
+		}
+
+		/* create socket */
+		job_data->socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+						 G_SOCKET_TYPE_STREAM,
+						 G_SOCKET_PROTOCOL_DEFAULT,
+						 &error);
+		if (job_data->socket == NULL) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "failed to create socket: %s",
+						   error->message);
+			pk_backend_job_finished (job);
+			g_error_free (error);
+			goto out;
+		}
+		g_socket_set_blocking (job_data->socket, FALSE);
+		g_socket_set_keepalive (job_data->socket, TRUE);
+
+		/* connect to it */
+		address = g_unix_socket_address_new (frontend_socket);
+		ret = g_socket_connect (job_data->socket, address, NULL, &error);
+		if (!ret) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "failed to open socket: %s", error->message);
+			pk_backend_job_finished (job);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* socket has data */
+		source = g_socket_create_source (job_data->socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
+		g_source_set_callback (source, (GSourceFunc) pk_backend_socket_has_data_cb, job, NULL);
+		job_data->socket_listen_id = g_source_attach (source, NULL);
+
+		/* send some data */
+		wrote = g_socket_send (job_data->socket, "ping\n", 5, NULL, &error);
+		if (wrote != 5) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "failed to write, only %i bytes", wrote);
+			pk_backend_job_finished (job);
+			goto out;
+		}
+
+		/* FIXME: support only_trusted */
+		pk_backend_job_require_restart (job,
+						PK_RESTART_ENUM_SYSTEM,
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
+		priv->signal_timeout = g_timeout_add (100,
+						      pk_backend_update_system_timeout,
+						      job);
+		goto out;
+	}
+
+	priv->package_ids = package_ids;
+	job_data->progress_percentage = 0;
+	pk_backend_job_set_allow_cancel (job, TRUE);
+	pk_backend_job_set_percentage (job, 0);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+	priv->signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, job);
 out:
 	if (address != NULL)
 		g_object_unref (address);
