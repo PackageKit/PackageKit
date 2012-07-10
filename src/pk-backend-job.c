@@ -587,18 +587,22 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 {
 	PkBackendJobVFuncHelper *helper;
 	PkBackendJobVFuncItem *item;
+	guint priority = G_PRIORITY_DEFAULT_IDLE;
 
 	/* call transaction vfunc if not disabled and set */
 	item = &job->priv->vfunc_items[signal_kind];
 	if (!item->enabled || item->vfunc == NULL)
 		return;
 
+	if (signal_kind == PK_BACKEND_SIGNAL_FINISHED)
+		priority = G_PRIORITY_LOW;
+
 	/* emit idle, TODO: do we ever need to cancel this? */
 	helper = g_new0 (PkBackendJobVFuncHelper, 1);
 	helper->job = job;
 	helper->signal_kind = signal_kind;
 	helper->object = object;
-	g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+	g_idle_add_full (priority,
 			 pk_backend_job_call_vfunc_idle_cb,
 			 helper,
 			 g_free);
