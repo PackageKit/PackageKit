@@ -152,6 +152,8 @@ void		 pk_backend_job_set_vfunc		(PkBackendJob	*job,
 							 PkBackendJobSignal signal_kind,
 							 PkBackendJobVFunc vfunc,
 							 gpointer	 user_data);
+gboolean	 pk_backend_job_get_vfunc_enabled	(PkBackendJob	*job,
+							 PkBackendJobSignal signal_kind);
 
 /* thread helpers */
 typedef void	(*PkBackendJobThreadFunc)		(PkBackendJob	*job,

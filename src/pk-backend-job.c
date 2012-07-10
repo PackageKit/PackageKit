@@ -142,6 +142,22 @@ pk_backend_job_reset (PkBackendJob *job)
 }
 
 /**
+ * pk_backend_job_get_vfunc_enabled:
+ **/
+gboolean
+pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
+				  PkBackendJobSignal signal_kind)
+{
+	PkBackendJobVFuncItem *item;
+	item = &job->priv->vfunc_items[signal_kind];
+	if (!item->enabled)
+		return FALSE;
+	if (item->vfunc == NULL)
+		return FALSE;
+	return TRUE;
+}
+
+/**
  * pk_backend_job_get_backend:
  **/
 gpointer

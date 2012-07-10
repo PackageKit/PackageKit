@@ -920,6 +920,10 @@ pk_backend_download_packages (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->download_packages != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^ass)",
 							   package_ids,
@@ -935,6 +939,10 @@ pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_categories != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_CATEGORIES);
 	backend->priv->desc->get_categories (backend, job);
 }
@@ -951,6 +959,10 @@ pk_backend_get_depends (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_depends != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DEPENDS);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^asb)",
 							   filters,
@@ -969,6 +981,10 @@ pk_backend_get_details (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_details != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
 							   package_ids));
@@ -983,6 +999,10 @@ pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_distro_upgrades != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	backend->priv->desc->get_distro_upgrades (backend, job);
 }
@@ -997,6 +1017,10 @@ pk_backend_get_files (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_files != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_FILES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
 							   package_ids));
@@ -1015,6 +1039,10 @@ pk_backend_get_requires (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_requires != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_REQUIRES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^asb)",
 							   filters,
@@ -1033,6 +1061,10 @@ pk_backend_get_update_detail (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_update_detail != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
 							   package_ids));
@@ -1049,6 +1081,10 @@ pk_backend_get_updates (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_updates != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
 							   filters));
@@ -1066,6 +1102,10 @@ pk_backend_install_packages (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_packages != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
@@ -1086,6 +1126,10 @@ pk_backend_install_signature (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_signature != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(ss)",
 							   key_id,
@@ -1104,6 +1148,10 @@ pk_backend_install_files (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->install_files != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_FILES);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
@@ -1120,6 +1168,10 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->refresh_cache != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(b)",
 							   force));
@@ -1139,6 +1191,10 @@ pk_backend_remove_packages (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->remove_packages != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^asbb)",
@@ -1164,6 +1220,10 @@ pk_backend_resolve (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->resolve != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_RESOLVE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
@@ -1182,6 +1242,10 @@ pk_backend_search_details (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_details != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_DETAILS);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
@@ -1200,6 +1264,10 @@ pk_backend_search_files (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_files != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_FILE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
@@ -1218,6 +1286,10 @@ pk_backend_search_groups (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_groups != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_GROUP);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
@@ -1236,6 +1308,10 @@ pk_backend_search_names (PkBackend *backend,
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->search_names != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_NAME);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
@@ -1251,6 +1327,10 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->update_packages != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
@@ -1267,6 +1347,10 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_repo_list != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_REPO_LIST);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
 							   filters));
@@ -1281,6 +1365,10 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repo_enable != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_ENABLE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(sb)",
 							   repo_id,
@@ -1296,6 +1384,10 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repo_set_data != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_SET_DATA);
 	pk_backend_job_set_parameters (job, g_variant_new ("(sss)",
 							   repo_id,
@@ -1312,6 +1404,10 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->what_provides != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_WHAT_PROVIDES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(tu^as)",
 							   filters,
@@ -1328,6 +1424,10 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->get_packages != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_PACKAGES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
 							   filters));
@@ -1342,6 +1442,10 @@ pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *d
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_backend_job_set_parameters (job, g_variant_new ("(su)",
 							   distro_id,
@@ -1357,6 +1461,11 @@ pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->repair_system != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",

@@ -948,7 +948,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		g_debug ("not running plugin function %s as simulating",
 			 function);
-		return;
+		goto out;
 	}
 
 	/* run each plugin */
