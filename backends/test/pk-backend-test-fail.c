@@ -243,15 +243,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 /**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_backend_job_finished (job);
-}
-
-/**
  * pk_backend_upgrade_system:
  */
 void
