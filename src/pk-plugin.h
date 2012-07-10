@@ -49,6 +49,7 @@ typedef enum {
 	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS,	/* finished with some signals */
 	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END,	/* finished with no signals */
 	PK_PLUGIN_PHASE_DESTROY,			/* plugin finalized */
+	PK_PLUGIN_PHASE_STATE_CHANGED,			/* system state has changed */
 	PK_PLUGIN_PHASE_UNKNOWN
 } PkPluginPhase;
 
@@ -65,6 +66,7 @@ typedef void		 (*PkPluginTransactionFunc)	(PkPlugin	*plugin,
 const gchar	*pk_plugin_get_description		(void);
 void		 pk_plugin_initialize			(PkPlugin	*plugin);
 void		 pk_plugin_destroy			(PkPlugin	*plugin);
+void		 pk_plugin_state_changed		(PkPlugin	*plugin);
 void		 pk_plugin_transaction_run		(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_started		(PkPlugin	*plugin,

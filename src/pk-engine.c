@@ -58,6 +58,7 @@
 
 static void     pk_engine_finalize	(GObject       *object);
 static void	pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
+static void	pk_engine_plugin_phase	(PkEngine *engine, PkPluginPhase phase);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
@@ -378,6 +379,9 @@ pk_engine_state_changed_cb (gpointer data)
 	PkEngine *engine = PK_ENGINE (data);
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* run the plugin hook */
+	pk_engine_plugin_phase (engine, PK_PLUGIN_PHASE_STATE_CHANGED);
 
 	/* if network is not up, then just reschedule */
 	state = pk_network_get_network_state (engine->priv->network);
@@ -1041,6 +1045,9 @@ pk_engine_plugin_phase (PkEngine *engine,
 		break;
 	case PK_PLUGIN_PHASE_DESTROY:
 		function = "pk_plugin_destroy";
+		break;
+	case PK_PLUGIN_PHASE_STATE_CHANGED:
+		function = "pk_plugin_state_changed";
 		break;
 	default:
 		g_assert_not_reached ();
