@@ -1066,6 +1066,7 @@ pk_engine_plugin_phase (PkEngine *engine,
 		plugin->backend = engine->priv->backend;
 		plugin_func (plugin);
 		plugin->backend = NULL;
+		g_debug ("finished %s", function);
 	}
 }
 
