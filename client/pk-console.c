@@ -979,7 +979,7 @@ out:
  * pk_console_update_system:
  **/
 static gboolean
-pk_console_update_system (GError **error)
+pk_console_update_system (PkBitfield filters, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
@@ -987,7 +987,10 @@ pk_console_update_system (GError **error)
 	PkResults *results;
 
 	/* get the current updates */
-	results = pk_task_get_updates_sync (PK_TASK (task), 0, cancellable,
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NEWEST);
+	results = pk_task_get_updates_sync (PK_TASK (task),
+					    filters,
+					    cancellable,
 					    (PkProgressCallback) pk_console_progress_cb, NULL,
 					    error);
 	if (results == NULL) {
@@ -1597,7 +1600,7 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			nowait = !pk_console_update_system (&error);
+			nowait = !pk_console_update_system (filters, &error);
 		} else {
 			nowait = !pk_console_update_packages (argv+2, &error);
 		}
