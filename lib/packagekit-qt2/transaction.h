@@ -112,7 +112,7 @@ public:
         RoleSearchGroup        = 1 << 20,
         RoleSearchName         = 1 << 21,
         RoleUpdatePackages     = 1 << 22,
-        RoleUpdateSystem       = 1 << 23,
+        RoleUpdateSystem       = 1 << 23, // Removed in 0.8.2
         RoleWhatProvides       = 1 << 24,
         RoleAcceptEula         = 1 << 25,
         RoleDownloadPackages   = 1 << 26,

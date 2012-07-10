@@ -568,11 +568,6 @@ void Transaction::updatePackage(const Package &package, TransactionFlags flags)
     updatePackages(PackageList() << package, flags);
 }
 
-void Transaction::updateSystem(bool onlyTrusted)
-{
-    RUN_TRANSACTION(UpdateSystem(onlyTrusted))
-}
-
 void Transaction::upgradeSystem(const QString &distroId, UpgradeKind kind)
 {
     RUN_TRANSACTION(UpgradeSystem(distroId, kind))
