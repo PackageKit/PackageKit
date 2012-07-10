@@ -1490,7 +1490,7 @@ pk_backend_zif_lock_state_changed_cb (ZifLock *lock,
 
 	/* tell the daemon the lock state; if any lock is taken then
 	 * this is going to run in exclusive mode */
-	pk_backend_set_locked (backend, state_bitfield != 0);
+	//pk_backend_job_set_locked (job, state_bitfield != 0);
 
 	/* just print something pretty to the console */
 	str = g_string_new ("lock state: ");
@@ -4131,149 +4131,6 @@ out:
 }
 
 /**
- * pk_backend_update_system_thread:
- */
-static void
-pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
-{
-	gboolean ret;
-	GError *error = NULL;
-	GPtrArray *updates = NULL;
-	GPtrArray *store_array = NULL;
-	guint i;
-	ZifPackage *package;
-	ZifState *state_local;
-	ZifStore *store_local = NULL;
-	PkBitfield transaction_flags;
-	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
-
-	g_variant_get (params, "(t)",
-		       &transaction_flags);
-
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	pk_backend_job_set_percentage (job, 0);
-
-	/* setup steps */
-	ret = zif_state_set_steps (job_data->state,
-				   NULL,
-				   10, /* add remote */
-				   10, /* get updates */
-				   10, /* add updates */
-				   70, /* run transaction */
-				   -1);
-	g_assert (ret);
-
-	/* get a store_array of remote stores */
-	store_array = zif_store_array_new ();
-	state_local = zif_state_get_child (job_data->state);
-	ret = zif_store_array_add_remote_enabled (store_array,
-						  state_local,
-						  &error);
-	if (!ret) {
-		pk_backend_job_error_code (job,
-				       pk_backend_convert_error (error),
-				       "failed to add enabled stores: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* use these stores for the transaction */
-	zif_transaction_set_stores_remote (job_data->transaction, store_array);
-
-	/* this section done */
-	ret = zif_state_done (job_data->state, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get all updates */
-	state_local = zif_state_get_child (job_data->state);
-	store_local = zif_store_local_new ();
-	updates = zif_store_array_get_updates (store_array,
-					       store_local,
-					       state_local,
-					       &error);
-	if (updates == NULL) {
-		pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_TRANSACTION_ERROR,
-				       "failed to get updates: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* this section done */
-	ret = zif_state_done (job_data->state, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* add them as an update to the transaction */
-	for (i = 0; i < updates->len; i++) {
-		package = g_ptr_array_index (updates, i);
-		ret = zif_transaction_add_install_as_update (job_data->transaction,
-							     package,
-							     &error);
-		if (!ret) {
-			pk_backend_job_error_code (job,
-					       PK_ERROR_ENUM_TRANSACTION_ERROR,
-					       "failed to add package %s: %s",
-					       zif_package_get_printable (package),
-					       error->message);
-			g_error_free (error);
-			goto out;
-		}
-	}
-
-	/* this section done */
-	ret = zif_state_done (job_data->state, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* run transaction */
-	state_local = zif_state_get_child (job_data->state);
-	ret = pk_backend_job_run_transaction (job, transaction_flags, state_local);
-	if (!ret)
-		goto out;
-
-	/* this section done */
-	ret = zif_state_done (job_data->state, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	pk_backend_job_finished (job);
-	if (store_local != NULL)
-		g_object_unref (store_local);
-	if (updates != NULL)
-		g_ptr_array_unref (updates);
-	if (store_array != NULL)
-		g_ptr_array_unref (store_array);
-}
-
-/**
  * pk_backend_install_packages_thread:
  */
 static void
@@ -5429,15 +5286,6 @@ void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
-}
-
-/**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_backend_job_thread_create (job, pk_backend_update_system_thread, NULL, NULL);
 }
 
 /**
