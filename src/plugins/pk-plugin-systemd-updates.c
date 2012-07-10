@@ -116,11 +116,10 @@ pk_plugin_state_changed (PkPlugin *plugin)
 }
 
 /**
- * pk_plugin_transaction_finished_end:
+ * pk_plugin_transaction_update_packages:
  */
-void
-pk_plugin_transaction_finished_end (PkPlugin *plugin,
-				    PkTransaction *transaction)
+static void
+pk_plugin_transaction_update_packages (PkTransaction *transaction)
 {
 	gboolean ret;
 	gchar **package_ids;
@@ -130,20 +129,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	GPtrArray *packages;
 	guint i;
 	PkBitfield transaction_flags;
-	PkExitEnum exit_enum;
-	PkResults *results;
-	PkRoleEnum role;
-
-	/* check the role */
-	role = pk_transaction_get_role (transaction);
-	if (role != PK_ROLE_ENUM_UPDATE_PACKAGES)
-		goto out;
-
-	/* check for success */
-	results = pk_transaction_get_results (transaction);
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		goto out;
 
 	/* only write the file for only-download */
 	transaction_flags = pk_transaction_get_transaction_flags (transaction);
@@ -184,5 +169,72 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 out:
 	g_free (packages_str);
 	g_free (path);
+	return;
+}
+
+/**
+ * pk_plugin_transaction_get_updates:
+ */
+static void
+pk_plugin_transaction_get_updates (PkTransaction *transaction)
+{
+	gchar *path;
+	GPtrArray *array;
+	PkResults *results;
+
+	results = pk_transaction_get_results (transaction);
+	path = g_build_filename (LOCALSTATEDIR,
+				 "lib",
+				 "PackageKit",
+				 "prepared-update",
+				 NULL);
+	array = pk_results_get_package_array (results);
+	if (array->len != 0) {
+		g_debug ("got %i updates, so ignoring %s",
+			 array->len, path);
+		goto out;
+	}
+	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+		g_debug ("Removing %s as no updates", path);
+		g_unlink (path);
+	} else {
+		g_debug ("No %s present, so no need to delete", path);
+	}
+out:
+	g_free (path);
+	g_ptr_array_unref (array);
+}
+
+/**
+ * pk_plugin_transaction_finished_end:
+ */
+void
+pk_plugin_transaction_finished_end (PkPlugin *plugin,
+				    PkTransaction *transaction)
+{
+	PkExitEnum exit_enum;
+	PkResults *results;
+	PkRoleEnum role;
+
+	/* check for success */
+	results = pk_transaction_get_results (transaction);
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		goto out;
+
+	/* if we're doing only-download then update prepared-updates */
+	role = pk_transaction_get_role (transaction);
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		pk_plugin_transaction_update_packages (transaction);
+		goto out;
+	}
+
+	/* if we do get-updates and there's no updates then remove
+	 * prepared-updates so the UI doesn't display update & reboot */
+	if (role == PK_ROLE_ENUM_GET_UPDATES) {
+		pk_plugin_transaction_get_updates (transaction);
+		goto out;
+	}
+out:
 	return;
 }
