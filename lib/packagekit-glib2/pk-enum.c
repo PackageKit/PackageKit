@@ -115,7 +115,6 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_SEARCH_GROUP,			"search-group"},
 	{PK_ROLE_ENUM_SEARCH_NAME,			"search-name"},
 	{PK_ROLE_ENUM_UPDATE_PACKAGES,			"update-packages"},
-	{PK_ROLE_ENUM_UPDATE_SYSTEM,			"update-system"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,			"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,			"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,		"download-packages"},
@@ -1269,10 +1268,6 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Updating packages");
-		break;
-	case PK_ROLE_ENUM_UPDATE_SYSTEM:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Updating system");
 		break;
 	case PK_ROLE_ENUM_CANCEL:
 		/* TRANSLATORS: The role of the transaction, in present tense */

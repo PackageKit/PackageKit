@@ -150,8 +150,7 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 
 	/* check the role */
 	role = pk_transaction_get_role (transaction);
-	if (role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    role != PK_ROLE_ENUM_UPDATE_PACKAGES)
+	if (role != PK_ROLE_ENUM_UPDATE_PACKAGES)
 		goto out;
 
 	/* check we can do the action */

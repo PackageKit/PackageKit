@@ -44,7 +44,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* just delete the file, no questions asked :) */
 	role = pk_transaction_get_role (transaction);
 	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
-	    role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		unlink ("/system-update");
 	}

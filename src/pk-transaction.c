@@ -271,8 +271,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	pk_cache_set_results (priv->cache, priv->role, priv->results);
 
 	/* could the update list have changed? */
-	if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
@@ -1190,8 +1189,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	g_debug ("backend was running for %i ms", time_ms);
 
 	/* add to the database if we are going to log it */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 
@@ -1334,8 +1332,7 @@ pk_transaction_package_cb (PkBackend *backend,
 
 	/* check the backend is doing the right thing */
 	info = pk_package_get_info (item);
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
@@ -2536,8 +2533,7 @@ pk_transaction_commit (PkTransaction *transaction)
 	}
 
 	/* only save into the database for useful stuff */
-	if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 
@@ -2776,7 +2772,6 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 
 	switch (role) {
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
-		case PK_ROLE_ENUM_UPDATE_SYSTEM:
 			policy = "org.freedesktop.packagekit.system-update";
 			break;
 		case PK_ROLE_ENUM_INSTALL_SIGNATURE:
@@ -2828,7 +2823,6 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 		case PK_ROLE_ENUM_INSTALL_PACKAGES:
 		case PK_ROLE_ENUM_INSTALL_FILES:
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
-		case PK_ROLE_ENUM_UPDATE_SYSTEM:
 			policy = "org.freedesktop.packagekit.package-install-untrusted";
 			break;
 		default:
@@ -5131,58 +5125,6 @@ out:
 }
 
 /**
- * pk_transaction_update_system:
- **/
-static void
-pk_transaction_update_system (PkTransaction *transaction,
-			      GVariant *params,
-			      GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error = NULL;
-	PkBitfield transaction_flags;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	g_variant_get (params, "(t)",
-		       &transaction_flags);
-
-	g_debug ("UpdateSystem method called");
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_UPDATE_SYSTEM)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "UpdateSystem not supported by backend");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	/* are we already performing an update? */
-	if (pk_transaction_list_role_present (transaction->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
-				     "Already performing system update");
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-
-	transaction->priv->cached_transaction_flags = transaction_flags;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_SYSTEM);
-
-	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction,
-						   PK_ROLE_ENUM_UPDATE_SYSTEM,
-						   &error);
-	if (!ret) {
-		pk_transaction_release_tid (transaction);
-		goto out;
-	}
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-/**
  * pk_transaction_what_provides:
  **/
 static void
@@ -5571,11 +5513,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "UpdatePackages") == 0) {
 		pk_transaction_update_packages (transaction, parameters, invocation);
-		goto out;
-	}
-
-	if (g_strcmp0 (method_name, "UpdateSystem") == 0) {
-		pk_transaction_update_system (transaction, parameters, invocation);
 		goto out;
 	}
 

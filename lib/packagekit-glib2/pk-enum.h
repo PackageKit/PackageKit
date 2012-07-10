@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -72,7 +72,6 @@ typedef enum {
 	PK_ROLE_ENUM_SEARCH_GROUP,
 	PK_ROLE_ENUM_SEARCH_NAME,
 	PK_ROLE_ENUM_UPDATE_PACKAGES,
-	PK_ROLE_ENUM_UPDATE_SYSTEM,
 	PK_ROLE_ENUM_WHAT_PROVIDES,
 	PK_ROLE_ENUM_ACCEPT_EULA,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES,

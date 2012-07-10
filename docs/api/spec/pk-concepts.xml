@@ -598,7 +598,7 @@
           <row>
             <entry><literal>no-packages-to-update</literal></entry>
             <entry>
-	      UpdateSystem() was called, but there are no packages to update.
+	      UpdatePackages() was called, but there are no packages to update.
             </entry>
           </row>
           <row>
@@ -800,7 +800,7 @@
             <literal>::Package()</literal>: Used to either return a result
             (e.g. returning results of the <literal>SearchName()</literal> method)
             or to return progress about a _specific_ package.
-            For instance, when doing <literal>UpdateSystem()</literal>, sending
+            For instance, when doing <literal>UpdatePackages()</literal>, sending
             <literal>::Package(downloading)</literal> and then
             <literal>::Package(installing)</literal> for each package as processed
             in the transaction allows a GUI to position the cursor on the worked

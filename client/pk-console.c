@@ -175,7 +175,7 @@ pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 	g_print (" %s: %s\n", _("System time"), timespec);
 	/* TRANSLATORS: this is if the transaction succeeded or not */
 	g_print (" %s: %s\n", _("Succeeded"), succeeded ? _("True") : _("False"));
-	/* TRANSLATORS: this is the transactions role, e.g. "update-system" */
+	/* TRANSLATORS: this is the transactions role, e.g. "update-packages" */
 	g_print (" %s: %s\n", _("Role"), role_text);
 
 	/* only print if not null */
@@ -602,7 +602,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		/* show new status on the bar */
 		text = pk_role_enum_to_localised_present (role);
 		if (!is_console) {
-			/* TRANSLATORS: the role is the point of the transaction, e.g. update-system */
+			/* TRANSLATORS: the role is the point of the transaction, e.g. update-packages */
 			g_print ("%s:\t%s\n", _("Transaction"), text);
 			goto out;
 		}
@@ -729,7 +729,6 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (!is_console ||
 	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
 	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	     role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
 	     role != PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, NULL);
 	}
@@ -737,7 +736,6 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* special case */
 	if (array->len == 0 &&
 	    (role == PK_ROLE_ENUM_GET_UPDATES ||
-	     role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	     role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		/* TRANSLATORS: print a message when there are no updates */
 		g_print ("%s\n", _("There are no updates available at this time."));
@@ -1226,8 +1224,7 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "remove [package]");
-	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
-	    pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES))
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "update <package>");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE))
 		g_string_append_printf (string, "  %s\n", "refresh [--force]");
@@ -1658,7 +1655,7 @@ main (int argc, char *argv[])
 		PkRoleEnum role;
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify what action to use */
-			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-system' is required"));
+			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-packages' is required"));
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}

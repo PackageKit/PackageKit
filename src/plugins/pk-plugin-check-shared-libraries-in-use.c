@@ -298,8 +298,7 @@ pk_plugin_transaction_run (PkPlugin *plugin,
 
 	/* check the role */
 	role = pk_transaction_get_role (transaction);
-	if (role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	if (role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
 	    role != PK_ROLE_ENUM_INSTALL_PACKAGES)
 		goto out;
 
