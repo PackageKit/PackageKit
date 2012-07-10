@@ -21,6 +21,7 @@
 
 #include <config.h>
 #include <gio/gio.h>
+#include <glib/gstdio.h>
 #include <pk-plugin.h>
 
 /**
@@ -87,6 +88,31 @@ pk_plugin_array_str_exists (GPtrArray *array, const gchar *str)
 			return TRUE;
 	}
 	return FALSE;
+}
+
+/**
+ * pk_plugin_state_changed:
+ */
+void
+pk_plugin_state_changed (PkPlugin *plugin)
+{
+	gchar *file;
+
+	/* if the state changed because of a yum command that could
+	 * have changed the updates list then nuke the prepared-updates
+	 * file */
+	file = g_build_filename (LOCALSTATEDIR,
+				 "lib",
+				 "PackageKit",
+				 "prepared-update",
+				 NULL);
+	if (g_file_test (file, G_FILE_TEST_EXISTS)) {
+		g_debug ("Removing %s as state has changed", file);
+		g_unlink (file);
+	} else {
+		g_debug ("No %s needed to be deleted", file);
+	}
+	g_free (file);
 }
 
 /**
