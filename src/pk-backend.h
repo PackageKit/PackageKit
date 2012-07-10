@@ -190,9 +190,6 @@ void		 pk_backend_update_packages		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
-void		 pk_backend_update_system		(PkBackend	*backend,
-							 PkBackendJob	*job,
-							 PkBitfield	 transaction_flags);
 void		 pk_backend_get_repo_list		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters);
@@ -210,7 +207,7 @@ void		 pk_backend_what_provides		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 PkProvidesEnum provides,
 							 gchar		**search);
-void		 pk_backend_get_packages			(PkBackend	*backend,
+void		 pk_backend_get_packages		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters);
 void		 pk_backend_upgrade_system		(PkBackend	*backend,

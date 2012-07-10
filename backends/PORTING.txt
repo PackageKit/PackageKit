@@ -2,12 +2,13 @@ Guide to porting backends from 0.7.x to 0.8.x
 
  * Remove any Simulate* methods from pk-backend-*.c
 
+ * There's no such thing as UpdateSystem anymore
+
  * Rename the 'gboolean only_trusted' arguments to
    'PkBitfield transaction_flags' in the following methods:
   - InstallFiles
   - InstallPackages
   - UpdateFiles
-  - UpdateSystem
 
  * Add a 'PkBitfield transaction_flags' argument to the methods:
   - RemovePackages

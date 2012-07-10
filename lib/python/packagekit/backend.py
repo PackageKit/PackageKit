@@ -441,13 +441,6 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def update_system(self, transaction_flags):
-        '''
-        Implement the {backend}-update-system functionality
-        Needed to be implemented in a sub class
-        '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
-
     def upgrade_system(self, distro_id):
         '''
         Implement the {backend}-update-system functionality
@@ -726,10 +719,6 @@ class PackageKitBaseBackend:
             transaction_flags = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             self.update_packages(transaction_flags, package_ids)
-            self.finished()
-        elif cmd == 'update-system':
-            transaction_flags = args[0].split(';')
-            self.update_system(transaction_flags)
             self.finished()
         elif cmd == 'what-provides':
             filters = args[0].split(';')

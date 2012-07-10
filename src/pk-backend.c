@@ -163,9 +163,6 @@ typedef struct {
 							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags,
 							 gchar		**package_ids);
-	void		(*update_system)		(PkBackend	*backend,
-							 PkBackendJob	*job,
-							 PkBitfield	 transaction_flags);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
@@ -312,8 +309,6 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
 	if (desc->update_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (desc->update_system != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	if (desc->get_repo_list != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
 	if (desc->repo_enable != NULL)
@@ -477,7 +472,6 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_stop_job", (gpointer *)&desc->job_stop);
 		g_module_symbol (handle, "pk_backend_reset_job", (gpointer *)&desc->job_reset);
 		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
-		g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
 		g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
 		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
@@ -1263,21 +1257,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 							   transaction_flags,
 							   package_ids));
 	backend->priv->desc->update_packages (backend, job, transaction_flags, package_ids);
-}
-
-/**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->desc->update_system != NULL);
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPDATE_SYSTEM);
-	pk_backend_job_set_transaction_flags (job, transaction_flags);
-	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
-							   transaction_flags));
-	backend->priv->desc->update_system (backend, job, transaction_flags);
 }
 
 /**

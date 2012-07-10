@@ -2396,8 +2396,6 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_remove_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
 		pk_backend_update_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		pk_backend_update_system (priv->backend, priv->job, priv->cached_transaction_flags);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
 		pk_backend_get_categories (priv->backend, priv->job);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
