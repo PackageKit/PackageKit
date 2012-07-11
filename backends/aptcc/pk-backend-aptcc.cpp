@@ -376,13 +376,10 @@ void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **packa
     pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
 }
 
-static void backend_get_or_update_system_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkBitfield filters;
     bool getUpdates;
-    
-    PkRoleEnum role;
-    role = pk_backend_job_get_role(job);
 
     pk_backend_job_set_allow_cancel(job, true);
 
@@ -398,11 +395,11 @@ static void backend_get_or_update_system_thread(PkBackendJob *job, GVariant *par
     AptCacheFile cache(job);
     int timeout = 10;
     // TODO test this
-    while (cache.Open(role == PK_ROLE_ENUM_UPDATE_SYSTEM) == false || cache.CheckDeps() == false) {
-        if (role == PK_ROLE_ENUM_GET_UPDATES || (timeout <= 0)) {
+    while (cache.Open() == false || cache.CheckDeps() == false) {
+        if (timeout <= 0) {
             pk_backend_job_error_code(job,
-                                  PK_ERROR_ENUM_NO_CACHE,
-                                  "Could not open package cache.");
+                                      PK_ERROR_ENUM_NO_CACHE,
+                                      "Could not open package cache.");
             delete apt;
             return;
         } else {
@@ -420,44 +417,29 @@ static void backend_get_or_update_system_thread(PkBackendJob *job, GVariant *par
         return;
     }
 
-    bool res = true;
-    if (role == PK_ROLE_ENUM_GET_UPDATES) {
-        g_variant_get(params, "(t)",
-                      &filters);
+    g_variant_get(params, "(t)",
+                    &filters);
 
-        PkgList updates;
-        PkgList kept;
-        for (pkgCache::PkgIterator pkg = cache->PkgBegin();
-             !pkg.end();
-             ++pkg) {
-            if (cache[pkg].Upgrade() == true &&
-                    cache[pkg].NewInstall() == false) {
-                const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
-                if (!ver.end()) {
-                    updates.push_back(ver);
-                }
-            } else if (cache[pkg].Upgradable() == true &&
-                       pkg->CurrentVer != 0 &&
-                       cache[pkg].Delete() == false) {
-                const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
-                if (!ver.end()) {
-                    kept.push_back(ver);
-                }
+    PkgList updates;
+    PkgList kept;
+    for (pkgCache::PkgIterator pkg = cache->PkgBegin(); !pkg.end(); ++pkg) {
+        if (cache[pkg].Upgrade() == true && cache[pkg].NewInstall() == false) {
+            const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
+            if (!ver.end()) {
+                updates.push_back(ver);
+            }
+        } else if (cache[pkg].Upgradable() == true &&
+                   pkg->CurrentVer != 0 &&
+                   cache[pkg].Delete() == false) {
+            const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
+            if (!ver.end()) {
+                kept.push_back(ver);
             }
         }
-
-        apt->emitUpdates(updates, filters);
-        apt->emitPackages(kept, filters, PK_INFO_ENUM_BLOCKED);
-    } else {
-        PkBitfield transaction_flags;
-        bool downloadOnly;
-        pk_backend_job_get_transaction_flags(job);
-        downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
-
-        // TODO there should be a simulate upgrade system,
-        // tho afaik Apper and GPK don't use this
-        res = apt->installPackages(cache, false, downloadOnly);
     }
+
+    apt->emitUpdates(updates, filters);
+    apt->emitPackages(kept, filters, PK_INFO_ENUM_BLOCKED);
 
     delete apt;
 }
@@ -467,15 +449,7 @@ static void backend_get_or_update_system_thread(PkBackendJob *job, GVariant *par
  */
 void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    pk_backend_job_thread_create(job, backend_get_or_update_system_thread, NULL, NULL);
-}
-
-/**
- * pk_backend_update_system:
- */
-void pk_backend_update_system(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-    pk_backend_job_thread_create(job, backend_get_or_update_system_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_updates_thread, NULL, NULL);
 }
 
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -1275,7 +1249,6 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_SEARCH_GROUP,
                 PK_ROLE_ENUM_SEARCH_NAME,
                 PK_ROLE_ENUM_UPDATE_PACKAGES,
-                PK_ROLE_ENUM_UPDATE_SYSTEM,
                 PK_ROLE_ENUM_GET_REPO_LIST,
                 PK_ROLE_ENUM_REPO_ENABLE,
                 PK_ROLE_ENUM_REPAIR_SYSTEM,
