@@ -164,6 +164,14 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 	if (plugin->priv->list->len > 0)
 		g_ptr_array_set_size (plugin->priv->list, 0);
 	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  (PkBackendJobVFunc) pk_plugin_finished_cb,
+				  plugin);
+	pk_backend_job_set_vfunc (plugin->job,
+				  PK_BACKEND_SIGNAL_PACKAGE,
+				  (PkBackendJobVFunc) pk_plugin_package_cb,
+				  plugin);
 	filenames = g_strsplit (filename, "|||", -1);
 	pk_backend_search_files (plugin->backend,
 				 plugin->job,

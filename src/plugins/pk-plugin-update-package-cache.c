@@ -254,13 +254,11 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* clear old package list */
 	pk_package_sack_clear (priv->sack);
 
-	/* update UI */
-	pk_backend_job_set_status (plugin->job,
-			       PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-	pk_backend_job_set_percentage (plugin->job, 101);
-
 	/* get the new package list */
 	pk_backend_reset_job (plugin->backend, plugin->job);
+	pk_backend_job_set_status (plugin->job,
+				   PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+	pk_backend_job_set_percentage (plugin->job, 101);
 	pk_backend_job_set_vfunc (plugin->job,
 				  PK_BACKEND_SIGNAL_FINISHED,
 				  (PkBackendJobVFunc) pk_plugin_finished_cb,
