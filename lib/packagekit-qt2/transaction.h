@@ -112,14 +112,14 @@ public:
         RoleSearchGroup        = 1 << 20,
         RoleSearchName         = 1 << 21,
         RoleUpdatePackages     = 1 << 22,
-        RoleWhatProvides       = 1 << 24,
-        RoleAcceptEula         = 1 << 25,
-        RoleDownloadPackages   = 1 << 26,
-        RoleGetDistroUpgrades  = 1 << 27,
-        RoleGetCategories      = 1 << 28,
-        RoleGetOldTransactions = 1 << 29,
-        RoleUpgradeSystem      = 1 << 30, // Since 0.6.11
-        RoleRepairSystem       = 1 << 31 // Since 0.7.2
+        RoleWhatProvides       = 1 << 23,
+        RoleAcceptEula         = 1 << 24,
+        RoleDownloadPackages   = 1 << 25,
+        RoleGetDistroUpgrades  = 1 << 26,
+        RoleGetCategories      = 1 << 27,
+        RoleGetOldTransactions = 1 << 28,
+        RoleUpgradeSystem      = 1 << 29, // Since 0.6.11
+        RoleRepairSystem       = 1 << 30 // Since 0.7.2
     };
     Q_DECLARE_FLAGS(Roles, Role)
 
