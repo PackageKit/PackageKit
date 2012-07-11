@@ -112,7 +112,6 @@ public:
         RoleSearchGroup        = 1 << 20,
         RoleSearchName         = 1 << 21,
         RoleUpdatePackages     = 1 << 22,
-        RoleUpdateSystem       = 1 << 23, // Removed in 0.8.2
         RoleWhatProvides       = 1 << 24,
         RoleAcceptEula         = 1 << 25,
         RoleDownloadPackages   = 1 << 26,
@@ -884,17 +883,6 @@ public:
      * \sa updatePackages(const PackageList &packages, TransactionFlags flags)
      */
     void updatePackage(const Package &package, TransactionFlags flags = TransactionFlagOnlyTrusted);
-
-    /**
-     * Updates the whole system
-     *
-     * \p onlyTrusted indicates if this transaction is only allowed to install trusted packages
-     *
-     * \note This method typically emits
-     * \li package()
-     * \li changed()
-     */
-    void updateSystem(bool onlyTrusted = true);
 
     /**
      * Updates the whole system
