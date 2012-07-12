@@ -2,9 +2,11 @@
 
 use Debconf::Client::ConfModule ':all';
 use Cwd 'abs_path';
+use File::Temp qw/ tempfile tempdir /;
 use strict;
 
-my $template = '/tmp/pkconffile.templates';
+my $template_fname;
+(undef, $template_fname) = tempfile('/tmp/pkconffileXXXXXX', SUFFIX => '.template');
 
 # (1) quit unless we have the correct number of command-line args
 if ($#ARGV + 1 != 3) {
@@ -15,7 +17,7 @@ if ($#ARGV + 1 != 3) {
 ## Process template so we can add the diff at the end
 ## the abs_path will give us the full path where this script is so we can find the template
 open (TEMP_NODIFF, abs_path($0).'.nodiff') || die ("could not open the template");
-open (TEMPLATE, ">$template");
+open (TEMPLATE, ">$template_fname");
 
 ## Adds the original template
 while (<TEMP_NODIFF>) {
@@ -43,7 +45,7 @@ foreach (@diff) {
 close (TEMPLATE);
 
 ## Force the template to be loaded again
-x_loadtemplatefile($template);
+x_loadtemplatefile($template_fname);
 
 ## set the package name in the title
 subst("pkconffile/title", "package", $package);
@@ -80,5 +82,5 @@ while (1) {
     }
 }
 
-unlink($template);
+unlink($template_fname);
 exit $state;
