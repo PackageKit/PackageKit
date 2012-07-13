@@ -144,6 +144,12 @@ void
 pk_plugin_transaction_run (PkPlugin *plugin,
 			   PkTransaction *transaction)
 {
+	/* skip simulate actions */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		return;
+	}
+
 	pk_transaction_process_scripts (transaction,
 					"pre-transaction.d");
 }
@@ -155,6 +161,12 @@ void
 pk_plugin_transaction_finished_end (PkPlugin *plugin,
 				    PkTransaction *transaction)
 {
+	/* skip simulate actions */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		return;
+	}
+
 	pk_transaction_process_scripts (transaction,
 					"post-transaction.d");
 }

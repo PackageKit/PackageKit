@@ -144,6 +144,12 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	PkResults *results;
 	PkRoleEnum role;
 
+	/* skip simulate actions */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		return;
+	}
+
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
 	ret = pk_conf_get_bool (conf, "UpdateCheckProcesses");

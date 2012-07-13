@@ -216,6 +216,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	PkResults *results;
 	PkRoleEnum role;
 
+	/* skip simulate actions */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		return;
+	}
+
 	/* check for success */
 	results = pk_transaction_get_results (transaction);
 	exit_enum = pk_results_get_exit_code (results);
