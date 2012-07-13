@@ -943,14 +943,6 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	if (transaction->priv->plugins == NULL)
 		goto out;
 
-	/* never run any plugins for simulate actions */
-	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-		g_debug ("not running plugin function %s as simulating",
-			 function);
-		goto out;
-	}
-
 	/* run each plugin */
 	for (i=0; i<transaction->priv->plugins->len; i++) {
 		plugin = g_ptr_array_index (transaction->priv->plugins, i);
