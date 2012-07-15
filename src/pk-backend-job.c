@@ -1281,9 +1281,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 				   g_object_ref (item),
 				   g_object_unref);
 	pk_results_add_update_detail (job->priv->results, item);
-
-	/* we parsed okay */
-	ret = TRUE;
 out:
 	if (item != NULL)
 		g_object_unref (item);
