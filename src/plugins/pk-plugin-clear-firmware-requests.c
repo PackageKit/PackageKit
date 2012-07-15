@@ -45,15 +45,22 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	gchar *filename = NULL;
 	PkRoleEnum role;
 
-	/* skip simulate actions */
-	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
-				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-		return;
-	}
-
+	/* only do this for RefreshCache, usually once a week */
 	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_REFRESH_CACHE)
 		goto out;
+
+	/* skip simulate actions */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		goto out;
+	}
+
+	/* skip only-download */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		goto out;
+	}
 
 	/* clear the firmware requests directory */
 	filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);

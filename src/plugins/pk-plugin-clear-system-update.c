@@ -43,7 +43,13 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* skip simulate actions */
 	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
-				PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		return;
+	}
+
+	/* skip only-download */
+	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		return;
 	}
 
