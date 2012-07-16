@@ -12,10 +12,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-01 11:08+0000\n"
-"PO-Revision-Date: 2012-04-16 11:10+0000\n"
-"Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
-"Language-Team: Slovak (http://www.transifex.net/projects/p/freedesktop/language/sk/)\n"
+"POT-Creation-Date: 2012-06-25 15:41+0100\n"
+"PO-Revision-Date: 2012-06-25 16:42+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"Language-Team: Slovak (http://www.transifex.com/projects/p/freedesktop/language/sk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,7 +24,7 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
-#: ../client/pk-console.c:173 ../client/pk-console.c:595
+#: ../client/pk-console.c:173 ../client/pk-console.c:606
 msgid "Transaction"
 msgstr "Transakcia"
 
@@ -131,7 +131,7 @@ msgid "Icon"
 msgstr "Ikona"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:338
+#: ../client/pk-console.c:339
 msgid "Details about the update:"
 msgstr "Podrobnosti o aktualizácii:"
 
@@ -139,7 +139,7 @@ msgstr "Podrobnosti o aktualizácii:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:344 ../client/pk-console.c:614
+#: ../client/pk-console.c:345 ../client/pk-console.c:625
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
@@ -147,181 +147,181 @@ msgstr "Balík"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
-#: ../client/pk-console.c:347
+#: ../client/pk-console.c:349
 msgid "Updates"
 msgstr "Aktualizuje"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. obsoletes
-#: ../client/pk-console.c:351
+#: ../client/pk-console.c:355
 msgid "Obsoletes"
 msgstr "Nahrádza"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:355 ../lib/packagekit-glib2/pk-task-text.c:209
+#: ../client/pk-console.c:361 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "Dodávateľ"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:359
+#: ../client/pk-console.c:367
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:363
+#: ../client/pk-console.c:373
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:367
+#: ../client/pk-console.c:378
 msgid "Restart"
 msgstr "Reštart"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:371
+#: ../client/pk-console.c:382
 msgid "Update text"
 msgstr "Text aktualizácie"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:375
+#: ../client/pk-console.c:386
 msgid "Changes"
 msgstr "Zmeny"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:379
+#: ../client/pk-console.c:390
 msgid "State"
 msgstr "Stav"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:383
+#: ../client/pk-console.c:394
 msgid "Issued"
 msgstr "Vydané"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:387 ../lib/packagekit-glib2/pk-enum.c:1135
+#: ../client/pk-console.c:398 ../lib/packagekit-glib2/pk-enum.c:1170
 msgid "Updated"
 msgstr "Aktualizované"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:423
+#: ../client/pk-console.c:434
 msgid "Enabled"
 msgstr "Povolený"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:426
+#: ../client/pk-console.c:437
 msgid "Disabled"
 msgstr "Zakázaný"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:458
+#: ../client/pk-console.c:469
 msgid "System restart required by:"
 msgstr "Reštart systému vyžaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:461
+#: ../client/pk-console.c:472
 msgid "Session restart required:"
 msgstr "Reštart relácie vyžaduje:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a
 #. security update
-#: ../client/pk-console.c:464
+#: ../client/pk-console.c:475
 msgid "System restart (security) required by:"
 msgstr "Reštart systému (kvôli bezpečnosti) vyžaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a
 #. security update
-#: ../client/pk-console.c:467
+#: ../client/pk-console.c:478
 msgid "Session restart (security) required:"
 msgstr "Reštart relácie (kvôli bezpečnosti) vyžaduje:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:470
+#: ../client/pk-console.c:481
 msgid "Application restart required by:"
 msgstr "Reštart aplikácie vyžaduje:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:505
+#: ../client/pk-console.c:516
 msgid "Package description"
 msgstr "Popis balíka"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest)
 #. from the transaction
-#: ../client/pk-console.c:536
+#: ../client/pk-console.c:547
 msgid "Message:"
 msgstr "Správa:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:568
 msgid "No files"
 msgstr "Žiadne súbory"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:562
+#: ../client/pk-console.c:573
 msgid "Package files"
 msgstr "Zonam súborov v balíku"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:630
+#: ../client/pk-console.c:641
 msgid "Percentage"
 msgstr "Počet percent"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:648
+#: ../client/pk-console.c:659
 msgid "Status"
 msgstr "Stav"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:677
+#: ../client/pk-console.c:688
 msgid "Results:"
 msgstr "Výsledky:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:684
+#: ../client/pk-console.c:695
 msgid "Fatal error"
 msgstr "Kritická chyba"
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
-#: ../client/pk-console.c:700
+#: ../client/pk-console.c:711
 msgid "There are no packages to update."
 msgstr "Nie sú dostupné aktualizácie žiadnych balíkov."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:703
+#: ../client/pk-console.c:714
 #: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr "Transakcia zlyhala"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:732
+#: ../client/pk-console.c:743
 msgid "There are no updates available at this time."
 msgstr "Momentálne nie sú dostupné žiadne aktualizácie."
 
-#: ../client/pk-console.c:755
+#: ../client/pk-console.c:766
 msgid "There are no upgrades available at this time."
 msgstr "Momentálne nie sú dostupné žiadne aktualizácie systému."
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:822
+#: ../client/pk-console.c:833
 msgid "Please restart the computer to complete the update."
 msgstr "Aktualizáciu dokončíte reštartovaním počítača."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:825
+#: ../client/pk-console.c:836
 msgid "Please logout and login to complete the update."
 msgstr "Aktualizáciu dokončíte odhlásením a opätovným prihlásením sa."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:828
+#: ../client/pk-console.c:839
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr "Prosím, reštartujte počítač aby sa dokončila aktualizácia, pretože boli nainštalované dôležité bezpečnostné aktualizácie."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:831
+#: ../client/pk-console.c:842
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
@@ -329,7 +329,7 @@ msgstr "Prosím odhláste sa a znovu sa prihláste, aby sa dokončila aktualizá
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
-#: ../client/pk-console.c:857
+#: ../client/pk-console.c:868
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
@@ -338,21 +338,21 @@ msgstr "Očakával sa názov balíka, dostali sme súbor. Skúste namiesto toho 
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:870
+#: ../client/pk-console.c:881
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Tomuto nástroju sa nepodarilo násjť žiadne dostupné balíky: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:898
+#: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Nepodarilo sa nájsť nainštalovaný balík: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:926 ../client/pk-console.c:954
+#: ../client/pk-console.c:937 ../client/pk-console.c:965
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Nepodarilo sa nájsť balík: %s"
@@ -365,223 +365,213 @@ msgstr "Nepodarilo sa nájsť balík: %s"
 #. detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The
 #. detailed error follows
-#: ../client/pk-console.c:982 ../client/pk-console.c:1010
-#: ../client/pk-console.c:1038 ../client/pk-console.c:1066
-#: ../client/pk-console.c:1094
+#: ../client/pk-console.c:993 ../client/pk-console.c:1021
+#: ../client/pk-console.c:1049 ../client/pk-console.c:1077
+#: ../client/pk-console.c:1105
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Nepodarilo sa nájsť všetky balíky: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
-#: ../client/pk-console.c:1123
+#: ../client/pk-console.c:1134
 msgid "The daemon crashed mid-transaction!"
 msgstr "Služba na pozadí neočakávne skončila počas transakcie!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1157
+#: ../client/pk-console.c:1168
 msgid "PackageKit Console Interface"
 msgstr "Konzola PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1159
+#: ../client/pk-console.c:1170
 msgid "Subcommands:"
 msgstr "Podpríkazy:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1250
 msgid "Failed to get the time since this action was last completed"
 msgstr "Nepodarilo sa zistiť čas od posledného dokončenia tejto operácie"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1283 ../client/pk-monitor.c:370
+#: ../client/pk-console.c:1292 ../client/pk-monitor.c:370
 msgid "Show the program version and exit"
 msgstr "Zobraziť verziu programu a skončiť"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1286
+#: ../client/pk-console.c:1295
 msgid "Set the filter, e.g. installed"
 msgstr "Nastaviť filter, napríklad „nainštalované“"
 
-#. TRANSLATORS: command line argument, use a non-standard install prefix
-#: ../client/pk-console.c:1289
-msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
-msgstr "Nastavte koreň inštalácie, napr. „/“ alebo „/mnt/ltsp“"
-
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1292
+#: ../client/pk-console.c:1298
 msgid "Exit without waiting for actions to complete"
 msgstr "Nečakať na dokončenie úloh a skončiť"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1295
+#: ../client/pk-console.c:1301
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "Inštalovať balíky bez potvrdzovania"
 
+#. command line argument, do we just download or apply changes
+#: ../client/pk-console.c:1304
+msgid "Prepare the transaction by downloading pakages only"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1298
+#: ../client/pk-console.c:1307
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Spustiť príkaz tak, aby využíval len nevuyžitú šírku pásma a tiež menej energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1301
+#: ../client/pk-console.c:1310
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "Vypísať na obrazovku strojovo čitateľný výstup namiesto animovaných ovládacích prvkov"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1313
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "Maximálny vek metadát vo vyrovnávacej pamäti. -1 znamená nepoužívať vyrovnávaciu pamäť."
 
 #. TRANSLATORS: command line argument, --help
-#: ../client/pk-console.c:1307
+#: ../client/pk-console.c:1316
 msgid "Show help options."
 msgstr "Zobraziť voľby pomocníka."
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1338
+#: ../client/pk-console.c:1347
 msgid "Failed to parse command line"
 msgstr "Nepodarilo sa analyzovať parametre príkazového riadka"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1357
 msgid "Failed to contact PackageKit"
 msgstr "Nepodarilo sa kontaktovať PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1401
+#: ../client/pk-console.c:1411
 msgid "The proxy could not be set"
 msgstr "Proxy server nebolo možné nastaviť"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1413
-msgid "The install root could not be set"
-msgstr "Koreň inštalácie nebolo možné nastaviť"
-
-#. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1423
 msgid "The filter specified was invalid"
 msgstr "Zadaný filter nebol platný"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1444
+#: ../client/pk-console.c:1442
 msgid "A search type is required, e.g. name"
 msgstr "Je potrebný typ hľadania, napr. názov"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1451 ../client/pk-console.c:1463
-#: ../client/pk-console.c:1475 ../client/pk-console.c:1487
+#: ../client/pk-console.c:1449 ../client/pk-console.c:1461
+#: ../client/pk-console.c:1473 ../client/pk-console.c:1485
 msgid "A search term is required"
 msgstr "Je potrebný vyhľadávací reťazec"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1497
+#: ../client/pk-console.c:1495
 msgid "Invalid search type"
 msgstr "Neplatný typ vyhľadávania"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1501
 msgid "A package name to install is required"
 msgstr "Je potrebný názov balíka, ktorý sa má inštalovať"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1510
 msgid "A filename to install is required"
 msgstr "Je potrebný názov súboru, ktorý sa má inštalovať"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1521
 msgid "A type, key_id and package_id are required"
 msgstr "Je potrebné určiť typ, key_id a package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1534
+#: ../client/pk-console.c:1532
 msgid "A package name to remove is required"
 msgstr "Je potrebný názov balíka, ktorý sa má odstrániť"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1541
 msgid "A destination directory and the package names to download are required"
 msgstr "Je potrebné určiť cieľový priečinok a názvy balíkov, ktoré sa majú stiahnuť"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1548
 msgid "Directory not found"
 msgstr "Priečinok nenájdený"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1557
 msgid "A licence identifier (eula-id) is required"
 msgstr "Je potrebný identifikátor licencie (eula-id)"
 
-#. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1570
-msgid "A transaction identifier (tid) is required"
-msgstr "Je potrebný identifikátor transakcie (tid)"
-
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1591
+#: ../client/pk-console.c:1578
 msgid "A package name to resolve is required"
 msgstr "Je potrebný názov balíka, ktorý sa má vyriešiť"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1602 ../client/pk-console.c:1613
+#: ../client/pk-console.c:1589 ../client/pk-console.c:1600
 msgid "A repository name is required"
 msgstr "Je potrebný názov zdroja softvéru"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1611
 msgid "A repo name, parameter and value are required"
 msgstr "Je potrebné určiť názov repozitára, parameter a hodnotu"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1641
+#: ../client/pk-console.c:1628
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Musíte zadať operáciu, napr. „update-system“"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1648
+#: ../client/pk-console.c:1635
 msgid "A correct role is required"
 msgstr "Je potrebná správna rola"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1658 ../client/pk-console.c:1672
-#: ../client/pk-console.c:1681 ../client/pk-console.c:1701
-#: ../client/pk-console.c:1710 ../client/pk-generate-pack.c:314
+#: ../client/pk-console.c:1645 ../client/pk-console.c:1659
+#: ../client/pk-console.c:1668 ../client/pk-console.c:1688
+#: ../client/pk-console.c:1697 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr "Je potrebný názov balíka"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1690
+#: ../client/pk-console.c:1677
 msgid "A package provide string is required"
 msgstr "Je potrebný reťazec poskytovania"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1721
 msgid "A distribution name is required"
 msgstr "Vyžaduje sa názov distribúcie"
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1740
+#: ../client/pk-console.c:1727
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr "Vyžaduje sa typ aktualizácie, napr. „minimal“, „default“ alebo „complete“"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1795
+#: ../client/pk-console.c:1782
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Voľba „%s“ nie je podporovaná"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1805
+#: ../client/pk-console.c:1792
 msgid "Command failed"
 msgstr "Príkaz zlyhal"
 
@@ -1226,7 +1216,7 @@ msgstr "Odstraňujú sa balíky"
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:327
-#: ../lib/packagekit-glib2/pk-enum.c:1288
+#: ../lib/packagekit-glib2/pk-enum.c:1319
 msgid "Downloading packages"
 msgstr "Sťahujú sa balíky"
 
@@ -1262,121 +1252,114 @@ msgstr "Riešia sa závislosti"
 msgid "Checking signatures"
 msgstr "Kontrolujú sa podpisy"
 
-#. TRANSLATORS: transaction state, when we return to a previous system state
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:359
-#: ../lib/packagekit-glib2/pk-enum.c:1248
-msgid "Rolling back"
-msgstr "Vracajú sa zmeny"
-
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:363
+#: ../lib/packagekit-glib2/pk-console-shared.c:359
 msgid "Testing changes"
 msgstr "Testujú sa zmeny"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
-#: ../lib/packagekit-glib2/pk-console-shared.c:367
+#: ../lib/packagekit-glib2/pk-console-shared.c:363
 msgid "Committing changes"
 msgstr "Vykonávajú sa zmeny"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:371
+#: ../lib/packagekit-glib2/pk-console-shared.c:367
 msgid "Requesting data"
 msgstr "Žiada sa o dáta"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:375
+#: ../lib/packagekit-glib2/pk-console-shared.c:371
 msgid "Finished"
 msgstr "Hotovo"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:379
+#: ../lib/packagekit-glib2/pk-console-shared.c:375
 msgid "Cancelling"
 msgstr "Prerušuje sa"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:383
+#: ../lib/packagekit-glib2/pk-console-shared.c:379
 msgid "Downloading repository information"
 msgstr "Sťahujú sa informácie o zdroji softvéru"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:387
+#: ../lib/packagekit-glib2/pk-console-shared.c:383
 msgid "Downloading list of packages"
 msgstr "Sťahuje sa zoznam balíkov"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:391
+#: ../lib/packagekit-glib2/pk-console-shared.c:387
 msgid "Downloading file lists"
 msgstr "Sťahujú sa zoznamy súborov"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:395
+#: ../lib/packagekit-glib2/pk-console-shared.c:391
 msgid "Downloading lists of changes"
 msgstr "Sťahujú sa záznamy zmien"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:399
+#: ../lib/packagekit-glib2/pk-console-shared.c:395
 msgid "Downloading groups"
 msgstr "Sťahujú sa skupiny"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:403
+#: ../lib/packagekit-glib2/pk-console-shared.c:399
 msgid "Downloading update information"
 msgstr "Sťahujú sa aktualizačné informácie"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:407
+#: ../lib/packagekit-glib2/pk-console-shared.c:403
 msgid "Repackaging files"
 msgstr "Prebaľujú sa súbory"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:411
+#: ../lib/packagekit-glib2/pk-console-shared.c:407
 msgid "Loading cache"
 msgstr "Načítava sa vyrovnávacia pamäť"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:415
+#: ../lib/packagekit-glib2/pk-console-shared.c:411
 msgid "Scanning applications"
 msgstr "Hľadajú sa aplikácie"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:419
+#: ../lib/packagekit-glib2/pk-console-shared.c:415
 msgid "Generating package lists"
 msgstr "Vytvárajú sa zoznamy balíkov"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:423
+#: ../lib/packagekit-glib2/pk-console-shared.c:419
 msgid "Waiting for package manager lock"
 msgstr "Čaká sa na zámok správcu balíkov"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:427
+#: ../lib/packagekit-glib2/pk-console-shared.c:423
 msgid "Waiting for authentication"
 msgstr "Čaká sa na overenie totožnosti"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:431
+#: ../lib/packagekit-glib2/pk-console-shared.c:427
 msgid "Updating running applications"
 msgstr "Aktualizujú sa bežiace aplikácie"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:435
+#: ../lib/packagekit-glib2/pk-console-shared.c:431
 msgid "Checking applications in use"
 msgstr "Kontrolujú sa používané aplikácie"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
-#: ../lib/packagekit-glib2/pk-console-shared.c:439
+#: ../lib/packagekit-glib2/pk-console-shared.c:435
 msgid "Checking libraries in use"
 msgstr "Kontrolujú sa používané knižnice"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:443
+#: ../lib/packagekit-glib2/pk-console-shared.c:439
 msgid "Copying files"
 msgstr "Kopírujú sa súbory"
 
@@ -1394,266 +1377,250 @@ msgid "Show debugging options"
 msgstr "Zobraziť možnosti ladenia"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1023
+#: ../lib/packagekit-glib2/pk-enum.c:1058
 msgid "Trivial"
 msgstr "Triviálna"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1027
+#: ../lib/packagekit-glib2/pk-enum.c:1062
 msgid "Normal"
 msgstr "Bežná"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1031
+#: ../lib/packagekit-glib2/pk-enum.c:1066
 msgid "Important"
 msgstr "Dôležitá"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1035
+#: ../lib/packagekit-glib2/pk-enum.c:1070
 msgid "Security"
 msgstr "Bezpečnostná"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1039
+#: ../lib/packagekit-glib2/pk-enum.c:1074
 msgid "Bug fix "
 msgstr "Oprava chýb"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1043
+#: ../lib/packagekit-glib2/pk-enum.c:1078
 msgid "Enhancement"
 msgstr "Vylepšenia"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1047
+#: ../lib/packagekit-glib2/pk-enum.c:1082
 msgid "Blocked"
 msgstr "Zablokovaná"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1052
-#: ../lib/packagekit-glib2/pk-enum.c:1139
+#: ../lib/packagekit-glib2/pk-enum.c:1087
+#: ../lib/packagekit-glib2/pk-enum.c:1174
 msgid "Installed"
 msgstr "Nainštalované"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-enum.c:1057
+#: ../lib/packagekit-glib2/pk-enum.c:1092
 msgid "Available"
 msgstr "Dostupné"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1082
+#: ../lib/packagekit-glib2/pk-enum.c:1117
 msgid "Downloading"
 msgstr "Sťahuje sa"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1086
+#: ../lib/packagekit-glib2/pk-enum.c:1121
 msgid "Updating"
 msgstr "Aktualizuje sa"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1090
-#: ../lib/packagekit-glib2/pk-enum.c:1224
+#: ../lib/packagekit-glib2/pk-enum.c:1125
+#: ../lib/packagekit-glib2/pk-enum.c:1259
 msgid "Installing"
 msgstr "Inštaluje sa"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1094
-#: ../lib/packagekit-glib2/pk-enum.c:1220
+#: ../lib/packagekit-glib2/pk-enum.c:1129
+#: ../lib/packagekit-glib2/pk-enum.c:1255
 msgid "Removing"
 msgstr "Odstraňuje sa"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1098
+#: ../lib/packagekit-glib2/pk-enum.c:1133
 msgid "Cleaning up"
 msgstr "Čistí sa"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1102
+#: ../lib/packagekit-glib2/pk-enum.c:1137
 msgid "Obsoleting"
 msgstr "Označuje sa ako zastaralé"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1106
+#: ../lib/packagekit-glib2/pk-enum.c:1141
 msgid "Reinstalling"
 msgstr "Znovu sa inštaluje"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1131
+#: ../lib/packagekit-glib2/pk-enum.c:1166
 msgid "Downloaded"
 msgstr "Stiahnuté"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1143
+#: ../lib/packagekit-glib2/pk-enum.c:1178
 msgid "Removed"
 msgstr "Odstránené"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1147
+#: ../lib/packagekit-glib2/pk-enum.c:1182
 msgid "Cleaned up"
 msgstr "Vyčistené"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1151
+#: ../lib/packagekit-glib2/pk-enum.c:1186
 msgid "Obsoleted"
 msgstr "Označené ako zastarané"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1155
+#: ../lib/packagekit-glib2/pk-enum.c:1190
 msgid "Reinstalled"
 msgstr "Znovu nainštalované"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1180
+#: ../lib/packagekit-glib2/pk-enum.c:1215
 msgid "Unknown role type"
 msgstr "Neznámy typ role"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1184
+#: ../lib/packagekit-glib2/pk-enum.c:1219
 msgid "Getting dependencies"
 msgstr "Zisťujú sa závislosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1188
+#: ../lib/packagekit-glib2/pk-enum.c:1223
 msgid "Getting update details"
 msgstr "Zisťujú sa podrobnosti aktualizácie"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1192
+#: ../lib/packagekit-glib2/pk-enum.c:1227
 msgid "Getting details"
 msgstr "Zisťujú sa podrobnosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1196
+#: ../lib/packagekit-glib2/pk-enum.c:1231
 msgid "Getting requires"
 msgstr "Zisťujú sa závislosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1200
+#: ../lib/packagekit-glib2/pk-enum.c:1235
 msgid "Getting updates"
 msgstr "Získavajú sa aktualizácie"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1204
+#: ../lib/packagekit-glib2/pk-enum.c:1239
 msgid "Searching by details"
 msgstr "Hľadá sa podľa podrobností"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1208
+#: ../lib/packagekit-glib2/pk-enum.c:1243
 msgid "Searching by file"
 msgstr "Hľadá sa podľa súboru"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1212
+#: ../lib/packagekit-glib2/pk-enum.c:1247
 msgid "Searching groups"
 msgstr "Hľadá sa podľa skupín"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1216
+#: ../lib/packagekit-glib2/pk-enum.c:1251
 msgid "Searching by name"
 msgstr "Hľadá sa podľa názvu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1228
+#: ../lib/packagekit-glib2/pk-enum.c:1263
 msgid "Installing files"
 msgstr "Inštalujú sa súbory"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1232
+#: ../lib/packagekit-glib2/pk-enum.c:1267
 msgid "Refreshing cache"
 msgstr "Obnovuje sa vyrovnávacia pamäť"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1236
+#: ../lib/packagekit-glib2/pk-enum.c:1271
 msgid "Updating packages"
 msgstr "Aktualizujú sa balíky"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1240
+#: ../lib/packagekit-glib2/pk-enum.c:1275
 msgid "Updating system"
 msgstr "Aktualizuje sa systém"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1244
+#: ../lib/packagekit-glib2/pk-enum.c:1279
 msgid "Canceling"
 msgstr "Prerušuje sa"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1252
+#: ../lib/packagekit-glib2/pk-enum.c:1283
 msgid "Getting repositories"
 msgstr "Získavajú sa zdroje softvéru"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1256
+#: ../lib/packagekit-glib2/pk-enum.c:1287
 msgid "Enabling repository"
 msgstr "Povoľuje sa zdroj softvéru"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1260
+#: ../lib/packagekit-glib2/pk-enum.c:1291
 msgid "Setting data"
 msgstr "Nastavujú sa údaje"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1264
+#: ../lib/packagekit-glib2/pk-enum.c:1295
 msgid "Resolving"
 msgstr "Rieši sa"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1268
+#: ../lib/packagekit-glib2/pk-enum.c:1299
 msgid "Getting file list"
 msgstr "Získava sa zoznam súborov"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1272
+#: ../lib/packagekit-glib2/pk-enum.c:1303
 msgid "Getting provides"
 msgstr "Získava sa zoznam poskytovaných"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1276
+#: ../lib/packagekit-glib2/pk-enum.c:1307
 msgid "Installing signature"
 msgstr "Inštaluje sa podpis"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1280
+#: ../lib/packagekit-glib2/pk-enum.c:1311
 msgid "Getting packages"
 msgstr "Získavajú sa balíky"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1284
+#: ../lib/packagekit-glib2/pk-enum.c:1315
 msgid "Accepting EULA"
 msgstr "Prijíma sa EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1292
+#: ../lib/packagekit-glib2/pk-enum.c:1323
 msgid "Getting upgrades"
 msgstr "Získavajú sa aktualizácie systému"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1296
+#: ../lib/packagekit-glib2/pk-enum.c:1327
 msgid "Getting categories"
 msgstr "Získavajú sa kategórie"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1300
+#: ../lib/packagekit-glib2/pk-enum.c:1331
 msgid "Getting transactions"
 msgstr "Získavajú sa transakcie"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1304
-#: ../lib/packagekit-glib2/pk-enum.c:1308
-msgid "Simulating install"
-msgstr "Simuluje sa inštalácia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1312
-msgid "Simulating remove"
-msgstr "Simuluje sa odstránenie"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1316
-msgid "Simulating update"
-msgstr "Simuluje sa aktualizácia"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1829,8 +1796,8 @@ msgid "Install signed package"
 msgstr "Inštalovať podpísaný balík"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to install a signed package"
-msgstr "Na inštalovanie podpísaného balíka je potrebné overenie totožnosti"
+msgid "Authentication is required to install a package"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1909,28 +1876,15 @@ msgid "Authentication is required to update packages"
 msgstr "Na aktualizáciu balíkov je potrebné overenie totožnosti"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rollback system state
-#. as this will change a large number of packages, and could expose the
-#. system to previously patched security vulnerabilities.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:65
-msgid "Rollback to a previous transaction"
-msgstr "Navrátiť sa k stavu pred transakciou"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:66
-msgid "Authentication is required to rollback a transaction"
-msgstr "Na vrátenie transakcie je potrebné overenie totožnosti"
-
-#. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:72
+#: ../policy/org.freedesktop.packagekit.policy.in.h:65
 msgid "Change software source parameters"
 msgstr "Zmeniť parametre zdrojov softvéru"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:73
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Authentication is required to change software source parameters"
 msgstr "Na zmenu parametrov softvérového zdroja je potrebné overenie totožnosti"
 
@@ -1938,11 +1892,11 @@ msgstr "Na zmenu parametrov softvérového zdroja je potrebné overenie totožno
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:78
+#: ../policy/org.freedesktop.packagekit.policy.in.h:71
 msgid "Refresh system sources"
 msgstr "Obnoviť zdroje pre systém"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:72
 msgid "Authentication is required to refresh the system sources"
 msgstr "Na obnovenie zdrojov systému je potrebné overenie totožnosti"
 
@@ -1950,11 +1904,11 @@ msgstr "Na obnovenie zdrojov systému je potrebné overenie totožnosti"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:84
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Set network proxy"
 msgstr "Nastaviť proxy server"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:85
+#: ../policy/org.freedesktop.packagekit.policy.in.h:78
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
@@ -1966,11 +1920,11 @@ msgstr "Na nastavenie proxy servera na získavanie balíkov je potrebné overeni
 #. - This could be used to overwrite files not owned by the user using
 #. a carefully created package file.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:92
+#: ../policy/org.freedesktop.packagekit.policy.in.h:85
 msgid "Change location that packages are installed"
 msgstr "Zmeniť miesto, kam sa inštalujú balíky"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:93
+#: ../policy/org.freedesktop.packagekit.policy.in.h:86
 msgid ""
 "Authentication is required to change the location used to decompress "
 "packages"
@@ -1983,11 +1937,11 @@ msgstr "Na zmenu adresára, kam sa rozbaľujú balíky, je potrebné overenie to
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:101
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Reload a device"
 msgstr "Obnoviť zariadenie"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:102
+#: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "Na načítanie nového ovládača zariadenia je potrebné overenie totožnosti"
 
@@ -1996,11 +1950,11 @@ msgstr "Na načítanie nového ovládača zariadenia je potrebné overenie toto�
 #. this can make the system unbootable or stop other applications from
 #. working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:108
+#: ../policy/org.freedesktop.packagekit.policy.in.h:101
 msgid "Upgrade System"
 msgstr "Aktualizovať systém"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Authentication is required to upgrade the operating system"
 msgstr "Na aktualizáciu operačného systému je potrebné overenie totožnosti"
 
@@ -2009,75 +1963,95 @@ msgstr "Na aktualizáciu operačného systému je potrebné overenie totožnosti
 #. since this can make the system unbootable or stop other
 #. applications from working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+#: ../policy/org.freedesktop.packagekit.policy.in.h:108
 msgid "Repair System"
 msgstr "Opraviť systém"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:116
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Authentication is required to repair the installed software"
 msgstr "Na opravenie nainštalovaného softvéru je potrebné overenie totožnosti"
 
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:114
+msgid "Trigger offline updates"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+msgid "Authentication is required to trigger offline updates"
+msgstr ""
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:120
+msgid "Clear offline update message"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:121
+msgid "Authentication is required to clear the offline updates message"
+msgstr ""
+
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:149
+#: ../src/pk-main.c:215
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Rozhranie balíkového systému, ktoré sa má použiť, napríklad „dummy“"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:152
+#: ../src/pk-main.c:218
 msgid "Daemonize and detach from the terminal"
 msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:155
+#: ../src/pk-main.c:221
 msgid "Disable the idle timer"
 msgstr "Vypnúť počítadlo času nečinnosti"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:158
+#: ../src/pk-main.c:224
 msgid "Show version and exit"
 msgstr "Zobraziť verziu a skončiť"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:161
+#: ../src/pk-main.c:227
 msgid "Exit after a small delay"
 msgstr "Skončiť po krátkej prestávke"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:164
+#: ../src/pk-main.c:230
 msgid "Exit after the engine has loaded"
 msgstr "Skončiť po načítaní jadra"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: ../src/pk-main.c:167
+#: ../src/pk-main.c:233
 msgid "Don't clear environment on startup"
 msgstr "Nečistiť prostredie počas štartu"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:179
+#: ../src/pk-main.c:245
 msgid "PackageKit service"
 msgstr "Služba PackageKit"
 
-#: ../src/pk-main.c:253
-msgid "Failed to load any of the specified backends:"
-msgstr "Nepodarilo sa načítať žiadne z uvedených rozhraní:"
-
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2972
+#: ../src/pk-transaction.c:2945
 msgid "The software is not from a trusted source."
 msgstr "Tento softvér nepochádza z dôveryhodného zdroja."
 
-#: ../src/pk-transaction.c:2980
+#: ../src/pk-transaction.c:2953
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Neaktualizujte tento balík, pokiaľ si nie ste istý, že to je bezpečné."
 
-#: ../src/pk-transaction.c:2981
+#: ../src/pk-transaction.c:2954
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Neaktualizujte tieto balíky, pokiaľ si nie ste istý, že to je bezpečné."
 
-#: ../src/pk-transaction.c:2991
+#: ../src/pk-transaction.c:2964
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Neinštalujte tento balík, pokiaľ si nie ste istý, že to je bezpečné."
 
-#: ../src/pk-transaction.c:2992
+#: ../src/pk-transaction.c:2965
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Neinštalujte tieto balíky, pokiaľ si nie ste istý, že to je bezpečné."

@@ -1,3 +1,100 @@
+Version 0.8.2
+~~~~~~~~~~~~~
+Released: 2012-07-16
+
+Notes:
+ - We broke backend API and libpackagekit-glib and libpackagekit-qt
+   ABI. Again. This should hopefully be the last soname bump in the
+   0.8.x series.
+ - We split up PkBackend into PkBackend and PkBackendJob. It's a pretty
+   huge internal change, but it'll allow us to turn on the parallel
+   transactions stuff in the next couple of releases. Most backends
+   need updating, although sed has done a lot of the heavy lifting.
+ - The systemd-updates has had a lot of bugfixes and poilish and is now
+   ready to be used by end users. There's even a test document now.
+ - You can now write plugins that get run if the daemon is told to drop
+   internal state as another package manager is running, e.g. YUM CLI.
+
+Libraries:
+ - glib: Don't update the transaction role to 'unknown' (Richard Hughes)
+ - glib: Remove support for UpdateSystem() (Richard Hughes)
+ - qt: Fix compilation on 32 bit (Rex Dieter)
+ - qt: Fix infinite loop on Package operator== (Daniel Nicoletti)
+ - qt: Fix TransactionFlags to receive bitwise values (Daniel Nicoletti)
+ - qt: Remove support for UpdateSystem() (Richard Hughes, Daniel Nicoletti)
+ - qt: Update Role enum to match the bitwise number of pk-enum.h (Daniel Nicoletti)
+
+Backends:
+ - alpm: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - aptcc: Don't freeze if apt-listchanges is installed (Matthias Klumpp)
+ - aptcc: Don't use tempfile with fixed name for conffiles (Matthias Klumpp)
+ - aptcc: Fix compilation without UPDATE_SYSTEM (Daniel Nicoletti)
+ - aptcc: Port to PkBackendJob (Daniel Nicoletti)
+ - aptcc: Remove two unused methods from AptCacheFile (Daniel Nicoletti)
+ - apt: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - box: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - conary: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - dummy: Port to PkBackendJob (Richard Hughes)
+ - dummy: Remove support for UpdateSystem() (Richard Hughes)
+ - entropy: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - opkg: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - pisi: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - poldek: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - portage: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - ports: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - slapt: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - smart: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - test: Port to PkBackendJob (Richard Hughes)
+ - test: Remove support for UpdateSystem() (Richard Hughes)
+ - urpmi: Partial port to PkBackendJob [untested] (Richard Hughes)
+ - yum: Add support for the only-download transaction flag (Richard Hughes)
+ - yum: Disable async parallel downloading to prevent a hard to debug infinate loop (Richard Hughes)
+ - yum: Emit ItemProgress() as the files are being installed by rpm (Richard Hughes)
+ - yum: Fix a backtrace when updating packages (Richard Hughes)
+ - yum: Pass all the transaction_flags to _runYumTransaction() (Richard Hughes)
+ - yum: Port to PkBackendJob (Richard Hughes)
+ - yum: Remove support for UpdateSystem() (Richard Hughes)
+ - zif: Port to PkBackendJob (Richard Hughes)
+ - zif: Remove support for UpdateSystem() (Richard Hughes)
+ - zypp: Partial port to PkBackendJob [untested] (Richard Hughes)
+
+New Features:
+ - Abstract out a PkBackendJob object for parallel transactions (Richard Hughes)
+ - Add a status parameter to Transaction::ItemProgress() (Richard Hughes)
+ - Allow retrieving the PkBackendJob from a PkTransaction (Matthias Klumpp)
+ - Inhibit shutdown when the package manager is locked (Richard Hughes)
+ - Remove the backend UpdateSystem action (Richard Hughes)
+ - Remove the Transaction.UpdateSystem() method (Richard Hughes)
+ - Run any methods that implement pk_plugin_state_changed() when the daemon state changes (Richard Hughes)
+
+Bugfixes:
+ - Always process the finished signal at a priority lower than the other signals (Richard Hughes)
+ - Always return signals to the daemon using idle (Richard Hughes)
+ - Check for the finished signal being connected before running each backend method (Richard Hughes)
+ - Do not use UpdateSystem() in pkcon (Richard Hughes)
+ - Disable package-cache by default (Matthias Klumpp)
+ - Do not run the plugins when using only-download (Richard Hughes)
+ - Don't show a warning on refresh if /var/run/PackageKit/udev does not exist (Richard Hughes)
+ - Fix a crash when emitting ItemProgress (Richard Hughes)
+ - Fix a crash when updating a package that has ItemProgress (Richard Hughes)
+ - Fix segfault in pkcon when user does ctrl-d at the package prompt (Richard Hughes)
+ - Implement locked-changed in PkBackendJob (Matthias Klumpp)
+ - Make each plugin skip simulate actions, if needed (Matthias Klumpp)
+ - Move the prepared-update functionality into a plugin (Richard Hughes)
+ - Never run any plugins for simulated actions (Richard Hughes)
+ - Only simulate in pkcon if only-download is not set (Richard Hughes)
+ - Reset the job vfuncs when resetting the job in a plugin (Richard Hughes)
+ - Send a PropertyChanged signal when setting the role (Richard Hughes)
+ - Set the exit code before running the plugin finished handlers (Richard Hughes)
+ - systemd-updates: Add environment PK_OFFLINE_UPDATE_TEST=1 for testing funcitonality (Richard Hughes)
+ - systemd-updates: If the upgrade tool exits with an error reboot the system (Richard Hughes)
+ - systemd-updates: Remove the prepared-updates file if GetUpdates() returns no packages (Richard Hughes)
+ - systemd-updates: Remove the prepared-updates file if the daemon state changes (Richard Hughes)
+ - systemd-updates: Write package_ids into /var/lib/PackageKit/prepared-update (Richard Hughes)
+ - We don't need to authenticate at all to just download packages (Richard Hughes)
+ - When doing 'pkcon update' allow the user to specify filters but enforce NEWEST (Richard Hughes)
+ - When sending ::Transaction(), send the role as a uint to match the DBus specification (Richard Hughes)
+
 Version 0.8.1
 ~~~~~~~~~~~~~
 Released: 2012-06-25

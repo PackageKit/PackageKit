@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-01 11:08+0000\n"
-"PO-Revision-Date: 2012-04-14 16:39+0000\n"
-"Last-Translator: Shinjo Park <kde@peremen.name>\n"
-"Language-Team: Korean (http://www.transifex.net/projects/p/freedesktop/language/ko/)\n"
+"POT-Creation-Date: 2012-06-25 15:41+0100\n"
+"PO-Revision-Date: 2012-06-25 16:42+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"Language-Team: Korean (http://www.transifex.com/projects/p/freedesktop/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
-#: ../client/pk-console.c:173 ../client/pk-console.c:595
+#: ../client/pk-console.c:173 ../client/pk-console.c:606
 msgid "Transaction"
 msgstr "트랜잭션"
 
@@ -128,7 +128,7 @@ msgid "Icon"
 msgstr "아이콘"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:338
+#: ../client/pk-console.c:339
 msgid "Details about the update:"
 msgstr "자세한 업데이트 정보:"
 
@@ -136,7 +136,7 @@ msgstr "자세한 업데이트 정보:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:344 ../client/pk-console.c:614
+#: ../client/pk-console.c:345 ../client/pk-console.c:625
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
@@ -144,181 +144,181 @@ msgstr "패키지"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
-#: ../client/pk-console.c:347
+#: ../client/pk-console.c:349
 msgid "Updates"
 msgstr "갱신"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. obsoletes
-#: ../client/pk-console.c:351
+#: ../client/pk-console.c:355
 msgid "Obsoletes"
 msgstr "오래된 항목"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:355 ../lib/packagekit-glib2/pk-task-text.c:209
+#: ../client/pk-console.c:361 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "제조자"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:359
+#: ../client/pk-console.c:367
 msgid "Bugzilla"
 msgstr "버그질라"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:363
+#: ../client/pk-console.c:373
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:367
+#: ../client/pk-console.c:378
 msgid "Restart"
 msgstr "재시작"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:371
+#: ../client/pk-console.c:382
 msgid "Update text"
 msgstr "텍스트"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:375
+#: ../client/pk-console.c:386
 msgid "Changes"
 msgstr "변경"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:379
+#: ../client/pk-console.c:390
 msgid "State"
 msgstr "상태"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:383
+#: ../client/pk-console.c:394
 msgid "Issued"
 msgstr "등록됨"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:387 ../lib/packagekit-glib2/pk-enum.c:1135
+#: ../client/pk-console.c:398 ../lib/packagekit-glib2/pk-enum.c:1170
 msgid "Updated"
 msgstr "갱신됨"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:423
+#: ../client/pk-console.c:434
 msgid "Enabled"
 msgstr "활성화됨"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:426
+#: ../client/pk-console.c:437
 msgid "Disabled"
 msgstr "비활성화됨"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:458
+#: ../client/pk-console.c:469
 msgid "System restart required by:"
 msgstr "다음 패키지에서 시스템 재시작을 요청함:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:461
+#: ../client/pk-console.c:472
 msgid "Session restart required:"
 msgstr "세션 재시작을 요청함:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a
 #. security update
-#: ../client/pk-console.c:464
+#: ../client/pk-console.c:475
 msgid "System restart (security) required by:"
 msgstr "다음 패키지에서 (보안된) 시스템 재시작을 요청함:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a
 #. security update
-#: ../client/pk-console.c:467
+#: ../client/pk-console.c:478
 msgid "Session restart (security) required:"
 msgstr "(보안된) 시스템 재시작을 요청함:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:470
+#: ../client/pk-console.c:481
 msgid "Application restart required by:"
 msgstr "프로그램 재시작을 요청함:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:505
+#: ../client/pk-console.c:516
 msgid "Package description"
 msgstr "패키지 설명"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest)
 #. from the transaction
-#: ../client/pk-console.c:536
+#: ../client/pk-console.c:547
 msgid "Message:"
 msgstr "메시지:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:568
 msgid "No files"
 msgstr "파일이 없음"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:562
+#: ../client/pk-console.c:573
 msgid "Package files"
 msgstr "패키지 파일"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:630
+#: ../client/pk-console.c:641
 msgid "Percentage"
 msgstr "백분율"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:648
+#: ../client/pk-console.c:659
 msgid "Status"
 msgstr "상태"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:677
+#: ../client/pk-console.c:688
 msgid "Results:"
 msgstr "결과:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:684
+#: ../client/pk-console.c:695
 msgid "Fatal error"
 msgstr "치명적 오류"
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
-#: ../client/pk-console.c:700
+#: ../client/pk-console.c:711
 msgid "There are no packages to update."
 msgstr "업데이트할 패키지가 없습니다."
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:703
+#: ../client/pk-console.c:714
 #: ../contrib/command-not-found/pk-command-not-found.c:634
 msgid "The transaction failed"
 msgstr "트랜잭션에 실패했습니다."
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:732
+#: ../client/pk-console.c:743
 msgid "There are no updates available at this time."
 msgstr "현재 사용 가능한 업데이트가 없습니다."
 
-#: ../client/pk-console.c:755
+#: ../client/pk-console.c:766
 msgid "There are no upgrades available at this time."
 msgstr "현재 사용 가능한 업그레이드가 없습니다."
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:822
+#: ../client/pk-console.c:833
 msgid "Please restart the computer to complete the update."
 msgstr "업데이트를 완료하려면 컴퓨터를 다시 시작하십시오."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:825
+#: ../client/pk-console.c:836
 msgid "Please logout and login to complete the update."
 msgstr "업데이트를 완료하려면 로그아웃 후 다시 로그인하십시오."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:828
+#: ../client/pk-console.c:839
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr "중요한 보안 업데이트를 완료하려면 컴퓨터를 다시 시작하십시오."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:831
+#: ../client/pk-console.c:842
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
@@ -326,7 +326,7 @@ msgstr "중요한 보안 업데이트를 완료하려면 로그아웃 후 다시
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
-#: ../client/pk-console.c:857
+#: ../client/pk-console.c:868
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
@@ -335,21 +335,21 @@ msgstr "패키지 이름을 예상하였으나, 파일을 지정하였습니다.
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:870
+#: ../client/pk-console.c:881
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "사용 가능한 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:898
+#: ../client/pk-console.c:909
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "설치된 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:926 ../client/pk-console.c:954
+#: ../client/pk-console.c:937 ../client/pk-console.c:965
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "패키지를 찾을 수 없음: %s"
@@ -362,223 +362,213 @@ msgstr "패키지를 찾을 수 없음: %s"
 #. detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The
 #. detailed error follows
-#: ../client/pk-console.c:982 ../client/pk-console.c:1010
-#: ../client/pk-console.c:1038 ../client/pk-console.c:1066
-#: ../client/pk-console.c:1094
+#: ../client/pk-console.c:993 ../client/pk-console.c:1021
+#: ../client/pk-console.c:1049 ../client/pk-console.c:1077
+#: ../client/pk-console.c:1105
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "모든 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
-#: ../client/pk-console.c:1123
+#: ../client/pk-console.c:1134
 msgid "The daemon crashed mid-transaction!"
 msgstr "트랜잭션 도중 데몬이 충돌하였습니다!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1157
+#: ../client/pk-console.c:1168
 msgid "PackageKit Console Interface"
 msgstr "PackageKit 콘솔 인터페이스"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1159
+#: ../client/pk-console.c:1170
 msgid "Subcommands:"
 msgstr "하위 명령:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1250
 msgid "Failed to get the time since this action was last completed"
 msgstr "마지막으로 이 동작을 실행한 시간을 알 수 없음"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1283 ../client/pk-monitor.c:370
+#: ../client/pk-console.c:1292 ../client/pk-monitor.c:370
 msgid "Show the program version and exit"
 msgstr "프로그램 버전을 보여 주고 종료"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1286
+#: ../client/pk-console.c:1295
 msgid "Set the filter, e.g. installed"
 msgstr "필터 설정, 예: 설치됨"
 
-#. TRANSLATORS: command line argument, use a non-standard install prefix
-#: ../client/pk-console.c:1289
-msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
-msgstr "설치 루트 지정, 예: '/' 혹은 '/mnt/ltsp'"
-
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1292
+#: ../client/pk-console.c:1298
 msgid "Exit without waiting for actions to complete"
 msgstr "동작이 완료될 때까지 기다리지 않고 종료"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1295
+#: ../client/pk-console.c:1301
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "확인 사항을 묻지 않고 패키지를 설치"
 
+#. command line argument, do we just download or apply changes
+#: ../client/pk-console.c:1304
+msgid "Prepare the transaction by downloading pakages only"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1298
+#: ../client/pk-console.c:1307
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "유휴 네트워크 대역폭과 적은 전원을 사용하여 명령 실행"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1301
+#: ../client/pk-console.c:1310
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "애니메이션 위젯 대신 컴퓨터가 읽을 수 있는 형식으로 출력"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1313
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "최대 메타데이터 캐시 시간. -1을 사용하면 '설정하지 않음'."
 
 #. TRANSLATORS: command line argument, --help
-#: ../client/pk-console.c:1307
+#: ../client/pk-console.c:1316
 msgid "Show help options."
 msgstr "도움말 옵션 보이기"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1338
+#: ../client/pk-console.c:1347
 msgid "Failed to parse command line"
 msgstr "명령 줄 해석에 실패했습니다"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1357
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit과 연결하는 데 실패했습니다."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1401
+#: ../client/pk-console.c:1411
 msgid "The proxy could not be set"
 msgstr "프록시를 설정할 수 없습니다"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1413
-msgid "The install root could not be set"
-msgstr "설치 루트를 설정할 수 없습니다"
-
-#. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1423
 msgid "The filter specified was invalid"
 msgstr "정의된 필터가 올바르지 않습니다"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1444
+#: ../client/pk-console.c:1442
 msgid "A search type is required, e.g. name"
 msgstr "검색 유형이 필요합니다. 예: 이름"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1451 ../client/pk-console.c:1463
-#: ../client/pk-console.c:1475 ../client/pk-console.c:1487
+#: ../client/pk-console.c:1449 ../client/pk-console.c:1461
+#: ../client/pk-console.c:1473 ../client/pk-console.c:1485
 msgid "A search term is required"
 msgstr "검색 단어가 필요합니다"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1497
+#: ../client/pk-console.c:1495
 msgid "Invalid search type"
 msgstr "잘못된 검색 유형"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1501
 msgid "A package name to install is required"
 msgstr "설치할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1510
 msgid "A filename to install is required"
 msgstr "설치할 파일 이름이 필요합니다"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1521
 msgid "A type, key_id and package_id are required"
 msgstr "유형, key_id, package_id가 필요합니다"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1534
+#: ../client/pk-console.c:1532
 msgid "A package name to remove is required"
 msgstr "제거할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1541
 msgid "A destination directory and the package names to download are required"
 msgstr "대상 디렉터리와 다운로드할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1548
 msgid "Directory not found"
 msgstr "디렉터리를 찾을 수 없습니다"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1557
 msgid "A licence identifier (eula-id) is required"
 msgstr "라이선스 식별자(eula-id)가 필요합니다"
 
-#. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1570
-msgid "A transaction identifier (tid) is required"
-msgstr "트랜잭션 식별자 (tid)가 필요합니다"
-
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1591
+#: ../client/pk-console.c:1578
 msgid "A package name to resolve is required"
 msgstr "해석할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1602 ../client/pk-console.c:1613
+#: ../client/pk-console.c:1589 ../client/pk-console.c:1600
 msgid "A repository name is required"
 msgstr "저장소 이름이 필요합니다"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1624
+#: ../client/pk-console.c:1611
 msgid "A repo name, parameter and value are required"
 msgstr "저장소 이름, 인자, 값이 필요합니다"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1641
+#: ../client/pk-console.c:1628
 msgid "An action, e.g. 'update-system' is required"
 msgstr " 'update-system' 과 같은 동작이  필요합니다"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1648
+#: ../client/pk-console.c:1635
 msgid "A correct role is required"
 msgstr "올바른 규칙이 필요합니다"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1658 ../client/pk-console.c:1672
-#: ../client/pk-console.c:1681 ../client/pk-console.c:1701
-#: ../client/pk-console.c:1710 ../client/pk-generate-pack.c:314
+#: ../client/pk-console.c:1645 ../client/pk-console.c:1659
+#: ../client/pk-console.c:1668 ../client/pk-console.c:1688
+#: ../client/pk-console.c:1697 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr "패키지 이름이 필요합니다"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1690
+#: ../client/pk-console.c:1677
 msgid "A package provide string is required"
 msgstr "패키지 제공 문자열이 필요합니다"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1721
 msgid "A distribution name is required"
 msgstr "배포판 이름이 필요합니다"
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1740
+#: ../client/pk-console.c:1727
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr "업그레이드 유형이 필요합니다. 예: '최소', '기본' 혹은 '전체'"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1795
+#: ../client/pk-console.c:1782
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "옵션 '%s'이(가) 지원되지 않습니다"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1805
+#: ../client/pk-console.c:1792
 msgid "Command failed"
 msgstr "명령에 실패했습니다"
 
@@ -1223,7 +1213,7 @@ msgstr "패키지 제거 중"
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:327
-#: ../lib/packagekit-glib2/pk-enum.c:1288
+#: ../lib/packagekit-glib2/pk-enum.c:1319
 msgid "Downloading packages"
 msgstr "패키지 다운로드 중"
 
@@ -1259,121 +1249,114 @@ msgstr "의존성 확인 중"
 msgid "Checking signatures"
 msgstr "서명 확인 중"
 
-#. TRANSLATORS: transaction state, when we return to a previous system state
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:359
-#: ../lib/packagekit-glib2/pk-enum.c:1248
-msgid "Rolling back"
-msgstr "되돌리는 중"
-
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:363
+#: ../lib/packagekit-glib2/pk-console-shared.c:359
 msgid "Testing changes"
 msgstr "변경 사항 시험 중"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
-#: ../lib/packagekit-glib2/pk-console-shared.c:367
+#: ../lib/packagekit-glib2/pk-console-shared.c:363
 msgid "Committing changes"
 msgstr "변경 사항 등록 중"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:371
+#: ../lib/packagekit-glib2/pk-console-shared.c:367
 msgid "Requesting data"
 msgstr "데이터 요청 중"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:375
+#: ../lib/packagekit-glib2/pk-console-shared.c:371
 msgid "Finished"
 msgstr "완료됨"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:379
+#: ../lib/packagekit-glib2/pk-console-shared.c:375
 msgid "Cancelling"
 msgstr "취소 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:383
+#: ../lib/packagekit-glib2/pk-console-shared.c:379
 msgid "Downloading repository information"
 msgstr "저장소 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:387
+#: ../lib/packagekit-glib2/pk-console-shared.c:383
 msgid "Downloading list of packages"
 msgstr "패키지 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:391
+#: ../lib/packagekit-glib2/pk-console-shared.c:387
 msgid "Downloading file lists"
 msgstr "파일 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:395
+#: ../lib/packagekit-glib2/pk-console-shared.c:391
 msgid "Downloading lists of changes"
 msgstr "변경 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:399
+#: ../lib/packagekit-glib2/pk-console-shared.c:395
 msgid "Downloading groups"
 msgstr "그룹 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:403
+#: ../lib/packagekit-glib2/pk-console-shared.c:399
 msgid "Downloading update information"
 msgstr "갱신 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:407
+#: ../lib/packagekit-glib2/pk-console-shared.c:403
 msgid "Repackaging files"
 msgstr "파일을 패키지로 되돌리는 중"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:411
+#: ../lib/packagekit-glib2/pk-console-shared.c:407
 msgid "Loading cache"
 msgstr "캐시 적재 중"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:415
+#: ../lib/packagekit-glib2/pk-console-shared.c:411
 msgid "Scanning applications"
 msgstr "프로그램 조사 중"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:419
+#: ../lib/packagekit-glib2/pk-console-shared.c:415
 msgid "Generating package lists"
 msgstr "패키지 목록 생성 중"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:423
+#: ../lib/packagekit-glib2/pk-console-shared.c:419
 msgid "Waiting for package manager lock"
 msgstr "패키지 관리자 잠금 해제 대기 중"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:427
+#: ../lib/packagekit-glib2/pk-console-shared.c:423
 msgid "Waiting for authentication"
 msgstr "인증 대기 중"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:431
+#: ../lib/packagekit-glib2/pk-console-shared.c:427
 msgid "Updating running applications"
 msgstr "사용 중인 프로그램 갱신 중"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:435
+#: ../lib/packagekit-glib2/pk-console-shared.c:431
 msgid "Checking applications in use"
 msgstr "사용 중인 프로그램 점검 중"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
-#: ../lib/packagekit-glib2/pk-console-shared.c:439
+#: ../lib/packagekit-glib2/pk-console-shared.c:435
 msgid "Checking libraries in use"
 msgstr "사용 중인 라이브러리 점검 중"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:443
+#: ../lib/packagekit-glib2/pk-console-shared.c:439
 msgid "Copying files"
 msgstr "파일 복사 중"
 
@@ -1391,266 +1374,250 @@ msgid "Show debugging options"
 msgstr "디버깅 옵션 보이기"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1023
+#: ../lib/packagekit-glib2/pk-enum.c:1058
 msgid "Trivial"
 msgstr "필수"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1027
+#: ../lib/packagekit-glib2/pk-enum.c:1062
 msgid "Normal"
 msgstr "일반"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1031
+#: ../lib/packagekit-glib2/pk-enum.c:1066
 msgid "Important"
 msgstr "중요"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1035
+#: ../lib/packagekit-glib2/pk-enum.c:1070
 msgid "Security"
 msgstr "보안"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1039
+#: ../lib/packagekit-glib2/pk-enum.c:1074
 msgid "Bug fix "
 msgstr "버그 수정"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1043
+#: ../lib/packagekit-glib2/pk-enum.c:1078
 msgid "Enhancement"
 msgstr "향상"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1047
+#: ../lib/packagekit-glib2/pk-enum.c:1082
 msgid "Blocked"
 msgstr "차단됨"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1052
-#: ../lib/packagekit-glib2/pk-enum.c:1139
+#: ../lib/packagekit-glib2/pk-enum.c:1087
+#: ../lib/packagekit-glib2/pk-enum.c:1174
 msgid "Installed"
 msgstr "설치됨"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-enum.c:1057
+#: ../lib/packagekit-glib2/pk-enum.c:1092
 msgid "Available"
 msgstr "사용가능"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1082
+#: ../lib/packagekit-glib2/pk-enum.c:1117
 msgid "Downloading"
 msgstr "다운로드 중"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1086
+#: ../lib/packagekit-glib2/pk-enum.c:1121
 msgid "Updating"
 msgstr "갱신 중"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1090
-#: ../lib/packagekit-glib2/pk-enum.c:1224
+#: ../lib/packagekit-glib2/pk-enum.c:1125
+#: ../lib/packagekit-glib2/pk-enum.c:1259
 msgid "Installing"
 msgstr "설치 중"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1094
-#: ../lib/packagekit-glib2/pk-enum.c:1220
+#: ../lib/packagekit-glib2/pk-enum.c:1129
+#: ../lib/packagekit-glib2/pk-enum.c:1255
 msgid "Removing"
 msgstr "제거 중"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1098
+#: ../lib/packagekit-glib2/pk-enum.c:1133
 msgid "Cleaning up"
 msgstr "청소 중"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1102
+#: ../lib/packagekit-glib2/pk-enum.c:1137
 msgid "Obsoleting"
 msgstr "무효화 중"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1106
+#: ../lib/packagekit-glib2/pk-enum.c:1141
 msgid "Reinstalling"
 msgstr "재설치 중"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1131
+#: ../lib/packagekit-glib2/pk-enum.c:1166
 msgid "Downloaded"
 msgstr "다운로드 됨"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1143
+#: ../lib/packagekit-glib2/pk-enum.c:1178
 msgid "Removed"
 msgstr "제거 됨"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1147
+#: ../lib/packagekit-glib2/pk-enum.c:1182
 msgid "Cleaned up"
 msgstr "청소 됨"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1151
+#: ../lib/packagekit-glib2/pk-enum.c:1186
 msgid "Obsoleted"
 msgstr "무효화 됨"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1155
+#: ../lib/packagekit-glib2/pk-enum.c:1190
 msgid "Reinstalled"
 msgstr "재설치 됨"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1180
+#: ../lib/packagekit-glib2/pk-enum.c:1215
 msgid "Unknown role type"
 msgstr "알 수 없는 규칙 유형"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1184
+#: ../lib/packagekit-glib2/pk-enum.c:1219
 msgid "Getting dependencies"
 msgstr "의존성 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1188
+#: ../lib/packagekit-glib2/pk-enum.c:1223
 msgid "Getting update details"
 msgstr "갱신 세부사항 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1192
+#: ../lib/packagekit-glib2/pk-enum.c:1227
 msgid "Getting details"
 msgstr "세부사항 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1196
+#: ../lib/packagekit-glib2/pk-enum.c:1231
 msgid "Getting requires"
 msgstr "필수요소 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1200
+#: ../lib/packagekit-glib2/pk-enum.c:1235
 msgid "Getting updates"
 msgstr "갱신 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1204
+#: ../lib/packagekit-glib2/pk-enum.c:1239
 msgid "Searching by details"
 msgstr "세부 사항 검색 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1208
+#: ../lib/packagekit-glib2/pk-enum.c:1243
 msgid "Searching by file"
 msgstr "파일 검색 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1212
+#: ../lib/packagekit-glib2/pk-enum.c:1247
 msgid "Searching groups"
 msgstr "그룹 검색 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1216
+#: ../lib/packagekit-glib2/pk-enum.c:1251
 msgid "Searching by name"
 msgstr "이름 검색 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1228
+#: ../lib/packagekit-glib2/pk-enum.c:1263
 msgid "Installing files"
 msgstr "파일 설치 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1232
+#: ../lib/packagekit-glib2/pk-enum.c:1267
 msgid "Refreshing cache"
 msgstr "캐시 새로 고치는 "
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1236
+#: ../lib/packagekit-glib2/pk-enum.c:1271
 msgid "Updating packages"
 msgstr "패키지 "
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1240
+#: ../lib/packagekit-glib2/pk-enum.c:1275
 msgid "Updating system"
 msgstr "시스템 갱신 "
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1244
+#: ../lib/packagekit-glib2/pk-enum.c:1279
 msgid "Canceling"
 msgstr "취소 "
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1252
+#: ../lib/packagekit-glib2/pk-enum.c:1283
 msgid "Getting repositories"
 msgstr "저장소 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1256
+#: ../lib/packagekit-glib2/pk-enum.c:1287
 msgid "Enabling repository"
 msgstr "저장소 활성화 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1260
+#: ../lib/packagekit-glib2/pk-enum.c:1291
 msgid "Setting data"
 msgstr "데이터 "
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1264
+#: ../lib/packagekit-glib2/pk-enum.c:1295
 msgid "Resolving"
 msgstr "분석 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1268
+#: ../lib/packagekit-glib2/pk-enum.c:1299
 msgid "Getting file list"
 msgstr "파일 목록 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1272
+#: ../lib/packagekit-glib2/pk-enum.c:1303
 msgid "Getting provides"
 msgstr "제공자 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1276
+#: ../lib/packagekit-glib2/pk-enum.c:1307
 msgid "Installing signature"
 msgstr "서명 설치 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1280
+#: ../lib/packagekit-glib2/pk-enum.c:1311
 msgid "Getting packages"
 msgstr "패키지 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1284
+#: ../lib/packagekit-glib2/pk-enum.c:1315
 msgid "Accepting EULA"
 msgstr "EULA 수락 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1292
+#: ../lib/packagekit-glib2/pk-enum.c:1323
 msgid "Getting upgrades"
 msgstr "갱신 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1296
+#: ../lib/packagekit-glib2/pk-enum.c:1327
 msgid "Getting categories"
 msgstr "목록 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1300
+#: ../lib/packagekit-glib2/pk-enum.c:1331
 msgid "Getting transactions"
 msgstr "트랜잭션 가져오는 중"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1304
-#: ../lib/packagekit-glib2/pk-enum.c:1308
-msgid "Simulating install"
-msgstr "설치 시연 중"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1312
-msgid "Simulating remove"
-msgstr "제거 시연 중"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1316
-msgid "Simulating update"
-msgstr "갱신 시연 중"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1826,8 +1793,8 @@ msgid "Install signed package"
 msgstr "서명된 패키지 설치"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to install a signed package"
-msgstr "서명된 패키지를 설치하려면 인증이 필요합니다"
+msgid "Authentication is required to install a package"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1906,28 +1873,15 @@ msgid "Authentication is required to update packages"
 msgstr "패키지를 갱신하려면 인증이 필요합니다"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rollback system state
-#. as this will change a large number of packages, and could expose the
-#. system to previously patched security vulnerabilities.
-#. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:65
-msgid "Rollback to a previous transaction"
-msgstr "이전 트랜잭션 되돌리기"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:66
-msgid "Authentication is required to rollback a transaction"
-msgstr "트랜잭션을 되돌리려면 인증이 "
-
-#. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:72
+#: ../policy/org.freedesktop.packagekit.policy.in.h:65
 msgid "Change software source parameters"
 msgstr "소프트웨어 원본 인자 변경"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:73
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Authentication is required to change software source parameters"
 msgstr "소프트웨어 원본 인자를 변경하려면 인증이 필요합니다"
 
@@ -1935,11 +1889,11 @@ msgstr "소프트웨어 원본 인자를 변경하려면 인증이 필요합니�
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:78
+#: ../policy/org.freedesktop.packagekit.policy.in.h:71
 msgid "Refresh system sources"
 msgstr "시스템 원본 새로 고침"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:72
 msgid "Authentication is required to refresh the system sources"
 msgstr "시스템 원본을 새로 고치려면 인증이 필요합니다"
 
@@ -1947,11 +1901,11 @@ msgstr "시스템 원본을 새로 고치려면 인증이 필요합니다"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:84
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Set network proxy"
 msgstr "네트워크 프록시 설정"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:85
+#: ../policy/org.freedesktop.packagekit.policy.in.h:78
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
@@ -1963,11 +1917,11 @@ msgstr "다운로드 중인 패키지에 의해 사용될 네트워크 프록시
 #. - This could be used to overwrite files not owned by the user using
 #. a carefully created package file.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:92
+#: ../policy/org.freedesktop.packagekit.policy.in.h:85
 msgid "Change location that packages are installed"
 msgstr "설치된 패키지의 위치 변경"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:93
+#: ../policy/org.freedesktop.packagekit.policy.in.h:86
 msgid ""
 "Authentication is required to change the location used to decompress "
 "packages"
@@ -1980,11 +1934,11 @@ msgstr "패키지의 압축을 해제할 경로를 변경하려면 인증이 필
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:101
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Reload a device"
 msgstr "장치 다시 로드"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:102
+#: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "새로운 드라이버로 장치를 다시 로드하려면 인증이 필요합니다"
 
@@ -1993,11 +1947,11 @@ msgstr "새로운 드라이버로 장치를 다시 로드하려면 인증이 필
 #. this can make the system unbootable or stop other applications from
 #. working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:108
+#: ../policy/org.freedesktop.packagekit.policy.in.h:101
 msgid "Upgrade System"
 msgstr "시스템 업그레이드"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Authentication is required to upgrade the operating system"
 msgstr "운영체제를 업그레이드 하려면 인증이 필요합니다"
 
@@ -2006,75 +1960,95 @@ msgstr "운영체제를 업그레이드 하려면 인증이 필요합니다"
 #. since this can make the system unbootable or stop other
 #. applications from working.
 #. 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+#: ../policy/org.freedesktop.packagekit.policy.in.h:108
 msgid "Repair System"
 msgstr "시스템 복구"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:116
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Authentication is required to repair the installed software"
 msgstr "설치된 소프트웨어를 복구하려면 인증이 필요합니다"
 
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:114
+msgid "Trigger offline updates"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:115
+msgid "Authentication is required to trigger offline updates"
+msgstr ""
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:120
+msgid "Clear offline update message"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:121
+msgid "Authentication is required to clear the offline updates message"
+msgstr ""
+
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:149
+#: ../src/pk-main.c:215
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "사용하기 위한 백엔드 (예: dummy) 패키지로 만드는 중"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:152
+#: ../src/pk-main.c:218
 msgid "Daemonize and detach from the terminal"
 msgstr "터미널로부터 떨어뜨리고 데몬화 함"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:155
+#: ../src/pk-main.c:221
 msgid "Disable the idle timer"
 msgstr "대기 타이머 비활성화"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:158
+#: ../src/pk-main.c:224
 msgid "Show version and exit"
 msgstr "버전을 보여주고 종료"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:161
+#: ../src/pk-main.c:227
 msgid "Exit after a small delay"
 msgstr "약간의 지연시간 이후 종료"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:164
+#: ../src/pk-main.c:230
 msgid "Exit after the engine has loaded"
 msgstr "엔진이 로드 되고 나면 종료"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: ../src/pk-main.c:167
+#: ../src/pk-main.c:233
 msgid "Don't clear environment on startup"
 msgstr "시작할 때 환경 설정 초기화하지 않기"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:179
+#: ../src/pk-main.c:245
 msgid "PackageKit service"
 msgstr "PackageKit 서비스"
 
-#: ../src/pk-main.c:253
-msgid "Failed to load any of the specified backends:"
-msgstr "어떤 지정된 백엔드를 로드하는데 실패했습니다"
-
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2972
+#: ../src/pk-transaction.c:2945
 msgid "The software is not from a trusted source."
 msgstr "소프트웨어가 신뢰할 수 있는 원본으로부터 온 것이 아닙니다"
 
-#: ../src/pk-transaction.c:2980
+#: ../src/pk-transaction.c:2953
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지를 갱신하지 마십시오"
 
-#: ../src/pk-transaction.c:2981
+#: ../src/pk-transaction.c:2954
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지들을 갱신하지 마십시오"
 
-#: ../src/pk-transaction.c:2991
+#: ../src/pk-transaction.c:2964
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지를 설치하지 "
 
-#: ../src/pk-transaction.c:2992
+#: ../src/pk-transaction.c:2965
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "안던하다고 판단되기 전에는 이 패키지들을 설치하지 마십시오"
