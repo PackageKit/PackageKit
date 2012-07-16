@@ -242,6 +242,10 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 
 	/* TRANSLATORS: This finds out which package in the list to use */
 	i = pk_console_get_number (_("Please choose the correct package: "), array->len);
+	if (i == 0) {
+		g_set_error_literal (error, 1, 0, "User aborted selection");
+		goto out;
+	}
 	package = g_ptr_array_index (array, i-1);
 	g_object_get (package,
 		      "package-id", &package_id,
