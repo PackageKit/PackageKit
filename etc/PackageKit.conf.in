@@ -316,3 +316,11 @@ UseRoot=/
 #
 # default=true
 CancelBackgroundTransactions=true
+
+# If the daemon should write /var/lib/PackageKit/prepared-update
+#
+# By allowing the prepared-update file to be created the session may
+# show a 'Reboot and install updates' item to the user.
+#
+# default=true
+WritePreparedUpdates=true

@@ -129,12 +129,19 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	GPtrArray *packages;
 	guint i;
 	PkBitfield transaction_flags;
+	PkConf *conf;
 
 	/* only write the file for only-download */
 	transaction_flags = pk_transaction_get_transaction_flags (transaction);
 	if (!pk_bitfield_contain (transaction_flags,
 				  PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
 		return;
+
+	/* check the config file */
+	conf = pk_transaction_get_conf (transaction);
+	ret = pk_conf_get_bool (conf, "WritePreparedUpdates");
+	if (!ret)
+		goto out;
 
 	/* get the existing prepared updates */
 	path = g_build_filename (LOCALSTATEDIR,
