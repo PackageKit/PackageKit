@@ -100,11 +100,6 @@ void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
 zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (const std::string &name, zypp::Edition edition);
 
 /**
-  * Return the group of the given PoolItem.
-  */
-std::string zypp_get_group (zypp::sat::Solvable item);
-
-/**
   * Return the PkEnumGroup of the given PoolItem.
   */
 PkGroupEnum get_enum_group (const std::string &group);

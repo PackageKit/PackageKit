@@ -287,23 +287,6 @@ zypp_get_rpmHeader (const string &name, Edition edition)
 	return result;
 }
 
-
-string
-zypp_get_group (sat::Solvable item)
-{
-	string group;
-
-	if (item.isSystem ()) {
-
-		target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (item.name (), item.edition ());
-		group = rpmHeader->tag_group ();
-
-	} else {
-		group = item.lookupStrAttribute (sat::SolvAttr::group);
-	}
-	return str::toLower(group);
-}
-
 PkGroupEnum
 get_enum_group (const string &group_)
 {

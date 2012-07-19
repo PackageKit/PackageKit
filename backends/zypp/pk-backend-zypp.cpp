@@ -535,66 +535,45 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		v.insert (v.end (), v2.begin (), v2.end ());
 		v.insert (v.end (), v3.begin (), v3.end ());
 
-		sat::Solvable package;
+		sat::Solvable solv;
 		for (vector<sat::Solvable>::iterator it = v.begin ();
 				it != v.end (); ++it) {
 			if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
 						     id_parts[PK_PACKAGE_ID_ARCH])) {
-				package = *it;
+				solv = *it;
 				break;
 			}
 		}
 		g_strfreev (id_parts);
 
-		if (package == NULL) {
+		ResObject::constPtr obj = make<ResObject>( solv );
+		if (obj == NULL) {
 			return zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 		}
 
 		try {
-			PkGroupEnum group = get_enum_group (zypp_get_group (package));
+			Package::constPtr pkg = make<Package>( solv );	// or NULL if not a Package
+			Patch::constPtr patch = make<Patch>( solv );	// or NULL if not a Patch
 
-			if (package.isSystem ()){
-				target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
-
-				pk_backend_job_details (job,
-					package_ids[i],			  // package_id
-					rpmHeader->tag_license ().c_str (),     // const gchar *license
-					group,				  // PkGroupEnum group
-					package.lookupStrAttribute (sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
-					rpmHeader->tag_url (). c_str (),	// const gchar *url
-					(gulong)rpmHeader->tag_archivesize ());	// gulong size
-
-			} else {
-				gulong size = 0;
-
-				if (isKind<Patch>(package)) {
-					PoolItem item = ResPool::instance ().find (package);
-					Patch::constPtr patch = asKind<Patch>(item);
-
-					sat::SolvableSet content = patch->contents ();
-					for (sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); ++it)
-						size += it->lookupNumAttribute (sat::SolvAttr::downloadsize);
-				} else
-					size = package.lookupNumAttribute (sat::SolvAttr::downloadsize);
-
-				pk_backend_job_details (job,
-						    package_ids[i],
-						    package.lookupStrAttribute (sat::SolvAttr::license).c_str (),
-						    group,
-						    package.lookupStrAttribute (sat::SolvAttr::description).c_str (),
-						    package.lookupStrAttribute (sat::SolvAttr::url).c_str (),
-#ifdef ZYPP_RETURN_BYTES
-						    size);
-#else
-						    size * 1024);
-#endif
+			ByteCount size;
+			if ( patch ) {
+				Patch::Contents contents( patch->contents() );
+				for_( it, contents.begin(), contents.end() ) {
+					size += make<ResObject>(*it)->downloadSize();
+				}
+			}
+			else {
+				size = obj->isSystem() ? obj->installSize() : obj->downloadSize();
 			}
 
-		} catch (const target::rpm::RpmException &ex) {
-			zypp_backend_finished_error (
-				backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
-			return;
+			pk_backend_job_details (job,
+				package_ids[i],				// package_id
+				(pkg ? pkg->license().c_str() : "" ),	// license is Package attribute
+				get_enum_group(pkg ? pkg->group() : ""),// PkGroupEnum
+				obj->description().c_str(),		// description is common attibute
+				(pkg ? pkg->url().c_str() : "" ),	// url is Package attribute
+				(gulong)size);
 		} catch (const Exception &ex) {
 			zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
