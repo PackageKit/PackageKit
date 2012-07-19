@@ -188,7 +188,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	{
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
-		gchar* summary = g_strdup(resolvable->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
 		//g_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_job_set_status (_backend, PK_STATUS_ENUM_INSTALL);

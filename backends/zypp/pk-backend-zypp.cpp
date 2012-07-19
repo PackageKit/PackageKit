@@ -983,7 +983,7 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 					  bugzilla,	// bugzilla
 					  cve,		// cve
 					  restart,	// restart -flag
-					  solvable.lookupStrAttribute (sat::SolvAttr::description).c_str (),	// update-text
+					  make<ResObject>(solvable)->description().c_str (),	// update-text
 					  NULL,		// ChangeLog text
 					  PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
 					  NULL, // date that the update was issued
@@ -2047,7 +2047,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 				continue;
 
 			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-			zypp_backend_package (backend, info, *it, it->lookupStrAttribute (sat::SolvAttr::summary).c_str ());
+			zypp_backend_package (backend, info, *it,  make<ResObject>(*it)->summary().c_str ());
 		}
 	}
 
@@ -2111,7 +2111,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			for (ResPool::byName_iterator it = pool.byNameBegin (name); it != pool.byNameEnd (name); ++it) {
 				if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
 							     id_parts[PK_PACKAGE_ID_ARCH])) {
-					size += 2 * it->satSolvable().lookupNumAttribute (sat::SolvAttr::downloadsize);
+					size += 2 * it->resolvable()->downloadSize();
 					item = *it;
 					break;
 				}
