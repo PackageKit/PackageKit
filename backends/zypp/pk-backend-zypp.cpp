@@ -224,8 +224,7 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 					"Package couldn't be found");
 			}
 
-			ResPool pool = ResPool::instance ();
-			package = pool.find (solvable);
+			package = PoolItem(solvable);
 			//set Package as to be installed
 			package.status ().setToBeInstalled (ResStatus::USER);
 		}
@@ -465,7 +464,7 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			    it->second.name ().c_str()[0] == '\0')
 				continue;
 
-			PoolItem item = ResPool::instance ().find (it->second);
+			PoolItem item(it->second);
 			PkInfoEnum info = it->second.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
 			g_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
@@ -940,13 +939,11 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-		PoolItem item = ResPool::instance ().find (solvable);
-
 		gchar *bugzilla = new gchar ();
 		gchar *cve = new gchar ();
 
 		if (isKind<Patch>(solvable)) {
-			Patch::constPtr patch = asKind<Patch>(item);
+			Patch::constPtr patch = make<Patch>(solvable); // may use asKind<Patch> if libzypp-11.6.4 is asserted
 			zypp_check_restart (&restart, patch);
 
 			// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
@@ -1821,7 +1818,7 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		if (system == true)
 			continue;
 		sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
-		PoolItem item = ResPool::instance ().find (solvable);
+		PoolItem item(solvable);
 		item.status ().setToBeInstalled (ResStatus::USER);
 		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
 		zypp_check_restart (&restart, patch);
