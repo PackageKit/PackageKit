@@ -642,7 +642,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	/* is the current running transaction backtround, and this new
 	 * transaction foreground? */
 	ret = pk_conf_get_bool (tlist->priv->conf,
-				"TransactionCreateCommitTimeout");
+				"CancelBackgroundTransactions");
 	if (!ret)
 		goto out;
 	if (!item->background && item_active->background) {
