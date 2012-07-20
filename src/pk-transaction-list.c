@@ -645,19 +645,8 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	/* clear any pending transactions */
+	/* cancel all running background transaction */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		state = pk_transaction_get_state (item->transaction);
-		if (state >= PK_TRANSACTION_STATE_RUNNING)
-			continue;
-		g_debug ("cancelling pending transaction %s",
-			 item->tid);
-		pk_transaction_cancel_bg (item->transaction);
-	}
-
-	/* cancel any running transactions */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
@@ -666,6 +655,32 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 		if (!item->background)
 			continue;
 		g_debug ("cancelling running background transaction %s",
+			 item->tid);
+		pk_transaction_cancel_bg (item->transaction);
+	}
+}
+
+/**
+ * pk_transaction_list_cancel_queued:
+ **/
+void
+pk_transaction_list_cancel_queued (PkTransactionList *tlist)
+{
+	guint i;
+	GPtrArray *array;
+	PkTransactionItem *item;
+	PkTransactionState state;
+
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
+
+	/* clear any pending transactions */
+	array = tlist->priv->array;
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		state = pk_transaction_get_state (item->transaction);
+		if (state >= PK_TRANSACTION_STATE_RUNNING)
+			continue;
+		g_debug ("cancelling pending transaction %s",
 			 item->tid);
 		pk_transaction_cancel_bg (item->transaction);
 	}

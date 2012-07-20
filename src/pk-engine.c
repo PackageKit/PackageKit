@@ -1316,6 +1316,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "SuggestDaemonQuit") == 0) {
 
 		/* attempt to kill background tasks */
+		pk_transaction_list_cancel_queued (engine->priv->transaction_list);
 		pk_transaction_list_cancel_background (engine->priv->transaction_list);
 
 		/* can we exit straight away */
