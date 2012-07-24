@@ -3254,7 +3254,7 @@ class DownloadCallback(BaseMeter):
         if name:
             pkg = self._getPackage(name)
             if pkg:
-                self.base.item_progress(self.base._pkg_to_id(pkg), val)
+                self.base.item_progress(self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, val)
 
         # package finished
         if val == 100 and name:
@@ -3315,7 +3315,7 @@ class PackageKitCallback(RPMBaseCallback):
         #if package and te_total > 0:
         #    val = (te_current*100L)/te_total
         #    if self.curpkg:
-        #        self.base.item_progress(self.base._pkg_to_id(self.curpkg), val)
+        #        self.base.item_progress(self.base._pkg_to_id(self.curpkg), STATUS_INSTALL, val)
 
         # find out the offset
         pct_start = StatusPercentageMap[STATUS_INSTALL]
