@@ -3312,10 +3312,10 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 
         # set item percentage
-        #if package and te_total > 0:
-        #    val = (te_current*100L)/te_total
-        #    if self.curpkg:
-        #        self.base.item_progress(self.base._pkg_to_id(self.curpkg), STATUS_INSTALL, val)
+        if package and te_total > 0:
+            val = (te_current*100L) / te_total
+            if self.curpkg:
+                self.base.item_progress(self.base._pkg_to_id(self.curpkg), STATUS_INSTALL, val)
 
         # find out the offset
         pct_start = StatusPercentageMap[STATUS_INSTALL]
