@@ -3321,7 +3321,8 @@ class PackageKitCallback(RPMBaseCallback):
         pct_start = StatusPercentageMap[STATUS_INSTALL]
 
         # do percentage
-        if ts_total > 0:
+        if ts_total > 0 and te_total > 0:
+            val = (te_current * 100L) / te_total
             div = (100 - pct_start) / ts_total
             pct = div * (ts_current - 1) + pct_start + ((div / 100.0) * val)
             self.base.percentage(pct)
