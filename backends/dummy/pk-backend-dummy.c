@@ -48,6 +48,7 @@ typedef struct {
 	gchar		**values;
 	gulong		 signal_timeout;
 	PkBitfield	 filters;
+	gboolean	 fake_db_locked;
 } PkBackendDummyPrivate;
 
 typedef struct {
@@ -592,12 +593,25 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 		}
 	}
 
-	if (priv->use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
-					   "Can't install as untrusted");
-		pk_backend_job_finished (job);
+	if ((g_strcmp0 (package_ids[0], "foobar;1.1.0;i386;debian") != 0) && (g_strcmp0 (package_ids[0], "libawesome;42;i386;debian") != 0)) {
+		if (priv->use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+						"Can't install as untrusted");
+			pk_backend_job_finished (job);
+			return;
+		}
+	}
+
+	/* check if something else locked the "fake-db" */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
 		return;
 	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
 
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	job_data->progress_percentage = 0;
@@ -605,6 +619,10 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 				"gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				"An HTML widget for GTK+ 2.0");
 	priv->signal_timeout = g_timeout_add (100, pk_backend_install_timeout, job);
+
+	priv->fake_db_locked = FALSE;
+	pk_backend_job_set_locked (job, FALSE);
+
 }
 
 /**
@@ -729,6 +747,19 @@ pk_backend_resolve_timeout (gpointer data)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
 						"An HTML widget for GTK+ 2.0");
+		else if (g_strcmp0 (packages[i], "foobar") == 0 || g_strcmp0 (packages[i], "foobar;1.1.0;i386;debian") == 0) {
+			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
+				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
+							"foobar;1.1.0;i386;debian",
+							"The awesome FooBar application");
+			}
+		} else if (g_strcmp0 (packages[i], "libawesome") == 0 || g_strcmp0 (packages[i], "libawesome;42;i386;debian") == 0) {
+			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
+				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
+							"libawesome;42;i386;debian",
+							"Simple library for warping reality");
+			}
+		}
 	}
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
@@ -758,9 +789,23 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 			    gboolean allow_deps,
 			    gboolean autoremove)
 {
+	/* check if something else locked the "fake-db" */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
+		return;
+	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
+
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_job_finished (job);
+
+	priv->fake_db_locked = FALSE;
+	pk_backend_job_set_locked (job, FALSE);
 }
 
 /**
@@ -1152,6 +1197,17 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		return;
 	}
 
+	/* check if something else locked the "fake-db" */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
+		return;
+	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
+
 	/* handle the socket test */
 	if (g_strcmp0 (package_ids[0], "testsocket;0.1;i386;fedora") == 0) {
 		job_data->socket = NULL;
@@ -1224,6 +1280,9 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 	priv->signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, job);
 out:
+	priv->fake_db_locked = FALSE;
+	pk_backend_job_set_locked (job, FALSE);
+
 	if (address != NULL)
 		g_object_unref (address);
 	g_free (frontend_socket);
