@@ -638,10 +638,11 @@ pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
 	/* optional */
 	if (backend->priv->desc->job_reset != NULL) {
 		backend->priv->desc->job_reset (backend, job);
-	} else if (backend->priv->desc->job_stop != NULL &&
-		   backend->priv->desc->job_start != NULL) {
-		backend->priv->desc->job_stop (backend, job);
-		backend->priv->desc->job_start (backend, job);
+	} else {
+		if (backend->priv->desc->job_stop != NULL)
+			backend->priv->desc->job_stop (backend, job);
+		if (backend->priv->desc->job_start != NULL)
+			backend->priv->desc->job_start (backend, job);
 	}
 
 	/* bubble up */
