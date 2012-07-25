@@ -707,54 +707,58 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 }
 
 /**
- * pk_backend_resolve_timeout:
+ * pk_backend_resolve_thread:
  */
-static gboolean
-pk_backend_resolve_timeout (gpointer data)
+static void
+pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBackendJob *job = (PkBackendJob *) data;
+	gchar **search;
 	guint i;
 	guint len;
-	gchar **packages = priv->package_ids;
+	PkBitfield filters;
+
+	g_variant_get (params, "(t^a&s)",
+		       &filters,
+		       &search);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 
 	/* each one has a different detail for testing */
-	len = g_strv_length (packages);
+	len = g_strv_length (search);
 	for (i=0; i<len; i++) {
-		if (g_strcmp0 (packages[i], "vips-doc") == 0 || g_strcmp0 (packages[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
-			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (g_strcmp0 (search[i], "vips-doc") == 0 || g_strcmp0 (search[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 							"vips-doc;7.12.4-2.fc8;noarch;linva",
 							"The vips documentation package.");
 			}
-		} else if (g_strcmp0 (packages[i], "glib2") == 0 || g_strcmp0 (packages[i], "glib2;2.14.0;i386;fedora") == 0) {
-			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		} else if (g_strcmp0 (search[i], "glib2") == 0 || g_strcmp0 (search[i], "glib2;2.14.0;i386;fedora") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 							"glib2;2.14.0;i386;fedora",
 							"The GLib library");
 			}
-		} else if (g_strcmp0 (packages[i], "powertop") == 0 || g_strcmp0 (packages[i], "powertop;1.8-1.fc8;i386;fedora") == 0)
+		} else if (g_strcmp0 (search[i], "powertop") == 0 || g_strcmp0 (search[i], "powertop;1.8-1.fc8;i386;fedora") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 						"powertop;1.8-1.fc8;i386;fedora",
 						"Power consumption monitor");
-		else if (g_strcmp0 (packages[i], "kernel") == 0 || g_strcmp0 (packages[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
+		else if (g_strcmp0 (search[i], "kernel") == 0 || g_strcmp0 (search[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 						"The Linux kernel (the core of the Linux operating system)");
-		else if (g_strcmp0 (packages[i], "gtkhtml2") == 0 || g_strcmp0 (packages[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
+		else if (g_strcmp0 (search[i], "gtkhtml2") == 0 || g_strcmp0 (search[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
 						"An HTML widget for GTK+ 2.0");
-		else if (g_strcmp0 (packages[i], "foobar") == 0 || g_strcmp0 (packages[i], "foobar;1.1.0;i386;debian") == 0) {
-			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
+		else if (g_strcmp0 (search[i], "foobar") == 0 || g_strcmp0 (search[i], "foobar;1.1.0;i386;debian") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 							"foobar;1.1.0;i386;debian",
 							"The awesome FooBar application");
 			}
-		} else if (g_strcmp0 (packages[i], "libawesome") == 0 || g_strcmp0 (packages[i], "libawesome;42;i386;debian") == 0) {
-			if (!pk_bitfield_contain (priv->filters, PK_FILTER_ENUM_INSTALLED)) {
+		} else if (g_strcmp0 (search[i], "libawesome") == 0 || g_strcmp0 (search[i], "libawesome;42;i386;debian") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 							"libawesome;42;i386;debian",
 							"Simple library for warping reality");
@@ -763,9 +767,6 @@ pk_backend_resolve_timeout (gpointer data)
 	}
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
-
-	/* never repeat */
-	return FALSE;
 }
 
 /**
@@ -774,9 +775,7 @@ pk_backend_resolve_timeout (gpointer data)
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
-	priv->filters = filters;
-	priv->package_ids = packages;
-	priv->signal_timeout = g_timeout_add (20, pk_backend_resolve_timeout, job);
+	pk_backend_job_thread_create (job, pk_backend_resolve_thread, NULL, NULL);
 }
 
 /**
