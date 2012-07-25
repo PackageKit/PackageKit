@@ -491,7 +491,7 @@ pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	while (TRUE) {
 		if (job_data->progress_percentage == 100) {
 			pk_backend_job_finished (job);
-			return;
+			break;
 		}
 
 		if (job_data->progress_percentage == 30) {
@@ -969,7 +969,7 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 				priv->updated_gtkhtml = FALSE;
 			}
 			pk_backend_job_finished (job);
-			return;
+			break;
 		}
 		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
