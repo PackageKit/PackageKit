@@ -127,8 +127,6 @@ AptIntf::~AptIntf()
     }
 
     delete m_cache;
-
-    pk_backend_job_finished(m_job);
 }
 
 void AptIntf::cancel()
@@ -146,6 +144,11 @@ void AptIntf::cancel()
 bool AptIntf::cancelled() const
 {
     return m_cancel;
+}
+
+void AptIntf::emitFinished()
+{
+    pk_backend_job_finished(m_job);
 }
 
 pkgCache::VerIterator AptIntf::findPackageId(const gchar *packageId)

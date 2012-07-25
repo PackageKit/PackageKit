@@ -50,6 +50,8 @@ public:
     void cancel();
     bool cancelled() const;
 
+    void emitFinished();
+
     /**
      * Tries to find a package with the given packageId
      * @returns pkgCache::VerIterator, if .end() is true the package could not be found
