@@ -686,22 +686,35 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 }
 
 /**
- * pk_backend_refresh_cache_timeout:
+ * pk_backend_refresh_cache_thread:
  */
-static gboolean
-pk_backend_refresh_cache_timeout (gpointer data)
+static void
+pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBackendJob *job = (PkBackendJob *) data;
+	gboolean force;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
-	if (job_data->progress_percentage == 100) {
-		pk_backend_job_finished (job);
-		return FALSE;
+
+	g_variant_get (params, "(b)",
+		       &force);
+
+	while (TRUE) {
+		if (job_data->progress_percentage == 100) {
+			pk_backend_job_finished (job);
+			break;
+		}
+
+		if (job_data->progress_percentage == 80)
+			pk_backend_job_set_allow_cancel (job, FALSE);
+		job_data->progress_percentage += 10;
+		pk_backend_job_set_percentage (job, job_data->progress_percentage);
+
+		/* sleep 500 milliseconds */
+		g_usleep (500000);
 	}
-	if (job_data->progress_percentage == 80)
-		pk_backend_job_set_allow_cancel (job, FALSE);
-	job_data->progress_percentage += 10;
-	pk_backend_job_set_percentage (job, job_data->progress_percentage);
-	return TRUE;
+
+	/* unlock backend again */
+	priv->fake_db_locked = FALSE;
+	pk_backend_job_set_locked (job, FALSE);
 }
 
 /**
@@ -720,7 +733,20 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
-	priv->signal_timeout = g_timeout_add (500, pk_backend_refresh_cache_timeout, job);
+
+	/* check if some other action has lock */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
+		pk_backend_job_finished (job);
+		return;
+	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
+
+	pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
@@ -821,6 +847,7 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_job_finished (job);
 
+	/* unlock backend again */
 	priv->fake_db_locked = FALSE;
 	pk_backend_job_set_locked (job, FALSE);
 }
@@ -964,8 +991,10 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 			pk_backend_job_require_restart (job, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,
+						"A newer package preupgrade is available in fedora-updates-testing");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+						"/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
 			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
 			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
 			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
@@ -1022,6 +1051,7 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 		g_usleep (200000);
 	}
 
+	/* unlock backend again */
 	priv->fake_db_locked = FALSE;
 	pk_backend_job_set_locked (job, FALSE);
 }
