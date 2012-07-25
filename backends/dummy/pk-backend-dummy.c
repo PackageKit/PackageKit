@@ -474,35 +474,50 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	priv->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, job);
 }
 
-static gboolean
-pk_backend_install_timeout (gpointer data)
+/**
+ * pk_backend_install_thread:
+ */
+static void
+pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBackendJob *job = (PkBackendJob *) data;
+	gchar **package_ids;
+	PkBitfield transaction_flags;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
-	if (job_data->progress_percentage == 100) {
-		pk_backend_job_finished (job);
-		return FALSE;
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
+		       &package_ids);
+
+	while (TRUE) {
+		if (job_data->progress_percentage == 100) {
+			pk_backend_job_finished (job);
+			return;
+		}
+
+		if (job_data->progress_percentage == 30) {
+			pk_backend_job_set_allow_cancel (job, FALSE);
+			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+						"An HTML widget for GTK+ 2.0");
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+		}
+
+		if (job_data->progress_percentage == 50) {
+			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
+						"Devel files for gtkhtml");
+			/* this duplicate package should be ignored */
+			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+		}
+
+		job_data->progress_percentage += 1;
+		pk_backend_job_set_percentage (job, job_data->progress_percentage);
+
+		/* sleep 100 milliseconds */
+		g_usleep (100000);
 	}
-	if (job_data->progress_percentage == 30) {
-		pk_backend_job_set_allow_cancel (job, FALSE);
-		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-					"gtkhtml2;2.19.1-4.fc8;i386;fedora",
-					"An HTML widget for GTK+ 2.0");
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
-	}
-	if (job_data->progress_percentage == 50) {
-		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-					"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
-					"Devel files for gtkhtml");
-		/* this duplicate package should be ignored */
-		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-					"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
-	}
-	job_data->progress_percentage += 1;
-	pk_backend_job_set_percentage (job, job_data->progress_percentage);
-	return TRUE;
 }
 
 /**
@@ -606,6 +621,7 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	if (priv->fake_db_locked) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
 						   "we require lock");
+		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -618,7 +634,8 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
 				"gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				"An HTML widget for GTK+ 2.0");
-	priv->signal_timeout = g_timeout_add (100, pk_backend_install_timeout, job);
+
+	pk_backend_job_thread_create (job, pk_backend_install_thread, NULL, NULL);
 
 	priv->fake_db_locked = FALSE;
 	pk_backend_job_set_locked (job, FALSE);
@@ -792,6 +809,7 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 	if (priv->fake_db_locked) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
 						   "we require lock");
+		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -1200,6 +1218,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	if (priv->fake_db_locked) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
 						   "we require lock");
+		pk_backend_job_finished (job);
 		return;
 	}
 
