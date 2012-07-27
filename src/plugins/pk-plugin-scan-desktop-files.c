@@ -155,7 +155,8 @@ pk_plugin_sqlite_remove_filename (PkPlugin *plugin,
  **/
 static PkPackage *
 pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
-					  const gchar *filename)
+					  const gchar *filename,
+					  GError **error)
 {
 	PkPackage *package = NULL;
 	gchar **filenames;
@@ -183,15 +184,23 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 	g_main_loop_run (plugin->priv->loop);
 
 	/* check that we only matched one package */
-	if (plugin->priv->list->len != 1) {
-		g_warning ("not correct size, %i", plugin->priv->list->len);
+	if (plugin->priv->list->len == 0) {
+		g_set_error_literal (error, 1, 0,
+				     "no packages own this file");
+		goto out;
+	}
+	if (plugin->priv->list->len > 1) {
+		g_set_error (error, 1, 0,
+			     "%i packages own this file",
+			     plugin->priv->list->len);
 		goto out;
 	}
 
 	/* get the package */
 	package = g_ptr_array_index (plugin->priv->list, 0);
 	if (package == NULL) {
-		g_warning ("cannot get package");
+		g_set_error_literal (error, 1, 0,
+				     "package invalid");
 		goto out;
 	}
 out:
@@ -272,6 +281,7 @@ pk_plugin_sqlite_add_filename (PkPlugin *plugin,
 	gchar *md5 = NULL;
 	gint rc = -1;
 	PkPackage *package;
+	GError *error = NULL;
 
 	/* if we've got it, use old data */
 	if (md5_opt != NULL)
@@ -281,9 +291,12 @@ pk_plugin_sqlite_add_filename (PkPlugin *plugin,
 
 	/* resolve */
 	package = pk_plugin_get_installed_package_for_file (plugin,
-							    filename);
+							    filename,
+							    &error);
 	if (package == NULL) {
-		g_warning ("failed to get list");
+		g_warning ("Failed to add database cache entry %s: %s",
+			   filename, error->message);
+		g_error_free (error);
 		goto out;
 	}
 
