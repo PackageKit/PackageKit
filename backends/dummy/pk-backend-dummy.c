@@ -853,10 +853,10 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 }
 
 /**
- * pk_backend_search_details:
- */
-void
-pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+ * pk_backend_search_details_thread:
+ **/
+static void
+pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_allow_cancel (job, TRUE);
@@ -864,6 +864,15 @@ pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield fil
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips \"documentation\" package.");
 	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_search_details:
+ */
+void
+pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+{
+	pk_backend_job_thread_create (job, pk_backend_search_details_thread, NULL, NULL);
 }
 
 /**
@@ -903,13 +912,26 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 }
 
 /**
- * pk_backend_search_name_timeout:
+ * pk_backend_search_names_thread:
  **/
-static gboolean
-pk_backend_search_name_timeout (gpointer data)
+static void
+pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *locale;
-	PkBackendJob *job = (PkBackendJob *) data;
+	PkRoleEnum role;
+	gchar **search;
+	PkBitfield filters;
+
+	role = pk_backend_job_get_role (job);
+	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
+		g_variant_get (params, "(t)",
+			       &filters);
+	} else {
+		g_variant_get (params, "(t^a&s)",
+			       &filters,
+			       &search);
+	}
+	g_usleep (200000);
 
 	locale = pk_backend_job_get_locale (job);
 	if (g_strcmp0 (locale, "en_GB.utf8") != 0) {
@@ -930,8 +952,8 @@ pk_backend_search_name_timeout (gpointer data)
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
+
 	pk_backend_job_finished (job);
-	return FALSE;
 }
 
 /**
@@ -943,7 +965,8 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	priv->signal_timeout = g_timeout_add (2000, pk_backend_search_name_timeout, job);
+
+	pk_backend_job_thread_create (job, pk_backend_search_names_thread, NULL, NULL);
 }
 
 /**
