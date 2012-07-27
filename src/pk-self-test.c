@@ -1135,7 +1135,7 @@ pk_test_transaction_db_func (void)
 	g_test_timer_start ();
 	tid = pk_transaction_db_generate_id (db);
 	ms = g_test_timer_elapsed ();
-	g_assert_cmpfloat (ms, <, 0.001);
+	g_assert_cmpfloat (ms, <, 0.002);
 	g_free (tid);
 
 	/* get an tid object (no wait) */
