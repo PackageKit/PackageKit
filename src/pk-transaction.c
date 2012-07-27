@@ -182,6 +182,7 @@ G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
 /**
  * pk_transaction_error_quark:
+ *
  * Return value: Our personal error quark.
  **/
 GQuark

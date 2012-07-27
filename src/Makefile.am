@@ -63,10 +63,14 @@ plugininclude_GIRSOURCES =				\
 	pk-plugin.h					\
 	pk-backend.c					\
 	pk-backend.h					\
+	pk-backend-job.c				\
+	pk-backend-job.h				\
 	pk-transaction.c				\
 	pk-transaction.h				\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-shared.c					\
+	pk-shared.h					\
 	$(NULL)
 
 shared_SOURCES =					\

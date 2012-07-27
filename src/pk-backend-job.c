@@ -158,6 +158,8 @@ pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
 
 /**
  * pk_backend_job_get_backend:
+ *
+ * Return value: (transfer none): Associated PkBackend instance
  **/
 gpointer
 pk_backend_job_get_backend (PkBackendJob *job)
@@ -178,6 +180,8 @@ pk_backend_job_set_backend (PkBackendJob *job, gpointer backend)
 
 /**
  * pk_backend_job_get_user_data:
+ *
+ * Return value: (transfer none): Job user data
  **/
 gpointer
 pk_backend_job_get_user_data (PkBackendJob *job)
@@ -630,7 +634,7 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 
 /**
  * pk_backend_job_set_vfunc:
- * @backend: A valid PkBackend instance
+ * @job: A valid PkBackendJob
  * @signal_kind: Kind of the backend signal we want to connect
  * @vfunc: (scope call): The function we want to call
  * @user_data: User data we want to pass to the callback
@@ -738,7 +742,6 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 /**
  * pk_backend_job_thread_create:
- *
  * @func: (scope call):
  **/
 gboolean
@@ -2093,6 +2096,7 @@ pk_backend_job_init (PkBackendJob *job)
 
 /**
  * pk_backend_job_new:
+ *
  * Return value: A new job class instance.
  **/
 PkBackendJob *

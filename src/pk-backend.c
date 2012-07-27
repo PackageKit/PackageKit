@@ -815,7 +815,6 @@ pk_backend_file_monitor_changed_cb (GFileMonitor *monitor,
 
 /**
  * pk_backend_watch_file:
- *
  * @func: (scope call):
  */
 gboolean
@@ -1488,6 +1487,7 @@ pk_backend_init (PkBackend *backend)
 
 /**
  * pk_backend_new:
+ *
  * Return value: A new backend class backend.
  **/
 PkBackend *

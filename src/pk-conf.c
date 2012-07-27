@@ -290,6 +290,7 @@ pk_conf_init (PkConf *conf)
 
 /**
  * pk_conf_new:
+ *
  * Return value: A new conf class instance.
  **/
 PkConf *
