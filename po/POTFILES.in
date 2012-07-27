@@ -18,4 +18,3 @@ lib/packagekit-glib2/pk-task-text.c
 policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
 src/pk-transaction.c
-src/pk-transaction-list.c
