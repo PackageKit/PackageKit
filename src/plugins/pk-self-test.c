@@ -45,30 +45,13 @@ pk_test_lsof_get_files_for_directory (GPtrArray *files, const gchar *dirname)
 	g_dir_close (dir);
 }
 
-static gchar **
-pk_test_lsof_get_files (void)
-{
-	GPtrArray *files;
-	gchar **retval;
-
-	files = g_ptr_array_new_with_free_func (g_free);
-	pk_test_lsof_get_files_for_directory (files, "/lib");
-	pk_test_lsof_get_files_for_directory (files, "/usr/lib");
-	pk_test_lsof_get_files_for_directory (files, "/usr/lib64");
-
-	/* convert to gchar ** */
-	retval = pk_ptr_array_to_strv (files);
-	g_ptr_array_unref (files);
-	return retval;
-}
-
 static void
 pk_test_lsof_func (void)
 {
 	gboolean ret;
 	PkLsof *lsof;
 	GPtrArray *pids;
-	gchar **files;
+	GPtrArray *files;
 
 	lsof = pk_lsof_new ();
 	g_assert (lsof != NULL);
@@ -78,13 +61,19 @@ pk_test_lsof_func (void)
 	g_assert (ret);
 
 	/* get pids for some test files */
-	files = pk_test_lsof_get_files ();
-	g_assert_cmpint (g_strv_length (files), >, 0);
-	pids = pk_lsof_get_pids_for_filenames (lsof, files);
+	files = g_ptr_array_new_with_free_func (g_free);
+	pk_test_lsof_get_files_for_directory (files, "/lib");
+	pk_test_lsof_get_files_for_directory (files, "/usr/lib");
+	pk_test_lsof_get_files_for_directory (files, "/usr/lib64");
+	pk_test_lsof_get_files_for_directory (files, "/usr/lib/x86_64-linux-gnu");
+	pk_test_lsof_get_files_for_directory (files, "/usr/lib/i386-linux-gnu");
+	g_assert_cmpint (files->len, >, 0);
+	g_ptr_array_add (files, NULL);
+	pids = pk_lsof_get_pids_for_filenames (lsof, (gchar**) files->pdata);
 	g_assert_cmpint (pids->len, >, 0);
 	g_ptr_array_unref (pids);
 
-	g_strfreev (files);
+	g_ptr_array_unref (files);
 	g_object_unref (lsof);
 }
 
