@@ -1563,6 +1563,224 @@ pk_test_transaction_list_func (void)
 	g_object_unref (conf);
 }
 
+static void
+pk_test_transaction_list_parallel_func (void)
+{
+	PkTransactionList *tlist;
+	PkCache *cache;
+	guint size;
+	gboolean ret;
+	guint i;
+	gchar **array;
+	PkTransaction *transaction1;
+	PkTransaction *transaction2;
+	PkTransaction *transaction3;
+	PkTransactionState state;
+	gchar *tid_item1;
+	gchar *tid_item2;
+	gchar *tid_item3;
+	gchar *tid_item4;
+	gchar *tid_item5;
+	PkBackend *backend;
+	PkConf *conf;
+
+	/* we get a cache object to reproduce the engine having it ref'd */
+	cache = pk_cache_new ();
+	db = pk_transaction_db_new ();
+
+	/* try to load a valid backend */
+	backend = pk_backend_new ();
+	conf = pk_conf_new ();
+	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	ret = pk_backend_load (backend, NULL);
+	g_assert (ret);
+
+	/* get a transaction list object */
+	tlist = pk_transaction_list_new ();
+	g_assert (tlist != NULL);
+
+	pk_transaction_list_set_backend (tlist, backend);
+
+	/* create three instances in list */
+	tid_item1 = pk_test_transaction_list_create_transaction (tlist);
+	tid_item2 = pk_test_transaction_list_create_transaction (tlist);
+	tid_item3 = pk_test_transaction_list_create_transaction (tlist);
+	tid_item4 = pk_test_transaction_list_create_transaction (tlist);
+	tid_item5 = pk_test_transaction_list_create_transaction (tlist);
+
+	/* get all transactions in queue */
+	size = pk_transaction_list_get_size (tlist);
+	g_assert_cmpint (size, ==, 5);
+
+	/* get transactions (committed, not finished) committed */
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	g_assert_cmpint (size, ==, 0);
+	g_strfreev (array);
+
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item1);
+	g_signal_connect (transaction1, "finished",
+			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_signal_connect (transaction1, "finished",
+			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item3);
+	g_signal_connect (transaction1, "finished",
+			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item4);
+	g_signal_connect (transaction1, "finished",
+			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item5);
+	g_signal_connect (transaction1, "finished",
+			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
+
+	/* this starts one action */
+	array = g_strsplit ("dave", " ", -1);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item1);
+	pk_transaction_search_details (transaction1,
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
+				       NULL);
+	g_strfreev (array);
+
+	/* run a second (and exclusive!) action in parallel */
+	array = g_strsplit ("libawesome;42;i386;debian", " ", -1);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item2);
+	pk_transaction_skip_auth_checks (transaction1, TRUE);
+	pk_transaction_install_packages (transaction1,
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
+				       NULL);
+	g_strfreev (array);
+
+	/* run a third action in parallel */
+	array = g_strsplit ("power", " ", -1);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item3);
+	pk_transaction_search_names (transaction1,
+				     g_variant_new ("(t^as)",
+						    pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						    array),
+				     NULL);
+	g_strfreev (array);
+
+	/* run a fourth (and exclusive!) action in parallel */
+	array = g_strsplit ("foobar;1.1.0;i386;debian", " ", -1);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item4);
+	pk_transaction_skip_auth_checks (transaction1, TRUE);
+	pk_transaction_install_packages (transaction1,
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
+				       NULL);
+	g_strfreev (array);
+
+	/* get transactions (committed, not finished) in progress (all should be RUNNING now) */
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	g_assert_cmpint (size, ==, 4);
+	g_strfreev (array);
+
+	/* wait for one action to complete */
+	_g_test_loop_run_with_timeout (10000);
+
+	/* make sure transaction4 (second exclusive) has correct flags (should be waiting for transaction2 to complete) */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item4);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_READY);
+
+	/* make sure transaction3 (non-exlusive) is running (should still be running, because it was run at last) */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item3);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_RUNNING);
+
+	/* make sure transaction2 (exlusive) is running too */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_RUNNING);
+
+	/* run a fifth (non-exclusive) action in parallel to the running exclusive */
+	array = g_strsplit ("paul", " ", -1);
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item5);
+	pk_transaction_search_details (transaction1,
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+						      array),
+				       NULL);
+	g_strfreev (array);
+
+	/* get all transactions in queue */
+	size = pk_transaction_list_get_size (tlist);
+	g_assert_cmpint (size, ==, 5);
+
+	/* wait for all non-exclusive actions to complete */
+	i = 0;
+	while (TRUE) {
+		_g_test_loop_run_with_timeout (10000 - i * 20);
+		i++;
+
+		/* ensure transaction objects are up-to-date */
+		transaction1 = pk_transaction_list_get_transaction (tlist, tid_item1);
+		transaction2 = pk_transaction_list_get_transaction (tlist, tid_item3);
+		transaction3 = pk_transaction_list_get_transaction (tlist, tid_item5);
+
+		if (i >= 100 ||
+		    transaction1 == NULL ||
+		    transaction2 == NULL ||
+		    transaction3 == NULL) {
+			g_print ("Dumping transaction-list state:\n%s\n", pk_transaction_list_get_state (tlist));
+			g_warning ("did not reach state where all non-exclusive transactions are finished");
+			g_assert_not_reached ();
+		}
+
+		if (pk_transaction_get_state (transaction1) == PK_TRANSACTION_STATE_FINISHED &&
+		    pk_transaction_get_state (transaction2) == PK_TRANSACTION_STATE_FINISHED &&
+		    pk_transaction_get_state (transaction3) == PK_TRANSACTION_STATE_FINISHED)
+			break;
+	}
+
+	/* we should have two exlusive transactions left */
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	g_assert_cmpint (size, ==, 2);
+	g_strfreev (array);
+
+	/* wait for first exclusive transaction to complete */
+	_g_test_loop_run_with_timeout (10000);
+
+	/* make sure transaction2 (first exclusive) is FINISHED */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_FINISHED);
+
+	/* make sure transaction4 (second exclusive) is RUNNING now */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item4);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_RUNNING);
+
+	/* wait for last exclusive transaction to complete */
+	_g_test_loop_run_with_timeout (20000);
+
+	/* make sure transaction4 (second exclusive) is now finished too */
+	transaction1 = pk_transaction_list_get_transaction (tlist, tid_item4);
+	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_FINISHED);
+
+	/* we shouldn't have transactions left */
+	array = pk_transaction_list_get_array (tlist);
+	size = g_strv_length (array);
+	g_assert_cmpint (size, ==, 0);
+	g_strfreev (array);
+
+	/* free tids */
+	g_free (tid_item1);
+	g_free (tid_item2);
+	g_free (tid_item3);
+	g_free (tid_item4);
+	g_free (tid_item5);
+
+	g_object_unref (tlist);
+	g_object_unref (backend);
+	g_object_unref (cache);
+	g_object_unref (db);
+	g_object_unref (conf);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -1583,6 +1801,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);
+	g_test_add_func ("/packagekit/transaction-list-parallel", pk_test_transaction_list_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);
 
 	/* backend stuff */
