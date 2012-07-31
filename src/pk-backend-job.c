@@ -1813,10 +1813,20 @@ pk_backend_job_error_code (PkBackendJob *job,
 	buffer = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	/* did we set a duplicate error? */
+	/* did we set a duplicate error? (we can override LOCK_REQUIRED errors,
+	 * so the transaction list can fail transactions) */
 	if (job->priv->set_error) {
-		g_warning ("More than one error emitted! You tried to set '%s'", buffer);
-		goto out;
+		item = pk_results_get_error_code (job->priv->results);
+		if (pk_error_get_code (item) == PK_ERROR_ENUM_LOCK_REQUIRED) {
+			/* reset the exit status, we're resetting the error now */
+			job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
+			job->priv->finished = FALSE;
+		} else {
+			g_warning ("More than one error emitted! You tried to set '%s'", buffer);
+			goto out;
+		}
+		g_object_unref (item);
+		item = NULL;
 	}
 	job->priv->set_error = TRUE;
 
