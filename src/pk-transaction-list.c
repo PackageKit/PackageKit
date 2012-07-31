@@ -403,6 +403,39 @@ out:
 }
 
 /**
+ * pk_transaction_list_get_background_running:
+ *
+ * Return value: %TRUE if we have running background transactions
+ **/
+static gboolean
+pk_transaction_list_get_background_running (PkTransactionList *tlist)
+{
+	PkTransactionItem *item = NULL;
+	GPtrArray *array;
+	gboolean ret = FALSE;
+	guint i;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* anything running? */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0)
+		goto out;
+
+	/* check if we have any running background transaction */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (item->background) {
+			ret = TRUE;
+			goto out;
+		}
+	}
+out:
+	g_ptr_array_free (array, TRUE);
+	return ret;
+}
+
+/**
  * pk_transaction_list_get_next_item:
  **/
 static PkTransactionItem *
