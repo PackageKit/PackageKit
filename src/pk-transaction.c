@@ -1126,6 +1126,27 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
 }
 
 /**
+ * pk_transaction_is_finished_with_lock_required:
+ **/
+gboolean
+pk_transaction_is_finished_with_lock_required (PkTransaction *transaction)
+{
+	gboolean ret = FALSE;
+	PkError	*error_code;
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+
+	error_code = pk_results_get_error_code (transaction->priv->results);
+	if (error_code != NULL) {
+		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_LOCK_REQUIRED)
+			ret = TRUE;
+
+		g_object_unref (error_code);
+	}
+
+	return ret;
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1150,6 +1171,13 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
+
+	/* don't really finish the transaction if we only completed to wait for lock */
+	if (pk_transaction_is_finished_with_lock_required (transaction)) {
+		/* finish only for the transaction list */
+		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
+		return;
+	}
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
