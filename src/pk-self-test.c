@@ -1543,6 +1543,11 @@ pk_test_transaction_list_func (void)
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
 	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
+	/* free tids */
+	g_free (tid_item1);
+	g_free (tid_item2);
+	g_free (tid_item3);
+
 	/* wait for Cleanup */
 	_g_test_loop_wait (10000);
 
