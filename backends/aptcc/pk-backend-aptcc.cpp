@@ -287,7 +287,7 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
 
     g_variant_get(params, "(^a&s)",
                   &package_ids);
-    
+
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (apt->init()) {
         g_debug("Failed to create apt cache");
@@ -344,10 +344,10 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
     gchar **package_ids;
     PkRoleEnum role;
     role = pk_backend_job_get_role(job);
-    
+
     g_variant_get(params, "(^a&s)",
                   &package_ids);
-    
+
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (apt->init()) {
         g_debug ("Failed to create apt cache");
@@ -484,7 +484,7 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
     gchar **values;
     bool error = false;
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
-    
+
     g_variant_get(params, "(tu^a&s)",
                   &filters,
                   &provides,
@@ -798,7 +798,7 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
 {
     gchar **search;
     PkBitfield filters;
-    
+
     g_variant_get(params, "(t^a&s)",
                   &filters,
                   &search);
