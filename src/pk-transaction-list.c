@@ -367,6 +367,42 @@ pk_transaction_list_get_active_transactions (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_get_exclusive_running:
+ *
+ * Return value: Greater than zero if any of the transactions in progress is
+ * exclusive (no other exclusive transaction can be run in parallel).
+ **/
+static guint
+pk_transaction_list_get_exclusive_running (PkTransactionList *tlist)
+{
+	PkTransactionItem *item = NULL;
+	GPtrArray *array;
+	guint exclusive_running = 0;
+	guint i;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* anything running? */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0)
+		goto out;
+
+	/* check if we have any running locked (exclusive) transaction */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+
+		/* check if a transaction is running in exclusive */
+		if (pk_transaction_is_exclusive (item->transaction)) {
+			/* should never be more that one, but we count them for sanity checks */
+			exclusive_running++;
+		}
+	}
+out:
+	g_ptr_array_free (array, TRUE);
+	return exclusive_running;
+}
+
+/**
  * pk_transaction_list_get_next_item:
  **/
 static PkTransactionItem *
@@ -840,10 +876,12 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
+
 		role = pk_transaction_get_role (item->transaction);
-		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] background[%i]\n", i,
+		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] exclusive[%i] background[%i]\n", i,
 					pk_role_enum_to_string (role), item->tid,
 					pk_transaction_state_to_string (state),
+					pk_transaction_is_exclusive (item->transaction),
 					item->background);
 	}
 
@@ -878,6 +916,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	guint i;
 	gboolean ret = TRUE;
 	guint running = 0;
+	guint running_exclusive = 0;
 	guint waiting = 0;
 	guint no_commit = 0;
 	guint length;
@@ -925,6 +964,13 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	/* more than one running */
 	if (running > 0) {
 		g_debug ("%i are running", running);
+	}
+
+	/* more than one exclusive transactions running? */
+	running_exclusive = pk_transaction_list_get_exclusive_running (tlist);
+	if (running_exclusive > 1) {
+		g_warning ("%i exclusive transactions running", running_exclusive);
+		ret = FALSE;
 	}
 
 	/* nothing running */
