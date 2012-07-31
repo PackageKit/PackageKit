@@ -483,6 +483,8 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_debug ("backend job lock status changed: %i", locked);
+
 	/* if backend cache is locked at some time, this transaction is running in exclusive mode */
 	if (locked) {
 		g_debug ("changing transaction to exclusive mode");
@@ -574,7 +576,7 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 
 	if (code == PK_ERROR_ENUM_LOCK_REQUIRED) {
 		/* the backend failed to get lock for this action, this means this transaction has to be run in exclusive mode */
-		g_debug ("changing transaction to exclusive mode");
+		g_debug ("changing transaction to exclusive mode (after failing with lock-required)");
 		transaction->priv->exclusive = TRUE;
 	} else {
 		/* emit, as it is not the internally-handled LOCK_REQUIRED code */
@@ -875,6 +877,8 @@ out:
 PkTransactionState
 pk_transaction_get_state (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), PK_TRANSACTION_STATE_UNKNOWN);
+
 	return transaction->priv->state;
 }
 
@@ -5625,6 +5629,8 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	/* first set state manually, otherwise set_state will refuse to switch to an earlier stage */
 	priv->state = PK_TRANSACTION_STATE_READY;
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+
+	g_debug ("transaction has been reset after lock-required issue.");
 }
 
 /**
