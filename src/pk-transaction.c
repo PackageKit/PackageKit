@@ -4208,7 +4208,7 @@ out:
 /**
  * pk_transaction_install_packages:
  **/
-static void
+void
 pk_transaction_install_packages (PkTransaction *transaction,
 				 GVariant *params,
 				 GDBusMethodInvocation *context)
