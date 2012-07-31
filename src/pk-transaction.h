@@ -105,6 +105,8 @@ void		 pk_transaction_set_signals			(PkTransaction	*transaction,
 								 PkBackendJob	*job,
 								 PkBitfield backend_signals);
 void		 pk_transaction_reset_after_lock_error		(PkTransaction *transaction);
+void		 pk_transaction_skip_auth_checks		(PkTransaction *transaction,
+								 gboolean skip_checks);
 
 G_END_DECLS
 
