@@ -64,6 +64,7 @@ typedef struct {
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	PkBitfield	(*get_roles)			(PkBackend	*backend);
 	gchar		**(*get_mime_types)		(PkBackend	*backend);
+	gboolean	(*supports_parallelization)	(PkBackend	*backend);
 	void		(*job_start)			(PkBackend	*backend,
 							 PkBackendJob	*job);
 	void		(*job_reset)			(PkBackend	*backend,
@@ -226,6 +227,20 @@ pk_backend_get_mime_types (PkBackend *backend)
 	if (backend->priv->desc->get_mime_types == NULL)
 		return g_new0 (gchar *, 1);
 	return backend->priv->desc->get_mime_types (backend);
+}
+
+/**
+ * pk_backend_supports_parallelization:
+ **/
+gboolean
+pk_backend_supports_parallelization (PkBackend	*backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* not compulsory */
+	if (backend->priv->desc->supports_parallelization == NULL)
+		return FALSE;
+	return backend->priv->desc->supports_parallelization (backend);
 }
 
 /**
@@ -449,6 +464,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_get_filters", (gpointer *)&desc->get_filters);
 		g_module_symbol (handle, "pk_backend_get_groups", (gpointer *)&desc->get_groups);
 		g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *)&desc->get_mime_types);
+		g_module_symbol (handle, "pk_backend_supports_parallelization", (gpointer *)&desc->supports_parallelization);
 		g_module_symbol (handle, "pk_backend_get_packages", (gpointer *)&desc->get_packages);
 		g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *)&desc->get_repo_list);
 		g_module_symbol (handle, "pk_backend_get_requires", (gpointer *)&desc->get_requires);

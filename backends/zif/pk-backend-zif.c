@@ -68,6 +68,15 @@ pk_backend_get_author (PkBackend *backend)
 }
 
 /**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return TRUE;
+}
+
+/**
  * pk_backend_yum_repos_changed_cb:
  **/
 static void

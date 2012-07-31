@@ -1699,6 +1699,15 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return TRUE;
+}
+
+/**
  * pk_backend_get_description:
  */
 const gchar *

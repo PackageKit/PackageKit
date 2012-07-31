@@ -53,6 +53,15 @@ const gchar* pk_backend_get_author(PkBackend *backend)
 }
 
 /**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return TRUE;
+}
+
+/**
  * pk_backend_initialize:
  */
 void pk_backend_initialize(PkBackend *backend)
