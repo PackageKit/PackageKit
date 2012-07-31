@@ -248,6 +248,9 @@ void		 pk_backend_job_set_speed		(PkBackendJob	*job,
 							 guint		 speed);
 void		 pk_backend_job_set_download_size_remaining (PkBackendJob	*job,
 							 guint64	 download_size_remaining);
+void		 pk_backend_job_set_started		(PkBackendJob *job,
+							 gboolean started);
+gboolean	 pk_backend_job_get_started		(PkBackendJob *job);
 
 G_END_DECLS
 

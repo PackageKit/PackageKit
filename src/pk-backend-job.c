@@ -110,6 +110,7 @@ struct PkBackendJobPrivate
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
 	PkTime			*time;
+	gboolean		 started;
 };
 
 G_DEFINE_TYPE (PkBackendJob, pk_backend_job, G_TYPE_OBJECT)
@@ -1862,6 +1863,25 @@ pk_backend_job_has_set_error_code (PkBackendJob *job)
 }
 
 /**
+ * pk_backend_job_set_started:
+ **/
+void
+pk_backend_job_set_started (PkBackendJob *job, gboolean started)
+{
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+	job->priv->started = started;
+}
+
+/**
+ * pk_backend_job_get_started:
+ **/
+gboolean
+pk_backend_job_get_started (PkBackendJob *job)
+{
+	return job->priv->started;
+}
+
+/**
  * pk_backend_job_set_allow_cancel:
  **/
 void
@@ -2047,6 +2067,11 @@ pk_backend_job_finalize (GObject *object)
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_JOB (object));
 	job = PK_BACKEND_JOB (object);
+
+	if (pk_backend_job_get_started (job)) {
+		g_warning ("FINALIZED JOB WITHOUT STOPPING IT BEFORE! Please stop jobs before freeing them!");
+		pk_backend_stop_job (job->priv->backend, job);
+	}
 
 	g_free (job->priv->proxy_http);
 	g_free (job->priv->proxy_https);

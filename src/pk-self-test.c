@@ -299,7 +299,9 @@ pk_test_backend_func (void)
 	g_assert_cmpint (number_packages, ==, 1);
 
 	/* reset */
+	pk_backend_start_job (backend, job);
 	pk_backend_reset_job (backend, job);
+	pk_backend_stop_job (backend, job);
 	g_object_unref (job);
 	job = pk_backend_job_new ();
 	pk_backend_job_set_backend (job, backend);
@@ -314,6 +316,7 @@ pk_test_backend_func (void)
 	/* wait for Finished */
 	_g_test_loop_wait (10);
 
+	pk_backend_start_job (backend, job);
 	pk_backend_reset_job (backend, job);
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
@@ -344,6 +347,9 @@ pk_test_backend_func (void)
 		/* check we enforce finished after error_code */
 		g_assert_cmpint (number_messages, ==, 1);
 	}
+
+	/* stop the job again */
+	pk_backend_stop_job (backend, job);
 
 	g_object_unref (conf);
 	g_object_unref (job);

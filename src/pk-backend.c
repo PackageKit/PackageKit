@@ -622,6 +622,13 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* common stuff */
 	pk_backend_job_set_backend (job, backend);
 
+	if (pk_backend_job_get_started (job)) {
+		g_warning ("trying to start an already started job again");
+		return;
+	}
+
+	pk_backend_job_set_started (job, TRUE);
+
 	/* optional */
 	if (backend->priv->desc->job_start != NULL)
 		backend->priv->desc->job_start (backend, job);
@@ -634,6 +641,11 @@ void
 pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	if (!pk_backend_job_get_started (job)) {
+		g_warning ("trying to reset job, but never started it before");
+		return;
+	}
 
 	/* optional */
 	if (backend->priv->desc->job_reset != NULL) {
@@ -662,6 +674,13 @@ void
 pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	if (!pk_backend_job_get_started (job)) {
+		g_warning ("trying to stop job, but never started it before");
+		return;
+	}
+
+	pk_backend_job_set_started (job, FALSE);
 
 	/* optional */
 	if (backend->priv->desc->job_stop != NULL)
