@@ -1426,6 +1426,7 @@ pk_test_transaction_list_func (void)
 	/* this starts one action */
 	array = g_strsplit ("dave", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
+	pk_transaction_set_exclusive (transaction, TRUE);
 	pk_transaction_search_details (transaction,
 				       g_variant_new ("(t^as)",
 						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
@@ -1436,6 +1437,7 @@ pk_test_transaction_list_func (void)
 	/* this should be chained after the first action completes */
 	array = g_strsplit ("power", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
+	pk_transaction_set_exclusive (transaction, TRUE);
 	pk_transaction_search_names (transaction,
 				     g_variant_new ("(t^as)",
 						    pk_bitfield_value (PK_FILTER_ENUM_NONE),
@@ -1446,6 +1448,7 @@ pk_test_transaction_list_func (void)
 	/* this starts be chained after the second action completes */
 	array = g_strsplit ("paul", " ", -1);
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
+	pk_transaction_set_exclusive (transaction, TRUE);
 	pk_transaction_search_details (transaction,
 				       g_variant_new ("(t^as)",
 						      pk_bitfield_value (PK_FILTER_ENUM_NONE),

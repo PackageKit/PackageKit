@@ -2431,6 +2431,21 @@ pk_transaction_is_exclusive (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_set_exclusive:
+ *
+ * Manipulate exclusive state of this transaction.
+ * NOTE: You usually don't want and should not use this!
+ * This function is for testing only.
+ */
+void
+pk_transaction_set_exclusive (PkTransaction *transaction, gboolean exclusive)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	transaction->priv->exclusive = exclusive;
+}
+
+/**
  * pk_transaction_vanished_cb:
  **/
 static void
