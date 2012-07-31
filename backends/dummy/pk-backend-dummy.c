@@ -1332,18 +1332,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		return;
 	}
 
-	/* check if something else locked the "fake-db" */
-	if (priv->fake_db_locked) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
-						   "we require lock");
-		pk_backend_job_finished (job);
-		return;
-	}
-
-	/* we're now locked */
-	priv->fake_db_locked = TRUE;
-	pk_backend_job_set_locked (job, TRUE);
-
 	/* handle the socket test */
 	if (g_strcmp0 (package_ids[0], "testsocket;0.1;i386;fedora") == 0) {
 		job_data->socket = NULL;
@@ -1408,6 +1396,18 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 						      job);
 		goto out;
 	}
+
+	/* check if something else locked the "fake-db" */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
+		pk_backend_job_finished (job);
+		return;
+	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
 
 	priv->package_ids = package_ids;
 	job_data->progress_percentage = 0;
