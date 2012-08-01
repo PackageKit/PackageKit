@@ -486,10 +486,8 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 	g_debug ("backend job lock status changed: %i", locked);
 
 	/* if backend cache is locked at some time, this transaction is running in exclusive mode */
-	if (locked) {
-		g_debug ("changing transaction to exclusive mode");
-		transaction->priv->exclusive = TRUE;
-	}
+	if (locked)
+		pk_transaction_make_exclusive (transaction);
 }
 
 /**
@@ -2463,18 +2461,18 @@ pk_transaction_is_exclusive (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_set_exclusive:
+ * pk_transaction_make_exclusive:
  *
- * Manipulate exclusive state of this transaction.
- * NOTE: You usually don't want and should not use this!
- * This function is for testing only.
+ * Make this transaction exclusive.
  */
 void
-pk_transaction_set_exclusive (PkTransaction *transaction, gboolean exclusive)
+pk_transaction_make_exclusive (PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
-	transaction->priv->exclusive = exclusive;
+	g_debug ("changing transaction to exclusive mode");
+
+	transaction->priv->exclusive = TRUE;
 }
 
 /**
