@@ -1510,12 +1510,6 @@ bool AptIntf::tryToInstall(const pkgCache::VerIterator &ver,
 
     // Check if there is something at all to install
     pkgDepCache::StateCache &State = Cache[Pkg];
-    
-    // Check if the package is Held
-    if (State.Keep()) {
-        Cache.MarkKeep(Pkg, false);
-        return true;
-    }
 
     if (State.CandidateVer == 0) {
         _error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());

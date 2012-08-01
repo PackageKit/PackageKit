@@ -445,16 +445,14 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     PkgList updates;
     PkgList kept;
     for (pkgCache::PkgIterator pkg = cache->PkgBegin(); !pkg.end(); ++pkg) {
-        if (cache[pkg].Upgrade() == true &&
-            cache[pkg].Keep() == false &&
-            cache[pkg].NewInstall() == false) {
+        if (cache[pkg].Upgrade() == true && cache[pkg].NewInstall() == false) {
             const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
             if (!ver.end()) {
                 updates.push_back(ver);
             }
         } else if (cache[pkg].Upgradable() == true &&
                    pkg->CurrentVer != 0 &&
-                   (cache[pkg].Keep() == true || cache[pkg].Delete() == false)) {
+                   cache[pkg].Delete() == false) {
             const pkgCache::VerIterator &ver = cache.findCandidateVer(pkg);
             if (!ver.end()) {
                 kept.push_back(ver);
