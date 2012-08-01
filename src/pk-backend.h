@@ -104,6 +104,7 @@ PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 gchar		**pk_backend_get_mime_types		(PkBackend	*backend);
+gboolean	 pk_backend_supports_parallelization	(PkBackend	*backend);
 void		 pk_backend_initialize			(PkBackend	*backend);
 void		 pk_backend_destroy			(PkBackend	*backend);
 void		 pk_backend_start_job			(PkBackend	*backend,

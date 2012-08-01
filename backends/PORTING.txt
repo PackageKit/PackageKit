@@ -62,9 +62,19 @@ Guide to porting backends from 0.7.x to 0.8.x
    which can read the database at any time. Not using this method will cause
    your backend to fail, as we then try to create multiple write transactions
    too.
+   See the dummy backend for some examples.
 
-IN THE FUTURE, NOT YET:
-
+ * Make your backend is threadsafe, so tasks can be executed in parallel.
+   If your package manager is not threadsafe, create a new process and
+   do IPC from the main thread, or - if possible - change your package manager
+   to be threadsafe.
+   If you managed to do this, add a new backend function
+   "pk_backend_supports_parallelization" and let it return TRUE, so PackageKit
+   can enable parallelization for your backend.
+   Otherwise, PackageKit will fall-back to the old, non-parallel behaviour.
+   Please try to enable parallelization, and use the non-parallel approach only
+   if you have to, as some frontends will likely start to rely on beeing able
+   to request data in parallel.
 
  * Fail any transactions which requires lock with PK_ERROR_ENUM_LOCK_REQUIRED.
    PackageKit will then requeue the transaction as soon as another transaction
@@ -72,14 +82,4 @@ IN THE FUTURE, NOT YET:
    PK_ERROR_ENUM_CANNOT_GET_LOCK signal to frontends. If you continue to use
    this in your backends directly, your backend won't work properly with
    parallel transactions.
-
- * Make your backend threadsafe to be executed in parallel. If your package
-   manager is not threadsafe, create a new process and do IPC from the main
-   thread, or - if possible - change your package manager to be threadsafe.
-   If you cannot do this or don't want to do this, please make all transactions
-   - even read-only transactions - fail with PK_ERROR_ENUM_LOCK_REQUIRED if
-   you detect that your database is already open. PK will then enqueue the
-   transactions and don't try to run them in parallel.
-   Please try to do one of the first two options (fix package-manager, do IPC)
-   and use the last one only if there's no other choice, as some frontends will
-   likely start to rely on beeing able to request data in parallel.
+   (if you don't use parallelization, you can still emit CANNOT_GET_LOCK)

@@ -108,6 +108,7 @@ struct PkTransactionPrivate
 	PolkitSubject		*subject;
 	GCancellable		*cancellable;
 #endif
+	gboolean		 skip_auth_check;
 	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
@@ -482,11 +483,11 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	g_debug ("backend job lock status changed: %i", locked);
+
 	/* if backend cache is locked at some time, this transaction is running in exclusive mode */
-	if (locked) {
-		g_debug ("changing transaction to exclusive mode");
-		transaction->priv->exclusive = TRUE;
-	}
+	if (locked)
+		pk_transaction_make_exclusive (transaction);
 }
 
 /**
@@ -573,7 +574,7 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 
 	if (code == PK_ERROR_ENUM_LOCK_REQUIRED) {
 		/* the backend failed to get lock for this action, this means this transaction has to be run in exclusive mode */
-		g_debug ("changing transaction to exclusive mode");
+		g_debug ("changing transaction to exclusive mode (after failing with lock-required)");
 		transaction->priv->exclusive = TRUE;
 	} else {
 		/* emit, as it is not the internally-handled LOCK_REQUIRED code */
@@ -874,6 +875,8 @@ out:
 PkTransactionState
 pk_transaction_get_state (PkTransaction *transaction)
 {
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), PK_TRANSACTION_STATE_UNKNOWN);
+
 	return transaction->priv->state;
 }
 
@@ -1121,6 +1124,27 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
 }
 
 /**
+ * pk_transaction_is_finished_with_lock_required:
+ **/
+gboolean
+pk_transaction_is_finished_with_lock_required (PkTransaction *transaction)
+{
+	gboolean ret = FALSE;
+	PkError	*error_code;
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+
+	error_code = pk_results_get_error_code (transaction->priv->results);
+	if (error_code != NULL) {
+		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_LOCK_REQUIRED)
+			ret = TRUE;
+
+		g_object_unref (error_code);
+	}
+
+	return ret;
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1145,6 +1169,13 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
+
+	/* don't really finish the transaction if we only completed to wait for lock */
+	if (pk_transaction_is_finished_with_lock_required (transaction)) {
+		/* finish only for the transaction list */
+		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
+		return;
+	}
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
@@ -2430,6 +2461,21 @@ pk_transaction_is_exclusive (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_make_exclusive:
+ *
+ * Make this transaction exclusive.
+ */
+void
+pk_transaction_make_exclusive (PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	g_debug ("changing transaction to exclusive mode");
+
+	transaction->priv->exclusive = TRUE;
+}
+
+/**
  * pk_transaction_vanished_cb:
  **/
 static void
@@ -2849,10 +2895,12 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 
 	g_return_val_if_fail (priv->sender != NULL, FALSE);
 
-	/* we don't need to authenticate at all to just download packages */
+	/* we don't need to authenticate at all to just download
+	 * packages or if we're running unit tests */
 	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		g_debug ("No authentication required for only-download");
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD) ||
+	    priv->skip_auth_check == TRUE) {
+		g_debug ("No authentication required");
 		ret = pk_transaction_commit (transaction);
 		if (!ret) {
 			g_set_error_literal (error,
@@ -3003,6 +3051,21 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 #endif
 
 /**
+ * pk_transaction_skip_auth_checks:
+ *
+ * Skip authorization checks.
+ * NOTE: This is *only* for testing, do never
+ * use it somewhere else!
+ **/
+void
+pk_transaction_skip_auth_checks (PkTransaction *transaction, gboolean skip_checks)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	transaction->priv->skip_auth_check = skip_checks;
+}
+
+/**
  * pk_transaction_get_role:
  **/
 PkRoleEnum
@@ -3019,6 +3082,17 @@ static void
 pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 {
 	transaction->priv->role = role;
+
+	/* always set transaction exclusive for some actions (improves performance) */
+	if (role == PK_ROLE_ENUM_INSTALL_FILES ||
+	    role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPGRADE_SYSTEM ||
+	    role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+		pk_transaction_make_exclusive (transaction);
+	}
+
 	pk_transaction_emit_property_changed (transaction,
 					      "Role",
 					      g_variant_new_uint32 (role));
@@ -4175,7 +4249,7 @@ out:
 /**
  * pk_transaction_install_packages:
  **/
-static void
+void
 pk_transaction_install_packages (PkTransaction *transaction,
 				 GVariant *params,
 				 GDBusMethodInvocation *context)
@@ -5592,6 +5666,8 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	/* first set state manually, otherwise set_state will refuse to switch to an earlier stage */
 	priv->state = PK_TRANSACTION_STATE_READY;
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+
+	g_debug ("transaction has been reset after lock-required issue.");
 }
 
 /**

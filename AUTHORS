@@ -1,13 +1,14 @@
 Richard Hughes <richard@hughsie.com>
 Tom Parker <palfrey@tevp.net>
 Ken VanDine <ken@vandine.org>
+Matthias Klumpp <matthias@tenstral.net>
 
 Backend: yum
 	Tim Lauridsen <timlau@fedoraproject.org>
 	Luke Macken <lmacken@redhat.com>
-	James Bowes <jbowes@dangerouslyinc.com>	
+	James Bowes <jbowes@dangerouslyinc.com>
 	Robin Norwood <rnorwood@redhat.com>
-	
+
 Backend: conary
     Og Maciel <omaciel@foresightlinux.org>
     Elliot Peele <elliot@bentlogic.net>

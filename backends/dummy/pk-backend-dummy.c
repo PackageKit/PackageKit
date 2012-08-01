@@ -46,7 +46,6 @@ typedef struct {
 	gboolean	 use_trusted;
 	gchar		**package_ids;
 	gchar		**values;
-	gulong		 signal_timeout;
 	PkBitfield	 filters;
 	gboolean	 fake_db_locked;
 } PkBackendDummyPrivate;
@@ -55,6 +54,8 @@ typedef struct {
 	guint		 progress_percentage;
 	GSocket		*socket;
 	guint		 socket_listen_id;
+	GCancellable	*cancellable;
+	gulong		 signal_timeout;
 } PkBackendDummyJobData;
 
 static PkBackendDummyPrivate *priv;
@@ -126,9 +127,10 @@ static gboolean
 pk_backend_cancel_timeout (gpointer data)
 {
 	PkBackendJob *job = (PkBackendJob *) data;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* we can now cancel again */
-	priv->signal_timeout = 0;
+	job_data->signal_timeout = 0;
 
 	/* now mark as finished */
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
@@ -143,9 +145,13 @@ pk_backend_cancel_timeout (gpointer data)
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
-	/* cancel the timeout */
-	if (priv->signal_timeout != 0) {
-		g_source_remove (priv->signal_timeout);
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+
+	/* try to cancel the transaction */
+	g_debug ("cancelling transaction");
+	g_cancellable_cancel (job_data->cancellable);
+	if (job_data->signal_timeout != 0) {
+		g_source_remove (job_data->signal_timeout);
 
 		/* emulate that it takes us a few ms to cancel */
 		g_timeout_add (1500, pk_backend_cancel_timeout, job);
@@ -299,6 +305,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	const gchar *package_id;
 	PkBackendJob *job = (PkBackendJob *) data;
 	const gchar *changelog;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* dummy */
 	changelog = "**Thu Mar 12 2009** Adam Jackson <ajax@redhat.com> 1.6.0-13\n"
@@ -407,7 +414,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	}
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
-	priv->signal_timeout = 0;
+	job_data->signal_timeout = 0;
 	return FALSE;
 }
 
@@ -417,9 +424,10 @@ pk_backend_get_update_detail_timeout (gpointer data)
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	priv->package_ids = package_ids;
-	priv->signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, job);
+	job_data->signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, job);
 }
 
 /**
@@ -429,6 +437,7 @@ static gboolean
 pk_backend_get_updates_timeout (gpointer data)
 {
 	PkBackendJob *job = (PkBackendJob *) data;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	if (priv->use_blocked) {
 		if (!priv->updated_powertop && !priv->updated_kernel && !priv->updated_gtkhtml) {
@@ -453,7 +462,7 @@ pk_backend_get_updates_timeout (gpointer data)
 					"An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_job_finished (job);
-	priv->signal_timeout = 0;
+	job_data->signal_timeout = 0;
 	return FALSE;
 }
 
@@ -463,6 +472,7 @@ pk_backend_get_updates_timeout (gpointer data)
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 	/* check network state */
@@ -471,7 +481,7 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 		pk_backend_job_finished (job);
 		return;
 	}
-	priv->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, job);
+	job_data->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, job);
 }
 
 /**
@@ -489,6 +499,16 @@ pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		       &package_ids);
 
 	while (TRUE) {
+
+		/* check cancelled */
+		if (g_cancellable_is_cancelled (job_data->cancellable)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						   "The task was stopped successfully");
+			pk_backend_job_finished (job);
+			break;
+		}
+
 		if (job_data->progress_percentage == 100) {
 			pk_backend_job_finished (job);
 			break;
@@ -680,9 +700,10 @@ pk_backend_install_files_timeout (gpointer data)
 void
 pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
 {
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 	pk_backend_job_set_percentage (job, 101);
-	priv->signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, job);
+	job_data->signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, job);
 }
 
 /**
@@ -698,6 +719,16 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 		       &force);
 
 	while (TRUE) {
+
+		/* check cancelled */
+		if (g_cancellable_is_cancelled (job_data->cancellable)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						   "The task was stopped successfully");
+			pk_backend_job_finished (job);
+			break;
+		}
+
 		if (job_data->progress_percentage == 100) {
 			pk_backend_job_finished (job);
 			break;
@@ -917,10 +948,12 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 static void
 pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	guint i;
 	gchar *locale;
 	PkRoleEnum role;
 	gchar **search;
 	PkBitfield filters;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	role = pk_backend_job_get_role (job);
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
@@ -931,7 +964,17 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 			       &filters,
 			       &search);
 	}
-	g_usleep (200000);
+
+	/* delay, checking cancelled */
+	for (i = 0; i < 1000; i++) {
+		if (g_cancellable_is_cancelled (job_data->cancellable)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						   "The task was stopped successfully");
+			goto out;
+		}
+		g_usleep (2000);
+	}
 
 	locale = pk_backend_job_get_locale (job);
 	if (g_strcmp0 (locale, "en_GB.utf8") != 0) {
@@ -952,7 +995,7 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
-
+out:
 	pk_backend_job_finished (job);
 }
 
@@ -984,6 +1027,16 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 		       &directory);
 
 	while (TRUE) {
+
+		/* check cancelled */
+		if (g_cancellable_is_cancelled (job_data->cancellable)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						   "The task was stopped successfully");
+			pk_backend_job_finished (job);
+			break;
+		}
+
 		if (job_data->progress_percentage == 100) {
 			if (priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
@@ -1209,7 +1262,7 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 		} else {
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 						   "unexpected data: %s", buffer);
-			g_source_remove (priv->signal_timeout);
+			g_source_remove (job_data->signal_timeout);
 			pk_backend_job_finished (job);
 			goto out;
 		}
@@ -1279,18 +1332,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		return;
 	}
 
-	/* check if something else locked the "fake-db" */
-	if (priv->fake_db_locked) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
-						   "we require lock");
-		pk_backend_job_finished (job);
-		return;
-	}
-
-	/* we're now locked */
-	priv->fake_db_locked = TRUE;
-	pk_backend_job_set_locked (job, TRUE);
-
 	/* handle the socket test */
 	if (g_strcmp0 (package_ids[0], "testsocket;0.1;i386;fedora") == 0) {
 		job_data->socket = NULL;
@@ -1350,11 +1391,23 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		pk_backend_job_require_restart (job,
 						PK_RESTART_ENUM_SYSTEM,
 						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-		priv->signal_timeout = g_timeout_add (100,
+		job_data->signal_timeout = g_timeout_add (100,
 						      pk_backend_update_system_timeout,
 						      job);
 		goto out;
 	}
+
+	/* check if something else locked the "fake-db" */
+	if (priv->fake_db_locked) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCK_REQUIRED,
+						   "we require lock");
+		pk_backend_job_finished (job);
+		return;
+	}
+
+	/* we're now locked */
+	priv->fake_db_locked = TRUE;
+	pk_backend_job_set_locked (job, TRUE);
 
 	priv->package_ids = package_ids;
 	job_data->progress_percentage = 0;
@@ -1488,8 +1541,9 @@ pk_backend_what_provides_timeout (gpointer data)
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	priv->values = values;
-	priv->signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, job);
+	job_data->signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, job);
 	priv->filters = filters;
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
 	pk_backend_job_set_allow_cancel (job, TRUE);
@@ -1592,9 +1646,10 @@ pk_backend_upgrade_system_timeout (gpointer data)
 void
 pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_job_set_allow_cancel (job, TRUE);
-	priv->signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, job);
+	job_data->signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, job);
 }
 
 /**
@@ -1617,6 +1672,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* create private state for this job */
 	job_data = g_new0 (PkBackendDummyJobData, 1);
 	job_data->progress_percentage = 0;
+	job_data->cancellable = g_cancellable_new ();
 
 	/* you can use pk_backend_job_error_code() here too */
 	pk_backend_job_set_user_data (job, job_data);
@@ -1636,9 +1692,19 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 
 	/* you cannot do pk_backend_job_finished() here as well as this is
 	 * needed to fire the job_stop() vfunc */
+	g_object_unref (job_data->cancellable);
 
 	/* destroy state for this job */
 	g_free (job_data);
+}
+
+/**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return TRUE;
 }
 
 /**

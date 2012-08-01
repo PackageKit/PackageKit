@@ -93,6 +93,7 @@ typedef struct {
 	guint			 commit_id;
 	gulong			 finished_id;
 	guint			 uid;
+	guint			 tries;
 	gboolean		 background;
 } PkTransactionItem;
 
@@ -367,6 +368,75 @@ pk_transaction_list_get_active_transactions (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_get_exclusive_running:
+ *
+ * Return value: Greater than zero if any of the transactions in progress is
+ * exclusive (no other exclusive transaction can be run in parallel).
+ **/
+static guint
+pk_transaction_list_get_exclusive_running (PkTransactionList *tlist)
+{
+	PkTransactionItem *item = NULL;
+	GPtrArray *array;
+	guint exclusive_running = 0;
+	guint i;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* anything running? */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0)
+		goto out;
+
+	/* check if we have any running locked (exclusive) transaction */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+
+		/* check if a transaction is running in exclusive */
+		if (pk_transaction_is_exclusive (item->transaction)) {
+			/* should never be more that one, but we count them for sanity checks */
+			exclusive_running++;
+		}
+	}
+out:
+	g_ptr_array_free (array, TRUE);
+	return exclusive_running;
+}
+
+/**
+ * pk_transaction_list_get_background_running:
+ *
+ * Return value: %TRUE if we have running background transactions
+ **/
+static gboolean
+pk_transaction_list_get_background_running (PkTransactionList *tlist)
+{
+	PkTransactionItem *item = NULL;
+	GPtrArray *array;
+	gboolean ret = FALSE;
+	guint i;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* anything running? */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	if (array->len == 0)
+		goto out;
+
+	/* check if we have any running background transaction */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (item->background) {
+			ret = TRUE;
+			goto out;
+		}
+	}
+out:
+	g_ptr_array_free (array, TRUE);
+	return ret;
+}
+
+/**
  * pk_transaction_list_get_next_item:
  **/
 static PkTransactionItem *
@@ -375,22 +445,44 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 	PkTransactionItem *item = NULL;
 	GPtrArray *array;
 	guint i;
+	PkTransactionState state;
+	gboolean exclusive_running;
 
 	array = tlist->priv->array;
+
+	/* check for running exclusive transaction */
+	exclusive_running = pk_transaction_list_get_exclusive_running (tlist) > 0;
 
 	/* first try the waiting non-background transactions */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_READY &&
-		    !item->background)
-			goto out;
+		state = pk_transaction_get_state (item->transaction);
+
+		if ((state == PK_TRANSACTION_STATE_READY) && (!item->background)) {
+			/* check if we can run the transaction now or if we need to wait for lock release */
+			if (pk_transaction_is_exclusive (item->transaction)) {
+				if (!exclusive_running)
+					goto out;
+			} else {
+				goto out;
+			}
+		}
 	}
 
 	/* then try the other waiting transactions (background tasks) */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_READY)
-			goto out;
+		state = pk_transaction_get_state (item->transaction);
+
+		if (state == PK_TRANSACTION_STATE_READY) {
+			/* check if we can run the transaction now or if we need to wait for lock release */
+			if (pk_transaction_is_exclusive (item->transaction)) {
+				if (!exclusive_running)
+					goto out;
+			} else {
+				goto out;
+			}
+		}
 	}
 
 	/* nothing to run */
@@ -410,6 +502,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
 	guint timeout;
 	PkTransactionItem *item;
 	PkTransactionState state;
+	PkBackendJob *job;
 	const gchar *tid;
 
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
@@ -426,34 +519,56 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
 		return;
 	}
 
-	/* we've been 'used' */
-	if (item->commit_id != 0) {
-		g_source_remove (item->commit_id);
-		item->commit_id = 0;
+	if (pk_transaction_is_finished_with_lock_required (item->transaction)) {
+		pk_transaction_reset_after_lock_error (item->transaction);
+
+		/* increase the number of tries */
+		item->tries++;
+
+		g_debug ("transaction finished and requires lock now, attempt %i", item->tries);
+
+		if (item->tries > 4) {
+			/* fail the transaction */
+			job = pk_transaction_get_backend_job (item->transaction);
+
+			/* we finally failed completely to get a package manager lock */
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_GET_LOCK,
+						   "Unable to lock package database! There is probably another application using it already.");
+
+			/* now really finish & fail the transaction */
+			pk_backend_job_finished (job);
+			return;
+		}
+	} else {
+		/* we've been 'used' */
+		if (item->commit_id != 0) {
+			g_source_remove (item->commit_id);
+			item->commit_id = 0;
+		}
+
+		g_debug ("transaction %s completed, marking finished", item->tid);
+		ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_FINISHED);
+		if (!ret) {
+			g_warning ("transaction could not be set finished!");
+			return;
+		}
+
+		/* give the client a few seconds to still query the runner */
+		timeout = pk_conf_get_int (tlist->priv->conf, "TransactionKeepFinishedTimeout");
+		item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
+		g_source_set_name_by_id (item->remove_id, "[PkTransactionList] remove");
 	}
 
-	g_debug ("transaction %s completed, marking finished", item->tid);
-	ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_FINISHED);
-	if (!ret) {
-		g_warning ("transaction could not be set finished!");
-		return;
-	}
-
-	/* we have changed what is running */
-	g_debug ("emmitting ::changed");
-	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
-
-	/* give the client a few seconds to still query the runner */
-	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionKeepFinishedTimeout");
-	item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
-	g_source_set_name_by_id (item->remove_id, "[PkTransactionList] remove");
-
-	/* do the next transaction now if we have another queued */
+	/* try to run the next transaction, if possible */
 	item = pk_transaction_list_get_next_item (tlist);
 	if (item != NULL) {
 		g_debug ("running %s as previous one finished", item->tid);
 		pk_transaction_list_run_item (tlist, item);
 	}
+
+	/* we have changed what is running */
+	g_debug ("emmitting ::changed");
+	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 }
 
 /**
@@ -645,7 +760,7 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	/* cancel all running background transaction */
+	/* cancel all running background transactions */
 	array = tlist->priv->array;
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
@@ -694,8 +809,6 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 {
 	gboolean ret;
 	PkTransactionItem *item;
-	PkTransactionItem *item_active;
-	GPtrArray *array;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
@@ -706,7 +819,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 		return FALSE;
 	}
 
-	/* check we're not this again */
+	/* check we're not doing this again */
 	if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_COMMITTED) {
 		g_warning ("already committed");
 		return FALSE;
@@ -720,6 +833,10 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 		return FALSE;
 	}
 
+	/* treat all transactions as exclusive if backend does not support parallelization */
+	if (!pk_backend_supports_parallelization (tlist->priv->backend))
+		pk_transaction_make_exclusive (item->transaction);
+
 	/* we've been 'used' */
 	if (item->commit_id != 0) {
 		g_source_remove (item->commit_id);
@@ -730,33 +847,23 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	g_debug ("emitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
-	/* do the transaction now if we have no other in progress */
-	/* FIXME: Hack to keep this function working with get_active_transactions, adjustment to parallel transactions
-	 * is done in the para_processing branch right now. */
-	array = pk_transaction_list_get_active_transactions (tlist);
-	if (array->len == 0) {
-		g_debug ("running %s as no others in progress", item->tid);
-		pk_transaction_list_run_item (tlist, item);
-		goto out;
-	}
-	item_active = (PkTransactionItem *) g_ptr_array_index (array, 0);
-
-	/* is the current running transaction backtround, and this new
+	/* is one of the current running transactions background, and this new
 	 * transaction foreground? */
 	ret = pk_conf_get_bool (tlist->priv->conf,
 				"CancelBackgroundTransactions");
-	if (!ret)
-		goto out;
-	if (!item->background && item_active->background) {
-		g_debug ("cancelling running background transaction %s "
-			 "and instead running %s",
-			 item_active->tid, item->tid);
-		pk_transaction_cancel_bg (item_active->transaction);
-		goto out;
+	if (!ret) {
+		if (!item->background && pk_transaction_list_get_background_running (tlist)) {
+			g_debug ("cancelling running background transactions and instead running %s",
+				item->tid);
+			pk_transaction_list_cancel_background (tlist);
+		}
 	}
-out:
-	if (array != NULL)
-		g_ptr_array_free (array, TRUE);
+
+	/* do the transaction now, if possible */
+	g_debug ("running %s", item->tid);
+	if (pk_transaction_is_exclusive (item->transaction) == FALSE ||
+	    pk_transaction_list_get_exclusive_running (tlist) == 0)
+		pk_transaction_list_run_item (tlist, item);
 
 	return TRUE;
 }
@@ -840,10 +947,12 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
+
 		role = pk_transaction_get_role (item->transaction);
-		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] background[%i]\n", i,
+		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] exclusive[%i] background[%i]\n", i,
 					pk_role_enum_to_string (role), item->tid,
 					pk_transaction_state_to_string (state),
+					pk_transaction_is_exclusive (item->transaction),
 					item->background);
 	}
 
@@ -878,6 +987,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	guint i;
 	gboolean ret = TRUE;
 	guint running = 0;
+	guint running_exclusive = 0;
 	guint waiting = 0;
 	guint no_commit = 0;
 	guint length;
@@ -925,6 +1035,13 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	/* more than one running */
 	if (running > 0) {
 		g_debug ("%i are running", running);
+	}
+
+	/* more than one exclusive transactions running? */
+	running_exclusive = pk_transaction_list_get_exclusive_running (tlist);
+	if (running_exclusive > 1) {
+		g_warning ("%i exclusive transactions running", running_exclusive);
+		ret = FALSE;
 	}
 
 	/* nothing running */

@@ -37,6 +37,9 @@ void	pk_transaction_search_details	(PkTransaction	*transaction,
 void	pk_transaction_search_names	(PkTransaction	*transaction,
 					 GVariant	*params,
 					 GDBusMethodInvocation *context);
+void	pk_transaction_install_packages (PkTransaction *transaction,
+					 GVariant *params,
+					 GDBusMethodInvocation *context);
 gboolean	 pk_transaction_set_sender			(PkTransaction	*transaction,
 								 const gchar	*sender);
 gboolean	 pk_transaction_filter_check			(const gchar	*filter,
