@@ -2563,23 +2563,19 @@ bool AptIntf::installPackages(AptCacheFile &cache, PkBitfield flags, bool autore
     }
 
     PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
-    pk_backend_set_simultaneous_mode(backend, true);
     // Download and check if we can continue
     if (fetcher.Run() != pkgAcquire::Continue
             && m_cancel == false) {
         // We failed and we did not cancel
         show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         return false;
-    }
-    pk_backend_set_simultaneous_mode(backend, false);
-    
-    
-    
+    }    
+
     if (_error->PendingError() == true) {
         cout << "PendingError download" << endl;
         return false;
     }
-    
+
     // Download finished, check if we should proceed the install
     if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
         return true;
