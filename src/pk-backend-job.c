@@ -1009,10 +1009,6 @@ pk_backend_job_package_emulate_finished (PkBackendJob *job)
 	gchar *package_id = NULL;
 	gchar *summary = NULL;
 
-	/* simultaneous handles this on it's own */
-	if (pk_backend_get_simultaneous_mode (job->priv->backend))
-		goto out;
-
 	/* first package in transaction */
 	item = job->priv->last_package;
 	if (item == NULL)
@@ -1057,12 +1053,6 @@ static gboolean
 pk_backend_job_package_emulate_finished_for_package (PkBackendJob *job, PkPackage *item)
 {
 	gboolean ret = FALSE;
-
-	/* simultaneous handles this on it's own */
-	if (pk_backend_get_simultaneous_mode (job->priv->backend)) {
-		g_debug ("backend handling finished");
-		goto out;
-	}
 
 	/* first package in transaction */
 	if (job->priv->last_package == NULL) {
@@ -1174,22 +1164,19 @@ pk_backend_job_package (PkBackendJob *job,
 		goto out;
 	}
 
-	/* we automatically set the transaction status for some PkInfoEnums if running
-	 * in non-simultaneous transaction mode */
-	if (!pk_backend_get_simultaneous_mode (job->priv->backend)) {
-		if (info == PK_INFO_ENUM_DOWNLOADING)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
-		else if (info == PK_INFO_ENUM_UPDATING)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
-		else if (info == PK_INFO_ENUM_INSTALLING)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
-		else if (info == PK_INFO_ENUM_REMOVING)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
-		else if (info == PK_INFO_ENUM_CLEANUP)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
-		else if (info == PK_INFO_ENUM_OBSOLETING)
-			pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
-	}
+	/* we automatically set the transaction status  */
+	if (info == PK_INFO_ENUM_DOWNLOADING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+	else if (info == PK_INFO_ENUM_UPDATING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+	else if (info == PK_INFO_ENUM_INSTALLING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+	else if (info == PK_INFO_ENUM_REMOVING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+	else if (info == PK_INFO_ENUM_CLEANUP)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
+	else if (info == PK_INFO_ENUM_OBSOLETING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
 
 	/* we've sent a package for this transaction */
 	job->priv->has_sent_package = TRUE;

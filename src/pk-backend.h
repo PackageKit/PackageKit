@@ -224,9 +224,6 @@ void		 pk_backend_accept_eula			(PkBackend	*backend,
 							 const gchar	*eula_id);
 gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
 							 const gchar	*eula_id);
-void		 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
-							 gboolean	 simultaneous);
-gboolean	 pk_backend_get_simultaneous_mode	(PkBackend	*backend);
 
 G_END_DECLS
 

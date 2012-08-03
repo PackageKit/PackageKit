@@ -182,7 +182,6 @@ struct PkBackendPrivate
 {
 	gboolean		 during_initialize;
 	gboolean		 loaded;
-	gboolean		 simultaneous;
 	gchar			*name;
 	gpointer		 file_changed_data;
 	GHashTable		*eulas;
@@ -553,30 +552,6 @@ pk_backend_unload (PkBackend *backend)
 		backend->priv->desc->destroy (backend);
 	backend->priv->loaded = FALSE;
 	return TRUE;
-}
-
-/**
- * pk_backend_set_simultaneous_mode:
- **/
-void
-pk_backend_set_simultaneous_mode (PkBackend *backend, gboolean simultaneous)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->priv->loaded);
-
-	backend->priv->simultaneous = simultaneous;
-	if (simultaneous)
-		g_warning ("simultaneous mode is not well tested, use with caution");
-}
-
-/**
- * pk_backend_get_simultaneous_mode:
- **/
-gboolean
-pk_backend_get_simultaneous_mode (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return backend->priv->simultaneous;
 }
 
 /**
