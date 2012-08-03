@@ -31,6 +31,7 @@ typedef struct {
 	gchar		*type_name;
 	gchar		*codec_name;
 	gchar		*app_name;
+	gchar		*gstreamer_version;
 } PkGstCodecInfo;
 
 enum {
@@ -58,9 +59,13 @@ pk_gst_parse_codec (const gchar *codec)
 		g_message ("PackageKit: not a GStreamer codec line");
 		goto out;
 	}
-	if (g_strcmp0 (split[0], "gstreamer") != 0 ||
-	    g_strcmp0 (split[1], "0.10") != 0) {
-		g_message ("PackageKit: not for GStreamer 0.10");
+	if (g_strcmp0 (split[0], "gstreamer") != 0) {
+		g_message ("PackageKit: not a GStreamer codec request");
+		goto out;
+	}
+	if (g_strcmp0 (split[1], "0.10") != 0 &&
+	    g_strcmp0 (split[1], "1.0") != 0) {
+		g_message ("PackageKit: not recognised GStreamer version");
 		goto out;
 	}
 
@@ -99,6 +104,7 @@ pk_gst_parse_codec (const gchar *codec)
 	gst_structure_remove_field (s, "bitrate");
 
 	info = g_new0 (PkGstCodecInfo, 1);
+	info->gstreamer_version = g_strdup (split[1]);
 	info->app_name = g_strdup (split[2]);
 	info->codec_name = g_strdup (split[3]);
 	info->type_name = g_strdup (type_name);
@@ -219,6 +225,7 @@ pk_gst_codec_free (PkGstCodecInfo *codec)
 	g_free (codec->type_name);
 	g_free (codec->codec_name);
 	g_free (codec->app_name);
+	g_free (codec->gstreamer_version);
 }
 
 /**
@@ -344,12 +351,18 @@ main (int argc, gchar **argv)
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
 			s = pk_gst_structure_to_provide (info->structure);
-			type = g_strdup_printf ("gstreamer0.10(%s-%s)%s%s", info->type_name,
-						gst_structure_get_name (info->structure), s, suffix);
+			type = g_strdup_printf ("gstreamer%s(%s-%s)%s%s",
+						info->gstreamer_version,
+						info->type_name,
+						gst_structure_get_name (info->structure),
+						s, suffix);
 			g_free (s);
 			g_message ("PackageKit: structure: %s", type);
 		} else {
-			type = g_strdup_printf ("gstreamer0.10(%s)%s", info->type_name, suffix);
+			type = g_strdup_printf ("gstreamer%s(%s)%s",
+						info->gstreamer_version,
+						info->type_name,
+						suffix);
 			g_message ("PackageKit: non-structure: %s", type);
 		}
 
