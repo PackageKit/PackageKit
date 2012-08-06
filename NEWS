@@ -1,3 +1,51 @@
+Version 0.8.3
+~~~~~~~~~~~~~
+Released: 2012-08-06
+
+Notes:
+ - This is the first release that features the work done by Matthias to
+   allow multiple transactions to run in parallel.
+   This makes applications such as gnome-software and software-center
+   run without having to wait for the global lock just to query.
+ - The aptcc and zif backends are run in parallel by default, other
+   backends still run each transaction one at a time.
+
+Libraries:
+ - glib: Save the transaction flags when removing packages (Richard Hughes)
+
+Backends:
+ - aptcc: Don't use pk_backend_set_simultaneous_mode as it is obsoleted by ItemProgress (Daniel Nicoletti)
+ - aptcc: Implement pk_backend_reset_job() to keep the cache alive (Daniel Nicoletti)
+ - dummy: Add fake-locks to test parallelization (Matthias Klumpp)
+ - dummy: Fix cancellation when using threads (Richard Hughes)
+ - dummy: Make InstallPackages() threaded (Matthias Klumpp)
+ - dummy: Make RefreshCache() threaded (Matthias Klumpp)
+ - dummy: Make Resolve() threaded (Richard Hughes)
+ - dummy: Make search_details and search_names threaded (Matthias Klumpp)
+ - dummy: Make sure we unlock the backend again on UpdatePackages() (Matthias Klumpp)
+ - dummy: Make UpdatePackages() threaded and fix lock-issue (Matthias Klumpp)
+ - yum: Don't return an obscure error if the rpmdb returns a result it can't later find (Richard Hughes)
+ - yum: Fix a backtrace if we send the legacy percentage update (Richard Hughes)
+ - yum: Fix a python backtrace when removing a package (Richard Hughes)
+ - yum: Set the item percentage when installing the package (Richard Hughes)
+ - yum: Use the correct API when using ItemProgress (Richard Hughes)
+
+New Features:
+ - Add handling for parallel transactions to PkTransactionList (Matthias Klumpp)
+ - Add sanity checks for PkBackendJob to check if it is running or not (Matthias Klumpp)
+ - Add self-tests for parallelization (Matthias Klumpp)
+ - Allow backends to disable parallelization if they don't support it (Matthias Klumpp)
+ - Always make some transaction roles exclusive (Matthias Klumpp)
+ - Print the ItemProgress signals in pkmon when in verbose mode (Richard Hughes)
+
+Bugfixes:
+ - Add GStreamer 1.0 support to the PackageKit plugin (Richard Hughes)
+ - Add WritePreparedUpdates config item for admins to turn off the systemd-updates feature (Richard Hughes)
+ - Allow the authentication steps to be optionally skipped when in self-test mode (Matthias Klumpp)
+ - Don't skip the reset action if a backend only implements _start() or _stop() (Richard Hughes)
+ - Don't treat a dispatcher failure as an ignorable error (Richard Hughes)
+ - Fix GIR annotations (and add PkBackendJob) (Matthias Klumpp)
+
 Version 0.8.2
 ~~~~~~~~~~~~~
 Released: 2012-07-16
