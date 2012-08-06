@@ -194,6 +194,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	PkStatusEnum status;
 	PkPackage *package = NULL;
 	PkInfoEnum info;
+	PkItemProgress *item_progress = NULL;
 	guint percentage;
 	gboolean allow_cancel;
 	gchar *summary = NULL;
@@ -208,6 +209,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		      "percentage", &percentage,
 		      "allow-cancel", &allow_cancel,
 		      "package", &package,
+		      "item-progress", &item_progress,
 		      "package-id", &package_id,
 		      "transaction-id", &transaction_id,
 		      NULL);
@@ -237,10 +239,18 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		g_print ("%s\tallow_cancel %i\n", transaction_id, allow_cancel);
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
 		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_string (status));
+	} else if (type == PK_PROGRESS_TYPE_ITEM_PROGRESS) {
+		g_print ("%s\titem-progress %s,%i [%s]\n",
+			 transaction_id,
+			 pk_item_progress_get_package_id (item_progress),
+			 pk_item_progress_get_percentage (item_progress),
+			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)));
 	}
 out:
 	if (package != NULL)
 		g_object_unref (package);
+	if (item_progress != NULL)
+		g_object_unref (item_progress);
 	g_free (package_id);
 	g_free (package_id_tmp);
 	g_free (summary);
