@@ -1208,6 +1208,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # if the package is found, then return it (do not have to match the repo_id)
             if len(pkgs) != 0:
                 return pkgs[0], True
+            return None, False
 
         # find the correct repo, and don't use yb.pkgSack.searchNevra as it
         # searches all repos and takes 66ms
