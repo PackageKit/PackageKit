@@ -3397,6 +3397,7 @@ pk_client_remove_packages_async (PkClient *client,
 							       state,
 							       NULL);
 	}
+	state->transaction_flags = transaction_flags;
 	state->allow_deps = allow_deps;
 	state->autoremove = autoremove;
 	state->package_ids = g_strdupv (package_ids);
