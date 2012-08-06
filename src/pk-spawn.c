@@ -260,6 +260,9 @@ pk_spawn_check_child (PkSpawn *spawn)
 			g_debug ("the child exited with success");
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
+		} else if (retval == 254) {
+			g_debug ("backend was exited rather than finished");
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
 		} else {
 			g_warning ("the child exited with return code %i", retval);
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)

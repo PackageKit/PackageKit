@@ -199,7 +199,7 @@ class PackageKitBaseBackend:
             # huge race when you try to change a dispatcher because of an error.
             #
             # Leave PackageKit to clean up for us in this case.
-            sys.exit(1)
+            sys.exit(254)
 
     def message(self, typ, msg):
         '''
