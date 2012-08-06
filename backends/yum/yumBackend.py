@@ -3315,7 +3315,17 @@ class PackageKitCallback(RPMBaseCallback):
         if package and te_total > 0:
             val = (te_current*100L) / te_total
             if self.curpkg:
-                self.base.item_progress(self.base._pkg_to_id(self.curpkg), STATUS_INSTALL, val)
+                # curpkg is a yum package object or simple string of the package name
+                if type(self.curpkg) in types.StringTypes:
+                    package_id = self.base.get_package_id(self.curpkg, '', '', '')
+                    self.base.item_progress(package_id, TransactionsStateMap[action], val)
+                else:
+                    repo_id = _to_unicode(self.curpkg.repo.id)
+                    if repo_id.find("/") != -1:
+                        repo_id = 'local'
+                    pkgver = _get_package_ver(self.curpkg)
+                    package_id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, repo_id)
+                    self.base.item_progress(package_id, TransactionsStateMap[action], val)
 
         # find out the offset
         pct_start = StatusPercentageMap[STATUS_INSTALL]
