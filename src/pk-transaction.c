@@ -2246,6 +2246,10 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
 
+	/* Ignore "accept-eula" */
+	if (priv->role == PK_ROLE_ENUM_ACCEPT_EULA)
+		return TRUE;
+
 	/* prepare for use; the transaction list ensures this is safe */
 	pk_backend_reset (priv->backend);
 
