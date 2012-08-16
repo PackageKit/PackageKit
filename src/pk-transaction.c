@@ -2375,63 +2375,175 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* do the correct action with the cached parameters */
-	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
-		pk_backend_get_depends (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
-	else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
-		pk_backend_get_update_detail (priv->backend, priv->job, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
-		pk_backend_resolve (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
-		pk_backend_download_packages (priv->backend, priv->job, priv->cached_package_ids, priv->cached_directory);
-	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
-		pk_backend_get_details (priv->backend, priv->job, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
-		pk_backend_get_distro_upgrades (priv->backend, priv->job);
-	else if (priv->role == PK_ROLE_ENUM_GET_FILES)
-		pk_backend_get_files (priv->backend, priv->job, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
-		pk_backend_get_requires (priv->backend, priv->job, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
-	else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES)
-		pk_backend_what_provides (priv->backend, priv->job, priv->cached_filters, priv->cached_provides, priv->cached_values);
-	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
-		pk_backend_get_updates (priv->backend, priv->job, priv->cached_filters);
-	else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES)
-		pk_backend_get_packages (priv->backend, priv->job, priv->cached_filters);
-	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
-		pk_backend_search_details (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
-	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		pk_backend_search_files (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
-	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
-		pk_backend_search_groups (priv->backend, priv->job, priv->cached_filters, priv->cached_values);
-	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
-		pk_backend_search_names (priv->backend, priv->job, priv->cached_filters,priv->cached_values);
-	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		pk_backend_install_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
-		pk_backend_install_files (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_full_paths);
-	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
-		pk_backend_install_signature (priv->backend, priv->job, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
-	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
-		pk_backend_refresh_cache (priv->backend, priv->job,  priv->cached_force);
-	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
-		pk_backend_remove_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
-	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		pk_backend_update_packages (priv->backend, priv->job, priv->cached_transaction_flags, priv->cached_package_ids);
-	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
-		pk_backend_get_categories (priv->backend, priv->job);
-	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
-		pk_backend_get_repo_list (priv->backend, priv->job, priv->cached_filters);
-	else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE)
-		pk_backend_repo_enable (priv->backend, priv->job, priv->cached_repo_id, priv->cached_enabled);
-	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
-		pk_backend_repo_set_data (priv->backend, priv->job, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
-	else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		pk_backend_upgrade_system (priv->backend, priv->job, priv->cached_value, priv->cached_provides);
-	} else if (priv->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-		pk_backend_repair_system (priv->backend, priv->job, priv->cached_transaction_flags);
-	} else {
+	switch (priv->role) {
+	case PK_ROLE_ENUM_GET_DEPENDS:
+		pk_backend_get_depends (priv->backend,
+					priv->job,
+					priv->cached_filters,
+					priv->cached_package_ids,
+					priv->cached_force);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+		pk_backend_get_update_detail (priv->backend,
+					      priv->job,
+					      priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_RESOLVE:
+		pk_backend_resolve (priv->backend,
+				    priv->job,
+				    priv->cached_filters,
+				    priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+		pk_backend_download_packages (priv->backend,
+					      priv->job,
+					      priv->cached_package_ids,
+					      priv->cached_directory);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS:
+		pk_backend_get_details (priv->backend,
+					priv->job,
+					priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
+		pk_backend_get_distro_upgrades (priv->backend,
+						priv->job);
+		break;
+	case PK_ROLE_ENUM_GET_FILES:
+		pk_backend_get_files (priv->backend,
+				      priv->job,
+				      priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_GET_REQUIRES:
+		pk_backend_get_requires (priv->backend,
+					 priv->job,
+					 priv->cached_filters,
+					 priv->cached_package_ids,
+					 priv->cached_force);
+		break;
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+		pk_backend_what_provides (priv->backend,
+					  priv->job,
+					  priv->cached_filters,
+					  priv->cached_provides,
+					  priv->cached_values);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATES:
+		pk_backend_get_updates (priv->backend,
+					priv->job,
+					priv->cached_filters);
+		break;
+	case PK_ROLE_ENUM_GET_PACKAGES:
+		pk_backend_get_packages (priv->backend,
+					 priv->job,
+					 priv->cached_filters);
+		break;
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+		pk_backend_search_details (priv->backend,
+					   priv->job,
+					   priv->cached_filters,
+					   priv->cached_values);
+		break;
+	case PK_ROLE_ENUM_SEARCH_FILE:
+		pk_backend_search_files (priv->backend,
+					 priv->job,
+					 priv->cached_filters,
+					 priv->cached_values);
+		break;
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+		pk_backend_search_groups (priv->backend,
+					  priv->job,
+					  priv->cached_filters,
+					  priv->cached_values);
+		break;
+	case PK_ROLE_ENUM_SEARCH_NAME:
+		pk_backend_search_names (priv->backend,
+					 priv->job,
+					 priv->cached_filters,
+					 priv->cached_values);
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		pk_backend_install_packages (priv->backend,
+					     priv->job,
+					     priv->cached_transaction_flags,
+					     priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_INSTALL_FILES:
+		pk_backend_install_files (priv->backend,
+					  priv->job,
+					  priv->cached_transaction_flags,
+					  priv->cached_full_paths);
+		break;
+	case PK_ROLE_ENUM_INSTALL_SIGNATURE:
+		pk_backend_install_signature (priv->backend,
+					      priv->job,
+					      PK_SIGTYPE_ENUM_GPG,
+					      priv->cached_key_id,
+					      priv->cached_package_id);
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		pk_backend_refresh_cache (priv->backend,
+					  priv->job,
+					  priv->cached_force);
+		break;
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		pk_backend_remove_packages (priv->backend,
+					    priv->job,
+					    priv->cached_transaction_flags,
+					    priv->cached_package_ids,
+					    priv->cached_allow_deps,
+					    priv->cached_autoremove);
+		break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		pk_backend_update_packages (priv->backend,
+					    priv->job,
+					    priv->cached_transaction_flags,
+					    priv->cached_package_ids);
+		break;
+	case PK_ROLE_ENUM_GET_CATEGORIES:
+		pk_backend_get_categories (priv->backend,
+					   priv->job);
+		break;
+	case PK_ROLE_ENUM_GET_REPO_LIST:
+		pk_backend_get_repo_list (priv->backend,
+					  priv->job,
+					  priv->cached_filters);
+		break;
+	case PK_ROLE_ENUM_REPO_ENABLE:
+		pk_backend_repo_enable (priv->backend,
+					priv->job,
+					priv->cached_repo_id,
+					priv->cached_enabled);
+		break;
+	case PK_ROLE_ENUM_REPO_SET_DATA:
+		pk_backend_repo_set_data (priv->backend,
+					  priv->job,
+					  priv->cached_repo_id,
+					  priv->cached_parameter,
+					  priv->cached_value);
+		break;
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+		pk_backend_upgrade_system (priv->backend,
+					   priv->job,
+					   priv->cached_value,
+					   priv->cached_provides);
+		break;
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+		pk_backend_repair_system (priv->backend,
+					  priv->job,
+					  priv->cached_transaction_flags);
+		break;
+	/* handled in the engine without a transaction */
+	case PK_ROLE_ENUM_CANCEL:
+	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
+	case PK_ROLE_ENUM_ACCEPT_EULA:
+		g_warning ("role %s should be handled by engine",
+			   pk_role_enum_to_string (priv->role));
+		break;
+	default:
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
+		break;
 	}
 out:
 	return ret;
