@@ -36,6 +36,7 @@
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
 #define PK_EXIT_CODE_CANNOT_SETUP	6
+#define PK_EXIT_CODE_TRANSACTION_FAILED	7
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles = 0;
@@ -694,6 +695,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		/* TRANSLATORS: we failed to get any results, which is pretty fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
 		g_error_free (error);
+		retval = PK_EXIT_CODE_TRANSACTION_FAILED;
 		goto out;
 	}
 
@@ -879,6 +881,7 @@ pk_console_install_packages (gchar **packages, GError **error)
 		*error = g_error_new (1, 0, _("This tool could not find any available package: %s"), error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
+		retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 		goto out;
 	}
 
@@ -1381,6 +1384,7 @@ main (int argc, char *argv[])
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to parse command line"), error->message);
 		g_error_free (error);
+		retval = PK_EXIT_CODE_SYNTAX_INVALID;
 		goto out_last;
 	}
 
@@ -1391,6 +1395,7 @@ main (int argc, char *argv[])
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
 		g_error_free (error);
+		retval = PK_EXIT_CODE_CANNOT_SETUP;
 		goto out_last;
 	}
 
