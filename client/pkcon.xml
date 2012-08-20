@@ -116,6 +116,14 @@ manpage.1: manpage.xml
           <para>The initial setup failed, e.g. setting the network proxy.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>
+          <option>7</option>
+        </term>
+        <listitem>
+          <para>The transaction failed, see the detailed error for more information.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
