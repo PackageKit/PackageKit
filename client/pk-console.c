@@ -1209,7 +1209,7 @@ pk_console_get_summary (void)
 				_("Subcommands:"));
 
 	/* always */
-	g_string_append_printf (string, "  %s\n", "get-actions");
+	g_string_append_printf (string, "  %s\n", "get-roles");
 	g_string_append_printf (string, "  %s\n", "get-groups");
 	g_string_append_printf (string, "  %s\n", "get-filters");
 	g_string_append_printf (string, "  %s\n", "get-transactions");
