@@ -926,10 +926,11 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 {
 	gchar *basename;
 	gchar *path;
-	gchar **files;
+	gchar **files = NULL;
 	GFile *source;
 	GFile *destination;
-	PkFiles *item;
+	PkFiles *item = NULL;
+	GError *error = NULL;
 
 	/* generate the destination location */
 	basename = g_path_get_basename (source_file);
@@ -939,6 +940,15 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	g_debug ("copy %s to %s", source_file, path);
 	source = g_file_new_for_path (source_file);
 	destination = g_file_new_for_path (path);
+	if (g_file_query_exists (destination, state->cancellable)) {
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_ERROR_ENUM_FILE_CONFLICTS,
+			     "file %s already exists", path);
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
 	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
 			   (GFileProgressCallback) pk_client_copy_progress_cb, state,
 			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb, state);
@@ -955,7 +965,9 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	pk_results_add_files (state->results, item);
 
 	/* free everything we've used */
-	g_object_unref (item);
+out:
+	if (item != NULL)
+		g_object_unref (item);
 	g_object_unref (source);
 	g_object_unref (destination);
 	g_strfreev (files);
