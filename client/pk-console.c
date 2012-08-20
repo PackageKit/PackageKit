@@ -41,7 +41,7 @@
 static GMainLoop *loop = NULL;
 static PkBitfield roles = 0;
 static gboolean is_console = FALSE;
-static gboolean nowait = FALSE;
+static gboolean run_mainloop = TRUE;
 static PkControl *control = NULL;
 static PkTaskText *task = NULL;
 static PkProgressBar *progressbar = NULL;
@@ -1330,9 +1330,6 @@ main (int argc, char *argv[])
 		{ "filter", '\0', 0, G_OPTION_ARG_STRING, &filter,
 			/* TRANSLATORS: command line argument, use a filter to narrow down results */
 			_("Set the filter, e.g. installed"), NULL},
-		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
-			/* TRANSLATORS: command line argument, work asynchronously */
-			_("Exit without waiting for actions to complete"), NULL},
 		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
 			/* command line argument, do we ask questions */
 			_("Install the packages without asking for confirmation"), NULL },
@@ -1537,7 +1534,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_install_packages (argv+2, &error);
+		run_mainloop = pk_console_install_packages (argv+2, &error);
 
 	} else if (strcmp (mode, "install-local") == 0) {
 		if (value == NULL) {
@@ -1568,7 +1565,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_remove_packages (argv+2, &error);
+		run_mainloop = pk_console_remove_packages (argv+2, &error);
 
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
@@ -1584,7 +1581,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		nowait = !pk_console_download_packages (argv+3, value, &error);
+		run_mainloop = pk_console_download_packages (argv+3, value, &error);
 
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
@@ -1600,9 +1597,9 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			nowait = !pk_console_update_system (filters, &error);
+			run_mainloop = pk_console_update_system (filters, &error);
 		} else {
-			nowait = !pk_console_update_packages (argv+2, &error);
+			run_mainloop = pk_console_update_packages (argv+2, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -1679,7 +1676,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_get_depends (filters, argv+2, &error);
+		run_mainloop = pk_console_get_depends (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
 		pk_client_get_distro_upgrades_async (PK_CLIENT(task), cancellable,
@@ -1693,7 +1690,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_get_update_detail (argv+2, &error);
+		run_mainloop = pk_console_get_update_detail (argv+2, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
@@ -1702,7 +1699,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_get_requires (filters, argv+2, &error);
+		run_mainloop = pk_console_get_requires (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
@@ -1722,7 +1719,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_get_details (argv+2, &error);
+		run_mainloop = pk_console_get_details (argv+2, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
@@ -1731,7 +1728,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		nowait = !pk_console_get_files (argv+2, &error);
+		run_mainloop = pk_console_get_files (argv+2, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
 		pk_task_get_updates_async (PK_TASK (task),filters, cancellable,
@@ -1772,7 +1769,7 @@ main (int argc, char *argv[])
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		nowait = TRUE;
+		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
 		g_object_get (control,
@@ -1782,7 +1779,7 @@ main (int argc, char *argv[])
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		nowait = TRUE;
+		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
 		g_object_get (control,
@@ -1792,7 +1789,7 @@ main (int argc, char *argv[])
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		nowait = TRUE;
+		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
 		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, cancellable,
@@ -1816,7 +1813,7 @@ main (int argc, char *argv[])
 	}
 
 	/* do we wait for the method? */
-	if (!nowait && error == NULL)
+	if (run_mainloop && error == NULL)
 		g_main_loop_run (loop);
 
 out:
