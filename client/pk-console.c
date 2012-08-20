@@ -1260,7 +1260,6 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	GError *error_local = NULL;
 	gboolean background = FALSE;
-	gboolean help = FALSE;
 	gboolean noninteractive = FALSE;
 	guint cache_age = 0;
 	gboolean plain = FALSE;
@@ -1305,9 +1304,6 @@ main (int argc, char *argv[])
 		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
 			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
-		{ "help", 'h', 0, G_OPTION_ARG_NONE, &help,
-			/* TRANSLATORS: command line argument, --help */
-			_("Show help options."), NULL},
 		{ NULL}
 	};
 
@@ -1331,7 +1327,6 @@ main (int argc, char *argv[])
 
 	cancellable = g_cancellable_new ();
 	context = g_option_context_new ("PackageKit Console Program");
-	g_option_context_set_help_enabled (context, FALSE);
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_add_group (context, pk_debug_get_option_group ());
