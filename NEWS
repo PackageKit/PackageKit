@@ -1,3 +1,41 @@
+Version 0.7.6
+~~~~~~~~~~~~~
+Released: 2012-08-21
+
+Notes:
+ - Lots of nice bugfixes, and a very good idea for stable distros that
+   are already shipping PackageKit 0.7.x
+
+Libraries:
+ - glib: Don't update the transaction role to 'unknown' (Richard Hughes)
+
+Backends:
+ - aptcc: Don't use tempfile with fixed name for conffiles (Matthias Klumpp)
+ - alpm: add new error codes (Jonathan Conder)
+ - alpm: add GPGDir config option (Jonathan Conder)
+ - alpm: port to new API (Jonathan Conder)
+ - alpm: report new informational updates to frontend (Jonathan Conder)
+ - alpm: implement preliminary signature checking (Jonathan Conder)
+ - alpm: remove ShowSize option, add VerbosePkgLists (Jonathan Conder)
+ - alpm: fix freedesktop.org bug #44713 (Jonathan Conder)
+ - alpm: fix locale and proxy support (Jonathan Conder)
+ - alpm: allow forced install of untrusted packages (Jonathan Conder)
+ - yum: Don't return an obscure error if the rpmdb returns a result it can't later find (Richard Hughes)
+
+New features:
+ - Add GStreamer 1.0 support to the PackageKit plugin (Richard Hughes)
+
+Bugfixes:
+ - Ignore "accept-eula" in pk-transaction-run (Gary Ching-Pang Lin)
+ - Check for CancelBackgroundTransactions setting again (Matthias Klumpp)
+ - Fix a crash where NetworkManager is restarted whilst packagekitd is running (Richard Hughes)
+ - Drop the unused polkit-backend-1 check from configure as it's gone upstream (Richard Hughes)
+ - Fix segfault in pkcon when user does ctrl-d at the package prompt (Richard Hughes)
+ - Inhibit shutdown when the package manager is locked (Richard Hughes)
+ - Fix several return values in pkcon when there is an error (Richard Hughes)
+ - Allow the user to specify standard GNU help options (Richard Hughes)
+ - Do not allow the client to overwrite files when downloading packages (Richard Hughes)
+
 Version 0.7.5
 ~~~~~~~~~~~~~
 Released: 2012-06-26

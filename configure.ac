@@ -53,7 +53,7 @@ AC_SUBST(PK_VERSION)
 #   fixed, change:
 #      REVISION += 1
 LT_CURRENT=14
-LT_REVISION=14
+LT_REVISION=15
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -644,7 +644,7 @@ if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
 		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
-			       "Meta release is available"), 
+			       "Meta release is available"),
 		     AC_MSG_WARN([Distro upgrade notification not supported]))
 	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
 		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
