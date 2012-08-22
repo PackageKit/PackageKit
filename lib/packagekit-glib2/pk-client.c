@@ -4346,9 +4346,6 @@ pk_client_adopt_get_proxy_cb (GObject *object,
 
 	/* connect */
 	pk_client_proxy_connect (state);
-
-	state->ret = TRUE;
-	pk_client_state_finish (state, NULL);
 }
 
 /**
