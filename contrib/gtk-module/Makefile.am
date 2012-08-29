@@ -13,9 +13,6 @@ libpk_gtk_module_la_CFLAGS = $(PK_GTK_MODULE_CFLAGS) $(WARNINGFLAGS_C)
 gtkmoduledir = $(libdir)/gnome-settings-daemon-3.0/gtk-modules
 dist_gtkmodule_DATA = pk-gtk-module.desktop
 
-@GSETTINGS_RULES@
-gsettings_SCHEMAS = org.gnome.settings-daemon.gtk-modules-packagekit.gschema.xml
-
 clean-local:
 	rm -f *~
 
