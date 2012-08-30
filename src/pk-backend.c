@@ -192,6 +192,7 @@ struct PkBackendPrivate
 	PkConf			*conf;
 	GFileMonitor		*monitor;
 	PkNetwork		*network;
+	gboolean		 backend_roles_set;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -263,14 +264,15 @@ pk_backend_get_filters (PkBackend *backend)
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
-	PkBitfield roles = 0;
+	PkBitfield roles = backend->priv->roles;
 	PkBackendDesc *desc;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->loaded, PK_ROLE_ENUM_UNKNOWN);
 
-	/* optimise */
-	if (backend->priv->roles != 0)
+	/* optimise - we only skip here if we already loaded backend settings,
+	 * so we don't override preexisting settings (e.g. by plugins) */
+	if (backend->priv->backend_roles_set)
 		goto out;
 
 	/* not compulsory, but use it if we've got it */
@@ -338,6 +340,8 @@ pk_backend_get_roles (PkBackend *backend)
 	if (desc->repair_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	backend->priv->roles = roles;
+
+	backend->priv->backend_roles_set = TRUE;
 out:
 	return backend->priv->roles;
 }
