@@ -25,6 +25,8 @@ BuildRequires: dbus-glib-devel >= 0.74
 BuildRequires: pam-devel
 BuildRequires: libX11-devel
 BuildRequires: xmlto
+BuildRequires: gtk-doc
+BuildRequires: gcc-c++
 BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-devel
 BuildRequires: polkit-devel >= 0.92
