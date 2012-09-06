@@ -2599,7 +2599,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _pkg_to_id(self, pkg):
         pkgver = _get_package_ver(pkg)
-        repo = str(pkg.repo)
+        repo = pkg.repo.id
         if repo.startswith('/'):
             repo = "local"
         # can we add data from the yumdb
