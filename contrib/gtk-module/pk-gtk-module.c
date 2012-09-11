@@ -252,8 +252,7 @@ pk_pango_fc_font_map_load_fontset (PangoFontMap *font_map,
 	 * code instead of "xx"... */
 	if (G_LIKELY (language == last_language) ||
 	    language == NULL ||
-	    language == pango_language_from_string ("C") ||
-	    language == pango_language_from_string ("xx"))
+	    pango_language_matches (language, "C;xx"))
 		return fontset;
 
 	if (G_UNLIKELY (!seen_languages))
