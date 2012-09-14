@@ -33,7 +33,7 @@ libpk_plugin_external_la_SOURCES = pk-plugin-external.c
 libpk_plugin_external_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_external_la_LDFLAGS = -module -avoid-version
 libpk_plugin_external_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
- * } 
+ * }
  */
 
 #define I_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
@@ -109,10 +109,10 @@ out:
 }
 
 /**
- * pk_plugin_transaction_started:
+ * pk_plugin_transaction_start:
  */
 void
-pk_plugin_transaction_started (PkPlugin *plugin,
+pk_plugin_transaction_start (PkPlugin *plugin,
 			       PkTransaction *transaction)
 {
 }
