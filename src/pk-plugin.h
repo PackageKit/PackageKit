@@ -69,7 +69,7 @@ void		 pk_plugin_destroy			(PkPlugin	*plugin);
 void		 pk_plugin_state_changed		(PkPlugin	*plugin);
 void		 pk_plugin_transaction_run		(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
-void		 pk_plugin_transaction_started		(PkPlugin	*plugin,
+void		 pk_plugin_transaction_start		(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_finished_start	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
