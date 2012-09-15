@@ -915,7 +915,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
-		function = "pk_plugin_transaction_start";
+		function = "pk_plugin_transaction_started";
 		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
@@ -2364,6 +2364,7 @@ pk_transaction_run (PkTransaction *transaction)
 	/* did the plugin finish or abort the transaction? */
 	if (exit_status != PK_EXIT_ENUM_UNKNOWN)  {
 		pk_transaction_finished_emit (transaction, exit_status, 0);
+
 		ret = TRUE;
 		goto out;
 	}
