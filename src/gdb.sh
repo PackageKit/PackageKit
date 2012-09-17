@@ -7,11 +7,6 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-if [ "$USER" != "root" ]; then
-    echo "You are not running this script as root. Use sudo."
-    exit 1
-fi
-
 if [ "$1x" = "x" ]; then
     echo "NO BACKEND SPECIFIED, using dummy"
     BACKEND=dummy

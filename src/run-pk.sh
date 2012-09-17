@@ -7,11 +7,6 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-if [ "$USER" != "root" ]; then
-    echo "You are not running this script as root. Use sudo."
-    exit 1
-fi
-
 # check some important things are installed systemwide
 if [ ! -e "/etc/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
     echo "You need to install the DBus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /etc/dbus-1/system.d"
