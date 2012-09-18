@@ -851,7 +851,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	 * transaction foreground? */
 	ret = pk_conf_get_bool (tlist->priv->conf,
 				"CancelBackgroundTransactions");
-	if (!ret) {
+	if (ret) {
 		if (!item->background && pk_transaction_list_get_background_running (tlist)) {
 			g_debug ("cancelling running background transactions and instead running %s",
 				item->tid);
