@@ -1132,72 +1132,80 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 	pk_backend_job_set_locked (job, FALSE);
 }
 
-static gboolean
-pk_backend_update_system_timeout (gpointer data)
+/**
+ * pk_backend_update_system_thread:
+ **/
+static void
+pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBackendJob *job = (PkBackendJob *) data;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
-	if (job_data->progress_percentage == 100) {
 
-		/* cleanup socket stuff */
-		if (job_data->socket != NULL)
-			g_object_unref (job_data->socket);
-		if (job_data->socket_listen_id != 0)
-			g_source_remove (job_data->socket_listen_id);
+	job_data->progress_percentage = 0;
+	while (TRUE) {
 
-		pk_backend_job_finished (job);
-		return FALSE;
-	}
-	if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
-		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"powertop;1.8-1.fc8;i386;fedora",
-					"Power consumption monitor");
-	}
-	if (job_data->progress_percentage == 20 && !priv->updated_kernel) {
-		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-					"The Linux kernel (the core of the Linux operating system)");
-	}
-	if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
-		if (priv->use_blocked) {
-			pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
-						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
-						"An HTML widget for GTK+ 2.0");
-			priv->updated_gtkhtml = FALSE;
-		} else {
-			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
-						"An HTML widget for GTK+ 2.0");
-			priv->updated_gtkhtml = TRUE;
+		if (job_data->progress_percentage == 100) {
+
+			/* cleanup socket stuff */
+			if (job_data->socket != NULL)
+				g_object_unref (job_data->socket);
+			if (job_data->socket_listen_id != 0)
+				g_source_remove (job_data->socket_listen_id);
+
+			pk_backend_job_finished (job);
+			break;
 		}
+		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
+			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+						"powertop;1.8-1.fc8;i386;fedora",
+						"Power consumption monitor");
+		}
+		if (job_data->progress_percentage == 20 && !priv->updated_kernel) {
+			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"The Linux kernel (the core of the Linux operating system)");
+		}
+		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
+			if (priv->use_blocked) {
+				pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"An HTML widget for GTK+ 2.0");
+				priv->updated_gtkhtml = FALSE;
+			} else {
+				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"An HTML widget for GTK+ 2.0");
+				priv->updated_gtkhtml = TRUE;
+			}
+		}
+		if (job_data->progress_percentage == 40 && !priv->updated_powertop) {
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+			pk_backend_job_set_allow_cancel (job, FALSE);
+			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+						"powertop;1.8-1.fc8;i386;fedora",
+						"Power consumption monitor");
+			priv->updated_powertop = TRUE;
+		}
+		if (job_data->progress_percentage == 60 && !priv->updated_kernel) {
+			pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"The Linux kernel (the core of the Linux operating system)");
+			priv->updated_kernel = TRUE;
+		}
+		if (job_data->progress_percentage == 80 && !priv->updated_kernel) {
+			pk_backend_job_package (job, PK_INFO_ENUM_CLEANUP,
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"The Linux kernel (the core of the Linux operating system)");
+		}
+		job_data->progress_percentage += 1;
+		pk_backend_job_set_percentage (job, job_data->progress_percentage);
+
+		g_usleep (1000);
 	}
-	if (job_data->progress_percentage == 40 && !priv->updated_powertop) {
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
-		pk_backend_job_set_allow_cancel (job, FALSE);
-		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-					"powertop;1.8-1.fc8;i386;fedora",
-					"Power consumption monitor");
-		priv->updated_powertop = TRUE;
-	}
-	if (job_data->progress_percentage == 60 && !priv->updated_kernel) {
-		pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-					"The Linux kernel (the core of the Linux operating system)");
-		priv->updated_kernel = TRUE;
-	}
-	if (job_data->progress_percentage == 80 && !priv->updated_kernel) {
-		pk_backend_job_package (job, PK_INFO_ENUM_CLEANUP,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-					"The Linux kernel (the core of the Linux operating system)");
-	}
-	job_data->progress_percentage += 1;
-	pk_backend_job_set_percentage (job, job_data->progress_percentage);
-	return TRUE;
 }
 
 /**
@@ -1391,9 +1399,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		pk_backend_job_require_restart (job,
 						PK_RESTART_ENUM_SYSTEM,
 						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-		job_data->signal_timeout = g_timeout_add (100,
-						      pk_backend_update_system_timeout,
-						      job);
+		pk_backend_job_thread_create (job, pk_backend_update_system_thread, NULL, NULL);
 		goto out;
 	}
 
