@@ -627,6 +627,9 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 	gboolean ret;
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
+	/* reset the busy flag */
+	backend_spawn->priv->is_busy = FALSE;
+
 	/* if we force killed the process, set an error */
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_SIGKILL) {
 		/* we just call this failed, and set an error */
