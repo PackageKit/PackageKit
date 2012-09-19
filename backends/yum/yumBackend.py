@@ -2376,9 +2376,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     repo = self.yumbase.repos.getRepo(txmbr.po.repoid)
                     try:
                         path = repo.getPackage(txmbr.po)
+                    except yum.Errors.RepoError, e:
+                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download file", exit=False)
+                        return
                     except IOError, e:
                         self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
                         return
+                    except Exception, e:
+                        raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             self.percentage(100)
             return
 
