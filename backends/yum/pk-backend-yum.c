@@ -279,6 +279,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_LOCK_REQUIRED,
 					   "spawned backend requires lock");
+		pk_backend_job_finished (job);
 		return;
 	}
 	pk_backend_enable_media_repo (TRUE);
