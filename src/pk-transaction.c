@@ -2310,9 +2310,9 @@ pk_transaction_run (PkTransaction *transaction)
 	}
 
 	/* run the plugins */
-	pk_backend_start_job (priv->backend, priv->job);
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
+	pk_backend_start_job (priv->backend, priv->job);
 
 	/* is an error code set? */
 	if (pk_backend_job_get_is_error_set (priv->job)) {
