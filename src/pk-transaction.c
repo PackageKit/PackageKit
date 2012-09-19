@@ -908,7 +908,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
-		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
+		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES:
 		function = "pk_plugin_transaction_content_types";
