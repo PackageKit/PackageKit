@@ -572,7 +572,7 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 	/* add to results */
 	pk_results_set_error_code (transaction->priv->results, item);
 
-	if (code == PK_ERROR_ENUM_LOCK_REQUIRED) {
+	if (!transaction->priv->exclusive && code == PK_ERROR_ENUM_LOCK_REQUIRED) {
 		/* the backend failed to get lock for this action, this means this transaction has to be run in exclusive mode */
 		g_debug ("changing transaction to exclusive mode (after failing with lock-required)");
 		transaction->priv->exclusive = TRUE;
