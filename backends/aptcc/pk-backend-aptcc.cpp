@@ -58,7 +58,8 @@ const gchar* pk_backend_get_author(PkBackend *backend)
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {
-	return TRUE;
+	// we need to set this to TRUE as soon as the parallelization work is completed!
+	return FALSE;
 }
 
 /**
