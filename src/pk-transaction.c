@@ -918,10 +918,6 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		function = "pk_plugin_transaction_started";
 		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
-	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START:
-		function = "pk_plugin_transaction_finished_start";
-		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
-		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
 		function = "pk_plugin_transaction_finished_results";
 		backend_signals = pk_bitfield_from_enums (
@@ -1176,10 +1172,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 		return;
 	}
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START);
 
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,

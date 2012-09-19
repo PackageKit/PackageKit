@@ -45,7 +45,6 @@ typedef enum {
 	PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES,	/* for adding content types */
 	PK_PLUGIN_PHASE_TRANSACTION_RUN,		/* only this running */
 	PK_PLUGIN_PHASE_TRANSACTION_STARTED,		/* all signals connected */
-	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START,	/* finshed with all signals */
 	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS,	/* finished with some signals */
 	PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END,	/* finished with no signals */
 	PK_PLUGIN_PHASE_DESTROY,			/* plugin finalized */
@@ -70,8 +69,6 @@ void		 pk_plugin_state_changed		(PkPlugin	*plugin);
 void		 pk_plugin_transaction_run		(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_started	(PkPlugin	*plugin,
-							 PkTransaction	*transaction);
-void		 pk_plugin_transaction_finished_start	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_finished_results	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
