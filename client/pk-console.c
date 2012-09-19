@@ -1467,6 +1467,9 @@ main (int argc, char *argv[])
 	if (argc > 4)
 		parameter = argv[4];
 
+	/* start polkit tty agent to listen for password requests */
+	pk_polkit_agent_open ();
+
 	/* parse the big list */
 	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
@@ -1823,6 +1826,9 @@ out:
 		if (retval == EXIT_SUCCESS)
 			retval = EXIT_FAILURE;
 	}
+
+	/* stop listening for polkit questions */
+	pk_polkit_agent_close ();
 
 	g_free (options_help);
 	g_free (filter);

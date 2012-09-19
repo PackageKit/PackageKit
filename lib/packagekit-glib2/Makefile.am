@@ -160,6 +160,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-transaction-list.h					\
 	pk-update-detail.c					\
 	pk-update-detail.h					\
+	pk-spawn-polkit-agent.c				\
+	pk-spawn-polkit-agent.h				\
 	pk-version.h						\
 	$(NULL)
 
@@ -192,6 +194,7 @@ libpackagekitprivate_a_SOURCES =				\
 	pk-task-text.h						\
 	pk-task-wrapper.c					\
 	pk-task-wrapper.h					\
+	pk-spawn-polkit-agent.h				\
 	$(NULL)
 
 libpackagekitprivate_a_CFLAGS =					\

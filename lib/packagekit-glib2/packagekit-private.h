@@ -28,6 +28,7 @@
 #include <packagekit-glib2/pk-task-text.h>
 #include <packagekit-glib2/pk-console-shared.h>
 #include <packagekit-glib2/pk-progress-bar.h>
+#include <packagekit-glib2/pk-spawn-polkit-agent.h>
 
 #undef __PACKAGEKIT_H_INSIDE__
 
