@@ -1659,10 +1659,13 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 		vector<sat::Solvable> v;
 		vector<sat::Solvable> v2;
+		vector<sat::Solvable> v3;
 		zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], ResKind::package, v);
 		zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], ResKind::srcpackage, v2);
+		zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], ResKind::patch, v3);
 
 		v.insert (v.end (), v2.begin (), v2.end ());
+		v.insert (v.end (), v3.begin (), v3.end ());
 
 		sat::Solvable package;
 		for (vector<sat::Solvable>::iterator it = v.begin ();
