@@ -144,7 +144,14 @@ QDBusObjectPath Daemon::getTid()
 
 uint Daemon::getTimeSinceAction(Transaction::Role role)
 {
-    return global()->d_ptr->daemon->GetTimeSinceAction(role);
+    // We need to find the Role enum position
+    // since this method does not support bitwised enum.
+    for (uint i = 0; i < 64; ++i) {
+        if (role == (1 << i)) {
+            return global()->d_ptr->daemon->GetTimeSinceAction(i);
+        }
+    }
+    return UINT_MAX;
 }
 
 QList<QDBusObjectPath> Daemon::getTransactionList()
