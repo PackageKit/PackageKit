@@ -213,8 +213,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	GError *error = NULL;
 	PkConf *conf;
 	PkRoleEnum role;
-	PkBitfield backend_signals;
-
 	PkPackageCache *cache = NULL;
 	GPtrArray *pkg_array = NULL;
 	gchar **package_ids;
@@ -253,13 +251,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		g_debug ("cannot get packages");
 		goto out;
 	}
-
-	/* don't forward unnecessary info the the transaction */
-	backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
-	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_DETAILS);
-	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_PACKAGE);
-	pk_bitfield_remove (backend_signals, PK_BACKEND_SIGNAL_FINISHED);
-	pk_transaction_set_signals (transaction, plugin->job, backend_signals);
 
 	g_debug ("plugin: rebuilding package cache");
 

@@ -65,6 +65,8 @@
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
+static void	pk_transaction_signals_reset	(PkTransaction	*transaction,
+						 PkBackendJob	*job);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
@@ -901,38 +903,24 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	gboolean ret;
 	guint i;
 	PkBackendJob *job;
-	PkBitfield backend_signals = PK_BACKEND_SIGNAL_LAST;
 	PkPlugin *plugin;
 	PkPluginTransactionFunc plugin_func = NULL;
 
 	switch (phase) {
 	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
 		function = "pk_plugin_transaction_run";
-		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES:
 		function = "pk_plugin_transaction_content_types";
-		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
 		function = "pk_plugin_transaction_started";
-		backend_signals = PK_TRANSACTION_ALL_BACKEND_SIGNALS;
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
 		function = "pk_plugin_transaction_finished_results";
-		backend_signals = pk_bitfield_from_enums (
-			PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-			PK_BACKEND_SIGNAL_MESSAGE,
-			PK_BACKEND_SIGNAL_PERCENTAGE,
-			PK_BACKEND_SIGNAL_REMAINING,
-			PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-			PK_BACKEND_SIGNAL_STATUS_CHANGED,
-			PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-			-1);
 		break;
 	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END:
 		function = "pk_plugin_transaction_finished_end";
-		backend_signals = PK_TRANSACTION_NO_BACKEND_SIGNALS;
 		break;
 	default:
 		g_assert_not_reached ();
@@ -958,7 +946,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 			 g_module_name (plugin->module));
 		job = pk_backend_job_new ();
 		pk_backend_start_job (transaction->priv->backend, job);
-		pk_transaction_set_signals (transaction, job, backend_signals);
+		pk_transaction_signals_reset (transaction, job);
 		plugin->job = job;
 		plugin->backend = transaction->priv->backend;
 		plugin_func (plugin, transaction);
@@ -967,11 +955,10 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		plugin->backend = NULL;
 	}
 out:
-	/* set this to a know state in case the plugin misbehaves */
+	/* set this to a known state */
 	if (transaction->priv->job != NULL) {
-		pk_transaction_set_signals (transaction,
-					    transaction->priv->job,
-					    backend_signals);
+		pk_transaction_signals_reset (transaction,
+					    transaction->priv->job);
 	}
 	if (!ran_one)
 		g_debug ("no plugins provided %s", function);
@@ -1987,272 +1974,101 @@ pk_transaction_remaining_cb (PkBackendJob *job,
 }
 
 /**
- * pk_transaction_set_signals:
+ * pk_transaction_signals_reset:
  *
- * Connect selected signals in backend_signals to Pkransaction,
- * disconnect everthing else not mentioned there.
+ * Connect all backend_signals to the Pkransaction.
  **/
-void
-pk_transaction_set_signals (PkTransaction *transaction,
-			    PkBackendJob *job,
-			    PkBitfield backend_signals)
+static void
+pk_transaction_signals_reset (PkTransaction *transaction,
+			      PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	/* NOTE: We never disconnect the LOCKED_CHANGED signal! */
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ALLOW_CANCEL)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-					(PkBackendJobVFunc) pk_transaction_allow_cancel_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DETAILS)) {
-		pk_backend_job_set_vfunc (job,
-				      PK_BACKEND_SIGNAL_DETAILS,
-				      (PkBackendJobVFunc) pk_transaction_details_cb,
-				      transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-				      PK_BACKEND_SIGNAL_DETAILS,
-				      NULL,
-				      transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ERROR_CODE)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ERROR_CODE,
-					(PkBackendJobVFunc) pk_transaction_error_code_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ERROR_CODE,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FILES)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_FILES,
-					(PkBackendJobVFunc) pk_transaction_files_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_FILES,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DISTRO_UPGRADE)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
-					(PkBackendJobVFunc) pk_transaction_distro_upgrade_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_FINISHED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_FINISHED,
-					(PkBackendJobVFunc) pk_transaction_finished_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_FINISHED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MESSAGE)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_MESSAGE,
-					(PkBackendJobVFunc) pk_transaction_message_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_MESSAGE,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PACKAGE)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_PACKAGE,
-					(PkBackendJobVFunc) pk_transaction_package_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_PACKAGE,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_ITEM_PROGRESS)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-					(PkBackendJobVFunc) pk_transaction_item_progress_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_PERCENTAGE)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_PERCENTAGE,
-					(PkBackendJobVFunc) pk_transaction_percentage_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_PERCENTAGE,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REMAINING)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REMAINING,
-					(PkBackendJobVFunc) pk_transaction_remaining_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REMAINING,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_SPEED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_SPEED,
-					(PkBackendJobVFunc) pk_transaction_speed_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_SPEED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-					(PkBackendJobVFunc) pk_transaction_download_size_remaining_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_DETAIL)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REPO_DETAIL,
-					(PkBackendJobVFunc) pk_transaction_repo_detail_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REPO_DETAIL,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
-					(PkBackendJobVFunc) pk_transaction_repo_signature_required_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_EULA_REQUIRED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_EULA_REQUIRED,
-					(PkBackendJobVFunc) pk_transaction_eula_required_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_EULA_REQUIRED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-					(PkBackendJobVFunc) pk_transaction_media_change_required_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_REQUIRE_RESTART)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-					(PkBackendJobVFunc) pk_transaction_require_restart_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_STATUS_CHANGED)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_STATUS_CHANGED,
-					(PkBackendJobVFunc) pk_transaction_status_changed_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_STATUS_CHANGED,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_UPDATE_DETAIL)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-					(PkBackendJobVFunc) pk_transaction_update_detail_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-					NULL,
-					transaction);
-	}
-
-	if (pk_bitfield_contain (backend_signals, PK_BACKEND_SIGNAL_CATEGORY)) {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_CATEGORY,
-					(PkBackendJobVFunc) pk_transaction_category_cb,
-					transaction);
-	} else {
-		pk_backend_job_set_vfunc (job,
-					PK_BACKEND_SIGNAL_CATEGORY,
-					NULL,
-					transaction);
-	}
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_ALLOW_CANCEL,
+				  (PkBackendJobVFunc) pk_transaction_allow_cancel_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_DETAILS,
+				  (PkBackendJobVFunc) pk_transaction_details_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_ERROR_CODE,
+				  (PkBackendJobVFunc) pk_transaction_error_code_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_FILES,
+				  (PkBackendJobVFunc) pk_transaction_files_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+				  (PkBackendJobVFunc) pk_transaction_distro_upgrade_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  (PkBackendJobVFunc) pk_transaction_finished_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_MESSAGE,
+				  (PkBackendJobVFunc) pk_transaction_message_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PACKAGE,
+				  (PkBackendJobVFunc) pk_transaction_package_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+				  (PkBackendJobVFunc) pk_transaction_item_progress_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PERCENTAGE,
+				  (PkBackendJobVFunc) pk_transaction_percentage_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_REMAINING,
+				  (PkBackendJobVFunc) pk_transaction_remaining_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_SPEED,
+				  (PkBackendJobVFunc) pk_transaction_speed_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
+				  (PkBackendJobVFunc) pk_transaction_download_size_remaining_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_REPO_DETAIL,
+				  (PkBackendJobVFunc) pk_transaction_repo_detail_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
+				  (PkBackendJobVFunc) pk_transaction_repo_signature_required_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_EULA_REQUIRED,
+				  (PkBackendJobVFunc) pk_transaction_eula_required_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
+				  (PkBackendJobVFunc) pk_transaction_media_change_required_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_REQUIRE_RESTART,
+				  (PkBackendJobVFunc) pk_transaction_require_restart_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_STATUS_CHANGED,
+				  (PkBackendJobVFunc) pk_transaction_status_changed_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+				  (PkBackendJobVFunc) pk_transaction_update_detail_cb,
+				  transaction);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_CATEGORY,
+				  (PkBackendJobVFunc) pk_transaction_category_cb,
+				  transaction);
 }
 
 /**

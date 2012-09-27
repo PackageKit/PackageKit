@@ -101,9 +101,6 @@ void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
 void		 pk_transaction_set_supported_roles		(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
-void		 pk_transaction_set_signals			(PkTransaction	*transaction,
-								 PkBackendJob	*job,
-								 PkBitfield backend_signals);
 gboolean	 pk_transaction_is_finished_with_lock_required	(PkTransaction *transaction);
 void		 pk_transaction_reset_after_lock_error		(PkTransaction *transaction);
 void		 pk_transaction_make_exclusive			(PkTransaction *transaction);
