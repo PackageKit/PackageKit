@@ -97,10 +97,12 @@ const gchar	*pk_transaction_get_tid				(PkTransaction	*transaction);
 gboolean	 pk_transaction_is_exclusive			(PkTransaction	*transaction);
 void		 pk_transaction_add_supported_content_type	(PkTransaction	*transaction,
 								 const gchar	*mime_type);
-void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
-								 GPtrArray	*plugins);
 void		 pk_transaction_set_supported_roles		(PkTransaction	*transaction,
 								 GPtrArray	*plugins);
+void		 pk_transaction_set_plugins			(PkTransaction	*transaction,
+								 GPtrArray	*plugins);
+void		 pk_transaction_signals_reset			(PkTransaction	*transaction,
+								 PkBackendJob	*job);
 gboolean	 pk_transaction_is_finished_with_lock_required	(PkTransaction *transaction);
 void		 pk_transaction_reset_after_lock_error		(PkTransaction *transaction);
 void		 pk_transaction_make_exclusive			(PkTransaction *transaction);

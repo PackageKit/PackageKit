@@ -65,8 +65,6 @@
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
-static void	pk_transaction_signals_reset	(PkTransaction	*transaction,
-						 PkBackendJob	*job);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
@@ -1976,9 +1974,9 @@ pk_transaction_remaining_cb (PkBackendJob *job,
 /**
  * pk_transaction_signals_reset:
  *
- * Connect all backend_signals to the Pkransaction.
+ * Connect all backend_signals to the PkTransaction.
  **/
-static void
+void
 pk_transaction_signals_reset (PkTransaction *transaction,
 			      PkBackendJob *job)
 {
