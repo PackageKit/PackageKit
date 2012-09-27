@@ -212,6 +212,84 @@ pk_cnf_find_alternatives_locale (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
+ * pk_cnf_find_alternatives_solaris:
+ *
+ * Suggest Linux commands for Solaris commands
+ **/
+static void
+pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
+{
+	GHashTable *hash;
+	const gchar *tmp;
+
+	hash = g_hash_table_new (g_str_hash, g_str_equal);
+	g_hash_table_insert (hash, (gpointer) "smuser", (gpointer) "usermod");
+	g_hash_table_insert (hash, (gpointer) "logins", (gpointer) "usermod");
+	g_hash_table_insert (hash, (gpointer) "adb", (gpointer) "gdb");
+	g_hash_table_insert (hash, (gpointer) "add_drv", (gpointer) "modprobe");
+	g_hash_table_insert (hash, (gpointer) "modload", (gpointer) "modprobe");
+	g_hash_table_insert (hash, (gpointer) "modunload", (gpointer) "modprobe");
+	g_hash_table_insert (hash, (gpointer) "rem_drv", (gpointer) "modprobe");
+	g_hash_table_insert (hash, (gpointer) "audit", (gpointer) "auditctl");
+	g_hash_table_insert (hash, (gpointer) "auditreduce", (gpointer) "auditctl");
+	g_hash_table_insert (hash, (gpointer) "cfgadm", (gpointer) "lsmod");
+	g_hash_table_insert (hash, (gpointer) "clri", (gpointer) "fsck");
+	g_hash_table_insert (hash, (gpointer) "fsdb", (gpointer) "fsck");
+	g_hash_table_insert (hash, (gpointer) "volcheck", (gpointer) "fsck");
+	g_hash_table_insert (hash, (gpointer) "crle", (gpointer) "ldconfig");
+	g_hash_table_insert (hash, (gpointer) "devfsadm", (gpointer) "udevtrigger");
+	g_hash_table_insert (hash, (gpointer) "devlinks", (gpointer) "ln");
+	g_hash_table_insert (hash, (gpointer) "dfshares", (gpointer) "exportfs");
+	g_hash_table_insert (hash, (gpointer) "share", (gpointer) "exportfs");
+	g_hash_table_insert (hash, (gpointer) "shareall", (gpointer) "exportfs");
+	g_hash_table_insert (hash, (gpointer) "dladm", (gpointer) "ifconfig");
+	g_hash_table_insert (hash, (gpointer) "kstat", (gpointer) "ifconfig");
+	g_hash_table_insert (hash, (gpointer) "dtrace", (gpointer) "stap");
+	g_hash_table_insert (hash, (gpointer) "eeprom", (gpointer) "hwclock");
+	g_hash_table_insert (hash, (gpointer) "fcinfo", (gpointer) "lspci");
+	g_hash_table_insert (hash, (gpointer) "prtfru", (gpointer) "lspci");
+	g_hash_table_insert (hash, (gpointer) "fmthard", (gpointer) "fdisk");
+	g_hash_table_insert (hash, (gpointer) "format", (gpointer) "fdisk");
+	g_hash_table_insert (hash, (gpointer) "prtvtoc", (gpointer) "fdisk");
+	g_hash_table_insert (hash, (gpointer) "installboot", (gpointer) "mkbootdisk");
+	g_hash_table_insert (hash, (gpointer) "installpatch", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "patchaddpkgadd", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkgchk", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkginfo", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkgrm", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "prodreg", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "showrev", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "isainfo", (gpointer) "uname");
+	g_hash_table_insert (hash, (gpointer) "luxadm", (gpointer) "systool");
+	g_hash_table_insert (hash, (gpointer) "mkfile", (gpointer) "touch");
+	g_hash_table_insert (hash, (gpointer) "mpathadm", (gpointer) "multipath");
+	g_hash_table_insert (hash, (gpointer) "stmsboot", (gpointer) "multipath");
+	g_hash_table_insert (hash, (gpointer) "ndd", (gpointer) "modinfo");
+	g_hash_table_insert (hash, (gpointer) "newfs", (gpointer) "mkfs");
+	g_hash_table_insert (hash, (gpointer) "pbind", (gpointer) "taskset");
+	g_hash_table_insert (hash, (gpointer) "pldd", (gpointer) "ldd");
+	g_hash_table_insert (hash, (gpointer) "praudit", (gpointer) "auditctl");
+	g_hash_table_insert (hash, (gpointer) "prstat", (gpointer) "ps");
+	g_hash_table_insert (hash, (gpointer) "prtconf", (gpointer) "dmesg");
+	g_hash_table_insert (hash, (gpointer) "psrinfo", (gpointer) "dmidecode");
+	g_hash_table_insert (hash, (gpointer) "sysdef", (gpointer) "dmidecode");
+	g_hash_table_insert (hash, (gpointer) "ptree", (gpointer) "pstree");
+	g_hash_table_insert (hash, (gpointer) "snoop", (gpointer) "tcpdump");
+	g_hash_table_insert (hash, (gpointer) "sotruss", (gpointer) "strace");
+	g_hash_table_insert (hash, (gpointer) "truss", (gpointer) "strace");
+	g_hash_table_insert (hash, (gpointer) "svcadm", (gpointer) "service");
+	g_hash_table_insert (hash, (gpointer) "svcs", (gpointer) "service");
+	g_hash_table_insert (hash, (gpointer) "swap", (gpointer) "swapon");
+	g_hash_table_insert (hash, (gpointer) "trapstat", (gpointer) "oprofile");
+
+	/* find anything that matches exactly */
+	tmp = g_hash_table_lookup (hash, cmd);
+	if (tmp != NULL)
+		g_ptr_array_add (array, g_strdup (tmp));
+	g_hash_table_unref (hash);
+}
+
+/**
  * pk_cnf_find_alternatives_case:
  *
  * Remove double chars, e.g. Lshal -> lshal
@@ -285,6 +363,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	pk_cnf_find_alternatives_remove_double (cmd, len, possible);
 	pk_cnf_find_alternatives_case (cmd, len, possible);
 	pk_cnf_find_alternatives_locale (cmd, len, possible);
+	pk_cnf_find_alternatives_solaris (cmd, len, possible);
 
 	/* remove duplicates using a helper array */
 	for (i=0; i<possible->len; i++) {
