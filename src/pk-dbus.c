@@ -245,7 +245,6 @@ pk_dbus_class_init (PkDbusClass *klass)
 static void
 pk_dbus_init (PkDbus *dbus)
 {
-	GError *error = NULL;
 	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 
 	/* use the bus to get the uid */
@@ -253,25 +252,23 @@ pk_dbus_init (PkDbus *dbus)
 
 	/* connect to DBus so we can get the pid */
 	dbus->priv->proxy_pid =
-		dbus_g_proxy_new_for_name_owner (dbus->priv->connection,
+		dbus_g_proxy_new_for_name (dbus->priv->connection,
 						 "org.freedesktop.DBus",
 						 "/org/freedesktop/DBus/Bus",
-						 "org.freedesktop.DBus", &error);
+						 "org.freedesktop.DBus");
 	if (dbus->priv->proxy_pid == NULL) {
-		egg_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
+		egg_warning ("cannot connect to DBus");
+		return;
 	}
 
 	/* use ConsoleKit to get the session */
 	dbus->priv->proxy_session =
-		dbus_g_proxy_new_for_name_owner (dbus->priv->connection,
+		dbus_g_proxy_new_for_name (dbus->priv->connection,
 						 "org.freedesktop.ConsoleKit",
 						 "/org/freedesktop/ConsoleKit/Manager",
-						 "org.freedesktop.ConsoleKit.Manager", &error);
-	if (dbus->priv->proxy_session == NULL) {
-		egg_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
-	}
+						 "org.freedesktop.ConsoleKit.Manager");
+	if (dbus->priv->proxy_session == NULL)
+		egg_warning ("cannot connect to ConsoleKit");
 }
 
 /**
