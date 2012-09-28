@@ -346,11 +346,16 @@ zypp_get_packages_by_name (PkBackend *backend,
 			   vector<sat::Solvable> &result,
 			   gboolean include_local)
 {
-	ResPool pool(ResPool::instance());
-
-	for (ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
-		it != pool.byIdentEnd (kind, package_name); ++it) {
-		result.push_back (it->satSolvable ());
+	ui::Selectable::Ptr sel( ui::Selectable::get( kind, package_name ) );
+	if ( sel ) {
+		if ( ! sel->installedEmpty() ) {
+			for_( it, sel->installedBegin(), sel->installedEnd() )
+				result.push_back( (*it).satSolvable() );
+		}
+		if ( ! sel->availableEmpty() ) {
+			for_( it, sel->availableBegin(), sel->availableEnd() )
+				result.push_back( (*it).satSolvable() );
+		}
 	}
 }
 
