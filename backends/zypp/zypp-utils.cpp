@@ -915,12 +915,12 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
 				if (!has_eula) {
 					gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-					pk_backend_job_eula_required (backend,
+					pk_backend_job_eula_required (job,
 							eula_id,
 							package_id,
 							(*it)->vendor ().c_str (),
 							it->resolvable()->licenseToConfirm().c_str ());
-					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
+					pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 					g_free (package_id);
 					g_free (eula_id);
 					goto exit;
