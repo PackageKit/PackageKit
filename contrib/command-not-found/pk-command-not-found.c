@@ -758,7 +758,7 @@ main (int argc, char *argv[])
 	gchar *text;
 	const gchar *possible;
 	gchar **parts;
-	guint retval = EXIT_SUCCESS;
+	guint retval = EXIT_COMMAND_NOT_FOUND;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -793,10 +793,8 @@ main (int argc, char *argv[])
 
 	/* get length */
 	len = strlen (argv[1]);
-	if (len < 1) {
-		retval = EXIT_COMMAND_NOT_FOUND;
+	if (len < 1)
 		goto out;
-	}
 
 	/* TRANSLATORS: the prefix of all the output telling the user
 	 * why it's not executing. NOTE: this is lowercase to mimic
@@ -806,7 +804,6 @@ main (int argc, char *argv[])
 	/* user is not allowing CNF to do anything useful */
 	if (!config->software_source_search &&
 	    !config->similar_name_search) {
-		retval = EXIT_COMMAND_NOT_FOUND;
 		goto out;
 	}
 
@@ -820,7 +817,6 @@ main (int argc, char *argv[])
 		if (config->single_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: tell the user what we think the command is */
 			g_printerr ("%s '%s'\n", _("Similar command is:"), possible);
-			retval = EXIT_COMMAND_NOT_FOUND;
 			goto out;
 		}
 
@@ -837,8 +833,6 @@ main (int argc, char *argv[])
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
 				retval = pk_cnf_spawn_command (possible, &argv[2]);
-			else
-				retval = EXIT_COMMAND_NOT_FOUND;
 			g_free (text);
 		}
 		goto out;
@@ -895,8 +889,6 @@ main (int argc, char *argv[])
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
 						retval = pk_cnf_spawn_command (argv[1], &argv[2]);
-					else
-						retval = EXIT_COMMAND_NOT_FOUND;
 				}
 				g_print ("\n");
 				goto out;
@@ -907,8 +899,6 @@ main (int argc, char *argv[])
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
 					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
-				else
-					retval = EXIT_COMMAND_NOT_FOUND;
 			}
 			g_strfreev (parts);
 			goto out;
@@ -940,8 +930,6 @@ main (int argc, char *argv[])
 				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
 					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
-				else
-					retval = EXIT_COMMAND_NOT_FOUND;
 			}
 			goto out;
 		}
