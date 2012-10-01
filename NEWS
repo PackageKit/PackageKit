@@ -1,3 +1,58 @@
+Version 0.8.4
+~~~~~~~~~~~~~
+Released: 2012-10-01
+
+Notes:
+ - Lots of nice bugfixes (mainly for the parallel-backend code), but
+   also a few new features to play with.
+
+Libraries:
+ - packagekit-qt: Fix getTimeSinceAction (Daniel Nicoletti)
+
+Backends:
+ - aptcc: Disable parallelization for now (Matthias Klumpp)
+ - dummy: Use a thread when doing the socket ping-pong test (Richard Hughes)
+ - yum: Emit finished() if the lock is not available (Richard Hughes)
+ - yum: Handle RepoError when downloading packages (Richard Hughes)
+ - yum: Work around a yum API break for resolving (Richard Hughes)
+ - zypp: Adjust PK_FILTER_ENUM_NOT_DEVELOPMENT (bnc#770028) (Michael Andres)
+ - zypp: Construct PoolItem from sat::Solvable rather than doing a search (Michael Andres)
+ - zypp: Don't retrieve raw package attributes but use zypp::ResObject (bnc#764677) (Michael Andres)
+ - zypp: Don't waste time comparing zypp::Arch string representations (Michael Andres)
+ - zypp: Fix missing dtor (Michael Andres)
+ - zypp: No longer use the old and deprecated ZYppCommitResult members (bnc#769764) (Michael Andres)
+ - zypp: No need to retrieve installed packages attributes from rpm database (Michael Andres)
+ - zypp: Set CXXFLAGS and use --std=c++0x as libzypp does (bnc#769764) (Michael Andres)
+ - zypp: Use pre-increment in for-loops to avoid temporaries (Michael Andres)
+
+New Features:
+ - cnf: Suggest a Linux binary if the Solaris name is used (Richard Hughes)
+ - Remove support for the deprecated category search prefix (Richard Hughes)
+ - Use pkttyagent to request user passwords if required (Matthias Klumpp)
+ - When retrying a cancelled task wait before rescheduling it (Richard Hughes)
+ - yum-plugin: Ask PackageKit to quit when yum is started (Elad Alfassa)
+
+Bugfixes:
+ - Allow plugins to restore transaction signals (Matthias Klumpp)
+ - Allow the user to specify standard GNU help options (Richard Hughes)
+ - cnf: Return with exit code 127 for a cancelled transaction (Richard Hughes)
+ - Do not allow the client to overwrite files when downloading packages (Richard Hughes)
+ - Do not fail with lock-required when a cancelled transaction (Richard Hughes)
+ - Don't finish an adopted transaction prematurely (Jonathan Conder)
+ - Don't leak pango languages (William Jon McCann)
+ - Drop unneeded schema (Matthias Clasen)
+ - Ensure we cancel background transactions for a interactive transaction (Richard Hughes)
+ - Fix plugin interface transaction_start method (Matthias Klumpp)
+ - Fix several return values in pkcon when there is an error (Richard Hughes)
+ - Increase MaximumItemsToResolve default value to 1200 (Matthias Klumpp)
+ - Make sure all plugin events are processed (Matthias Klumpp)
+ - Preserve previously-set backend roles (Matthias Klumpp)
+ - Remove backend/ includes dir and install missing Jobs header (Matthias Klumpp)
+ - Remove PK_PLUGIN_PHASE_TRANSACTION_FINISHED_START as it's unused (Richard Hughes)
+ - Remove the --nowait option in pkcon, it does not work with PkTask (Richard Hughes)
+ - Run the transaction-run plugins before we start the transaction (Richard Hughes)
+ - Wire up all signals for pk_plugin_transaction_run() (Richard Hughes)
+
 Version 0.8.3
 ~~~~~~~~~~~~~
 Released: 2012-08-06
