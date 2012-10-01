@@ -38,6 +38,8 @@ static void     pk_task_finalize	(GObject     *object);
 
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
 
+#define PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT	2000 /* ms */
+
 /**
  * PkTaskPrivate:
  *
@@ -92,6 +94,7 @@ typedef struct {
 	gchar				**values;
 	PkBitfield			 filters;
 	PkProvidesEnum			 provides;
+	guint				 retry_id;
 } PkTaskState;
 
 G_DEFINE_TYPE (PkTask, pk_task, PK_TYPE_CLIENT)
@@ -159,6 +162,8 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 		g_object_unref (state->results);
 		state->results = NULL;
 	}
+	if (state->retry_id != 0)
+		g_source_remove (state->retry_id);
 	g_free (state->directory);
 	g_free (state->repo_id);
 	g_free (state->transaction_id);
@@ -779,6 +784,18 @@ pk_task_user_declined (PkTask *task, guint request)
 }
 
 /**
+ * pk_task_retry_cancelled_transaction_cb:
+ **/
+static gboolean
+pk_task_retry_cancelled_transaction_cb (gpointer user_data)
+{
+	PkTaskState *state = (PkTaskState *) user_data;
+	pk_task_do_async_action (state);
+	state->retry_id = 0;
+	return FALSE;
+}
+
+/**
  * pk_task_ready_cb:
  **/
 static void
@@ -907,9 +924,11 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		goto out;
 	}
 
-	/* just re-run the transaction */
+	/* just re-run the transaction after a small delay */
 	if (state->exit_enum == PK_EXIT_ENUM_CANCELLED_PRIORITY) {
-		pk_task_do_async_action (state);
+		state->retry_id = g_timeout_add (PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT,
+						 pk_task_retry_cancelled_transaction_cb,
+						 state);
 		goto out;
 	}
 
