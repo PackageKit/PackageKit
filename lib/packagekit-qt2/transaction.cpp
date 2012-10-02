@@ -59,7 +59,6 @@ void Transaction::init(const QDBusObjectPath &tid)
 {
     Q_D(Transaction);
 
-    d->tid = tid;
     d->oldtrans = false;
     d->p = 0;
 
@@ -67,7 +66,8 @@ void Transaction::init(const QDBusObjectPath &tid)
     // he want us to get it
     if (tid.path().isNull()) {
         d->tid = Daemon::global()->getTid();
-        qDebug() << "packagekit-qt:" << d->tid.path();
+    } else {
+        d->tid = tid;
     }
 
     int retry = 0;
@@ -78,7 +78,7 @@ void Transaction::init(const QDBusObjectPath &tid)
                                     QDBusConnection::systemBus(),
                                     this);
         if (!d->p->isValid()) {
-            qDebug() << "Error, cannot create transaction proxy" << d->p->lastError();
+            qWarning() << "Error, cannot create transaction proxy" << d->p->lastError();
             QDBusMessage message;
             message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.DBus"),
                                                      QLatin1String("/"),
@@ -278,16 +278,14 @@ Transaction::Role Transaction::role() const
 {
     Q_D(const Transaction);
     if(d->oldtrans) {
-        uint role = 1 << d->role;
-        return static_cast<Transaction::Role>(role);
+        return d->role;
     }
 
     if (d->destroyed) {
         return Transaction::RoleUnknown;
     }
 
-    uint role = 1 << d->p->role();
-    return static_cast<Transaction::Role>(role);
+    return static_cast<Transaction::Role>(d->p->role());
 }
 
 void Transaction::setHints(const QStringList &hints)
@@ -541,6 +539,12 @@ void Transaction::searchGroups(const QStringList &groups, Transaction::Filters f
 void Transaction::searchGroup(const QString &group, Transaction::Filters filters)
 {
     searchGroups(QStringList() << group, filters);
+}
+
+void Transaction::searchGroup(PackageDetails::Group group, Filters filters)
+{
+    QString groupString = Daemon::enumToString<PackageDetails>(group, "Group");
+    searchGroup(groupString, filters);
 }
 
 void Transaction::searchGroups(PackageDetails::Groups groups, Transaction::Filters filters)

@@ -22,6 +22,7 @@
 #define PACKAGEKIT_PACKAGE_DETAILS_H
 
 #include "package.h"
+#include "bitfield.h"
 
 #include <QtCore/QDateTime>
 
@@ -57,48 +58,50 @@ namespace PackageKit {
  */
 class PackageDetails : public Package
 {
+    Q_GADGET
+    Q_ENUMS(Group)
 public:
     /**
      * Describes the different package groups
      */
-    enum Group {
-        GroupUnknown         = 1ULL << 0,
-        GroupAccessibility   = 1ULL << 1,
-        GroupAccessories     = 1ULL << 2,
-        GroupAdminTools      = 1ULL << 3,
-        GroupCommunication   = 1ULL << 4,
-        GroupDesktopGnome    = 1ULL << 5,
-        GroupDesktopKde      = 1ULL << 6,
-        GroupDesktopOther    = 1ULL << 7,
-        GroupDesktopXfce     = 1ULL << 8,
-        GroupEducation       = 1ULL << 9,
-        GroupFonts           = 1ULL << 10,
-        GroupGames           = 1ULL << 11,
-        GroupGraphics        = 1ULL << 12,
-        GroupInternet        = 1ULL << 13,
-        GroupLegacy          = 1ULL << 14,
-        GroupLocalization    = 1ULL << 15,
-        GroupMaps            = 1ULL << 16,
-        GroupMultimedia      = 1ULL << 17,
-        GroupNetwork         = 1ULL << 18,
-        GroupOffice          = 1ULL << 19,
-        GroupOther           = 1ULL << 20,
-        GroupPowerManagement = 1ULL << 21,
-        GroupProgramming     = 1ULL << 22,
-        GroupPublishing      = 1ULL << 23,
-        GroupRepos           = 1ULL << 24,
-        GroupSecurity        = 1ULL << 25,
-        GroupServers         = 1ULL << 26,
-        GroupSystem          = 1ULL << 27,
-        GroupVirtualization  = 1ULL << 28,
-        GroupScience         = 1ULL << 29,
-        GroupDocumentation   = 1ULL << 30,
-        GroupElectronics     = 1ULL << 31,
-        GroupCollections     = 1ULL << 32,
-        GroupVendor          = 1ULL << 33,
-        GroupNewest          = 1ULL << 34
-    };
-    typedef qulonglong Groups;
+    typedef enum {
+        GroupUnknown,
+        GroupAccessibility,
+        GroupAccessories,
+        GroupAdminTools,
+        GroupCommunication,
+        GroupDesktopGnome,
+        GroupDesktopKde,
+        GroupDesktopOther,
+        GroupDesktopXfce,
+        GroupEducation,
+        GroupFonts,
+        GroupGames,
+        GroupGraphics,
+        GroupInternet,
+        GroupLegacy,
+        GroupLocalization,
+        GroupMaps,
+        GroupMultimedia,
+        GroupNetwork,
+        GroupOffice,
+        GroupOther,
+        GroupPowerManagement,
+        GroupProgramming,
+        GroupPublishing,
+        GroupRepos,
+        GroupSecurity,
+        GroupServers,
+        GroupSystem,
+        GroupVirtualization,
+        GroupScience,
+        GroupDocumentation,
+        GroupElectronics,
+        GroupCollections,
+        GroupVendor,
+        GroupNewest
+    } Group;
+    typedef Bitfield Groups;
 
     /**
      * Constructs package

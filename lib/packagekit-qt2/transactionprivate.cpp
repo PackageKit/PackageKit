@@ -202,7 +202,7 @@ QStringList TransactionPrivate::packageListToPids(const PackageList &packages) c
 {
     QStringList pids;
     foreach (const Package &package, packages) {
-        pids << package;
+        pids << package.id();
     }
     return pids;
 }

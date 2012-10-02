@@ -23,6 +23,7 @@
 #define PACKAGEKIT_DAEMON_H
 
 #include <QtCore/QObject>
+#include <QtCore/QMetaEnum>
 
 #include "package.h"
 #include "transaction.h"
@@ -242,6 +243,82 @@ public:
      * The micro version number.
      */
     static uint versionMicro();
+    
+    /**
+     * Returns the string representing the enum
+     * Useful for PackageDetails::Group
+     */
+    template<class T> static QString enumToString(int value, const char *enumName)
+    {
+        QString prefix = enumName;
+        int id = T::staticMetaObject.indexOfEnumerator(enumName);
+        QMetaEnum e = T::staticMetaObject.enumerator(id);
+        if (!e.isValid ()) {
+//             qDebug() << "Invalid enum " << prefix;
+            return QString();
+        }
+        QString enumString = e.valueToKey(value);
+        if (enumString.isNull()) {
+//             qDebug() << "Enum key not found while searching for value" << QString::number(value) << "in enum" << prefix;
+            return QString();
+        }
+
+        // Remove the prefix
+        if(!prefix.isNull() && enumString.indexOf(prefix) == 0) {
+            enumString.remove(0, prefix.length());
+        }
+
+        QString pkName;
+        for(int i = 0 ; i < enumString.length() - 1 ; ++i) {
+            pkName += enumString[i];
+            if(enumString[i+1].isUpper())
+                pkName += QChar('-');
+        }
+        pkName += enumString[enumString.length() - 1];
+
+        return pkName.toLower();
+    }
+    
+    template<class T> static int enumFromString(const QString &str, const char *enumName)
+    {
+        QString prefix = enumName;
+        QString realName;
+        bool lastWasDash = false;
+        QChar buf;
+
+        for(int i = 0 ; i < str.length() ; ++i) {
+            buf = str[i].toLower();
+            if(i == 0 || lastWasDash) {
+                buf = buf.toUpper();
+            }
+
+            lastWasDash = false;
+            if(buf == QLatin1Char('-')) {
+                lastWasDash = true;
+            } else if(buf == QLatin1Char('~')) {
+                lastWasDash = true;
+                realName += "Not";
+            } else {
+                realName += buf;
+            }
+        };
+
+        if (!prefix.isNull()) {
+            realName = prefix + realName;
+        }
+
+        int id = T::staticMetaObject.indexOfEnumerator(enumName);
+        QMetaEnum e = T::staticMetaObject.enumerator(id);
+        int enumValue = e.keyToValue(realName.toAscii().data());
+
+        if (enumValue == -1) {
+            enumValue = e.keyToValue(prefix.append("Unknown").toAscii().data());
+            if (!QString(enumName).isEmpty()) {
+//                 qDebug() << "enumFromString (" << enumName << ") : converted" << str << "to" << QString("Unknown").append(enumName) << ", enum id" << id;
+            }
+        }
+        return enumValue;
+    }
 
 Q_SIGNALS:
     /**

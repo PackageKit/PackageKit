@@ -22,12 +22,6 @@
 
 #include <QtCore/QDebug>
 
-namespace PackageKit {
-
-
-
-}
-
 using namespace PackageKit;
 
 PackageDetails::PackageDetails(const QString &package_id, const QString &license, uint group, const QString &detail, const QString &url, qulonglong size) :
@@ -82,3 +76,5 @@ qulonglong PackageDetails::size() const
 {
     return d->size;
 }
+
+#include "packagedetails.moc"

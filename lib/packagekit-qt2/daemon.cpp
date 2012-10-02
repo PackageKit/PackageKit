@@ -78,11 +78,7 @@ Daemon::~Daemon()
 
 Transaction::Roles Daemon::actions()
 {
-    qulonglong roles = global()->d_ptr->daemon->roles();
-
-    Transaction::Roles flags;
-    flags |= static_cast<Transaction::Role>(roles);
-    return flags;
+    return global()->d_ptr->daemon->roles();
 }
 
 QString Daemon::backendName()
@@ -144,14 +140,7 @@ QDBusObjectPath Daemon::getTid()
 
 uint Daemon::getTimeSinceAction(Transaction::Role role)
 {
-    // We need to find the Role enum position
-    // since this method does not support bitwised enum.
-    for (uint i = 0; i < 64; ++i) {
-        if (role == (1 << i)) {
-            return global()->d_ptr->daemon->GetTimeSinceAction(i);
-        }
-    }
-    return UINT_MAX;
+    return global()->d_ptr->daemon->GetTimeSinceAction(role);
 }
 
 QList<QDBusObjectPath> Daemon::getTransactionList()

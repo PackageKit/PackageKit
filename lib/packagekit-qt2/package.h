@@ -37,6 +37,7 @@ public:
         info(other.info),
         summary(other.summary) { }
     ~PackagePrivate() { }
+    QString id;
     uint info;
     QString summary;
 };
@@ -51,8 +52,9 @@ public:
  *
  * \note All Package objects should be deleted by the user.
  */
-class Package : public QString
+class Package
 {
+    Q_GADGET
 public:
     /**
      * Describes the state of a package

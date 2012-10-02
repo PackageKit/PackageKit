@@ -28,9 +28,9 @@
 using namespace PackageKit;
 
 Package::Package(const QString &packageId, Info info, const QString &summary) :
-    QString(packageId),
     d(new PackagePrivate)
 {
+    d->id = packageId;
     d->info = info;
     d->summary = summary;
 }
@@ -42,11 +42,8 @@ Package::Package() :
 }
 
 Package::Package(const Package &other) :
-    d(new PackagePrivate)
+    d(other.d)
 {
-    d->info = InfoUnknown;
-
-    *this = other;
 }
 
 Package::~Package()
@@ -55,40 +52,40 @@ Package::~Package()
 
 bool Package::isValid() const
 {
-    int sepCount = count(QLatin1Char(';'));
+    int sepCount = d->id.count(QLatin1Char(';'));
     if (sepCount == 3) {
         // A valid pk-id "name;version;arch;data"
         return true;
     } else if (sepCount == 0) {
         // its also valid just "name"
-        return !isEmpty();
+        return !d->id.isEmpty();
     }
     return false;
 }
 
 QString Package::id() const
 {
-    return *this;
+    return d->id;
 }
 
 QString Package::name() const
 {
-    return section(QLatin1Char(';'), 0, 0);
+    return d->id.section(QLatin1Char(';'), 0, 0);
 }
 
 QString Package::version() const
 {
-    return section(QLatin1Char(';'), 1, 1);
+    return d->id.section(QLatin1Char(';'), 1, 1);
 }
 
 QString Package::arch() const
 {
-    return section(QLatin1Char(';'), 2, 2);
+    return d->id.section(QLatin1Char(';'), 2, 2);
 }
 
 QString Package::data() const
 {
-    return section(QLatin1Char(';'), 3, 3);
+    return d->id.section(QLatin1Char(';'), 3, 3);
 }
 
 QString Package::summary() const
@@ -144,6 +141,6 @@ bool Package::operator==(const Package &package) const
 Package& Package::operator=(const Package &package)
 {
     d = package.d;
-    QString::operator=(package);
 }
 
+#include "package.moc"

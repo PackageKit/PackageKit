@@ -21,6 +21,8 @@ MOCFILES =							\
 	daemonproxy.moc						\
 	transactionproxy.moc					\
 	transaction.moc						\
+	package.moc						\
+	packagedetails.moc					\
 	$(NULL)
 
 lib_LTLIBRARIES =						\
@@ -30,6 +32,7 @@ lib_LTLIBRARIES =						\
 libpackagekit_qt2_includedir = $(includedir)/PackageKit/packagekit-qt2
 
 libpackagekit_qt2_include_HEADERS =				\
+	bitfield.h						\
 	Signature						\
 	signature.h						\
 	Eula							\
@@ -47,6 +50,7 @@ libpackagekit_qt2_include_HEADERS =				\
 	$(NULL)
 
 libpackagekit_qt2_la_SOURCES =					\
+	bitfield.cpp						\
 	signature.h						\
 	signature.cpp						\
 	eula.h							\

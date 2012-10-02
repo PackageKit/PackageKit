@@ -88,40 +88,40 @@ public:
     /**
      * Describes the role of the transaction
      */
-    enum Role {
-        RoleUnknown            = 1 << 0,
-        RoleCancel             = 1 << 1,
-        RoleGetDepends         = 1 << 2,
-        RoleGetDetails         = 1 << 3,
-        RoleGetFiles           = 1 << 4,
-        RoleGetPackages        = 1 << 5,
-        RoleGetRepoList        = 1 << 6,
-        RoleGetRequires        = 1 << 7,
-        RoleGetUpdateDetail    = 1 << 8,
-        RoleGetUpdates         = 1 << 9,
-        RoleInstallFiles       = 1 << 10,
-        RoleInstallPackages    = 1 << 11,
-        RoleInstallSignature   = 1 << 12,
-        RoleRefreshCache       = 1 << 13,
-        RoleRemovePackages     = 1 << 14,
-        RoleRepoEnable         = 1 << 15,
-        RoleRepoSetData        = 1 << 16,
-        RoleResolve            = 1 << 17,
-        RoleSearchDetails      = 1 << 18,
-        RoleSearchFile         = 1 << 19,
-        RoleSearchGroup        = 1 << 20,
-        RoleSearchName         = 1 << 21,
-        RoleUpdatePackages     = 1 << 22,
-        RoleWhatProvides       = 1 << 23,
-        RoleAcceptEula         = 1 << 24,
-        RoleDownloadPackages   = 1 << 25,
-        RoleGetDistroUpgrades  = 1 << 26,
-        RoleGetCategories      = 1 << 27,
-        RoleGetOldTransactions = 1 << 28,
-        RoleUpgradeSystem      = 1 << 29, // Since 0.6.11
-        RoleRepairSystem       = 1 << 30 // Since 0.7.2
-    };
-    Q_DECLARE_FLAGS(Roles, Role)
+    typedef enum {
+        RoleUnknown,
+        RoleCancel,
+        RoleGetDepends,
+        RoleGetDetails,
+        RoleGetFiles,
+        RoleGetPackages,
+        RoleGetRepoList,
+        RoleGetRequires,
+        RoleGetUpdateDetail,
+        RoleGetUpdates,
+        RoleInstallFiles,
+        RoleInstallPackages,
+        RoleInstallSignature,
+        RoleRefreshCache,
+        RoleRemovePackages,
+        RoleRepoEnable,
+        RoleRepoSetData,
+        RoleResolve,
+        RoleSearchDetails,
+        RoleSearchFile,
+        RoleSearchGroup,
+        RoleSearchName,
+        RoleUpdatePackages,
+        RoleWhatProvides,
+        RoleAcceptEula,
+        RoleDownloadPackages,
+        RoleGetDistroUpgrades,
+        RoleGetCategories,
+        RoleGetOldTransactions,
+        RoleUpgradeSystem, // Since 0.6.11
+        RoleRepairSystem   // Since 0.7.2
+    } Role;
+    typedef Bitfield Roles;
 
     /**
      * Describes the different types of error
@@ -844,6 +844,12 @@ public:
      * \sa searchGroups(const QStringList &groups, Filters filters = FilterNone)
      */
     void searchGroup(const QString &group, Filters filters = FilterNone);
+    
+    /**
+     * Convenience function to search by group enum
+     * \sa searchGroups(const QStringList &groups, Filters filters = FilterNone)
+     */
+    void searchGroup(PackageDetails::Group group, Filters filters = FilterNone);
 
     /**
      * \brief Lists all the packages in the given \p group
