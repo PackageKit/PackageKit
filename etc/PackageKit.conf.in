@@ -194,8 +194,8 @@ DeveloperMode=false
 # This should be used when a native tool has been used, and the update UIs
 # should be updated to reflect reality.
 #
-# default=30
-StateChangedTimeoutPriority=30
+# default=2
+StateChangedTimeoutPriority=2
 
 # The time in seconds to wait after the computer has been resumed or any non
 # package related system event
