@@ -2377,10 +2377,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     try:
                         path = repo.getPackage(txmbr.po)
                     except yum.Errors.RepoError, e:
-                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download file", exit=False)
+                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download file: %s" % _to_unicode(e), exit=False)
                         return
                     except IOError, e:
-                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
+                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file: %s" % _to_unicode(e), exit=False)
                         return
                     except Exception, e:
                         raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
