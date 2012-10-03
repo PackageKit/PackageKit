@@ -218,7 +218,8 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 static void
 pk_client_fixup_dbus_error (GError *error)
 {
-	const gchar *name;
+	gchar *name = NULL;
+	const gchar *name_suffix = NULL;
 
 	g_return_if_fail (error != NULL);
 
@@ -231,45 +232,46 @@ pk_client_fixup_dbus_error (GError *error)
 		goto out;
 	}
 
+	/* is a remote error? */
+	if (!g_dbus_error_is_remote_error (error))
+		goto out;
+
 	/* fall back to generic */
-	name = error->message;
+	error->domain = PK_CLIENT_ERROR;
 	error->code = PK_CLIENT_ERROR_FAILED;
 
-	/* trim common prefix */
+	/* parse the remote error */
+	name = g_dbus_error_get_remote_error (error);
+	g_dbus_error_strip_remote_error (error);
 	if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
-		name = &error->message[39];
-
-	/* try to get a better error */
-	if (g_str_has_prefix (name, "PermissionDenied") ||
-	    g_str_has_prefix (name, "RefusedByPolicy")) {
+		name_suffix = &name[39];
+	if (g_strcmp0 (name_suffix, "PermissionDenied") == 0 ||
+	    g_strcmp0 (name_suffix, "RefusedByPolicy") == 0) {
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
 		goto out;
 	}
-	if (g_str_has_prefix (name, "PackageIdInvalid") ||
-		 g_str_has_prefix (name, "SearchInvalid") ||
-		 g_str_has_prefix (name, "FilterInvalid") ||
-		 g_str_has_prefix (name, "InvalidProvide") ||
-		 g_str_has_prefix (name, "InputInvalid")) {
+	if (g_strcmp0 (name_suffix, "PackageIdInvalid") == 0 ||
+		 g_strcmp0 (name_suffix, "SearchInvalid") == 0 ||
+		 g_strcmp0 (name_suffix, "FilterInvalid") == 0 ||
+		 g_strcmp0 (name_suffix, "InvalidProvide") == 0 ||
+		 g_strcmp0 (name_suffix, "InputInvalid") == 0) {
 		error->code = PK_CLIENT_ERROR_INVALID_INPUT;
 		goto out;
 	}
-	if (g_str_has_prefix (name, "PackInvalid") ||
-	    g_str_has_prefix (name, "NoSuchFile") ||
-	    g_str_has_prefix (name, "MimeTypeNotSupported") ||
-	    g_str_has_prefix (name, "NoSuchDirectory")) {
+	if (g_strcmp0 (name_suffix, "PackInvalid") == 0 ||
+	    g_strcmp0 (name_suffix, "NoSuchFile") == 0 ||
+	    g_strcmp0 (name_suffix, "MimeTypeNotSupported") == 0 ||
+	    g_strcmp0 (name_suffix, "NoSuchDirectory") == 0) {
 		error->code = PK_CLIENT_ERROR_INVALID_FILE;
 		goto out;
 	}
-	if (g_str_has_prefix (name, "NotSupported")) {
+	if (g_strcmp0 (name_suffix, "NotSupported") == 0) {
 		error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
 		goto out;
 	}
-	g_dbus_error_strip_remote_error (error);
 	g_warning ("couldn't parse execption '%s', please report", name);
 out:
-	/* hardcode domain */
-	error->domain = PK_CLIENT_ERROR;
-	return;
+	g_free (name);
 }
 
 /**
