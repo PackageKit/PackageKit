@@ -514,8 +514,10 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	results = pk_client_search_files (PK_CLIENT(task), filters, values, cancellable,
 					  NULL, NULL, &error);
 	if (results == NULL) {
-		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
-		g_printerr ("%s: %s\n", _("Failed to search for file"), error->message);
+		if (!g_error_matches (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT)) {
+			/* TRANSLATORS: we failed to find the package, this shouldn't happen */
+			g_printerr ("%s: %s\n", _("Failed to search for file"), error->message);
+		}
 		g_error_free (error);
 		goto out;
 	}
