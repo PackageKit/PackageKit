@@ -264,6 +264,7 @@ pk_client_fixup_dbus_error (GError *error)
 		error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
 		goto out;
 	}
+	g_dbus_error_strip_remote_error (error);
 	g_warning ("couldn't parse execption '%s', please report", name);
 out:
 	/* hardcode domain */
