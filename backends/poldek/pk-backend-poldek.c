@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2011 Marcin Banasiak <megabajt@pld-linux.org>
+ * Copyright (C) 2008-2012 Marcin Banasiak <megabajt@pld-linux.org>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1791,17 +1791,15 @@ static void
 update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	struct vf_progress	vf_progress;
-	gboolean		update_system;
 	guint			i, toupdate = 0;
 	gchar **package_ids, *command;
 	GString *cmd;
 
-	update_system = pk_backend_get_bool (backend, "update_system");
 	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* sth goes wrong. package_ids has to be set in UpdatePackages */
-	if (update_system == FALSE && package_ids == NULL) {
+	if (package_ids == NULL) {
 		g_warning ("package_ids cannot be NULL in UpdatePackages method.");
 		pk_backend_job_finished (job);
 		return;
@@ -1816,40 +1814,17 @@ update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	cmd = g_string_new ("upgrade ");
 
-	if (update_system) {
-		tn_array *packages = NULL;
+	for (i = 0; i < g_strv_length (package_ids); i++) {
+		struct pkg *pkg;
 
-		if ((packages = execute_packages_command ("cd /all-avail; ls -q -u")) != NULL) {
-			/* UpdateSystem updates to the newest available packages */
-			do_newest (packages);
+		pkg = poldek_get_pkg_from_package_id (package_ids[i]);
 
-			for (i = 0; i < n_array_size (packages); i++) {
-				struct pkg *pkg = n_array_nth (packages, i);
+		g_string_append_printf (cmd, "%s-%s-%s.%s ", pkg->name,
+					pkg->ver, pkg->rel, pkg_arch (pkg));
 
-				/* don't try to update blocked packages */
-				if (!(pkg->flags & PKG_HELD)) {
-					g_string_append_printf (cmd, "%s-%s-%s.%s ", pkg->name,
-								pkg->ver, pkg->rel, pkg_arch (pkg));
+		toupdate++;
 
-					toupdate++;
-				}
-			}
-
-			n_array_free (packages);
-		}
-	} else {
-		for (i = 0; i < g_strv_length (package_ids); i++) {
-			struct pkg *pkg;
-
-			pkg = poldek_get_pkg_from_package_id (package_ids[i]);
-
-			g_string_append_printf (cmd, "%s-%s-%s.%s ", pkg->name,
-						pkg->ver, pkg->rel, pkg_arch (pkg));
-
-			toupdate++;
-
-			pkg_free (pkg);
-		}
+		pkg_free (pkg);
 	}
 
 	command = g_string_free (cmd, FALSE);
@@ -3183,27 +3158,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 
 	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
-	pk_backend_job_thread_create (job, update_packages_thread, NULL, NULL);
-}
-
-/**
- * pk_backend_update_system:
- **/
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update system when offline!");
-		pk_backend_job_finished (job);
-		return;
-	}
-
-	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
-	pb_error_clean ();
-
-	poldek_backend_percentage_data_create (backend);
-	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
-	pk_backend_set_bool (backend, "update_system", TRUE);
 	pk_backend_job_thread_create (job, update_packages_thread, NULL, NULL);
 }
 
