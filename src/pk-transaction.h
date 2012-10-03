@@ -33,12 +33,8 @@ G_BEGIN_DECLS
 
 #define PK_TYPE_TRANSACTION		(pk_transaction_get_type ())
 #define PK_TRANSACTION(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION, PkTransaction))
-#define PK_TRANSACTION_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION, PkTransactionClass))
 #define PK_IS_TRANSACTION(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION))
-#define PK_IS_TRANSACTION_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION))
-#define PK_TRANSACTION_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION, PkTransactionClass))
 #define PK_TRANSACTION_ERROR		(pk_transaction_error_quark ())
-#define PK_TRANSACTION_TYPE_ERROR	(pk_transaction_error_get_type ())
 
 typedef struct PkTransactionPrivate PkTransactionPrivate;
 
@@ -65,7 +61,6 @@ typedef enum {
 } PkTransactionState;
 
 GQuark		 pk_transaction_error_quark			(void);
-GType		 pk_transaction_error_get_type			(void);
 GType		 pk_transaction_get_type			(void);
 PkTransaction	*pk_transaction_new				(void);
 
