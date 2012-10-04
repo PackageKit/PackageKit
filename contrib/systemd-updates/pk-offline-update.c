@@ -326,6 +326,7 @@ main (int argc, char *argv[])
 	gchar **package_ids = NULL;
 	gchar *packages_data = NULL;
 	GError *error = NULL;
+	GFile *file = NULL;
 	gint retval;
 	PkResults *results;
 	PkTask *task = NULL;
@@ -375,12 +376,26 @@ main (int argc, char *argv[])
 		goto out;
 	}
 	pk_offline_update_write_results (results);
-	g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+
+	/* delete prepared-update file */
+	file = g_file_new_for_path (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+	ret = g_file_delete (file, NULL, &error);
+	if (!ret) {
+		retval = EXIT_FAILURE;
+		g_warning ("failed to delete %s: %s",
+			   PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	retval = EXIT_SUCCESS;
 out:
 	pk_offline_update_reboot ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
+	if (file != NULL)
+		g_object_unref (file);
 	if (task != NULL)
 		g_object_unref (task);
 	return retval;
