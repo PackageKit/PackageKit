@@ -282,8 +282,15 @@ pk_offline_update_write_results (PkResults *results)
 		string = g_string_new ("");
 		for (i = 0; i < packages->len; i++) {
 			package = g_ptr_array_index (packages, i);
-			g_string_append_printf (string, "%s,",
-						pk_package_get_id (package));
+			switch (pk_package_get_info (package)) {
+			case PK_INFO_ENUM_UPDATING:
+			case PK_INFO_ENUM_INSTALLING:
+				g_string_append_printf (string, "%s,",
+							pk_package_get_id (package));
+				break;
+			default:
+				break;
+			}
 		}
 		if (string->len > 0)
 			g_string_set_size (string, string->len - 1);
