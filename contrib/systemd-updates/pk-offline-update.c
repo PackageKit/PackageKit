@@ -280,7 +280,7 @@ pk_offline_update_write_results (PkResults *results)
 	packages = pk_results_get_package_array (results);
 	if (packages != NULL) {
 		string = g_string_new ("");
-		for (i = 0; packages->len; i++) {
+		for (i = 0; i < packages->len; i++) {
 			package = g_ptr_array_index (packages, i);
 			g_string_append_printf (string, "%s,",
 						pk_package_get_id (package));
