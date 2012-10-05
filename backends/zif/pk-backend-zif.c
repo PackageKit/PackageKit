@@ -4687,7 +4687,7 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer use
 	const gchar *repo_id;
 	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	g_variant_get (params, "(^sb)",
+	g_variant_get (params, "(&sb)",
 		       &repo_id,
 		       &enabled);
 
