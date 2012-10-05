@@ -1018,13 +1018,13 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 static void
 pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	const gchar *directory;
+	PkBitfield transaction_flags;
 	gchar **package_ids;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
-	g_variant_get (params, "(^a&ss)",
-		       &package_ids,
-		       &directory);
+	g_variant_get (params, "(t^a&s)",
+		       &transaction_flags,
+		       &package_ids);
 
 	while (TRUE) {
 
