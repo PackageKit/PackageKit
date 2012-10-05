@@ -797,7 +797,7 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 	gchar *summary = NULL;
 
 	string = g_string_new ("");
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "info", &info,
@@ -958,7 +958,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		goto out;
 
 	/* run each plugin */
-	for (i=0; i<transaction->priv->plugins->len; i++) {
+	for (i = 0; i < transaction->priv->plugins->len; i++) {
 		plugin = g_ptr_array_index (transaction->priv->plugins, i);
 		ret = g_module_symbol (plugin->module,
 				       function,
@@ -1245,7 +1245,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 
 		/* report to syslog */
-		for (i=0; i<array->len; i++) {
+		for (i = 0; i < array->len; i++) {
 			item = g_ptr_array_index (array, i);
 			g_object_get (item,
 				      "info", &info,
@@ -1667,7 +1667,7 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 
 	/* filter out duplicates */
 	array = pk_results_get_require_restart_array (transaction->priv->results);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item_tmp = g_ptr_array_index (array, i);
 		g_object_get (item_tmp,
 			      "package-id", &package_id_tmp,
@@ -2620,7 +2620,7 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 		return FALSE;
 	}
 
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		if (pk_transaction_strvalidate_char (text[i]) == FALSE) {
 			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon: char '%c' in text!", text[i]);
@@ -3952,7 +3952,7 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 
 	/* packages */
 	package_array = pk_results_get_package_array (results);
-	for (i=0; i<package_array->len; i++) {
+	for (i = 0; i < package_array->len; i++) {
 		package = g_ptr_array_index (package_array, i);
 		g_dbus_connection_emit_signal (transaction->priv->connection,
 					       NULL,
@@ -3968,7 +3968,7 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 
 	/* messages */
 	message_array = pk_results_get_message_array (results);
-	for (i=0; i<message_array->len; i++) {
+	for (i = 0; i < message_array->len; i++) {
 		message = g_ptr_array_index (message_array, i);
 		g_dbus_connection_emit_signal (transaction->priv->connection,
 					       NULL,
@@ -4090,7 +4090,7 @@ pk_transaction_is_supported_content_type (PkTransaction *transaction,
 	guint i;
 
 	/* can we support this one? */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		mime_type_tmp = g_ptr_array_index (array, i);
 		if (g_strcmp0 (mime_type_tmp, content_type) == 0) {
 			ret = TRUE;
@@ -4146,7 +4146,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
 
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
@@ -4644,7 +4644,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 	}
 
 	/* check each package for sanity */
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		ret = pk_transaction_strvalidate (packages[i], &error);
 		if (!ret) {
 			pk_transaction_release_tid (transaction);

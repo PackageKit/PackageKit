@@ -123,7 +123,7 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 
 	/* find the runner with the transaction ID */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		tmptid = pk_transaction_get_tid (item->transaction);
 		if (g_strcmp0 (tmptid, tid) == 0)
@@ -165,7 +165,7 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 
 	/* check for existing transaction doing an update */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		/* we might not have this set yet */
 		if (item->transaction == NULL)
@@ -358,7 +358,7 @@ pk_transaction_list_get_active_transactions (PkTransactionList *tlist)
 
 	/* find the runner with the transaction ID */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_RUNNING)
 			g_ptr_array_add (res, item);
@@ -389,7 +389,7 @@ pk_transaction_list_get_exclusive_running (PkTransactionList *tlist)
 		goto out;
 
 	/* check if we have any running locked (exclusive) transaction */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 
 		/* check if a transaction is running in exclusive */
@@ -424,7 +424,7 @@ pk_transaction_list_get_background_running (PkTransactionList *tlist)
 		goto out;
 
 	/* check if we have any running background transaction */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (item->background) {
 			ret = TRUE;
@@ -454,7 +454,7 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 	exclusive_running = pk_transaction_list_get_exclusive_running (tlist) > 0;
 
 	/* first try the waiting non-background transactions */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 
@@ -470,7 +470,7 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 	}
 
 	/* then try the other waiting transactions (background tasks) */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 
@@ -599,7 +599,7 @@ pk_transaction_list_get_number_transactions_for_uid (PkTransactionList *tlist, g
 
 	/* find all the transactions in progress */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (item->uid == uid)
 			count++;
@@ -730,7 +730,7 @@ pk_transaction_list_get_locked (PkTransactionList *tlist)
 		goto out;
 
 	/* check if any backend in running transaction is locked at time */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 
 		job = pk_transaction_get_backend_job (item->transaction);
@@ -762,7 +762,7 @@ pk_transaction_list_cancel_background (PkTransactionList *tlist)
 
 	/* cancel all running background transactions */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 		if (state != PK_TRANSACTION_STATE_RUNNING)
@@ -790,7 +790,7 @@ pk_transaction_list_cancel_queued (PkTransactionList *tlist)
 
 	/* clear any pending transactions */
 	array = tlist->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 		if (state >= PK_TRANSACTION_STATE_RUNNING)
@@ -888,7 +888,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 
 	/* find all the transactions in progress */
 	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if its committed and not finished */
 		state = pk_transaction_get_state (item->transaction);
@@ -936,7 +936,7 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 		goto out;
 
 	/* iterate tasks */
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		state = pk_transaction_get_state (item->transaction);
 		if (state == PK_TRANSACTION_STATE_RUNNING)
@@ -1005,7 +1005,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 
 	/* get state */
 	g_debug ("checking consistency as length %i", length);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		state = pk_transaction_get_state (item->transaction);
 		if (state == PK_TRANSACTION_STATE_RUNNING)

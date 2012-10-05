@@ -125,7 +125,7 @@ pk_task_find_by_request (PkTask *task, guint request)
 	g_return_val_if_fail (request != 0, NULL);
 
 	array = task->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		if (item->request == request)
 			goto out;
@@ -385,7 +385,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* remove all the original packages from the sack */
 	if (state->package_ids != NULL) {
 		length = g_strv_length (state->package_ids);
-		for (i=0; i<length; i++)
+		for (i = 0; i < length; i++)
 			pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
 	}
 

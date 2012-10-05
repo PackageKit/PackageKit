@@ -1057,7 +1057,7 @@ pk_engine_plugin_phase (PkEngine *engine,
 	g_assert (function != NULL);
 
 	/* run each plugin */
-	for (i=0; i<engine->priv->plugins->len; i++) {
+	for (i = 0; i < engine->priv->plugins->len; i++) {
 		plugin = g_ptr_array_index (engine->priv->plugins, i);
 		ret = g_module_symbol (plugin->module,
 				       function,

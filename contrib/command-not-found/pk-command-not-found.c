@@ -71,7 +71,7 @@ pk_cnf_find_alternatives_swizzle (const gchar *cmd, guint len, GPtrArray *array)
 	gchar swap;
 
 	/*  */
-	for (i=0; i<len-1; i++) {
+	for (i = 0; i < len-1; i++) {
 		possible = g_strdup (cmd);
 		swap = possible[i];
 		possible[i] = possible[i+1];
@@ -93,7 +93,7 @@ pk_cnf_find_alternatives_replace (const gchar *cmd, guint len, GPtrArray *array)
 	gchar temp;
 
 	/* replace some easily confused chars */
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		temp = cmd[i];
 		if (temp == 'i') {
 			possible = g_strdup (cmd);
@@ -161,7 +161,7 @@ pk_cnf_find_alternatives_truncate (const gchar *cmd, guint len, GPtrArray *array
 
 	/* truncate first char */
 	possible = g_strdup (cmd);
-	for (i=0; i<len-1; i++)
+	for (i = 0; i < len-1; i++)
 		possible[i] = possible[i+1];
 	possible[len-1] = '\0';
 	g_ptr_array_add (array, possible);
@@ -301,7 +301,7 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 	gchar *possible;
 	gchar temp;
 
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		temp = g_ascii_tolower (cmd[i]);
 		if (temp != cmd[i]) {
 			possible = g_strdup (cmd);
@@ -318,7 +318,7 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 
 	/* all lower */
 	possible = g_strdup (cmd);
-	for (i=0; i<len; i++)
+	for (i = 0; i < len; i++)
 		possible[i] = g_ascii_tolower (cmd[i]);
 	if (strcmp (possible, cmd) != 0)
 		g_ptr_array_add (array, possible);
@@ -327,7 +327,7 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 
 	/* all upper */
 	possible = g_strdup (cmd);
-	for (i=0; i<len; i++)
+	for (i = 0; i < len; i++)
 		possible[i] = g_ascii_toupper (cmd[i]);
 	if (strcmp (possible, cmd) != 0)
 		g_ptr_array_add (array, possible);
@@ -366,7 +366,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	pk_cnf_find_alternatives_solaris (cmd, len, possible);
 
 	/* remove duplicates using a helper array */
-	for (i=0; i<possible->len; i++) {
+	for (i = 0; i < possible->len; i++) {
 		cmdt = g_ptr_array_index (possible, i);
 		ret = TRUE;
 		for (j=0; j<unique->len; j++) {
@@ -388,7 +388,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	strncpy (buffer_sbin, "/usr/sbin/", PK_MAX_PATH_LEN);
 
 	/* remove any that exist (fast path) */
-	for (i=0; i<unique->len; i++) {
+	for (i = 0; i < unique->len; i++) {
 		cmdt = g_ptr_array_index (unique, i);
 
 		/* ITS4: ignore, size is checked */
@@ -539,7 +539,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	/* get the packages returned */
 	array = pk_results_get_package_array (results);
 	package_ids = g_new0 (gchar *, array->len+1);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		package_ids[i] = g_strdup (pk_package_get_id (item));
 	}
@@ -844,7 +844,7 @@ main (int argc, char *argv[])
 		if (config->multiple_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: show the user a list of commands that they could have meant */
 			g_printerr ("%s:\n", _("Similar commands are:"));
-			for (i=0; i<array->len; i++) {
+			for (i = 0; i < array->len; i++) {
 				possible = g_ptr_array_index (array, i);
 				g_printerr ("'%s'\n", possible);
 			}
@@ -853,7 +853,7 @@ main (int argc, char *argv[])
 		} else if (config->multiple_match == PK_CNF_POLICY_ASK) {
 			/* TRANSLATORS: show the user a list of commands we could run */
 			g_printerr ("%s:\n", _("Similar commands are:"));
-			for (i=0; i<array->len; i++) {
+			for (i = 0; i < array->len; i++) {
 				possible = g_ptr_array_index (array, i);
 				g_printerr ("%i\t'%s'\n", i+1, possible);
 			}
