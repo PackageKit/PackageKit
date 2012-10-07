@@ -80,6 +80,12 @@ typedef struct {
 } PkBackendPoldekJobData;
 
 typedef struct {
+	struct poldek_ctx	*ctx;
+	struct poclidek_ctx	*cctx;
+	struct pkgdb		*db;
+} PkBackendPoldekPriv;
+
+typedef struct {
 	PkGroupEnum	group;
 	const gchar	*regex;
 } PLDGroupRegex;
@@ -132,8 +138,7 @@ static PbError *pberror;
 /* cached locale variants */
 static GHashTable *clv;
 
-static struct poldek_ctx	*ctx = NULL;
-static struct poclidek_ctx	*cctx = NULL;
+static PkBackendPoldekPriv *priv = NULL;
 
 /**
  * execute_command:
@@ -155,8 +160,8 @@ execute_command (const gchar *format, ...)
 	command = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	ts = poldek_ts_new (ctx, 0);
-	rcmd = poclidek_rcmd_new (cctx, ts);
+	ts = poldek_ts_new (priv->ctx, 0);
+	rcmd = poclidek_rcmd_new (priv->cctx, ts);
 
 	ts->setop(ts, POLDEK_OP_PARTICLE, 0);
 
@@ -192,7 +197,7 @@ execute_packages_command (const gchar *format, ...)
 	command = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	rcmd = poclidek_rcmd_new (cctx, NULL);
+	rcmd = poclidek_rcmd_new (priv->cctx, NULL);
 
 	if (poclidek_rcmd_execline (rcmd, command)) {
 		packages = poclidek_rcmd_get_packages (rcmd);
@@ -754,7 +759,7 @@ setup_vf_progress (struct vf_progress *vf_progress, PkBackendJob *job)
 	vfile_configure (VFILE_CONF_VERBOSE, &verbose);
 	vfile_configure (VFILE_CONF_STUBBORN_NRETRIES, 5);
 
-	poldek_configure (ctx, POLDEK_CONF_VFILEPROGRESS, vf_progress);
+	poldek_configure (priv->ctx, POLDEK_CONF_VFILEPROGRESS, vf_progress);
 }
 
 static gint
@@ -802,20 +807,26 @@ do_post_search_process (tn_array *installed, tn_array *available)
 	return packages;
 }
 
+static void
+pk_backend_poldek_open_pkgdb (void)
+{
+	if (priv->db == NULL) {
+		priv->db = pkgdb_open (poldek_get_pmctx (priv->ctx),
+				       NULL, NULL, O_RDONLY, NULL);
+	}
+}
+
 static gboolean
 pkg_is_installed (struct pkg *pkg)
 {
-	struct pkgdb *db;
 	gint cmprc, is_installed = 0;
 
 	g_return_val_if_fail (pkg != NULL, FALSE);
 
-	db = pkgdb_open (poldek_get_pmctx (ctx), NULL, NULL, O_RDONLY, NULL);
+	pk_backend_poldek_open_pkgdb ();
 
-	if (db) {
-		is_installed = pkgdb_is_pkg_installed (db, pkg, &cmprc);
-
-		pkgdb_free (db);
+	if (priv->db) {
+		is_installed = pkgdb_is_pkg_installed (priv->db, pkg, &cmprc);
 	}
 
 	return is_installed ? TRUE : FALSE;
@@ -833,20 +844,20 @@ pkg_is_installed (struct pkg *pkg)
 static gchar *
 get_pkgid_from_localpath (const gchar *localpath)
 {
-	struct pkgdb *db = NULL;
 	struct poldek_ts *ts = NULL;
 	gchar *pkgid = NULL;
 
 	g_return_val_if_fail (localpath != NULL, NULL);
 
-	ts = poldek_ts_new (ctx, 0);
-	db = pkgdb_open (ts->pmctx, ts->rootdir, NULL, O_RDONLY, NULL);
+	ts = poldek_ts_new (priv->ctx, 0);
 
-	if (db) {
+	pk_backend_poldek_open_pkgdb ();
+
+	if (priv->db) {
 		const struct pm_dbrec *ldbrec;
 		struct pkgdb_it it;
 
-		pkgdb_it_init (db, &it, PMTAG_FILE, localpath);
+		pkgdb_it_init (priv->db, &it, PMTAG_FILE, localpath);
 
 		/* get only one package */
 		if ((ldbrec = pkgdb_it_get (&it)) != NULL) {
@@ -859,8 +870,6 @@ get_pkgid_from_localpath (const gchar *localpath)
 		}
 
 		pkgdb_it_destroy (&it);
-		/* it calls pkgdb_close (db) */
-		pkgdb_free (db);
 	}
 
 	poldek_ts_free (ts);
@@ -1015,7 +1024,7 @@ poldek_get_nvra_from_package_id (const gchar* package_id)
 static tn_array*
 poldek_get_installed_packages (void)
 {
-	return poclidek_get_dent_packages (cctx, POCLIDEK_INSTALLEDDIR);
+	return poclidek_get_dent_packages (priv->cctx, POCLIDEK_INSTALLEDDIR);
 }
 
 static tn_array*
@@ -1909,8 +1918,8 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	cmd = g_string_free (buf, FALSE);
 
-	ts = poldek_ts_new (ctx, 0);
-	rcmd = poclidek_rcmd_new (cctx, ts);
+	ts = poldek_ts_new (priv->ctx, 0);
+	rcmd = poclidek_rcmd_new (priv->cctx, ts);
 
 	ts->setop(ts, POLDEK_OP_PARTICLE, 0);
 
@@ -1973,7 +1982,7 @@ pb_load_packages (PkBackendJob *job)
 		poldek_backend_set_allow_cancel (job, FALSE, FALSE);
 
 	/* load information about installed and available packages */
-	poclidek_load_packages (cctx, POCLIDEK_LOAD_ALL);
+	poclidek_load_packages (priv->cctx, POCLIDEK_LOAD_ALL);
 
 	if (allow_cancel)
 		poldek_backend_set_allow_cancel (job, TRUE, FALSE);
@@ -2226,32 +2235,32 @@ do_poldek_init (PkBackend *backend)
 {
 	poldeklib_init ();
 
-	ctx = poldek_new (0);
+	priv->ctx = poldek_new (0);
 
-	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
+	poldek_load_config (priv->ctx, "/etc/poldek/poldek.conf", NULL, 0);
 
-	poldek_setup (ctx);
+	poldek_setup (priv->ctx);
 
-	cctx = poclidek_new (ctx);
+	priv->cctx = poclidek_new (priv->ctx);
 
 	poldek_set_verbose (1);
 	/* disable LOGFILE and LOGTTY logging */
-	poldek_configure (ctx, POLDEK_CONF_LOGFILE, NULL);
-	poldek_configure (ctx, POLDEK_CONF_LOGTTY, NULL);
+	poldek_configure (priv->ctx, POLDEK_CONF_LOGFILE, NULL);
+	poldek_configure (priv->ctx, POLDEK_CONF_LOGTTY, NULL);
 
 	/* disable unique package names */
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 0);
+	poldek_configure (priv->ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 0);
 
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_LDALLDESC, 1);
+	poldek_configure (priv->ctx, POLDEK_CONF_OPT, POLDEK_OP_LDALLDESC, 1);
 
 	/* poldek has to ask. Otherwise callbacks won't be used */
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_INST, 1);
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
+	poldek_configure (priv->ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_INST, 1);
+	poldek_configure (priv->ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
 	/* (...), but we don't need choose_equiv callback */
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
+	poldek_configure (priv->ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
 
 	/* Install all suggested packages by default */
-	poldek_configure (ctx, POLDEK_CONF_CHOOSESUGGESTS_CB, suggests_callback, NULL);
+	poldek_configure (priv->ctx, POLDEK_CONF_CHOOSESUGGESTS_CB, suggests_callback, NULL);
 
 	sigint_init ();
 }
@@ -2261,8 +2270,13 @@ do_poldek_destroy (PkBackend *backend)
 {
 	sigint_destroy ();
 
-	poclidek_free (cctx);
-	poldek_free (ctx);
+	if (priv->db != NULL) {
+		pkgdb_close (priv->db);
+		priv->db = NULL;
+	}
+
+	poclidek_free (priv->cctx);
+	poldek_free (priv->ctx);
 
 	poldeklib_destroy ();
 }
@@ -2316,6 +2330,8 @@ pk_backend_initialize (PkBackend *backend)
 	pberror = g_new0 (PbError, 1);
 	pberror->tslog = g_string_new ("");
 
+	priv = g_new0 (PkBackendPoldekPriv, 1);
+
 	do_poldek_init (backend);
 
 	g_debug ("backend initalize end");
@@ -2327,6 +2343,8 @@ void
 pk_backend_destroy (PkBackend *backend)
 {
 	do_poldek_destroy (backend);
+
+	g_free (priv);
 
 	/* release PbError struct */
 	g_free (pberror->vfffmsg);
@@ -2352,7 +2370,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 
 	poldek_log_set_appender ("PackageKit", (void *) job, NULL, 0, (poldek_vlog_fn) poldek_backend_log);
 
-	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, job);
+	poldek_configure (priv->ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, job);
 }
 
 /**
@@ -2371,6 +2389,12 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	n_array_cfree (&job_data->to_remove_pkgs);
 
 	g_free (job_data);
+
+	// close pkgdb as well
+	if (priv->db != NULL) {
+		pkgdb_close (priv->db);
+		priv->db = NULL;
+	}
 
 	pk_backend_job_set_user_data (job, NULL);
 }
@@ -2460,7 +2484,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	pkgs = n_array_new (10, (tn_fn_free)pkg_free, NULL);
 
-	ts = poldek_ts_new (ctx, 0);
+	ts = poldek_ts_new (priv->ctx, 0);
 
 	setup_vf_progress (&vf_progress, job);
 
@@ -2533,7 +2557,7 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	deppkgs = n_array_new (2, NULL, NULL);
 
 	installed = poldek_get_installed_packages ();
-	available = poldek_get_avail_packages (ctx);
+	available = poldek_get_avail_packages (priv->ctx);
 
 	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 
@@ -2725,7 +2749,7 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 		installed = poldek_get_installed_packages ();
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) == FALSE)
-		available = poldek_get_avail_packages (ctx);
+		available = poldek_get_avail_packages (priv->ctx);
 
 	pk_backend_job_set_percentage (job, 4);
 
@@ -2794,7 +2818,7 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 
 	pkg = poldek_get_pkg_from_package_id (package_ids[0]);
 	installed = poldek_get_installed_packages ();
-	available = poldek_get_avail_packages (ctx);
+	available = poldek_get_avail_packages (priv->ctx);
 
 	do_requires (installed, available, reqpkgs, pkg, filters, recursive);
 
@@ -2839,7 +2863,7 @@ get_obsoletedby_pkg (struct pkg *pkg)
 	obsoletes = g_ptr_array_new ();
 
 	/* get installed packages */
-	dbpkgs = poclidek_get_dent_packages (cctx, POCLIDEK_INSTALLEDDIR);
+	dbpkgs = poclidek_get_dent_packages (priv->cctx, POCLIDEK_INSTALLEDDIR);
 
 	if (dbpkgs == NULL)
 		return NULL;
@@ -3105,7 +3129,7 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	pk_backend_job_set_percentage (job, 1);
 
-	sources = poldek_get_sources (ctx);
+	sources = poldek_get_sources (priv->ctx);
 
 	if (sources) {
 		size_t	i;
@@ -3317,7 +3341,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
 
-	sources = poldek_get_sources (ctx);
+	sources = poldek_get_sources (priv->ctx);
 
 	if (sources) {
 		size_t i;
