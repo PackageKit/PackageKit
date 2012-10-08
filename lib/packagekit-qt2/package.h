@@ -55,6 +55,15 @@ public:
 class Package
 {
     Q_GADGET
+    Q_ENUMS(Info)
+    Q_PROPERTY(bool isValid READ isValid)
+    Q_PROPERTY(QString packageId READ id)
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString version READ version)
+    Q_PROPERTY(QString arch READ arch)
+    Q_PROPERTY(QString data READ data)
+    Q_PROPERTY(QString summary READ summary)
+    Q_PROPERTY(Info info READ info)
 public:
     /**
      * Describes the state of a package

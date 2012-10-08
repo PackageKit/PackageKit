@@ -54,6 +54,20 @@ namespace PackageKit {
  */
 class PackageUpdateDetails : public Package
 {
+    Q_GADGET
+    Q_ENUMS(UpdateState)
+    Q_ENUMS(Restart)
+    Q_PROPERTY(PackageList updates READ updates)
+    Q_PROPERTY(PackageList obsoletes READ obsoletes)
+    Q_PROPERTY(QStringList vendorUrls READ vendorUrls)
+    Q_PROPERTY(QStringList bugzillaUrls READ bugzillaUrls)
+    Q_PROPERTY(QStringList cveUrls READ cveUrls)
+    Q_PROPERTY(Restart restart READ restart)
+    Q_PROPERTY(QString updateText READ updateText)
+    Q_PROPERTY(QString changelog READ changelog)
+    Q_PROPERTY(UpdateState state READ state)
+    Q_PROPERTY(QDateTime issued READ issued)
+    Q_PROPERTY(QDateTime updated READ updated)
 public:
     /**
      * Describes an update's state

@@ -60,6 +60,11 @@ class PackageDetails : public Package
 {
     Q_GADGET
     Q_ENUMS(Group)
+    Q_PROPERTY(Group group READ group)
+    Q_PROPERTY(QString license READ license)
+    Q_PROPERTY(QString detail READ detail)
+    Q_PROPERTY(QString url READ url)
+    Q_PROPERTY(qulonglong size READ size)
 public:
     /**
      * Describes the different package groups
