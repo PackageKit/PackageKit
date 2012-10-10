@@ -1,7 +1,7 @@
 /*
  * This file is part of the QPackageKit project
  * Copyright (C) 2008 Adrien Bustany <madcat@mymadcat.com>
- * Copyright (C) 2010-2011 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+ * Copyright (C) 2010-2012 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,7 +25,6 @@
 #include <QtCore/QObject>
 #include <QtCore/QMetaEnum>
 
-#include "package.h"
 #include "transaction.h"
 
 namespace PackageKit {
@@ -33,7 +32,7 @@ namespace PackageKit {
 /**
  * \class Daemon daemon.h Daemon
  * \author Adrien Bustany \e <madcat@mymadcat.com>
- * \author Daniel Nicoletti \e <dantti85-pk@yahoo.com.br>
+ * \author Daniel Nicoletti \e <dantti12@gmail.com>
  *
  * \brief Base class used to interact with the PackageKit daemon
  *
@@ -117,7 +116,7 @@ public:
     /**
      * Returns the package groups supported by the current backend
      */
-    static PackageDetails::Groups groups();
+    static Transaction::Groups groups();
 
     /**
      * Set when the backend is locked and native tools would fail.

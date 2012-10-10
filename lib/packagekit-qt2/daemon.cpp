@@ -101,7 +101,7 @@ Transaction::Filters Daemon::filters()
     return static_cast<Transaction::Filter>(global()->d_ptr->daemon->filters());
 }
 
-PackageDetails::Groups Daemon::groups()
+Transaction::Groups Daemon::groups()
 {
     return global()->d_ptr->daemon->groups();
 }

@@ -16,13 +16,10 @@ INCLUDES = \
 METASOURCES = AUTO
 
 MOCFILES =							\
-	signature.moc						\
 	daemon.moc						\
 	daemonproxy.moc						\
 	transactionproxy.moc					\
 	transaction.moc						\
-	package.moc						\
-	packagedetails.moc					\
 	$(NULL)
 
 lib_LTLIBRARIES =						\
@@ -33,34 +30,14 @@ libpackagekit_qt2_includedir = $(includedir)/PackageKit/packagekit-qt2
 
 libpackagekit_qt2_include_HEADERS =				\
 	bitfield.h						\
-	Signature						\
-	signature.h						\
-	Eula							\
-	eula.h							\
 	Transaction						\
 	Daemon							\
 	daemon.h						\
 	transaction.h						\
-	Package							\
-	package.h						\
-	PackageDetails						\
-	packagedetails.h					\
-	PackageUpdateDetails					\
-	packageupdatedetails.h					\
 	$(NULL)
 
 libpackagekit_qt2_la_SOURCES =					\
 	bitfield.cpp						\
-	signature.h						\
-	signature.cpp						\
-	eula.h							\
-	eula.cpp						\
-	package.h						\
-	package.cpp						\
-	packagedetails.h					\
-	packagedetails.cpp					\
-	packageupdatedetails.h					\
-	packageupdatedetails.cpp				\
 	transactionproxy.h					\
 	transactionproxy.cpp					\
 	transactionprivate.h					\

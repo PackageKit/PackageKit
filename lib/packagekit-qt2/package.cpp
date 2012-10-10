@@ -35,7 +35,8 @@ Package::Package(const QString &packageId, Info info, const QString &summary) :
     d->summary = summary;
 }
 
-Package::Package() :
+Package::Package(QObject *parent) :
+    QObject(parent),
     d(new PackagePrivate)
 {
     d->info = InfoUnknown;

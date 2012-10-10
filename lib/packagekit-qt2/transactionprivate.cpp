@@ -19,24 +19,23 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <QtCore/QStringList>
-
 #include "transactionprivate.h"
 
-#include "package.h"
-#include "signature.h"
-#include "eula.h"
+#include "transactionproxy.h"
+
+#include <QStringList>
+#include <QDebug>
 
 using namespace PackageKit;
 
 TransactionPrivate::TransactionPrivate(Transaction* parent) :
     q_ptr(parent),
     p(0),
-    destroyed(false)
+    role(Transaction::RoleUnknown)
 {
 }
 
-void TransactionPrivate::details(const QString &pid,
+void TransactionPrivate::Details(const QString &pid,
                                  const QString &license,
                                  uint group,
                                  const QString &detail,
@@ -44,14 +43,12 @@ void TransactionPrivate::details(const QString &pid,
                                  qulonglong size)
 {
     Q_Q(Transaction);
-    PackageDetails package(pid,
-                           license,
-                           group,
-                           detail,
-                           url,
-                           size);
-
-    q->packageDetails(package);
+    q->details(pid,
+               license,
+               static_cast<Transaction::Group>(group),
+               detail,
+               url,
+               size);
 }
 
 void TransactionPrivate::distroUpgrade(uint type, const QString &name, const QString &description)
@@ -68,18 +65,6 @@ void TransactionPrivate::errorCode(uint error, const QString &details)
     q->errorCode(static_cast<Transaction::Error>(error), details);
 }
 
-void TransactionPrivate::eulaRequired(const QString &eulaId, const QString &pid, const QString &vendor, const QString &licenseAgreement)
-{
-    Q_Q(Transaction);
-    Eula eula;
-    eula.id = eulaId;
-    eula.package = Package(pid);
-    eula.vendor = vendor;
-    eula.licenseAgreement = licenseAgreement;
-
-    q->eulaRequired(eula);
-}
-
 void TransactionPrivate::mediaChangeRequired(uint mediaType, const QString &mediaId, const QString &mediaText)
 {
     Q_Q(Transaction);
@@ -91,7 +76,7 @@ void TransactionPrivate::mediaChangeRequired(uint mediaType, const QString &medi
 void TransactionPrivate::files(const QString &pid, const QStringList &fileList)
 {
     Q_Q(Transaction);
-    q->files(Package(pid), fileList);
+    q->files(pid, fileList);
 }
 
 void TransactionPrivate::finished(uint exitCode, uint runtime)
@@ -103,14 +88,19 @@ void TransactionPrivate::finished(uint exitCode, uint runtime)
 void TransactionPrivate::destroy()
 {
     Q_Q(Transaction);
-    q->deleteLater();
+    if (p) {
+       delete p;
+       p = 0;
+    }
 }
 
 void TransactionPrivate::daemonQuit()
 {
     Q_Q(Transaction);
-    q->finished(Transaction::ExitFailed, 0);
-    destroy();
+    if (p) {
+        q->finished(Transaction::ExitFailed, 0);
+        destroy();
+    }
 }
 
 void TransactionPrivate::message(uint type, const QString &message)
@@ -119,13 +109,23 @@ void TransactionPrivate::message(uint type, const QString &message)
     q->message(static_cast<Transaction::Message>(type), message);
 }
 
-void TransactionPrivate::package(uint info, const QString &pid, const QString &summary)
+void TransactionPrivate::Package(uint info, const QString &pid, const QString &summary)
 {
     Q_Q(Transaction);
-    q->package(Package(pid, static_cast<Package::Info>(info), summary));
+    q->package(static_cast<Transaction::Info>(info),
+               pid,
+               summary);
 }
 
-void TransactionPrivate::repoSignatureRequired(const QString &pid,
+void TransactionPrivate::ItemProgress(const QString &itemID, uint status, uint percentage)
+{
+    Q_Q(Transaction);
+    q->itemProgress(itemID,
+                    static_cast<Transaction::Status>(status),
+                    percentage);
+}
+
+void TransactionPrivate::RepoSignatureRequired(const QString &pid,
                                                const QString &repoName,
                                                const QString &keyUrl,
                                                const QString &keyUserid,
@@ -135,23 +135,20 @@ void TransactionPrivate::repoSignatureRequired(const QString &pid,
                                                uint type)
 {
     Q_Q(Transaction);
-    Signature i;
-    i.package = Package(pid);
-    i.repoId = repoName;
-    i.keyUrl = keyUrl;
-    i.keyUserid = keyUserid;
-    i.keyId = keyId;
-    i.keyFingerprint = keyFingerprint;
-    i.keyTimestamp = keyTimestamp;
-    i.type = static_cast<Signature::Type>(type);
-
-    q->repoSignatureRequired(i);
+    q->repoSignatureRequired(pid,
+                             repoName,
+                             keyUrl,
+                             keyUserid,
+                             keyId,
+                             keyFingerprint,
+                             keyTimestamp,
+                             static_cast<Transaction::SigType>(type));
 }
 
 void TransactionPrivate::requireRestart(uint type, const QString &pid)
 {
     Q_Q(Transaction);
-    q->requireRestart(static_cast<PackageUpdateDetails::Restart>(type), Package(pid));
+    q->requireRestart(static_cast<Transaction::Restart>(type), pid);
 }
 
 void TransactionPrivate::transaction(const QDBusObjectPath &oldTid,
@@ -167,7 +164,7 @@ void TransactionPrivate::transaction(const QDBusObjectPath &oldTid,
     q->transaction(new Transaction(oldTid, timespec, succeeded, static_cast<Transaction::Role>(role), duration, data, uid, cmdline, q->parent()));
 }
 
-void TransactionPrivate::updateDetail(const QString &package_id,
+void TransactionPrivate::UpdateDetail(const QString &package_id,
                                       const QStringList &updates,
                                       const QStringList &obsoletes,
                                       const QStringList &vendor_urls,
@@ -181,28 +178,16 @@ void TransactionPrivate::updateDetail(const QString &package_id,
                                       const QString &updated)
 {
     Q_Q(Transaction);
-
-    PackageUpdateDetails package(package_id,
-                                 updates,
-                                 obsoletes,
-                                 vendor_urls,
-                                 bugzilla_urls,
-                                 cve_urls,
-                                 restart,
-                                 update_text,
-                                 changelog,
-                                 state,
-                                 QDateTime::fromString(issued, Qt::ISODate),
-                                 QDateTime::fromString(updated, Qt::ISODate));
-
-    q->packageUpdateDetails(package);
-}
-
-QStringList TransactionPrivate::packageListToPids(const PackageList &packages) const
-{
-    QStringList pids;
-    foreach (const Package &package, packages) {
-        pids << package.id();
-    }
-    return pids;
+    q->updateDetail(package_id,
+                    updates,
+                    obsoletes,
+                    vendor_urls,
+                    bugzilla_urls,
+                    cve_urls,
+                    static_cast<Transaction::Restart>(restart),
+                    update_text,
+                    changelog,
+                    static_cast<Transaction::UpdateState>(state),
+                    QDateTime::fromString(issued, Qt::ISODate),
+                    QDateTime::fromString(updated, Qt::ISODate));
 }

@@ -23,7 +23,7 @@
 #define PACKAGEKIT_PACKAGE_H
 
 #include <QtCore/QSharedDataPointer>
-#include <QtCore/QString>
+#include <QtCore/QObject>
 #include <QtCore/QSet>
 
 namespace PackageKit {
@@ -52,7 +52,7 @@ public:
  *
  * \note All Package objects should be deleted by the user.
  */
-class Package
+class Package : public QObject
 {
     Q_GADGET
     Q_ENUMS(Info)
@@ -68,7 +68,7 @@ public:
     /**
      * Describes the state of a package
      */
-    typedef enum {
+    enum Info {
         InfoUnknown,
         InfoInstalled,
         InfoAvailable,
@@ -94,7 +94,7 @@ public:
         InfoDecompressing,
         InfoUntrusted,
         InfoTrusted
-    } Info;
+    };
 
     /**
      * Constructs package
@@ -109,7 +109,7 @@ public:
     /**
      * Constructs an invalid package.
      */
-    Package();
+    explicit Package(QObject *parent = 0);
 
     /**
      * Destructor
