@@ -53,7 +53,6 @@ class Transaction : public QObject
     Q_ENUMS(Role)
     Q_ENUMS(Error)
     Q_ENUMS(Exit)
-    Q_ENUMS(Filter)
     Q_ENUMS(Message)
     Q_ENUMS(Status)
     Q_ENUMS(MediaType)
@@ -65,6 +64,8 @@ class Transaction : public QObject
     Q_ENUMS(Group)
     Q_ENUMS(Info)
     Q_ENUMS(SigType)
+    Q_FLAGS(TransactionFlag TransactionFlags)
+    Q_FLAGS(Filter Filters)
     Q_PROPERTY(bool allowCancel READ allowCancel NOTIFY changed)
     Q_PROPERTY(bool isCallerActive READ isCallerActive NOTIFY changed)
     Q_PROPERTY(QString lastPackage READ lastPackage NOTIFY changed)
@@ -81,7 +82,7 @@ public:
      *
      * \sa Transaction::error
      */
-    typedef enum {
+    enum InternalError {
         InternalErrorNone = 0,
         InternalErrorUnkown,
         InternalErrorFailed,
@@ -94,7 +95,7 @@ public:
         InternalErrorInvalidFile,
         InternalErrorFunctionNotSupported,
         InternalErrorDaemonUnreachable
-    } InternalError;
+    };
 
     /**
      * Describes the role of the transaction
@@ -137,7 +138,7 @@ public:
     /**
      * Describes the different types of error
      */
-    typedef enum {
+    enum Error {
         ErrorUnknown,
         ErrorOom,
         ErrorNoNetwork,
@@ -206,13 +207,13 @@ public:
         ErrorCancelledPriority,
         ErrorUnfinishedTransaction,
         ErrorLockRequired
-    } Error;
+    };
 
     /**
      * Describes how the transaction finished
      * \sa Transaction::finished()
      */
-    typedef enum {
+    enum Exit {
         ExitUnknown,
         ExitSuccess,
         ExitFailed,
@@ -224,12 +225,12 @@ public:
         ExitNeedUntrusted,
         ExitCancelledPriority,
         ExitRepairRequired
-    } Exit;
+    };
 
     /**
      * Describes the different package filters
      */
-    typedef enum {
+    enum Filter {
         FilterUnknown        = 0x0000001,
         FilterNone           = 0x0000002,
         FilterInstalled      = 0x0000004,
@@ -258,13 +259,13 @@ public:
         FilterNotApplication = 0x2000000,
         /* this always has to be at the end of the list */
         FilterLast           = 0x4000000
-    } Filter;
+    };
     Q_DECLARE_FLAGS(Filters, Filter)
 
     /**
      * Describes a message's type
      */
-    typedef enum {
+    enum Message {
         MessageUnknown,
         MessageBrokenMirror,
         MessageConnectionRefused,
@@ -282,12 +283,12 @@ public:
         MessageRepoMetadataDownloadFailed,
         MessageRepoForDevelopersOnly,
         MessageOtherUpdatesHeldBack
-    } Message;
+    };
 
     /**
      * Describes the current state of the transaction
      */
-    typedef enum {
+    enum Status {
         StatusUnknown,
         StatusWait,
         StatusSetup,
@@ -324,23 +325,23 @@ public:
         StatusCheckExecutableFiles,
         StatusCheckLibraries,
         StatusCopyFiles
-    } Status;
+    };
 
     /**
      * Describes what kind of media is required
      */
-    typedef enum {
+    enum MediaType {
         MediaTypeUnknown,
         MediaTypeCd,
         MediaTypeDvd,
         MediaTypeDisc
-    } MediaType;
+    };
 
     /**
      * Enum used to describe a "provides" request
      * \sa whatProvides
      */
-    typedef enum {
+    enum Provides {
         ProvidesUnknown,
         ProvidesAny,
         ProvidesModalias,
@@ -353,44 +354,44 @@ public:
         ProvidesSharedLib,
         ProvidesPythonModule,
         ProvidesLanguageSupport
-    } Provides;
+    };
 
     /**
      * Describes an distro upgrade state
      */
-    typedef enum {
+    enum DistroUpgrade {
         DistroUpgradeUnknown,
         DistroUpgradeStable,
         DistroUpgradeUnstable
-    } DistroUpgrade;
+    };
 
     /**
      * Describes the type of distribution upgrade to perform
      * \sa upgradeSystem()
      */
-    typedef enum {
+    enum UpgradeKind {
         UpgradeKindUnknown,
         UpgradeKindMinimal,
         UpgradeKindDefault,
         UpgradeKindComplete
-    } UpgradeKind;
+    };
 
     /**
      * Describes the type of distribution upgrade to perform
      * \sa upgradeSystem()
      */
-    typedef enum {
+    enum TransactionFlag {
         TransactionFlagNone         = 1 << 0, // Since: 0.8.1
         TransactionFlagOnlyTrusted  = 1 << 1, // Since: 0.8.1
         TransactionFlagSimulate     = 1 << 2, // Since: 0.8.1
         TransactionFlagOnlyDownload = 1 << 3  // Since: 0.8.1
-    } TransactionFlag;
+    };
     Q_DECLARE_FLAGS(TransactionFlags, TransactionFlag)
 
     /**
      * Describes a restart type
      */
-    typedef enum {
+    enum Restart {
         RestartUnknown,
         RestartNone,
         RestartApplication,
@@ -398,22 +399,22 @@ public:
         RestartSystem,
         RestartSecuritySession, /* a library that is being used by this package has been updated for security */
         RestartSecuritySystem
-    } Restart;
+    };
 
     /**
      * Describes an update's state
      */
-    typedef enum {
+    enum UpdateState {
         UpdateStateUnknown,
         UpdateStateStable,
         UpdateStateUnstable,
         UpdateStateTesting
-    } UpdateState;
+    };
 
     /**
      * Describes the different package groups
      */
-    typedef enum {
+    enum Group {
         GroupUnknown,
         GroupAccessibility,
         GroupAccessories,
@@ -449,7 +450,7 @@ public:
         GroupCollections,
         GroupVendor,
         GroupNewest
-    } Group;
+    };
     typedef Bitfield Groups;
 
     /**
@@ -486,10 +487,10 @@ public:
     /**
      * Describes a signature type
      */
-    typedef enum {
+    enum SigType {
         SigTypeUnknown,
         SigTypeGpg
-    } SigType;
+    };
 
     /**
      * Create a transaction object with a new transaction id
@@ -1047,10 +1048,10 @@ public:
      */
     Q_INVOKABLE void cancel();
 
-    static QString packageName(const QString &packageID);
-    static QString packageVersion(const QString &packageID);
-    static QString packageArch(const QString &packageID);
-    static QString packageData(const QString &packageID);
+    Q_INVOKABLE static QString packageName(const QString &packageID);
+    Q_INVOKABLE static QString packageVersion(const QString &packageID);
+    Q_INVOKABLE static QString packageArch(const QString &packageID);
+    Q_INVOKABLE static QString packageData(const QString &packageID);
     static QString packageIcon(const QString &packageID);
 
 Q_SIGNALS:
@@ -1227,6 +1228,7 @@ private:
     Q_PRIVATE_SLOT(d_ptr, void daemonQuit());
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Transaction::Filters)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Transaction::TransactionFlags)
 
 } // End namespace PackageKit
 

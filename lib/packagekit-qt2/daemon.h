@@ -50,6 +50,19 @@ class Daemon : public QObject
     Q_OBJECT
     Q_ENUMS(Network)
     Q_ENUMS(Authorize)
+    Q_PROPERTY(Transaction::Roles actions READ actions NOTIFY changed)
+    Q_PROPERTY(QString backendName READ backendName NOTIFY changed)
+    Q_PROPERTY(QString backendDescription READ backendDescription NOTIFY changed)
+    Q_PROPERTY(QString backendAuthor READ backendAuthor NOTIFY changed)
+    Q_PROPERTY(Transaction::Filters filters READ filters NOTIFY changed)
+    Q_PROPERTY(Transaction::Groups groups READ groups NOTIFY changed)
+    Q_PROPERTY(bool locked READ locked NOTIFY changed)
+    Q_PROPERTY(QStringList mimeTypes READ mimeTypes NOTIFY changed)
+    Q_PROPERTY(Daemon::Network networkState READ networkState NOTIFY changed)
+    Q_PROPERTY(QString distroID READ distroID NOTIFY changed)
+    Q_PROPERTY(uint versionMajor READ versionMajor NOTIFY changed)
+    Q_PROPERTY(uint versionMinor READ versionMinor NOTIFY changed)
+    Q_PROPERTY(uint versionMicro READ versionMicro NOTIFY changed)
 public:
     /**
      * Describes the current network state
@@ -91,54 +104,69 @@ public:
     /**
      * Returns all the actions supported by the current backend
      */
-    static Transaction::Roles actions();
+    Transaction::Roles actions();
 
     /**
      * The backend name, e.g. "yum".
      */
-    static QString backendName();
+    QString backendName();
 
     /**
      * The backend description, e.g. "Yellow Dog Update Modifier".
      */
-    static QString backendDescription();
+    QString backendDescription();
 
     /**
      * The backend author, e.g. "Joe Bloggs <joe@blogs.com>"
      */
-    static QString backendAuthor();
+    QString backendAuthor();
 
     /**
      * Returns the package filters supported by the current backend
      */
-    static Transaction::Filters filters();
+    Transaction::Filters filters();
 
     /**
      * Returns the package groups supported by the current backend
      */
-    static Transaction::Groups groups();
+    Transaction::Groups groups();
 
     /**
      * Set when the backend is locked and native tools would fail.
      */
-    static bool locked();
+    bool locked();
 
     /**
      * Returns a list containing the MIME types supported by the current backend
      */
-    static QStringList mimeTypes();
+    QStringList mimeTypes();
 
     /**
      * Returns the current network state
      */
-    static Daemon::Network networkState();
+    Daemon::Network networkState();
 
     /**
      * The distribution identifier in the
      * distro;version;arch form,
      * e.g. "debian;squeeze/sid;x86_64".
      */
-    static QString distroId();
+    QString distroID();
+
+    /**
+     * Returns the major version number.
+     */
+    uint versionMajor();
+
+    /**
+     * The minor version number.
+     */
+    uint versionMinor();
+
+    /**
+     * The micro version number.
+     */
+    uint versionMicro();
 
     /**
      * Allows a client to find out if it would be allowed to authorize an action.
@@ -146,12 +174,12 @@ public:
      * specified in \p actionId
      * Returm might be either yes, no or interactive \sa Authorize.
      */
-    static Authorize canAuthorize(const QString &actionId);
+    Q_INVOKABLE Authorize canAuthorize(const QString &actionId);
 
     /**
      * Returns the time (in seconds) since the specified \p action
      */
-    static uint getTimeSinceAction(Transaction::Role action);
+    Q_INVOKABLE uint getTimeSinceAction(Transaction::Role action);
 
     /**
      * \brief creates a new transaction path
@@ -164,12 +192,12 @@ public:
      * is not useful as simply creating a \c Transaction object will
      * automatically create this path.
      */
-    static QDBusObjectPath getTid();
+    Q_INVOKABLE QDBusObjectPath getTid();
 
     /**
      * Returns the list of current transactions
      */
-    static QList<QDBusObjectPath> getTransactionList();
+    Q_INVOKABLE QList<QDBusObjectPath> getTransactionList();
 
     /**
      * Convenience function
@@ -178,7 +206,7 @@ public:
      * You must delete these yourself or pass a
      * \p parent for these comming transactions
      */
-    static QList<Transaction*> getTransactionObjects(QObject *parent = 0);
+    Q_INVOKABLE QList<Transaction*> getTransactionObjects(QObject *parent = 0);
 
     /**
      * \brief Sets a global hints for all the transactions to be created
@@ -198,50 +226,35 @@ public:
      *
      * \sa Transaction::setHints
      */
-    static void setHints(const QStringList &hints);
+    Q_INVOKABLE void setHints(const QStringList &hints);
 
     /**
      * Convenience function to set global hints
      * \sa setHints(const QStringList &hints)
      */
-    static void setHints(const QString &hints);
+    Q_INVOKABLE void setHints(const QString &hints);
 
     /**
      * This method returns the current hints
      */
-    static QStringList hints();
+    Q_INVOKABLE QStringList hints();
 
     /**
      * Sets a proxy to be used for all the network operations
      */
-    static Transaction::InternalError setProxy(const QString &http_proxy, const QString &https_proxy, const QString &ftp_proxy, const QString &socks_proxy, const QString &no_proxy, const QString &pac);
+    Q_INVOKABLE Transaction::InternalError setProxy(const QString &http_proxy, const QString &https_proxy, const QString &ftp_proxy, const QString &socks_proxy, const QString &no_proxy, const QString &pac);
 
     /**
      * \brief Tells the daemon that the system state has changed, to make it reload its cache
      *
      * \p reason can be resume or posttrans
      */
-    static void stateHasChanged(const QString &reason);
+    Q_INVOKABLE void stateHasChanged(const QString &reason);
 
     /**
      * Asks PackageKit to quit, for example to let a native package manager operate
      */
-    static void suggestDaemonQuit();
-
-    /**
-     * Returns the major version number.
-     */
-    static uint versionMajor();
-
-    /**
-     * The minor version number.
-     */
-    static uint versionMinor();
-
-    /**
-     * The micro version number.
-     */
-    static uint versionMicro();
+    Q_INVOKABLE void suggestDaemonQuit();
     
     /**
      * Returns the string representing the enum

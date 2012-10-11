@@ -112,8 +112,8 @@ bool Transaction::init(const QDBusObjectPath &tid)
         return false;
     } else {
         d->error = Transaction::InternalErrorNone;
-        if (!Daemon::hints().isEmpty()) {
-            setHints(Daemon::hints());
+        if (!Daemon::global()->hints().isEmpty()) {
+            setHints(Daemon::global()->hints());
         }
     }
 
@@ -251,7 +251,7 @@ QString Transaction::packageData(const QString &packageID)
 QString Transaction::packageIcon(const QString &packageID)
 {
     QString path;
-    QSqlDatabase db = QSqlDatabase::database();
+    QSqlDatabase db = QSqlDatabase::database(PK_DESKTOP_DEFAULT_DATABASE);
     if (!db.isOpen()) {
         qDebug() << "Desktop files database is not open";
         return path;

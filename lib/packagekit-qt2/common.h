@@ -32,3 +32,4 @@
 #define AUTH_SYSTEM_NETWORK_PROXY_CONFIGURE	"org.freedesktop.packagekit.system-network-proxy-configure"
 #define AUTH_CANCEL_FOREIGN 			"org.freedesktop.packagekit.cancel-foreign"
 
+#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"

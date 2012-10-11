@@ -27,8 +27,6 @@
 
 #include "common.h"
 
-#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
-
 using namespace PackageKit;
 
 Daemon* Daemon::m_global = 0;
@@ -65,7 +63,7 @@ Daemon::Daemon(QObject *parent) :
 
     // Set up database for desktop files
     QSqlDatabase db;
-    db = QSqlDatabase::addDatabase("QSQLITE");
+    db = QSqlDatabase::addDatabase("QSQLITE", PK_DESKTOP_DEFAULT_DATABASE);
     db.setDatabaseName(PK_DESKTOP_DEFAULT_DATABASE);
     if (!db.open()) {
         qDebug() << "Failed to initialize the desktop files database";
@@ -78,99 +76,118 @@ Daemon::~Daemon()
 
 Transaction::Roles Daemon::actions()
 {
-    return global()->d_ptr->daemon->roles();
+    Q_D(const Daemon);
+    return d->daemon->roles();
 }
 
 QString Daemon::backendName()
 {
-    return global()->d_ptr->daemon->backendName();
+    Q_D(const Daemon);
+    return d->daemon->backendName();
 }
 
 QString Daemon::backendDescription()
 {
-    return global()->d_ptr->daemon->backendDescription();
+    Q_D(const Daemon);
+    return d->daemon->backendDescription();
 }
 
 QString Daemon::backendAuthor()
 {
-    return global()->d_ptr->daemon->backendAuthor();
+    Q_D(const Daemon);
+    return d->daemon->backendAuthor();
 }
 
 Transaction::Filters Daemon::filters()
 {
-    return static_cast<Transaction::Filter>(global()->d_ptr->daemon->filters());
+    Q_D(const Daemon);
+    return static_cast<Transaction::Filters>(d->daemon->filters());
 }
 
 Transaction::Groups Daemon::groups()
 {
-    return global()->d_ptr->daemon->groups();
+    Q_D(const Daemon);
+    return static_cast<Transaction::Groups>(d->daemon->groups());
 }
 
 bool Daemon::locked()
 {
-    return global()->d_ptr->daemon->locked();
+    Q_D(const Daemon);
+    return d->daemon->locked();
 }
 
 QStringList Daemon::mimeTypes()
 {
-    return global()->d_ptr->daemon->mimeTypes();
+    Q_D(const Daemon);
+    return d->daemon->mimeTypes();
 }
 
 Daemon::Network Daemon::networkState()
 {
-    return static_cast<Daemon::Network>(global()->d_ptr->daemon->networkState());
+    Q_D(const Daemon);
+    return static_cast<Daemon::Network>(d->daemon->networkState());
 }
 
-QString Daemon::distroId()
+QString Daemon::distroID()
 {
-    return global()->d_ptr->daemon->distroId();
+    Q_D(const Daemon);
+    return d->daemon->distroId();
 }
 
 Daemon::Authorize Daemon::canAuthorize(const QString &actionId)
 {
+    Q_D(const Daemon);
     uint ret;
-    ret = global()->d_ptr->daemon->CanAuthorize(actionId);
+    ret = d->daemon->CanAuthorize(actionId);
     return static_cast<Daemon::Authorize>(ret);
 }
 
 QDBusObjectPath Daemon::getTid()
 {
-    return global()->d_ptr->daemon->CreateTransaction();
+    Q_D(const Daemon);
+    return d->daemon->CreateTransaction();
 }
 
 uint Daemon::getTimeSinceAction(Transaction::Role role)
 {
-    return global()->d_ptr->daemon->GetTimeSinceAction(role);
+    Q_D(const Daemon);
+    return d->daemon->GetTimeSinceAction(role);
 }
 
 QList<QDBusObjectPath> Daemon::getTransactionList()
 {
-    return global()->d_ptr->daemon->GetTransactionList();
+    Q_D(const Daemon);
+    return d->daemon->GetTransactionList();
 }
 
 QList<Transaction*> Daemon::getTransactionObjects(QObject *parent)
 {
-    return global()->d_ptr->transactions(getTransactionList(), parent);
+    Q_D(Daemon);
+    return d->transactions(getTransactionList(), parent);
 }
 
-void Daemon::setHints(const QStringList& hints)
+void Daemon::setHints(const QStringList &hints)
 {
-    global()->d_ptr->hints = hints;
+    Q_D(Daemon);
+    d->hints = hints;
 }
 
-void Daemon::setHints(const QString& hints)
+void Daemon::setHints(const QString &hints)
 {
-    global()->d_ptr->hints = QStringList() << hints;
+    Q_D(Daemon);
+    d->hints = QStringList() << hints;
 }
 
 QStringList Daemon::hints()
 {
-    return global()->d_ptr->hints;
+    Q_D(const Daemon);
+    return d->hints;
 }
 
 Transaction::InternalError Daemon::setProxy(const QString& http_proxy, const QString& https_proxy, const QString& ftp_proxy, const QString& socks_proxy, const QString& no_proxy, const QString& pac)
 {
-    QDBusPendingReply<> r = global()->d_ptr->daemon->SetProxy(http_proxy, https_proxy, ftp_proxy, socks_proxy, no_proxy, pac);
+    Q_D(const Daemon);
+    QDBusPendingReply<> r = d->daemon->SetProxy(http_proxy, https_proxy, ftp_proxy, socks_proxy, no_proxy, pac);
     r.waitForFinished();
     if (r.isError ()) {
         return Transaction::parseError(r.error().name());
@@ -181,27 +198,32 @@ Transaction::InternalError Daemon::setProxy(const QString& http_proxy, const QSt
 
 void Daemon::stateHasChanged(const QString& reason)
 {
-    global()->d_ptr->daemon->StateHasChanged(reason);
+    Q_D(const Daemon);
+    d->daemon->StateHasChanged(reason);
 }
 
 void Daemon::suggestDaemonQuit()
 {
-    global()->d_ptr->daemon->SuggestDaemonQuit();
+    Q_D(const Daemon);
+    d->daemon->SuggestDaemonQuit();
 }
 
 uint Daemon::versionMajor()
 {
-    return global()->d_ptr->daemon->versionMajor();
+    Q_D(const Daemon);
+    return d->daemon->versionMajor();
 }
 
 uint Daemon::versionMinor()
 {
-    return global()->d_ptr->daemon->versionMinor();
+    Q_D(const Daemon);
+    return d->daemon->versionMinor();
 }
 
 uint Daemon::versionMicro()
 {
-    return global()->d_ptr->daemon->versionMicro();
+    Q_D(const Daemon);
+    return d->daemon->versionMicro();
 }
 
 #include "daemon.moc"
