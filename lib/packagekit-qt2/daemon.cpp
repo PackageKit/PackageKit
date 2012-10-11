@@ -226,4 +226,29 @@ uint Daemon::versionMicro()
     return d->daemon->versionMicro();
 }
 
+QString Daemon::packageName(const QString &packageID)
+{
+    return packageID.section(QLatin1Char(';'), 0, 0);
+}
+
+QString Daemon::packageVersion(const QString &packageID)
+{
+    return packageID.section(QLatin1Char(';'), 1, 1);
+}
+
+QString Daemon::packageArch(const QString &packageID)
+{
+    return packageID.section(QLatin1Char(';'), 2, 2);
+}
+
+QString Daemon::packageData(const QString &packageID)
+{
+    return packageID.section(QLatin1Char(';'), 3, 3);
+}
+
+QString Daemon::packageIcon(const QString &packageID)
+{
+    return Transaction::packageIcon(packageID);
+}
+
 #include "daemon.moc"
