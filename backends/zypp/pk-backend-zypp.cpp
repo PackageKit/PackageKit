@@ -234,6 +234,7 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 		Resolver solver(pool);
 
 		solver.setForceResolve (true);
+		solver.setIgnoreAlreadyRecommended (TRUE);
 
 		if (!solver.resolvePool ()) {
 			list<ResolverProblem_Ptr> problems = solver.problems ();
