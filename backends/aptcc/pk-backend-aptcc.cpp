@@ -904,7 +904,7 @@ void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield
 static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     // Transaction flags
-    PkBitfield transaction_flags;
+    PkBitfield transaction_flags = 0;
     bool allow_deps = false;
     bool autoremove = false;
     bool fileInstall = false;
@@ -934,6 +934,9 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
                       &package_ids);
     }
 
+    //FIXME: Workaround for a strange bug which clears the transaction flag in the params GVariant in rare cases
+    transaction_flags = pk_backend_job_get_transaction_flags (job);
+
     // Check if we should only simulate the install (calculate dependencies)
     bool simulate;
     simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
@@ -948,6 +951,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         // On fix broken mode no package to remove/install is allowed
         fixBroken = true;
     }
+
     g_debug("FILE INSTALL: %i", fileInstall);
     pk_backend_job_set_allow_cancel(job, true);
 
