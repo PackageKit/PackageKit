@@ -4109,6 +4109,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gchar *full_paths_temp;
+	gchar *transaction_flags_temp;
 	gboolean ret;
 	GError *error = NULL;
 	GError *error_local = NULL;
@@ -4127,8 +4128,9 @@ pk_transaction_install_files (PkTransaction *transaction,
 		       &full_paths);
 
 	full_paths_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("InstallFiles method called: %s (transaction_flags %" G_GUINT64_FORMAT ")",
-		 full_paths_temp, transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("InstallFiles method called: %s (transaction_flags: %s)",
+		 full_paths_temp, transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4203,6 +4205,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 	}
 out:
 	g_free (full_paths_temp);
+	g_free (transaction_flags_temp);
 	g_free (content_type);
 	pk_transaction_dbus_return (context, error);
 }
@@ -4218,6 +4221,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	PkBitfield transaction_flags;
@@ -4231,7 +4235,9 @@ pk_transaction_install_packages (PkTransaction *transaction,
 		       &package_ids);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("InstallPackages method called: %s", package_ids_temp);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("InstallPackages method called: %s (transaction_flags: %s)",
+		 package_ids_temp, transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4276,6 +4282,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	}
 out:
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4407,6 +4414,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	gchar **package_ids;
@@ -4424,8 +4432,9 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 		       &autoremove);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("RemovePackages method called: %s, %i, %i",
-		 package_ids_temp, allow_deps, autoremove);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("RemovePackages method called: %s, %i, %i (transaction_flags: %s)",
+		 package_ids_temp, allow_deps, autoremove, transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4471,6 +4480,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 		goto out;
 	}
 out:
+	g_free (transaction_flags_temp);
 	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
@@ -5091,6 +5101,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	PkBitfield transaction_flags;
@@ -5104,7 +5115,9 @@ pk_transaction_update_packages (PkTransaction *transaction,
 		       &package_ids);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("UpdatePackages method called: %s", package_ids_temp);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("UpdatePackages method called: %s (transaction_flags: %s)",
+		 package_ids_temp, transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -5149,6 +5162,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	}
 out:
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -5270,6 +5284,7 @@ pk_transaction_repair_system (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
+	gchar *transaction_flags_temp;
 	GError *error = NULL;
 	PkBitfield transaction_flags;
 
@@ -5278,8 +5293,9 @@ pk_transaction_repair_system (PkTransaction *transaction,
 
 	g_variant_get (params, "(t)", &transaction_flags);
 
-	g_debug ("RepairSystem method called (transaction_flags %" G_GUINT64_FORMAT ")",
-		 transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("RepairSystem method called  (transaction_flags: %s)",
+		 transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -5303,6 +5319,7 @@ pk_transaction_repair_system (PkTransaction *transaction,
 		goto out;
 	}
 out:
+	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
