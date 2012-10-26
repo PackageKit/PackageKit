@@ -228,7 +228,7 @@ pk_conf_class_init (PkConfClass *klass)
 }
 
 /**
- * pk_conf_class_init:
+ * pk_conf_get_filename:
  **/
 gchar *
 pk_conf_get_filename (void)

@@ -782,7 +782,7 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 }
 
 /**
- * pk_backend_is_eula_valid:
+ * pk_backend_get_accepted_eula_string:
  */
 gchar *
 pk_backend_get_accepted_eula_string (PkBackend *backend)

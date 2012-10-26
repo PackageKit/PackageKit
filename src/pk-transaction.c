@@ -1966,7 +1966,7 @@ pk_transaction_speed_cb (PkBackendJob *job,
 }
 
 /**
- * pk_transaction_speed_cb:
+ * pk_transaction_download_size_remaining_cb:
  **/
 static void
 pk_transaction_download_size_remaining_cb (PkBackendJob *job,
