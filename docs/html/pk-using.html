@@ -74,27 +74,43 @@ See the <a href="pk-screenshots.html">screenshots page</a> for more details.
 
 <h2>Using libpackagekit:</h2>
 <p>
-The <a href="gtk-doc/PkClient.html">libpackagekit gobject library</a>
-wraps the DBUS interface in a nice glib-style API.
+The <a href="gtk-doc/PkTask.html">libpackagekit gobject library</a>
+wraps the DBus interface in a nice glib-style API.
 This makes designing programs that use libpackagekit can concentrate on
-core functionality rather that the DBUS and PackageKit internals.
+core functionality rather that the DBus and PackageKit internals.
 PkClient in libpackagekit can be used as easily as:
 </p>
 <pre>
-PkClient *client;
-client = pk_client_new ();
-pk_client_install_package (client, "openoffice-clipart");
-g_object_unref (client);
+GError *error = NULL;
+PkError *error_code = NULL;
+PkResults *results = NULL;
+PkTask *task;
+
+task = pk_task_new ();
+
+/* install the package "openoffice-clipart" */
+results = pk_task_install_packages_sync (task, "openoffice-clipart", NULL, NULL, NULL, &amp;error);
+
+g_object_unref (task);
+
+/* check error code */
+error_code = pk_results_get_error_code (results);
+if (error_code != NULL) {
+	g_printerr ("%s: %s, %s\n", _("Error installing openoffice-clipart!"),
+		pk_error_enum_to_string (pk_error_get_code (error_code)),
+		pk_error_get_details (error_code));
+	return;
+}
 </pre>
 
-<h2>Using the raw DBUS API:</h2>
+<h2>Using the raw DBus API:</h2>
 <p>
-Using the DBUS methods and signals directly means that no glib or
+Using the DBus methods and signals directly means that no glib or
 gobject dependency is needed, although this means you will have to
 manage the transaction_id multiplexing in any client program.
 This is not difficult, although does require more code than just using
 libpackagekit.
-The latest interface is available in the source tree or <a href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/org.freedesktop.PackageKit.xml">on-line</a>.
+The latest interface is available in the source tree or <a href="http://gitorious.org/packagekit/packagekit/blobs/master/src/org.freedesktop.PackageKit.xml">on-line</a>.
 </p>
 
 <p>Back to the <a href="index.html">main page</a></p>
