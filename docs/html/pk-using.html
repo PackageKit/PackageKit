@@ -78,29 +78,67 @@ The <a href="gtk-doc/PkTask.html">libpackagekit gobject library</a>
 wraps the DBus interface in a nice glib-style API.
 This makes designing programs that use libpackagekit can concentrate on
 core functionality rather that the DBus and PackageKit internals.
-PkClient in libpackagekit can be used as easily as:
+PkTask in libpackagekit can be used as easily as:
 </p>
 <pre>
 GError *error = NULL;
 PkError *error_code = NULL;
 PkResults *results = NULL;
+GPtrArray *array = NULL;
+PkPackage *item;
+gchar **values = NULL;
+gchar **package_ids = NULL;
+uint i;
 PkTask *task;
 
 task = pk_task_new ();
 
-/* install the package "openoffice-clipart" */
-results = pk_task_install_packages_sync (task, "openoffice-clipart", NULL, NULL, NULL, &amp;error);
-
-g_object_unref (task);
+/* resolve the package name */
+values = g_new0 (gchar*, 1 + 1);
+values[0] = g_strdup ("openoffice-clipart");
+values[1] = NULL;
+results = pk_task_resolve_sync (task, PK_FILTER_ENUM_NOT_INSTALLED, values, NULL, NULL, NULL, &amp;error);
 
 /* check error code */
 error_code = pk_results_get_error_code (results);
 if (error_code != NULL) {
-	g_printerr ("%s: %s, %s\n", _("Error installing openoffice-clipart!"),
+	g_printerr ("%s: %s, %s\n", "Resolving of packages failed",
+		    pk_error_enum_to_string (pk_error_get_code (error_code)),
+		    pk_error_get_details (error_code));
+	goto out;
+}
+
+/* get the packages returned */
+array = pk_results_get_package_array (results);
+package_ids = g_new0 (gchar *, array->len+1);
+for (i = 0; i &lt; array->len; i++) {
+	item = g_ptr_array_index (array, i);
+	package_ids[i] = g_strdup (pk_package_get_id (item));
+}
+
+/* install the packages */
+results = pk_task_install_packages_sync (task, package_ids , NULL, NULL, NULL, &amp;error);
+
+/* check error code */
+error_code = pk_results_get_error_code (results);
+if (error_code != NULL) {
+	g_printerr ("%s: %s, %s\n", _("Error installing package(s)!"),
 		pk_error_enum_to_string (pk_error_get_code (error_code)),
 		pk_error_get_details (error_code));
-	return;
+	goto out;
 }
+
+out:
+	g_strfreev (values);
+	g_object_unref (task);
+	if (error_code != NULL)
+		g_object_unref (error_code);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	if (package_ids != NULL)
+		g_strfreev (package_ids);
+	if (results != NULL)
+		g_object_unref (results);
 </pre>
 
 <h2>Using the raw DBus API:</h2>
