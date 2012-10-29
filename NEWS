@@ -1,3 +1,38 @@
+Version 0.8.5
+~~~~~~~~~~~~~
+Released: 2012-10-29
+
+Notes:
+ - This is probably the last release where packagekit-qt is bundled with
+   the main daemon. Distros should package up the QT bindings before
+   the next PackageKit release.
+
+Libraries:
+ - glib: Ensure remote error is stripped before showing it to the user (Richard Hughes)
+ - qt: Add introspection properties (Daniel Nicoletti)
+ - qt: Add invokable methods to retrieve the package id sections (Daniel Nicoletti)
+ - qt: A few more changes so Daemon and Transaction flags can be accessed by QML (Daniel Nicoletti)
+ - qt: Break ABI to make pk-qt more closer to what pk-glib is and allow for searchGroup() to work (Daniel Nicoletti)
+ - qt: Simplied API (by greatly breaking it) so it can be safer in QML (Daniel Nicoletti)
+
+Backends:
+ - aptcc: Added workaround for the not-respecting-simulate bug (Matthias Klumpp)
+ - dummy: Fix a critical warning when updating from the command line (Richard Hughes)
+ - poldek: keep pkgdb open through the whole transaction (Marcin Banasiak)
+ - poldek: port to the new API (Marcin Banasiak)
+ - poldek: remove UpdateSystem method (Marcin Banasiak)
+ - yum: Print the exception detail when a package failed to be downloaded (Richard Hughes)
+ - zif: Fix a critical warning when enabling a repository (Richard Hughes)
+
+Bugfixes:
+ - Change the priority state changed timeout to 2 seconds (Richard Hughes)
+ - cnf: Ignore InvalidInput errors from the daemon (Richard Hughes)
+ - Correctly register remote transaction DBus errors (Richard Hughes)
+ - offline-updates: Don't crash when writing the offline-update-competed file (Richard Hughes)
+ - offline-updates: Only save packages that have been updated or installed (Richard Hughes)
+ - pk-gtk-module: Argument pango_language_matches() must be canonical (Owen W. Taylor)
+ - Use g_dbus_error_get_remote_error() rather than just looking at the prefix (Richard Hughes)
+
 Version 0.8.4
 ~~~~~~~~~~~~~
 Released: 2012-10-01
