@@ -59,28 +59,6 @@ AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
-# libtool versioning - this applies to libpackagekit-qt2
-#
-# - If interfaces have been changed or added, but binary compatibility
-#   has been preserved, change:
-#      CURRENT += 1
-#      REVISION = 0
-#      AGE += 1
-# - If binary compatibility has been broken (eg removed or changed
-#   interfaces), change:
-#      CURRENT += 1
-#      REVISION = 0
-#      AGE = 0
-# - If the interface is the same as the previous version, but bugs are
-#   fixed, change:
-#      REVISION += 1
-LT_QT_CURRENT=5
-LT_QT_REVISION=0
-LT_QT_AGE=0
-AC_SUBST(LT_QT_CURRENT)
-AC_SUBST(LT_QT_REVISION)
-AC_SUBST(LT_QT_AGE)
-
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
@@ -188,10 +166,6 @@ GLIB_REQUIRED=2.26.0
 GIO_REQUIRED=2.16.1
 NETWORK_MANAGER_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.98
-QTCORE_REQUIRED=4.4.0
-QTDBUS_REQUIRED=4.4.0
-QTSQL_REQUIRED=4.4.0
-QTXML_REQUIRED=4.4.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
@@ -202,31 +176,6 @@ PKG_CHECK_MODULES(SQLITE, sqlite3)
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
-
-dnl ---------------------------------------------------------------------------
-dnl - Build PackageKit-Qt
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt],[Build PackageKit-Qt]),
-	      enable_qt=$enableval,enable_qt=yes)
-if test x$enable_qt = xyes; then
-	PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
-	PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
-	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
-	PKG_CHECK_MODULES(QTXML, QtXml >= $QTXML_REQUIRED)
-
-	# look for MOC
-	AC_PATH_PROG(MOC, moc-qt4)
-	if test ! -x "$MOC"; then
-		AC_PATH_PROG(MOC, moc)
-		if test ! -x "$MOC"; then
-			AC_MSG_ERROR([MOC has not been found])
-		fi
-	fi
-	build_qt=yes
-else
-	build_qt=no
-fi
-AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
@@ -838,11 +787,6 @@ lib/Makefile
 lib/packagekit-glib2/pk-version.h
 lib/packagekit-glib2/Makefile
 lib/packagekit-glib2/packagekit-glib2.pc
-lib/packagekit-qt2/Makefile
-lib/packagekit-qt2/modules/Makefile
-lib/packagekit-qt2/modules/packagekit-qt2-config.cmake
-lib/packagekit-qt2/modules/packagekit-qt2-config-version.cmake
-lib/packagekit-qt2/packagekit-qt2.pc
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
@@ -881,7 +825,6 @@ echo "
         systemd-updates:           ${build_systemd_updates}
         pm-utils scripts:          ${build_pm_utils}
         python3:                   ${enable_python3}
-        QT library:                ${build_qt}
 
         Backends:
         ALPM backend:              ${enable_alpm}

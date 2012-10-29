@@ -15,9 +15,6 @@ SUBDIRS = 						\
 	contrib						\
 	docs
 
-GITIGNOREFILES =				\
-	.moc.version
-
 clean-local :
 	rm -f *~
 

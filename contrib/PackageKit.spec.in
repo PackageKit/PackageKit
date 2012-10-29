@@ -44,8 +44,6 @@ BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
-BuildRequires: qt4-devel
-BuildRequires: cppunit-devel
 BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
@@ -133,15 +131,6 @@ Provides: PackageKit-libs = %{version}-%{release}
 %description glib
 GLib libraries for accessing PackageKit.
 
-%package qt
-Summary: QT libraries for accessing PackageKit
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
-%{?_qt4_version:Requires: qt4%{?_isa} >= %{_qt4_version}}
-
-%description qt
-QT libraries for accessing PackageKit.
-
 %package cron
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
@@ -172,14 +161,6 @@ Provides: PackageKit-devel = %{version}-%{release}
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
-
-%package qt-devel
-Summary: Qt Libraries and headers for PackageKit
-Group: Development/Libraries
-Requires: %{name}-qt = %{version}-%{release}
-
-%description qt-devel
-Qt headers and libraries for PackageKit.
 
 %package backend-devel
 Summary: Headers to compile out of tree PackageKit backends
@@ -298,10 +279,8 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %post glib -p /sbin/ldconfig
-%post qt -p /sbin/ldconfig
 
 %postun glib -p /sbin/ldconfig
-%postun qt -p /sbin/ldconfig
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
@@ -388,10 +367,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/*packagekit-glib2.so.*
 %{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
 
-%files qt
-%defattr(-,root,root,-)
-%{_libdir}/*packagekit-qt*.so.*
-
 %files cron
 %defattr(-,root,root,-)
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
@@ -437,13 +412,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 %{_datadir}/gir-1.0/PackageKitPlugin-1.0.gir
-
-%files qt-devel
-%defattr(-,root,root,-)
-%{_libdir}/libpackagekit-qt*.so
-%{_includedir}/PackageKit/packagekit-qt2/*
-%{_libdir}/pkgconfig/packagekit-qt2.pc
-%{_libdir}/cmake/packagekit-qt2/packagekit-qt2*.cmake
 
 %files backend-devel
 %defattr(-,root,root,-)
