@@ -26,7 +26,7 @@ def _isunicode(obj):
     if sys.hexversion >= 0x3000000:
         return isinstance(obj, str)
     else:
-        return isinstance(obj, unicode)
+        return isinstance(obj, str)
 
 def _israwstring(obj):
     if sys.hexversion >= 0x3000000:
@@ -48,7 +48,7 @@ def _to_unicode(obj, encoding="utf-8"):
         if sys.hexversion >= 0x3000000:
             return str(obj, encoding, errors="replace")
         else:
-            return unicode(obj, encoding, errors="replace")
+            return str(obj, encoding, errors="replace")
 
 def _to_rawstring(obj, from_encoding="utf-8"):
     if _israwstring(obj):

@@ -104,7 +104,15 @@ GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
-AM_PATH_PYTHON([2.7])
+# Python2/3 stuff
+AC_ARG_ENABLE(python3, AS_HELP_STRING([--enable-python3],[Use Python3 for PackageKit]), enable_python3=$enableval,
+							enable_python3=$default_strict)
+if test x$enable_python3 = xyes; then
+	AM_PATH_PYTHON([3.2])
+else
+	AM_PATH_PYTHON([2.7])
+fi
+
 PYTHON_PACKAGE_DIR=${pythondir}/packagekit
 AC_SUBST(PYTHON_PACKAGE_DIR)
 
@@ -872,6 +880,7 @@ echo "
         device-rebind:             ${build_device_rebind}
         systemd-updates:           ${build_systemd_updates}
         pm-utils scripts:          ${build_pm_utils}
+        python3:                   ${enable_python3}
         QT library:                ${build_qt}
 
         Backends:

@@ -16,8 +16,6 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 """
 
-__author__  = "Sebastian Heinlein <devel@glatzor.de>"
-
 import locale
 import logging
 import optparse
@@ -115,7 +113,7 @@ def run(args, single=False):
         backend.dispatcher(args)
 
 def main():
-    parser = optparse.OptionParser(description="APT backend for PackageKit")
+    parser = optparse.OptionParser(description="Aptcc backend for PackageKit")
     parser.add_option("-r", "--root",
                       action="store", type="string", dest="root",
                       help="Use the given directory as the system root "

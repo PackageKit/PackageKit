@@ -24,4 +24,3 @@ print("\n# Constants\n")
 
 for k in sorted(names.keys()):
 	print('%s = "%s"'%(k,names[k]))
-

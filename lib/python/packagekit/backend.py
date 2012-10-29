@@ -19,9 +19,11 @@
 #
 # This file contain the base classes to implement a PackageKit python backend
 #
-from __future__ import print_function
+
 
 # imports
+from __future__ import print_function
+
 import sys
 import codecs
 import traceback
@@ -33,9 +35,9 @@ PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
 
 def _to_unicode(txt, encoding='utf-8'):
-    if isinstance(txt, basestring):
-        if not isinstance(txt, unicode):
-            txt = unicode(txt, encoding, errors='replace')
+    if isinstance(txt, str):
+        if not isinstance(txt, str):
+            txt = str(txt, encoding, errors='replace')
     return txt
 
 def _to_utf8(txt, errors='replace'):
@@ -44,17 +46,17 @@ def _to_utf8(txt, errors='replace'):
     # convert to unicode object
     if isinstance(txt, str):
         txt = txt.decode('utf-8', errors=errors)
-    if not isinstance(txt, basestring):
+    if not isinstance(txt, str):
         # try to convert non-string objects like exceptions
         try:
             # if txt.__unicode__() exists, or txt.__str__() returns ASCII
-            txt = unicode(txt)
+            txt = str(txt)
         except UnicodeDecodeError:
             # if txt.__str__() exists
             txt = str(txt).decode('utf-8', errors=errors)
         except:
             # no __str__(), __unicode__() methods, use representation
-            txt = unicode(repr(txt))
+            txt = str(repr(txt))
 
     # return encoded as UTF-8
     return txt.encode('utf-8', errors=errors)
@@ -73,7 +75,7 @@ class _UTF8Writer(codecs.StreamWriter):
             l = len(inp)
         except TypeError:
             try:
-                l = len(unicode(inp))
+                l = len(str(inp))
             except:
                 try:
                     l = len(str(inp))
@@ -769,8 +771,8 @@ def format_string(text, encoding='utf-8'):
     '''
     Format a string to be used on stdout for communication with the daemon.
     '''
-    if not isinstance(text, unicode):
-        text = unicode(text, encoding, errors='replace')
+    if not isinstance(text, str):
+        text = str(text, encoding, errors='replace')
     return text.replace("\n", ";")
 
 def _text_to_bool(text):
