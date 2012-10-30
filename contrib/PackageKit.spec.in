@@ -379,8 +379,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files browser-plugin
 %defattr(-,root,root,-)
-#%{_libdir}/mozilla/plugins/packagekit-plugin.so
-# FIXME: F16 doesn't have a new enough npapi package
+%{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %files gstreamer-plugin
 %defattr(-,root,root,-)
