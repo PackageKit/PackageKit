@@ -299,6 +299,12 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	pk_cache_set_results (priv->cache, priv->role, priv->results);
 
 	/* could the update list have changed? */
+	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+		goto out;
+	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+		goto out;
 	if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
@@ -313,6 +319,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		pk_notify_wait_updates_changed (priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
+out:
 	return TRUE;
 }
 
