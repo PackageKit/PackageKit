@@ -574,6 +574,59 @@ typedef struct {
 } PkBackendJobVFuncHelper;
 
 /**
+ * pk_backend_job_signal_to_string:
+ **/
+static const gchar *
+pk_backend_job_signal_to_string (PkBackendJobSignal id)
+{
+	if (id == PK_BACKEND_SIGNAL_ALLOW_CANCEL)
+		return "AllowCancel";
+	if (id == PK_BACKEND_SIGNAL_DETAILS)
+		return "Details";
+	if (id == PK_BACKEND_SIGNAL_ERROR_CODE)
+		return "ErrorCode";
+	if (id == PK_BACKEND_SIGNAL_DISTRO_UPGRADE)
+		return "DistroUpgrade";
+	if (id == PK_BACKEND_SIGNAL_FINISHED)
+		return "Finished";
+	if (id == PK_BACKEND_SIGNAL_MESSAGE)
+		return "Message";
+	if (id == PK_BACKEND_SIGNAL_PACKAGE)
+		return "Package";
+	if (id == PK_BACKEND_SIGNAL_ITEM_PROGRESS)
+		return "ItemProgress";
+	if (id == PK_BACKEND_SIGNAL_FILES)
+		return "Files";
+	if (id == PK_BACKEND_SIGNAL_PERCENTAGE)
+		return "Percentage";
+	if (id == PK_BACKEND_SIGNAL_REMAINING)
+		return "Remaining";
+	if (id == PK_BACKEND_SIGNAL_SPEED)
+		return "Speed";
+	if (id == PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)
+		return "DownloadSizeRemaining";
+	if (id == PK_BACKEND_SIGNAL_REPO_DETAIL)
+		return "RepoDetail";
+	if (id == PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED)
+		return "RepoSignatureRequired";
+	if (id == PK_BACKEND_SIGNAL_EULA_REQUIRED)
+		return "EulaRequired";
+	if (id == PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED)
+		return "MediaChangeRequired";
+	if (id == PK_BACKEND_SIGNAL_REQUIRE_RESTART)
+		return "RequireRestart";
+	if (id == PK_BACKEND_SIGNAL_STATUS_CHANGED)
+		return "StatusChanged";
+	if (id == PK_BACKEND_SIGNAL_LOCKED_CHANGED)
+		return "LockedChanged";
+	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAIL)
+		return "UpdateDetail";
+	if (id == PK_BACKEND_SIGNAL_CATEGORY)
+		return "Category";
+	return NULL;
+}
+
+/**
  * pk_backend_job_call_vfunc_idle_cb:
  **/
 static gboolean
@@ -584,13 +637,13 @@ pk_backend_job_call_vfunc_idle_cb (gpointer user_data)
 
 	/* call transaction vfunc on main thread */
 	item = &helper->job->priv->vfunc_items[helper->signal_kind];
-	if (item != NULL) {
+	if (item != NULL && item->vfunc != NULL) {
 		item->vfunc (helper->job,
 			     helper->object,
 			     item->user_data);
 	} else {
-		g_warning ("tried to do signal %i when no longer connected",
-			   helper->signal_kind);
+		g_warning ("tried to do signal %s when no longer connected",
+			   pk_backend_job_signal_to_string (helper->signal_kind));
 	}
 	if (helper->destroy_func != NULL)
 		helper->destroy_func (helper->object);
