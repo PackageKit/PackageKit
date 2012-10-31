@@ -95,6 +95,17 @@ pk_plugin_finished_cb (PkBackendJob *job,
 }
 
 /**
+ * pk_plugin_package_cb:
+ **/
+static void
+pk_plugin_package_cb (PkBackendJob *job,
+		      PkPackage *package,
+		      PkPlugin *plugin)
+{
+	g_ptr_array_add (plugin->priv->list, g_object_ref (package));
+}
+
+/**
  * pk_plugin_get_installed_package_for_file:
  **/
 static PkPackage *
@@ -109,8 +120,8 @@ pk_plugin_get_installed_package_for_file (PkPlugin *plugin,
 	g_ptr_array_set_size (plugin->priv->list, 0);
 	pk_backend_reset_job (plugin->backend, plugin->job);
 	pk_backend_job_set_vfunc (plugin->job,
-				  PK_BACKEND_SIGNAL_FILES,
-				  (PkBackendJobVFunc) pk_plugin_files_cb,
+				  PK_BACKEND_SIGNAL_PACKAGE,
+				  (PkBackendJobVFunc) pk_plugin_package_cb,
 				  plugin);
 	pk_backend_job_set_vfunc (plugin->job,
 				  PK_BACKEND_SIGNAL_FINISHED,
