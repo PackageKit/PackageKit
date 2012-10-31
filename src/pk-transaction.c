@@ -994,11 +994,12 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 				g_main_context_iteration (context, FALSE);
 		}
 
+		/* quit the transaction if any of the plugins fail */
 		exit_code = pk_backend_job_get_exit_code (job);
-		if (exit_code != PK_EXIT_ENUM_UNKNOWN) {
+		if (exit_code != PK_EXIT_ENUM_UNKNOWN &&
+		    exit_code != PK_EXIT_ENUM_SUCCESS) {
 			pk_backend_job_set_exit_code (transaction->priv->job, exit_code);
-			if (exit_code != PK_EXIT_ENUM_SUCCESS)
-				break;
+			break;
 		}
 	}
 out:
