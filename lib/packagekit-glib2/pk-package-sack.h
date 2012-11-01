@@ -96,6 +96,9 @@ gboolean	 pk_package_sack_add_package_by_id	(PkPackageSack		*sack,
 gboolean	 pk_package_sack_add_packages_from_file	(PkPackageSack		*sack,
 							 GFile			*file,
 							 GError			**error);
+gboolean	 pk_package_sack_to_file		(PkPackageSack		*sack,
+							 GFile			*file,
+							 GError			**error);
 gboolean	 pk_package_sack_remove_package		(PkPackageSack		*sack,
 							 PkPackage		*package);
 gboolean	 pk_package_sack_remove_package_by_id	(PkPackageSack		*sack,

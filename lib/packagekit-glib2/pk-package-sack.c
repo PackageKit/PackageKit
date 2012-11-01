@@ -381,6 +381,51 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 }
 
 /**
+ * pk_package_sack_add_packages_from_file:
+ * @sack: a valid #PkPackageSack instance
+ * @file: a valid package-list file
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Write the contents of a PkPackageSack to a package-list file.
+ *
+ * Return value: %TRUE if there were no errors.
+ *
+ * Since: 0.8.6
+ **/
+gboolean
+pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
+{
+	gboolean ret;
+	GString *string;
+	guint i;
+	PkPackage *pkg;
+
+	string = g_string_new ("");
+	for (i = 0; i < sack->priv->array->len; i++) {
+		pkg = g_ptr_array_index (sack->priv->array, i);
+		g_string_append_printf (string,
+					"%s\t%s\t%s\n",
+					pk_info_enum_to_string (pk_package_get_info (pkg)),
+					pk_package_get_id (pkg),
+					pk_package_get_summary (pkg));
+	}
+	ret = g_file_replace_contents (file,
+				       string->str,
+				       string->len,
+				       NULL,
+				       FALSE,
+				       G_FILE_CREATE_NONE,
+				       NULL,
+				       NULL,
+				       error);
+	if (!ret)
+		goto out;
+out:
+	g_string_free (string, FALSE);
+	return ret;
+}
+
+/**
  * pk_package_sack_remove_package:
  * @sack: a valid #PkPackageSack instance
  * @package: a valid #PkPackage instance
