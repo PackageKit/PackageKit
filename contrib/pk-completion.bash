@@ -36,6 +36,7 @@ __pkcon_commandlist="
     get-categories
     install
     install-local
+    list-create
     refresh
     remove
     repo-disable
