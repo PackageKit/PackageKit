@@ -53,11 +53,13 @@ pk_console_get_number (const gchar *question, guint maxnum)
 		char buffer[64];
 
 		/* swallow the \n at end of line too */
-		if (!fgets (buffer, 64, stdin))
+		if (!fgets (buffer, sizeof (buffer), stdin))
 			break;
+		if (strlen (buffer) == sizeof (buffer) - 1)
+			continue;
 
 		/* get a number */
-		retval = sscanf(buffer, "%u", &answer);
+		retval = sscanf (buffer, "%u", &answer);
 
 		/* positive */
 		if (retval == 1 && answer > 0 && answer <= (gint) maxnum)
