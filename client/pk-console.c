@@ -1233,7 +1233,7 @@ pk_console_get_summary (void)
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "update <package>");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE))
-		g_string_append_printf (string, "  %s\n", "refresh [--force]");
+		g_string_append_printf (string, "  %s\n", "refresh [force]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_RESOLVE))
 		g_string_append_printf (string, "  %s\n", "resolve [package]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_UPDATES))
@@ -1800,7 +1800,7 @@ main (int argc, char *argv[])
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "refresh") == 0) {
-		gboolean force = value && !strcmp (value, "--force");
+		gboolean force = (value != NULL && g_strcmp0 (value, "force") == 0);
 		pk_task_refresh_cache_async (PK_TASK (task), force, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
