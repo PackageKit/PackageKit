@@ -1143,6 +1143,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 package_id_tmp = self._pkg_to_id(pkg_download)
                 self.files(package_id_tmp, path)
 
+            except yum.Errors.NoMoreMirrorsRepoError, e:
+                self.error(ERROR_NO_MORE_MIRRORS_TO_TRY, "Failed to download: %s" % _to_unicode(e), exit=False)
+                return
             except IOError, e:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
                 return
