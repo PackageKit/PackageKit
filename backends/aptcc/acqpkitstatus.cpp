@@ -29,9 +29,10 @@
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor
 // ---------------------------------------------------------------------
 AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackendJob *job) :
-    m_apt(apt),
     m_job(job),
-    m_lastPercent(PK_BACKEND_PERCENTAGE_INVALID)
+    m_lastPercent(PK_BACKEND_PERCENTAGE_INVALID),
+    m_lastCPS(0),
+    m_apt(apt)
 {
 }
 
