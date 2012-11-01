@@ -192,7 +192,7 @@ manpage.1: manpage.xml
       For example:
     </para>
 <programlisting>
-[hacker@tim-lounge:~]$ pkcon install /media/USB/TimPacks/valgrind-fedora-9-i686.servicepack
+[hacker@tim-lounge:~]$ pkcon install-local /media/USB/TimPacks/valgrind-fedora-9-i686.servicepack
 </programlisting>
   </refsect1>
   <refsect1>
