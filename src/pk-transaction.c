@@ -1978,14 +1978,14 @@ pk_transaction_speed_cb (PkBackendJob *job,
  **/
 static void
 pk_transaction_download_size_remaining_cb (PkBackendJob *job,
-					   guint64 download_size_remaining,
+					   guint64 *download_size_remaining,
 					   PkTransaction *transaction)
 {
 	/* emit */
-	transaction->priv->download_size_remaining = download_size_remaining;
+	transaction->priv->download_size_remaining = *download_size_remaining;
 	pk_transaction_emit_property_changed (transaction,
 					      "DownloadSizeRemaining",
-					      g_variant_new_uint64 (download_size_remaining));
+					      g_variant_new_uint64 (*download_size_remaining));
 	pk_transaction_emit_changed (transaction);
 }
 

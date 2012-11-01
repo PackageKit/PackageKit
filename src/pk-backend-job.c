@@ -659,7 +659,7 @@ pk_backend_job_call_vfunc_idle_cb (gpointer user_data)
 static void
 pk_backend_job_call_vfunc (PkBackendJob *job,
 			   PkBackendJobSignal signal_kind,
-			   GObject *object,
+			   gpointer object,
 			   GDestroyNotify destroy_func)
 {
 	PkBackendJobVFuncHelper *helper;
@@ -940,6 +940,7 @@ pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 void
 pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_size_remaining)
 {
+	guint64 *tmp;
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
@@ -956,10 +957,14 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
 
 	/* set new value */
 	job->priv->download_size_remaining = download_size_remaining;
+
+	/* we can't squash a 64bit value into a pointer on a 32bit arch */
+	tmp = g_new0 (guint64, 1);
+	*tmp = download_size_remaining;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-				   GUINT_TO_POINTER (download_size_remaining),
-				   NULL);
+				   tmp,
+				   g_free);
 }
 
 /**
