@@ -1064,7 +1064,6 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
-			pk_backend_job_require_restart (job, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
 			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,
@@ -1605,9 +1604,6 @@ pk_backend_upgrade_system_timeout (gpointer data)
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 
 	if (job_data->progress_percentage == 100) {
-		pk_backend_job_require_restart (job,
-						PK_RESTART_ENUM_SYSTEM,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 		pk_backend_job_finished (job);
 		return FALSE;
 	}

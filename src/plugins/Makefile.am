@@ -62,6 +62,7 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-update-check-processes.la		\
 	libpk_plugin-check-shared-libraries-in-use.la	\
 	libpk_plugin-clear-system-update.la		\
+	libpk_plugin-require-restart.la			\
 	libpk_plugin-clear-firmware-requests.la
 
 libpk_plugin_example_la_SOURCES = pk-plugin-example.c
@@ -121,5 +122,11 @@ libpk_plugin_check_shared_libraries_in_use_la_SOURCES =	\
 libpk_plugin_check_shared_libraries_in_use_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_check_shared_libraries_in_use_la_LDFLAGS = -module -avoid-version
 libpk_plugin_check_shared_libraries_in_use_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
+
+libpk_plugin_require_restart_la_SOURCES =		\
+	pk-plugin-require-restart.c
+libpk_plugin_require_restart_la_LIBADD = $(PK_PLUGIN_LIBS)
+libpk_plugin_require_restart_la_LDFLAGS = -module -avoid-version
+libpk_plugin_require_restart_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
