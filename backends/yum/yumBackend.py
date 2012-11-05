@@ -225,11 +225,6 @@ def _get_cmdline_for_pid(pid):
 
 class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
-    # Packages there require a reboot
-    rebootpkgs = ("kernel", "kernel-smp", "kernel-xen-hypervisor", "kernel-PAE",
-              "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
-              "glibc", "hal", "dbus", "xen")
-
     def __init__(self, args, lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
@@ -2307,8 +2302,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # check if package is in reboot list or flagged with reboot_suggested
             # in the update metadata and is installed/updated etc
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if (pkg.name in self.rebootpkgs \
-                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
+            if notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
 
     def _runYumTransaction(self, transaction_flags, allow_remove_deps=None, allow_skip_broken=False):
