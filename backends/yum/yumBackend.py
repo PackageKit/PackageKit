@@ -965,9 +965,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         else:
                             pkgfilter.add_available(pkgs)
 
-                    # we couldn't do this when generating the list
-                    package_list = pkgfilter.get_package_list()
-                    self._show_package_list(package_list)
+        # we couldn't do this when generating the list
+        package_list = pkgfilter.get_package_list()
+        self._show_package_list(package_list)
 
     def get_categories(self):
         '''
