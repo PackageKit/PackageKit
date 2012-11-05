@@ -2293,7 +2293,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
-                self.error(ERROR_TRANSACTION_ERROR, "No transaction to process", exit=False)
+                self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No updates available", exit=False)
 
     def _check_for_reboot(self):
         md = self.updateMetadata
