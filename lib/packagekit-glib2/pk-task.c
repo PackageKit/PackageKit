@@ -323,7 +323,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
 	GError *error = NULL;
-	GPtrArray *array_messages = NULL;
 	guint i;
 	guint length;
 	PkPackageSack *sack = NULL;
@@ -401,8 +400,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
 out:
-	if (array_messages != NULL)
-		g_ptr_array_unref (array_messages);
 	if (results != NULL)
 		g_object_unref (results);
 	if (sack != NULL)
