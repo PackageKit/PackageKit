@@ -186,6 +186,10 @@ pk_time_get_remaining (PkTime *pktime)
 		g_debug ("not enough samples for accurate time: %i", averaged);
 		return 0;
 	}
+	if (averaged  == 0) {
+		g_debug ("no valid gradients, so bailing out");
+		return 0;
+	}
 
 	/* normalise to the number of samples */
 	grad_ave /= averaged;
