@@ -616,8 +616,8 @@ pk_cnf_get_config (void)
 	config->multiple_match = PK_CNF_POLICY_UNKNOWN;
 	config->single_install = PK_CNF_POLICY_UNKNOWN;
 	config->multiple_install = PK_CNF_POLICY_UNKNOWN;
-	config->software_source_search = FALSE;
-	config->similar_name_search = FALSE;
+	config->software_source_search = TRUE;
+	config->similar_name_search = TRUE;
 	config->locations = NULL;
 	config->max_search_time = 5000;
 
@@ -747,6 +747,40 @@ pk_cnf_sigint_handler (int sig)
 }
 
 /**
+ * pk_cnf_is_backend_fast_enough_to_do_search:
+**/
+static gboolean
+pk_cnf_is_backend_fast_enough_to_do_search (void)
+{
+	gboolean ret = FALSE;
+	gchar *backend;
+	GError *error = NULL;
+	PkControl *control = NULL;
+
+	/* Initialize PkControl */
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, cancellable, &error);
+	if (!ret) {
+		/* failed to contact the daemon */
+		g_error_free (error);
+		goto out;
+	}
+
+	/* Find backend name */
+	g_object_get (control, "backend-name", &backend, NULL);
+
+	/* Current list of too slow backends */
+	if (g_strcmp0 (backend, "yum") == 0) {
+		ret = FALSE;
+		goto out;
+	}
+out:
+	if (control != NULL)
+		g_object_unref(control);
+	return ret;
+}
+
+/**
  * main:
  **/
 int
@@ -869,7 +903,8 @@ main (int argc, char *argv[])
 		goto out;
 
 	/* only search using PackageKit if configured to do so */
-	} else if (config->software_source_search) {
+	} else if (config->software_source_search &&
+		   pk_cnf_is_backend_fast_enough_to_do_search ()) {
 		package_ids = pk_cnf_find_available (argv[1], config->max_search_time);
 		if (package_ids == NULL)
 			goto out;
