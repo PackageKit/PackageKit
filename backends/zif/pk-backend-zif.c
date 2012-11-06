@@ -3883,7 +3883,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	gboolean ret;
 	gchar **package_ids;
 	GError *error = NULL;
-	GPtrArray *store_array = NULL;
 	guint i;
 	ZifPackage *package;
 	ZifState *state_local;
@@ -3993,8 +3992,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	}
 out:
 	pk_backend_job_finished (job);
-	if (store_array != NULL)
-		g_ptr_array_unref (store_array);
 }
 
 /**
