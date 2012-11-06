@@ -192,10 +192,10 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	struct archive_entry *entry;
 	int r;
 	int retval;
+	gchar *buf;
 
 	/* save the PWD as we chdir to extract */
-	gchar *buf = getcwd (NULL, 0);
-
+	buf = getcwd (NULL, 0);
 	if (buf == NULL) {
 		g_set_error_literal (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
 				      "failed to get cwd");
@@ -250,9 +250,11 @@ out:
 	}
 
 	/* switch back to PWD */
-	retval = chdir (buf);
-	if (retval != 0)
-		g_warning ("cannot chdir back!");
+	if (buf != NULL) {
+		retval = chdir (buf);
+		if (retval != 0)
+			g_warning ("cannot chdir back!");
+	}
 	free (buf);
 
 	return ret;
@@ -301,8 +303,9 @@ static gchar *
 pk_service_pack_create_temporary_directory (const gchar *prefix)
 {
 	gboolean ret;
-	gchar *random_str;
 	gchar *directory = NULL;
+	gchar *random_str;
+	gint rc;
 
 	/* ensure path does not already exist */
 	do {
@@ -319,7 +322,11 @@ pk_service_pack_create_temporary_directory (const gchar *prefix)
 	} while (ret);
 
 	/* create so only user (root) has rwx access */
-	g_mkdir (directory, 0700);
+	rc = g_mkdir (directory, 0700);
+	if (rc < 0) {
+		g_free (directory);
+		directory = NULL;
+	}
 
 	return directory;
 }
