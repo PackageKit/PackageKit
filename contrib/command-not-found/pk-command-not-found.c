@@ -619,13 +619,14 @@ pk_cnf_get_config (void)
 	config->software_source_search = FALSE;
 	config->similar_name_search = FALSE;
 	config->locations = NULL;
+	config->max_search_time = 5000;
 
 	/* load file */
 	file = g_key_file_new ();
 	path = g_build_filename (SYSCONFDIR, "PackageKit", "CommandNotFound.conf", NULL);
 	ret = g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		g_warning ("failed to open policy: %s", error->message);
+		g_printerr ("failed to load config file: %s\n", error->message);
 		g_error_free (error);
 		goto out;
 	}
