@@ -4666,7 +4666,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 		ret = pk_transaction_strvalidate (packages[i], &error);
 		if (!ret) {
 			pk_transaction_release_tid (transaction);
-				return;
+			goto out;
 		}
 	}
 
@@ -4790,7 +4790,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
 					     "Invalid search path");
 			pk_transaction_release_tid (transaction);
-				return;
+			goto out;
 		}
 	}
 
@@ -4857,7 +4857,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 					     "Invalid search containing spaces");
 			pk_transaction_release_tid (transaction);
-				return;
+			goto out;
 		}
 	}
 
