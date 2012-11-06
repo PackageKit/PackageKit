@@ -2173,6 +2173,14 @@ pk_transaction_run (PkTransaction *transaction)
 		g_clear_error (&error);
 	}
 
+	/* already cancelled? */
+	if (pk_backend_job_get_exit_code (priv->job) == PK_EXIT_ENUM_CANCELLED) {
+		exit_status = pk_backend_job_get_exit_code (priv->job);
+		pk_transaction_finished_emit (transaction, exit_status, 0);
+		ret = TRUE;
+		goto out;
+	}
+
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
