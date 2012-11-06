@@ -1853,6 +1853,12 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
 
+	/* backend job has already been stopped */
+	if (job_data == NULL) {
+		g_debug ("not cancelling as job has already been stopped");
+		return;
+	}
+
 	/* try to cancel the thread */
 	g_debug ("cancelling transaction");
 	g_cancellable_cancel (job_data->cancellable);
