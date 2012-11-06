@@ -924,12 +924,15 @@ main (int argc, char *argv[])
 					g_strfreev (parts);
 				}
 
-				/* get selection */
 				/* TRANSLATORS: ask the user to choose a file to install */
 				i = pk_console_get_number (_("Please choose a package to install"), len);
+				if (i == 0) {
+					g_printerr ("%s\n", _("User aborted selection"));
+					goto out;
+				}
 
 				/* run command */
-				ret = pk_cnf_install_package_id (package_ids[i]);
+				ret = pk_cnf_install_package_id (package_ids[i - 1]);
 				if (ret)
 					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
 			}
