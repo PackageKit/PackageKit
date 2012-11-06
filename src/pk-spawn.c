@@ -523,7 +523,7 @@ pk_strvequal (gchar **id1, gchar **id2)
 gboolean
 pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 {
-	gboolean ret;
+	gboolean ret = TRUE;
 	GError *error_local = NULL;
 	gboolean idleio;
 	guint i;
@@ -531,6 +531,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	gint nice_value;
 	gchar *command;
 	const gchar *key;
+	gint rc;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -547,8 +548,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 
 	/* check we are not using a closing instance */
 	if (spawn->priv->is_sending_exit) {
+		ret = FALSE;
 		g_set_error_literal (error, 1, 0, "trying to use instance that is in the process of exiting");
-		return FALSE;
+		goto out;
 	}
 
 	/* we can reuse the dispatcher if:
@@ -569,7 +571,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 			ret = pk_spawn_send_stdin (spawn, command);
 			g_free (command);
 			if (ret)
-				return TRUE;
+				goto out;
 
 			/* so fall on through to kill and respawn */
 			g_warning ("failed to write, so trying to kill and respawn");
@@ -604,7 +606,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to spawn %s: %s", argv[0], error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		goto out;
 	}
 
 	/* get the nice value and ensure we are in the valid range */
@@ -641,8 +643,18 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	spawn->priv->last_envp = g_strdupv (envp);
 
 	/* install an idle handler to check if the child returnd successfully. */
-	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
-	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
+	rc = fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
+	if (rc < 0) {
+		ret = FALSE;
+		g_set_error_literal (error, 1, 0, "stdout fcntl failed");
+		goto out;
+	}
+	rc = fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
+	if (rc < 0) {
+		ret = FALSE;
+		g_set_error_literal (error, 1, 0, "stderr fcntl failed");
+		goto out;
+	}
 
 	/* sanity check */
 	if (spawn->priv->poll_id != 0) {
@@ -653,8 +665,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
 	g_source_set_name_by_id (spawn->priv->poll_id, "[PkSpawn] main poll");
-
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
