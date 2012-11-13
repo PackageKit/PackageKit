@@ -45,7 +45,7 @@ print "finished\n";
 
 while (<STDIN>) {
   chomp($_);
-  my @args = split (/\t/, $_);
+  my @args = split(/\t/, $_);
   dispatch_command($urpm, \@args);
   print "finished\n";
 }
