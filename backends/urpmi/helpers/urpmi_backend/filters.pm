@@ -69,12 +69,8 @@ sub filter_devel {
   my $pkgname = $pkg->name;
   my $devel = $pkgname =~ /-devel$/;
 
-  if ($filter eq FILTER_DEVELOPMENT && $devel) {
-    return 1;
-  }
-  if ($filter eq FILTER_NOT_DEVELOPMENT && !$devel) {
-    return 1;
-  }
+  return 1 if $filter eq FILTER_DEVELOPMENT && $devel;
+  return 1 if $filter eq FILTER_NOT_DEVELOPMENT && !$devel;
   return 0;
 }
 
