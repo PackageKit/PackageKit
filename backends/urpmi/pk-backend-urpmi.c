@@ -169,7 +169,6 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_SEARCH_GROUP,
 		PK_ROLE_ENUM_SEARCH_NAME,
 		PK_ROLE_ENUM_UPDATE_PACKAGES,
-		PK_ROLE_ENUM_UPDATE_SYSTEM,
 		PK_ROLE_ENUM_GET_REPO_LIST,
 		PK_ROLE_ENUM_REPO_ENABLE,
 		// PK_ROLE_ENUM_ACCEPT_EULA,
@@ -445,15 +444,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 /**
