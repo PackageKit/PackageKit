@@ -54,7 +54,7 @@ sub dispatch_command {
 
   my ($urpm, $args) = @_;
 
-  my $command = shift(@{$args});
+  my $command = shift(@$args);
   if($command eq "get-depends") {
     get_depends($urpm, $args);
   }
@@ -132,9 +132,9 @@ sub get_depends {
 
   my ($urpm, $args) = @_;
   
-  my @filterstab = split(/;/, @{$args}[0]);
-  my @packageidstab = split(/&/, @{$args}[1]);
-  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
+  my @filterstab = split(/;/, $args->[0]);
+  my @packageidstab = split(/&/, $args->[1]);
+  my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -186,7 +186,7 @@ sub get_details {
 
   my ($urpm, $args) = @_;
   
-  my @packageidstab = split(/&/, @{$args}[0]);
+  my @packageidstab = split(/&/, $args->[0]);
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   foreach (@packageidstab) {
@@ -241,7 +241,7 @@ sub get_files {
   
   my ($urpm, $args) = @_;
   
-  my @packageidstab = split(/&/, @{$args}[0]);
+  my @packageidstab = split(/&/, $args->[0]);
   pk_print_status(PK_STATUS_ENUM_QUERY);
   
   foreach (@packageidstab) {
@@ -253,7 +253,7 @@ sub get_files {
 sub get_packages {
 
   my ($urpm, $args) = @_;
-  my @filterstab = split(/;/, @{$args}[0]);
+  my @filterstab = split(/;/, $args->[0]);
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
   
@@ -297,9 +297,9 @@ sub get_requires {
   
   my ($urpm, $args) = @_;
   
-  my @filterstab = split(/;/, @{$args}[0]);
-  my @packageidstab = split(/&/, @{$args}[1]);
-  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
+  my @filterstab = split(/;/, $args->[0]);
+  my @packageidstab = split(/&/, $args->[1]);
+  my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
   
   my @pkgnames;
   foreach (@packageidstab) {
@@ -328,7 +328,7 @@ sub get_update_detail {
   my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
-  my @packageidstab = split(/&/, @{$args}[0]);
+  my @packageidstab = split(/&/, $args->[0]);
   
   foreach (@packageidstab) {
     _print_package_update_details($urpm, $_);
@@ -341,7 +341,7 @@ sub get_updates {
   my ($urpm, $args) = @_;
   # Fix me
   # Filter are to be implemented.
-  my $filters = @{$args}[0];
+  my $filters = $args->[0];
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -370,8 +370,8 @@ sub install_packages {
 
   my ($urpm, $args) = @_;
 
-  my $only_trusted = @{$args}[0];
-  my @packageidstab = split(/&/, @{$args}[1]);
+  my $only_trusted = $args->[0];
+  my @packageidstab = split(/&/, $args->[1]);
   
   my @names;
   foreach(@packageidstab) {
@@ -397,8 +397,8 @@ sub search_name {
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
-  my @filterstab = split(/;/, @{$args}[0]);
-  my $search_term = @{$args}[1];
+  my @filterstab = split(/;/, $args->[0]);
+  my $search_term = $args->[1];
   
   my $basename_option = FILTER_BASENAME;
   $basename_option = grep(/$basename_option/, @filterstab);
@@ -470,8 +470,8 @@ sub remove_packages {
 
   my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 
-  my $allowdeps_option = @{$args}[0] eq "yes" ? 1 : 0;
-  my @packageidstab = split(/&/, @{$args}[1]);
+  my $allowdeps_option = $args->[0] eq "yes" ? 1 : 0;
+  my @packageidstab = split(/&/, $args->[1]);
 
   my @names;
   foreach(@packageidstab) {
@@ -522,8 +522,8 @@ sub repo_enable {
 
   my ($urpm, $args) = @_;
 
-  my $name = @{$args}[0];
-  my $enable = @{$args}[1] eq "yes" ? 1 : 0;
+  my $name = $args->[0];
+  my $enable = $args->[1] eq "yes" ? 1 : 0;
 
   my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
   if ($#media == 0) {
@@ -544,8 +544,8 @@ sub resolve {
 
   my ($urpm, $args) = @_;
 
-  my @filters = split(/;/, @{$args}[0]);
-  my @patterns = split(/&/, @{$args}[1]);
+  my @filters = split(/;/, $args->[0]);
+  my @patterns = split(/&/, $args->[1]);
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -582,8 +582,8 @@ sub resolve {
 sub search_details {
 
   my ($urpm, $args) = @_;
-  my @filters = split(/;/, @{$args}[0]);
-  my $search_term = @{$args}[1];
+  my @filters = split(/;/, $args->[0]);
+  my $search_term = $args->[1];
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -618,8 +618,8 @@ sub search_details {
 sub search_file {
 
   my ($urpm, $args) = @_;
-  my @filters = split(/;/, @{$args}[0]);
-  my $search_term = @{$args}[1];
+  my @filters = split(/;/, $args->[0]);
+  my $search_term = $args->[1];
 
   my %requested;
 
@@ -645,8 +645,8 @@ sub search_file {
 sub search_group {
 
   my ($urpm, $args) = @_;
-  my @filters = split(/;/, @{$args}[0]);
-  my $pk_group = @{$args}[1];
+  my @filters = split(/;/, $args->[0]);
+  my $pk_group = $args->[1];
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -682,8 +682,8 @@ sub update_packages {
 
   my ($urpm, $args) = @_;
 
-  my $only_trusted = @{$args}[0];
-  my @packageidstab = split(/&/, @{$args}[1]);
+  my $only_trusted = $args->[0];
+  my @packageidstab = split(/&/, $args->[1]);
 
   my @names;
   foreach(@packageidstab) {
@@ -717,7 +717,7 @@ sub update_system {
   
   my ($urpm, $args) = @_;
 
-  my $only_trusted = @{$args}[0];
+  my $only_trusted = $args->[0];
   eval {
     perform_installation($urpm, {}, auto_select => 1, only_trusted => $only_trusted);
   };
@@ -728,9 +728,9 @@ sub what_provides {
 
   my ($urpm, $args) = @_;
   
-  my @filterstab = split(/;/, @{$args}[0]);
-  my $providestype = @{$args}[1];
-  my @packageidstab = split(/&/, @{$args}[2]);
+  my @filterstab = split(/;/, $args->[0]);
+  my $providestype = $args->[1];
+  my @packageidstab = split(/&/, $args->[2]);
   my @pkgnames;
   my @prov;
 
