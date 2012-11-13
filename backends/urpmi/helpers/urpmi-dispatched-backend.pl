@@ -168,7 +168,7 @@ sub get_depends {
   my @selected_keys = keys %selected;
   my @depslist = @{$urpm->{depslist}};
   
-  foreach (sort {@depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed} @selected_keys) {
+  foreach (sort { @depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed } @selected_keys) {
     my $pkg = @depslist[$_];
     if ($pkg->flag_installed) {
       grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
