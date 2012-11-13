@@ -43,7 +43,7 @@ urpm::media::configure($urpm);
 dispatch_command($urpm, \@ARGV);
 print "finished\n";
 
-while(<STDIN>) {
+while (<STDIN>) {
   chomp($_);
   my @args = split (/\t/, $_);
   dispatch_command($urpm, \@args);
@@ -212,7 +212,7 @@ sub get_distro_upgrades() {
 
   my @distribs;
   open(DISTRIB_FILE, $distribfile_path);
-  while(<DISTRIB_FILE>) {
+  while (<DISTRIB_FILE>) {
     my %distrib = _parse_line($_);
     push(@distribs, \%distrib);
   }
