@@ -167,7 +167,7 @@ sub get_depends {
   my @depslist = @{$urpm->{depslist}};
   
   foreach (sort { @depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed } @selected_keys) {
-    my $pkg = @depslist[$_];
+    my $pkg = $depslist[$_];
     if ($pkg->flag_installed) {
       any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
@@ -538,7 +538,7 @@ sub resolve {
   $urpm->compute_installed_flags($db);
 
   foreach (@requested_keys) {
-    my $pkg = @{$urpm->{depslist}}[$_];
+    my $pkg = $urpm->{depslist}[$_];
     $_ && $pkg or next;
 
     # We exit the script if found package does not match with specified filters
@@ -603,7 +603,7 @@ sub search_file {
   perform_file_search($urpm, \%requested, $search_term, fuzzy => 1);
 
   foreach (keys %requested) {
-    my $p = @{$urpm->{depslist}}[$_];
+    my $p = $urpm->{depslist}[$_];
     if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
       if (is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
