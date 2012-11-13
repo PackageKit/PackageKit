@@ -13,6 +13,7 @@ package urpmi_backend::tools;
 
 use strict;
 
+use MDK::Common;
 use URPM;
 use urpmi_backend::open_db;
 use urpm::msg;
@@ -24,6 +25,7 @@ our @EXPORT = qw(
   rpm_description 
   urpm_name 
   find_installed_fullname 
+  is_mageia
   is_package_installed
   get_package_id 
   ensure_utf8 
@@ -84,6 +86,10 @@ sub find_installed_fullname {
 sub is_package_installed {
     my ($pkg) = @_;
     return URPM::DB::open()->is_package_installed($pkg);
+}
+
+sub is_mageia() {
+    cat_('/etc/release') =~ /Mageia/;
 }
 
 sub get_package_id {
