@@ -860,7 +860,7 @@ sub _print_package_update_details {
   
   pk_print_update_detail(get_package_id($pkg),
     join("&", @to_upgrade_pkids),
-    join("&", map(fullname_to_package_id($_), @to_remove)),
+    join("&", map { fullname_to_package_id($_) } @to_remove),
     "http://qa.mandriva.com",
     "http://qa.mandriva.com",
     "http://qa.mandriva.com",
