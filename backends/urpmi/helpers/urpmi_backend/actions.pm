@@ -77,7 +77,7 @@ sub perform_installation {
   if(@ask_remove) {
     my $db = urpm::db_open_or_die($urpm, $urpm->{root});
     urpm::select::find_removed_from_basesystem($urpm, $db, $state, sub {
-        my $urpm = shift @_;
+        shift @_; # $urpm
         foreach (@_) {
           # Fix me 
           # Someting like that. With a clean pk error enum.
@@ -100,9 +100,8 @@ sub perform_installation {
 
   # sorted by medium for format_selected_packages
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
-  my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
   # With packagekit, we will never install src packages.
-  @to_install = @$binary;
+  @to_install = grep { $_->arch ne 'src' } @to_install;
 
   print "\@to_install debug : \n\t";
   print join("\n\t", map { urpm_name($_) } @to_install), "\n";
@@ -145,7 +144,7 @@ sub perform_installation {
       inst => $callback_inst,
       trans => $callback_inst,
       trans_log => sub {
-        my ($mode, $file, $percent, $total, $eta, $speed) = @_;
+        my ($mode, $_file, $_percent, $_total, $_eta, $_speed) = @_;
         # Transfer log need to be improved.
         if($mode eq "progress") {
           pk_print_status(PK_STATUS_ENUM_DOWNLOAD);
@@ -188,7 +187,6 @@ sub perform_file_search {
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
 
-  my $xml_info = 'files';
   my %result_hash;
 
   # - For each medium, we browse the xml info file,

@@ -134,7 +134,7 @@ sub get_depends {
   
   my @filterstab = split(/;/, $args->[0]);
   my @packageidstab = split(/&/, $args->[1]);
-  my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
+  #my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -339,20 +339,15 @@ sub get_update_detail {
 sub get_updates {
 
   my ($urpm, $args) = @_;
-  # Fix me
-  # Filter are to be implemented.
-  my $filters = $args->[0];
+  # FIXME: Filter are to be implemented.
+  my $_filters = $args->[0];
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
   my $state = {};
   my %requested;
-  my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested,
-    auto_select => 1);
+  urpm::select::resolve_dependencies($urpm, $state, \%requested, auto_select => 1);
   
-  my %selected = %{$state->{selected} || {}};
-  my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
-  my @to_remove = urpm::select::removed_packages($urpm, $state);
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
   @to_install = grep { $_->arch ne 'src' } @to_install;
   my $updates_descr = urpm::get_updates_description($urpm);
@@ -444,7 +439,7 @@ sub refresh_cache {
     pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, $_[1]."\n"); 
     die;
   };
-  my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 0);
+  my $_urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 0);
   urpm::media::read_config($urpm);
 
   my @entries = map { $_->{name} } @{$urpm->{media}};
@@ -452,9 +447,7 @@ sub refresh_cache {
 
   my %options = ( all => 1 );
   
-  eval {
-    my $ok = urpm::media::update_media($urpm, %options, quiet => 0);
-  };
+  eval { urpm::media::update_media($urpm, %options, quiet => 0) };
   _finished();
 
 }
@@ -489,7 +482,7 @@ sub remove_packages {
     callback_notfound => $notfound_callback,
     callback_fuzzy => $notfound_callback,
     callback_base => sub {
-      my $urpm = shift @_;
+      shift @_; # $urpm
       push @breaking_pkgs, @_;
     }
   );
@@ -630,7 +623,6 @@ sub search_file {
   foreach(keys %requested) {
     my $p = @{$urpm->{depslist}}[$_];
     if(filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
-      my $version = find_installed_fullname($p);
       if(is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
@@ -697,7 +689,6 @@ sub update_packages {
   my %requested;
 
   my @depslist = @{$urpm->{depslist}};
-  my $pkg = undef;
   foreach my $depslistpkg (@depslist) {
     foreach my $name (@names) {
       if($depslistpkg->name =~ /^$name$/ && $depslistpkg->flag_upgrade) {
@@ -839,11 +830,9 @@ sub _print_package_update_details {
   $requested{$pkg->id} = 1;
   my $state = {};
   my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested);
-  my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
   my @to_remove = urpm::select::removed_packages($urpm, $state);
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
-  my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
-  @to_install = @$binary;
+  @to_install = grep { $_->arch ne 'src' } @to_install;
   my $updates_descr = urpm::get_updates_description($urpm);
   my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $pkg)->{name}}{$pkg->name};
   my $desc;
@@ -898,7 +887,7 @@ sub _download_distrib_file {
                           "--output-document", $outfile,
                           $api_url);
   
-  my $wget_pid = open(my $wget, "$wget_command |");
+  my $_wget_pid = open(my $wget, "$wget_command |");
   close($wget);
 }
 
