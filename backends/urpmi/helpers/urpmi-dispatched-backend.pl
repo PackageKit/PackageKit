@@ -259,7 +259,7 @@ sub get_packages {
 sub get_repo_list {
   my ($urpm) = @_;
   foreach my $media (@{$urpm->{media}}) {
-    pk_print_repo_details($media->{name}, $media->{name}, $media->{ignore});
+    pk_print_repo_details($media->{name}, $media->{name}, !$media->{ignore});
   }
   _finished();
 }
