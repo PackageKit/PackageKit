@@ -502,7 +502,7 @@ sub remove_packages {
       \@to_remove, {}, {},
       callback_report_uninst => sub {
         my @return = split(/ /, $_[0]);
-        pk_print_package(INFO_REMOVING, fullname_to_package_id($return[$#return]), "");
+        pk_print_package(INFO_REMOVING, fullname_to_package_id($return[-1]), "");
       }
     );
   }
