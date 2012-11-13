@@ -67,8 +67,8 @@ pk_backend_initialize (PkBackend *backend)
 	g_debug ("backend: initialize");
 
 	/* BACKEND MAINTAINER: feel free to remove this when you've
-	 * added support for ONLY_DOWNLOAD and merged the simulate
-	 * methods as specified in backends/PORTING.txt */
+	 * added support for ONLY_DOWNLOAD as specified in backends/PORTING.txt
+	 * */
 	g_error ("Backend needs to be ported to 0.8.x -- "
 		 "see backends/PORTING.txt for details");
 
@@ -176,10 +176,6 @@ pk_backend_get_roles (PkBackend *backend)
 		// PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 		// PK_ROLE_ENUM_GET_CATEGORIES,
 		// PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-		// PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-		// PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-		// PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-		// PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		// PK_ROLE_ENUM_UPGRADE_SYSTEM
 		-1);
 
