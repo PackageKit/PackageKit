@@ -113,7 +113,7 @@ sub fullname_to_package_id {
     name => $1,
     version => $2,
     release => $3,
-    arch => $4
+    'arch' => $4
   );
   return $pkg{name}.";".$pkg{version}."-".$pkg{release}.";".$pkg{arch}.";mandriva";
 }
