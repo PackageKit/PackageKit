@@ -199,11 +199,11 @@ sub get_distro_upgrades() {
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
-  open(PRODUCT_FILE, "/etc/product.id");
+  open(my $product_file, "/etc/product.id");
 
   my %product_id;
-  %product_id = _parse_line(<PRODUCT_FILE>);
-  close(PRODUCT_FILE);
+  %product_id = _parse_line(<$product_file>);
+  close($product_file);
 
   my (undef, $distribfile_path) = tempfile("packagekit_urpmi_XXXXXX", UNLINK => 1);
   _download_distrib_file($distribfile_path, \%product_id);
@@ -211,12 +211,12 @@ sub get_distro_upgrades() {
   -f $distribfile_path or goto finished;
 
   my @distribs;
-  open(DISTRIB_FILE, $distribfile_path);
-  while (<DISTRIB_FILE>) {
+  open(my $distrib_file, $distribfile_path);
+  while (<$distrib_file>) {
     my %distrib = _parse_line($_);
     push(@distribs, \%distrib);
   }
-  close(DISTRIB_FILE);
+  close($distrib_file);
 
   my $distrib;
   foreach (@distribs) {
