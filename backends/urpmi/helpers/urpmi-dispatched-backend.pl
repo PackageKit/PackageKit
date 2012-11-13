@@ -150,8 +150,7 @@ sub get_depends {
     all => 0
   );
   
-  $results 
-      or (_finished() and return);
+  $results or _finished() and return;
   
   my $empty_db = new URPM;
   my $state = {};
@@ -360,7 +359,7 @@ sub install_packages {
   
   my @names;
   foreach (@packageidstab) {
-    my @pkg_id = (split(/;/, $_));
+    my @pkg_id = split(/;/, $_);
     push @names, $pkg_id[0];
   }
   
@@ -395,7 +394,7 @@ sub search_name {
     $db->traverse(sub {
         my ($pkg) = @_;
         if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
-          if ((!$basename_option && $pkg->name =~ /$search_term/)
+          if (!$basename_option && $pkg->name =~ /$search_term/
             || $pkg->name =~ /^$search_term$/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -410,7 +409,7 @@ sub search_name {
   
   foreach my $pkg (@{$urpm->{depslist}}) {
     if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
-      if ((!$basename_option && $pkg->name =~ /$search_term/)
+      if (!$basename_option && $pkg->name =~ /$search_term/
         || $pkg->name =~ /^$search_term$/) {
         pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
       }
@@ -455,7 +454,7 @@ sub remove_packages {
 
   my @names;
   foreach (@packageidstab) {
-    my @pkg_id = (split(/;/, $_));
+    my @pkg_id = split(/;/, $_);
     push @names, $pkg_id[0];
   }
 
@@ -540,7 +539,7 @@ sub resolve {
 
   foreach (@requested_keys) {
     my $pkg = @{$urpm->{depslist}}[$_];
-    ($_ && $pkg) or next;
+    $_ && $pkg or next;
 
     # We exit the script if found package does not match with specified filters
     filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 }) or next;
@@ -726,8 +725,7 @@ sub what_provides {
     push @prov, $urpm->packages_providing($pkgid[0]);
   }
 
-  @prov 
-      or (_finished() and return);
+  @prov or _finished() and return;
   
   foreach (@prov) {
     my $pkg = $_;

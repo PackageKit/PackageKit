@@ -60,7 +60,7 @@ sub filter_installed {
   my ($urpm, $pkg, $filter) = @_;
   my $installed;
 
-  $installed = 1 if (is_package_installed($pkg));
+  $installed = 1 if is_package_installed($pkg);
   if ($filter eq FILTER_INSTALLED && $installed) {
     return 1;
   }
@@ -73,7 +73,7 @@ sub filter_installed {
 sub filter_devel {
   my ($urpm, $pkg, $filter) = @_;
   my $pkgname = $pkg->name;
-  my $devel = ($pkgname =~ /-devel$/);
+  my $devel = $pkgname =~ /-devel$/;
 
   if ($filter eq FILTER_DEVELOPMENT && $devel) {
     return 1;
@@ -107,7 +107,7 @@ sub filter_supported {
   # FIXME: matching against media name is certainly not optimal,
   #        better heuristics needed...
   #        could be blacklisting 'contrib' or better check for 'media_type=official'
-  my $supported = ($medianame =~ /^(?:core|main)/i);
+  my $supported = $medianame =~ /^(?:core|main)/i;
 
   if ($filter eq FILTER_SUPPORTED && $supported) {
     return 1;

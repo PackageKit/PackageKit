@@ -142,7 +142,7 @@ sub perform_installation {
       print "($type) Progress : total = ", $total, " ; amount/total = ", $amount/$total, " ; amount = ", $amount, "\n";
       if ($type eq "inst") {
         pk_print_percentage($percentage + ($amount/$total)*(100/$nb_to_install));
-        if (($amount/$total) == 1) {
+        if ($amount/$total == 1) {
           $percentage = $percentage + ($amount/$total)*(100/$nb_to_install);
         }
       }
@@ -215,8 +215,8 @@ sub perform_file_search {
       if (m!^<!) {
         ($fn) = /fn="(.*)"/;
       } 
-      elsif ( (!$options{'fuzzy'} && $_ =~ /^$search_term$/)
-        || ($options{'fuzzy'} && $_ =~ /$search_term/) ) {
+      elsif (!$options{'fuzzy'} && $_ =~ /^$search_term$/
+        || $options{'fuzzy'} && $_ =~ /$search_term/) {
         # Fix me : Replace with pk error enum.
         # $fn or $urpm->{fatal}("fast algorithm is broken, please report a bug");
         my $pkg = urpm::xml_info_pkg->new({ fn => $fn });
