@@ -215,8 +215,8 @@ sub perform_file_search {
       if (m!^<!) {
         ($fn) = /fn="(.*)"/;
       } 
-      elsif (!$options{fuzzy} && $_ =~ /^$search_term$/
-        || $options{fuzzy} && $_ =~ /$search_term/) {
+      elsif (!$options{fuzzy} && /^$search_term$/
+        || $options{fuzzy} && /$search_term/) {
         # Fix me : Replace with pk error enum.
         # $fn or $urpm->{fatal}("fast algorithm is broken, please report a bug");
         my $pkg = urpm::xml_info_pkg->new({ fn => $fn });
