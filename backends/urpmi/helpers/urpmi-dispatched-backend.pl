@@ -523,7 +523,7 @@ sub repo_enable {
     if ($enable) {
       delete @media[0]->{ignore};
     } else {
-      $media[0]->{ignore} = 1;
+      $media[0]{ignore} = 1;
     }
     urpm::media::write_config($urpm);
   } else {
