@@ -96,7 +96,7 @@ sub is_mageia() {
 
 sub get_package_id {
   my ($pkg) = @_;
-  return $pkg->name.";".$pkg->version."-".$pkg->release.";".$pkg->arch.";mandriva";
+  return $pkg->name . ";" . $pkg->version . "-" . $pkg->release . ";" . $pkg->arch . ";mandriva";
 }
 
 sub pkg2medium {
