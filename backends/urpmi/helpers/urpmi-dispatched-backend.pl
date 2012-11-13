@@ -195,7 +195,7 @@ sub get_details {
   _finished();
 }
 
-sub get_distro_upgrades {
+sub get_distro_upgrades() {
 
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
@@ -775,7 +775,7 @@ sub what_provides {
   }
   _finished();
 }
-sub _finished {
+sub _finished() {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
 }
 

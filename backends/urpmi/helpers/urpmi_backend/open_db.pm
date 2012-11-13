@@ -53,7 +53,7 @@ sub get_inactive_backport_media {
     map { $_->{name} } grep { $_->{ignore} && $_->{name} =~ /backport/i } @{$urpm->{media}};
 }
 
-sub open_rpm_db {
+sub open_rpm_db() {
   URPM::DB::open() or die "Couldn't open RPM DB";
 }
 
