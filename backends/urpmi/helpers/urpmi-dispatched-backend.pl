@@ -396,7 +396,7 @@ sub search_name {
   my $search_term = $args->[1];
   
   my $basename_option = FILTER_BASENAME;
-  $basename_option = grep { /$basename_option/ } @filterstab;
+  $basename_option = find { /$basename_option/ } @filterstab;
 
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
