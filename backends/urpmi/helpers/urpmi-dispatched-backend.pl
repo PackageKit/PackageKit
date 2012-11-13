@@ -475,7 +475,7 @@ sub remove_packages {
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
   my $state = {};
-  my @breaking_pkgs = ();
+  my @breaking_pkgs;
   my @to_remove = urpm::select::find_packages_to_remove($urpm,
     $state,
     \@names,
@@ -732,7 +732,7 @@ sub what_provides {
     # skip if old standard
     if (not grep { /^gstreamer0.10\(/ } $pkgid[0]) {
 	# new standard
-	my $namespace = undef;
+	my $namespace;
 	if ($providestype eq "codec") {
 	    $namespace = "gstreamer0.10";
 	} elsif ($providestype ne "any") {

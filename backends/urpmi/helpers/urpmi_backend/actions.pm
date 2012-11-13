@@ -298,7 +298,7 @@ sub perform_requires_search {
   }
 
   my @depslist = @{$urpm->{depslist}};
-  my @requires = ();
+  my @requires;
   foreach(@depslist) {
     my $pkgid = $_->id;
     if(grep { /^$pkgid$/ } keys %{$state->{selected}}) {
