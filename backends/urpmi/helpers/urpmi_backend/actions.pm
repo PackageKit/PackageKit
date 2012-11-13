@@ -54,7 +54,7 @@ sub perform_installation {
 
   # Here we have packages which cannot be installed because of dependencies
   my @unselected_uninstalled = @{$state->{unselected_uninstalled} || []};
-  if(@unselected_uninstalled) {
+  if (@unselected_uninstalled) {
     my $list = join "\n", map { $_->name . '-' . $_->version . '-' . $_->release  } @unselected_uninstalled;
   }
   # Fix me !
@@ -74,7 +74,7 @@ sub perform_installation {
   # the diplayed message in urpmi)
 
   my @ask_remove = urpm::select::removed_packages($urpm, $state);
-  if(@ask_remove) {
+  if (@ask_remove) {
     my $db = urpm::db_open_or_die($urpm, $urpm->{root});
     urpm::select::find_removed_from_basesystem($urpm, $db, $state, sub {
         shift @_; # $urpm
@@ -86,7 +86,7 @@ sub perform_installation {
         @_ and $no_remove = 1;
       });
     my $list = urpm::select::translate_why_removed($urpm, $state, @ask_remove);
-    if($no_remove) {
+    if ($no_remove) {
       # Fix me
       # Display message to prevent that the installation cannot continue because some
       # packages has to be removed for others to be upgraded.
@@ -130,9 +130,9 @@ sub perform_installation {
     } 
     elsif ($subtype eq 'progress') {
       print "($type) Progress : total = ", $total, " ; amount/total = ", $amount/$total, " ; amount = ", $amount, "\n";
-      if($type eq "inst") {
+      if ($type eq "inst") {
         pk_print_percentage($percentage + ($amount/$total)*(100/$nb_to_install));
-        if(($amount/$total) == 1) {
+        if (($amount/$total) == 1) {
           $percentage = $percentage + ($amount/$total)*(100/$nb_to_install);
         }
       }
@@ -146,16 +146,16 @@ sub perform_installation {
       trans_log => sub {
         my ($mode, $_file, $_percent, $_total, $_eta, $_speed) = @_;
         # Transfer log need to be improved.
-        if($mode eq "progress") {
+        if ($mode eq "progress") {
           pk_print_status(PK_STATUS_ENUM_DOWNLOAD);
         }
-        elsif($mode eq "error") {
+        elsif ($mode eq "error") {
           pk_print_error(PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "Please refresh your package list");
         }
         print "Install current mode = ", $mode, "\n";
       },
       bad_signature => sub {
-        if($options{only_trusted} eq "yes") {
+        if ($options{only_trusted} eq "yes") {
           pk_print_error(PK_ERROR_ENUM_GPG_FAILURE, "Bad or missing GPG signatures");
           undef $lock;
           undef $rpm_lock;
@@ -301,7 +301,7 @@ sub perform_requires_search {
   my @requires;
   foreach(@depslist) {
     my $pkgid = $_->id;
-    if(grep { /^$pkgid$/ } keys %{$state->{selected}}) {
+    if (grep { /^$pkgid$/ } keys %{$state->{selected}}) {
       push @requires, $_;
     }
   }

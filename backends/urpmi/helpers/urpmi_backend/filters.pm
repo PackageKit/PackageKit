@@ -27,28 +27,28 @@ sub filter {
   my %e_filters = %$enabled_filters;
 
   foreach my $filter (@$filters) {
-    if($filter eq FILTER_INSTALLED || $filter eq FILTER_NOT_INSTALLED) {
-      if($e_filters{FILTER_INSTALLED}) {
+    if ($filter eq FILTER_INSTALLED || $filter eq FILTER_NOT_INSTALLED) {
+      if ($e_filters{FILTER_INSTALLED}) {
         return 0 if !filter_installed($urpm, $pkg, $filter);
       }
     }
-    elsif($filter eq FILTER_DEVELOPMENT || $filter eq FILTER_NOT_DEVELOPMENT) {
-      if($e_filters{FILTER_DEVELOPMENT}) {
+    elsif ($filter eq FILTER_DEVELOPMENT || $filter eq FILTER_NOT_DEVELOPMENT) {
+      if ($e_filters{FILTER_DEVELOPMENT}) {
         return 0 if !filter_devel($urpm, $pkg, $filter);
       }
     }
-    elsif($filter eq FILTER_GUI || $filter eq FILTER_NOT_GUI) {
-      if($e_filters{FILTER_GUI}) {
+    elsif ($filter eq FILTER_GUI || $filter eq FILTER_NOT_GUI) {
+      if ($e_filters{FILTER_GUI}) {
         return 0 if !filter_gui($urpm, $pkg, $filter);
       }
     }
-    elsif($filter eq FILTER_SUPPORTED || $filter eq FILTER_NOT_SUPPORTED) {
-      if($e_filters{FILTER_SUPPORTED}) {
+    elsif ($filter eq FILTER_SUPPORTED || $filter eq FILTER_NOT_SUPPORTED) {
+      if ($e_filters{FILTER_SUPPORTED}) {
         return 0 if !filter_supported($urpm, $pkg, $filter);
       }
     }
-    elsif($filter eq FILTER_FREE || $filter eq FILTER_NOT_FREE) {
-      if($e_filters{FILTER_FREE}) {
+    elsif ($filter eq FILTER_FREE || $filter eq FILTER_NOT_FREE) {
+      if ($e_filters{FILTER_FREE}) {
         return 0 if !filter_free($urpm, $pkg, $filter);
       }
     }
@@ -60,11 +60,11 @@ sub filter_installed {
   my ($urpm, $pkg, $filter) = @_;
   my $installed;
 
-  $installed = 1 if(is_package_installed($pkg));
-  if($filter eq FILTER_INSTALLED && $installed) {
+  $installed = 1 if (is_package_installed($pkg));
+  if ($filter eq FILTER_INSTALLED && $installed) {
     return 1;
   }
-  if($filter eq FILTER_NOT_INSTALLED && !$installed) {
+  if ($filter eq FILTER_NOT_INSTALLED && !$installed) {
     return 1;
   }
   return 0;
@@ -75,10 +75,10 @@ sub filter_devel {
   my $pkgname = $pkg->name;
   my $devel = ($pkgname =~ /-devel$/);
 
-  if($filter eq FILTER_DEVELOPMENT && $devel) {
+  if ($filter eq FILTER_DEVELOPMENT && $devel) {
     return 1;
   }
-  if($filter eq FILTER_NOT_DEVELOPMENT && !$devel) {
+  if ($filter eq FILTER_NOT_DEVELOPMENT && !$devel) {
     return 1;
   }
   return 0;
@@ -89,10 +89,10 @@ sub filter_gui {
   my $pkgname = $pkg->name;
   my $gui = member($pkgname, @gui_pkgs);
 
-  if($filter eq FILTER_NOT_GUI && !$gui) {
+  if ($filter eq FILTER_NOT_GUI && !$gui) {
     return 1;
   }
-  if($filter eq FILTER_GUI && $gui) {
+  if ($filter eq FILTER_GUI && $gui) {
     return 1;
   }
   return 0;
@@ -108,10 +108,10 @@ sub filter_supported {
   #        better heuristics needed...
   my $supported = ($medianame =~ /^main/i);
 
-  if($filter eq FILTER_SUPPORTED && $supported) {
+  if ($filter eq FILTER_SUPPORTED && $supported) {
     return 1;
   }
-  if($filter eq FILTER_NOT_SUPPORTED && !$supported) {
+  if ($filter eq FILTER_NOT_SUPPORTED && !$supported) {
     return 1;
   }
   return 0;
@@ -127,10 +127,10 @@ sub filter_free {
   #        better heuristics needed...
   my $free = !($medianame =~ /non-free/i);
 
-  if($filter eq FILTER_FREE && $free) {
+  if ($filter eq FILTER_FREE && $free) {
     return 1;
   }
-  if($filter eq FILTER_NOT_FREE && !$free) {
+  if ($filter eq FILTER_NOT_FREE && !$free) {
     return 1;
   }
   return 0;

@@ -116,7 +116,7 @@ sub get_package_by_package_id {
   my ($urpm, $package_id) = @_;
   my @depslist = @{$urpm->{depslist}};
   foreach(@depslist) {
-    if(get_package_id($_) eq $package_id) {
+    if (get_package_id($_) eq $package_id) {
       return $_;
     }
   }
@@ -130,7 +130,7 @@ sub get_package_upgrade {
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
   foreach(@depslist) {
-    if($_->name =~ /^$pkgname$/ && $_->flag_upgrade) {
+    if ($_->name =~ /^$pkgname$/ && $_->flag_upgrade) {
       return $_;
     }
   }
@@ -141,7 +141,7 @@ sub get_installed_fullname {
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
   foreach $_ (@depslist) {
-    if($_->name =~ /^$pkgname$/ && is_package_installed($_)) {
+    if ($_->name =~ /^$pkgname$/ && is_package_installed($_)) {
       return $_;
     }
   }
@@ -155,7 +155,7 @@ sub get_installed_fullname_pkid {
   my $installed_pkid;
   $db->traverse(sub {
       my ($pkg) = @_;
-      if($pkg->name =~ /^$pkgname$/) {
+      if ($pkg->name =~ /^$pkgname$/) {
         $installed_pkid = get_package_id($pkg);
       }
     });
