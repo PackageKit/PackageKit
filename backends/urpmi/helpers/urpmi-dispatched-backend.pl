@@ -56,76 +56,54 @@ sub dispatch_command {
   my $command = shift(@$args);
   if ($command eq "get-depends") {
     get_depends($urpm, $args);
-  }
-  elsif ($command eq "get-details") {
+  } elsif ($command eq "get-details") {
     get_details($urpm, $args);
-  }
-  elsif ($command eq "get-distro-upgrades") {
+  } elsif ($command eq "get-distro-upgrades") {
     get_distro_upgrades();
-  }
-  elsif ($command eq "get-files") {
+  } elsif ($command eq "get-files") {
     get_files($urpm, $args);
-  }
-  elsif ($command eq "get-packages") {
+  } elsif ($command eq "get-packages") {
     get_packages($urpm, $args);
-  }
-  elsif ($command eq "get-repo-list") {
+  } elsif ($command eq "get-repo-list") {
     get_repo_list($urpm);
-  }
-  elsif ($command eq "get-requires") {
+  } elsif ($command eq "get-requires") {
     get_requires($urpm, $args);
-  }
-  elsif ($command eq "get-update-detail") {
+  } elsif ($command eq "get-update-detail") {
     get_update_detail($urpm, $args);
-  }
-  elsif ($command eq "get-updates") {
+  } elsif ($command eq "get-updates") {
     get_updates($urpm, $args);
-  }
-  elsif ($command eq "install-packages") {
+  } elsif ($command eq "install-packages") {
     install_packages($urpm, $args);
     urpm::media::configure($urpm);
-  }
-  elsif ($command eq "search-name") {
+  } elsif ($command eq "search-name") {
     search_name($urpm, $args);
-  }
-  elsif ($command eq "refresh-cache") {
+  } elsif ($command eq "refresh-cache") {
     refresh_cache($urpm);
     urpm::media::configure($urpm);
-  }
-  elsif ($command eq "remove-packages") {
+  } elsif ($command eq "remove-packages") {
     remove_packages($urpm, $args);
     urpm::media::configure($urpm);
-  }
-  elsif ($command eq "repo-enable") {
+  } elsif ($command eq "repo-enable") {
     repo_enable($urpm, $args);
-  }
-  elsif ($command eq "resolve") {
+  } elsif ($command eq "resolve") {
     resolve($urpm, $args);
-  }
-  elsif ($command eq "search-details") {
+  } elsif ($command eq "search-details") {
     search_details($urpm, $args);
-  }
-  elsif ($command eq "search-file") {
+  } elsif ($command eq "search-file") {
     search_file($urpm, $args);
-  }
-  elsif ($command eq "search-group") {
+  } elsif ($command eq "search-group") {
     search_group($urpm, $args);
-  }
-  elsif ($command eq "update-packages") {
+  } elsif ($command eq "update-packages") {
     update_packages($urpm, $args);
     urpm::media::configure($urpm);
-  }
-  elsif ($command eq "update-system") {
+  } elsif ($command eq "update-system") {
     update_system($urpm, $args);
     urpm::media::configure($urpm);
-  }
-  elsif ($command eq "what-provides") {
+  } elsif ($command eq "what-provides") {
     what_provides($urpm, $args);
-  }
-  elsif ($command eq "exit") {
+  } elsif ($command eq "exit") {
     exit 0;
-  }
-  else {}
+  } else {}
 }
 
 sub get_depends {
@@ -476,11 +454,9 @@ sub remove_packages {
 
   if ($notfound) {
     pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Some selected packages are not installed on your system");
-  }
-  elsif (@breaking_pkgs) {
+  } elsif (@breaking_pkgs) {
     pk_print_error(PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "Removing selected packages will break your system");
-  }
-  elsif (!$allowdeps_option && scalar(@to_remove) != scalar(@names)) {
+  } elsif (!$allowdeps_option && scalar(@to_remove) != scalar(@names)) {
     pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, "Packages can't be removed because dependencies remove is forbidden");
   }
   else {

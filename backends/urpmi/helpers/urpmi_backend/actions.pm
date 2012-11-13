@@ -132,13 +132,11 @@ sub perform_installation {
       if ($type eq 'trans') {
         print "Preparing packages installation ...\n";
         pk_print_status(PK_STATUS_ENUM_INSTALL);
-      } 
-      elsif (defined $pkg) {
+      } elsif (defined $pkg) {
         printf("Installing package %s ...\n", $pkg->name);
         pk_print_package(INFO_INSTALLING, get_package_id($pkg), $pkg->summary);
       }
-    } 
-    elsif ($subtype eq 'progress') {
+    } elsif ($subtype eq 'progress') {
       print "($type) Progress : total = ", $total, " ; amount/total = ", $amount/$total, " ; amount = ", $amount, "\n";
       if ($type eq "inst") {
         pk_print_percentage($percentage + ($amount/$total)*(100/$nb_to_install));
@@ -158,8 +156,7 @@ sub perform_installation {
         # Transfer log need to be improved.
         if ($mode eq "progress") {
           pk_print_status(PK_STATUS_ENUM_DOWNLOAD);
-        }
-        elsif ($mode eq "error") {
+        } elsif ($mode eq "error") {
           pk_print_error(PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "Please refresh your package list");
         }
         print "Install current mode = ", $mode, "\n";
@@ -214,8 +211,7 @@ sub perform_file_search {
     while (<$F>) {
       if (m!^<!) {
         ($fn) = /fn="(.*)"/;
-      } 
-      elsif (!$options{fuzzy} && /^$search_term$/
+      } elsif (!$options{fuzzy} && /^$search_term$/
         || $options{fuzzy} && /$search_term/) {
         # Fix me : Replace with pk error enum.
         # $fn or $urpm->{fatal}("fast algorithm is broken, please report a bug");
