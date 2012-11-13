@@ -26,30 +26,30 @@ sub filter {
 
   my %e_filters = %$enabled_filters;
 
-  foreach my $filter (@{$filters}) {
+  foreach my $filter (@$filters) {
     if($filter eq FILTER_INSTALLED || $filter eq FILTER_NOT_INSTALLED) {
       if($e_filters{FILTER_INSTALLED}) {
-        return 0 if not filter_installed($urpm, $pkg, $filter);
+        return 0 if !filter_installed($urpm, $pkg, $filter);
       }
     }
     elsif($filter eq FILTER_DEVELOPMENT || $filter eq FILTER_NOT_DEVELOPMENT) {
       if($e_filters{FILTER_DEVELOPMENT}) {
-        return 0 if not filter_devel($urpm, $pkg, $filter);
+        return 0 if !filter_devel($urpm, $pkg, $filter);
       }
     }
     elsif($filter eq FILTER_GUI || $filter eq FILTER_NOT_GUI) {
       if($e_filters{FILTER_GUI}) {
-        return 0 if not filter_gui($urpm, $pkg, $filter);
+        return 0 if !filter_gui($urpm, $pkg, $filter);
       }
     }
     elsif($filter eq FILTER_SUPPORTED || $filter eq FILTER_NOT_SUPPORTED) {
       if($e_filters{FILTER_SUPPORTED}) {
-        return 0 if not filter_supported($urpm, $pkg, $filter);
+        return 0 if !filter_supported($urpm, $pkg, $filter);
       }
     }
     elsif($filter eq FILTER_FREE || $filter eq FILTER_NOT_FREE) {
       if($e_filters{FILTER_FREE}) {
-        return 0 if not filter_free($urpm, $pkg, $filter);
+        return 0 if !filter_free($urpm, $pkg, $filter);
       }
     }
   }
