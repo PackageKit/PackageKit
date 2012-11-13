@@ -126,7 +126,7 @@ sub filter_free {
   my $medianame = $media->{name};
   # FIXME: matching against media name is certainly not optimal,
   #        better heuristics needed...
-  my $free = !($medianame =~ /non-free/i);
+  my $free = $medianame !~ /non-free/i;
 
   if ($filter eq FILTER_FREE && $free) {
     return 1;
