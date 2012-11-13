@@ -744,10 +744,7 @@ sub what_provides {
     }
 
     push(@pkgnames, $pkgid[0]);
-    my @res = $urpm->packages_providing($pkgid[0]);
-    foreach(@res) {
-	push (@prov, $_);
-    }
+    push @prov, $urpm->packages_providing($pkgid[0]);
   }
 
   @prov 
