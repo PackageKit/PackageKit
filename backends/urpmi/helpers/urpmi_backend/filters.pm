@@ -57,7 +57,7 @@ sub filter {
 }
 
 sub filter_installed {
-  my ($opkg, $filter) = @_;
+  my ($pkg, $filter) = @_;
   my $installed;
 
   $installed = 1 if is_package_installed($pkg);
