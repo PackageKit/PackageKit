@@ -264,7 +264,7 @@ sub get_packages {
   if (!grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       });
@@ -274,7 +274,7 @@ sub get_packages {
   if (!grep { /^${\FILTER_INSTALLED}$/ } @filterstab) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       }  
@@ -311,7 +311,7 @@ sub get_requires {
   my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
   foreach (@requires) {
-    if (filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+    if (filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
       if (is_package_installed($_)) {
         grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
@@ -405,7 +405,7 @@ sub search_name {
   if (!grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           if ((!$basename_option && $pkg->name =~ /$search_term/)
             || $pkg->name =~ /^$search_term$/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -420,7 +420,7 @@ sub search_name {
     and return;
   
   foreach my $pkg(@{$urpm->{depslist}}) {
-    if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+    if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
       if ((!$basename_option && $pkg->name =~ /$search_term/)
         || $pkg->name =~ /^$search_term$/) {
         pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -558,7 +558,7 @@ sub resolve {
     ($_ && $pkg) or next;
 
     # We exit the script if found package does not match with specified filters
-    filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1}) or next;
+    filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 }) or next;
 
     if (is_package_installed($pkg)) {
       grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters and next;
@@ -586,7 +586,7 @@ sub search_details {
   if (!grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           if ($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -597,7 +597,7 @@ sub search_details {
   if (!grep { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           if ($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -622,7 +622,7 @@ sub search_file {
 
   foreach (keys %requested) {
     my $p = @{$urpm->{depslist}}[$_];
-    if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+    if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
       if (is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
@@ -648,7 +648,7 @@ sub search_group {
   if (!grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           if (package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -659,7 +659,7 @@ sub search_group {
   if (!grep { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
+        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
           if (package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
