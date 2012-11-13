@@ -519,7 +519,7 @@ sub repo_enable {
   my $enable = $args->[1] eq "yes" ? 1 : 0;
 
   my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
-  if ($#media == 0) {
+  if (@media == 1) {
     if ($enable) {
       delete @media[0]->{ignore};
     } else {
