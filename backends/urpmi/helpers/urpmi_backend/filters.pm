@@ -106,7 +106,7 @@ sub filter_supported {
   my $medianame = $media->{name};
   # FIXME: matching against media name is certainly not optimal,
   #        better heuristics needed...
-  my $supported = ($medianame =~ /^main/i);
+  my $supported = ($medianame =~ /^(?:core|main)/i);
 
   if ($filter eq FILTER_SUPPORTED && $supported) {
     return 1;
