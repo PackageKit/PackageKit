@@ -108,14 +108,9 @@ sub fullname_to_package_id {
   # fullname, ie 'xeyes-1.0.1-5mdv2008.1.i586'
   my ($pkg_string) = @_;
   chomp($pkg_string);
-  $pkg_string =~ /^(.*)-([^-]*)-([^-]*)\.([^\.]*)$/;
-  my %pkg = (
-    name => $1,
-    version => $2,
-    release => $3,
-    'arch' => $4
-  );
-  return $pkg{name}.";".$pkg{version}."-".$pkg{release}.";".$pkg{arch}.";mandriva";
+  if ($pkg_string =~ /^(.*)-([^-]*)-([^-]*)\.([^\.]*)$/) {
+      return $1 . $2 . $3 . $4 . ";mandriva";
+  }
 }
 
 sub get_package_by_package_id {
