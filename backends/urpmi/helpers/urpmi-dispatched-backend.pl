@@ -144,7 +144,7 @@ sub get_depends {
   my @selected_keys = keys %selected;
   my @depslist = @{$urpm->{depslist}};
   
-  foreach (sort { @depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed } @selected_keys) {
+  foreach (sort { $depslist[$b]->flag_installed <=> $depslist[$a]->flag_installed } @selected_keys) {
     my $pkg = $depslist[$_];
     if ($pkg->flag_installed) {
       any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
@@ -483,7 +483,7 @@ sub repo_enable {
   my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
   if (@media == 1) {
     if ($enable) {
-      delete @media[0]->{ignore};
+      delete $media[0]->{ignore};
     } else {
       $media[0]{ignore} = 1;
     }
