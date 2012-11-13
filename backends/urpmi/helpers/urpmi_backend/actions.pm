@@ -299,7 +299,7 @@ sub perform_requires_search {
 
   my @depslist = @{$urpm->{depslist}};
   my @requires;
-  foreach(@depslist) {
+  foreach (@depslist) {
     my $pkgid = $_->id;
     if (grep { /^$pkgid$/ } keys %{$state->{selected}}) {
       push @requires, $_;

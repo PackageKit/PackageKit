@@ -168,7 +168,7 @@ sub get_depends {
   my @selected_keys = keys %selected;
   my @depslist = @{$urpm->{depslist}};
   
-  foreach(sort {@depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed} @selected_keys) {
+  foreach (sort {@depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed} @selected_keys) {
     my $pkg = @depslist[$_];
     if ($pkg->flag_installed) {
       grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
@@ -310,7 +310,7 @@ sub get_requires {
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
-  foreach(@requires) {
+  foreach (@requires) {
     if (filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
       if (is_package_installed($_)) {
         grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
@@ -352,7 +352,7 @@ sub get_updates {
   @to_install = grep { $_->arch ne 'src' } @to_install;
   my $updates_descr = urpm::get_updates_description($urpm);
   
-  foreach(@to_install) {
+  foreach (@to_install) {
     my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $_)->{name}}{$_->name};
     pk_print_package($updesc->{importance} eq "bugfix" ? INFO_BUGFIX :
                         $updesc->{importance} eq "security" ? INFO_SECURITY :
@@ -369,7 +369,7 @@ sub install_packages {
   my @packageidstab = split(/&/, $args->[1]);
   
   my @names;
-  foreach(@packageidstab) {
+  foreach (@packageidstab) {
     my @pkg_id = (split(/;/, $_));
     push @names, $pkg_id[0];
   }
@@ -467,7 +467,7 @@ sub remove_packages {
   my @packageidstab = split(/&/, $args->[1]);
 
   my @names;
-  foreach(@packageidstab) {
+  foreach (@packageidstab) {
     my @pkg_id = (split(/;/, $_));
     push @names, $pkg_id[0];
   }
@@ -620,7 +620,7 @@ sub search_file {
 
   perform_file_search($urpm, \%requested, $search_term, fuzzy => 1);
 
-  foreach(keys %requested) {
+  foreach (keys %requested) {
     my $p = @{$urpm->{depslist}}[$_];
     if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
       if (is_package_installed($p)) {
@@ -678,7 +678,7 @@ sub update_packages {
   my @packageidstab = split(/&/, $args->[1]);
 
   my @names;
-  foreach(@packageidstab) {
+  foreach (@packageidstab) {
     my @pkgid = split(/;/, $_);
     push @names, $pkgid[0];
   }
@@ -753,7 +753,7 @@ sub what_provides {
   @prov 
       or (_finished() and return);
   
-  foreach(@prov) {
+  foreach (@prov) {
     my $pkg = $_;
     if (is_package_installed($pkg)) {
       grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
@@ -842,7 +842,7 @@ sub _print_package_update_details {
   }
   
   my @to_upgrade_pkids;
-  foreach(@to_install) {
+  foreach (@to_install) {
     my $pkid = get_installed_fullname_pkid($_);
     push @to_upgrade_pkids, $pkid if $pkid;
   }
