@@ -406,8 +406,8 @@ sub search_name {
     $db->traverse(sub {
         my ($pkg) = @_;
         if (filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
-          if ( (!$basename_option && $pkg->name =~ /$search_term/)
-            || $pkg->name =~ /^$search_term$/ ) {
+          if ((!$basename_option && $pkg->name =~ /$search_term/)
+            || $pkg->name =~ /^$search_term$/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
         }
@@ -421,8 +421,8 @@ sub search_name {
   
   foreach my $pkg(@{$urpm->{depslist}}) {
     if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
-      if ( (!$basename_option && $pkg->name =~ /$search_term/)
-        || $pkg->name =~ /^$search_term$/ ) {
+      if ((!$basename_option && $pkg->name =~ /$search_term/)
+        || $pkg->name =~ /^$search_term$/) {
         pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
       }
     }
@@ -445,7 +445,7 @@ sub refresh_cache {
   my @entries = map { $_->{name} } @{$urpm->{media}};
   @entries == 0 and pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, "nothing to update (use urpmi.addmedia to add a media)\n");
 
-  my %options = ( all => 1 );
+  my %options = (all => 1);
   
   eval { urpm::media::update_media($urpm, %options, quiet => 0) };
   _finished();
