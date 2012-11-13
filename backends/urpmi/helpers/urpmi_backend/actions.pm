@@ -303,7 +303,7 @@ sub perform_requires_search {
   my @requires = ();
   foreach(@depslist) {
     my $pkgid = $_->id;
-    if(grep(/^$pkgid$/, keys %{$state->{selected}})) {
+    if(grep { /^$pkgid$/ } keys %{$state->{selected}}) {
       push @requires, $_;
     }
   }

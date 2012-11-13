@@ -141,7 +141,7 @@ sub package_belongs_to_pk_group {
   my ($pkg, $pk_group) = @_;
   my @groups = get_mdv_groups($pk_group);
   my $pkg_group = $pkg->group;
-  return grep(/$pkg_group/, @groups);
+  return grep { /$pkg_group/ } @groups;
 }
 
 1;

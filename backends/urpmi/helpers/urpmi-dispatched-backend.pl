@@ -171,11 +171,11 @@ sub get_depends {
   foreach(sort {@depslist[$b]->flag_installed <=> @depslist[$a]->flag_installed} @selected_keys) {
     my $pkg = @depslist[$_];
     if($pkg->flag_installed) {
-      grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
+      grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
     else {
-      grep(/^${\FILTER_INSTALLED}$/, @filterstab) and next;
+      grep { /^${\FILTER_INSTALLED}$/ } @filterstab and next;
       pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
     }
   }
@@ -261,7 +261,7 @@ sub get_packages {
   $urpm->compute_installed_flags($db);
   
   # Here we display installed packages
-  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
+  if(not grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
         if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -271,7 +271,7 @@ sub get_packages {
   }
   
   # Here are package which can be installed
-  if(not grep(/^${\FILTER_INSTALLED}$/, @filterstab)) {
+  if(not grep { /^${\FILTER_INSTALLED}$/ } @filterstab) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
         if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -313,10 +313,10 @@ sub get_requires {
   foreach(@requires) {
     if(filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
       if(is_package_installed($_)) {
-        grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
+        grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
       else {
-        grep(/^${\FILTER_INSTALLED}$/, @filterstab) or pk_print_package(INFO_AVAILABLE, get_package_id($_), $_->summary);
+        grep { /^${\FILTER_INSTALLED}$/ } @filterstab or pk_print_package(INFO_AVAILABLE, get_package_id($_), $_->summary);
       }
     }
   }
@@ -401,13 +401,13 @@ sub search_name {
   my $search_term = $args->[1];
   
   my $basename_option = FILTER_BASENAME;
-  $basename_option = grep(/$basename_option/, @filterstab);
+  $basename_option = grep { /$basename_option/ } @filterstab;
 
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
   
   # Here we display installed packages
-  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab)) {
+  if(not grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
         if(filter($urpm, $pkg, \@filterstab, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -420,7 +420,7 @@ sub search_name {
   }
   
   # Here are packages which can be installed
-  grep(/^${\FILTER_INSTALLED}$/, @filterstab) 
+  grep { /^${\FILTER_INSTALLED}$/ } @filterstab 
     and _finished()
     and return;
   
@@ -568,11 +568,11 @@ sub resolve {
     filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1}) or next;
 
     if(is_package_installed($pkg)) {
-      grep(/^${\FILTER_NOT_INSTALLED}$/, @filters) and next;
+      grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
     else {
-      grep(/^${\FILTER_INSTALLED}$/, @filters) and next;
+      grep { /^${\FILTER_INSTALLED}$/ } @filters and next;
       pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
     }
   }
@@ -590,7 +590,7 @@ sub search_details {
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
 
-  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
+  if(not grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
         if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -601,7 +601,7 @@ sub search_details {
       });
   }
 
-  if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
+  if(not grep { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
         if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -653,7 +653,7 @@ sub search_group {
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
 
-  if(not grep(/^${\FILTER_NOT_INSTALLED}$/, @filters)) {
+  if(not grep { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
         if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -664,7 +664,7 @@ sub search_group {
       });
   }
 
-  if(not grep(/^${\FILTER_INSTALLED}$/, @filters)) {
+  if(not grep { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg(@{$urpm->{depslist}}) {
       if($pkg->flag_upgrade) {
         if(filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1})) {
@@ -739,7 +739,7 @@ sub what_provides {
   foreach (@packageidstab) {
     my @pkgid = split(/;/, $_);
     # skip if old standard
-    if (not grep(/^gstreamer0.10\(/, $pkgid[0])) {
+    if (not grep { /^gstreamer0.10\(/ } $pkgid[0]) {
 	# new standard
 	my $namespace = undef;
 	if ($providestype eq "codec") {
@@ -765,11 +765,11 @@ sub what_provides {
   foreach(@prov) {
     my $pkg = $_;
     if(is_package_installed($pkg)) {
-      grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
+      grep { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
     else {
-      grep(/^${\FILTER_INSTALLED}$/, @filterstab) and next;
+      grep { /^${\FILTER_INSTALLED}$/ } @filterstab and next;
       pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
     }
   }
