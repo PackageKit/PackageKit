@@ -204,7 +204,7 @@ sub perform_file_search {
   # search term given in argument. We store results 
   # in a hash.
   foreach my $medium (urpm::media::non_ignored_media($urpm)) {
-    my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, ( "files", "summary" ), undef, undef);
+    my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, 'files', 0);
     $xml_info_file or next;
     require urpm::xml_info;
     require urpm::xml_info_pkg;
