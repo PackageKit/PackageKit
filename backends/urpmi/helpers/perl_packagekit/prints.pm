@@ -92,7 +92,7 @@ sub pk_print_error {
   # @param exit: exit application with rc=1, if true
   my ($err, $description) = @_;
   printf("error\t%s\t%s\n", $err, $description);
-  exit if($exit);
+  exit if ($exit);
 }
 
 sub pk_print_percentage {
