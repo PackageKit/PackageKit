@@ -296,7 +296,7 @@ sub perform_requires_search {
           foreach (map { $urpm->{depslist}[$_] }
             grep { ! exists $state->{selected}{$_} && ! exists $properties{$_} }
             keys %{$requires{$n} || {}}) {
-            if (grep { URPM::ranges_overlap("$n $s", $_) } $_->requires) {
+            if (any { URPM::ranges_overlap("$n $s", $_) } $_->requires) {
               push @properties, $_->id;
               # $urpm->{debug} and $urpm->{debug}(sprintf "adding package %s (requires %s%s)", $_->name, $pkg->name, $n eq $pkg->name ? '' : " via $n");
               $properties{$_->id} = undef;
@@ -311,7 +311,7 @@ sub perform_requires_search {
   my @requires;
   foreach (@depslist) {
     my $pkgid = $_->id;
-    if (grep { /^$pkgid$/ } keys %{$state->{selected}}) {
+    if (any { /^$pkgid$/ } keys %{$state->{selected}}) {
       push @requires, $_;
     }
   }
