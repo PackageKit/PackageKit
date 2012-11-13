@@ -436,7 +436,7 @@ sub refresh_cache {
   my ($urpm) = @_;
 
   $urpm->{fatal} = sub { 
-    pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, $_[1]."\n"); 
+    pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, $_[1] . "\n"); 
     die;
   };
   my $_urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 0);
