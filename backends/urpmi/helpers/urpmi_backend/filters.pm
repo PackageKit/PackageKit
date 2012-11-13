@@ -61,12 +61,8 @@ sub filter_installed {
   my $installed;
 
   $installed = 1 if is_package_installed($pkg);
-  if ($filter eq FILTER_INSTALLED && $installed) {
-    return 1;
-  }
-  if ($filter eq FILTER_NOT_INSTALLED && !$installed) {
-    return 1;
-  }
+  return 1 if $filter eq FILTER_INSTALLED && $installed;
+  return 1 if $filter eq FILTER_NOT_INSTALLED && !$installed;
   return 0;
 }
 
