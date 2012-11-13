@@ -143,9 +143,9 @@ sub get_installed_fullname {
   my ($urpm, $pkg) = @_;
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
-  foreach $_ (@depslist) {
-    if ($_->name =~ /^$pkgname$/ && is_package_installed($_)) {
-      return $_;
+  foreach my $pkg (@depslist) {
+    if ($pkg->name =~ /^$pkgname$/ && is_package_installed($pkg)) {
+      return $pkg;
     }
   }
   return;
