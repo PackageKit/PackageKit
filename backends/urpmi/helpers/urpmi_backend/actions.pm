@@ -64,7 +64,12 @@ sub perform_installation {
   # the diplayed message in urpmi)
 
   # Here we have packages which cannot be installed
-  my @ask_unselect = urpm::select::unselected_packages($urpm, $state);
+  my @ask_unselect;
+  if (is_mageia()) {
+      @ask_unselect = urpm::select::unselected_packages($state);
+  } else {
+      @ask_unselect = urpm::select::unselected_packages($urpm, $state);
+  }
   if (@ask_unselect) {
     my $list = urpm::select::translate_why_unselected($urpm, $state, @ask_unselect);
   }
@@ -73,7 +78,12 @@ sub perform_installation {
   # that the following packages can't be installed (copy/paste from
   # the diplayed message in urpmi)
 
-  my @ask_remove = urpm::select::removed_packages($urpm, $state);
+  my @ask_remove;
+  if (is_mageia()) {
+      @ask_remove = urpm::select::removed_packages($state);
+  } else {
+      @ask_remove = urpm::select::removed_packages($urpm, $state);
+  }
   if (@ask_remove) {
     my $db = urpm::db_open_or_die($urpm, $urpm->{root});
     urpm::select::find_removed_from_basesystem($urpm, $db, $state, sub {
@@ -140,8 +150,8 @@ sub perform_installation {
   };
 
   # Now, the script will call the urpmi main loop to make installation
-  my $exit_code = urpm::main_loop::run($urpm, $state, undef, \@ask_unselect, $requested, {
-      inst => $callback_inst,
+  my $exit_code = urpm::main_loop::run($urpm, $state, undef, \@ask_unselect, (is_mageia() ? () : $requested), {
+   inst => $callback_inst,
       trans => $callback_inst,
       trans_log => sub {
         my ($mode, $_file, $_percent, $_total, $_eta, $_speed) = @_;
