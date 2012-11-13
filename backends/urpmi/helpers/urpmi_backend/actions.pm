@@ -50,7 +50,7 @@ sub perform_installation {
   my %selected = %{$state->{selected} || {}};
 
   print "Dependencies = \n\t";
-  print join("\n\t", map(@{$urpm->{depslist}}[$_]->name, keys %selected)), "\n";
+  print join("\n\t", map { @{$urpm->{depslist}}[$_]->name } keys %selected), "\n";
 
   # Here we have packages which cannot be installed because of dependencies
   my @unselected_uninstalled = @{$state->{unselected_uninstalled} || []};
@@ -105,7 +105,7 @@ sub perform_installation {
   @to_install = @$binary;
 
   print "\@to_install debug : \n\t";
-  print join("\n\t", map(urpm_name($_), @to_install)), "\n";
+  print join("\n\t", map { urpm_name($_) } @to_install), "\n";
 
   my $nb_to_install = $#to_install + 1;
   my $percentage = 0;
