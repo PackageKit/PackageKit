@@ -79,12 +79,8 @@ sub filter_gui {
   my $pkgname = $pkg->name;
   my $gui = member($pkgname, @gui_pkgs);
 
-  if ($filter eq FILTER_NOT_GUI && !$gui) {
-    return 1;
-  }
-  if ($filter eq FILTER_GUI && $gui) {
-    return 1;
-  }
+  return 1 if $filter eq FILTER_NOT_GUI && !$gui;
+  return 1 if $filter eq FILTER_GUI && $gui;
   return 0;
 }
 
@@ -99,12 +95,8 @@ sub filter_supported {
   #        could be blacklisting 'contrib' or better check for 'media_type=official'
   my $supported = $medianame =~ /^(?:core|main)/i;
 
-  if ($filter eq FILTER_SUPPORTED && $supported) {
-    return 1;
-  }
-  if ($filter eq FILTER_NOT_SUPPORTED && !$supported) {
-    return 1;
-  }
+  return 1 if $filter eq FILTER_SUPPORTED && $supported;
+  return 1 if $filter eq FILTER_NOT_SUPPORTED && !$supported;
   return 0;
 }
 
@@ -118,12 +110,8 @@ sub filter_free {
   #        better heuristics needed...
   my $free = $medianame !~ /non-free/i;
 
-  if ($filter eq FILTER_FREE && $free) {
-    return 1;
-  }
-  if ($filter eq FILTER_NOT_FREE && !$free) {
-    return 1;
-  }
+  return 1 if $filter eq FILTER_FREE && $free;
+  return 1 if $filter eq FILTER_NOT_FREE && !$free;
   return 0;
 }
 
