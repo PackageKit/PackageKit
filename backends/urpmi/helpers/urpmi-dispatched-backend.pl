@@ -71,7 +71,7 @@ sub dispatch_command {
     get_packages($urpm, $args);
   }
   elsif($command eq "get-repo-list") {
-    get_repo_list($urpm, $args);
+    get_repo_list($urpm);
   }
   elsif($command eq "get-requires") {
     get_requires($urpm, $args);
@@ -285,7 +285,7 @@ sub get_packages {
 
 sub get_repo_list {
 
-  my ($urpm, $args) = @_;
+  my ($urpm) = @_;
   foreach my $media (@{$urpm->{media}}) {
     pk_print_repo_details($media->{name}, $media->{name}, $media->{ignore});
   }
