@@ -29,17 +29,17 @@ sub filter {
   foreach my $filter (@$filters) {
     if ($filter eq FILTER_INSTALLED || $filter eq FILTER_NOT_INSTALLED) {
       if ($e_filters{FILTER_INSTALLED}) {
-        return 0 if !filter_installed($urpm, $pkg, $filter);
+        return 0 if !filter_installed($pkg, $filter);
       }
     }
     elsif ($filter eq FILTER_DEVELOPMENT || $filter eq FILTER_NOT_DEVELOPMENT) {
       if ($e_filters{FILTER_DEVELOPMENT}) {
-        return 0 if !filter_devel($urpm, $pkg, $filter);
+        return 0 if !filter_devel($pkg, $filter);
       }
     }
     elsif ($filter eq FILTER_GUI || $filter eq FILTER_NOT_GUI) {
       if ($e_filters{FILTER_GUI}) {
-        return 0 if !filter_gui($urpm, $pkg, $filter);
+        return 0 if !filter_gui($pkg, $filter);
       }
     }
     elsif ($filter eq FILTER_SUPPORTED || $filter eq FILTER_NOT_SUPPORTED) {
@@ -57,7 +57,7 @@ sub filter {
 }
 
 sub filter_installed {
-  my ($urpm, $pkg, $filter) = @_;
+  my ($opkg, $filter) = @_;
   my $installed;
 
   $installed = 1 if is_package_installed($pkg);
@@ -71,7 +71,7 @@ sub filter_installed {
 }
 
 sub filter_devel {
-  my ($urpm, $pkg, $filter) = @_;
+  my ($pkg, $filter) = @_;
   my $pkgname = $pkg->name;
   my $devel = $pkgname =~ /-devel$/;
 
@@ -85,7 +85,7 @@ sub filter_devel {
 }
 
 sub filter_gui {
-  my ($urpm, $pkg, $filter) = @_;
+  my ($pkg, $filter) = @_;
   my $pkgname = $pkg->name;
   my $gui = member($pkgname, @gui_pkgs);
 
