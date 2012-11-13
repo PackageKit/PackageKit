@@ -483,7 +483,7 @@ sub repo_enable {
   my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
   if (@media == 1) {
     if ($enable) {
-      delete $media[0]->{ignore};
+      delete $media[0]{ignore};
     } else {
       $media[0]{ignore} = 1;
     }
