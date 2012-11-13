@@ -51,7 +51,6 @@ while (<STDIN>) {
 }
 
 sub dispatch_command {
-
   my ($urpm, $args) = @_;
 
   my $command = shift(@$args);
@@ -128,8 +127,8 @@ sub dispatch_command {
   }
   else {}
 }
-sub get_depends {
 
+sub get_depends {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, $args->[0]);
@@ -183,7 +182,6 @@ sub get_depends {
 }
 
 sub get_details {
-
   my ($urpm, $args) = @_;
   
   my @packageidstab = split(/&/, $args->[0]);
@@ -196,7 +194,6 @@ sub get_details {
 }
 
 sub get_distro_upgrades() {
-
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   open(my $product_file, "/etc/product.id");
@@ -238,7 +235,6 @@ sub get_distro_upgrades() {
 }
 
 sub get_files {
-  
   my ($urpm, $args) = @_;
   
   my @packageidstab = split(/&/, $args->[0]);
@@ -251,7 +247,6 @@ sub get_files {
 }
 
 sub get_packages {
-
   my ($urpm, $args) = @_;
   my @filterstab = split(/;/, $args->[0]);
   
@@ -284,7 +279,6 @@ sub get_packages {
 }
 
 sub get_repo_list {
-
   my ($urpm) = @_;
   foreach my $media (@{$urpm->{media}}) {
     pk_print_repo_details($media->{name}, $media->{name}, $media->{ignore});
@@ -294,7 +288,6 @@ sub get_repo_list {
 
 
 sub get_requires {
-  
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, $args->[0]);
@@ -324,7 +317,6 @@ sub get_requires {
 }
 
 sub get_update_detail {
-
   my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
@@ -337,7 +329,6 @@ sub get_update_detail {
 }
 
 sub get_updates {
-
   my ($urpm, $args) = @_;
   # FIXME: Filter are to be implemented.
   my $_filters = $args->[0];
@@ -362,7 +353,6 @@ sub get_updates {
 }
 
 sub install_packages {
-
   my ($urpm, $args) = @_;
 
   my $only_trusted = $args->[0];
@@ -387,7 +377,6 @@ sub install_packages {
 }
 
 sub search_name {
-
   my ($urpm, $args) = @_;
   
   pk_print_status(PK_STATUS_ENUM_QUERY);
@@ -432,7 +421,6 @@ sub search_name {
 }
 
 sub refresh_cache {
-
   my ($urpm) = @_;
 
   $urpm->{fatal} = sub { 
@@ -453,7 +441,6 @@ sub refresh_cache {
 }
 
 sub remove_packages {
-
   my ($urpm, $args) = @_;
 
   my $notfound = 0;
@@ -512,7 +499,6 @@ sub remove_packages {
 }
 
 sub repo_enable {
-
   my ($urpm, $args) = @_;
 
   my $name = $args->[0];
@@ -534,7 +520,6 @@ sub repo_enable {
 }
 
 sub resolve {
-
   my ($urpm, $args) = @_;
 
   my @filters = split(/;/, $args->[0]);
@@ -573,7 +558,6 @@ sub resolve {
 }
 
 sub search_details {
-
   my ($urpm, $args) = @_;
   my @filters = split(/;/, $args->[0]);
   my $search_term = $args->[1];
@@ -609,7 +593,6 @@ sub search_details {
 }
 
 sub search_file {
-
   my ($urpm, $args) = @_;
   my @filters = split(/;/, $args->[0]);
   my $search_term = $args->[1];
@@ -635,7 +618,6 @@ sub search_file {
 }
 
 sub search_group {
-
   my ($urpm, $args) = @_;
   my @filters = split(/;/, $args->[0]);
   my $pk_group = $args->[1];
@@ -671,7 +653,6 @@ sub search_group {
 }
 
 sub update_packages {
-
   my ($urpm, $args) = @_;
 
   my $only_trusted = $args->[0];
@@ -705,7 +686,6 @@ sub update_packages {
 }
 
 sub update_system {
-  
   my ($urpm, $args) = @_;
 
   my $only_trusted = $args->[0];
@@ -716,7 +696,6 @@ sub update_system {
 }
 
 sub what_provides {
-
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, $args->[0]);
@@ -763,12 +742,12 @@ sub what_provides {
   }
   _finished();
 }
+
 sub _finished() {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
 }
 
 sub _print_package_details {
-
   my ($urpm, $pkgid) = @_;
   
   my $pkg = get_package_by_package_id($urpm, $pkgid);
@@ -797,7 +776,6 @@ sub _print_package_details {
 }
 
 sub _print_package_files {
-
   my ($urpm, $pkgid) = @_;
 
   my $pkg = get_package_by_package_id($urpm, $pkgid);
@@ -818,7 +796,6 @@ sub _print_package_files {
 }
 
 sub _print_package_update_details {
-
   my ($urpm, $pkgid) = @_;
   my $pkg = get_package_by_package_id($urpm, $pkgid);
   $pkg or return;
@@ -873,7 +850,6 @@ sub _parse_line {
 }
 
 sub _download_distrib_file {
-
   my ($outfile, $product_id) = @_;
   
   -x "/usr/bin/wget" or die "wget is missing\n";
@@ -894,7 +870,6 @@ sub _download_distrib_file {
 }
 
 sub _get_newer_distrib {
-
   my ($installed_version, $distrib_list) = @_;
   my $installed_distrib;
   foreach (@$distrib_list) {
