@@ -115,7 +115,7 @@ sub fullname_to_package_id {
 sub get_package_by_package_id {
   my ($urpm, $package_id) = @_;
   my @depslist = @{$urpm->{depslist}};
-  foreach(@depslist) {
+  foreach (@depslist) {
     if (get_package_id($_) eq $package_id) {
       return $_;
     }
@@ -129,7 +129,7 @@ sub get_package_upgrade {
   $urpm->compute_installed_flags($db);
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
-  foreach(@depslist) {
+  foreach (@depslist) {
     if ($_->name =~ /^$pkgname$/ && $_->flag_upgrade) {
       return $_;
     }
