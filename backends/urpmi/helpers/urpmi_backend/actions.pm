@@ -116,7 +116,7 @@ sub perform_installation {
   print "\@to_install debug : \n\t";
   print join("\n\t", map { urpm_name($_) } @to_install), "\n";
 
-  my $nb_to_install = $#to_install + 1;
+  my $nb_to_install = @to_install;
   my $percentage = 0;
 
   $urpm->{nb_install} = @to_install;
