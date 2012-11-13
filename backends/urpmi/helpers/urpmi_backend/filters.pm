@@ -106,6 +106,7 @@ sub filter_supported {
   my $medianame = $media->{name};
   # FIXME: matching against media name is certainly not optimal,
   #        better heuristics needed...
+  #        could be blacklisting 'contrib' or better check for 'media_type=official'
   my $supported = ($medianame =~ /^(?:core|main)/i);
 
   if ($filter eq FILTER_SUPPORTED && $supported) {
