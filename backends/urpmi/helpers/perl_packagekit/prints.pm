@@ -112,7 +112,7 @@ sub pk_print_distro_upgrade {
 
 sub pk_print_repo_details {
   my ($id, $description, $enabled) = @_;
-  printf("repo-detail\t%s\t%s\t%s\n", $id, $description, $enabled);
+  printf("repo-detail\t%s\t%s\t%s\n", $id, $description, bool2text($enabled));
 }
 
 1;
