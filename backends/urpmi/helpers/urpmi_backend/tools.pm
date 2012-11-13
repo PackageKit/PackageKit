@@ -94,9 +94,13 @@ sub is_mageia() {
     cat_('/etc/release') =~ /Mageia/;
 }
 
+sub vendor() {
+    is_mageia() ? "mageia" : "mandriva";
+}
+
 sub get_package_id {
   my ($pkg) = @_;
-  return $pkg->name . ";" . $pkg->version . "-" . $pkg->release . ";" . $pkg->arch . ";mandriva";
+  return $pkg->name . ";" . $pkg->version . "-" . $pkg->release . ";" . $pkg->arch . vendor();
 }
 
 sub pkg2medium {
@@ -111,7 +115,7 @@ sub fullname_to_package_id {
   my ($pkg_string) = @_;
   chomp($pkg_string);
   if ($pkg_string =~ /^(.*)-([^-]*)-([^-]*)\.([^\.]*)$/) {
-      return $1 . $2 . $3 . $4 . ";mandriva";
+      return $1 . $2 . $3 . $4 . vendor();
   }
 }
 
