@@ -21,6 +21,7 @@ pk_clear_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)
 
 PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
 
 pk_offline_update_SOURCES =				\

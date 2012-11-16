@@ -23,6 +23,7 @@
 #include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 #include <stdlib.h>
 
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
@@ -117,21 +118,50 @@ pk_offline_update_progress_cb (PkProgress *progress,
 {
 	gchar *msg = NULL;
 	gint percentage;
+	PkInfoEnum info;
+	PkPackage *pkg = NULL;
+	PkProgressBar *progressbar = PK_PROGRESS_BAR (user_data);
 
-	if (type != PK_PROGRESS_TYPE_PERCENTAGE)
-		goto out;
-	g_object_get (progress, "percentage", &percentage, NULL);
-	if (percentage < 0)
-		goto out;
+	switch (type) {
+	case PK_PROGRESS_TYPE_ROLE:
+		pk_progress_bar_start (progressbar, "Updating system");
+		break;
+	case PK_PROGRESS_TYPE_PACKAGE:
+		g_object_get (progress, "package", &pkg, NULL);
+		info = pk_package_get_info (pkg);
+		if (info == PK_INFO_ENUM_UPDATING) {
+			msg = g_strdup_printf ("Updating %s",
+					       pk_package_get_name (pkg));
+			pk_progress_bar_start (progressbar, msg);
+		} else if (info == PK_INFO_ENUM_INSTALLING) {
+			msg = g_strdup_printf ("Installing %s",
+					       pk_package_get_name (pkg));
+			pk_progress_bar_start (progressbar, msg);
+		} else if (info == PK_INFO_ENUM_REMOVING) {
+			msg = g_strdup_printf ("Removing %s",
+					       pk_package_get_name (pkg));
+			pk_progress_bar_start (progressbar, msg);
+		}
+		break;
+	case PK_PROGRESS_TYPE_PERCENTAGE:
+		g_object_get (progress, "percentage", &percentage, NULL);
+		if (percentage < 0)
+			goto out;
 
-	/* print on terminal */
-	g_print ("Offline update process %i%% complete\n", percentage);
+		/* print on terminal */
+		pk_progress_bar_set_percentage (progressbar, percentage);
 
-	/* update plymouth */
-	msg = g_strdup_printf ("Update process %i%% complete", percentage);
-	pk_offline_update_set_plymouth_msg (msg);
-	pk_offline_update_set_plymouth_percentage (percentage);
+		/* update plymouth */
+		msg = g_strdup_printf ("Update process %i%% complete", percentage);
+		pk_offline_update_set_plymouth_msg (msg);
+		pk_offline_update_set_plymouth_percentage (percentage);
+		break;
+	default:
+		break;
+	}
 out:
+	if (pkg != NULL)
+		g_object_unref (pkg);
 	g_free (msg);
 }
 
@@ -337,6 +367,7 @@ main (int argc, char *argv[])
 	gint retval;
 	PkResults *results;
 	PkTask *task = NULL;
+	PkProgressBar *progressbar = NULL;
 
 	/* setup */
 	g_type_init ();
@@ -363,6 +394,11 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* use a progress bar when the user presses <esc> in plymouth */
+	progressbar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (progressbar, 25);
+	pk_progress_bar_set_padding (progressbar, 30);
+
 	/* just update the system */
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
@@ -373,7 +409,7 @@ main (int argc, char *argv[])
 					     package_ids,
 					     NULL, /* GCancellable */
 					     pk_offline_update_progress_cb,
-					     NULL, /* user_data */
+					     progressbar, /* user_data */
 					     &error);
 	if (results == NULL) {
 		retval = EXIT_FAILURE;
@@ -382,6 +418,7 @@ main (int argc, char *argv[])
 		g_error_free (error);
 		goto out;
 	}
+	pk_progress_bar_end (progressbar);
 	pk_offline_update_write_results (results);
 
 	/* delete prepared-update file */
@@ -401,6 +438,8 @@ out:
 	pk_offline_update_reboot ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
+	if (progressbar != NULL)
+		g_object_unref (progressbar);
 	if (file != NULL)
 		g_object_unref (file);
 	if (task != NULL)
