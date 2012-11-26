@@ -115,7 +115,7 @@ sub fullname_to_package_id {
   my ($pkg_string) = @_;
   chomp($pkg_string);
   if ($pkg_string =~ /^(.*)-([^-]*)-([^-]*)\.([^\.]*)$/) {
-      return $1 . $2 . $3 . $4 . vendor();
+      return join(';', $1, $2, $3, $4, vendor());
   }
 }
 
