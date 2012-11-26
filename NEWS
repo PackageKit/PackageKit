@@ -1,3 +1,58 @@
+Version 0.8.6
+~~~~~~~~~~~~~
+Released: 2012-11-26
+
+Libraries:
+ - glib: Add pk_package_sack_to_file() to save the sack to disk (Richard Hughes)
+ - glib: Check for failure to copy files when making a service pack (Richard Hughes)
+ - glib: Remove some unused code spotted by coverity (Richard Hughes)
+ - qt: Move the libpackagekit-qt code to a separate project (Richard Hughes)
+
+Backends:
+ - aptcc: Fix valgrind warning about use of uninitialized var (Daniel Nicoletti)
+ - urpmi: Add support Mageia too (& next Mdv Server) (Thierry Vignaud)
+ - urpmi: Fix compilation without UPDATE_SYSTEM (Thierry Vignaud)
+ - urpmi: Fix displaying inverted repo_list status (Thierry Vignaud)
+ - urpmi: Fix filter_installed (Thierry Vignaud)
+ - urpmi: Fix "pkcon repo-list" failing to parse (Thierry Vignaud)
+ - urpmi: Port to the new PkTransactionFlags API (Thierry Vignaud)
+ - urpmi: Use utf8:: functions instead of Encode (Thierry Vignaud)
+ - yum: Don't crash when resolving groups (Richard Hughes)
+ - yum: Don't rely on a blacklist for RequireRestart (Richard Hughes)
+ - yum: Handle NoMoreMirrorsRepoError when using repo.getPackage() (Richard Hughes)
+ - yum: Only emit the package list once when using WhatProvides() with multiple search terms (Richard Hughes)
+ - yum: Use a the error NoPackagesToUpdate when there are no updates available (Richard Hughes)
+ - zif: Don't try to cancel the backend if it's not running (Richard Hughes)
+ - zif: Remove an unused variable spotted by coverity (Richard Hughes)
+
+New Features:
+ - Add a 'make coverity' command to the buildsystem (Richard Hughes)
+ - cnf: Don't search for packages if backend is known to be too slow (Elad Alfassa)
+ - Convert Python scripts to Python3 and make it possible to use Python3 (Matthias Klumpp)
+ - Reinstate 'pkcon list-create' for the service pack functionality (Richard Hughes)
+
+Bugfixes:
+ - Always return the DBus error when input validation fails (Richard Hughes)
+ - Check the return value of fcntl before spawning the helper (Richard Hughes)
+ - cnf: Check for ctrl-d when the user selects a package to install (Richard Hughes)
+ - cnf: Fall back to MaxSearchTime=5000 if the config file is missing (Elad Alfassa)
+ - Correctly match the installed file to a package when checking shared libraries (Richard Hughes)
+ - Correct the pkcon example in the pkgenpack man page (Richard Hughes)
+ - Discard any user input over 64 chars when asking for a package number (Richard Hughes)
+ - Do not abort the transaction if the plugin exits with success (Richard Hughes)
+ - Do not divide by zero if all the time gradients are invalid (Richard Hughes)
+ - Do not send the UpdatesChanged signal for only-download or simulate (Richard Hughes)
+ - Do not try to run the job signal callback when it has been disconnected (Richard Hughes)
+ - Do not use --force for 'pkcon refresh' it gets swallowed by the option parser (Richard Hughes)
+ - Don't throw a cryptic warning when 'pkcon update' has no packages needing an update (Richard Hughes)
+ - Don't try to cancel the backend if it's not running after thread setup (Richard Hughes)
+ - Emit RequireRestart(system) in a PackageKit daemon plugin (Richard Hughes)
+ - Fix a crash on 32bit when using DownloadSizeRemaining (Richard Hughes)
+ - Perform the simulation of spawned transactions correctly (Richard Hughes)
+ - Show a progressbar if the user presses [esc] during the system update to get to text mode (Richard Hughes)
+ - Simplify check for polkit (Ryan Lortie)
+ - Update website C sample for installing packages (Matthias Klumpp)
+
 Version 0.8.5
 ~~~~~~~~~~~~~
 Released: 2012-10-29
