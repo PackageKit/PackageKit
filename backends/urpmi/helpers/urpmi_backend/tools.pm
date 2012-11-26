@@ -100,7 +100,7 @@ sub vendor() {
 
 sub get_package_id {
   my ($pkg) = @_;
-  return $pkg->name . ";" . $pkg->version . "-" . $pkg->release . ";" . $pkg->arch . vendor();
+  return join(';', $pkg->name, $pkg->version . "-" . $pkg->release, $pkg->arch, vendor());
 }
 
 sub pkg2medium {
