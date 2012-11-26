@@ -2,7 +2,7 @@
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [8])
-m4_define([pk_micro_version], [6])
+m4_define([pk_micro_version], [7])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
