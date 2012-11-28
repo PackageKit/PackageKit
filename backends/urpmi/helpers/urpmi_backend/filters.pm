@@ -106,9 +106,18 @@ sub filter_free {
   return 0 unless defined($media);
 
   my $medianame = $media->{name};
-  # FIXME: matching against media name is certainly not optimal,
-  #        better heuristics needed...
-  my $free = $medianame !~ /non-free/i;
+  my $free;
+  if ($media->{mediacfg}) {
+      my @media_types;
+      my ($distribconf, $media_path) = @{$media->{mediacfg}};
+      warn ">> (distribconf, media_path) = ($distribconf, $media_path)\n";
+      @media_types = split(':', $distribconf->getvalue($media_path, 'media_type')) if $distribconf;
+      $free = member('free', @media_types);
+  } else {
+      # FIXME: matching against media name is certainly not optimal,
+      #        better heuristics needed...
+      $free = $medianame !~ /non-free/i;
+  }
 
   return 1 if $filter eq FILTER_FREE && $free;
   return 1 if $filter eq FILTER_NOT_FREE && !$free;
