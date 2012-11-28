@@ -103,6 +103,7 @@ sub get_package_id {
   return join(';', $pkg->name, $pkg->version . "-" . $pkg->release, $pkg->arch, vendor());
 }
 
+# From Rpmdrake::formatting:
 sub pkg2medium {
   my ($p, $urpm) = @_;
   return if !ref $p;
