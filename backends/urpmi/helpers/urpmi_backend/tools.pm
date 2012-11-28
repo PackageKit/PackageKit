@@ -161,11 +161,9 @@ sub get_installed_fullname_pkid {
   my $pkgname = $pkg->name;
   my $db = open_rpm_db();
   my $installed_pkid;
-  $db->traverse(sub {
+  $db->traverse_tag_find('name', $pkgname, sub {
       my ($pkg) = @_;
-      if ($pkg->name =~ /^$pkgname$/) {
-        $installed_pkid = get_package_id($pkg);
-      }
+      $installed_pkid = get_package_id($pkg);
     });
   return $installed_pkid;
 }
