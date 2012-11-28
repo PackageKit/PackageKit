@@ -422,27 +422,20 @@ sub remove_packages {
   my ($urpm, $args) = @_;
 
   my $notfound = 0;
-  my $notfound_callback = sub {
-    $notfound = 1;
-  };
+  my $notfound_callback = sub { $notfound = 1 };
 
   my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 
   my $allowdeps_option = $args->[0] eq "yes" ? 1 : 0;
   my @packageidstab = split(/&/, $args->[1]);
 
-  my @names;
-  foreach (@packageidstab) {
-    my @pkg_id = split(/;/, $_);
-    push @names, $pkg_id[0];
-  }
+  my @names = map { (split(/;/, $_))[0] } @packageidstab;
 
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
-  my $state = {};
   my @breaking_pkgs;
   my @to_remove = urpm::select::find_packages_to_remove($urpm,
-    $state,
+    {},
     \@names,
     callback_notfound => $notfound_callback,
     callback_fuzzy => $notfound_callback,
