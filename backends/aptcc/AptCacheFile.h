@@ -47,11 +47,11 @@ public:
     /**
       * This routine generates the caches and then opens the dependency cache
       * and verifies that the system is OK.
-      * @param FixBroken when true it will try to perform the instalation
+      * @param AllowBroken when true it will try to perform the instalation
       * even if we have broken packages, when false it will try to fix
       * the current situation
       */
-    bool CheckDeps(bool FixBroken = false);
+    bool CheckDeps(bool AllowBroken = false);
 
     /**
      * Mark Cache for dist-upgrade
@@ -79,10 +79,36 @@ public:
     inline pkgDepCache* GetDepCache() { BuildCaches(); BuildPolicy(); BuildDepCache(); return DCache; }
 
     /**
+     * DoAutomaticRemove - Remove all automatic unused packages
+     *
+     * Remove unused automatic packages
+     */
+    bool doAutomaticRemove();
+
+    /**
+     * Checks if there are Essential packages marked to be removed
+     */
+    bool isRemovingEssentialPackages();
+
+    /**
+     * Tries to find a package with the given packageId
+     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
+     */
+    pkgCache::VerIterator resolvePkgID(const gchar *packageId);
+
+    /**
      * Tries to find the candidate version of a package
      * @returns pkgCache::VerIterator, if .end() is true the version could not be found
      */
     pkgCache::VerIterator findCandidateVer(const pkgCache::PkgIterator &pkg);
+
+    /**
+     * Tries to find the current version of a package
+     * if it can't find it will return the candidate
+     * TODO check if we really need the candidate version
+     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
+     */
+    pkgCache::VerIterator findVer(const pkgCache::PkgIterator &pkg);
 
     /** \return a short description string corresponding to the given
      *  version.

@@ -20,6 +20,7 @@
 #include "AptCacheFile.h"
 
 #include "apt-utils.h"
+#include "apt-messages.h"
 #include "OpPackageKitProgress.h"
 
 #include <apt-pkg/algorithms.h>
@@ -62,36 +63,47 @@ bool AptCacheFile::BuildCaches(bool withLock)
     return pkgCacheFile::BuildCaches(&progress, withLock);
 }
 
-bool AptCacheFile::CheckDeps(bool FixBroken)
+bool AptCacheFile::CheckDeps(bool AllowBroken)
 {
+    PkRoleEnum role = pk_backend_job_get_role(m_job);
+    bool FixBroken = (role == PK_ROLE_ENUM_REPAIR_SYSTEM);
+
     if (_error->PendingError() == true) {
         return false;
     }
 
     // Check that the system is OK
     if (DCache->DelCount() != 0 || DCache->InstCount() != 0) {
-        return _error->Error("Internal error, non-zero counts");
+        _error->Error("Internal error, non-zero counts");
+        show_errors(m_job, PK_ERROR_ENUM_INTERNAL_ERROR);
+        return false;
     }
 
     // Apply corrections for half-installed packages
     if (pkgApplyStatus(*DCache) == false) {
-        return _error->Error("Unable to apply corrections for half-installed packages");;
+        _error->Error("Unable to apply corrections for half-installed packages");;
+        show_errors(m_job, PK_ERROR_ENUM_INTERNAL_ERROR);
+        return false;
     }
 
     // Nothing is broken or we don't want to try fixing it
-    if (DCache->BrokenCount() == 0 || FixBroken == false) {
+    if (DCache->BrokenCount() == 0 || AllowBroken == true) {
         return true;
     }
 
     // Attempt to fix broken things
     if (pkgFixBroken(*DCache) == false || DCache->BrokenCount() != 0) {
         // We failed to fix the cache
-        ShowBroken(true);
+        ShowBroken(true, PK_ERROR_ENUM_UNFINISHED_TRANSACTION);
 
-        return _error->Error("Unable to correct dependencies");
+        g_warning("Unable to correct dependencies");
+        return false;
     }
+
     if (pkgMinimizeUpgrade(*DCache) == false) {
-        return _error->Error("Unable to minimize the upgrade set");
+        g_warning("Unable to minimize the upgrade set");
+        show_errors(m_job, PK_ERROR_ENUM_INTERNAL_ERROR);
+        return false;
     }
 
     // Fixing the cache is DONE no errors were found
@@ -241,6 +253,148 @@ void AptCacheFile::buildPkgRecords()
 
     // Create the text record parser
     m_packageRecords = new pkgRecords(*this);
+}
+
+bool AptCacheFile::doAutomaticRemove()
+{
+    pkgDepCache::ActionGroup group(*this);
+
+    // look over the cache to see what can be removed
+    for (pkgCache::PkgIterator Pkg = (*this)->PkgBegin(); ! Pkg.end(); ++Pkg) {
+        if ((*this)[Pkg].Garbage) {
+            if (Pkg.CurrentVer() != 0 &&
+                    Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+                // TODO, packagekit could provide a way to purge
+                (*this)->MarkDelete(Pkg, false);
+            } else {
+                (*this)->MarkKeep(Pkg, false, false);
+            }
+        }
+    }
+
+    // Now see if we destroyed anything
+    if ((*this)->BrokenCount() != 0) {
+        cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
+                "shouldn't happen. Please file a bug report against apt." << endl;
+        // TODO call show_broken
+        //       ShowBroken(c1out,cache,false);
+        return _error->Error("Internal Error, AutoRemover broke stuff");
+    }
+
+    return true;
+}
+
+bool AptCacheFile::isRemovingEssentialPackages()
+{
+    string List;
+    bool *Added = new bool[(*this)->Head().PackageCount];
+    for (unsigned int I = 0; I != (*this)->Head().PackageCount; ++I) {
+        Added[I] = false;
+    }
+
+    for (pkgCache::PkgIterator I = (*this)->PkgBegin(); ! I.end(); ++I) {
+        if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential &&
+                (I->Flags & pkgCache::Flag::Important) != pkgCache::Flag::Important) {
+            continue;
+        }
+
+        if ((*this)[I].Delete() == true) {
+            if (Added[I->ID] == false) {
+                Added[I->ID] = true;
+                List += string(I.Name()) + " ";
+            }
+        }
+
+        if (I->CurrentVer == 0) {
+            continue;
+        }
+
+        // Print out any essential package depenendents that are to be removed
+        for (pkgCache::DepIterator D = I.CurrentVer().DependsList(); D.end() == false; ++D) {
+            // Skip everything but depends
+            if (D->Type != pkgCache::Dep::PreDepends &&
+                    D->Type != pkgCache::Dep::Depends){
+                continue;
+            }
+
+            pkgCache::PkgIterator P = D.SmartTargetPkg();
+            if ((*this)[P].Delete() == true)
+            {
+                if (Added[P->ID] == true){
+                    continue;
+                }
+                Added[P->ID] = true;
+
+                char S[300];
+                snprintf(S, sizeof(S), "%s (due to %s) ", P.Name(), I.Name());
+                List += S;
+            }
+        }
+    }
+
+    delete [] Added;
+    if (!List.empty()) {
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                                  g_strdup_printf("WARNING: You are trying to remove the "
+                                                  "following essential packages: %s",
+                                                  List.c_str()));
+        return true;
+    }
+
+    return false;
+}
+
+pkgCache::VerIterator AptCacheFile::resolvePkgID(const gchar *packageId)
+{
+    gchar **parts;
+    pkgCache::PkgIterator pkg;
+
+    parts = pk_package_id_split(packageId);
+    pkg = (*this)->FindPkg(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
+
+    // Ignore packages that could not be found or that exist only due to dependencies.
+    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+        g_strfreev(parts);
+        return pkgCache::VerIterator();
+    }
+
+    const pkgCache::VerIterator &ver = findVer(pkg);
+    // check to see if the provided package isn't virtual too
+    if (ver.end() == false &&
+            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
+        g_strfreev(parts);
+        return ver;
+    }
+
+    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
+    // check to see if the provided package isn't virtual too
+    if (candidateVer.end() == false &&
+            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
+        g_strfreev(parts);
+        return candidateVer;
+    }
+
+    g_strfreev (parts);
+
+    return ver;
+}
+
+pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)
+{
+    // if the package is installed return the current version
+    if (!pkg.CurrentVer().end()) {
+        return pkg.CurrentVer();
+    }
+
+    // Else get the candidate version iterator
+    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
+    if (!candidateVer.end()) {
+        return candidateVer;
+    }
+
+    // return the version list as a last resource
+    return pkg.VersionList();
 }
 
 pkgCache::VerIterator AptCacheFile::findCandidateVer(const pkgCache::PkgIterator &pkg)

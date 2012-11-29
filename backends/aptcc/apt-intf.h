@@ -59,14 +59,6 @@ public:
     pkgCache::VerIterator findPackageId(const gchar *packageId);
 
     /**
-     * Tries to find the current version of a package
-     * if it can't find it will return the candidate
-     * TODO check if we really need the candidate version
-     * @returns pkgCache::VerIterator, if .end() is true the version could not be found
-     */
-    pkgCache::VerIterator findVer(const pkgCache::PkgIterator &pkg);
-
-    /**
      * Tries to find a list of packages mathing the package ids
      * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
      */
@@ -88,7 +80,7 @@ public:
     /**
       * Marks the given packages as auto installed
       */
-    void markAutoInstalled(AptCacheFile &cache, const PkgList &pkgs);
+    void markAutoInstalled(const PkgList &pkgs);
 
     /**
      *  runs a transaction to install/remove/update packages
@@ -144,6 +136,12 @@ public:
       * Returns a list of all packages that matched contains the given files
       */
     PkgList searchPackageFiles(gchar **values);
+
+    /**
+      * Returns a list of all packages that can be updated
+      * Pass a PkgList to get the blocked updates as well
+      */
+    PkgList getUpdates(PkgList &blocked);
 
     /**
      *  Emits a package with the given state
@@ -208,7 +206,7 @@ public:
     /**
       *  Download and install packages
       */
-    bool installPackages(AptCacheFile &cache, PkBitfield flags, bool autoremove);
+    bool installPackages(PkBitfield flags, bool autoremove);
 
     /**
      *  Install a DEB file
@@ -239,26 +237,23 @@ public:
      */
     bool getArchive(pkgAcquire *Owner, pkgCache::VerIterator const &Version,
                     std::string directory, std::string &StoreFilename);
+    
+    AptCacheFile* aptCacheFile() const;
 
 private:
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
-    void tryToRemove(const pkgCache::VerIterator &ver,
-                     pkgDepCache &Cache,
-                     pkgProblemResolver &Fix);
-    bool tryToInstall(const pkgCache::VerIterator &ver,
-                      pkgDepCache &Cache,
-                      pkgProblemResolver &Fix,
-                      bool BrokenFix,
-                      unsigned int &ExpectedInst);
+    void tryToRemove(pkgProblemResolver &Fix,
+                     const pkgCache::VerIterator &ver);
+    bool tryToInstall(pkgProblemResolver &Fix,
+                      const pkgCache::VerIterator &ver,
+                      bool BrokenFix);
 
     /**
      *  interprets dpkg status fd
      */
     void updateInterface(int readFd, int writeFd);
-    bool doAutomaticRemove(AptCacheFile &cache);
-    bool removingEssentialPackages(AptCacheFile &cache);
-    PkgList checkChangedPackages(AptCacheFile &cache, bool emitChanged);
+    PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
     AptCacheFile *m_cache;
