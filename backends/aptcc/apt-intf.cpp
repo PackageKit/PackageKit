@@ -23,6 +23,7 @@
 
 #include "apt-intf.h"
 
+#include <apt-pkg/init.h>
 #include <apt-pkg/error.h>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/pkgsystem.h>
@@ -53,14 +54,13 @@ AptIntf::AptIntf(PkBackendJob *job) :
     m_job(job),
     m_cancel(false),
     m_terminalTimeout(120),
-    m_lastSubProgress(0)
+    m_lastSubProgress(0),
+    m_cache(0)
 {
     m_cancel = false;
 
     // Make sure initial m_time is 0
     m_restartStat.st_mtime = 0;
-
-    m_cache = new AptCacheFile(job);
 }
 
 bool AptIntf::init()
@@ -68,6 +68,13 @@ bool AptIntf::init()
     gchar *locale;
     gchar *http_proxy;
     gchar *ftp_proxy;
+    
+    // pkgInitSystem is needed to compare the changelog verstion to
+    // current package using DoCmpVersion()
+    if (pkgInitConfig(*_config) == false ||
+            pkgInitSystem(*_config, _system) == false) {
+        g_debug("ERROR initializing backend");
+    }
 
     m_isMultiArch = APT::Configuration::getArchitectures(false).size() > 1;
 
@@ -92,6 +99,9 @@ bool AptIntf::init()
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
     setenv("ftp_proxy", ftp_proxy, 1);
     g_free(ftp_proxy);
+
+    // Create the AptCacheFile class to search for packages
+    m_cache = new AptCacheFile(m_job);
 
     // Tries to open the cache
     bool ret;
@@ -2071,6 +2081,8 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
         return ret;
     }
 
+    bool deps = m_cache->CheckDeps(true);
+    cout << "m_cache->CheckDeps(true)" << deps << endl;
     for (uint i = 0; i < g_strv_length(package_ids); ++i) {
         if (m_cancel) {
             break;

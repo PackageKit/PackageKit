@@ -20,7 +20,6 @@
  */
 
 #include <stdio.h>
-#include <apt-pkg/init.h>
 
 #include <config.h>
 #include <pk-backend.h>
@@ -68,11 +67,6 @@ pk_backend_supports_parallelization (PkBackend *backend)
 void pk_backend_initialize(PkBackend *backend)
 {
     g_debug("APTcc Initializing");
-
-    if (pkgInitConfig(*_config) == false ||
-            pkgInitSystem(*_config, _system) == false) {
-        g_debug("ERROR initializing backend");
-    }
 
     // Disable apt-listbugs as it freezes PK
     setenv("APT_LISTBUGS_FRONTEND", "none", 1);
@@ -372,12 +366,6 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
         pk_backend_job_finished(job);
         apt->emitFinished();
         return;
-    }
-
-    if (role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-        // this is needed to compare the changelog verstion to
-        // current package using DoCmpVersion()
-        pkgInitSystem(*_config, _system);
     }
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
