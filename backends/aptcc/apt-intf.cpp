@@ -2366,6 +2366,8 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
  */
 bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
 {
+    bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+
     //cout << "installPackages() called" << endl;
     // Try to auto-remove packages
     if (autoremove && !m_cache->doAutomaticRemove()) {
@@ -2397,21 +2399,17 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         return false;
     }
 
-    // Lock the archive directory
-    FileFd Lock;
-    if (_config->FindB("Debug::NoLocking", false) == false) {
-        Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
-        if (_error->PendingError() == true) {
-            return _error->Error("Unable to lock the download directory");
-        }
-    }
-
     // Create the download object
     AcqPackageKitStatus Stat(this, m_job);
 
     // get a fetcher
     pkgAcquire fetcher;
-    fetcher.Setup(&Stat);
+    if (!simulate) {
+        // Only lock the archive directory if we will download
+        if (fetcher.Setup(&Stat, _config->FindDir("Dir::Cache::Archives")) == false) {
+            return false;
+        }
+    }
     
     // Read the source list
     if (m_cache->BuildSourceList() == false) {
@@ -2467,11 +2465,11 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     }
 
     // Make sure we are not installing any untrusted package is untrusted is not set
-    if (!checkTrusted(fetcher, flags) && !pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+    if (!checkTrusted(fetcher, flags) && !simulate) {
         return false;
     }
 
-    if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+    if (simulate) {
         // Print out a list of packages that are going to be installed extra
         checkChangedPackages(true);
 
