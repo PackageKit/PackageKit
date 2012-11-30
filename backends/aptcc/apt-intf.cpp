@@ -1494,21 +1494,28 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
     if (untrusted.empty()) {
         return true;
     } else if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+        // We are just simulating and have untrusted packages emit them
+        // and return true to continue processing
         emitPackages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
-    }
 
-    if (!pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+        return true;
+    } else if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+        // We are NOT simulating and have untrusted packages
+        // fail the transaction.
+        string warning("The following packages cannot be authenticated:\n");
+        warning += UntrustedList;
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+                                  warning.c_str());
+        _error->Discard();
+
+        return false;
+    } else {
+        // We are NOT simulating and have untrusted packages
+        // But the user didn't set ONLY_TRUSTED flag
         g_debug ("Authentication warning overridden.\n");
         return true;
     }
-
-    string warning("The following packages cannot be authenticated:\n");
-    warning += UntrustedList;
-    pk_backend_job_error_code(m_job,
-                              PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
-                              warning.c_str());
-    _error->Discard();
-    return false;
 }
 
 void AptIntf::tryToRemove(pkgProblemResolver &Fix,
