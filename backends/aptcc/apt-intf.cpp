@@ -2079,6 +2079,12 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
 
 void AptIntf::refreshCache()
 {
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_REFRESH_CACHE);
+    
+    if (m_cache->BuildSourceList() == false) {
+        return;
+    }
+    
     // Create the progress
     AcqPackageKitStatus Stat(this, m_job);
 
@@ -2086,11 +2092,8 @@ void AptIntf::refreshCache()
     ListUpdate(Stat, *m_cache->GetSourceList());
 
     // Rebuild the cache.
-    AptCacheFile cache(m_job);
-    if (cache.BuildCaches(true) == false) {
-        if (_error->PendingError() == true) {
-            show_errors(m_job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
-        }
+    pkgCacheFile::RemoveCaches();
+    if (m_cache->BuildCaches() == false) {
         return;
     }
 

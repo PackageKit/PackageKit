@@ -634,20 +634,11 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
         return;
     }
 
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-    // Lock the list directory
-    FileFd Lock;
-    if (_config->FindB("Debug::NoLocking", false) == false) {
-        Lock.Fd(GetLock(_config->FindDir("Dir::State::Lists") + "lock"));
-        if (_error->PendingError() == true) {
-            pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_LOCK, "Unable to lock the list directory");
-            apt->emitFinished();
-            return;
-            // 	 return _error->Error(_("Unable to lock the list directory"));
-        }
-    }
-
     apt->refreshCache();
+    
+    if (_error->PendingError() == true) {
+        show_errors(job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
+    }
 
     apt->emitFinished();
 }
