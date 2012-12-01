@@ -26,6 +26,8 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 
+#include <apt-pkg/init.h>
+
 #include "apt-intf.h"
 #include "AptCacheFile.h"
 #include "apt-messages.h"
@@ -74,6 +76,10 @@ void pk_backend_initialize(PkBackend *backend)
     // Set apt-listchanges frontend to "debconf" to make it's output visible
     // (without using the debconf frontend, PK will freeze)
     setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
+
+    // Make sure the config is ready for the get-filters
+    // call which needs to know about multi-arch
+    pkgInitConfig(*_config);
 
     spawn = pk_backend_spawn_new();
 //     pk_backend_spawn_set_job(spawn, backend);
