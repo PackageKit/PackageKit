@@ -1548,6 +1548,7 @@ bool AptIntf::tryToInstall(pkgProblemResolver &Fix,
     pkgCache::PkgIterator Pkg = ver.ParentPkg();
 
     // Check if there is something at all to install
+    m_cache->GetDepCache()->SetCandidateVersion(ver);
     pkgDepCache::StateCache &State = (*m_cache)[Pkg];
 
     if (State.CandidateVer == 0) {
@@ -1566,14 +1567,6 @@ bool AptIntf::tryToInstall(pkgProblemResolver &Fix,
 
     // Install it
     m_cache->GetDepCache()->MarkInstall(Pkg, false);
-
-    // 	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
-    // Install it with autoinstalling enabled (if we not respect the minial
-    // required deps or the policy)
-    if ((State.InstBroken() == true || State.InstPolicyBroken() == true) &&
-            BrokenFix == false) {
-        m_cache->GetDepCache()->MarkInstall(Pkg,true);
-    }
 
     return true;
 }
