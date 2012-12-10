@@ -2420,21 +2420,17 @@ bool AptIntf::installPackages(AptCacheFile &cache, bool simulating)
         return false;
     }
 
-    // Lock the archive directory
-    FileFd Lock;
-    if (_config->FindB("Debug::NoLocking", false) == false) {
-        Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
-        if (_error->PendingError() == true) {
-            return _error->Error("Unable to lock the download directory");
-        }
-    }
-
     // Create the download object
     AcqPackageKitStatus Stat(this, m_backend, m_cancel);
 
     // get a fetcher
     pkgAcquire fetcher;
-    fetcher.Setup(&Stat);
+    if (!simulating) {
+        // Only lock the archive directory if we will download
+        if (fetcher.Setup(&Stat, _config->FindDir("Dir::Cache::Archives")) == false) {
+            return false;
+        }
+    }
 
     // Create the package manager and prepare to download
     SPtr<pkgPackageManager> PM = _system->CreatePM(cache);
