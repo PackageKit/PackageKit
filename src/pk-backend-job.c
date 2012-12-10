@@ -1056,81 +1056,6 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 }
 
 /**
- * pk_backend_job_package_emulate_finished:
- **/
-static gboolean
-pk_backend_job_package_emulate_finished (PkBackendJob *job)
-{
-	gboolean ret = FALSE;
-	PkPackage *item;
-	PkInfoEnum info;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
-
-	/* first package in transaction */
-	item = job->priv->last_package;
-	if (item == NULL)
-		goto out;
-
-	/* get data */
-	g_object_get (item,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
-
-	/* already finished */
-	if (info == PK_INFO_ENUM_FINISHED)
-		goto out;
-
-	/* only makes sense for some values */
-	if (info == PK_INFO_ENUM_DOWNLOADING ||
-	    info == PK_INFO_ENUM_UPDATING ||
-	    info == PK_INFO_ENUM_INSTALLING ||
-	    info == PK_INFO_ENUM_REMOVING ||
-	    info == PK_INFO_ENUM_CLEANUP ||
-	    info == PK_INFO_ENUM_OBSOLETING ||
-	    info == PK_INFO_ENUM_REINSTALLING ||
-	    info == PK_INFO_ENUM_DOWNGRADING) {
-		pk_backend_job_package (job,
-					PK_INFO_ENUM_FINISHED,
-					package_id,
-					summary);
-		ret = TRUE;
-	}
-out:
-	g_free (package_id);
-	g_free (summary);
-	return ret;
-}
-
-/**
- * pk_backend_job_package_emulate_finished_for_package:
- **/
-static gboolean
-pk_backend_job_package_emulate_finished_for_package (PkBackendJob *job, PkPackage *item)
-{
-	gboolean ret = FALSE;
-
-	/* first package in transaction */
-	if (job->priv->last_package == NULL) {
-		g_debug ("first package, so no finished");
-		goto out;
-	}
-
-	/* same package, just info change */
-	if (pk_package_equal_id (job->priv->last_package, item)) {
-		g_debug ("same package_id, ignoring");
-		goto out;
-	}
-
-	/* emit the old package as finished */
-	ret = pk_backend_job_package_emulate_finished (job);
-out:
-	return ret;
-}
-
-/**
  * pk_backend_strsafe:
  * @text: The input text to make safe
  *
@@ -1206,10 +1131,6 @@ pk_backend_job_package (PkBackendJob *job,
 		g_debug ("skipping duplicate %s", package_id);
 		goto out;
 	}
-
-	/* simulate the finish here when required */
-	if (info != PK_INFO_ENUM_FINISHED)
-		pk_backend_job_package_emulate_finished_for_package (job, item);
 
 	/* update the 'last' package */
 	if (job->priv->last_package != NULL)
@@ -2087,9 +2008,6 @@ pk_backend_job_finished (PkBackendJob *job)
 				    "Backends should send status <value> signals for %s!", role_text);
 		g_warning ("GUI will remain unchanged!");
 	}
-
-	/* emulate the last finished package if not done already */
-	pk_backend_job_package_emulate_finished (job);
 
 	/* make any UI insensitive */
 	pk_backend_job_set_allow_cancel (job, FALSE);
