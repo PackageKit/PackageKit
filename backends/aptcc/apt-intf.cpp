@@ -1433,9 +1433,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
         // We are just simulating and have untrusted packages emit them
         // and return true to continue processing
         emitPackages(untrusted, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UNTRUSTED);
-    }
-
-    if (pk_backend_get_bool(m_backend, "only_trusted")) {
+    } else if (pk_backend_get_bool(m_backend, "only_trusted")) {
          // We are NOT simulating and have untrusted packages
          // fail the transaction.
          string warning("The following packages cannot be authenticated:\n");
@@ -1452,8 +1450,6 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, bool simulating)
          g_debug ("Authentication warning overridden.\n");
          return true;
     }
-
-    return false;
 }
 
 void AptIntf::tryToRemove(const pkgCache::VerIterator &ver,
