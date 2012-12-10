@@ -1479,7 +1479,6 @@ void AptIntf::tryToRemove(const pkgCache::VerIterator &ver,
     Cache.MarkDelete(Pkg, false);
 }
 
-
 bool AptIntf::tryToInstall(const pkgCache::VerIterator &ver,
                            pkgDepCache &Cache,
                            pkgProblemResolver &Fix,
@@ -1489,6 +1488,7 @@ bool AptIntf::tryToInstall(const pkgCache::VerIterator &ver,
     pkgCache::PkgIterator Pkg = ver.ParentPkg();
 
     // Check if there is something at all to install
+    Cache.SetCandidateVersion(ver);
     pkgDepCache::StateCache &State = Cache[Pkg];
 
     if (State.CandidateVer == 0) {
@@ -1509,14 +1509,6 @@ bool AptIntf::tryToInstall(const pkgCache::VerIterator &ver,
     Cache.MarkInstall(Pkg, false);
     if (State.Install() == true) {
         ExpectedInst++;
-    }
-
-    // 	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
-    // Install it with autoinstalling enabled (if we not respect the minial
-    // required deps or the policy)
-    if ((State.InstBroken() == true || State.InstPolicyBroken() == true) &&
-            BrokenFix == false) {
-        Cache.MarkInstall(Pkg,true);
     }
 
     return true;
