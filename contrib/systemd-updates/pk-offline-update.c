@@ -146,8 +146,6 @@ pk_offline_update_progress_cb (PkProgress *progress,
 		pk_progress_bar_set_percentage (progressbar, percentage);
 
 		/* update plymouth */
-		msg = g_strdup_printf ("Update process %i%% complete", percentage);
-		pk_offline_update_set_plymouth_msg (msg);
 		pk_offline_update_set_plymouth_percentage (percentage);
 		break;
 	default:
