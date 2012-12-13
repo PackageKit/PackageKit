@@ -358,7 +358,8 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	/* connect to changed as libnm-glib is teh suc */
 	nstack_nm->priv->proxy_changed =
 		g_dbus_proxy_new_sync (nstack_nm->priv->bus,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+				       G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
 				       NULL,
 				       "org.freedesktop.NetworkManager",
 				       "/org/freedesktop/NetworkManager",
