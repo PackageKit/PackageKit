@@ -922,7 +922,7 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	/* emit */
 	pk_engine_emit_property_changed (engine,
 					 "NetworkState",
-					 g_variant_new_string (pk_network_enum_to_string (network_state)));
+					 g_variant_new_uint32 (network_state));
 	pk_engine_emit_changed (engine);
 }
 
