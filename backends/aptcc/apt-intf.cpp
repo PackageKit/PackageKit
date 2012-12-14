@@ -1706,12 +1706,23 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 continue;
             }
 
+            // Since PackageKit doesn't emulate finished anymore
+            // we need to manually do it here, as at this point
+            // dpkg doesn't process two packages at the same time
+            if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
+                const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                if (!ver.end()) {
+                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                }
+                m_lastSubProgress = 0;
+            }
+
             // first check for errors and conf-file prompts
             if (strstr(status, "pmerror") != NULL) {
                 // error from dpkg
                 pk_backend_job_error_code(m_job,
-                                      PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
-                                      str);
+                                          PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
+                                          str);
             } else if (strstr(status, "pmconffile") != NULL) {
                 // conffile-request from dpkg, needs to be parsed different
                 int i=0;
@@ -1863,14 +1874,6 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 } else if (starts_with(str, "Preparing")) {
                     // Preparing to Install/configure
                     // cout << "Found Preparing! " << line << endl;
-                    // if last package is different then finish it
-                    if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
-                        // cout << "FINISH the last package: " << m_lastPackage << endl;
-                        const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
-                        if (!ver.end()) {
-                            emitPackage(ver, PK_INFO_ENUM_FINISHED);
-                        }
-                    }
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
                         emitPackage(ver, PK_INFO_ENUM_PREPARING);
