@@ -315,6 +315,8 @@ pk_task_package_filter_cb (PkPackage *package, gpointer user_data)
 	return TRUE;
 }
 
+static void pk_task_do_async_simulate_action (PkTaskState *state);
+
 /**
  * pk_task_simulate_ready_cb:
  **/
@@ -357,6 +359,15 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 
 	/* get exit code */
 	state->exit_enum = pk_results_get_exit_code (state->results);
+	if (state->exit_enum == PK_EXIT_ENUM_NEED_UNTRUSTED) {
+		g_debug ("retrying with !only-trusted");
+		pk_bitfield_remove (state->transaction_flags,
+				    PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+		/* retry this */
+		pk_task_do_async_simulate_action (state);
+		goto out;
+	}
+
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		/* we 'fail' with success so the appication gets a
 		 * chance to process the PackageKit-specific
