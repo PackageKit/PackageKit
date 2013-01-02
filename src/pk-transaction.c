@@ -2876,6 +2876,8 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	 * packages or if we're running unit tests */
 	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD) ||
+	    pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
 	    priv->skip_auth_check == TRUE) {
 		g_debug ("No authentication required");
 		ret = pk_transaction_commit (transaction);
