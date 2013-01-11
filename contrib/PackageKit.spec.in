@@ -239,6 +239,7 @@ user to restart the computer or remove and re-insert the device.
         --with-default-backend=auto \
         --disable-local \
         --disable-strict \
+        --disable-silent-rules \
         --disable-tests
 
 make %{?_smp_mflags}
