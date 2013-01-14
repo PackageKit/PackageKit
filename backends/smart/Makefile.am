@@ -1,4 +1,4 @@
-INCLUDES = \
+AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"PackageKit-Smart\"
 
 helperdir = $(datadir)/PackageKit/helpers/smart

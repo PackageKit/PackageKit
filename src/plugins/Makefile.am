@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
 
-INCLUDES =						\
+AM_CPPFLAGS =						\
 	$(GIO_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\

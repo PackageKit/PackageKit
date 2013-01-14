@@ -16,7 +16,7 @@ pk-debuginfo-install.1: pk-debuginfo-install.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
-INCLUDES =						\
+AM_CPPFLAGS =						\
 	$(GLIB_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DPK_COMPILATION				\

@@ -73,7 +73,7 @@ expand_content_files=
 # CFLAGS and LDFLAGS for compiling gtkdoc-scangobj with your library.
 # Only needed if you are using gtkdoc-scangobj to dynamically query widget
 # signals and properties.
-INCLUDES =						\
+AM_CPPFLAGS =						\
 	$(POLKIT_CFLAGS)				\
 	$(DBUS_CFLAGS)					\
 	$(GLIB_CFLAGS)					\

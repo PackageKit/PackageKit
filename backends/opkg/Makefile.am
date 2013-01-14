@@ -1,4 +1,4 @@
-INCLUDES = \
+AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"PackageKit-Opkg\"
 
 plugindir = $(PK_PLUGIN_DIR)

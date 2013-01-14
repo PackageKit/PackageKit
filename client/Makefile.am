@@ -28,7 +28,7 @@ pkgenpack.1: pkgenpack.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
-INCLUDES =						\
+AM_CPPFLAGS =						\
 	$(GLIB_CFLAGS)					\
 	$(GIO_CFLAGS)					\
 	$(DBUS_CFLAGS)					\

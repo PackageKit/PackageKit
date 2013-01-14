@@ -3,7 +3,7 @@ dist_helper_DATA = 			\
 	zif-comps-groups.conf		\
 	licenses.txt
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit-Zif\"			\
 	-DPK_COMPILATION					\

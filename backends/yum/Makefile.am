@@ -6,7 +6,7 @@ dist_helper_DATA = 			\
 	yumComps.py			\
 	yumFilter.py
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit-Yum\"			\
 	-DPK_COMPILATION					\

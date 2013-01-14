@@ -16,7 +16,7 @@ pk-device-rebind.1: pk-device-rebind.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
-INCLUDES =						\
+AM_CPPFLAGS =						\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	$(GLIB_CFLAGS)					\
 	$(GUDEV_CFLAGS)					\
