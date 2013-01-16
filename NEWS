@@ -1,3 +1,45 @@
+Version 0.8.7
+~~~~~~~~~~~~~
+Released: 2013-01-16
+
+Backends:
+ - aptcc: Fix a remaining lock that was being left on the archive directory (Daniel Nicoletti)
+ - aptcc: Fix bug that caused the resolver wanted to remove some random packages (Daniel Nicoletti)
+ - aptcc: Fix bug that was marking some packages as auto-installed and confused the resolver (Daniel Nicoletti)
+ - aptcc: Fix build when using AM_CPPFLAGS (Alban Browaeys)
+ - aptcc: Fix crash caused by trying to Close the AptCacheFile that wasn't opened (Daniel Nicoletti)
+ - aptcc: Fix trusted packages not being emitted when an untrusted package was available (Daniel Nicoletti)
+ - aptcc: Make sure we init the config files so the Arch filter is properly set (Daniel Nicoletti)
+ - aptcc: Make the refresh cache code the same of apt-get (Daniel Nicoletti)
+ - aptcc: Since PackageKit doesn't emulate finished anymore we need to finish the package when installing (Daniel Nicoletti)
+ - urpm: (fullname_to_package_id) fix missing ";" (tv)
+ - urpm: (get_package_id) fix missing ";" (tv)
+ - urpmi: fix alt text for bad status (tv)
+ - urpmi: fix alt text for good status (tv)
+ - urpmi: fix filtering free/non-free packages (tv)
+ - urpmi: fix getting media of first non installed package (tv)
+ - urpmi: _huge_ speed up when retrieving ID of an installed package (tv)
+ - urpmi: tell from where pkg2medium() come (tv)
+ - urpmi: update status (tv)
+ - zypp: always solve dependencies with 'IgnoreAlreadyRecommended ON' (bnc#747751) (Michael Andres)
+ - zypp: check for best architecture and version when looking for the 'newest' package (Michael Andres)
+ - zypp: finish port of backend to 0.8 API (Stephan Kulow)
+ - zypp: match the patch name to prevent an internal error (Gary Ching-Pang Lin)
+ - zypp: return package list ordered witht respect to solver policies (Michael Andres)
+ - zypp: TODO is old and outdated, removed (Stephan Kulow)
+
+Bugfixes:
+ - Do not ask for authentication when the transaction is being simulated (Richard Hughes)
+ - Do not connect to NetworkManager in _init() (Richard Hughes)
+ - Don't use the deprecated INCLUDES in Makefile.am (Richard Hughes)
+ - If a simulated only-trusted transaction returns with need-untrusted then re-simulate with only-trusted=FALSE (Richard Hughes)
+ - Remove the emulation of finishing last_package since it breaks when we are working with multiple packages at the same time (Daniel Nicoletti)
+ - Return the correct type when the network state changed (Richard Hughes)
+ - systemd-updates: Don't show debugging text when using PK_OFFLINE_UPDATE_TEST (Richard Hughes)
+ - systemd-updates: Don't show 'Update process 99% complete' as it's not translated (Richard Hughes)
+ - The GStreamer provide name is gstreamer1() not gstreamer1.0() (Richard Hughes)
+ - Use /dev/tty or /dev/console where available rather than just using stdout (Richard Hughes)
+
 Version 0.8.6
 ~~~~~~~~~~~~~
 Released: 2012-11-26
