@@ -5328,10 +5328,12 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	array = g_ptr_array_new_with_free_func (g_free);
 	for (i=0; i<len; i++) {
 		/* compatibility with previous versions of GPK */
-		if (g_str_has_prefix (values[i], "gstreamer0.10(")) {
+		if (g_str_has_prefix (values[i], "gstreamer0.10(") ||
+		    g_str_has_prefix (values[i], "gstreamer1(")) {
 			g_ptr_array_add (array, g_strdup (values[i]));
 		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
 			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
 		} else if (provides == PK_PROVIDES_ENUM_FONT) {
 			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
 		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
@@ -5352,6 +5354,7 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 				g_ptr_array_add (array, g_strdup (values[i]));
 			} else {
 				g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
 				g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
 				g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
 				g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));

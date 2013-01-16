@@ -342,17 +342,26 @@ main (int argc, gchar **argv)
 		PkGstCodecInfo *info;
 		gchar *s;
 		gchar *type;
+		const gchar *gstreamer_version;
 
 		info = pk_gst_parse_codec (codecs[i]);
 		if (info == NULL) {
 			g_message ("skipping %s", codecs[i]);
 			continue;
 		}
+
+		/* gstreamer1 is the provide name used for the
+		 * first version of the new release */
+		if (g_strcmp0 (info->gstreamer_version, "1.0") == 0)
+			gstreamer_version = "1";
+		else
+			gstreamer_version = info->gstreamer_version;
+
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
 			s = pk_gst_structure_to_provide (info->structure);
 			type = g_strdup_printf ("gstreamer%s(%s-%s)%s%s",
-						info->gstreamer_version,
+						gstreamer_version,
 						info->type_name,
 						gst_structure_get_name (info->structure),
 						s, suffix);
@@ -360,7 +369,7 @@ main (int argc, gchar **argv)
 			g_message ("PackageKit: structure: %s", type);
 		} else {
 			type = g_strdup_printf ("gstreamer%s(%s)%s",
-						info->gstreamer_version,
+						gstreamer_version,
 						info->type_name,
 						suffix);
 			g_message ("PackageKit: non-structure: %s", type);

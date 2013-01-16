@@ -24,7 +24,7 @@ CODEC:                  A string in the format of gstreamer<version>(type-format
                         "decoder", "urisource", ""urisink", "element"), and
                         "format" is the type specific search string.
                         Example: "gstreamer0.10(decoder-audio/ac3)" or
-                        "gstreamer1.0(decoder-audio/mp3)"
+                        "gstreamer1(decoder-audio/mp3)"
 
 MIMETYPE:               Mimetypes are (valid) mimetypes strings,
                         for example "application/x-catalog" or "text/plain".

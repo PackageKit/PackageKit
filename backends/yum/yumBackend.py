@@ -885,7 +885,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # gets a list of provides
 
         # old standard
-        if value.startswith("gstreamer0.10("):
+        if value.startswith("gstreamer0.10(") or value.startswith("gstreamer1("):
             return [ value ]
 
         # new standard
