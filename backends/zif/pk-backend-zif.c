@@ -1135,8 +1135,9 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		/* treat these all the same */
 		if (search == NULL) {
 			pk_backend_job_error_code (job,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
-					       "failed to get 'search' for %s", pk_role_enum_to_string (role));
+						   PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "failed to get 'search' for %s",
+						   pk_role_enum_to_string (role));
 			goto out;
 		}
 		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
