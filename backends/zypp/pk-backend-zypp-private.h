@@ -6,18 +6,15 @@
 #include <string>
 #include <vector>
 
-class EventDirector;
+// struct PkBackendJob;
+
+#include "zypp-events.h"
 
 typedef struct {
 
-   /**
-    * A map to keep track of the EventDirector objects for
-    * each zypp backend that is created.
-    */
-    std::map<PkBackend *, EventDirector *> eventDirectors;
-    std::map<PkBackend *, std::vector<std::string> *> signatures;
-
-    EventDirector *eventDirector;
+  std::vector<std::string> signatures;
+  EventDirector eventDirector;
+  PkBackendJob *currentJob;
 
 } PkBackendZYppPrivate;
 

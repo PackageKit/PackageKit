@@ -71,11 +71,27 @@ using zypp::filesystem::PathInfo;
 
 extern PkBackendZYppPrivate *priv;
 
+ZyppJob::ZyppJob(PkBackendJob *job) 
+{
+	if (priv->currentJob) {
+		g_error("currentjob is already defined");
+	}
+
+	priv->currentJob = job;
+	priv->eventDirector.setJob(job);
+}
+
+ZyppJob::~ZyppJob()
+{
+	priv->currentJob = 0;
+	priv->eventDirector.setJob(0);
+}
+
 /**
  * Initialize Zypp (Factory method)
  */
 ZYpp::Ptr
-get_zypp (PkBackend *backend)
+ZyppJob::get_zypp()
 {
 	static gboolean initialized = FALSE;
 	ZYpp::Ptr zypp = NULL;
@@ -86,16 +102,16 @@ get_zypp (PkBackend *backend)
 		/* TODO: we need to lifecycle manage this, detect changes
 		   in the requested 'root' etc. */
 		if (!initialized) {
-			filesystem::Pathname pathname(pk_backend_get_root (backend));
+			filesystem::Pathname pathname("/");
 			zypp->initializeTarget (pathname);
 
 			initialized = TRUE;
 		}
 	} catch (const ZYppFactoryException &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
+		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
 		return NULL;
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		return NULL;
 	}
 
@@ -177,7 +193,7 @@ zypp_is_development_repo (PkBackend *backend, RepoInfo repo)
 }
 
 gboolean
-zypp_is_valid_repo (PkBackend *backend, RepoInfo repo)
+zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
 {
 
 	if (repo.alias().empty()){
@@ -194,11 +210,9 @@ zypp_is_valid_repo (PkBackend *backend, RepoInfo repo)
 }
 
 ResPool
-zypp_build_pool (PkBackend *backend, gboolean include_local)
+zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 {
 	static gboolean repos_loaded = FALSE;
-
-	ZYpp::Ptr zypp = get_zypp (backend);
 
 	// the target is loaded or unloaded on request
 	if (include_local) {
@@ -254,7 +268,7 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 }
 
 void
-warn_outdated_repos(PkBackend *backend, const ResPool & pool)
+warn_outdated_repos(PkBackendJob *job, const ResPool & pool)
 {
 	Repository repoobj;
 	ResPool::repository_iterator it;
@@ -360,11 +374,11 @@ zypp_get_packages_by_name (PkBackend *backend,
 }
 
 void
-zypp_get_packages_by_file (PkBackend *backend,
+zypp_get_packages_by_file (ZYpp::Ptr zypp,
 			   const gchar *search_file,
 			   vector<sat::Solvable> &ret)
 {
-	ResPool pool = zypp_build_pool (backend, TRUE);
+	ResPool pool = zypp_build_pool (zypp, TRUE);
 
 	string file (search_file);
 
@@ -424,7 +438,7 @@ zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
 }
 
 RepoInfo
-zypp_get_Repository (PkBackend *backend, const gchar *alias)
+zypp_get_Repository (PkBackendJob *job, const gchar *alias)
 {
 	RepoInfo info;
 
@@ -484,17 +498,17 @@ zypp_refresh_meta_and_cache (RepoManager &manager, RepoInfo &repo, bool force)
 }
 
 gboolean
-zypp_signature_required (PkBackend *backend, const PublicKey &key)
+zypp_signature_required (PkBackendJob *job, const PublicKey &key)
 {
 	gboolean ok = FALSE;
 
-	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), key.id ()) == priv->signatures[backend]->end ()) {
-		RepoInfo info = zypp_get_Repository (backend, _repoName);
+	if (find (priv->signatures.begin (), priv->signatures.end (), key.id ()) == priv->signatures.end ()) {
+		RepoInfo info = zypp_get_Repository (job, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_job_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (job,
 				"dummy;0.0.1;i386;data",
 				_repoName,
 				info.baseUrlsBegin ()->asString ().c_str (),
@@ -514,17 +528,17 @@ zypp_signature_required (PkBackend *backend, const PublicKey &key)
 }
 
 gboolean
-zypp_signature_required (PkBackend *backend, const string &file, const string &id)
+zypp_signature_required (PkBackendJob *job, const string &file, const string &id)
 {
 	gboolean ok = FALSE;
 
-	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), id) == priv->signatures[backend]->end ()) {
-		RepoInfo info = zypp_get_Repository (backend, _repoName);
+	if (find (priv->signatures.begin (), priv->signatures.end (), id) == priv->signatures.end ()) {
+		RepoInfo info = zypp_get_Repository (job, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_job_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (job,
 				"dummy;0.0.1;i386;data",
 				_repoName,
 				info.baseUrlsBegin ()->asString ().c_str (),
@@ -544,17 +558,17 @@ zypp_signature_required (PkBackend *backend, const string &file, const string &i
 }
 
 gboolean
-zypp_signature_required (PkBackend *backend, const string &file)
+zypp_signature_required (PkBackendJob *job, const string &file)
 {
 	gboolean ok = FALSE;
 
-	if (find (priv->signatures[backend]->begin (), priv->signatures[backend]->end (), file) == priv->signatures[backend]->end ()) {
-		RepoInfo info = zypp_get_Repository (backend, _repoName);
+	if (find (priv->signatures.begin (), priv->signatures.end (), file) == priv->signatures.end ()) {
+		RepoInfo info = zypp_get_Repository (job, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "Repository unknown");
 		else {
-			pk_backend_job_repo_signature_required (backend,
+			pk_backend_job_repo_signature_required (job,
 				"dummy;0.0.1;i386;data",
 				_repoName,
 				info.baseUrlsBegin ()->asString ().c_str (),
@@ -640,12 +654,11 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
  * PK doesn't handle re-installs (by some quirk).
  */
 void
-zypp_emit_filtered_packages_in_list (PkBackend *backend, const vector<sat::Solvable> &v)
+zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, const vector<sat::Solvable> &v)
 {
 	typedef vector<sat::Solvable>::const_iterator sat_it_t;
 
 	vector<sat::Solvable> installed;
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	// always emit system installed packages first
 	for (sat_it_t it = v.begin (); it != v.end (); ++it) {
@@ -653,7 +666,7 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const vector<sat::Solva
 		    zypp_filter_solvable (filters, *it))
 			continue;
 
-		zypp_backend_package (backend, PK_INFO_ENUM_INSTALLED, *it,
+		zypp_backend_package (job, PK_INFO_ENUM_INSTALLED, *it,
 				      make<ResObject>(*it)->summary().c_str());
 		installed.push_back (*it);
 	}
@@ -673,14 +686,14 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const vector<sat::Solva
 				  !isKind<SrcPackage>(*i));
 		}
 		if (!match) {
-			zypp_backend_package (backend, PK_INFO_ENUM_AVAILABLE, *it,
+			zypp_backend_package (job, PK_INFO_ENUM_AVAILABLE, *it,
 					      make<ResObject>(*it)->summary().c_str());
 		}
 	}
 }
 
 void
-zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
 		      const sat::Solvable &pkg,
 		      const char *opt_summary)
 {
@@ -704,10 +717,9 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 
 	getZYpp()->resolver()->doUpdate();
 	for (; it != e; ++it)
-       		if (it->status().isToBeInstalled())
-		{
+		if (it->status().isToBeInstalled()) {
 			ui::Selectable::constPtr s =
-			ui::Selectable::get((*it)->kind(), (*it)->name());
+				ui::Selectable::get((*it)->kind(), (*it)->name());
 			if (s->hasInstalledObj())
 				pks.insert(*it);
 		}
@@ -717,7 +729,7 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
  * Returns a set of all patches the could be installed
  */
 static void
-zypp_get_patches (PkBackend *backend, set<PoolItem> &patches)
+zypp_get_patches (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &patches)
 {
 	_updating_self = FALSE;
 	
@@ -748,10 +760,10 @@ zypp_get_patches (PkBackend *backend, set<PoolItem> &patches)
 }
 
 void
-zypp_get_updates (PkBackend *backend, set<PoolItem> &candidates)
+zypp_get_updates (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &candidates)
 {
 	typedef set<PoolItem>::iterator pi_it_t;
-	zypp_get_patches (backend, candidates);
+	zypp_get_patches (job, zypp, candidates);
 
 	if (!_updating_self) {
 		// exclude the patch-repository
@@ -830,14 +842,13 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 }
 
 gboolean
-zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
+zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
 	gboolean ret = FALSE;
-	gboolean simulate = pk_backend_get_bool (backend, "hint:simulate");
-
+	
+	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
+	
 	try {
-		ZYpp::Ptr zypp = get_zypp (backend);
-
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
@@ -845,9 +856,9 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		if (!zypp->resolver ()->resolvePool ()) {
-		       // Manual intervention required to resolve dependencies
-		       // TODO: Figure out what we need to do with PackageKit
-		       // to pull off interactive problem solving.
+			// Manual intervention required to resolve dependencies
+			// TODO: Figure out what we need to do with PackageKit
+			// to pull off interactive problem solving.
 
 			ResolverProblemList problems = zypp->resolver ()->problems ();
 			gchar * emsg = NULL, * tempmsg = NULL;
@@ -889,7 +900,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		};
 
 		ResPool pool = ResPool::instance ();
-		if (simulate) {
+		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 			ret = TRUE;
 
 			g_debug ("simulating");
@@ -899,7 +910,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					it->statusReset ();
 					continue;
 				}
-				if (!zypp_backend_pool_item_notify (backend, *it, TRUE))
+				if (!zypp_backend_pool_item_notify (job, *it, TRUE))
 					ret = FALSE;
 				it->statusReset ();
 			}
@@ -930,17 +941,26 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		}
 
 		// Perform the installation
-		gboolean only_trusted = pk_backend_get_bool (backend, "only_trusted");
+		gboolean only_download = pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
+
 		ZYppCommitPolicy policy;
 		policy.restrictToMedia (0); // 0 == install all packages regardless to media
-		policy.downloadMode (DownloadInHeaps);
+		if (only_download)
+			policy.downloadMode(DownloadOnly);
+		else
+			policy.downloadMode (DownloadInHeaps);
+		
 		policy.syncPoolAfterCommit (true);
-		if (only_trusted == FALSE)
+		if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED))
 			policy.rpmNoSignature(true);
 
 		ZYppCommitResult result = zypp->commit (policy);
 
-		if ( ! result.allDone() )
+		bool worked = result.allDone();
+		if (only_download)
+			worked = result.noError();
+
+		if ( ! worked )
 		{
 			std::ostringstream todolist;
 			char separator = '\0';
@@ -977,42 +997,37 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
  exit:
 	/* reset the various options */
 	try {
-		ZYpp::Ptr zypp = get_zypp (backend);
 		zypp->resolver ()->setForceResolve (FALSE);
 	} catch (const Exception &ex) { /* we tried */ }
 
 	return ret;
 }
 
-gchar *
-zypp_build_package_id_capabilities (Capabilities caps)
+GPtrArray *
+zypp_build_package_id_capabilities (Capabilities caps, gboolean terminate)
 {
-	gchar * package_ids = new gchar ();
+	GPtrArray *package_ids = g_ptr_array_new();
 
 	sat::WhatProvides provs (caps);
 
 	for (sat::WhatProvides::const_iterator it = provs.begin (); it != provs.end (); ++it) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-		//package_ids = g_strconcat (package_ids, package_id, PK_PACKAGE_IDS_DELIM, (gchar *)NULL);
-		if (strlen (package_ids) == 0) {
-			package_ids = g_strdup (package_id);
-		} else {
-			package_ids = g_strconcat (package_ids, PK_PACKAGE_IDS_DELIM, package_id, (gchar *)NULL);
-		}
-		g_free (package_id);
+		g_ptr_array_add(package_ids, package_id);
 	}
-
+	if (terminate)
+		g_ptr_array_add(package_ids, NULL);
 	return package_ids;
 }
 
 gboolean
-zypp_refresh_cache (PkBackend *backend, gboolean force)
+zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 {
+	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
-	ZYpp::Ptr zypp = get_zypp (backend);
+
 	if (zypp == NULL)
 		return  FALSE;
-	filesystem::Pathname pathname(pk_backend_get_root (backend));
+	filesystem::Pathname pathname("/");
 	// This call is needed to refresh system rpmdb status while refresh cache
 	zypp->finishTarget ();
 	zypp->initializeTarget (pathname);
@@ -1040,9 +1055,9 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	for (list <RepoInfo>::iterator it = repos.begin(); it != repos.end(); ++it, i++) {
 		RepoInfo repo (*it);
 
-		if (!zypp_is_valid_repo (backend, repo))
+		if (!zypp_is_valid_repo (job, repo))
 			return FALSE;
-		if (pk_backend_get_is_error_set (backend))
+		if (pk_backend_job_get_is_error_set (job))
 			break;
 
 		// skip disabled repos
@@ -1081,8 +1096,8 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	return TRUE;
 }
 
-gboolean
-zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
+void
+zypp_backend_finished_error (PkBackendJob  *job, PkErrorEnum err_code,
 			     const char *format, ...)
 {
 	va_list args;
@@ -1098,12 +1113,10 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	g_free (buffer);
 
 	pk_backend_job_finished (job);
-
-	return FALSE;
 }
 
 gboolean
-zypp_backend_pool_item_notify (PkBackend  *backend,
+zypp_backend_pool_item_notify (PkBackendJob  *job,
 			       const PoolItem &item,
 			       gboolean sanity_check)
 {
@@ -1132,7 +1145,7 @@ zypp_backend_pool_item_notify (PkBackend  *backend,
 	// Summary.cc (readPool) to generate _DOWNGRADING types ?
 	if (status != PK_INFO_ENUM_UNKNOWN) {
 		const string &summary = item.resolvable ()->summary ();
-		zypp_backend_package (backend, status, item.resolvable()->satSolvable(), summary.c_str ());
+		zypp_backend_package (job, status, item.resolvable()->satSolvable(), summary.c_str ());
 	}
 	return TRUE;
 }

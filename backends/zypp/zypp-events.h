@@ -44,7 +44,7 @@ static gboolean
 emit_sub_percentage (gpointer data)
 {
 	PercentageData *pd = (PercentageData *)data;
-	pk_backend_set_sub_percentage (pd->backend, pd->percentage);
+	//pk_backend_set_sub_percentage (pd->backend, pd->percentage);
 	free (pd);
 	return FALSE;
 }
@@ -53,15 +53,16 @@ emit_sub_percentage (gpointer data)
 namespace ZyppBackend
 {
 
-struct ZyppBackendReceiver
+class ZyppBackendReceiver
 {
-	PkBackend *_backend;
+public:
+	PkBackendJob *_job;
 	gchar *_package_id;
 	guint _sub_percentage;
 
-	virtual void initWithBackend (PkBackend *backend)
+	ZyppBackendReceiver()
 	{
-		_backend = backend;
+		_job = NULL;
 		_package_id = NULL;
 		_sub_percentage = 0;
 	}
@@ -156,24 +157,20 @@ struct ZyppBackendReceiver
 			return;
 
 		_sub_percentage = percentage;
-		//PercentageData *pd = (PercentageData *)malloc (sizeof (PercentageData));
-		//pd->backend = _backend;
-		//pd->percentage = _sub_percentage;
-		//g_idle_add (emit_sub_percentage, pd);
-		pk_backend_set_sub_percentage (_backend, _sub_percentage);
+		pk_backend_job_set_item_progress(_job, _package_id, PK_STATUS_ENUM_UNKNOWN, _sub_percentage);
 	}
 
 	inline void
 	update_speed (guint speed)
 	{
-		pk_backend_job_set_speed (_backend, speed);
+		pk_backend_job_set_speed (_job, speed);
 	}
 
 	void
 	reset_sub_percentage ()
 	{
 		_sub_percentage = 0;
-		pk_backend_set_sub_percentage (_backend, _sub_percentage);
+		//pk_backend_set_sub_percentage (_backend, _sub_percentage);
 	}
 
 protected:
@@ -189,10 +186,10 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
-		//g_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
+		g_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
-			pk_backend_job_set_status (_backend, PK_STATUS_ENUM_INSTALL);
-			pk_backend_job_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, summary);
+			pk_backend_job_set_status (_job, PK_STATUS_ENUM_INSTALL);
+			pk_backend_job_package (_job, PK_INFO_ENUM_INSTALLING, _package_id, summary);
 			reset_sub_percentage ();
 		}
 		g_free (summary);
@@ -231,8 +228,8 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		if (_package_id != NULL) {
-			pk_backend_job_set_status (_backend, PK_STATUS_ENUM_REMOVE);
-			pk_backend_job_package (_backend, PK_INFO_ENUM_REMOVING, _package_id, "");
+			pk_backend_job_set_status (_job, PK_STATUS_ENUM_REMOVE);
+			pk_backend_job_package (_job, PK_INFO_ENUM_REMOVING, _package_id, "");
 			reset_sub_percentage ();
 		}
 	}
@@ -246,14 +243,14 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description)
 	{
-                pk_backend_job_error_code (_backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, description.c_str ());
+                pk_backend_job_error_code (_job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, description.c_str ());
 		return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason)
 	{
 		if (_package_id != NULL) {
-			pk_backend_job_package (_backend, PK_INFO_ENUM_FINISHED, _package_id, "");
+			pk_backend_job_package (_job, PK_INFO_ENUM_FINISHED, _package_id, "");
 			clear_package_id ();
 		}
 	}
@@ -308,10 +305,10 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = build_package_id_from_url (&file);
 
-		//g_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
-		//		g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
+		fprintf (stderr, "DownloadProgressReportReceiver::start():%s --%s\n",
+			 g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
 		if (_package_id != NULL) {
-			pk_backend_job_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
+			pk_backend_job_set_status (_job, PK_STATUS_ENUM_DOWNLOAD);
 			reset_sub_percentage ();
 		}
 	}
@@ -337,7 +334,7 @@ struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::me
 {
 	virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, const std::string &label, zypp::media::MediaChangeReport::Error error, const std::string &description, const std::vector<std::string> & devices, unsigned int &dev_current)
 	{
-		pk_backend_job_error_code (_backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, description.c_str ());
+		pk_backend_job_error_code (_job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, description.c_str ());
 		// We've to abort here, because there is currently no feasible way to inform the user to insert/change media
 		return ABORT;
 	}
@@ -369,24 +366,24 @@ struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRin
 {
 	virtual zypp::KeyRingReport::KeyTrust askUserToAcceptKey (const zypp::PublicKey &key, const zypp::KeyContext &keycontext)
 	{
-		if (zypp_signature_required(_backend, key))
+		if (zypp_signature_required(_job, key))
 			return KEY_TRUST_AND_IMPORT;
 		return KEY_DONT_TRUST;
 	}
 
         virtual bool askUserToAcceptUnsignedFile (const std::string &file, const zypp::KeyContext &keycontext)
         {
-                return zypp_signature_required (_backend, file);
+                return zypp_signature_required (_job, file);
         }
 
         virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id, const zypp::KeyContext &keycontext)
         {
-                return zypp_signature_required(_backend, file, id);
+                return zypp_signature_required(_job, file, id);
         }
 
 	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key,  const zypp::KeyContext &keycontext)
 	{
-		return zypp_signature_required(_backend, key);
+		return zypp_signature_required(_job, key);
 	}
 
 };
@@ -395,20 +392,20 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 {
 	virtual bool askUserToAcceptNoDigest (const zypp::Pathname &file)
 	{
-		return zypp_signature_required(_backend, file.asString ());
+		return zypp_signature_required(_job, file.asString ());
 	}
 
 	virtual bool askUserToAcceptUnknownDigest (const zypp::Pathname &file, const std::string &name)
 	{
-		pk_backend_job_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
-		return zypp_signature_required(_backend, file.asString ());
+		pk_backend_job_error_code(_job, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
+		return zypp_signature_required(_job, file.asString ());
 	}
 
 	virtual bool askUserToAcceptWrongDigest (const zypp::Pathname &file, const std::string &requested, const std::string &found)
 	{
-		pk_backend_job_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
+		pk_backend_job_error_code(_job, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
 				file.c_str (), requested.c_str (), found.c_str ());
-		return zypp_signature_required(_backend, file.asString ());
+		return zypp_signature_required(_job, file.asString ());
 	}
 };
 
@@ -417,8 +414,6 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 class EventDirector
 {
 	private:
-		EventDirector () {}
-
 		ZyppBackend::RepoReportReceiver _repoReport;
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
@@ -430,34 +425,30 @@ class EventDirector
                 ZyppBackend::ProgressReportReceiver _progressReport;
 
 	public:
-		EventDirector (PkBackend *backend)
+		EventDirector ()
 		{
-			_repoReport.initWithBackend (backend);
 			_repoReport.connect ();
-
-			_repoProgressReport.initWithBackend (backend);
 			_repoProgressReport.connect ();
-
-			_installResolvableReport.initWithBackend (backend);
 			_installResolvableReport.connect ();
-
-			_removeResolvableReport.initWithBackend (backend);
 			_removeResolvableReport.connect ();
-
-                        _downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
-
-                        _keyRingReport.initWithBackend (backend);
                         _keyRingReport.connect ();
-
-			_digestReport.initWithBackend (backend);
 			_digestReport.connect ();
-
-                        _mediaChangeReport.initWithBackend (backend);
                         _mediaChangeReport.connect ();
-
-                        _progressReport.initWithBackend (backend);
                         _progressReport.connect ();
+		}
+
+		void setJob(PkBackendJob *job)
+		{
+			_repoReport._job = job;
+			_repoProgressReport._job = job;
+			_installResolvableReport._job = job;
+			_removeResolvableReport._job = job;
+			_downloadProgressReport._job = job;
+                        _keyRingReport._job = job;
+			_digestReport._job = job;
+                        _mediaChangeReport._job = job;
+                        _progressReport._job = job;	
 		}
 
 		~EventDirector ()

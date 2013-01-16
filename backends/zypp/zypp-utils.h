@@ -71,7 +71,12 @@ extern gboolean _updating_self;
   */
 extern gchar *_repoName;
 
-zypp::ZYpp::Ptr get_zypp (PkBackend *backend);
+class ZyppJob {
+ public:
+	ZyppJob(PkBackendJob *job);
+	~ZyppJob();
+	zypp::ZYpp::Ptr get_zypp();
+};
 
 /**
   * Enable and rotate logging
@@ -82,17 +87,17 @@ gboolean zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url);
 
 gboolean zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo);
 
-gboolean zypp_is_valid_repo (PkBackend *backend, zypp::RepoInfo repo);
+gboolean zypp_is_valid_repo (PkBackendJob *job, zypp::RepoInfo repo);
 /**
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.
  */
-zypp::ResPool zypp_build_pool (PkBackend *backend, gboolean include_local);
+zypp::ResPool zypp_build_pool (zypp::ZYpp::Ptr zypp, gboolean include_local);
 
 /**
 * check and warns the user that a repository may be outdated
 */
-void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
+void warn_outdated_repos(PkBackendJob *job, const zypp::ResPool & pool);
 
 /**
   * Return the rpmHeader of a package
@@ -114,7 +119,7 @@ void zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
 /**
  * Returns a list of packages that owns the specified file.
  */
-void zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file, std::vector<zypp::sat::Solvable> &result);
+void zypp_get_packages_by_file (zypp::ZYpp::Ptr zypp, const gchar *search_file, std::vector<zypp::sat::Solvable> &result);
 
 /**
  * Returns the Resolvable for the specified package_id.
@@ -136,17 +141,17 @@ zypp_get_Repository (PkBackend *backend, const gchar *alias);
 /**
   * Ask the User if it is OK to import an GPG-Key for a repo
   */
-gboolean zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key);
+gboolean zypp_signature_required (PkBackendJob *job, const zypp::PublicKey &key);
 
 /**
   * Ask the User if it is OK to refresh the Repo while we don't know the key
   */
-gboolean zypp_signature_required (PkBackend *backend, const std::string &file);
+gboolean zypp_signature_required (PkBackendJob *job, const std::string &file);
 
 /**
   * Ask the User if it is OK to refresh the Repo while we don't know the key, only its id which was never seen before
   */
-gboolean zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id);
+gboolean zypp_signature_required (PkBackendJob *job, const std::string &file, const std::string &id);
 
 /**
   * Find best (according to edition) uninstalled item with the same kind/name/arch as item.
@@ -158,7 +163,7 @@ zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::Poo
   * we can find. Also manages _updating_self to prioritise critical infrastructure
   * updates.
   */
-void zypp_get_updates (PkBackend *backend, std::set<zypp::PoolItem> &);
+void zypp_get_updates (PkBackendJob *job, zypp::ZYpp::Ptr zypp, std::set<zypp::PoolItem> &);
 
 /**
   * Sets the restart flag of a patch
@@ -168,7 +173,7 @@ void zypp_check_restart (PkRestartEnum *restart, zypp::Patch::constPtr patch);
 /**
   * simulate, or perform changes in pool to the system
   */
-gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
+gboolean zypp_perform_execution (PkBackendJob *job, zypp::ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags);
 
 /**
  * should we omit a solvable from a result because of filtering ?
@@ -178,35 +183,35 @@ gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &it
 /**
  * apply filters to a list.
  */
-void     zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
+void     zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield _filters, const std::vector<zypp::sat::Solvable> &list);
 
 /**
-  * build string of package_id's seperated by blanks out of the capabilities of a solvable
+  * build array of package_id's seperated by blanks out of the capabilities of a solvable
   */
-gchar * zypp_build_package_id_capabilities (zypp::Capabilities caps);
+GPtrArray * zypp_build_package_id_capabilities (zypp::Capabilities caps, gboolean terminate = TRUE);
 
 /**
   * refresh the enabled repositories
   */
-gboolean zypp_refresh_cache (PkBackend *backend, gboolean force);
+gboolean zypp_refresh_cache (PkBackendJob *job, zypp::ZYpp::Ptr zypp, gboolean force);
 
 /**
   * helper to simplify returning errors
   */
-gboolean zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
-				      const char *format, ...);
+void zypp_backend_finished_error (PkBackendJob  *job, PkErrorEnum err_code,
+				  const char *format, ...);
 
 /**
   * helper to emit pk package signals for a backend for a zypp solvable
   */
-void     zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+void     zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
 			       const zypp::sat::Solvable &pkg,
 			       const char *opt_summary);
 
 /**
   * helper to emit pk package status signals based on a ResPool object
   */
-gboolean zypp_backend_pool_item_notify (PkBackend  *backend,
+gboolean zypp_backend_pool_item_notify (PkBackendJob  *job,
 					const zypp::PoolItem &item,
 					gboolean sanity_check = FALSE);
 
