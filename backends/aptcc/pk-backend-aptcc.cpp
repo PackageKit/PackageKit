@@ -1042,7 +1042,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                       &filters);
     } else {
         pk_backend_job_set_status(job, PK_STATUS_ENUM_REQUEST);
-        g_variant_get (params, "(^sb)",
+        g_variant_get (params, "(&sb)",
                        &repo_id,
                        &enabled);
     }
