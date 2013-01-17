@@ -76,9 +76,9 @@ class PackageKitAptccBackend(PackageKitBaseBackend):
         #FIXME: Add support for description
         if meta_release.new_dist != None:
             self.distro_upgrade(DISTRO_UPGRADE_STABLE,
-                                "%s %s" % (meta_release.new_dist.name,
-                                           meta_release.new_dist.version),
-                                "The latest stable release")
+                                meta_release.new_dist.name,
+                                 "%s %s" % (meta_release.new_dist.name,
+                                            meta_release.new_dist.version))
 
 
 
