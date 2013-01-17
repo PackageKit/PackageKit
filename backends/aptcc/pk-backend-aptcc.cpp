@@ -205,7 +205,7 @@ static void backend_get_depends_or_requires_thread(PkBackendJob *job, GVariant *
     PkRoleEnum role;
     PkBitfield filters;
     gchar **package_ids;
-    bool recursive;
+    gboolean recursive;
     gchar *pi;
 
     g_variant_get(params, "(t^a&sb)",
@@ -832,8 +832,8 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
 {
     // Transaction flags
     PkBitfield transaction_flags = 0;
-    bool allow_deps = false;
-    bool autoremove = false;
+    gboolean allow_deps = false;
+    gboolean autoremove = false;
     bool fileInstall = false;
     gchar **full_paths = NULL;
     gchar **package_ids = NULL;
@@ -860,9 +860,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
                       &transaction_flags,
                       &package_ids);
     }
-
-    //FIXME: Workaround for a strange bug which clears the transaction flag in the params GVariant in rare cases
-    transaction_flags = pk_backend_job_get_transaction_flags (job);
 
     // Check if we should only simulate the install (calculate dependencies)
     bool simulate;
