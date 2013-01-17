@@ -1028,7 +1028,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     PkBitfield filters;
     // enable
     const gchar *repo_id;
-    bool enabled;
+    gboolean enabled;
     bool found = false;
     // generic
     PkRoleEnum role;
