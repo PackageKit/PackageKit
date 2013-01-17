@@ -75,95 +75,20 @@ public:
 		}
 	}
 
-	/**
-	 * Build a package_id from the specified zypp::Url.  The returned
-	 * gchar * should be freed with g_free ().  Returns NULL if the
-	 * URL does not contain information about an RPM.
-	 *
-	 * Example:
-	 *    basename: lynx-2.8.6-63.i586.rpm
-	 *    result:   lynx;2.8.6-63;i586;opensuse
-	 */
-	gchar *
-	build_package_id_from_url (const zypp::Url *url)
-	{
-		gchar *package_id;
-		gchar *basename;
-		gchar *tmp;
-
-		gchar *arch;
-		gchar *edition;
-		gchar *name;
-		gboolean first_dash_found;
-
-		basename = g_strdup (zypp::Pathname (url->getPathName ()).basename ().c_str());
-
-		tmp = g_strrstr (basename, ".rpm");
-
-		if (tmp == NULL) {
-			g_free (basename);
-			return NULL;
-		}
-
-		// Parse the architecture
-		tmp [0] = '\0'; // null-terminate the arch section
-		for (tmp--; tmp != basename && tmp [0] != '.'; tmp--) {}
-		arch = tmp + 1;
-
-		// Parse the edition
-		tmp [0] = '\0'; // null-terminate the edition (version)
-		first_dash_found = FALSE;
-		for (tmp--; tmp != basename; tmp--) {
-			if (tmp [0] == '-') {
-				if (!first_dash_found) {
-					first_dash_found = TRUE;
-					continue;
-				} else {
-					break;
-				}
-			}
-		}
-		edition = tmp + 1;
-
-		// Parse the name
-		tmp [0] = '\0'; // null-terminate the name
-		name = basename;
-
-		package_id = pk_package_id_build (name, edition, arch, "opensuse");
-		g_free (basename);
-
-		return package_id;
-	}
-
 	inline void
 	update_sub_percentage (guint percentage)
 	{
-		// TODO: Figure out this weird bug that libzypp emits a 100
-		// at the beginning of installing a package.
-		if (_sub_percentage == 0 && percentage == 100)
-			return; // can't jump from 0 -> 100 instantly!
-
 		// Only emit a percentage if it's different from the last
 		// percentage we emitted and it's divisible by ten.  We
 		// don't want to overload dbus/GUI.  Also account for the
 		// fact that libzypp may skip over a "divisible by ten"
 		// value (i.e., 28, 29, 31, 32).
 
-		// Drop off the least significant digit
-		// TODO: Figure out a faster way to drop the least significant digit
-		percentage = (percentage / 10) * 10;
-
 		if (percentage <= _sub_percentage)
 			return;
 
 		_sub_percentage = percentage;
 		pk_backend_job_set_item_progress(_job, _package_id, PK_STATUS_ENUM_UNKNOWN, _sub_percentage);
-	}
-
-	inline void
-	update_speed (guint speed)
-	{
-		pk_backend_job_set_speed (_job, speed);
 	}
 
 	void
@@ -298,32 +223,35 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 	}
 };
 
-struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::media::DownloadProgressReport>, ZyppBackendReceiver
+struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::DownloadResolvableReport>, ZyppBackendReceiver
 {
-	virtual void start (const zypp::Url &file, zypp::Pathname localfile)
+	virtual void start (zypp::Resolvable::constPtr resolvable, const zypp::Url &file)
 	{
 		clear_package_id ();
-		_package_id = build_package_id_from_url (&file);
+		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
+		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
 
 		fprintf (stderr, "DownloadProgressReportReceiver::start():%s --%s\n",
-			 g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
+			 g_strdup (file.asString().c_str()),	_package_id);
 		if (_package_id != NULL) {
-			pk_backend_job_set_status (_job, PK_STATUS_ENUM_DOWNLOAD);
+			pk_backend_job_set_status (_job, PK_STATUS_ENUM_DOWNLOAD); 
+			pk_backend_job_package (_job, PK_INFO_ENUM_DOWNLOADING, _package_id, summary);
 			reset_sub_percentage ();
 		}
+		g_free(summary);
 	}
 
-	virtual bool progress (int value, const zypp::Url &file, double dbps_avg, double dbps_current)
+	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL) {
 			update_sub_percentage (value);
-			update_speed (static_cast<guint>(dbps_current));
+			//pk_backend_job_set_speed (_job, static_cast<guint>(dbps_current));
 		}
 		return true;
 	}
 
-	virtual void finish (const zypp::Url & file, Error error, const std::string &konreason)
+	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &konreason)
 	{
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::finish(): %s\n", _package_id == NULL ? "unknown" : _package_id);
 		clear_package_id ();
