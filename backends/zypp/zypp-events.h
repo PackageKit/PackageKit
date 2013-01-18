@@ -84,9 +84,15 @@ public:
 		// fact that libzypp may skip over a "divisible by ten"
 		// value (i.e., 28, 29, 31, 32).
 
+		MIL << percentage << " " << _sub_percentage << std::endl;
 		if (percentage <= _sub_percentage)
 			return;
 
+		if (!_package_id) {
+			MIL << "percentage without package" << std::endl;
+			return;
+		}
+		
 		_sub_percentage = percentage;
 		pk_backend_job_set_item_progress(_job, _package_id, PK_STATUS_ENUM_UNKNOWN, _sub_percentage);
 	}
@@ -105,26 +111,40 @@ protected:
 struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zypp::target::rpm::InstallResolvableReport>, ZyppBackendReceiver
 {
 	zypp::Resolvable::constPtr _resolvable;
+	bool preparing;
+	int last_value;
 
 	virtual void start (zypp::Resolvable::constPtr resolvable)
 	{
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
+		MIL << resolvable << " " << _package_id << std::endl;
 		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
-		g_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_job_set_status (_job, PK_STATUS_ENUM_INSTALL);
 			pk_backend_job_package (_job, PK_INFO_ENUM_INSTALLING, _package_id, summary);
 			reset_sub_percentage ();
 		}
+		// first we prepare then we install
+		preparing = true;
+		last_value = 0;
 		g_free (summary);
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		//g_debug ("InstallResolvableReportReceiver::progress(), %s:%d", _package_id == NULL ? "unknown" : _package_id, value);
-		if (_package_id != NULL)
-			update_sub_percentage (value);
+		// we need to have extra logic here as progress is reported twice
+		// and PackageKit does not like percentages going back
+		if (preparing && value < last_value) 
+			preparing = false;
+		last_value = value;
+		MIL << preparing << " " << value << " " << _package_id << std::endl;
+		int perc = 0;
+		if (preparing)
+			perc = value * 30 / 100;
+		else
+			perc = 30 + value * 70 / 100;
+		update_sub_percentage (perc);
 		return true;
 	}
 
@@ -136,7 +156,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level)
 	{
-		//g_debug ("InstallResolvableReportReceiver::finish(): %s", _package_id == NULL ? "unknown" : _package_id);
+		MIL << reason << " " << _package_id << " " << resolvable << std::endl;
 		if (_package_id != NULL) {
 			//pk_backend_job_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
 			clear_package_id ();
@@ -161,8 +181,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		if (_package_id != NULL)
-			update_sub_percentage (value);
+		update_sub_percentage (value);
 		return true;
 	}
 
@@ -227,6 +246,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 {
 	virtual void start (zypp::Resolvable::constPtr resolvable, const zypp::Url &file)
 	{
+		MIL << resolvable << " " << file << std::endl;
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
@@ -243,17 +263,16 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
-		if (_package_id != NULL) {
-			update_sub_percentage (value);
-			//pk_backend_job_set_speed (_job, static_cast<guint>(dbps_current));
-		}
+		MIL << resolvable << " " << value << " " << _package_id << std::endl;
+		update_sub_percentage (value);
+		//pk_backend_job_set_speed (_job, static_cast<guint>(dbps_current));
 		return true;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &konreason)
 	{
-		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::finish(): %s\n", _package_id == NULL ? "unknown" : _package_id);
+		MIL << resolvable << " " << error << " " << _package_id << std::endl;
+		update_sub_percentage (100);
 		clear_package_id ();
 	}
 };
@@ -272,17 +291,20 @@ struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::Progr
 {
         virtual void start (const zypp::ProgressData &progress)
         {
+		MIL << std::endl;
                 reset_sub_percentage ();
         }
 
         virtual bool progress (const zypp::ProgressData &progress)
         {
+		MIL << progress.val() << std::endl;
                 update_sub_percentage ((int)progress.val ());
 		return true;
         }
 
         virtual void finish (const zypp::ProgressData &progress)
         {
+		MIL << progress.val() << std::endl;
                 update_sub_percentage ((int)progress.val ());
         }
 };

@@ -83,9 +83,7 @@ class ZyppJob {
   */
 gboolean zypp_logging ();
 
-gboolean zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url);
-
-gboolean zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo);
+gboolean zypp_is_development_repo (zypp::RepoInfo repo);
 
 gboolean zypp_is_valid_repo (PkBackendJob *job, zypp::RepoInfo repo);
 /**
@@ -112,7 +110,7 @@ PkGroupEnum get_enum_group (const std::string &group);
 /**
  * Returns a list of packages that match the specified package_name.
  */
-void zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
+void zypp_get_packages_by_name (const gchar *package_name,
 				const zypp::ResKind kind, std::vector<zypp::sat::Solvable> &result,
 				gboolean include_local = TRUE);
 
@@ -124,19 +122,13 @@ void zypp_get_packages_by_file (zypp::ZYpp::Ptr zypp, const gchar *search_file, 
 /**
  * Returns the Resolvable for the specified package_id.
  */
-zypp::sat::Solvable zypp_get_package_by_id (PkBackend *backend, const gchar *package_id);
+zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 
 /**
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
  */
 gchar * zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable);
-
-/**
-  * Get the RepoInfo
-  */
-zypp::RepoInfo
-zypp_get_Repository (PkBackend *backend, const gchar *alias);
 
 /**
   * Ask the User if it is OK to import an GPG-Key for a repo
@@ -214,12 +206,6 @@ void     zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
 gboolean zypp_backend_pool_item_notify (PkBackendJob  *job,
 					const zypp::PoolItem &item,
 					gboolean sanity_check = FALSE);
-
-/**
-  * helper to compare a version + architecture, with source arch mangling.
-  */
-gboolean zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
-				   const char *name, const char *arch);
 
 /**
  * helper to refresh a repo's metadata and cache, catching signature

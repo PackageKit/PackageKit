@@ -147,7 +147,7 @@ zypp_logging ()
 }
 
 gboolean
-zypp_is_changeable_media (PkBackend *backend, const Url &url)
+zypp_is_changeable_media (const Url &url)
 {
 	gboolean is_cd = false;
 	try {
@@ -184,7 +184,7 @@ namespace {
 }
 
 gboolean
-zypp_is_development_repo (PkBackend *backend, RepoInfo repo)
+zypp_is_development_repo (RepoInfo repo)
 {
 	return ( name_ends_or_contains( repo.alias(), "-debuginfo" )
 	      || name_ends_or_contains( repo.alias(), "-debug" )
@@ -354,8 +354,7 @@ get_enum_group (const string &group_)
 }
 
 void
-zypp_get_packages_by_name (PkBackend *backend,
-			   const gchar *package_name,
+zypp_get_packages_by_name (const gchar *package_name,
 			   const ResKind kind,
 			   vector<sat::Solvable> &result,
 			   gboolean include_local)
@@ -402,35 +401,55 @@ zypp_get_packages_by_file (ZYpp::Ptr zypp,
 	}
 }
 
+// gnome-packagekit;3.6.1-132.1;x86_64;G:F
 sat::Solvable
-zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
+zypp_get_package_by_id (const gchar *package_id)
 {
+	MIL << package_id << endl;
 	if (!pk_package_id_check(package_id)) {
 		// TODO: Do we need to do something more for this error?
 		return sat::Solvable::noSolvable;
 	}
 
 	gchar **id_parts = pk_package_id_split(package_id);
-	vector<sat::Solvable> v;
-	vector<sat::Solvable> v2;
-
-	zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], ResKind::package, v);
-	zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], ResKind::patch, v2);
-
-	v.insert (v.end (), v2.begin (), v2.end ());
-
-	if (v.empty())
-		return sat::Solvable::noSolvable;
-
+	const gchar *arch = id_parts[PK_PACKAGE_ID_ARCH];
+	if (!arch)
+		arch = "noarch";
+	bool want_source = !g_strcmp0 (arch, "source");
+	
 	sat::Solvable package;
 
-	for (vector<sat::Solvable>::iterator it = v.begin ();
-			it != v.end (); ++it) {
-		if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
-					     id_parts[PK_PACKAGE_ID_ARCH])) {
-			package = *it;
-			break;
-		}
+	ResPool pool = ResPool::instance();
+
+	// Iterate over the resolvables and mark the one we want to check its dependencies
+	for (ResPool::byName_iterator it = pool.byNameBegin (id_parts[PK_PACKAGE_ID_NAME]);
+	     it != pool.byNameEnd (id_parts[PK_PACKAGE_ID_NAME]); ++it) {
+		
+		sat::Solvable pkg = it->satSolvable();
+		MIL << "match " << package_id << " " << pkg << endl;
+
+		if (want_source && !isKind<SrcPackage>(pkg))
+			continue;
+
+		if (!want_source && (isKind<SrcPackage>(pkg) || g_strcmp0 (pkg.arch().c_str(), arch)))
+			continue;
+
+		const string &ver = pkg.edition ().asString();
+		if (g_strcmp0 (ver.c_str (), id_parts[PK_PACKAGE_ID_VERSION]))
+			continue;
+		
+		if (!strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9) && !pkg.isSystem())
+			continue;
+
+		if (pkg.isSystem() && strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9))
+			continue;
+
+		if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_DATA]))
+			continue;
+
+		MIL << "found " << pkg << endl;
+		package = pkg;
+		break;
 	}
 
 	g_strfreev (id_parts);
@@ -476,9 +495,8 @@ gboolean
 zypp_refresh_meta_and_cache (RepoManager &manager, RepoInfo &repo, bool force)
 {
 	try {
-		if (manager.checkIfToRefreshMetadata (repo, repo.url(),
-					RepoManager::RefreshIfNeededIgnoreDelay)
-					!= RepoManager::REFRESH_NEEDED)
+		if (manager.checkIfToRefreshMetadata (repo, repo.url())    //RepoManager::RefreshIfNeededIgnoreDelay)
+		    != RepoManager::REFRESH_NEEDED)
 			return TRUE;
 
 		sat::Pool pool = sat::Pool::instance ();
@@ -506,24 +524,24 @@ zypp_signature_required (PkBackendJob *job, const PublicKey &key)
 		RepoInfo info = zypp_get_Repository (job, _repoName);
 		if (info.type () == repo::RepoType::NONE)
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-					       "Repository unknown");
+						   "Repository unknown");
 		else {
 			pk_backend_job_repo_signature_required (job,
-				"dummy;0.0.1;i386;data",
-				_repoName,
-				info.baseUrlsBegin ()->asString ().c_str (),
-				key.name ().c_str (),
-				key.id ().c_str (),
-				key.fingerprint ().c_str (),
-				key.created ().asString ().c_str (),
-				PK_SIGTYPE_ENUM_GPG);
+								"dummy;0.0.1;i386;data",
+								_repoName,
+								info.baseUrlsBegin ()->asString ().c_str (),
+								key.name ().c_str (),
+								key.id ().c_str (),
+								key.fingerprint ().c_str (),
+								key.created ().asString ().c_str (),
+								PK_SIGTYPE_ENUM_GPG);
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE,
-					       "Signature verification for Repository %s failed", _repoName);
+						   "Signature verification for Repository %s failed", _repoName);
 		}
 		throw AbortTransactionException();
 	} else
 		ok = TRUE;
-
+	
 	return ok;
 }
 
@@ -844,6 +862,7 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
+	MIL << force << pk_filter_bitfield_to_string(transaction_flags) << endl;
 	gboolean ret = FALSE;
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
@@ -1022,7 +1041,7 @@ zypp_build_package_id_capabilities (Capabilities caps, gboolean terminate)
 gboolean
 zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 {
-	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
+	MIL << force << endl;
 	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
 
 	if (zypp == NULL)
@@ -1064,9 +1083,13 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		if (repo.enabled () == false)
 			continue;
 
+		// do as zypper does
+		if (!force && !repo.autorefresh())
+			continue;
+
 		// skip changeable meda (DVDs and CDs).  Without doing this,
 		// the disc would be required to be physically present.
-		if (zypp_is_changeable_media (backend, *repo.baseUrlsBegin ()) == true)
+		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
 			continue;
 
 		try {
@@ -1161,29 +1184,14 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 	else
 		arch = resolvable.arch ().asString ().c_str ();
 
+	string repo = resolvable.repository ().alias();
+	if (resolvable.isSystem())
+		repo = "installed";
 	package_id = pk_package_id_build (
 		resolvable.name ().c_str (),
 		resolvable.edition ().asString ().c_str (),
-		arch, resolvable.repository ().alias().c_str ());
+		arch, repo.c_str ());
 
 	return package_id;
 }
 
-gboolean
-zypp_ver_and_arch_equal (const sat::Solvable &pkg,
-			 const char *name, const char *arch)
-{
-	const string &ver = pkg.edition ().asString();
-	if (g_strcmp0 (ver.c_str (), name))
-		return FALSE;
-
-	if (arch && !strcmp (arch, "source")) {
-		return isKind<SrcPackage>(pkg);
-	}
-
-	const Arch &parch = pkg.arch();
-	if (g_strcmp0 (parch.c_str(), arch))
-		return FALSE;
-
-	return TRUE;
-}
