@@ -987,7 +987,7 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 
 	/* invalid number? */
 	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		g_debug ("invalid number %i", percentage);
+		g_error ("invalid number %i", percentage);
 		return;
 	}
 

@@ -93,6 +93,10 @@ public:
 			return;
 		}
 		
+		if (percentage > 100) {
+			MIL << "libzypp is silly" << std::endl;
+		}
+
 		_sub_percentage = percentage;
 		pk_backend_job_set_item_progress(_job, _package_id, PK_STATUS_ENUM_UNKNOWN, _sub_percentage);
 	}

@@ -71,20 +71,28 @@ using zypp::filesystem::PathInfo;
 
 extern PkBackendZYppPrivate *priv;
 
-ZyppJob::ZyppJob(PkBackendJob *job) 
+ZyppJob::ZyppJob(PkBackendJob *job)
 {
-	if (priv->currentJob) {
-		g_error("currentjob is already defined");
-	}
+	MIL << "locking zypp" << std::endl;
+	pthread_mutex_lock(&priv->zypp_mutex);
 
+	if (priv->currentJob) {
+		MIL << "currentjob is already defined - highly impossible" << endl;
+	}
+	
+	pk_backend_job_set_locked(job, true);
 	priv->currentJob = job;
 	priv->eventDirector.setJob(job);
 }
 
 ZyppJob::~ZyppJob()
 {
+	if (priv->currentJob)
+		pk_backend_job_set_locked(priv->currentJob, false);
 	priv->currentJob = 0;
 	priv->eventDirector.setJob(0);
+	MIL << "unlocking zypp" << std::endl;
+	pthread_mutex_unlock(&priv->zypp_mutex);
 }
 
 /**
@@ -428,24 +436,35 @@ zypp_get_package_by_id (const gchar *package_id)
 		sat::Solvable pkg = it->satSolvable();
 		MIL << "match " << package_id << " " << pkg << endl;
 
-		if (want_source && !isKind<SrcPackage>(pkg))
+		if (want_source && !isKind<SrcPackage>(pkg)) {
+			MIL << "not a src package\n";
 			continue;
+		}
 
-		if (!want_source && (isKind<SrcPackage>(pkg) || g_strcmp0 (pkg.arch().c_str(), arch)))
+		if (!want_source && (isKind<SrcPackage>(pkg) || g_strcmp0 (pkg.arch().c_str(), arch))) {
+			MIL << "not a matching arch\n";
 			continue;
+		}
 
 		const string &ver = pkg.edition ().asString();
-		if (g_strcmp0 (ver.c_str (), id_parts[PK_PACKAGE_ID_VERSION]))
+		if (g_strcmp0 (ver.c_str (), id_parts[PK_PACKAGE_ID_VERSION])) {
+			MIL << "not a matching version\n";
 			continue;
-		
-		if (!strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9) && !pkg.isSystem())
-			continue;
+		}
 
-		if (pkg.isSystem() && strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9))
+		if (!pkg.isSystem()) {
+			if (!strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
+				MIL << "pkg is not installed\n";
+				continue;
+			}
+			if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_DATA])) {
+				MIL << "repo does not match\n";
+				continue;
+			}
+		} else if (strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
+			MIL << "pkg installed\n";
 			continue;
-
-		if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_DATA]))
-			continue;
+		}
 
 		MIL << "found " << pkg << endl;
 		package = pkg;

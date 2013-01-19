@@ -97,6 +97,16 @@ public:
 };
 
 /**
+ * We do not pretend we're thread safe when all we do is having a huge mutex
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+        return FALSE;
+}
+
+
+/**
  * pk_backend_get_description:
  */
 const gchar *
@@ -127,6 +137,7 @@ pk_backend_initialize (PkBackend *backend)
 	/* create private area */
 	priv = new PkBackendZYppPrivate;
 	priv->currentJob = 0;
+	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
 	g_debug ("zypp_backend_initialize");
@@ -277,12 +288,11 @@ pk_backend_get_groups (PkBackend *backend)
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_ARCH,
-		PK_FILTER_ENUM_NEWEST,
-		PK_FILTER_ENUM_SOURCE,
-		-1);
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED,
+				       PK_FILTER_ENUM_ARCH,
+				       PK_FILTER_ENUM_NEWEST,
+				       PK_FILTER_ENUM_SOURCE,
+				       -1);
 }
 
 /*
@@ -298,9 +308,9 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	gchar **package_ids;
 	gboolean recursive;
 	g_variant_get (params, "(t^a&sb)",
-		&_filters,
-		&package_ids,
-		&recursive);
+		       &_filters,
+		       &package_ids,
+		       &recursive);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
@@ -313,7 +323,7 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		return;
 	}
 	
-	MIL << pk_filter_bitfield_to_string (_filters) << endl;
+	MIL << package_ids[0] << " " << pk_filter_bitfield_to_string (_filters) << endl;
 
 	try
 	{
@@ -393,21 +403,21 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		// print dependencies
 		for (map<string, sat::Solvable>::iterator it = caps.begin ();
-				it != caps.end();
-				++it) {
-
+		     it != caps.end();
+		     ++it) {
+			
 			// backup sanity check for no-solvables
 			if (! it->second.name ().c_str() ||
 			    it->second.name ().c_str()[0] == '\0')
 				continue;
-
+			
 			PoolItem item(it->second);
 			PkInfoEnum info = it->second.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
 			g_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
-				   info == PK_INFO_ENUM_INSTALLED ? "installed" : "available",
-				   it->second.isSystem(),
-				   zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
+				 info == PK_INFO_ENUM_INSTALLED ? "installed" : "available",
+				 it->second.isSystem(),
+				 zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
 
 			if (!zypp_filter_solvable (_filters, it->second)) {
 				zypp_backend_package (job, info, it->second,
@@ -445,7 +455,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	gchar **package_ids;
 	g_variant_get (params, "(^a&s)",
-		&package_ids);
+		       &package_ids);
 
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
@@ -458,13 +468,14 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	for (uint i = 0; package_ids[i]; i++) {
+		MIL << package_ids[i] << endl;
 
 		sat::Solvable solv = zypp_get_package_by_id( package_ids[i] );
 
 		ResObject::constPtr obj = make<ResObject>( solv );
 		if (obj == NULL) {
-			zypp_backend_finished_error (
-				job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, 
+						     "couldn't find package");
 			return;
 		}
 
@@ -531,8 +542,8 @@ backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 
 	vector<parser::ProductFileData> result;
 	if (!parser::ProductFileReader::scanDir (functor::getAll (back_inserter (result)), "/etc/products.d")) {
-		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not parse /etc/products.d");
+		zypp_backend_finished_error (job, PK_ERROR_ENUM_INTERNAL_ERROR, 
+					     "Could not parse /etc/products.d");
 		return;
 	}
 
@@ -569,12 +580,11 @@ pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 static void
 backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	MIL << endl;
-
 	gboolean force;
 	g_variant_get (params, "(b)",
-		&force);
+		       &force);
 
+	MIL << force << endl;
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
@@ -593,7 +603,6 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
-	MIL << endl;
 	pk_backend_job_thread_create (job, backend_refresh_cache_thread, NULL, NULL);
 }
 
@@ -626,12 +635,11 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 static void
 backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	MIL << endl;
-
 	PkBitfield _filters;
 	g_variant_get (params, "(t)",
-		&_filters);
+		       &_filters);
 
+	MIL << pk_filter_bitfield_to_string(_filters) << endl;
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
@@ -717,8 +725,8 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	PkBitfield transaction_flags;
 	gchar **full_paths;
 	g_variant_get (params, "(t^a&s)",
-		&transaction_flags,
-		&full_paths);
+		       &transaction_flags,
+		       &full_paths);
 	
 	if (zypp == NULL){
 		pk_backend_job_finished (job);
@@ -1148,6 +1156,7 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	zypp_build_pool (zypp, TRUE);
 
 	for (uint i = 0; search[i]; i++) {
+		MIL << search[i] << " " << pk_filter_bitfield_to_string(_filters) << endl;
 		vector<sat::Solvable> v;
 		
 		/* build a list of packages with this name */
@@ -1175,6 +1184,8 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 		/* Filter the list of packages with this name to 'pkgs' */
 		for (vector<sat::Solvable>::iterator it = v.begin (); it != v.end (); ++it) {
 
+			MIL << "found " << *it << endl;
+
 			if (zypp_filter_solvable (_filters, *it) ||
 			    zypp_is_no_solvable(*it))
 				continue;
@@ -1184,6 +1195,7 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			} else if (it->edition() > newest.edition() || Arch::compare(it->arch(), newest.arch()) > 0) {
 				newest = *it;
 			}
+			MIL << "emit " << *it << endl;
 			pkgs.push_back (*it);
 		}
 		
@@ -1192,12 +1204,13 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			/* 'newest' filter support */
 			if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NEWEST)) {
 				pkgs.clear();
+				MIL << "emit just newest " << newest << endl;
 				pkgs.push_back (newest);
 			} else if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_NEWEST)) {
 				pkgs.erase (find (pkgs.begin (), pkgs.end(), newest));
 			}
 		}
-
+		
 		zypp_emit_filtered_packages_in_list (job, _filters, pkgs);
 	}
 
@@ -1637,9 +1650,9 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 	const gchar *value;
 
 	g_variant_get(params, "(&s&s&s)",
-		&repo_id,
-		&parameter,
-		&value);
+		      &repo_id,
+		      &parameter,
+		      &value);
 
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
@@ -1770,10 +1783,10 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 	PkBitfield _filters;
 	PkProvidesEnum provides;
 	g_variant_get(params, "(tu^a&s)",
-		&_filters,
-		&provides,
-		&values);
-
+		      &_filters,
+		      &provides,
+		      &values);
+	
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
@@ -1783,7 +1796,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)
+	const gchar *search = values[0]; //Fixme - support possible multi1ple search values (logical OR)
 	ResPool pool = zypp_build_pool (zypp, true);
 
 	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
