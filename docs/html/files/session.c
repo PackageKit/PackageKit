@@ -14,9 +14,6 @@ main (int argc, char *argv[])
 	guint32 xid = 0;
 	GVariant *retval = NULL;
 
-	/* init the types system */
-	g_type_init ();
-
 	/* get a session bus proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
 					       G_DBUS_PROXY_FLAGS_NONE, NULL,

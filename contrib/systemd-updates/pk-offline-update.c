@@ -361,8 +361,9 @@ main (int argc, char *argv[])
 	PkTask *task = NULL;
 	PkProgressBar *progressbar = NULL;
 
-	/* setup */
-	g_type_init ();
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
+	g_type_init();
+#endif
 
 	/* ensure root user */
 	if (getuid () != 0 || geteuid () != 0) {

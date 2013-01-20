@@ -80,7 +80,9 @@ pk_test_lsof_func (void)
 int
 main (int argc, char **argv)
 {
-	g_type_init ();
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
+	g_type_init();
+#endif
 	g_test_init (&argc, &argv, NULL);
 
 	g_test_add_func ("/plugins/lsof", pk_test_lsof_func);

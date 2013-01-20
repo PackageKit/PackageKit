@@ -239,7 +239,9 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	g_type_init ();
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
+	g_type_init();
+#endif
 
 	/* TRANSLATORS: describing the service that is running */
 	context = g_option_context_new (_("PackageKit service"));

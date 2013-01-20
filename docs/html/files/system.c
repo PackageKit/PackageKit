@@ -16,9 +16,6 @@ main (int argc, char *argv[])
 	PkClient *client = NULL;
 	PkBitfield roles;
 
-	/* init the types system */
-	g_type_init ();
-
 	/* find out if we can do GetUpdates */
 	control = pk_control_new ();
 	roles = pk_control_get_actions (control, NULL);

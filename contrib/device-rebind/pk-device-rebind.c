@@ -307,8 +307,10 @@ main (gint argc, gchar *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	/* setup type system */
 	g_type_init ();
+#endif
 
 	context = g_option_context_new (NULL);
 	/* TRANSLATORS: tool that gets called when the device needs reloading after installing firmware */

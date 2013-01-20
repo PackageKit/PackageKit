@@ -1384,7 +1384,9 @@ main (int argc, char *argv[])
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
 #endif
-	g_type_init ();
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
+	g_type_init();
+#endif
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
