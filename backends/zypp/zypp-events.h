@@ -95,6 +95,7 @@ public:
 		
 		if (percentage > 100) {
 			MIL << "libzypp is silly" << std::endl;
+			return;
 		}
 
 		_sub_percentage = percentage;
