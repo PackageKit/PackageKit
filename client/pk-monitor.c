@@ -391,7 +391,7 @@ main (int argc, char *argv[])
 		g_thread_init (NULL);
 #endif
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init();
+	g_type_init ();
 #endif
 
 	context = g_option_context_new (NULL);

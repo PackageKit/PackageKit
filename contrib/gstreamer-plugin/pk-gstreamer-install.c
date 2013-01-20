@@ -293,7 +293,7 @@ main (int argc, gchar **argv)
 	};
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init();
+	g_type_init ();
 #endif
 
 	gst_init (&argc, &argv);
