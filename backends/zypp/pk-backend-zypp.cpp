@@ -1396,15 +1396,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		}
 
 		switch (type) {
-			case INSTALL:
-				pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
-				break;
-			case REMOVE:
-				pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
-				break;
-			case UPDATE:
-				pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
-				break;
+		case INSTALL:
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+			break;
+		case REMOVE:
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+			break;
+		case UPDATE:
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+			break;
 		}
 
 		ResPool pool = ResPool::instance ();
@@ -1414,14 +1414,21 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			MIL << "simulating" << endl;
 
 			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
-				if (type == REMOVE && !(*it)->isSystem ()) {
-					it->statusReset ();
-					continue;
+				switch (type) {
+				case REMOVE:
+					if (!(*it)->isSystem ()) {
+						it->statusReset ();
+						continue;
+					}
+					break;
+				case INSTALL:
+				case UPDATE:
+					// for updates we only care for updates
+					if (it->status ().isToBeUninstalledDueToUpgrade ())
+						continue;
+					break;
 				}
-				// for updates we only care for updates
-				if (type == UPDATE && it->status ().isToBeUninstalledDueToUpgrade ())
-					continue;
-
+				
 				if (!zypp_backend_pool_item_notify (job, *it, TRUE))
 					ret = FALSE;
 				it->statusReset ();
