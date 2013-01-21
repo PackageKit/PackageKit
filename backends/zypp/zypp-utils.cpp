@@ -434,35 +434,35 @@ zypp_get_package_by_id (const gchar *package_id)
 	     it != pool.byNameEnd (id_parts[PK_PACKAGE_ID_NAME]); ++it) {
 		
 		sat::Solvable pkg = it->satSolvable();
-		MIL << "match " << package_id << " " << pkg << endl;
+		//MIL << "match " << package_id << " " << pkg << endl;
 
 		if (want_source && !isKind<SrcPackage>(pkg)) {
-			MIL << "not a src package\n";
+			//MIL << "not a src package\n";
 			continue;
 		}
 
 		if (!want_source && (isKind<SrcPackage>(pkg) || g_strcmp0 (pkg.arch().c_str(), arch))) {
-			MIL << "not a matching arch\n";
+			//MIL << "not a matching arch\n";
 			continue;
 		}
 
 		const string &ver = pkg.edition ().asString();
 		if (g_strcmp0 (ver.c_str (), id_parts[PK_PACKAGE_ID_VERSION])) {
-			MIL << "not a matching version\n";
+			//MIL << "not a matching version\n";
 			continue;
 		}
 
 		if (!pkg.isSystem()) {
 			if (!strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
-				MIL << "pkg is not installed\n";
+				//MIL << "pkg is not installed\n";
 				continue;
 			}
 			if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_DATA])) {
-				MIL << "repo does not match\n";
+				//MIL << "repo does not match\n";
 				continue;
 			}
 		} else if (strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
-			MIL << "pkg installed\n";
+			//MIL << "pkg installed\n";
 			continue;
 		}
 
@@ -881,7 +881,7 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
-	MIL << force << pk_filter_bitfield_to_string(transaction_flags) << endl;
+	MIL << force << " " << pk_filter_bitfield_to_string(transaction_flags) << endl;
 	gboolean ret = FALSE;
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
@@ -935,19 +935,23 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			case UPDATE:
 				pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
 				break;
-		};
+		}
 
 		ResPool pool = ResPool::instance ();
 		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 			ret = TRUE;
 
-			g_debug ("simulating");
+			MIL << "simulating" << endl;
 
 			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
 				if (type == REMOVE && !(*it)->isSystem ()) {
 					it->statusReset ();
 					continue;
 				}
+				// for updates we only care for updates
+				if (type == UPDATE && it->status ().isToBeUninstalledDueToUpgrade ())
+					continue;
+
 				if (!zypp_backend_pool_item_notify (job, *it, TRUE))
 					ret = FALSE;
 				it->statusReset ();
@@ -1010,15 +1014,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 				if ( separator )
 					todolist << separator << it->ident();
 				else
-				{
+					{
 					todolist << it->ident();
 					separator = '\n';
 				}
 			}
 
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_ERROR,
-					"Transaction could not be completed.\n Theses packages could not be installed: %s",
-					todolist.str().c_str());
+						   "Transaction could not be completed.\n Theses packages could not be installed: %s",
+						   todolist.str().c_str());
 
 			goto exit;
 		}
@@ -1165,10 +1169,12 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 	PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
 
 	if (item.status ().isToBeUninstalledDueToUpgrade ()) {
+		MIL << "updating " << item << endl;
 		status = PK_INFO_ENUM_UPDATING;
 	} else if (item.status ().isToBeUninstalledDueToObsolete ()) {
 		status = PK_INFO_ENUM_OBSOLETING;
 	} else if (item.status ().isToBeInstalled ()) {
+		MIL << "installing " << item << endl;
 		status = PK_INFO_ENUM_INSTALLING;
 	} else if (item.status ().isToBeUninstalled ()) {
 		status = PK_INFO_ENUM_REMOVING;
