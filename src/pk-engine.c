@@ -265,7 +265,7 @@ pk_engine_inhibit (PkEngine *engine)
 	/* block shutdown and idle */
 	res = g_dbus_proxy_call_sync (engine->priv->logind_proxy,
 				      "Inhibit",
-				      g_variant_new ("ssss",
+				      g_variant_new ("(ssss)",
 						     "shutdown:idle",
 						     "Package Updater",
 						     "Package Update in Progress",
