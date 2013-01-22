@@ -56,7 +56,8 @@ GType		 pk_syslog_get_type		(void);
 PkSyslog	*pk_syslog_new			(void);
 void		 pk_syslog_add			(PkSyslog	*syslog,
 						 PkSyslogType	 type,
-						 const gchar	*format, ...);
+						 const gchar	*format, ...)
+						 G_GNUC_PRINTF(3,4);
 
 G_END_DECLS
 

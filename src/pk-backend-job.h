@@ -193,7 +193,7 @@ void		 pk_backend_job_require_restart		(PkBackendJob	*job,
 void		 pk_backend_job_message			(PkBackendJob	*job,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...)
-							__attribute__ ((format (gnu_printf, 3, 4)));
+							 G_GNUC_PRINTF(3,4);
 void		 pk_backend_job_details			(PkBackendJob	*job,
 							 const gchar	*package_id,
 							 const gchar	*license,
@@ -211,7 +211,7 @@ void	 	 pk_backend_job_distro_upgrade		(PkBackendJob	*job,
 void		 pk_backend_job_error_code		(PkBackendJob	*job,
 							 PkErrorEnum	 code,
 							 const gchar	*details, ...)
-							__attribute__ ((format (gnu_printf, 3, 4)));
+							 G_GNUC_PRINTF(3,4);
 void		 pk_backend_job_repo_signature_required	(PkBackendJob	*job,
 							 const gchar	*package_id,
 							 const gchar    *repository_name,
