@@ -379,7 +379,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		/* convert % else we try to format them */
 		g_strdelimit (text, "%", '$');
 
-		pk_backend_job_error_code (job, error_enum, text);
+		pk_backend_job_error_code (job, error_enum, "%s", text);
 		g_free (text);
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
@@ -414,7 +414,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		text = g_strdup (sections[2]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_message (job, message_enum, text);
+		pk_backend_job_message (job, message_enum, "%s", text);
 		g_free (text);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
@@ -1015,8 +1015,10 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	envp = pk_backend_spawn_get_envp (backend_spawn);
 	ret = pk_spawn_argv (priv->spawn, argv, envp, &error);
 	if (!ret) {
-		pk_backend_job_error_code (priv->job, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "Spawn of helper '%s' failed", argv[0], error->message);
+		pk_backend_job_error_code (priv->job,
+					   PK_ERROR_ENUM_INTERNAL_ERROR,
+					   "Spawn of helper '%s' failed: %s",
+					   argv[0], error->message);
 		g_error_free (error);
 		pk_backend_job_finished (priv->job);
 	}
