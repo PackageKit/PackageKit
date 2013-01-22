@@ -3780,8 +3780,8 @@ pk_backend_job_run_transaction (PkBackendJob *job, PkBitfield transaction_flags,
 		if (error->domain == ZIF_TRANSACTION_ERROR &&
 		    error->code == ZIF_TRANSACTION_ERROR_NOTHING_TO_DO) {
 			pk_backend_job_error_code (job,
-					       PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
-					       error->message);
+						   PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
+						   "%s", error->message);
 		} else {
 			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
@@ -4843,8 +4843,8 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer use
 					   "If this is not correct, please disable the %s software source.",
 					   repo_id);
 		pk_backend_job_message (job,
-				    PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY,
-				    warning);
+					PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY,
+					"%s", warning);
 	}
 out:
 	pk_backend_job_finished (job);
