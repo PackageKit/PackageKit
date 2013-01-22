@@ -54,7 +54,8 @@ GType		 pk_backend_spawn_get_type		(void);
 PkBackendSpawn	*pk_backend_spawn_new			(void);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
 							 PkBackendJob	*job,
-							 const gchar	*first_element, ...);
+							 const gchar	*first_element, ...)
+							 G_GNUC_NULL_TERMINATED;
 gboolean	 pk_backend_spawn_is_busy		(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_kill			(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_exit			(PkBackendSpawn	*backend_spawn);
