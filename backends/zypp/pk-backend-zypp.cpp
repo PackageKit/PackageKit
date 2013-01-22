@@ -680,7 +680,7 @@ zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
 {
 
 	if (repo.alias().empty()){
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "Repository has no or invalid repo name defined.\n", repo.alias ().c_str ());
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: Repository has no or invalid repo name defined.\n", repo.alias ().c_str ());
 		return FALSE;
 	}
 
