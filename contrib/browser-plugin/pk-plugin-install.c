@@ -396,6 +396,9 @@ pk_plugin_install_recheck (PkPluginInstall *self)
 				 (GAsyncReadyCallback) pk_plugin_install_finished_cb, self);
 }
 
+/* just to please -Wmissing-format-attribute */
+static void pk_plugin_install_append_markup (GString *str, const gchar *format, ...) G_GNUC_PRINTF(2,3);
+
 /**
  * pk_plugin_install_append_markup:
  **/
@@ -526,7 +529,7 @@ pk_plugin_install_ensure_layout (PkPluginInstall *self,
 				pk_plugin_install_append_markup (markup,
 				              "\n<span color='#%06x' underline='single'>%s</span>",
 					      /* TRANSLATORS: run the application now */
-					      _("Run now"), link_color >> 8);
+					      link_color >> 8, _("Run now"));
 		        }
 		}
 
