@@ -1247,7 +1247,7 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 		buffer[len] = '\0';
 		if (g_strcmp0 (buffer, "pong\n") == 0) {
 			/* send a message so we can verify in the self checks */
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, buffer);
+			pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, "%s", buffer);
 
 			/* verify we can write into the socket */
 			wrote = g_socket_send (job_data->socket, "invalid\n", 8, NULL, &error);
@@ -1389,7 +1389,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 		wrote = g_socket_send (job_data->socket, "ping\n", 5, NULL, &error);
 		if (wrote != 5) {
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
-						   "failed to write, only %i bytes", wrote);
+						   "failed to write, only %i bytes", (gint) wrote);
 			pk_backend_job_finished (job);
 			goto out;
 		}
