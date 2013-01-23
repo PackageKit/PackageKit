@@ -25,6 +25,7 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
 #define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
@@ -346,6 +347,78 @@ out:
 }
 
 /**
+ * pk_offline_update_write_dummy_results:
+ *
+ * If the transaction crashes, the kernel oopses or we loose power
+ * during the transaction then we never get a chance to write the actual
+ * transaction success / failure file.
+ *
+ * Write a dummy file so at least the user gets notified that something
+ * bad happened.
+ **/
+static void
+pk_offline_update_write_dummy_results (gchar **package_ids)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	GError *error = NULL;
+	GKeyFile *key_file;
+	GString *string;
+	guint i;
+
+	key_file = g_key_file_new ();
+	g_key_file_set_boolean (key_file,
+				PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				"Success",
+				FALSE);
+	g_key_file_set_string (key_file,
+			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+			       "ErrorCode",
+			       pk_error_enum_to_string (PK_ERROR_ENUM_FAILED_INITIALIZATION));
+	g_key_file_set_string (key_file,
+			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+			       "ErrorDetails",
+			       "The transaction did not complete");
+
+	/* save packages if any set */
+	string = g_string_new ("");
+	for (i = 0; package_ids[i] != NULL; i++)
+		g_string_append_printf (string, "%s,", package_ids[i]);
+	if (string->len > 0)
+		g_string_set_size (string, string->len - 1); {
+		g_key_file_set_string (key_file,
+				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
+				       "Packages",
+				       string->str);
+	}
+
+	/* write file */
+	data = g_key_file_to_data (key_file, NULL, &error);
+	if (data == NULL) {
+		g_warning ("failed to get keyfile data: %s",
+			   error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
+				   data,
+				   -1,
+				   &error);
+	if (!ret) {
+		g_warning ("failed to write file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* ensure this is written to disk */
+	sync ();
+out:
+	g_string_free (string, TRUE);
+	g_key_file_free (key_file);
+	g_free (data);
+}
+
+/**
  * main:
  **/
 int
@@ -397,6 +470,7 @@ main (int argc, char *argv[])
 	pk_task_set_interactive (task, FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
 	package_ids = g_strsplit (packages_data, "\n", -1);
+	pk_offline_update_write_dummy_results (package_ids);
 	results = pk_client_update_packages (PK_CLIENT (task),
 					     0,
 					     package_ids,
