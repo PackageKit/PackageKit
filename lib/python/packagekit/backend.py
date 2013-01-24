@@ -41,25 +41,11 @@ def _to_unicode(txt, encoding='utf-8'):
     return txt
 
 def _to_utf8(txt, errors='replace'):
-    '''convert practically anything to a utf-8-encoded byte string'''
-
-    # convert to unicode object
     if isinstance(txt, str):
-        txt = txt.decode('utf-8', errors=errors)
-    if not isinstance(txt, str):
-        # try to convert non-string objects like exceptions
-        try:
-            # if txt.__unicode__() exists, or txt.__str__() returns ASCII
-            txt = str(txt)
-        except UnicodeDecodeError:
-            # if txt.__str__() exists
-            txt = str(txt).decode('utf-8', errors=errors)
-        except:
-            # no __str__(), __unicode__() methods, use representation
-            txt = str(repr(txt))
-
-    # return encoded as UTF-8
-    return txt.encode('utf-8', errors=errors)
+        return txt
+    if isinstance(txt, unicode):
+        return txt.encode('utf-8', errors=errors)
+    return str(txt)
 
 class PkError(Exception):
     def __init__(self, code, details):
