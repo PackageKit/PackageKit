@@ -131,6 +131,12 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	PkBitfield transaction_flags;
 	PkConf *conf;
 
+/* only do this if we have systemd */
+#ifndef PK_BUILD_SYSTEMD
+	g_debug ("No systemd, so no PreparedUpdates");
+	return;
+#endif
+
 	/* only write the file for only-download */
 	transaction_flags = pk_transaction_get_transaction_flags (transaction);
 	if (!pk_bitfield_contain (transaction_flags,
