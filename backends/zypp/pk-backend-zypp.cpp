@@ -205,8 +205,8 @@ public:
 		// fact that libzypp may skip over a "divisible by ten"
 		// value (i.e., 28, 29, 31, 32).
 
-		MIL << percentage << " " << _sub_percentage << std::endl;
-		if (percentage <= _sub_percentage)
+		//MIL << percentage << " " << _sub_percentage << std::endl;
+		if (percentage == _sub_percentage)
 			return;
 
 		if (!_package_id) {
@@ -236,8 +236,6 @@ protected:
 struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zypp::target::rpm::InstallResolvableReport>, ZyppBackendReceiver
 {
 	zypp::Resolvable::constPtr _resolvable;
-	bool preparing;
-	int last_value;
 
 	virtual void start (zypp::Resolvable::constPtr resolvable) {
 		clear_package_id ();
@@ -249,25 +247,14 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 			pk_backend_job_package (_job, PK_INFO_ENUM_INSTALLING, _package_id, summary);
 			reset_sub_percentage ();
 		}
-		// first we prepare then we install
-		preparing = true;
-		last_value = 0;
 		g_free (summary);
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable) {
 		// we need to have extra logic here as progress is reported twice
 		// and PackageKit does not like percentages going back
-		if (preparing && value < last_value) 
-			preparing = false;
-		last_value = value;
-		MIL << preparing << " " << value << " " << _package_id << std::endl;
-		int perc = 0;
-		if (preparing)
-			perc = value * 30 / 100;
-		else
-			perc = 30 + value * 70 / 100;
-		update_sub_percentage (perc);
+		//MIL << value << " " << _package_id << std::endl;
+		update_sub_percentage (value);
 		return true;
 	}
 
@@ -380,7 +367,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		MIL << resolvable << " " << value << " " << _package_id << std::endl;
+		//MIL << resolvable << " " << value << " " << _package_id << std::endl;
 		update_sub_percentage (value);
 		//pk_backend_job_set_speed (_job, static_cast<guint>(dbps_current));
 		return true;
