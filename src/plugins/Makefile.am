@@ -61,7 +61,6 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-systemd-updates.la			\
 	libpk_plugin-update-check-processes.la		\
 	libpk_plugin-check-shared-libraries-in-use.la	\
-	libpk_plugin-clear-system-update.la		\
 	libpk_plugin-require-restart.la			\
 	libpk_plugin-clear-firmware-requests.la
 
@@ -84,11 +83,6 @@ libpk_plugin_clear_firmware_requests_la_SOURCES = pk-plugin-clear-firmware-reque
 libpk_plugin_clear_firmware_requests_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_clear_firmware_requests_la_LDFLAGS = -module -avoid-version
 libpk_plugin_clear_firmware_requests_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_clear_system_update_la_SOURCES = pk-plugin-clear-system-update.c
-libpk_plugin_clear_system_update_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_clear_system_update_la_LDFLAGS = -module -avoid-version
-libpk_plugin_clear_system_update_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_update_package_cache_la_SOURCES = \
 						pk-plugin-update-package-cache.c \
