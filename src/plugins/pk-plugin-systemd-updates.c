@@ -92,6 +92,9 @@ pk_plugin_array_str_exists (GPtrArray *array, const gchar *str)
 
 /**
  * pk_plugin_state_changed:
+ *
+ * Delete the prepared-update if the daemon state has changed, for
+ * instance, if the computer has just been resumed;
  */
 void
 pk_plugin_state_changed (PkPlugin *plugin)
@@ -128,7 +131,6 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	GError *error = NULL;
 	GPtrArray *packages;
 	guint i;
-	PkBitfield transaction_flags;
 	PkConf *conf;
 
 /* only do this if we have systemd */
@@ -136,12 +138,6 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	g_debug ("No systemd, so no PreparedUpdates");
 	return;
 #endif
-
-	/* only write the file for only-download */
-	transaction_flags = pk_transaction_get_transaction_flags (transaction);
-	if (!pk_bitfield_contain (transaction_flags,
-				  PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
-		return;
 
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
@@ -225,6 +221,7 @@ void
 pk_plugin_transaction_finished_end (PkPlugin *plugin,
 				    PkTransaction *transaction)
 {
+	PkBitfield transaction_flags;
 	PkExitEnum exit_enum;
 	PkResults *results;
 	PkRoleEnum role;
@@ -243,7 +240,10 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* if we're doing only-download then update prepared-updates */
 	role = pk_transaction_get_role (transaction);
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	transaction_flags = pk_transaction_get_transaction_flags (transaction);
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		pk_plugin_transaction_update_packages (transaction);
 		goto out;
 	}
@@ -253,6 +253,14 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	if (role == PK_ROLE_ENUM_GET_UPDATES) {
 		pk_plugin_transaction_get_updates (transaction);
 		goto out;
+	}
+
+	/* delete the prepared updates file as it's no longer valid */
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		pk_plugin_state_changed (plugin);
 	}
 out:
 	return;
