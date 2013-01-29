@@ -3229,9 +3229,19 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
 		for (j=0; j<updates->len; j++) {
 			package_update = ZIF_PACKAGE (g_ptr_array_index (updates, j));
 
+			/* correct package name and arch */
+			val = zif_package_compare_full (package_update,
+							package,
+							ZIF_PACKAGE_COMPARE_FLAG_CHECK_NAME |
+							ZIF_PACKAGE_COMPARE_FLAG_CHECK_ARCH);
+			if (val != 0)
+				continue;
+
 			/* newer? */
-			val = zif_package_compare (package_update, package);
-			if (val == G_MAXINT)
+			val = zif_package_compare_full (package_update,
+							package,
+							ZIF_PACKAGE_COMPARE_FLAG_CHECK_VERSION);
+			if (val == 0)
 				continue;
 			if (val > 0) {
 				g_debug ("*** update %s from %s to %s",
