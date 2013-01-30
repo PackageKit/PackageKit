@@ -33,7 +33,6 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-update-detail.h>
-#include <packagekit-glib2/pk-enum.h>
 
 static void     pk_update_detail_finalize	(GObject     *object);
 
@@ -78,6 +77,209 @@ enum {
 };
 
 G_DEFINE_TYPE (PkUpdateDetail, pk_update_detail, PK_TYPE_SOURCE)
+/**
+ * pk_update_detail_get_package_id:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail package ID.
+ *
+ * Return value: string values
+ *
+ * Since:0.8.8
+ **/
+const gchar *
+pk_update_detail_get_package_id (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->package_id;
+}
+
+/**
+ * pk_update_detail_get_updates:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail updates IDs.
+ *
+ * Return value: (transfer none): string values
+ *
+ * Since:0.8.8
+ **/
+gchar **
+pk_update_detail_get_updates (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->updates;
+}
+
+/**
+ * pk_update_detail_get_obsoletes:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail obsoletes IDs.
+ *
+ * Return value: (transfer none): string values
+ *
+ * Since:0.8.8
+ **/
+gchar **
+pk_update_detail_get_obsoletes (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->obsoletes;
+}
+
+/**
+ * pk_update_detail_get_vendor_urls:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail vendor URLs.
+ *
+ * Return value: (transfer none): string values
+ *
+ * Since:0.8.8
+ **/
+gchar **
+pk_update_detail_get_vendor_urls (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->vendor_urls;
+}
+
+/**
+ * pk_update_detail_get_bugzilla_urls:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail bugzilla URLs.
+ *
+ * Return value: (transfer none): string values
+ *
+ * Since:0.8.8
+ **/
+gchar **
+pk_update_detail_get_bugzilla_urls (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->bugzilla_urls;
+}
+
+/**
+ * pk_update_detail_get_cve_urls:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail CVE URLs.
+ *
+ * Return value: (transfer none): string values
+ *
+ * Since:0.8.8
+ **/
+gchar **
+pk_update_detail_get_cve_urls (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->cve_urls;
+}
+
+/**
+ * pk_update_detail_get_restart:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail restart kind.
+ *
+ * Return value: enum values
+ *
+ * Since:0.8.8
+ **/
+PkRestartEnum
+pk_update_detail_get_restart (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, PK_RESTART_ENUM_UNKNOWN);
+	return update_detail->priv->restart;
+}
+
+/**
+ * pk_update_detail_get_update_text:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail update text.
+ *
+ * Return value: string values
+ *
+ * Since:0.8.8
+ **/
+const gchar *
+pk_update_detail_get_update_text (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->update_text;
+}
+
+/**
+ * pk_update_detail_get_changelog:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail changelog.
+ *
+ * Return value: string values
+ *
+ * Since:0.8.8
+ **/
+const gchar *
+pk_update_detail_get_changelog (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->changelog;
+}
+
+/**
+ * pk_update_detail_get_state:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail state.
+ *
+ * Return value: enum value
+ *
+ * Since:0.8.8
+ **/
+PkUpdateStateEnum
+pk_update_detail_get_state (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, PK_UPDATE_STATE_ENUM_UNKNOWN);
+	return update_detail->priv->state;
+}
+
+/**
+ * pk_update_detail_get_issued:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail issued string.
+ *
+ * Return value: string values
+ *
+ * Since:0.8.8
+ **/
+const gchar *
+pk_update_detail_get_issued (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->issued;
+}
+
+/**
+ * pk_update_detail_get_updated:
+ * @update_detail: a #PkUpdateDetail instance
+ *
+ * Gets the update detail updated string.
+ *
+ * Return value: string values
+ *
+ * Since:0.8.8
+ **/
+const gchar *
+pk_update_detail_get_updated (PkUpdateDetail *update_detail)
+{
+	g_return_val_if_fail (update_detail != NULL, NULL);
+	return update_detail->priv->updated;
+}
 
 /**
  * pk_update_detail_get_property:
