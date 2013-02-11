@@ -3314,6 +3314,73 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
 	pk_backend_job_thread_create (job, backend_repo_set_data_thread, NULL, NULL);
 }
 
+/**
+ * pk_backend_what_provides_decompose: maps enums to provides
+ */
+static gchar **
+pk_backend_what_provides_decompose (PkBackendJob *job,
+				    PkProvidesEnum provides,
+				    gchar **values)
+{
+	guint i;
+	guint len;
+	gchar **search = NULL;
+	GPtrArray *array = NULL;
+
+	/* iter on each provide string, and wrap it with the fedora prefix - unless different to openSUSE */
+	len = g_strv_length (values);
+	array = g_ptr_array_new_with_free_func (g_free);
+	for (i=0; i<len; i++) {
+		MIL << provides << " " << values[i] << endl;
+		/* compatibility with previous versions of GPK */
+		if (g_str_has_prefix (values[i], "gstreamer0.10(") ||
+		    g_str_has_prefix (values[i], "gstreamer1(")) {
+			g_ptr_array_add (array, g_strdup (values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_FONT) {
+			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+			g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER) {
+			g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_PLASMA_SERVICE) {
+			/* We need to allow the Plasma version to be specified. */
+			if (g_str_has_prefix (values[i], "plasma")) {
+				g_ptr_array_add (array, g_strdup (values[i]));
+			} else {
+				/* For compatibility, we default to plasma4. */
+				g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
+			}
+		} else if (provides == PK_PROVIDES_ENUM_ANY) {
+			/* We need to allow the Plasma version to be specified. */
+			if (g_str_has_prefix (values[i], "plasma")) {
+				g_ptr_array_add (array, g_strdup (values[i]));
+			} else {
+				g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
+				g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
+			}
+		} else {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
+						  "provide type %s not supported",
+						  pk_provides_enum_to_string (provides));
+			goto out;
+		}
+	}
+	search = pk_ptr_array_to_strv (array);
+	for (i = 0; search[i] != NULL; i++)
+		g_debug ("Querying provide '%s'", search[i]);
+out:
+	return search;
+}
+
 static void
 backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -3336,10 +3403,9 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-	const gchar *search = values[0]; //Fixme - support possible multi1ple search values (logical OR)
 	ResPool pool = zypp_build_pool (zypp, true);
 
-	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
+	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", values[0]) == 0) {
 		// solver run
 		Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
@@ -3375,18 +3441,25 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 		}
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	} else {
-		Capability cap (search);
-		sat::WhatProvides prov (cap);
-
-		for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
-			if (zypp_filter_solvable (_filters, *it))
-				continue;
-
-			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-			zypp_backend_package (job, info, *it,  make<ResObject>(*it)->summary().c_str ());
+		gchar **search = pk_backend_what_provides_decompose (job,
+								     provides,
+								     values);
+		
+		guint len = g_strv_length (search);
+		for (guint i=0; i<len; i++) {
+			MIL << search[i] << endl;
+			Capability cap (search[i]);
+			sat::WhatProvides prov (cap);
+			
+			for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
+				if (zypp_filter_solvable (_filters, *it))
+					continue;
+				
+				PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+				zypp_backend_package (job, info, *it,  make<ResObject>(*it)->summary().c_str ());
+			}
 		}
 	}
-
 	pk_backend_job_finished (job);
 }
 
