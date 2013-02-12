@@ -419,6 +419,17 @@ out:
 }
 
 /**
+ * pk_offline_update_loop_quit_cb:
+ **/
+static gboolean
+pk_offline_update_loop_quit_cb (gpointer user_data)
+{
+	GMainLoop *loop = (GMainLoop *) user_data;
+	g_main_loop_quit (loop);
+	return FALSE;
+}
+
+/**
  * main:
  **/
 int
@@ -430,6 +441,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	GFile *file = NULL;
 	gint retval;
+	GMainLoop *loop = NULL;
 	PkResults *results;
 	PkTask *task = NULL;
 	PkProgressBar *progressbar = NULL;
@@ -502,6 +514,12 @@ main (int argc, char *argv[])
 
 	retval = EXIT_SUCCESS;
 out:
+	/* if we failed, we pause to show any error on the screen */
+	if (retval != EXIT_SUCCESS) {
+		loop = g_main_loop_new (NULL, FALSE);
+		g_timeout_add_seconds (10, pk_offline_update_loop_quit_cb, loop);
+		g_main_loop_run (loop);
+	}
 	pk_offline_update_reboot ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
@@ -511,5 +529,7 @@ out:
 		g_object_unref (file);
 	if (task != NULL)
 		g_object_unref (task);
+	if (loop != NULL)
+		g_main_loop_unref (loop);
 	return retval;
 }
