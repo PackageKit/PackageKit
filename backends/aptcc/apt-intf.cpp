@@ -2179,7 +2179,6 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
         PkBitfield intallFilters;
         intallFilters = pk_bitfield_from_enums (
                     PK_FILTER_ENUM_NOT_INSTALLED,
-                    PK_FILTER_ENUM_ARCH,
                     -1);
         install = resolvePackageIds(installPkgs, intallFilters);
 
@@ -2187,7 +2186,6 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
         PkBitfield removeFilters;
         removeFilters = pk_bitfield_from_enums (
                     PK_FILTER_ENUM_INSTALLED,
-                    PK_FILTER_ENUM_ARCH,
                     -1);
         remove = resolvePackageIds(removePkgs, removeFilters);
 
@@ -2221,10 +2219,8 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     string arch = deb.architecture();
     string aptArch = _config->Find("APT::Architecture");
 
-    // TODO: Perform this check _before_ installing all dependencies. (The whole thing needs
-    //       some rethinking anyway)
-    if ((arch != "all") &&
-            (arch != aptArch)) {
+    // If we are not on multi-arch make sure we got the correct arch package
+    if (!m_isMultiArch && arch != "all" && arch != aptArch) {
         cout << arch << " vs. " << aptArch << endl;
         gchar *msg = g_strdup_printf ("Package has wrong architecture, it is %s, but we need %s",
                                       arch.c_str(), aptArch.c_str());
@@ -2232,6 +2228,9 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
         g_free (msg);
         return false;
     }
+    
+    // Close the package cache to release the lock
+    m_cache->Close();
 
     // Build package-id for the new package
     gchar *deb_package_id = pk_package_id_build(deb.packageName ().c_str (),
