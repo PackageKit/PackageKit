@@ -118,6 +118,15 @@
         </doc:description>
       </doc:doc>
     </property>
+    <property name="TransactionFlags" type="t" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The flags set for this transaction, e.g. SIMULATE or ONLY_DOWNLOAD.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
 
     <!--*****************************************************************************************-->
     <method name="SetHints">

@@ -55,6 +55,7 @@ struct _PkProgressPrivate
 	guint				 remaining_time;
 	guint				 speed;
 	guint64				 download_size_remaining;
+	guint64				 transaction_flags;
 	guint				 uid;
 	PkItemProgress			*item_progress;
 	PkPackage			*package;
@@ -73,6 +74,7 @@ enum {
 	PROP_REMAINING_TIME,
 	PROP_SPEED,
 	PROP_DOWNLOAD_SIZE_REMAINING,
+	PROP_TRANSACTION_FLAGS,
 	PROP_UID,
 	PROP_PACKAGE,
 	PROP_ITEM_PROGRESS,
@@ -125,6 +127,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_DOWNLOAD_SIZE_REMAINING:
 		g_value_set_uint64 (value, progress->priv->download_size_remaining);
+		break;
+	case PROP_TRANSACTION_FLAGS:
+		g_value_set_uint64 (value, progress->priv->transaction_flags);
 		break;
 	case PROP_UID:
 		g_value_set_uint (value, progress->priv->uid);
@@ -409,6 +414,27 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
 }
 
 /**
+ * pk_progress_set_transaction_flags:
+ *
+ * Since: 0.8.8
+ **/
+gboolean
+pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_flags)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->transaction_flags == transaction_flags)
+		return FALSE;
+
+	/* new value */
+	progress->priv->transaction_flags = transaction_flags;
+	g_object_notify (G_OBJECT(progress), "transaction-flags");
+
+	return TRUE;
+}
+
+/**
  * pk_progress_set_uid:
  *
  * Since: 0.5.2
@@ -629,6 +655,16 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
+
+	/**
+	 * PkProgress:transaction-flags:
+	 *
+	 * Since: 0.8.8
+	 */
+	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_TRANSACTION_FLAGS, pspec);
 
 	/**
 	 * PkProgress:uid:

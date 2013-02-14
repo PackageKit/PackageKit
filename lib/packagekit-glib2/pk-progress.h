@@ -81,6 +81,7 @@ typedef enum {
 	PK_PROGRESS_TYPE_UID,
 	PK_PROGRESS_TYPE_PACKAGE,
 	PK_PROGRESS_TYPE_ITEM_PROGRESS,
+	PK_PROGRESS_TYPE_TRANSACTION_FLAGS,
 	PK_PROGRESS_TYPE_INVALID
 } PkProgressType;
 
@@ -112,6 +113,8 @@ gboolean	 pk_progress_set_speed			(PkProgress		*progress,
 							 guint			 speed);
 gboolean	 pk_progress_set_download_size_remaining(PkProgress		*progress,
 							 guint64		 download_size_remaining);
+gboolean	 pk_progress_set_transaction_flags	(PkProgress		*progress,
+							 guint64		 transaction_flags);
 gboolean	 pk_progress_set_uid			(PkProgress		*progress,
 							 guint			 uid);
 gboolean	 pk_progress_set_package		(PkProgress		*progress,

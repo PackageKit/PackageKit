@@ -4194,6 +4194,11 @@ pk_transaction_install_files (PkTransaction *transaction,
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
 
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
+
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
 						   PK_ROLE_ENUM_INSTALL_FILES,
@@ -4270,6 +4275,11 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	transaction->priv->cached_transaction_flags = transaction_flags;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
+
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -4469,6 +4479,11 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	transaction->priv->cached_allow_deps = allow_deps;
 	transaction->priv->cached_autoremove = autoremove;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
+
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
 
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
@@ -5151,6 +5166,11 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPDATE_PACKAGES);
 
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
+
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
 						   PK_ROLE_ENUM_UPDATE_PACKAGES,
@@ -5309,6 +5329,11 @@ pk_transaction_repair_system (PkTransaction *transaction,
 	transaction->priv->cached_transaction_flags = transaction_flags;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPAIR_SYSTEM);
 
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
+
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
 						   PK_ROLE_ENUM_REPAIR_SYSTEM,
@@ -5388,6 +5413,10 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	}
 	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0) {
 		retval = g_variant_new_uint64 (priv->download_size_remaining);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "TransactionFlags") == 0) {
+		retval = g_variant_new_uint64 (priv->cached_transaction_flags);
 		goto out;
 	}
 out:
