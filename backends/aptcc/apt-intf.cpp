@@ -2430,9 +2430,9 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     }
     
     // Display statistics
-    double FetchBytes = fetcher.FetchNeeded();
-    double FetchPBytes = fetcher.PartialPresent();
-    double DebBytes = fetcher.TotalNeeded();
+    unsigned long long FetchBytes = fetcher.FetchNeeded();
+    unsigned long long FetchPBytes = fetcher.PartialPresent();
+    unsigned long long DebBytes = fetcher.TotalNeeded();
     if (DebBytes != (*m_cache)->DebSize()) {
         cout << DebBytes << ',' << (*m_cache)->DebSize() << endl;
         cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
