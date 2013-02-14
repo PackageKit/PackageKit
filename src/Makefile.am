@@ -263,7 +263,7 @@ PackageKitPlugin_1_0_gir_CFLAGS = $(AM_CPPFLAGS)						\
 				-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 				-DI_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
 PackageKitPlugin_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
-					--symbol-prefix=pk_ \
+					--symbol-prefix=pk \
 					--warn-all \
 					--include-uninstalled=$(top_builddir)/lib/packagekit-glib2/PackageKitGlib-1.0.gir \
 					--add-include-path=$(srcdir) \
