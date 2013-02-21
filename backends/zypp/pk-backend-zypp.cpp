@@ -1243,7 +1243,7 @@ zypp_get_updates (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &candidates)
 			pi_it_t cb = candidates.begin (), ce = candidates.end (), ci;
 			for (ci = cb; ci != ce; ++ci) {
 				if (!isKind<Patch>(ci->resolvable()))
-				continue;
+					continue;
 
 				Patch::constPtr patch = asKind<Patch>(ci->resolvable());
 
@@ -3157,7 +3157,23 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		ui::Selectable::Ptr sel( ui::Selectable::get( solvable ));
+		
 		PoolItem item(solvable);
+		// patches are special - they are not installed and can't have update candidates
+		if (sel->kind() != ResKind::patch) {
+			MIL << "sel " << sel->kind() << " " << sel->ident() << endl;
+			if (sel->installedEmpty()) {
+				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
+				return;
+			}
+			item = sel->updateCandidateObj();
+			if (!item) {
+				 zypp_backend_finished_error(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "There is no update candidate for %s", sel->installedObj().satSolvable().asString().c_str());
+				return;
+			}
+		}
+
 		item.status ().setToBeInstalled (ResStatus::USER);
 		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
 		zypp_check_restart (&restart, patch);
