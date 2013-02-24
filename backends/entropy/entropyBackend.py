@@ -1336,7 +1336,14 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         # this is the part that takes time
         self.percentage(0)
         try:
-            update, remove, fine, spm_fine = self._entropy.calculate_updates()
+            outcome = self._entropy.calculate_updates()
+
+            if isinstance(outcome, dict):
+                updates, remove, fine, spm_fine = outcome['update'], \
+                    outcome['remove'], outcome['fine'], outcome['spm_fine']
+            else:
+                updates, remove, fine, spm_fine = outcome
+
         except SystemDatabaseError as err:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                 "System Repository error: %s" % (err,))
