@@ -120,8 +120,12 @@ enum PkgSearchType {
 	SEARCH_TYPE_RESOLVE = 3
 };
 
-// helper function to restore the pool status
-// after doing operations on it
+/// \class PoolStatusSaver
+/// \brief Helper to restore the pool status after doing operations on it.
+///
+/// \note It's important that a PoolStatusSaver is instantiated \b after
+/// the pool is built/refreshed. Otherwise you lose all the locks applied
+/// during refresh. (bnc#804054)
 class PoolStatusSaver : private base::NonCopyable
 {
 public:
@@ -1732,8 +1736,8 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 
 	pk_backend_job_set_percentage (job, 10);
 
-	PoolStatusSaver saver;
 	ResPool pool = zypp_build_pool (zypp, true);
+	PoolStatusSaver saver;
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 
@@ -2463,7 +2467,6 @@ static void
 backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	PoolStatusSaver saver;
 
 	PkBitfield transaction_flags = 0;
 	gchar **package_ids;
@@ -2491,6 +2494,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 	try
 	{
 		ResPool pool = zypp_build_pool (zypp, TRUE);
+		PoolStatusSaver saver;
 		pk_backend_job_set_percentage (job, 10);
 		vector<PoolItem> *items = new vector<PoolItem> ();
 
@@ -2581,7 +2585,6 @@ static void
 backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	PoolStatusSaver saver;
 	PkBitfield transaction_flags = 0;
 	gboolean autoremove = false;
 	gboolean allow_deps = false;
@@ -2613,6 +2616,7 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	target->load ();
 	pk_backend_job_set_percentage (job, 10);
 
+	PoolStatusSaver saver;
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		
@@ -3137,8 +3141,6 @@ static void
 backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	PoolStatusSaver saver;
-
 	PkBitfield transaction_flags = 0;
 	gchar **package_ids;
 	g_variant_get(params, "(t^a&s)",
@@ -3154,6 +3156,8 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+
+	PoolStatusSaver saver;
 
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
