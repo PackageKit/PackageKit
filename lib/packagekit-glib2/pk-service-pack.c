@@ -207,7 +207,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	archive_read_support_format_tar (arch);
 
 	/* open the tar file */
-	r = archive_read_open_file (arch, filename, 10240);
+	r = archive_read_open_filename (arch, filename, 10240);
 	if (r) {
 		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
 				      "cannot open: %s", archive_error_string (arch));
@@ -245,8 +245,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 out:
 	/* close the archive */
 	if (arch != NULL) {
-		archive_read_close (arch);
-		archive_read_finish (arch);
+		archive_read_free (arch);
 	}
 
 	/* switch back to PWD */
@@ -602,8 +601,7 @@ out:
 
 	/* close the archive */
 	if (arch != NULL) {
-		archive_write_close (arch);
-		archive_write_finish (arch);
+		archive_write_free (arch);
 	}
 	return ret;
 }
