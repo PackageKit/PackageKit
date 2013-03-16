@@ -32,6 +32,7 @@
 /* tiny helper to help us do the async operation */
 typedef struct {
 	GError		**error;
+	GMainContext    *context;
 	GMainLoop	*loop;
 	PkResults	*results;
 	PkProgress	*progress;
@@ -77,28 +78,32 @@ PkResults *
 pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
 		   PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_resolve_async (client, filters, packages, cancellable, progress_callback, progress_user_data,
-				 (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				 (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -127,28 +132,32 @@ PkResults *
 pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_search_names_async (client, filters, values, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -178,28 +187,32 @@ PkResults *
 pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_search_details_async (client, filters, values, cancellable, progress_callback, progress_user_data,
-					(GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -227,28 +240,32 @@ PkResults *
 pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_search_groups_async (client, filters, values, cancellable, progress_callback, progress_user_data,
-				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				      (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -276,28 +293,32 @@ PkResults *
 pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_search_files_async (client, filters, values, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -325,28 +346,32 @@ PkResults *
 pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_details_async (client, package_ids, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -374,28 +399,32 @@ PkResults *
 pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_update_detail_async (client, package_ids, cancellable, progress_callback, progress_user_data,
-					   (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					   (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -423,28 +452,32 @@ PkResults *
 pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_download_packages_async (client, package_ids, directory, cancellable, progress_callback, progress_user_data,
-					   (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					   (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -471,28 +504,32 @@ PkResults *
 pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_updates_async (client, filters, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -519,28 +556,32 @@ PkResults *
 pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *cancellable,
 				PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_old_transactions_async (client, number, cancellable, progress_callback, progress_user_data,
-					      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					      (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -556,7 +597,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Get the packages that depend this one, i.e. child->parent.
+ * Get the packages that depend this one, i.e. child.parent.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
@@ -569,28 +610,32 @@ PkResults *
 pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_depends_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -617,28 +662,32 @@ PkResults *
 pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_packages_async (client, filters, cancellable, progress_callback, progress_user_data,
-				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				      (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -654,7 +703,7 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Get the packages that require this one, i.e. parent->child.
+ * Get the packages that require this one, i.e. parent.child.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
@@ -667,28 +716,32 @@ PkResults *
 pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_requires_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
-				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				      (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -719,28 +772,32 @@ PkResults *
 pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
 			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_what_provides_async (client, filters, provides, values, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -767,28 +824,32 @@ PkResults *
 pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
 			       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_distro_upgrades_async (client, cancellable, progress_callback, progress_user_data,
-					     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -815,28 +876,32 @@ PkResults *
 pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancellable,
 		     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_files_async (client, package_ids, cancellable, progress_callback, progress_user_data,
-				   (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				   (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -862,28 +927,30 @@ PkResults *
 pk_client_get_categories (PkClient *client, GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
 
 	/* run async method */
 	pk_client_get_categories_async (client, cancellable, progress_callback, progress_user_data,
-					(GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -922,16 +989,18 @@ pk_client_remove_packages (PkClient *client,
 			   gpointer progress_user_data,
 			   GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_remove_packages_async (client,
@@ -943,15 +1012,17 @@ pk_client_remove_packages (PkClient *client,
 					 progress_callback,
 					 progress_user_data,
 					 (GAsyncReadyCallback) pk_client_generic_finish_sync,
-					 helper);
+					 &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -981,28 +1052,32 @@ PkResults *
 pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancellable,
 			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_refresh_cache_async (client, force, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1035,28 +1110,32 @@ pk_client_install_packages (PkClient *client,
 			    gpointer progress_user_data,
 			    GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_install_packages_async (client, transaction_flags, package_ids, cancellable, progress_callback, progress_user_data,
-					  (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					  (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1085,28 +1164,32 @@ PkResults *
 pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_install_signature_async (client, type, key_id, package_id, cancellable, progress_callback, progress_user_data,
-					   (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					   (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1139,28 +1222,32 @@ pk_client_update_packages (PkClient *client,
 			   gpointer progress_user_data,
 			   GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_update_packages_async (client, transaction_flags, package_ids, cancellable, progress_callback, progress_user_data,
-					 (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					 (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1194,28 +1281,30 @@ pk_client_install_files (PkClient *client,
 			 gpointer progress_user_data,
 			 GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_install_files_async (client, transaction_flags, files, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1242,28 +1331,32 @@ PkResults *
 pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_accept_eula_async (client, eula_id, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1290,28 +1383,32 @@ PkResults *
 pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *cancellable,
 			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_repo_list_async (client, filters, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1339,28 +1436,32 @@ PkResults *
 pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_repo_enable_async (client, repo_id, enabled, cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1390,28 +1491,32 @@ PkResults *
 pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
 			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_repo_set_data_async (client, repo_id, parameter, value, cancellable, progress_callback, progress_user_data,
-				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1443,29 +1548,33 @@ pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKin
 			  GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_upgrade_system_async (client, distro_id, upgrade_kind,
 					cancellable, progress_callback, progress_user_data,
-					(GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1500,16 +1609,18 @@ pk_client_repair_system (PkClient *client,
 			 gpointer progress_user_data,
 			 GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_repair_system_async (client,
@@ -1518,15 +1629,17 @@ pk_client_repair_system (PkClient *client,
 				       progress_callback,
 				       progress_user_data,
 				       (GAsyncReadyCallback) pk_client_generic_finish_sync,
-				       helper);
+				       &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1553,28 +1666,32 @@ PkResults *
 pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
 		 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_adopt_async (client, transaction_id, cancellable, progress_callback, progress_user_data,
-			       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+			       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	results = helper->results;
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return results;
 }
@@ -1613,28 +1730,32 @@ pk_client_get_progress_finish_sync (PkClient *client, GAsyncResult *res, PkClien
 PkProgress *
 pk_client_get_progress (PkClient *client, const gchar *transaction_id, GCancellable *cancellable, GError **error)
 {
-	PkClientHelper *helper;
+	PkClientHelper helper;
 	PkProgress *progress;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkClientHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_client_get_progress_async (client, transaction_id, cancellable,
-				      (GAsyncReadyCallback) pk_client_get_progress_finish_sync, helper);
+				      (GAsyncReadyCallback) pk_client_get_progress_finish_sync, &helper);
 
-	g_main_loop_run (helper->loop);
+	g_main_loop_run (helper.loop);
 
-	progress = helper->progress;
+	progress = helper.progress;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return progress;
 }
