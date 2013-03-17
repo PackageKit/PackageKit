@@ -210,16 +210,18 @@ pk_backend_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	static gint recent = 101;
 	gsize overall = percent + (current - 1) * 100;
 
-	/* TODO: revert when fixed upstream */
+	/* TODO: remove block if/when this is made consistent upstream */
 	if (type == ALPM_PROGRESS_CONFLICTS_START ||
 	    type == ALPM_PROGRESS_DISKSPACE_START ||
 	    type == ALPM_PROGRESS_INTEGRITY_START ||
-	    type == ALPM_PROGRESS_LOAD_START) {
+	    type == ALPM_PROGRESS_LOAD_START ||
+	    type == ALPM_PROGRESS_KEYRING_START) {
 		if (current < targets) {
-			overall = percent + current++ * 100;
+			++current;
+			overall += 100;
 		}
 	}
-	
+
 	if (current < 1 || targets < current) {
 		g_warning ("TODO: CURRENT/TARGETS FAILED for %d", type);
 	}
@@ -233,11 +235,14 @@ pk_backend_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	switch (type) {
 		case ALPM_PROGRESS_ADD_START:
 		case ALPM_PROGRESS_UPGRADE_START:
+		case ALPM_PROGRESS_DOWNGRADE_START:
+		case ALPM_PROGRESS_REINSTALL_START:
 		case ALPM_PROGRESS_REMOVE_START:
 		case ALPM_PROGRESS_CONFLICTS_START:
 		case ALPM_PROGRESS_DISKSPACE_START:
 		case ALPM_PROGRESS_INTEGRITY_START:
 		case ALPM_PROGRESS_LOAD_START:
+		case ALPM_PROGRESS_KEYRING_START:
 			if (percent == recent) {
 				break;
 			}
@@ -388,6 +393,17 @@ pk_backend_output (PkBackend *self, const gchar *output)
 }
 
 static void
+pk_backend_output_once (PkBackend *self, alpm_pkg_t *pkg, const gchar *output)
+{
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (pkg != NULL);
+	g_return_if_fail (output != NULL);
+
+	pk_backend_message (self, PK_MESSAGE_ENUM_UNKNOWN, "<b>%s</b>\n%s",
+			    alpm_pkg_get_name (pkg), output);
+}
+
+static void
 pk_backend_transaction_dep_resolve (PkBackend *self)
 {
 	g_return_if_fail (self != NULL);
@@ -436,8 +452,10 @@ pk_backend_transaction_add_done (PkBackend *self, alpm_pkg_t *pkg)
 		pk_backend_output (self, "Optional dependencies:\n");
 
 		for (i = optdepends; i != NULL; i = i->next) {
-			const gchar *depend = i->data;
+			gchar *depend = alpm_dep_compute_string (i->data);
 			gchar *output = g_strdup_printf ("%s\n", depend);
+			free (depend);
+
 			pk_backend_output (self, output);
 			g_free (output);
 		}
@@ -500,43 +518,103 @@ pk_backend_transaction_upgrade_start (PkBackend *self, alpm_pkg_t *pkg,
 	pk_backend_output_start (self, pkg);
 }
 
-static void
-pk_backend_transaction_upgrade_done (PkBackend *self, alpm_pkg_t *pkg,
-				     alpm_pkg_t *old)
+static gint
+alpm_depend_compare (gconstpointer a, gconstpointer b)
 {
-	const gchar *name, *pre, *post;
-	const alpm_list_t *i;
+	const alpm_depend_t *first = a;
+	const alpm_depend_t *second = b;
+	gint result;
+
+	g_return_val_if_fail (first != NULL, 0);
+	g_return_val_if_fail (second != NULL, 0);
+
+	result = g_strcmp0 (first->name, second->name);
+	if (result == 0) {
+		result = first->mod - second->mod;
+		if (result == 0) {
+			result = g_strcmp0 (first->version, second->version);
+			if (result == 0) {
+				result = g_strcmp0 (first->desc, second->desc);
+			}
+		}
+	}
+
+	return result;
+}
+
+static void
+pk_backend_transaction_process_new_optdepends (PkBackend *self, alpm_pkg_t *pkg,
+					       alpm_pkg_t *old)
+{
 	alpm_list_t *optdepends;
+	const alpm_list_t *i;
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (pkg != NULL);
 	g_return_if_fail (old != NULL);
-	g_return_if_fail (alpm != NULL);
-
-	name = alpm_pkg_get_name (pkg);
-	pre = alpm_pkg_get_version (old);
-	post = alpm_pkg_get_version (pkg);
-
-	alpm_logaction (alpm, PK_LOG_PREFIX, "upgraded %s (%s -> %s)\n", name,
-			pre, post);
-	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_list_diff (alpm_pkg_get_optdepends (pkg),
 				     alpm_pkg_get_optdepends (old),
-				     (alpm_list_fn_cmp) g_strcmp0);
-	if (optdepends != NULL) {
-		pk_backend_output (self, "New optional dependencies:\n");
+				     alpm_depend_compare);
+	if (optdepends == NULL) {
+		return;
+	}
 
-		for (i = optdepends; i != NULL; i = i->next) {
-			const gchar *depend = i->data;
-			gchar *output = g_strdup_printf ("%s\n", depend);
-			pk_backend_output (self, output);
-			g_free (output);
-		}
+	pk_backend_output (self, "New optional dependencies:\n");
 
-		alpm_list_free (optdepends);
+	for (i = optdepends; i != NULL; i = i->next) {
+		gchar *depend = alpm_dep_compute_string (i->data);
+		gchar *output = g_strdup_printf ("%s\n", depend);
+		free (depend);
+
+		pk_backend_output (self, output);
+		g_free (output);
+	}
+
+	alpm_list_free (optdepends);
+}
+
+static void
+pk_backend_transaction_upgrade_done (PkBackend *self, alpm_pkg_t *pkg,
+				     alpm_pkg_t *old, gint direction)
+{
+	const gchar *name, *pre, *post;
+
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (pkg != NULL);
+	g_return_if_fail (old != NULL || direction == 0);
+	g_return_if_fail (alpm != NULL);
+
+	name = alpm_pkg_get_name (pkg);
+	if (direction != 0) {
+		pre = alpm_pkg_get_version (old);
+	}
+	post = alpm_pkg_get_version (pkg);
+
+	if (direction > 0) {
+		alpm_logaction (alpm, PK_LOG_PREFIX, "upgraded %s (%s -> %s)\n",
+				name, pre, post);
+	} else if (direction < 0) {
+		alpm_logaction (alpm, PK_LOG_PREFIX,
+				"downgraded %s (%s -> %s)\n", name, pre, post);
+	} else {
+		alpm_logaction (alpm, PK_LOG_PREFIX, "reinstalled %s (%s)\n",
+				name, post);
+	}
+	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
+
+	if (direction != 0) {
+		pk_backend_transaction_process_new_optdepends (self, pkg, old);
 	}
 	pk_backend_output_end (self);
+}
+
+static void
+pk_backend_transaction_sig_check (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	pk_backend_set_status (self, PK_STATUS_ENUM_SIG_CHECK);
 }
 
 static void
@@ -548,12 +626,46 @@ pk_backend_transaction_setup (PkBackend *self)
 }
 
 static void
+pk_backend_transaction_repackaging (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	pk_backend_set_status (self, PK_STATUS_ENUM_REPACKAGING);
+}
+
+static void
+pk_backend_transaction_download (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	pk_backend_set_status (self, PK_STATUS_ENUM_DOWNLOAD);
+}
+
+static void
+pk_backend_transaction_optdepend_required (PkBackend *self, alpm_pkg_t *pkg,
+					   alpm_depend_t *optdepend)
+{
+	gchar *depend, *output;
+
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (pkg != NULL);
+	g_return_if_fail (optdepend != NULL);
+
+	depend = alpm_dep_compute_string (optdepend);
+	output = g_strdup_printf ("optionally requires %s\n", depend);
+	free (depend);
+
+	pk_backend_output_once (self, pkg, output);
+	g_free (output);
+}
+
+static void
 pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 				 gpointer old)
 {
 	g_return_if_fail (backend != NULL);
 
-	/* figure out the backend status and package info */
+	/* figure out backend status and process package changes */
 	switch (event) {
 		case ALPM_EVENT_CHECKDEPS_START:
 		case ALPM_EVENT_RESOLVEDEPS_START:
@@ -562,7 +674,6 @@ pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 
 		case ALPM_EVENT_FILECONFLICTS_START:
 		case ALPM_EVENT_INTERCONFLICTS_START:
-		case ALPM_EVENT_INTEGRITY_START:
 		case ALPM_EVENT_DELTA_INTEGRITY_START:
 		case ALPM_EVENT_DISKSPACE_START:
 			pk_backend_transaction_test_commit (backend);
@@ -585,21 +696,71 @@ pk_backend_transaction_event_cb (alpm_event_t event, gpointer data,
 			break;
 
 		case ALPM_EVENT_UPGRADE_START:
+		case ALPM_EVENT_DOWNGRADE_START:
+		case ALPM_EVENT_REINSTALL_START:
 			pk_backend_transaction_upgrade_start (backend, data,
 							      old);
 			break;
 
 		case ALPM_EVENT_UPGRADE_DONE:
 			pk_backend_transaction_upgrade_done (backend, data,
-							     old);
+							     old, 1);
+			break;
+
+		case ALPM_EVENT_DOWNGRADE_DONE:
+			pk_backend_transaction_upgrade_done (backend, data,
+							     old, -1);
+			break;
+
+		case ALPM_EVENT_REINSTALL_DONE:
+			pk_backend_transaction_upgrade_done (backend, data,
+							     old, 0);
+			break;
+
+		case ALPM_EVENT_INTEGRITY_START:
+		case ALPM_EVENT_KEYRING_START:
+			pk_backend_transaction_sig_check (backend);
 			break;
 
 		case ALPM_EVENT_LOAD_START:
 			pk_backend_transaction_setup (backend);
 			break;
 
+		case ALPM_EVENT_DELTA_PATCHES_START:
+		case ALPM_EVENT_DELTA_PATCH_START:
+			pk_backend_transaction_repackaging (backend);
+			break;
+
 		case ALPM_EVENT_SCRIPTLET_INFO:
 			pk_backend_output (backend, data);
+			break;
+
+		case ALPM_EVENT_RETRIEVE_START:
+			pk_backend_transaction_download (backend);
+			break;
+
+		case ALPM_EVENT_OPTDEP_REQUIRED:
+			/* TODO: remove if this results in notification spam */
+			pk_backend_transaction_optdepend_required (backend,
+								   data, old);
+			break;
+
+		case ALPM_EVENT_CHECKDEPS_DONE:
+		case ALPM_EVENT_FILECONFLICTS_DONE:
+		case ALPM_EVENT_RESOLVEDEPS_DONE:
+		case ALPM_EVENT_INTERCONFLICTS_DONE:
+		case ALPM_EVENT_INTEGRITY_DONE:
+		case ALPM_EVENT_LOAD_DONE:
+		case ALPM_EVENT_DELTA_INTEGRITY_DONE:
+		case ALPM_EVENT_DELTA_PATCHES_DONE:
+		case ALPM_EVENT_DELTA_PATCH_DONE:
+		case ALPM_EVENT_DELTA_PATCH_FAILED:
+		case ALPM_EVENT_DISKSPACE_DONE:
+		case ALPM_EVENT_DATABASE_MISSING:
+		case ALPM_EVENT_KEYRING_DONE:
+		case ALPM_EVENT_KEY_DOWNLOAD_START:
+		case ALPM_EVENT_KEY_DOWNLOAD_DONE:
+			/* ignored */
 			break;
 
 		default:
@@ -735,7 +896,7 @@ alpm_conflict_build_list (const alpm_list_t *i)
 			g_string_append_printf (list, "%s <-> %s (%s), ",
 						conflict->package1,
 						conflict->package2, reason);
-			g_free (reason);
+			free (reason);
 		}
 	}
 

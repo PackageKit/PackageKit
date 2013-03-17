@@ -266,6 +266,7 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 	}
 
 	alpm_logaction (alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
+	pk_backend_set_status (self, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
 	dlcb = alpm_option_get_dlcb (alpm);
 	totaldlcb = alpm_option_get_totaldlcb (alpm);

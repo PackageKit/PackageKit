@@ -184,7 +184,7 @@ pk_backend_get_depends_thread (PkBackend *self)
 			depend = alpm_dep_compute_string (depends->data);
 			pkgs = pk_backend_find_provider (self, pkgs, depend,
 							 &error);
-			g_free (depend);
+			free (depend);
 		}
 	}
 
