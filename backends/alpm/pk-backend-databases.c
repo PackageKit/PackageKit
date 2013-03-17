@@ -140,8 +140,8 @@ disabled_repos_configure (GHashTable *table, gboolean only_trusted,
 	g_return_val_if_fail (table != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	if (alpm_db_unregister_all (alpm) < 0) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+	if (alpm_unregister_all_syncdbs (alpm) < 0) {
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 		return FALSE;
@@ -161,9 +161,9 @@ disabled_repos_configure (GHashTable *table, gboolean only_trusted,
 			level &= ~ALPM_SIG_USE_DEFAULT;
 		}
 
-		db = alpm_db_register_sync (alpm, repo->name, level);
+		db = alpm_register_syncdb (alpm, repo->name, level);
 		if (db == NULL) {
-			enum _alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
 				     repo->name, alpm_strerror (errno));
 			return FALSE;
@@ -282,7 +282,7 @@ pk_backend_get_repo_list_thread (PkBackend *self)
 	g_return_val_if_fail (disabled != NULL, FALSE);
 
 	/* emit enabled repos */
-	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
+	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
 		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
 
@@ -368,13 +368,13 @@ pk_backend_repo_disable_thread (PkBackend *self)
 
 	g_return_val_if_fail (repo != NULL, FALSE);
 
-	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
+	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
 		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *name = alpm_db_get_name (db);
 
 		if (g_strcmp0 (repo, name) == 0) {
 			if (alpm_db_unregister (db) < 0) {
-				enum _alpm_errno_t errno = alpm_errno (alpm);
+				alpm_errno_t errno = alpm_errno (alpm);
 				g_set_error (&error, ALPM_ERROR, errno,
 					     "[%s]: %s", repo,
 					     alpm_strerror (errno));

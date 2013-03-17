@@ -42,7 +42,7 @@ alpm_pkg_build_id (alpm_pkg_t *pkg)
 	}
 
 	/* TODO: check correctness */
-	if (alpm_pkg_get_origin (pkg) == PKG_FROM_SYNCDB) {
+	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_SYNCDB) {
 		repo = alpm_db_get_name (alpm_pkg_get_db (pkg));
 	} else {
 		repo = "installed";
@@ -84,7 +84,7 @@ pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 	if (g_strcmp0 (repo_id, "installed") == 0) {
 		db = localdb;
 	} else {
-		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (alpm);
 		for (; i != NULL; i = i->next) {
 			const gchar *repo = alpm_db_get_name (i->data);
 
@@ -140,7 +140,7 @@ pk_backend_resolve_package (PkBackend *self, const gchar *package,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
-	if (alpm_pkg_get_origin (pkg) == PKG_FROM_LOCALDB) {
+	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_LOCALDB) {
 		if (!skip_local) {
 			pk_backend_pkg (self, pkg, PK_INFO_ENUM_INSTALLED);
 		}
@@ -179,7 +179,7 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 			return TRUE;
 		}
 	} else if (!skip_remote) {
-		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (alpm);
 		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
 			if (pkg != NULL) {
@@ -287,7 +287,7 @@ pk_backend_get_details_thread (PkBackend *self)
 		desc = alpm_pkg_get_desc (pkg);
 		url = alpm_pkg_get_url (pkg);
 
-		if (alpm_pkg_get_origin (pkg) == PKG_FROM_LOCALDB) {
+		if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_LOCALDB) {
 			size = alpm_pkg_get_isize (pkg);
 		} else {
 			size = alpm_pkg_download_size (pkg);

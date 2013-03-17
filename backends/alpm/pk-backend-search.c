@@ -374,7 +374,7 @@ pk_backend_search_thread (PkBackend *self)
 		goto out;
 	}
 
-	for (i = alpm_option_get_syncdbs (alpm); i != NULL; i = i->next) {
+	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
 		if (pk_backend_cancelled (self)) {
 			break;
 		}

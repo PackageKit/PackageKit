@@ -63,7 +63,7 @@ alpm_pkg_has_basename (alpm_pkg_t *pkg, const gchar *basename)
 		return TRUE;
 	}
 
-	if (alpm_option_get_usedelta (alpm) == 0) {
+	if (alpm_option_get_deltaratio (alpm) == 0.0) {
 		return FALSE;
 	}
 
@@ -427,7 +427,8 @@ pk_backend_transaction_add_done (PkBackend *self, alpm_pkg_t *pkg)
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction (alpm, "installed %s (%s)\n", name, version);
+	alpm_logaction (alpm, PK_LOG_PREFIX, "installed %s (%s)\n", name,
+			version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_pkg_get_optdepends (pkg);
@@ -467,7 +468,8 @@ pk_backend_transaction_remove_done (PkBackend *self, alpm_pkg_t *pkg)
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction (alpm, "removed %s (%s)\n", name, version);
+	alpm_logaction (alpm, PK_LOG_PREFIX, "removed %s (%s)\n", name,
+			version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 	pk_backend_output_end (self);
 }
@@ -515,7 +517,8 @@ pk_backend_transaction_upgrade_done (PkBackend *self, alpm_pkg_t *pkg,
 	pre = alpm_pkg_get_version (old);
 	post = alpm_pkg_get_version (pkg);
 
-	alpm_logaction (alpm, "upgraded %s (%s -> %s)\n", name, pre, post);
+	alpm_logaction (alpm, PK_LOG_PREFIX, "upgraded %s (%s -> %s)\n", name,
+			pre, post);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_list_diff (alpm_pkg_get_optdepends (pkg),
@@ -623,7 +626,7 @@ pk_backend_transaction_initialize (PkBackend *self, alpm_transflag_t flags,
 	g_return_val_if_fail (cancellable != NULL, FALSE);
 
 	if (alpm_trans_init (alpm, flags) < 0) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 		return FALSE;
@@ -692,6 +695,7 @@ alpm_depend_free (alpm_depend_t *depend)
 {
 	free (depend->name);
 	free (depend->version);
+	free (depend->desc);
 	free (depend);
 }
 
@@ -837,12 +841,12 @@ pk_backend_transaction_simulate (PkBackend *self, GError **error)
 	}
 
 	if (prefix != NULL) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error (error, ALPM_ERROR, errno, "%s: %s", prefix,
 			     alpm_strerror (errno));
 		g_free (prefix);
 	} else {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 	}
@@ -959,12 +963,12 @@ pk_backend_transaction_commit (PkBackend *self, GError **error)
 	}
 
 	if (prefix != NULL) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error (error, ALPM_ERROR, errno, "%s: %s", prefix,
 			     alpm_strerror (errno));
 		g_free (prefix);
 	} else {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 	}
@@ -993,7 +997,7 @@ pk_backend_transaction_end (PkBackend *self, GError **error)
 	}
 
 	if (alpm_trans_release (alpm) < 0) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error_literal (error, ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 		return FALSE;

@@ -48,7 +48,7 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 
 		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
 		if (pkg == NULL || alpm_remove_pkg (alpm, pkg) < 0) {
-			enum _alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s: %s", name,
 				     alpm_strerror (errno));
 			g_strfreev (package);

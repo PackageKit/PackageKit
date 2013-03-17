@@ -284,9 +284,9 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 	backend = self;
 	alpm_option_set_logcb (alpm, pk_backend_logcb);
 
-	localdb = alpm_option_get_localdb (alpm);
+	localdb = alpm_get_localdb (alpm);
 	if (localdb == NULL) {
-		enum _alpm_errno_t errno = alpm_errno (alpm);
+		alpm_errno_t errno = alpm_errno (alpm);
 		g_set_error (error, ALPM_ERROR, errno, "[%s]: %s", "local",
 			     alpm_strerror (errno));
 	}

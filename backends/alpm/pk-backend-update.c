@@ -130,6 +130,20 @@ alpm_pkg_same_pkgver (alpm_pkg_t *a, alpm_pkg_t *b)
 	}
 }
 
+static gchar *
+alpm_time_to_iso8601 (alpm_time_t time)
+{
+	GDateTime *date = g_date_time_new_from_unix_utc (time);
+
+	if (date != NULL) {
+		gchar *result = g_date_time_format (date, "%FT%TZ");
+		g_date_time_unref (date);
+		return result;
+	} else {
+		return NULL;
+	}
+}
+
 static gboolean
 pk_backend_get_update_detail_thread (PkBackend *self)
 {
@@ -154,7 +168,7 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 		PkRestartEnum restart;
 		PkUpdateStateEnum state;
 
-		GTimeVal built = { 0 }, installed = { 0 };
+		alpm_time_t built, installed;
 		gchar *issued, *updated;
 
 		if (pk_backend_cancelled (self)) {
@@ -195,17 +209,17 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 			state = PK_UPDATE_STATE_ENUM_STABLE;
 		}
 
-		built.tv_sec = alpm_pkg_get_builddate (pkg);
-		if (built.tv_sec > 0) {
-			issued = g_time_val_to_iso8601 (&built);
+		built = alpm_pkg_get_builddate (pkg);
+		if (built > 0) {
+			issued = alpm_time_to_iso8601 (built);
 		} else {
 			issued = NULL;
 		}
 
 		if (upgrades != NULL) {
-			installed.tv_sec = alpm_pkg_get_installdate (old);
-			if (installed.tv_sec > 0) {
-				updated = g_time_val_to_iso8601 (&installed);
+			installed = alpm_pkg_get_installdate (old);
+			if (installed > 0) {
+				updated = alpm_time_to_iso8601 (installed);
 			} else {
 				updated = NULL;
 			}
@@ -251,13 +265,13 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 		return FALSE;
 	}
 
-	alpm_logaction (alpm, "synchronizing package lists\n");
+	alpm_logaction (alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
 
 	dlcb = alpm_option_get_dlcb (alpm);
 	totaldlcb = alpm_option_get_totaldlcb (alpm);
 
 	/* set total size to minus the number of databases */
-	i = alpm_option_get_syncdbs (alpm);
+	i = alpm_get_syncdbs (alpm);
 	totaldlcb (-alpm_list_count (i));
 
 	for (; i != NULL; i = i->next) {
@@ -275,7 +289,7 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 			/* fake the download when already up to date */
 			dlcb ("", 1, 1);
 		} else if (result < 0) {
-			enum _alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
 				     alpm_db_get_name (i->data),
 				     alpm_strerror (errno));
@@ -398,7 +412,7 @@ pk_backend_get_updates_thread (PkBackend *self)
 	}
 
 	/* find outdated and replacement packages */
-	syncdbs = alpm_option_get_syncdbs (alpm);
+	syncdbs = alpm_get_syncdbs (alpm);
 	for (i = alpm_db_get_pkgcache (localdb); i != NULL; i = i->next) {
 		alpm_pkg_t *upgrade = alpm_pkg_find_update (i->data, syncdbs);
 

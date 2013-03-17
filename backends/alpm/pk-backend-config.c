@@ -746,7 +746,7 @@ static alpm_handle_t *
 pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 {
 	alpm_handle_t *handle;
-	enum _alpm_errno_t errno;
+	alpm_errno_t errno;
 	gsize dir = 1;
 
 	g_return_val_if_fail (config != NULL, FALSE);

@@ -681,9 +681,7 @@ if test x$enable_opkg = xyes; then
 fi
 
 if test x$enable_alpm = xyes; then
-	AC_CHECK_HEADER([alpm.h],
-			[],
-			[AC_MSG_ERROR([No ALPM headers found])])
+	PKG_CHECK_MODULES(ALPM, libalpm >= 4.1.0)
 fi
 
 if test x$enable_poldek = xyes; then

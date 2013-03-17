@@ -48,7 +48,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		const alpm_list_t *i = alpm_option_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (alpm);
 		alpm_pkg_t *pkg;
 
 		for (; i != NULL; i = i->next) {
@@ -58,7 +58,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		}
 
 		if (i == NULL) {
-			enum _alpm_errno_t errno = ALPM_ERR_DB_NOT_FOUND;
+			alpm_errno_t errno = ALPM_ERR_DB_NOT_FOUND;
 			g_set_error (error, ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
 			g_strfreev (package);
@@ -67,7 +67,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 
 		pkg = alpm_db_get_pkg (i->data, name);
 		if (pkg == NULL || alpm_add_pkg (alpm, pkg) < 0) {
-			enum _alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
 			g_strfreev (package);
@@ -274,7 +274,7 @@ pk_backend_update_packages_thread (PkBackend *self)
 	for (i = asdeps; i != NULL; i = i->next) {
 		const gchar *name = (const gchar *) i->data;
 		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
-		alpm_db_set_pkgreason (alpm, pkg, ALPM_PKG_REASON_DEPEND);
+		alpm_pkg_set_reason (pkg, ALPM_PKG_REASON_DEPEND);
 	}
 
 out:
