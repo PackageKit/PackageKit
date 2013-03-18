@@ -839,6 +839,21 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 }
 
 /**
+ * pk_transaction_db_ensure_file_directory:
+ **/
+static void
+pk_transaction_db_ensure_file_directory (const gchar *path)
+{
+	gchar *parent;
+
+	parent = g_path_get_dirname (path);
+	if (g_mkdir_with_parents (parent, 0755) == -1)
+		g_warning ("%s", g_strerror (errno));
+
+	g_free (parent);
+}
+
+/**
  * pk_transaction_db_init:
  **/
 static void
@@ -857,6 +872,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	tdb->priv->database_save_id = 0;
 
 	g_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
+	pk_transaction_db_ensure_file_directory (PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc != SQLITE_OK) {
 		g_error ("Can't open transaction database: %s\n", sqlite3_errmsg (tdb->priv->db));
