@@ -1339,10 +1339,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             outcome = self._entropy.calculate_updates()
 
             if isinstance(outcome, dict):
-                updates, remove, fine, spm_fine = outcome['update'], \
+                update, remove, fine, spm_fine = outcome['update'], \
                     outcome['remove'], outcome['fine'], outcome['spm_fine']
             else:
-                updates, remove, fine, spm_fine = outcome
+                update, remove, fine, spm_fine = outcome
 
         except SystemDatabaseError as err:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
