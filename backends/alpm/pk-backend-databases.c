@@ -176,29 +176,18 @@ disabled_repos_configure (GHashTable *table, gboolean only_trusted,
 }
 
 void
-pk_backend_configure_repos (alpm_list_t *repos, GHashTable *servers,
-			    GHashTable *levels)
+pk_backend_add_database (const gchar *name, alpm_list_t *servers,
+			 alpm_siglevel_t level)
 {
-	alpm_list_t *i;
+	PkBackendRepo *repo = g_new (PkBackendRepo, 1);
 
-	g_return_if_fail (servers != NULL);
+	g_return_if_fail (name != NULL);
 
-	for (i = repos; i != NULL; i = i->next) {
-		PkBackendRepo *repo = g_new (PkBackendRepo, 1);
-		gpointer value = g_hash_table_lookup (servers, i->data);
+	repo->name = g_strdup (name);
+	repo->servers = alpm_list_strdup (servers);
+	repo->level = level;
 
-		repo->name = g_strdup ((const gchar *) i->data);
-		repo->servers = alpm_list_strdup ((alpm_list_t *) value);
-
-		value = g_hash_table_lookup (levels, i->data);
-		if (value != NULL) {
-			repo->level = *(alpm_siglevel_t *) value;
-		} else {
-			repo->level = ALPM_SIG_USE_DEFAULT;
-		}
-
-		configured = alpm_list_add (configured, repo);
-	}
+	configured = alpm_list_add (configured, repo);
 }
 
 gboolean

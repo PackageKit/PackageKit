@@ -39,7 +39,7 @@ alpm_add_file (const gchar *filename)
 	g_return_val_if_fail (filename != NULL, -1);
 	g_return_val_if_fail (alpm != NULL, -1);
 
-	level = alpm_option_get_default_siglevel (alpm);
+	level = alpm_option_get_local_file_siglevel (alpm);
 
 	if (alpm_pkg_load (alpm, filename, 1, level, &pkg) < 0) {
 		return -1;

@@ -24,9 +24,9 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-void		 pk_backend_configure_repos		(alpm_list_t *repos,
-							 GHashTable *servers,
-							 GHashTable *levels);
+void		 pk_backend_add_database		(const gchar *name,
+							 alpm_list_t *servers,
+							 alpm_siglevel_t level);
 
 gboolean	 pk_backend_disable_signatures		(PkBackend *self,
 							 GError **error);
