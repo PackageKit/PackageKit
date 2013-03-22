@@ -2375,6 +2375,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
 bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
 {
     bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
 
     //cout << "installPackages() called" << endl;
     // Try to auto-remove packages
@@ -2445,6 +2446,15 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     if (FetchBytes != 0) {
         // Emit the remainig download size
         pk_backend_job_set_download_size_remaining(m_job, FetchBytes);
+        
+        // check network state if we are going to download
+        // something or if we are not simulating
+        if (!simulate && !pk_backend_is_online(backend)) {
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_NO_NETWORK,
+                                      "Cannot download packages whilst offline");
+            return false;
+        }
     }
 
     /* Check for enough free space */
@@ -2488,7 +2498,6 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         m_pkgs = checkChangedPackages(false);
     }
 
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
     // Download and check if we can continue
     if (fetcher.Run() != pkgAcquire::Continue
             && m_cancel == false) {
