@@ -242,7 +242,10 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
             }
         }
     }
-    pk_backend_job_error_code(m_job, error, utf8(out.str().c_str()));
+    pk_backend_job_error_code(m_job,
+                              error,
+                              "%s",
+                              utf8(out.str().c_str()));
 }
 
 void AptCacheFile::buildPkgRecords()
@@ -336,9 +339,8 @@ bool AptCacheFile::isRemovingEssentialPackages()
     if (!List.empty()) {
         pk_backend_job_error_code(m_job,
                                   PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
-                                  g_strdup_printf("WARNING: You are trying to remove the "
-                                                  "following essential packages: %s",
-                                                  List.c_str()));
+                                  "WARNING: You are trying to remove the following essential packages: %s",
+                                  List.c_str());
         return true;
     }
 

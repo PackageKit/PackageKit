@@ -179,17 +179,11 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
                                          Media.c_str(),
                                          Media.c_str());
 
-    char errorMsg[400];
-    sprintf(errorMsg,
-            "Media change: please insert the disc labeled"
-            " '%s' "
-            "in the drive '%s' and try again.",
-            Media.c_str(),
-            Drive.c_str());
-
     pk_backend_job_error_code(m_job,
                               PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
-                              errorMsg);
+                              "Media change: please insert the disc labeled '%s' in the drive '%s' and try again.",
+                              Media.c_str(),
+                              Drive.c_str());
 
     // Set this so we can fail the transaction
     Update = true;

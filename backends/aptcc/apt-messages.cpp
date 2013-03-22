@@ -56,11 +56,17 @@ bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
     }
 
     if (!errors.str().empty()) {
-        pk_backend_job_error_code(job, errorCode, utf8(errors.str().c_str()));
+        pk_backend_job_error_code(job,
+                                  errorCode,
+                                  "%s",
+                                  utf8(errors.str().c_str()));
     }
 
     if ((errModify) && (!messages.str().empty())) {
-        pk_backend_job_message(job, messageCode, utf8(messages.str().c_str()));
+        pk_backend_job_message(job,
+                               messageCode,
+                               "%s",
+                               utf8(messages.str().c_str()));
     }
 }
 
@@ -79,6 +85,9 @@ bool show_warnings(PkBackendJob *job, PkMessageEnum message)
     }
 
     if (!warnings.str().empty()) {
-        pk_backend_job_message(job, message, utf8(warnings.str().c_str()));
+        pk_backend_job_message(job,
+                               message,
+                               "%s",
+                               utf8(warnings.str().c_str()));
     }
 }

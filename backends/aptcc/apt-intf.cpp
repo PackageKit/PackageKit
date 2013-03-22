@@ -1060,8 +1060,8 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
     for (uint i = 0; i < len; i++) {
         if (values[i] == NULL) {
             pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_GROUP_NOT_FOUND,
-                                  values[i]);
+                                      PK_ERROR_ENUM_GROUP_NOT_FOUND,
+                                      "An empty group was recieved");
             pk_backend_job_finished(m_job);
             return output;
         } else {
@@ -1502,11 +1502,10 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
     } else if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
         // We are NOT simulating and have untrusted packages
         // fail the transaction.
-        string warning("The following packages cannot be authenticated:\n");
-        warning += UntrustedList;
         pk_backend_job_error_code(m_job,
                                   PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
-                                  warning.c_str());
+                                  "The following packages cannot be authenticated:\n%s",
+                                  UntrustedList.c_str());
         _error->Discard();
 
         return false;
@@ -1552,13 +1551,10 @@ bool AptIntf::tryToInstall(pkgProblemResolver &Fix,
     pkgDepCache::StateCache &State = (*m_cache)[Pkg];
 
     if (State.CandidateVer == 0) {
-        _error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());
-
         pk_backend_job_error_code(m_job,
-                              PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-                              g_strdup_printf("Package %s is virtual and has no "
-                                              "installation candidate",
-                                              Pkg.Name()));
+                                  PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+                                  "Package %s is virtual and has no installation candidate",
+                                  Pkg.Name());
         return false;
     }
 
@@ -1722,6 +1718,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 // error from dpkg
                 pk_backend_job_error_code(m_job,
                                           PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
+                                          "Error while installing package: %s",
                                           str);
             } else if (strstr(status, "pmconffile") != NULL) {
                 // conffile-request from dpkg, needs to be parsed different
@@ -1806,22 +1803,19 @@ void AptIntf::updateInterface(int fd, int writeFd)
                     }
                 } else {
                     // either the user didn't choose an option or the front end failed'
-                    gchar *confmsg;
-                    confmsg = g_strdup_printf("The configuration file '%s' "
-                                              "(modified by you or a script) "
-                                              "has a newer version '%s'.\n"
-                                              "Please verify your changes and update it manually.",
-                                              orig_file.c_str(),
-                                              new_file.c_str());
                     pk_backend_job_message(m_job,
-                                       PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-                                       confmsg);
+                                           PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+                                           "The configuration file '%s' "
+                                           "(modified by you or a script) "
+                                           "has a newer version '%s'.\n"
+                                           "Please verify your changes and update it manually.",
+                                           orig_file.c_str(),
+                                           new_file.c_str());
                     // fall back to keep the current config file
                     if (write(writeFd, "N\n", 2) != 2) {
                         // TODO we need a DPKG patch to use debconf
                         g_debug("Failed to write");
                     }
-                    g_free(confmsg);
                 }
             } else if (strstr(status, "pmstatus") != NULL) {
                 // INSTALL & UPDATE
@@ -2154,9 +2148,9 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
     PkgList pkgs;
     if (exit_code == 1) {
         if (strlen(std_out) == 0) {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, std_err);
+            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Error: %s", std_err);
         } else {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, std_out);
+            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Error: %s", std_out);
         }
         return false;
     } else {
@@ -2221,11 +2215,11 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 
     // If we are not on multi-arch make sure we got the correct arch package
     if (!m_isMultiArch && arch != "all" && arch != aptArch) {
-        cout << arch << " vs. " << aptArch << endl;
-        gchar *msg = g_strdup_printf ("Package has wrong architecture, it is %s, but we need %s",
-                                      arch.c_str(), aptArch.c_str());
-        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE, msg);
-        g_free (msg);
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,
+                                  "Package has wrong architecture, it is %s, but we need %s",
+                                  arch.c_str(),
+                                  aptArch.c_str());
         return false;
     }
     
@@ -2278,16 +2272,25 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
 
     if (error != NULL) {
         // We couldn't run dpkg for some reason...
-        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, error->message);
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                  "Failed to run DPKG: %s",
+                                  error->message);
         return false;
     }
 
     // If installation has failed...
     if (exit_code != 0) {
         if ((std_out == NULL) || (strlen(std_out) == 0)) {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, std_err);
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                      "Failed: %s",
+                                      std_err);
         } else {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, std_out);
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                      "Failed: %s",
+                                      std_out);
         }
         return false;
     }
@@ -2455,12 +2458,12 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize) {
         struct statfs Stat;
         if (statfs(OutputDir.c_str(), &Stat) != 0 ||
-                unsigned(Stat.f_type)            != RAMFS_MAGIC) {
+            unsigned(Stat.f_type) != RAMFS_MAGIC) {
             pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
-                                  string("You don't have enough free space in ").append(OutputDir).c_str());
-            return _error->Error("You don't have enough free space in %s.",
-                                 OutputDir.c_str());
+                                      PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+                                      "You don't have enough free space in %s",
+                                      OutputDir.c_str());
+            return false;
         }
     }
 

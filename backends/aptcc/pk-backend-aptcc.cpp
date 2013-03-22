@@ -233,6 +233,7 @@ static void backend_get_depends_or_requires_thread(PkBackendJob *job, GVariant *
         if (pk_package_id_check(pi) == false) {
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                                      "%s",
                                       pi);
             apt->emitFinished();
             return;
@@ -320,6 +321,7 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
         if (pk_package_id_check(pi) == false) {
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                                      "%s",
                                       pi);
             apt->emitFinished();
             return;
@@ -562,6 +564,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
         if (pk_package_id_check(pi) == false) {
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                                      "%s",
                                       pi);
             apt->emitFinished();
             return;
