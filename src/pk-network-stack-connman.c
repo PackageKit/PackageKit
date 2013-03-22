@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <dbus/dbus-glib.h>
 
 #include "pk-network-stack-connman.h"
 #include "pk-conf.h"
@@ -132,9 +133,14 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 		g_debug ("service path is %s", path);
 
 		proxy_service = g_dbus_proxy_new_sync (connection,
-							   CONNMAN_DBUS_NAME,
-							   path,
-							   CONNMAN_SERVICE_DBUS_INTERFACE);
+						       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+						       NULL,
+						       CONNMAN_DBUS_NAME,
+						       path,
+						       CONNMAN_SERVICE_DBUS_INTERFACE,
+						       NULL,
+						       &error);
+
 		if (proxy_service != NULL)
 			break;
 	}
@@ -177,24 +183,30 @@ pk_network_stack_connman_state_changed (PkNetworkStackConnman *nstack_connman,
 					GVariant *parameters)
 {
 	PkNetworkEnum network_state;
-	PkNetworkStackConnman *nstack_connman = (PkNetworkStackConnman *) user_data;
+	gchar *property = NULL;
+	GVariant *value = NULL;
 
 	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
 
-	/* I can't test this, but I'm guessing this is about right...:
-	 *  g_variant_get (parameters, "&sv", &property, &value);
-	 */
+	g_variant_get (parameters, "(&sv)", &property, &value);
+	if (property && value && (g_str_equal (property, "State") == TRUE)) {
+		gchar *state = NULL;
 
-	if (g_str_equal (property, "State") == TRUE) {
-		gchar *state;
-
-		state = g_value_dup_string (value);
-		if (g_str_equal (state, "online") == TRUE)
+		g_variant_get (value, "&s", &state);
+		if (state == NULL) 
+			network_state = PK_NETWORK_ENUM_UNKNOWN;
+		else if (g_str_equal (state, "online") == TRUE)
 			network_state = PK_NETWORK_ENUM_ONLINE;
-		else
+		else if (g_str_equal (state, "idle") == TRUE)
 			network_state = PK_NETWORK_ENUM_OFFLINE;
-		g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (network_state));
-		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", network_state);
+		else if (g_str_equal (state, "offline") == TRUE)
+			network_state = PK_NETWORK_ENUM_OFFLINE;
+		else
+			network_state = PK_NETWORK_ENUM_UNKNOWN;
+		if (network_state != PK_NETWORK_ENUM_UNKNOWN) {
+			g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (network_state));
+			g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", network_state);
+		}
 	}
 }
 
@@ -209,9 +221,7 @@ pk_network_stack_connman_dbus_signal_cb (GDBusProxy *proxy,
 					 GVariant *parameters,
 					 PkNetworkStackConnman *nstack_connman)
 {
-	PkNetworkEnum state;
-
-	g_return_if_fail (PK_IS_NETWORK_STACK_NM (nstack_connman));
+	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
 
 	/* do not use */
 	if (!nstack_connman->priv->is_enabled) {
