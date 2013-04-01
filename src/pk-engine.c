@@ -1238,7 +1238,13 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 		retval = _g_variant_new_maybe_string (engine->priv->distro_id);
 		goto out;
 	}
-	g_warning ("failed to get property %s", property_name);
+
+	/* return an error */
+	g_set_error (error,
+		     PK_ENGINE_ERROR,
+		     PK_ENGINE_ERROR_NOT_SUPPORTED,
+		     "failed to get property '%s'",
+		     property_name);
 out:
 	return retval;
 }
