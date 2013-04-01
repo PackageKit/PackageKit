@@ -60,6 +60,7 @@ struct _PkControlPrivate
 	gchar			*backend_description;
 	gchar			*backend_author;
 	PkBitfield		 roles;
+	PkBitfield		 provides;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			**mime_types;
@@ -258,6 +259,14 @@ pk_control_set_property_value (PkControl *control,
 			return;
 		control->priv->roles = tmp_bitfield;
 		g_object_notify (G_OBJECT(control), "roles");
+		return;
+	}
+	if (g_strcmp0 (key, "Provides") == 0) {
+		tmp_bitfield = g_variant_get_uint64 (value);
+		if (control->priv->provides == tmp_bitfield)
+			return;
+		control->priv->provides = tmp_bitfield;
+		g_object_notify (G_OBJECT(control), "provides");
 		return;
 	}
 	if (g_strcmp0 (key, "Groups") == 0) {

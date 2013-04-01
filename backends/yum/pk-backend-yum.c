@@ -765,3 +765,21 @@ pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *d
 {
 	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "update-system", NULL);
 }
+
+/**
+ * pk_backend_get_provides:
+ */
+PkBitfield pk_backend_get_provides(PkBackend *backend)
+{
+	PkBitfield provides;
+	provides = pk_bitfield_from_enums(
+		PK_PROVIDES_ENUM_CODEC,
+		PK_PROVIDES_ENUM_FONT,
+		PK_PROVIDES_ENUM_MIMETYPE,
+		PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
+		PK_PROVIDES_ENUM_PLASMA_SERVICE,
+		PK_PROVIDES_ENUM_ANY,
+		-1);
+
+	return provides;
+}

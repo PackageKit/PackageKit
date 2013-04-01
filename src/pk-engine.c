@@ -79,6 +79,7 @@ struct PkEnginePrivate
 	GFileMonitor		*monitor_conf;
 	GFileMonitor		*monitor_binary;
 	PkBitfield		 roles;
+	PkBitfield		 provides;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			**mime_types;
@@ -1144,6 +1145,7 @@ pk_engine_load_backend (PkEngine *engine, GError **error)
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
+	engine->priv->provides = pk_backend_get_provides (engine->priv->backend);
 	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
 	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
 	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
@@ -1206,6 +1208,10 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 	}
 	if (g_strcmp0 (property_name, "Roles") == 0) {
 		retval = g_variant_new_uint64 (engine->priv->roles);
+		goto out;
+	}
+	if (g_strcmp0 (property_name, "Provides") == 0) {
+		retval = g_variant_new_uint64 (engine->priv->provides);
 		goto out;
 	}
 	if (g_strcmp0 (property_name, "Groups") == 0) {

@@ -5410,3 +5410,21 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 {
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
+
+/**
+ * pk_backend_get_provides:
+ */
+PkBitfield pk_backend_get_provides(PkBackend *backend)
+{
+	PkBitfield provides;
+	provides = pk_bitfield_from_enums(
+		PK_PROVIDES_ENUM_CODEC,
+		PK_PROVIDES_ENUM_FONT,
+		PK_PROVIDES_ENUM_MIMETYPE,
+		PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
+		PK_PROVIDES_ENUM_PLASMA_SERVICE,
+		PK_PROVIDES_ENUM_ANY,
+		-1);
+
+	return provides;
+}

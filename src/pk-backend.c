@@ -63,6 +63,7 @@ typedef struct {
 	PkBitfield	(*get_groups)			(PkBackend	*backend);
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
 	PkBitfield	(*get_roles)			(PkBackend	*backend);
+	PkBitfield	(*get_provides)			(PkBackend	*backend);
 	gchar		**(*get_mime_types)		(PkBackend	*backend);
 	gboolean	(*supports_parallelization)	(PkBackend	*backend);
 	void		(*job_start)			(PkBackend	*backend,
@@ -347,6 +348,21 @@ out:
 }
 
 /**
+ * pk_backend_get_provides:
+ **/
+PkBitfield
+pk_backend_get_provides (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_PROVIDES_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->loaded, PK_PROVIDES_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->priv->desc->get_provides == NULL)
+		return PK_PROVIDES_ENUM_UNKNOWN;
+	return backend->priv->desc->get_provides (backend);
+}
+
+/**
  * pk_backend_is_implemented:
  **/
 gboolean
@@ -472,6 +488,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *)&desc->get_repo_list);
 		g_module_symbol (handle, "pk_backend_get_requires", (gpointer *)&desc->get_requires);
 		g_module_symbol (handle, "pk_backend_get_roles", (gpointer *)&desc->get_roles);
+		g_module_symbol (handle, "pk_backend_get_provides", (gpointer *)&desc->get_provides);
 		g_module_symbol (handle, "pk_backend_get_update_detail", (gpointer *)&desc->get_update_detail);
 		g_module_symbol (handle, "pk_backend_get_updates", (gpointer *)&desc->get_updates);
 		g_module_symbol (handle, "pk_backend_initialize", (gpointer *)&desc->initialize);

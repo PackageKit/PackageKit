@@ -1726,3 +1726,17 @@ pk_backend_get_author (PkBackend *backend)
 {
 	return "Richard Hughes <richard@hughsie.com>";
 }
+
+/**
+ * pk_backend_get_provides:
+ */
+PkBitfield pk_backend_get_provides(PkBackend *backend)
+{
+	PkBitfield provides;
+	provides = pk_bitfield_from_enums(
+		PK_PROVIDES_ENUM_CODEC,
+		PK_PROVIDES_ENUM_ANY,
+		-1);
+
+	return provides;
+}
