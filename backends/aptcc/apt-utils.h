@@ -29,6 +29,8 @@
 
 #include <pk-backend.h>
 
+#include "AptCacheFile.h"
+
 using namespace std;
 
 /**
@@ -46,6 +48,11 @@ void getChangelogFile(const string &filename,
                       const string &srcPkg,
                       const string &uri,
                       pkgAcquire *fetcher);
+
+bool downloadChangelog(AptCacheFile &CacheFile,
+                       pkgAcquire &Fetcher, 
+                       pkgCache::VerIterator Ver,
+                       string targetfile);
 
 /**
   * Returns a list of links pairs url;description for CVEs

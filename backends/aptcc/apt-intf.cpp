@@ -715,95 +715,18 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     const pkgCache::VerIterator &currver = m_cache->findVer(pkg);
 
     // Build a package_id from the current version
-    gchar *current_package_id;
-    current_package_id = utilBuildPackageId(currver);
+    gchar *current_package_id = utilBuildPackageId(currver);
 
     pkgCache::VerFileIterator vf = candver.FileList();
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(candver.FileList());
 
-    // Build the changelogURI
-    char uri[512];
     string srcpkg;
-    string verstr;
-
     if (rec.SourcePkg().empty()) {
         srcpkg = pkg.Name();
     } else {
         srcpkg = rec.SourcePkg();
-    }
-    if (origin.compare("Debian") == 0 || origin.compare("Ubuntu") == 0) {
-        string prefix;
-
-        string src_section = candver.Section() == NULL ? "" : candver.Section();
-        if(src_section.find('/') != src_section.npos) {
-            src_section = string(src_section, 0, src_section.find('/'));
-        } else {
-            src_section = "main";
-        }
-
-        prefix += srcpkg[0];
-        if(srcpkg.size() > 3 && srcpkg[0] == 'l' && srcpkg[1] == 'i' && srcpkg[2] == 'b') {
-            prefix = string("lib") + srcpkg[3];
-        }
-
-        if(candver.VerStr() != NULL) {
-            verstr = candver.VerStr();
-        }
-
-        if(verstr.find(':') != verstr.npos) {
-            verstr = string(verstr, verstr.find(':') + 1);
-        }
-
-        if (origin.compare("Debian") == 0) {
-            snprintf(uri,
-                     512,
-                     "http://packages.debian.org/changelogs/pool/%s/%s/%s/%s_%s/changelog",                                    src_section.c_str(),
-                     prefix.c_str(),
-                     srcpkg.c_str(),
-                     srcpkg.c_str(),
-                     verstr.c_str());
-        } else {
-            snprintf(uri,
-                     512,
-                     "http://changelogs.ubuntu.com/changelogs/pool/%s/%s/%s/%s_%s/changelog",                                    src_section.c_str(),
-                     prefix.c_str(),
-                     srcpkg.c_str(),
-                     srcpkg.c_str(),
-                     verstr.c_str());
-        }
-    } else {
-        string pkgfilename;
-        const char *start, *stop;
-        pkgTagSection sec;
-        unsigned long len;
-
-        rec.GetRec(start, stop);
-        len = stop - start;
-        // add +1 to ensure we have the double lineline in the buffer
-        if (start && sec.Scan(start, len + 1)) {
-            pkgfilename = sec.FindS("Filename");
-        }
-
-        string cadidateOriginSiteUrl;
-        if(!vf.end() && vf.File() && vf.File().Site()) {
-            cadidateOriginSiteUrl = vf.File().Site();
-        }
-
-        pkgfilename = pkgfilename.substr(0, pkgfilename.find_last_of('.')) + ".changelog";
-        snprintf(uri,512,"http://%s/%s",
-                 cadidateOriginSiteUrl.c_str(),
-                 pkgfilename.c_str());
-    }
-    // Create the download object
-    AcqPackageKitStatus Stat(this, m_job);
-
-    // get a fetcher
-    pkgAcquire fetcher;
-    fetcher.Setup(&Stat);
-
-    // fetch the changelog
-    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
+    }    
 
     // Create a random temp dir
     char dirName[] = "/tmp/aptccXXXXXXXX";
@@ -811,7 +734,20 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     string filename = tempDir;
     filename.append("/");
     filename.append(pkg.Name());
-    getChangelogFile(filename, pkg.Name(), origin, verstr, srcpkg, uri, &fetcher);
+
+    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
+    if (pk_backend_is_online(backend)) {
+        // Create the download object
+        AcqPackageKitStatus Stat(this, m_job);
+
+        // get a fetcher
+        pkgAcquire fetcher;
+        fetcher.Setup(&Stat);
+
+        // fetch the changelog
+        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
+        downloadChangelog(*m_cache, fetcher, candver, filename);
+    }
 
     string changelog;
     string update_text;

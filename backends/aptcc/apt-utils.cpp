@@ -107,6 +107,119 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
+/*}}}*/
+// GetChangelogPath - return a path pointing to a changelog file or dir /*{{{*/
+// ---------------------------------------------------------------------
+/* This returns a "path" string for the changelog url construction.
+ * Please note that its not complete, it either needs a "/changelog"
+ * appended (for the packages.debian.org/changelogs site) or a
+ * ".changelog" (for third party sites that store the changelog in the
+ * pool/ next to the deb itself)
+ * Example return: "pool/main/a/apt/apt_0.8.8ubuntu3" 
+ */
+string GetChangelogPath(AptCacheFile &Cache, 
+                        pkgCache::PkgIterator Pkg,
+                        pkgCache::VerIterator Ver)
+{
+   string path;
+
+   pkgRecords Recs(Cache);
+   pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
+   string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
+   string ver = Ver.VerStr();
+   // if there is a source version it always wins
+   if (rec.SourceVer() != "")
+      ver = rec.SourceVer();
+   path = flNotFile(rec.FileName());
+   path += srcpkg + "_" + StripEpoch(ver);
+   return path;
+}
+
+/*}}}*/
+// GuessThirdPartyChangelogUri - return url 			        /*{{{*/
+// ---------------------------------------------------------------------
+/* Contruct a changelog file path for third party sites that do not use
+ * packages.debian.org/changelogs
+ * This simply uses the ArchiveURI() of the source pkg and looks for
+ * a .changelog file there, Example for "mediabuntu":
+ * apt-get changelog mplayer-doc:
+ *  http://packages.medibuntu.org/pool/non-free/m/mplayer/mplayer_1.0~rc4~try1.dsfg1-1ubuntu1+medibuntu1.changelog
+ */
+bool GuessThirdPartyChangelogUri(AptCacheFile &Cache, 
+                                 pkgCache::PkgIterator Pkg,
+                                 pkgCache::VerIterator Ver,
+                                 string &out_uri)
+{
+   // get the binary deb server path
+   pkgCache::VerFileIterator Vf = Ver.FileList();
+   if (Vf.end() == true)
+      return false;
+   pkgCache::PkgFileIterator F = Vf.File();
+   pkgIndexFile *index;
+   pkgSourceList *SrcList = Cache.GetSourceList();
+   if(SrcList->FindIndex(F, index) == false)
+      return false;
+
+   // get archive uri for the binary deb
+   string path_without_dot_changelog = GetChangelogPath(Cache, Pkg, Ver);
+   out_uri = index->ArchiveURI(path_without_dot_changelog + ".changelog");
+
+   // now strip away the filename and add srcpkg_srcver.changelog
+   return true;
+}
+
+bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher, 
+                       pkgCache::VerIterator Ver, string targetfile)
+/* Download a changelog file for the given package version to
+ * targetfile. This will first try the server from Apt::Changelogs::Server
+ * (http://packages.debian.org/changelogs by default) and if that gives
+ * a 404 tries to get it from the archive directly (see 
+ * GuessThirdPartyChangelogUri for details how)
+ */
+{
+   string path;
+   string descr;
+   string server;
+   string changelog_uri;
+
+   // data structures we need
+   pkgCache::PkgIterator Pkg = Ver.ParentPkg();
+
+   // make the server root configurable
+   server = _config->Find("Apt::Changelogs::Server",
+                          "http://packages.debian.org/changelogs");
+   path = GetChangelogPath(CacheFile, Pkg, Ver);
+   strprintf(changelog_uri, "%s/%s/changelog", server.c_str(), path.c_str());
+
+   strprintf(descr, "Changelog for %s (%s)", Pkg.Name(), changelog_uri.c_str());
+   // queue it
+   new pkgAcqFile(&Fetcher, changelog_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
+
+   // try downloading it, if that fails, try third-party-changelogs location
+   // FIXME: Fetcher.Run() is "Continue" even if I get a 404?!?
+   Fetcher.Run();
+   if (!FileExists(targetfile)) {
+      string third_party_uri;
+      if (GuessThirdPartyChangelogUri(CacheFile, Pkg, Ver, third_party_uri))
+      {
+         strprintf(descr, "Changelog for %s (%s)", Pkg.Name(), third_party_uri.c_str());
+         new pkgAcqFile(&Fetcher, third_party_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
+         Fetcher.Run();
+      }
+   }
+
+   if (FileExists(targetfile)) {
+      return true;
+   }
+
+   // error
+   pkgRecords Recs(CacheFile);
+   pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
+   string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
+   strprintf(descr, "Changelog for this version is not yet available");
+   return false;
+}
+
 void getChangelogFile(const string &filename,
                       const string &name,
                       const string &origin,
