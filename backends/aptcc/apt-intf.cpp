@@ -721,6 +721,10 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(candver.FileList());
 
+    string changelog;
+    string update_text;
+    string updated;
+    string issued;
     string srcpkg;
     if (rec.SourcePkg().empty()) {
         srcpkg = pkg.Name();
@@ -746,91 +750,90 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
         // fetch the changelog
         pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
-        downloadChangelog(*m_cache, fetcher, candver, filename);
-    }
-
-    string changelog;
-    string update_text;
-    ifstream in(filename.c_str());
-    string line;
-    GRegex *regexVer;
-    regexVer = g_regex_new("(?'source'.+) \\((?'version'.*)\\) "
-                           "(?'dist'.+); urgency=(?'urgency'.+)",
-                           G_REGEX_CASELESS,
-                           G_REGEX_MATCH_ANCHORED,
-                           0);
-    GRegex *regexDate;
-    regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$",
-                            G_REGEX_CASELESS,
-                            G_REGEX_MATCH_ANCHORED,
-                            0);
-    string updated;
-    string issued;
-    while (getline(in, line)) {
-        // no need to free str later, it is allocated in a static buffer
-        const char *str = utf8(line.c_str());
-        if (strcmp(str, "") == 0) {
-            changelog.append("\n");
-            continue;
-        } else {
-            changelog.append(str);
-            changelog.append("\n");
-        }
-
-        if (starts_with(str, srcpkg.c_str())) {
-            // Check to see if the the text isn't about the current package,
-            // otherwise add a == version ==
-            GMatchInfo *match_info;
-            if (g_regex_match(regexVer, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                gchar *version;
-                version = g_match_info_fetch_named(match_info, "version");
-
-                // Compare if the current version is shown in the changelog, to not
-                // display old changelog information
-                if (_system != 0  &&
-                        _system->VS->DoCmpVersion(version, version + strlen(version),
-                                                  currver.VerStr(), currver.VerStr() + strlen(currver.VerStr())) <= 0) {
-                    g_free (version);
-                    break;
+        if (downloadChangelog(*m_cache, fetcher, candver, filename)) {
+            ifstream in(filename.c_str());
+            string line;
+            GRegex *regexVer;
+            regexVer = g_regex_new("(?'source'.+) \\((?'version'.*)\\) "
+                                "(?'dist'.+); urgency=(?'urgency'.+)",
+                                G_REGEX_CASELESS,
+                                G_REGEX_MATCH_ANCHORED,
+                                0);
+            GRegex *regexDate;
+            regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$",
+                                    G_REGEX_CASELESS,
+                                    G_REGEX_MATCH_ANCHORED,
+                                    0);
+            
+            while (getline(in, line)) {
+                // no need to free str later, it is allocated in a static buffer
+                const char *str = utf8(line.c_str());
+                if (strcmp(str, "") == 0) {
+                    changelog.append("\n");
+                    continue;
                 } else {
-                    if (!update_text.empty()) {
-                        update_text.append("\n\n");
-                    }
-                    update_text.append(" == ");
-                    update_text.append(version);
-                    update_text.append(" ==");
-                    g_free (version);
+                    changelog.append(str);
+                    changelog.append("\n");
                 }
-            }
-            g_match_info_free (match_info);
-        } else if (starts_with(str, "  ")) {
-            // update descritption
-            update_text.append("\n");
-            update_text.append(str);
-        } else if (starts_with(str, " --")) {
-            // Parse the text to know when the update was issued,
-            // and when it got updated
-            GMatchInfo *match_info;
-            if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                GTimeVal dateTime = {0, 0};
-                gchar *date;
-                date = g_match_info_fetch_named(match_info, "date");
-                g_warn_if_fail(RFC1123StrToTime(date, dateTime.tv_sec));
-                g_free(date);
 
-                issued = g_time_val_to_iso8601(&dateTime);
-                if (updated.empty()) {
-                    updated = g_time_val_to_iso8601(&dateTime);
+                if (starts_with(str, srcpkg.c_str())) {
+                    // Check to see if the the text isn't about the current package,
+                    // otherwise add a == version ==
+                    GMatchInfo *match_info;
+                    if (g_regex_match(regexVer, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
+                        gchar *version;
+                        version = g_match_info_fetch_named(match_info, "version");
+
+                        // Compare if the current version is shown in the changelog, to not
+                        // display old changelog information
+                        if (_system != 0  &&
+                                _system->VS->DoCmpVersion(version, version + strlen(version),
+                                                        currver.VerStr(), currver.VerStr() + strlen(currver.VerStr())) <= 0) {
+                            g_free (version);
+                            break;
+                        } else {
+                            if (!update_text.empty()) {
+                                update_text.append("\n\n");
+                            }
+                            update_text.append(" == ");
+                            update_text.append(version);
+                            update_text.append(" ==");
+                            g_free (version);
+                        }
+                    }
+                    g_match_info_free (match_info);
+                } else if (starts_with(str, "  ")) {
+                    // update descritption
+                    update_text.append("\n");
+                    update_text.append(str);
+                } else if (starts_with(str, " --")) {
+                    // Parse the text to know when the update was issued,
+                    // and when it got updated
+                    GMatchInfo *match_info;
+                    if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
+                        GTimeVal dateTime = {0, 0};
+                        gchar *date;
+                        date = g_match_info_fetch_named(match_info, "date");
+                        g_warn_if_fail(RFC1123StrToTime(date, dateTime.tv_sec));
+                        g_free(date);
+
+                        issued = g_time_val_to_iso8601(&dateTime);
+                        if (updated.empty()) {
+                            updated = g_time_val_to_iso8601(&dateTime);
+                        }
+                    }
+                    g_match_info_free(match_info);
                 }
             }
-            g_match_info_free(match_info);
+            // Clean structures
+            g_regex_unref(regexVer);
+            g_regex_unref(regexDate);
+            unlink(filename.c_str());
+            rmdir(tempDir);
+        } else if (_error->PendingError()) {
+            _error->PopMessage(changelog);
         }
     }
-    // Clean structures
-    g_regex_unref(regexVer);
-    g_regex_unref(regexDate);
-    unlink(filename.c_str());
-    rmdir(tempDir);
 
     // Check if the update was updates since it was issued
     if (issued.compare(updated) == 0) {

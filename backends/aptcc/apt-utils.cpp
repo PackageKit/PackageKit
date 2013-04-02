@@ -191,7 +191,8 @@ bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
    path = GetChangelogPath(CacheFile, Pkg, Ver);
    strprintf(changelog_uri, "%s/%s/changelog", server.c_str(), path.c_str());
 
-   strprintf(descr, "Changelog for %s (%s)", Pkg.Name(), changelog_uri.c_str());
+   g_debug("Trying to fetch '%s'", changelog_uri.c_str());
+   strprintf(descr, "Changelog for %s", Pkg.Name());
    // queue it
    new pkgAcqFile(&Fetcher, changelog_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
 
@@ -199,17 +200,17 @@ bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
    // FIXME: Fetcher.Run() is "Continue" even if I get a 404?!?
    Fetcher.Run();
    if (!FileExists(targetfile)) {
-      string third_party_uri;
-      if (GuessThirdPartyChangelogUri(CacheFile, Pkg, Ver, third_party_uri))
-      {
-         strprintf(descr, "Changelog for %s (%s)", Pkg.Name(), third_party_uri.c_str());
-         new pkgAcqFile(&Fetcher, third_party_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
-         Fetcher.Run();
-      }
+        string third_party_uri;
+        if (GuessThirdPartyChangelogUri(CacheFile, Pkg, Ver, third_party_uri)) {
+            g_debug("Trying to fetch '%s'", third_party_uri.c_str());
+            strprintf(descr, "Changelog for %s", Pkg.Name());
+            new pkgAcqFile(&Fetcher, third_party_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
+            Fetcher.Run();
+        }
    }
 
    if (FileExists(targetfile)) {
-      return true;
+        return true;
    }
 
    // error

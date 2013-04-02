@@ -110,7 +110,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
     } else {
         // an error was found (maybe 404, 403...)
         // the item that got the error and the error text
-        _error->Error("Error %s\n  %s",
+        _error->Error("%s, is not (yet) available (%s)",
                       Itm.Description.c_str(),
                       Itm.Owner->ErrorText.c_str());
     }
