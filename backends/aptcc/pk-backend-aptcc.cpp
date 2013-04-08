@@ -650,14 +650,17 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
         return;
     }
     
-    pk_backend_job_error_code(job,
-                              PK_ERROR_ENUM_NO_NETWORK,
-                              "Cannot refresh cache whilst offline");
-
-    apt->refreshCache();
-    
-    if (_error->PendingError() == true) {
-        show_errors(job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
+    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
+    if (pk_backend_is_online(backend)) {
+        apt->refreshCache();
+        
+        if (_error->PendingError() == true) {
+            show_errors(job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
+        }
+    } else {
+        pk_backend_job_error_code(job,
+                                  PK_ERROR_ENUM_NO_NETWORK,
+                                  "Cannot refresh cache whilst offline");
     }
 
     apt->emitFinished();
