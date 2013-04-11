@@ -3,7 +3,7 @@ gnome-packagekit package.
 
 It can however be launched for testing using:
 
-GTK_MODULES="$GTK_MODULES:/usr/lib/gtk-2.0/modules/pk-gtk-module.so" application
+GTK_MODULES="$GTK_MODULES:/usr/lib64/gtk-3.0/modules/libpk-gtk-module.so" application
 
 The module installs a custom default pangocairo font map during gtk_init().
 Pango will then call back with any languages which need installing, and these
