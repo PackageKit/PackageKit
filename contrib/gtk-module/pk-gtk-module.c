@@ -122,7 +122,7 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 
 	/* invoke the method */
 	g_dbus_proxy_call (proxy,
-			   "InstallPackageNames",
+			   "InstallFontconfigResources",
 			   g_variant_new ("(u^a&ss)",
 					  xid,
 					  font_tags,
