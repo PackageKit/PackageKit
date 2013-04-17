@@ -60,7 +60,7 @@ pk_backend_pkg (PkBackend *self, alpm_pkg_t *pkg, PkInfoEnum info)
 	g_return_if_fail (pkg != NULL);
 
 	package = alpm_pkg_build_id (pkg);
-	pk_backend_package (self, info, package, alpm_pkg_get_desc (pkg));
+	pk_backend_job_package (self, info, package, alpm_pkg_get_desc (pkg));
 	g_free (package);
 }
 
@@ -293,8 +293,8 @@ pk_backend_get_details_thread (PkBackend *self)
 			size = alpm_pkg_download_size (pkg);
 		}
 
-		pk_backend_details (self, *packages, licenses->str, group,
-				    desc, url, size);
+		pk_backend_job_details (self, *packages, licenses->str, group,
+					desc, url, size);
 		g_string_free (licenses, TRUE);
 	}
 
@@ -351,7 +351,7 @@ pk_backend_get_files_thread (PkBackend *self)
 		}
 
 		g_string_truncate (files, MAX (files->len, 1) - 1);
-		pk_backend_files (self, *packages, files->str);
+		pk_backend_job_files (self, *packages, files->str);
 		g_string_free (files, TRUE);
 	}
 

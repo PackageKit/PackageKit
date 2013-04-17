@@ -253,14 +253,15 @@ pk_backend_repo_info (PkBackend *self, const gchar *repo, gboolean enabled)
 	g_return_val_if_fail (repo != NULL, FALSE);
 
 	description = g_strdup_printf ("[%s]", repo);
-	result = pk_backend_repo_detail (self, repo, description, enabled);
+	result = pk_backend_job_repo_detail (self, repo, description, enabled);
 	g_free (description);
 
 	return result;
 }
 
 static void
-pk_backend_get_repo_list_thread (PkBackend *self, gpointer data)
+pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
+				 gpointer data)
 {
 	const alpm_list_t *i;
 	GHashTableIter iter;
@@ -308,7 +309,8 @@ pk_backend_get_repo_list (PkBackend *self, PkBitfield filters)
 }
 
 static void
-pk_backend_repo_enable_thread (PkBackend *self, gpointer data)
+pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params,
+			       gpointer data)
 {
 	const gchar *repo;
 
@@ -337,11 +339,12 @@ pk_backend_repo_enable_thread (PkBackend *self, gpointer data)
 		g_error_free (error);
 	}
 
-	pk_backend_finished (self);
+	pk_backend_job_finished (self);
 }
 
 static void
-pk_backend_repo_disable_thread (PkBackend *self, gpointer data)
+pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params,
+				gpointer data)
 {
 	const alpm_list_t *i;
 	const gchar *repo;
@@ -385,7 +388,7 @@ pk_backend_repo_disable_thread (PkBackend *self, gpointer data)
 		g_error_free (error);
 	}
 
-	pk_backend_finished (self);
+	pk_backend_job_finished (self);
 }
 
 void
@@ -394,13 +397,15 @@ pk_backend_repo_enable (PkBackend *self, const gchar *repo_id, gboolean enabled)
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (repo_id != NULL);
 
-	pk_backend_set_status (self, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_status (self, PK_STATUS_ENUM_QUERY);
 
 	if (enabled) {
-		pk_backend_thread_create (self, pk_backend_repo_enable_thread,
-					  NULL, NULL);
+		pk_backend_job_thread_create (self,
+					      pk_backend_repo_enable_thread,
+					      NULL, NULL);
 	} else {
-		pk_backend_thread_create (self, pk_backend_repo_disable_thread,
-					  NULL, NULL);
+		pk_backend_job_thread_create (self,
+					      pk_backend_repo_disable_thread,
+					      NULL, NULL);
 	}
 }
