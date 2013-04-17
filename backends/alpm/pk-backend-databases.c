@@ -202,8 +202,8 @@ pk_backend_repo_info (PkBackend *self, const gchar *repo, gboolean enabled)
 	return result;
 }
 
-static void
-pk_backend_get_repo_list_thread (PkBackend *self, gpointer user_data)
+static gboolean
+pk_backend_get_repo_list_thread (PkBackend *self)
 {
 	const alpm_list_t *i;
 	GHashTableIter iter;
@@ -237,7 +237,7 @@ pk_backend_get_repo_list_thread (PkBackend *self, gpointer user_data)
 	}
 
 out:
-	pk_backend_finish (self, NULL);
+	return pk_backend_finish (self, NULL);
 }
 
 void
@@ -246,11 +246,11 @@ pk_backend_get_repo_list (PkBackend *self, PkBitfield filters)
 	g_return_if_fail (self != NULL);
 
 	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_repo_list_thread, NULL, NULL);
+			pk_backend_get_repo_list_thread);
 }
 
-static void
-pk_backend_repo_enable_thread (PkBackend *self, gpointer user_data)
+static gboolean
+pk_backend_repo_enable_thread (PkBackend *self)
 {
 	const gchar *repo;
 
@@ -260,6 +260,8 @@ pk_backend_repo_enable_thread (PkBackend *self, gpointer user_data)
 	g_return_val_if_fail (disabled != NULL, FALSE);
 
 	repo = pk_backend_get_string (self, "repo_id");
+
+	g_return_val_if_fail (repo != NULL, FALSE);
 
 	if (g_hash_table_remove (disabled, repo)) {
 		/* reload configuration to preserve ordering */
@@ -278,17 +280,23 @@ pk_backend_repo_enable_thread (PkBackend *self, gpointer user_data)
 	}
 
 	pk_backend_finished (self);
+	return (error == NULL);
 }
 
-static void
-pk_backend_repo_disable_thread (PkBackend *self, gpointer user_data)
+static gboolean
+pk_backend_repo_disable_thread (PkBackend *self)
 {
 	const alpm_list_t *i;
 	const gchar *repo;
 
 	GError *error = NULL;
 
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (disabled != NULL, FALSE);
+
 	repo = pk_backend_get_string (self, "repo_id");
+
+	g_return_val_if_fail (repo != NULL, FALSE);
 
 	for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
 		pmdb_t *db = (pmdb_t *) i->data;
@@ -319,6 +327,7 @@ pk_backend_repo_disable_thread (PkBackend *self, gpointer user_data)
 	}
 
 	pk_backend_finished (self);
+	return (error == NULL);
 }
 
 void
@@ -330,8 +339,8 @@ pk_backend_repo_enable (PkBackend *self, const gchar *repo_id, gboolean enabled)
 	pk_backend_set_status (self, PK_STATUS_ENUM_QUERY);
 
 	if (enabled) {
-		pk_backend_thread_create (self, pk_backend_repo_enable_thread, NULL, NULL);
+		pk_backend_thread_create (self, pk_backend_repo_enable_thread);
 	} else {
-		pk_backend_thread_create (self, pk_backend_repo_disable_thread, NULL, NULL);
+		pk_backend_thread_create (self, pk_backend_repo_disable_thread);
 	}
 }
