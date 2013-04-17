@@ -169,7 +169,7 @@ pk_backend_error (PkBackend *self, GError *error)
 		}
 	}
 
-	pk_backend_job_error_code (self, code, "%s", error->message);
+	pk_backend_error_code (self, code, "%s", error->message);
 }
 
 GQuark

@@ -213,7 +213,7 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 			updated = NULL;
 		}
 
-		pk_backend_job_update_detail (self, *packages, upgrades, replaces,
+		pk_backend_update_detail (self, *packages, upgrades, replaces,
 					  urls, NULL, NULL, restart, reason,
 					  NULL, state, issued, updated);
 
