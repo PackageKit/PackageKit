@@ -337,7 +337,7 @@ pk_backend_repo_enable_thread (PkBackend *self)
 		g_error_free (error);
 	}
 
-	pk_backend_thread_finished (self);
+	pk_backend_finished (self);
 	return (error == NULL);
 }
 
@@ -386,7 +386,7 @@ pk_backend_repo_disable_thread (PkBackend *self)
 		g_error_free (error);
 	}
 
-	pk_backend_thread_finished (self);
+	pk_backend_finished (self);
 	return (error == NULL);
 }
 

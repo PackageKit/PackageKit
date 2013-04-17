@@ -45,20 +45,20 @@ gchar *xfercmd = NULL;
 alpm_list_t *holdpkgs = NULL;
 alpm_list_t *syncfirsts = NULL;
 
-gchar *
+const gchar *
 pk_backend_get_description (PkBackend *self)
 {
 	g_return_val_if_fail (self != NULL, NULL);
 
-	return g_strdup ("alpm");
+	return "alpm";
 }
 
-gchar *
+const gchar *
 pk_backend_get_author (PkBackend *self)
 {
 	g_return_val_if_fail (self != NULL, NULL);
 
-	return g_strdup ("Jonathan Conder <jonno.conder@gmail.com>");
+	return "Jonathan Conder <jonno.conder@gmail.com>";
 }
 
 static gboolean
@@ -348,14 +348,15 @@ pk_backend_get_filters (PkBackend *self)
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
-gchar *
+gchar **
 pk_backend_get_mime_types (PkBackend *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
-
 	/* packages currently use .pkg.tar.gz and .pkg.tar.xz */
-	return g_strdup ("application/x-compressed-tar;"
-			 "application/x-xz-compressed-tar");
+	const gchar *mime_types[] = {
+				"application/x-compressed-tar",
+				"application/x-xz-compressed-tar",
+				NULL };
+	return g_strdupv ((gchar **) mime_types);
 }
 
 void
@@ -439,7 +440,7 @@ pk_backend_finish (PkBackend *self, GError *error)
 		pk_backend_set_status (self, PK_STATUS_ENUM_CANCEL);
 	}
 
-	pk_backend_thread_finished (self);
+	pk_backend_finished (self);
 	return (error == NULL);
 }
 
