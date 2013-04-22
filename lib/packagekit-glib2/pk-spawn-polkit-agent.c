@@ -21,7 +21,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#ifdef __linux__
 #include <sys/prctl.h>
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -68,13 +70,14 @@ fork_agent (pid_t *pid, const char *path, ...) {
 		*pid = n_agent_pid;
 		return 0;
 	}
+#ifdef __linux__
 
 	/* In the child:
 	 *
 	 * Make sure the agent goes away when the parent dies */
 	if (prctl (PR_SET_PDEATHSIG, SIGTERM) < 0)
 		_exit (EXIT_FAILURE);
-
+#endif
 	/* Check whether our parent died before we were able
 	 * to set the death signal */
 	if (getppid () != parent_pid)
@@ -175,22 +178,16 @@ fd_wait_for_event (int fd, int event, uint64_t t) {
 }
 
 static int
-wait_for_terminate (pid_t pid, siginfo_t *status) {
-	siginfo_t dummy;
-
+wait_for_terminate (pid_t pid) {
+        int status;
 	g_assert (pid >= 1);
 
-	if (!status)
-		status = &dummy;
-
 	for (;;) {
-		zero(*status);
-		if (waitid(P_PID, pid, status, WEXITED) < 0) {
+		if (waitpid(pid, &status, 0) < 0) {
 			if (errno == EINTR)
 				continue;
 			return -errno;
 		}
-
 		return 0;
 	}
 }
@@ -242,6 +239,6 @@ pk_polkit_agent_close (void) {
 	/* Inform agent that we are done */
 	kill (agent_pid, SIGTERM);
 	kill (agent_pid, SIGCONT);
-	wait_for_terminate (agent_pid, NULL);
+	wait_for_terminate (agent_pid);
 	agent_pid = 0;
 }
