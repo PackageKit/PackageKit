@@ -3101,9 +3101,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # we are working offline
         if not self.has_network:
+            self.yumbase.conf.cache = 1
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = -1  # never refresh
-            self.yumbase.conf.cache = 1
 
         # choose a good default if the client didn't specify a timeout
         if self.cache_age == 0:
