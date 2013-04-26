@@ -32,10 +32,19 @@ public:
                     const pkgCache::VerIterator &b) {
         int ret = strcmp(a.ParentPkg().Name(), b.ParentPkg().Name());
         if (ret == 0) {
-            return strcmp(a.VerStr(), b.VerStr()) < 0;
+            ret = strcmp(a.VerStr(), b.VerStr());
+            if (ret == 0) {
+                ret = strcmp(a.Arch(), b.Arch());
+                if (ret == 0) {
+                    pkgCache::VerFileIterator aVF = a.FileList();
+                    pkgCache::VerFileIterator bVF = b.FileList();
+                    ret = strcmp(aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
+                                 bVF.File().Archive() == NULL ? "" : bVF.File().Archive());
+                }
+            }
         }
         return ret < 0;
-                    }
+    }
 };
 
 /** \brief operator== for match results. */
@@ -45,9 +54,17 @@ public:
     result_equality() {}
     
     bool operator() (const pkgCache::VerIterator &a, const pkgCache::VerIterator &b) {
-        return strcmp(a.ParentPkg().Name(), b.ParentPkg().Name()) == 0 &&
-        strcmp(a.VerStr(), b.VerStr()) == 0 &&
-        strcmp(a.Arch(), b.Arch()) == 0;
+        bool ret;
+        ret = strcmp(a.ParentPkg().Name(), b.ParentPkg().Name()) == 0 &&
+              strcmp(a.VerStr(), b.VerStr()) == 0 &&
+              strcmp(a.Arch(), b.Arch()) == 0;
+        if (ret) {
+            pkgCache::VerFileIterator aVF = a.FileList();
+            pkgCache::VerFileIterator bVF = b.FileList();
+            ret = strcmp(aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
+                         bVF.File().Archive() == NULL ? "" : bVF.File().Archive()) == 0;
+        }
+        return ret;
     }
 };
 
