@@ -94,6 +94,7 @@ enum {
 	PROP_ROLES,
 	PROP_GROUPS,
 	PROP_FILTERS,
+	PROP_PROVIDES,
 	PROP_MIME_TYPES,
 	PROP_LOCKED,
 	PROP_NETWORK_STATE,
@@ -2171,6 +2172,9 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_FILTERS:
 		g_value_set_uint64 (value, priv->filters);
 		break;
+	case PROP_PROVIDES:
+		g_value_set_uint64 (value, priv->provides);
+		break;
 	case PROP_MIME_TYPES:
 		g_value_set_boxed (value, priv->mime_types);
 		break;
@@ -2307,6 +2311,16 @@ pk_control_class_init (PkControlClass *klass)
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_FILTERS, pspec);
+
+	/**
+	 * PkControl:provides:
+	 *
+	 * Since: 0.8.8
+	 */
+	pspec = g_param_spec_uint64 ("provides", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_PROVIDES, pspec);
 
 	/**
 	 * PkControl:mime-types:
