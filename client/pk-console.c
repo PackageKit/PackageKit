@@ -1053,7 +1053,7 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -1063,7 +1063,11 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_task_get_requires_async (PK_TASK (task),filters, package_ids, TRUE, cancellable,
+	pk_task_get_requires_async (PK_TASK (task),
+				    pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+				    package_ids,
+				    TRUE,
+				    cancellable,
 				    (PkProgressCallback) pk_console_progress_cb, NULL,
 				    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
