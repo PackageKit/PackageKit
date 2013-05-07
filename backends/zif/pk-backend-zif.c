@@ -2189,6 +2189,7 @@ pk_backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer use
 	PkBitfield filters;
 	ZifPackage *package;
 	ZifPackage *package_provide;
+	ZifState *state_stuck;
 	ZifState *state_local;
 	ZifState *state_loop;
 	PkBackendZifJobData *job_data = pk_backend_job_get_user_data (job);
@@ -2240,11 +2241,13 @@ pk_backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer use
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	state_stuck = zif_state_get_child (job_data->state);
+	zif_state_set_number_steps (state_stuck, g_strv_length (package_ids));
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = package_ids[i];
 
 		/* set up state */
-		state_local = zif_state_get_child (job_data->state);
+		state_local = zif_state_get_child (state_stuck);
 		ret = zif_state_set_steps (state_local,
 					   NULL,
 					   50, /* find package */
@@ -2325,6 +2328,17 @@ pk_backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer use
 
 		/* this section done */
 		ret = zif_state_done (state_local, &error);
+		if (!ret) {
+			pk_backend_job_error_code (job,
+					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "cancelled: %s",
+					       error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		ret = zif_state_done (state_stuck, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
