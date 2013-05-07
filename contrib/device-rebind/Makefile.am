@@ -17,6 +17,7 @@ pk-device-rebind.1: pk-device-rebind.xml
 endif
 
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	$(GLIB_CFLAGS)					\
 	$(GUDEV_CFLAGS)					\
@@ -32,6 +33,9 @@ pk_device_rebind_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(GUDEV_LIBS)					\
 	$(NULL)
+
+pk_device_rebind_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_device_rebind_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\

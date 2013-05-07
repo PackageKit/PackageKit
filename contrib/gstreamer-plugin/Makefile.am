@@ -4,6 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	$(PK_GSTREAMER_PLUGIN_CFLAGS)			\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DBINDIR=\"$(bindir)\"			 	\
@@ -34,6 +35,9 @@ pk_gstreamer_install_LDADD =				\
 	$(PK_GSTREAMER_PLUGIN_LIBS)			\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
+
+pk_gstreamer_install_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_gstreamer_install_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\

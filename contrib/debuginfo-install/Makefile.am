@@ -17,6 +17,7 @@ pk-debuginfo-install.1: pk-debuginfo-install.xml
 endif
 
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DPK_COMPILATION				\
@@ -41,6 +42,9 @@ pk_debuginfo_install_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
+
+pk_debuginfo_install_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_debuginfo_install_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\

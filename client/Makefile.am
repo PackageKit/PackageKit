@@ -29,6 +29,7 @@ pkgenpack.1: pkgenpack.xml
 endif
 
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(GIO_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
@@ -72,6 +73,9 @@ pkcon_LDADD =						\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
+pkcon_LDFLAGS =						\
+	$(PIE_LDFLAGS)
+
 pkcon_CFLAGS =						\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
@@ -87,6 +91,9 @@ pkmon_LDADD =						\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
+
+pkmon_LDFLAGS =						\
+	$(PIE_LDFLAGS)
 
 pkmon_CFLAGS =						\
 	$(WARNINGFLAGS_C)				\
@@ -104,6 +111,9 @@ pkgenpack_LDADD = 					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
+
+pkgenpack_LDFLAGS =					\
+	$(PIE_LDFLAGS)
 
 pkgenpack_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\

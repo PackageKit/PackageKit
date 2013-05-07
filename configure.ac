@@ -150,6 +150,18 @@ fi
 AC_SUBST(WARNINGFLAGS_C)
 AC_SUBST(WARNINGFLAGS_CPP)
 
+# check for PIE (position independent executable) support
+AX_CHECK_COMPILE_FLAG([-fPIE],
+		      [AX_CHECK_LINK_FLAG([-fPIE -pie],
+					  [PIE_CFLAGS="-fPIE" PIE_LDFLAGS="-pie"])])
+AC_SUBST(PIE_CFLAGS)
+AC_SUBST(PIE_LDFLAGS)
+
+# check for full RELRO (relocation read-only) support
+AX_CHECK_LINK_FLAG([-Wl,-z,relro,-z,now],
+		   [RELRO_LDFLAGS="-Wl,-z,relro,-z,now"])
+AC_SUBST([RELRO_LDFLAGS])
+
 dnl ---------------------------------------------------------------------------
 dnl - gettext stuff
 dnl ---------------------------------------------------------------------------

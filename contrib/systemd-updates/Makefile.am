@@ -1,4 +1,5 @@
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	-DPK_COMPILATION				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
@@ -14,11 +15,15 @@ pk_trigger_offline_update_SOURCES =				\
 	pk-trigger-offline-update.c
 pk_trigger_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)
+pk_trigger_offline_update_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_clear_offline_update_SOURCES =				\
 	pk-clear-offline-update.c
 pk_clear_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)
+pk_clear_offline_update_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
@@ -31,6 +36,9 @@ pk_offline_update_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
 	$(PK_GLIB2_LIBS)
+
+pk_offline_update_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)

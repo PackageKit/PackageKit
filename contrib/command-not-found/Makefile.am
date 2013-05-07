@@ -2,6 +2,7 @@
 AUTOMAKE_OPTIONS = 1.7
 
 AM_CPPFLAGS =						\
+	$(PIE_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(GIO_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
@@ -29,6 +30,9 @@ pk_command_not_found_LDADD =				\
 	$(GIO_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
+
+pk_command_not_found_LDFLAGS =				\
+	$(PIE_LDFLAGS)
 
 pk_command_not_found_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\

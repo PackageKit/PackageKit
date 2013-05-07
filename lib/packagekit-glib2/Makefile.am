@@ -8,6 +8,7 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 endif
 
 AM_CPPFLAGS = \
+	$(PIE_CFLAGS)						\
 	$(GLIB_CFLAGS)						\
 	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
