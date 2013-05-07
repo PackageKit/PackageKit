@@ -132,7 +132,7 @@ manpage.1: manpage.xml
       </varlistentry>
       <varlistentry>
         <term>
-          <option>--update</option>
+          <option>--updates</option>
         </term>
         <listitem>
           <para>Put all updates available in the ServicePack.</para>
