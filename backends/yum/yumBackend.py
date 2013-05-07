@@ -1316,12 +1316,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            if rc != 2:
-                self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-            else:
-                for txmbr in self.yumbase.tsInfo:
-                    if txmbr.po not in deps_list:
-                        deps_list.append(txmbr.po)
+            for txmbr in self.yumbase.tsInfo:
+                if txmbr.po not in deps_list:
+                    deps_list.append(txmbr.po)
 
         # remove any of the original names
         for pkg in resolve_list:
