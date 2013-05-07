@@ -2459,7 +2459,7 @@ pk_backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	/* find all the packages */
 	state_local = zif_state_get_child (job_data->state);
-	store_array = pk_backend_get_store_array_for_filter (0,
+	store_array = pk_backend_get_store_array_for_filter (filters,
 							     state_local,
 							     &error);
 	if (store_array == NULL) {
