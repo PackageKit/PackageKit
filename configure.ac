@@ -296,6 +296,16 @@ else
 fi
 AM_CONDITIONAL(HAVE_XSLTPROC, [test "$XSLTPROC" != "no"])
 
+dnl **** Bash completion ****
+AC_ARG_ENABLE(bash_completion, AS_HELP_STRING([--enable-bash-completion],[Enable bash completion]),
+	      enable_bash_completion=$enableval, enable_bash_completion=yes)
+if test x$enable_bash_completion != xno; then
+	PKG_CHECK_MODULES([BASH_COMPLETION], [bash-completion >= 2.0])
+	BASH_COMPLETIONS_DIR="`pkg-config --variable=completionsdir bash-completion`"
+	AC_SUBST([BASH_COMPLETIONS_DIR])
+fi
+AM_CONDITIONAL([HAVE_BASH_COMPLETION],[test "x$enable_bash_completion" = "xyes"])
+
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------

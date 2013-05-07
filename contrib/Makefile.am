@@ -40,8 +40,10 @@ if PK_BUILD_SYSTEMD_UPDATES
 SUBDIRS += systemd-updates
 endif
 
-bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
-dist_bashcompletion_DATA = pk-completion.bash
+if HAVE_BASH_COMPLETION
+bashcompletiondir = $(BASH_COMPLETIONS_DIR)
+dist_bashcompletion_DATA = pkcon
+endif
 
 script_SCRIPTS =					\
 	packagekit-bugreport.sh

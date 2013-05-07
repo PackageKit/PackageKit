@@ -62,7 +62,8 @@ EXTRA_DIST =						\
 	intltool-update.in				\
 	$(NULL)
 
-DISTCHECK_CONFIGURE_FLAGS = 				\
+DISTCHECK_CONFIGURE_FLAGS =				\
+	--disable-bash-completion			\
 	--enable-gtk-doc				\
 	--with-security-framework=dummy			\
 	--with-systemdsystemunitdir=/tmp		\
