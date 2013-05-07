@@ -197,6 +197,47 @@ pk_get_distro_id_machine_type (void)
 }
 
 /**
+ * pk_get_distro_id_parse_os_release:
+ **/
+static gchar *
+pk_get_distro_id_parse_os_release (const gchar *contents, const gchar *arch)
+{
+	gboolean ret;
+	gchar *distro_id = NULL;
+	gchar *name = NULL;
+	gchar *version = NULL;
+	GError *error = NULL;
+	GKeyFile *key_file;
+	GString *str;
+
+	/* make a valid GKeyFile from the .ini data by prepending a header */
+	str = g_string_new (contents);
+	g_string_prepend (str, "[os-release]\n");
+	key_file = g_key_file_new ();
+	ret = g_key_file_load_from_data (key_file, str->str, -1, G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		g_warning ("failed to load os-release: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get keys */
+	name = g_key_file_get_string (key_file, "os-release", "ID", NULL);
+	if (name == NULL)
+		goto out;
+	version = g_key_file_get_string (key_file, "os-release", "VERSION_ID", NULL);
+	if (version == NULL)
+		goto out;
+	distro_id = g_strdup_printf ("%s;%s;%s", name, version, arch);
+out:
+	g_key_file_free (key_file);
+	g_string_free (str, TRUE);
+	g_free (name);
+	g_free (version);
+	return distro_id;
+}
+
+/**
  * pk_get_distro_id:
  *
  * Return value: the distro-id, typically "distro;version;arch"
@@ -227,6 +268,14 @@ pk_get_distro_id (void)
 
 	/* we can't get arch from /etc */
 	arch = pk_get_distro_id_machine_type ();
+
+	/* check for anything that supports os-release */
+	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
+	if (ret) {
+		distro_id = pk_get_distro_id_parse_os_release (contents, arch);
+		if (distro_id != NULL)
+			goto out;
+	}
 
 	/* check for fedora */
 	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);

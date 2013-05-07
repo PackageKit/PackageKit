@@ -846,17 +846,15 @@ pk_test_common_func (void)
 	gchar *present;
 	GDate *date;
 
-	/************************************************************
-	 **************            iso8601           ****************
-	 ************************************************************/
+	present = pk_get_distro_id ();
+	g_assert_cmpstr (present, ==, "selftest;11.91;i686");
+	g_free (present);
+
 	/* get present iso8601 */
 	present = pk_iso8601_present ();
 	g_assert (present != NULL);
 	g_free (present);
 
-	/************************************************************
-	 **************        Date handling         ****************
-	 ************************************************************/
 	/* zero length date */
 	date = pk_iso8601_to_date ("");
 	g_assert (date == NULL);
