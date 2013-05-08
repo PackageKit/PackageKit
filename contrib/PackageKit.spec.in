@@ -10,14 +10,11 @@ License:   GPLv2+ and LGPLv2+
 URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.xz
 
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: PackageKit-backend
 Requires: shared-mime-info
 Requires: comps-extras
 Requires: systemd
-%if 0%{?rhel} == 0
-Requires: preupgrade
-%endif
 
 BuildRequires: glib2-devel >= 2.16.1
 BuildRequires: dbus-devel  >= 1.1.1
@@ -49,8 +46,8 @@ BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
-BuildRequires: zif-devel >= 0.2.5
 %if !0%{?rhel}
+BuildRequires: zif-devel >= 0.2.5
 BuildRequires: bash-completion
 %endif
 
@@ -69,20 +66,21 @@ cross-architecture API.
 %package yum
 Summary: PackageKit YUM backend
 Group: System Environment/Libraries
-Requires: yum >= 3.2.19
+Requires: yum >= 3.4.3-45
 # python(gio)
 Requires: pygobject2
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Provides: PackageKit-backend
 
 %description yum
 A backend for PackageKit to enable yum functionality.
 
+%if 0%{?rhel} == 0
 %package zif
 Summary: PackageKit Zif backend
 Group: System Environment/Libraries
 Requires: zif >= 0.2.5
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Provides: PackageKit-backend
 
 %description zif
@@ -93,7 +91,7 @@ A backend for PackageKit to enable Zif functionality.
 Summary: PackageKit SMART backend
 Group: System Environment/Libraries
 Requires: smart
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Provides: PackageKit-backend
 
 %description smart
@@ -113,7 +111,7 @@ API docs for PackageKit.
 Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
 Requires: yum >= 3.0
-Requires: PackageKit
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: dbus-python
 Obsoletes: yum-packagekit < %{version}-%{release}
 
@@ -126,7 +124,6 @@ will almost instantly update itself to reflect this.
 Summary: GLib libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= 1.1.1
-Requires: %{name} = %{version}-%{release}
 Requires: gobject-introspection
 Obsoletes: PackageKit-libs < %{version}-%{release}
 Provides: PackageKit-libs = %{version}-%{release}
@@ -138,7 +135,7 @@ GLib libraries for accessing PackageKit.
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
 Requires: cronie
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
@@ -146,8 +143,7 @@ Crontab and utilities for running PackageKit as a cron job.
 %package debug-install
 Summary: Facility to install debugging packages using PackageKit
 Group: System Environment/Base
-Requires: %{name} = %{version}-%{release}
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Obsoletes: PackageKit-debuginfo-install <= 0.5.2-0.1.20090902git.fc12
 
 %description debug-install
@@ -156,10 +152,9 @@ Provides facility to install debugging packages using PackageKit.
 %package glib-devel
 Summary: GLib Libraries and headers for PackageKit
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: dbus-devel >= 1.1.1
 Requires: sqlite-devel
-Requires: PackageKit-glib = %{version}-%{release}
 Obsoletes: PackageKit-devel < %{version}-%{release}
 Provides: PackageKit-devel = %{version}-%{release}
 
@@ -169,7 +164,7 @@ GLib headers and libraries for PackageKit.
 %package backend-devel
 Summary: Headers to compile out of tree PackageKit backends
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description backend-devel
 Headers to compile out of tree PackageKit backends.
@@ -190,7 +185,7 @@ using PackageKit.
 Summary: Install GStreamer codecs using PackageKit
 Group: Development/Libraries
 Requires: gstreamer
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Obsoletes: codeina < 0.10.1-10
 Provides: codeina = 0.10.1-10
 
@@ -202,7 +197,7 @@ codecs from configured repositories using PackageKit.
 Summary: Install fonts automatically using PackageKit
 Group: Development/Libraries
 Requires: pango
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
 %description gtk3-module
 The PackageKit GTK3+ module allows any Pango application to install
@@ -212,7 +207,7 @@ fonts from configured repositories using PackageKit.
 Summary: Ask the user to install command line programs automatically
 Group: Development/Libraries
 Requires: bash
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
 %description command-not-found
 A simple helper that offers to install new packages on the command line
@@ -221,7 +216,7 @@ using PackageKit.
 %package device-rebind
 Summary: Device rebind functionality for PackageKit
 Group: Development/Libraries
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
 %description device-rebind
 The device rebind functionality offer the ability to re-initialize devices
@@ -235,8 +230,8 @@ user to restart the computer or remove and re-insert the device.
 %configure \
         --disable-static \
         --enable-yum \
-        --enable-zif \
 %if 0%{?rhel} == 0
+        --enable-zif \
         --enable-smart \
         --enable-introspection \
 %endif
@@ -246,7 +241,7 @@ user to restart the computer or remove and re-insert the device.
         --disable-silent-rules \
         --disable-tests
 
-make %{?_smp_mflags}
+make %{?_smp_mflags} V=1
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
@@ -336,7 +331,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/dbus-1/interfaces/*.xml
 /usr/lib/systemd/system/packagekit-offline-update.service
 %{_libexecdir}/pk-*offline-update
-%{_libdir}/gtk-2.0/modules/libpk-gtk-module.so
 
 %files docs
 %defattr(-,root,root,-)
@@ -357,11 +351,13 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
 
+%if 0%{?rhel} == 0
 %files zif
 %defattr(-,root,root,-)
 %{_libdir}/packagekit-backend/libpk_backend_zif.so
 %dir %{_datadir}/PackageKit/helpers/zif
 %{_datadir}/PackageKit/helpers/zif/*
+%endif
 
 %files yum-plugin
 %defattr(-, root, root)
@@ -394,6 +390,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files gtk3-module
 %defattr(-,root,root,-)
+%{_libdir}/gtk-2.0/modules/*.so
 %{_libdir}/gtk-3.0/modules/*.so
 %{_libdir}/gnome-settings-daemon-3.0/gtk-modules/*.desktop
 
