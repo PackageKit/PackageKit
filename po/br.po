@@ -1891,7 +1891,7 @@ msgstr ""
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:100
 msgid "Repair System"
-msgstr ""
+msgstr "Pareañ ar reizhiad"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:101
 msgid "Authentication is required to repair the installed software"
@@ -1959,12 +1959,12 @@ msgstr ""
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:247
 msgid "PackageKit service"
-msgstr ""
+msgstr "Servij PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-transaction.c:2937
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "Ne zeu ar meziant eus un tarzh sur."
 
 #: ../src/pk-transaction.c:2945
 msgid "Do not update this package unless you are sure it is safe to do so."
