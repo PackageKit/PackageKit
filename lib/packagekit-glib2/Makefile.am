@@ -8,7 +8,6 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 endif
 
 AM_CPPFLAGS = \
-	$(PIE_CFLAGS)						\
 	$(GLIB_CFLAGS)						\
 	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
@@ -181,6 +180,7 @@ libpackagekit_glib2_la_LDFLAGS =				\
 	$(NULL)
 
 libpackagekit_glib2_la_CFLAGS =					\
+	$(PIE_CFLAGS)						\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)
 
@@ -199,6 +199,7 @@ libpackagekitprivate_a_SOURCES =				\
 	$(NULL)
 
 libpackagekitprivate_a_CFLAGS =					\
+	$(PIE_CFLAGS)						\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)
 
