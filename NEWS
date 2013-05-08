@@ -1,3 +1,103 @@
+Version 0.8.8
+~~~~~~~~~~~~~
+Released: 2013-05-08
+
+Notes:
+ - PackageKit now wllow local active users to install signed software without
+   prompting for authentication. If you need to change this you will need to
+   either install a PolicyKit override or just patch the policy file.
+
+Libraries:
+ - Add some public getters to PkUpdateDetail (Richard Hughes)
+ - Don't use the default main context in sync PkClient methods (Giovanni Campagna)
+ - When getting desktop data try the installed prefix, and then the system copy (Richard Hughes)
+
+Backends:
+ - alpm: Account for minor API changes in alpm 8 (Jonathan Conder)
+ - alpm: Add GPGDir config option (Jonathan Conder)
+ - alpm: Add new error codes (Jonathan Conder)
+ - alpm: Allow forced install of untrusted packages (Jonathan Conder)
+ - alpm: Fix freedesktop.org bug #44713 (Jonathan Conder)
+ - alpm: Fix locale and proxy support (Jonathan Conder)
+ - alpm: Implement preliminary signature checking (Jonathan Conder)
+ - alpm: Improve and update config file parsing (Jonathan Conder)
+ - alpm: Improve messages and status/progress reports (Jonathan Conder)
+ - alpm: Make use of new package origin API (Jonathan Conder)
+ - alpm: Port configuration logic to new API (Jonathan Conder)
+ - alpm: Port enum constants to new API (Jonathan Conder)
+ - alpm: Port error messagess to new API (Jonathan Conder)
+ - alpm: Port function calls to new API (Jonathan Conder)
+ - alpm: Port public structs to new API (Jonathan Conder)
+ - alpm: Port type names to new API (Jonathan Conder)
+ - alpm: Remove ShowSize option, add VerbosePkgLists (Jonathan Conder)
+ - alpm: Report new informational updates to frontend (Jonathan Conder)
+ - alpm: Update error codes again (Jonathan Conder)
+ - aptcc: Check if we have network only for operations that need it (Daniel Nicoletti)
+ - aptcc: Make sure we always use gboolean on g_variant_get calls (Daniel Nicoletti)
+ - aptcc: Fix compile warnings (Daniel Nicoletti)
+ - aptcc: Fix repo set data signature (Daniel Nicoletti)
+ - aptcc: Fix sorting of packages and duplicates removal (Daniel Nicoletti)
+ - aptcc: GDebi supports now the installation of multi-arch packages (Daniel Nicoletti)
+ - aptcc: Get changelogs like apt-get does (Daniel Nicoletti)
+ - aptcc: Use gboolean for g_variant_get (Daniel Nicoletti)
+ - aptcc: Make sure we do the network test before setting the no network error (Daniel Nicoletti)
+ - aptcc: Remove redundant colon (Daniel Nicoletti)
+ - aptcc: Set a friendly message on the changelog text if we failed to fetch it (Daniel Nicoletti)
+ - aptcc: Use the right var type (Daniel Nicoletti)
+ - dummy: Fix compile with __attribute__ gnu_printf (Richard Hughes)
+ - entropy: Add compatibility with Entropy 179 (Fabio Erculiani)
+ - entropy: Add forward compatibility with upcoming new Entropy Library releases (Fabio Erculiani)
+ - entropy: Fix undefined reference "update" (Fabio Erculiani)
+ - yum: Ensure conf.cache is set before repo.cache is created (Richard Hughes)
+ - yum: Ignore errors when removing packages to work out the requires list (Richard Hughes)
+ - zif: Do not issue a critical warning when doing WhatProvides (Richard Hughes)
+ - zif: Fix compile with __attribute__ gnu_printf (Richard Hughes)
+ - zif: Fix GetDepends when more than one package is specified (Richard Hughes)
+ - zif: Respect the filters when doing GetRequires (Richard Hughes)
+ - zif: Use the same speedup used in libzif upstream (Richard Hughes)
+ - zypp: Do not trigger invalid numbers (Stephan Kulow)
+ - zypp: Fix compile with __attribute__ gnu_printf (Stephan Kulow)
+ - zypp: Fix download progress (Stephan Kulow)
+ - zypp: Fix removing packages (Stephan Kulow)
+ - zypp: Ignore system resolvables during install too (Stephan Kulow)
+ - zypp: Ignore @System upgrades during update (Stephan Kulow)
+ - zypp: Instantiate PoolStatusSaver after pool is built (bnc#804054) (Michael Andres)
+ - zypp: Less debug in progress functions (Stephan Kulow)
+ - zypp: Merge all backend code into one file, much easier to refactor (Stephan Kulow)
+ - zypp: Only allow to update candidates (fdo#61231) (Stephan Kulow)
+ - zypp: Remap PK provides into rpm provides as the zif backend does (Stephan Kulow)
+ - zypp: Use the right functions to get solvables (Stephan Kulow)
+
+New Features:
+ - Added Provides property to retrieve which Provides the backend supports (Daniel Nicoletti, Richard Hughes)
+ - Expose the transaction flags on the .Transaction object (Richard Hughes)
+ - Use __attribute__ gnu_printf when dealing with varargs (Richard Hughes)
+ - Use G_GNUC_NULL_TERMINATED for pk_backend_spawn_helper (Richard Hughes)
+ - Use PIE to better secure installed tools and also use full RELRO in the daemon (Richard Hughes)
+
+Bugfixes:
+ - Add compatibility with newer libarchive versions (Matthias Klumpp, Daniel Nicoletti)
+ - Allow clients to call org.freedesktop.DBus.Peer (Richard Hughes)
+ - browser-plugin: Do not crash when running an installed package that is upgradable (Richard Hughes)
+ - Do not install the bash-completion code in /etc (Richard Hughes)
+ - Do not use _UTF8Writer when using python3 (Richard Hughes)
+ - Do not write the prepared-updates file if systemd is not available (Richard Hughes)
+ - Don't abort the daemon if the client requests a property that does not exist (Richard Hughes)
+ - Don't initialize GType system on newer GLib versions (Matthias Klumpp)
+ - Ensure /var/lib/PackageKit exists before using it (Colin Walters)
+ - Fix compiling with --enable-systemd --disable-systemd-updates (Dominique Leuenberger)
+ - Fix crash while calling inhibit into systemd-login (Stephan Kulow)
+ - Fixed connman interface (Pekka Lundstrom)
+ - Fix symbol-prefix passed to g-ir-scanner (Evan Nemerson)
+ - Make PackageKit compile on !Linux again (Matthias Klumpp)
+ - Pause for 10 seconds if an error occurred before restarting systemd-updates (Richard Hughes)
+ - Remove pk-plugin-clear-system-update as removing the trigger file is never required (Richard Hughes)
+ - Remove the prepared-updates file if any relevant state was changed (Richard Hughes)
+ - Resolve according to the filters when doing 'pkcon get-requires' (Richard Hughes)
+ - Support getting the distro-id from /etc/os-release (Richard Hughes)
+ - Use the correct session method to fix font installation in pk-gtk-module (Richard Hughes)
+ - Write a pre-failure status file in case the update transaction crashes (Richard Hughes)
+
 Version 0.8.7
 ~~~~~~~~~~~~~
 Released: 2013-01-16

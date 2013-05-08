@@ -24,6 +24,7 @@ Bugfixes:
 
 2.5. Update translations and commit them with sign-off:
 
+tx push --source
 tx pull --all
 git add po/*.po
 
@@ -51,7 +52,6 @@ scp *.tar.* packagekit.org:/srv/www/html/releases/
 
 git commit -a -m "trivial: post release version bump"
 git push
-tx push --source
 
 9. Upload new html sources
 
