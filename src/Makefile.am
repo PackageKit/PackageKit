@@ -18,7 +18,6 @@ PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 		$(NULL)
 
 AM_CPPFLAGS =						\
-	$(PIE_CFLAGS)					\
 	$(GIO_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
@@ -160,6 +159,7 @@ packagekitd_LDFLAGS =					\
 	$(RELRO_LDFLAGS)
 
 packagekitd_CFLAGS =					\
+	$(PIE_CFLAGS)					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
@@ -259,6 +259,7 @@ libpkplugins_la_LIBADD =				\
 	$(NULL)
 
 libpkplugins_la_CFLAGS =				\
+	$(PIE_CFLAGS)					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
