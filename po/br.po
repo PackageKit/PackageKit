@@ -720,12 +720,12 @@ msgstr "Stumm"
 #. TRANSLATORS: noting found, so can't install
 #: ../contrib/browser-plugin/pk-plugin-install.c:552
 msgid "No packages found for your system"
-msgstr ""
+msgstr "N’eus pakad ebet a zo bet kavet evit ho reizhiad"
 
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/pk-plugin-install.c:557
 msgid "Installing..."
-msgstr ""
+msgstr "O staliañ ..."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:442
@@ -745,12 +745,12 @@ msgstr ""
 #. TRANSLATORS: loading package cache so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:454
 msgid "Loading list of packages."
-msgstr ""
+msgstr "O kargañ roll ar pakadoù."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:519
 msgid "Failed to search for file"
-msgstr ""
+msgstr "Sac’het eo bet klask ar restr"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../contrib/command-not-found/pk-command-not-found.c:532
@@ -765,14 +765,14 @@ msgstr ""
 #. TRANSLATORS: we failed to install the package
 #: ../contrib/command-not-found/pk-command-not-found.c:707
 msgid "Failed to install packages"
-msgstr ""
+msgstr "Sac’het eo bet staliañ ar pakadoù"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 #: ../contrib/command-not-found/pk-command-not-found.c:841
 msgid "command not found"
-msgstr ""
+msgstr "n’eo ket kavet an urzh"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:858
@@ -1187,12 +1187,12 @@ msgstr ""
 #. TRANSLATORS: transaction state, installing updates
 #: ../lib/packagekit-glib2/pk-console-shared.c:345
 msgid "Installing updates"
-msgstr ""
+msgstr "O staliañ ar vremanaat"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: ../lib/packagekit-glib2/pk-console-shared.c:349
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "O naetat ar pakadoù"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:353
@@ -1401,7 +1401,7 @@ msgstr "O lemel"
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1132
 msgid "Cleaning up"
-msgstr "O netaat"
+msgstr "O naetaat"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1136
@@ -1411,22 +1411,22 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1140
 msgid "Reinstalling"
-msgstr ""
+msgstr "Oc’h adstaliañ"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-enum.c:1165
 msgid "Downloaded"
-msgstr ""
+msgstr "Pellgarget"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-enum.c:1177
 msgid "Removed"
-msgstr ""
+msgstr "Lamet"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-enum.c:1181
 msgid "Cleaned up"
-msgstr ""
+msgstr "Naetaet"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-enum.c:1185
@@ -1436,7 +1436,7 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-enum.c:1189
 msgid "Reinstalled"
-msgstr ""
+msgstr "Adstaliet"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1214
@@ -1451,12 +1451,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1222
 msgid "Getting update details"
-msgstr ""
+msgstr "O tegas munudoù ar vremanaat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1226
 msgid "Getting details"
-msgstr ""
+msgstr "O tegas ar munudoù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1230
@@ -1466,32 +1466,32 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1234
 msgid "Getting updates"
-msgstr ""
+msgstr "O tigas ar vremanaat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1238
 msgid "Searching by details"
-msgstr ""
+msgstr "O klask dre ar munudoù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1242
 msgid "Searching by file"
-msgstr ""
+msgstr "O klask dre restroù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1246
 msgid "Searching groups"
-msgstr ""
+msgstr "O klask dre ar strolladoù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1250
 msgid "Searching by name"
-msgstr ""
+msgstr "O klask dre an anvioù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1262
 msgid "Installing files"
-msgstr ""
+msgstr "O staliañ ar restroù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1266
@@ -1501,12 +1501,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1270
 msgid "Updating packages"
-msgstr ""
+msgstr "O bremanaat ar pakadoù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1274
 msgid "Canceling"
-msgstr ""
+msgstr "O nulat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1278
@@ -1531,7 +1531,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1294
 msgid "Getting file list"
-msgstr ""
+msgstr "O tegas roll ar restroù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1298
@@ -1541,12 +1541,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1302
 msgid "Installing signature"
-msgstr ""
+msgstr "O staliañ ar sinadur"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1306
 msgid "Getting packages"
-msgstr ""
+msgstr "O tegas ar pakadoù"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1310
@@ -1556,7 +1556,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1318
 msgid "Getting upgrades"
-msgstr ""
+msgstr "O tegas ar vremanaat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1322
@@ -1576,7 +1576,7 @@ msgstr ""
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:72
 msgid "The unsigned software will not be installed."
-msgstr ""
+msgstr "N’hell ket bet staliet ar pakad n’eo ket sinet."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
 #: ../lib/packagekit-glib2/pk-task-text.c:121
@@ -1591,7 +1591,7 @@ msgstr ""
 #. TRANSLATORS: the key URL
 #: ../lib/packagekit-glib2/pk-task-text.c:130
 msgid "Key URL"
-msgstr ""
+msgstr "URL an alc’hwez"
 
 #. TRANSLATORS: the username of the key
 #: ../lib/packagekit-glib2/pk-task-text.c:133
@@ -1616,12 +1616,12 @@ msgstr ""
 #. TRANSLATORS: ask the user if they want to import
 #: ../lib/packagekit-glib2/pk-task-text.c:155
 msgid "Do you accept this signature?"
-msgstr ""
+msgstr "Hag-eñ e tegemerit ar sinadur-mañ ?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:160
 msgid "The signature was not accepted."
-msgstr ""
+msgstr "N’eo ket bet degemeret ar sinadur."
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:203
@@ -1651,17 +1651,17 @@ msgstr ""
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 #: ../lib/packagekit-glib2/pk-task-text.c:268
 msgid "Media type"
-msgstr ""
+msgstr "Seurt ar media"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 #: ../lib/packagekit-glib2/pk-task-text.c:271
 msgid "Media label"
-msgstr ""
+msgstr "Skridennad ar media"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "Text"
-msgstr ""
+msgstr "Skrid"
 
 #. TRANSLATORS: ask the user to insert the media
 #: ../lib/packagekit-glib2/pk-task-text.c:280
@@ -1676,37 +1676,37 @@ msgstr ""
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:300
 msgid "The following packages have to be removed:"
-msgstr ""
+msgstr "Ret eo lemel ar pakadoù a-heul :"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:305
 msgid "The following packages have to be installed:"
-msgstr ""
+msgstr "Ret eo staliañ ar pakadoù a-heul :"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:310
 msgid "The following packages have to be updated:"
-msgstr ""
+msgstr "Ret eo bremanaat ar pakadoù a-heul :"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:315
 msgid "The following packages have to be reinstalled:"
-msgstr ""
+msgstr "Ret eo adstaliañ ar pakadoù a-heul :"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:320
 msgid "The following packages have to be downgraded:"
-msgstr ""
+msgstr "Ret eo devremanaat ar pakadoù a-heul :"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: ../lib/packagekit-glib2/pk-task-text.c:325
 msgid "The following packages are untrusted:"
-msgstr ""
+msgstr "N’eo ket sur ar pakadoù a-heul :"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
-msgstr ""
+msgstr "Deomp dezhi gant ar cheñchamantoù ?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: ../lib/packagekit-glib2/pk-task-text.c:390
