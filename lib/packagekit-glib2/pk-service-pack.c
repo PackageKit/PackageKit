@@ -578,7 +578,11 @@ pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array
 
 	/* we can only write tar achives */
 	arch = archive_write_new ();
+#if ARCHIVE_VERSION_NUMBER >= 3000000
 	archive_write_add_filter_none (arch);
+#else
+	archive_write_set_compression_none (arch);
+#endif
 	archive_write_set_format_ustar (arch);
 	archive_write_open_filename (arch, state->filename);
 
