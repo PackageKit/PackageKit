@@ -801,6 +801,9 @@ backends/zypp/Makefile
 data/Makefile
 data/org.freedesktop.PackageKit.conf
 data/tests/Makefile
+data/tests/pk-client-helper-test.py
+data/tests/pk-spawn-dispatcher.py
+data/tests/pk-spawn-test-sigquit.py
 lib/Makefile
 lib/packagekit-glib2/pk-version.h
 lib/packagekit-glib2/Makefile
@@ -814,6 +817,10 @@ src/plugins/packagekit-plugin.pc
 client/Makefile
 tools/Makefile
 po/Makefile.in
+],[
+chmod +x data/tests/pk-client-helper-test.py
+chmod +x data/tests/pk-spawn-dispatcher.py
+chmod +x data/tests/pk-spawn-test-sigquit.py
 ])
 AC_OUTPUT
 

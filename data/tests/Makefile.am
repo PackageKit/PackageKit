@@ -5,12 +5,18 @@ NULL =
 
 TEST_FILES =						\
 	test.catalog					\
-	pk-client-helper-test.py			\
+	pk-client-helper-test.py.in			\
 	pk-spawn-test.sh				\
 	pk-spawn-proxy.sh				\
 	pk-spawn-test-sigquit.sh			\
-	pk-spawn-test-sigquit.py			\
+	pk-spawn-test-sigquit.py.in			\
 	pk-spawn-test-profiling.sh			\
+	pk-spawn-dispatcher.py.in			\
+	$(NULL)
+
+DISTCLEANFILES =					\
+	pk-client-helper-test.py			\
+	pk-spawn-test-sigquit.py			\
 	pk-spawn-dispatcher.py				\
 	$(NULL)
 
