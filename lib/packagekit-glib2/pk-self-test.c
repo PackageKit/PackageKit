@@ -819,6 +819,10 @@ pk_test_client_func (void)
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 
+	/* ensure previous files are deleted */
+	g_unlink ("/tmp/powertop-1.8-1.fc8.rpm");
+	g_unlink ("/tmp/powertop-common-1.8-1.fc8.rpm");
+
 	/* do downloads */
 	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
 	pk_client_download_packages_async (client, package_ids, "/tmp", cancellable,
