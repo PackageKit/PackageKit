@@ -234,6 +234,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			break;
 		case 'n':
 			if (type == PK_LSOF_TYPE_DEL ||
+			    type == PK_LSOF_TYPE_TXT ||
 			    type == PK_LSOF_TYPE_MEM) {
 
 				/* no valid pid found */
