@@ -680,45 +680,6 @@ USE_PKG = true
 # build packages
 BIN_PKG = true
 
-  def update_system(only_trusted)
-    if only_trusted
-        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
-        return
-    end
-    args = ['-M', 'DIALOG='+DIALOG]
-    args << '-P' if USE_PKG
-    args << '-p' if BIN_PKG
-    args << '-a' # all installed
-    status(STATUS_DEP_RESOLVE)
-    stdin, stdout, stderr = Open3.popen3(PORTUPGRADE, *args)
-    stdout.each_line do |line|
-        if line.match(/^\=+\>/)
-            message(MESSAGE_UNKNOWN, line.chomp)
-        elsif line.match(/^\-\-\-\>/)
-           if line.match(/Upgrading '(.*)\-(.*)' to '(.*)\-(.*)'/)
-                status(STATUS_UPDATE)
-                _resolve(FILTER_NONE, $1)
-            elsif line.match(/Fetching (.*)\-(.*)/)
-                status(STATUS_DOWNLOAD)
-                _resolve(FILTER_NONE, $1)
-            elsif line.match(/SECURITY REPORT/)
-                # important safety tip
-            end
-            message(MESSAGE_UNKNOWN, line.chomp)
-        end
-    end
-    stderr.each_line do |line|
-        if line.match(/\[Updating the pkgdb.*\]/)
-          status(STATUS_WAIT)
-        elsif line.match(/^\*\* Command failed \[exit code (\d)\]: (.*)/)
-          error(ERROR_TRANSACTION_ERROR, $2)
-        elsif not line.match(/\[Gathering depends.*\]/) \
-          and not line.match(/^\*\* Could not find the latest version/)
-          message(MESSAGE_BACKEND_ERROR, line.chomp)
-        end
-    end
-  end
-
   def download_packages(directory, package_ids)
     pkgnames = []
     package_ids.each do |package|

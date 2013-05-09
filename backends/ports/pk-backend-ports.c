@@ -426,15 +426,6 @@ pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 }
 
 /**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
-}
-
-/**
  * pk_backend_get_description:
  */
 const gchar *
