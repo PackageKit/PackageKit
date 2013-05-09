@@ -20,7 +20,7 @@ AM_CPPFLAGS = \
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DG_LOG_DOMAIN=\"PackageKit\"				\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
-	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"		\
+	-DTESTDATADIR=\""$(abs_top_srcdir)/data/tests"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
