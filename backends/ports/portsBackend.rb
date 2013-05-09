@@ -1,7 +1,7 @@
 #!/usr/local/bin/ruby
 # -*- ruby -*-
 
-# Copyright (C) 2009 Anders F Bjorklund <afb@users.sourceforge.net>
+# Copyright (C) 2009, 2013 Anders F Bjorklund <afb@users.sourceforge.net>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -132,15 +132,14 @@ GROUPS = {
 
   def get_packages(filters)
     status(STATUS_QUERY)
-    filterlist = filters.split(';')
     begin
       $portsdb.each do |portinfo|
         port = PortInfo.new(portinfo)
         pkg = PkgInfo.new(port.pkgname)
         installed = pkg.installed?
-        if filterlist.include? FILTER_NOT_INSTALLED and installed:
+        if filters.include? FILTER_NOT_INSTALLED and installed:
             next
-        elsif filterlist.include? FILTER_INSTALLED and !installed:
+        elsif filters.include? FILTER_INSTALLED and !installed:
             next
         end
         data = installed ? "installed" : "ports"
@@ -176,16 +175,15 @@ GROUPS = {
   end
 
   def _resolve(filters, packages)
-    filterlist = filters.split(';')
     packages.each do |package|
       portnames = $portsdb.glob(package)
       if portnames
       portnames.each do |port|
         pkg = PkgInfo.new(port.pkgname)
         installed = pkg.installed?
-        if filterlist.include? FILTER_NOT_INSTALLED and installed:
+        if filters.include? FILTER_NOT_INSTALLED and installed:
             next
-        elsif filterlist.include? FILTER_INSTALLED and !installed:
+        elsif filters.include? FILTER_INSTALLED and !installed:
             next
         end
         data = installed ? "installed" : "ports"
@@ -207,7 +205,6 @@ GROUPS = {
 
   def search_group(filters, key)
     status(STATUS_QUERY)
-    filterlist = filters.split(';')
     if key == GROUP_NEWEST
       portmodified = Hash.new do |modified, portinfo|
         modified[portinfo] = File.mtime(File.join(portinfo.portdir, 'Makefile')) if portinfo
@@ -223,9 +220,9 @@ GROUPS = {
         port = $portsdb.port(origin)
         pkg = PkgInfo.new(port.pkgname)
         installed = pkg.installed?
-        if filterlist.include? FILTER_NOT_INSTALLED and installed:
+        if filters.include? FILTER_NOT_INSTALLED and installed:
             next
-        elsif filterlist.include? FILTER_INSTALLED and !installed:
+        elsif filters.include? FILTER_INSTALLED and !installed:
             next
         end
         data = installed ? "installed" : "ports"
@@ -245,7 +242,6 @@ GROUPS = {
 
   def search_name(filters, key)
     status(STATUS_QUERY)
-    filterlist = filters.split(';')
     name = key
     begin
       $portsdb.glob("*#{name}*").each do |port|
@@ -267,7 +263,6 @@ GROUPS = {
 
   def search_details(filters, key)
     status(STATUS_QUERY)
-    filterlist = filters.split(';')
     begin
       $portsdb.each do |portinfo|
         port = PortInfo.new(portinfo)
@@ -291,8 +286,7 @@ GROUPS = {
 
   def search_file(filters, key)
     status(STATUS_QUERY)
-    filterlist = filters.split(';')
-    if filterlist.include? FILTER_NOT_INSTALLED
+    if filters.include? FILTER_NOT_INSTALLED
       error(ERROR_CANNOT_GET_FILELIST, "Only available for installed packages", false)
       return
     end
@@ -338,7 +332,6 @@ GROUPS = {
 
   def get_depends(filters, package_ids, recursive)
     status(STATUS_INFO)
-    filterlist = filters.split(';')
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
 
@@ -530,7 +523,6 @@ VULN_XML = 'vuln.xml'
 
   def get_updates(filters)
     status(STATUS_DEP_RESOLVE)
-    filterlist = filters.split(';')
     list = []
     $pkgdb.glob.each do |pkgname|
         list |= $pkgdb.recurse(pkgname)
@@ -729,8 +721,9 @@ BIN_PKG = true
     ENV['PACKAGES'] = packages
   end
 
-  def install_files(only_trusted, inst_files)
-    if only_trusted
+  def install_files(transaction_flags, inst_files)
+    simulate = transaction_flags.include? TRANSACTION_FLAG_SIMULATE
+    if transaction_flags.include? TRANSACTION_FLAG_ONLY_TRUSTED
         error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
     end
@@ -757,12 +750,13 @@ BIN_PKG = true
     end
     path << $packages_dir # add default dir for depends
     ENV['PKG_PATH'] = path.join(':')
-    _install(pkgnames)
+    _install(pkgnames, simulate)
     ENV['PKG_PATH'] = pkg_path
   end
 
-  def install_packages(only_trusted, package_ids)
-    if only_trusted
+  def install_packages(transaction_flags, package_ids)
+    simulate = transaction_flags.include? TRANSACTION_FLAG_SIMULATE
+    if transaction_flags.include? TRANSACTION_FLAG_ONLY_TRUSTED
         error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
     end
@@ -782,17 +776,47 @@ BIN_PKG = true
             next
         end
     end
-    _install(pkgnames)
+    _install(pkgnames, simulate)
   end
 
-  def _install(pkgnames)
+  def update_packages(transaction_flags, package_ids)
+    simulate = transaction_flags.include? TRANSACTION_FLAG_SIMULATE
+    if transaction_flags.include? TRANSACTION_FLAG_ONLY_TRUSTED
+        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+        return
+    end
+    pkgnames = []
+    package_ids.each do |package|
+        name, version, arch, data = split_package_id(package)
+        if $portsdb.glob(name)
+            pkgname = "#{name}-#{version}"
+            pkg = PkgInfo.new(pkgname)
+            pkgnames << pkg.fullname
+        else
+            error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
+            next
+        end
+    end
+    _upgrade(pkgnames, simulate)
+  end
+
+  def _install(pkgnames, simulate=false)
+    _execute(:portinstall, pkgnames, simulate)
+  end
+
+  def _upgrade(pkgnames, simulate=false)
+    _execute(:portupgrade, pkgnames, simulate)
+  end
+
+  def _execute(command, pkgnames, simulate)
     return if pkgnames.empty?
     args = ['-M', 'DIALOG='+DIALOG]
     args << '-P' if USE_PKG
     args << '-p' if BIN_PKG
+    args << '-n' if simulate
     args.concat pkgnames
     status(STATUS_DEP_RESOLVE)
-    stdin, stdout, stderr = Open3.popen3(PkgDB::command(:portinstall), *args)
+    stdin, stdout, stderr = Open3.popen3(PkgDB::command(command), *args)
     stdout.each_line do |line|
         if line.match(/^\=+\>/)
             message(MESSAGE_UNKNOWN, line.chomp)
@@ -824,7 +848,7 @@ BIN_PKG = true
     end
   end
 
-  def remove_packages(allowdep, autoremove, package_ids)
+  def remove_packages(transaction_flags, package_ids, allowdep, autoremove)
     if autoremove
         error(ERROR_NOT_SUPPORTED, "Automatic removal not available.", exit=false)
     end
@@ -877,7 +901,7 @@ BIN_PKG = true
     end
   end
 
-  protected :_resolve, :_match_range, :_vuxml, :_install
+  protected :_resolve, :_match_range, :_vuxml, :_install, :_upgrade, :_execute
 end
 
 #######################################################################
