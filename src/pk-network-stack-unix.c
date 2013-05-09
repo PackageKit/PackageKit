@@ -123,6 +123,11 @@ pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 	gboolean online = FALSE;
 	PkNetworkEnum state = PK_NETWORK_ENUM_ONLINE;
 
+	/* no warning if the file is missing, like if no /proc */
+	if (!g_file_test (PK_NETWORK_PROC_ROUTE, G_FILE_TEST_EXISTS)) {
+		goto out;
+	}
+
 	/* hack, because netlink is teh suck */
 	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
 	if (!ret) {
