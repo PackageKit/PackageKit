@@ -1817,6 +1817,26 @@ main (int argc, char *argv[])
 		g_free (text);
 		run_mainloop = FALSE;
 
+	} else if (strcmp (mode, "backend-details") == 0) {
+		gchar *backend_author = NULL;
+		gchar *backend_description = NULL;
+		gchar *backend_name = NULL;
+		g_object_get (control,
+			      "backend-author", &backend_author,
+			      "backend-description", &backend_description,
+			      "backend-name", &backend_name,
+			      NULL);
+		if (backend_name != NULL && backend_name[0] != '\0')
+			g_print ("Name:\t\t%s\n", backend_name);
+		if (backend_description != NULL && backend_description[0] != '\0')
+			g_print ("Description:\t%s\n", backend_description);
+		if (backend_author != NULL && backend_author[0] != '\0')
+			g_print ("Author:\t\t%s\n", backend_author);
+		g_free (backend_name);
+		g_free (backend_description);
+		g_free (backend_author);
+		run_mainloop = FALSE;
+
 	} else if (strcmp (mode, "get-groups") == 0) {
 		g_object_get (control,
 			      "groups", &groups,

@@ -19,6 +19,7 @@
 
 __pkcon_commandlist="
     accept-eula
+    backend-details
     get-roles
     get-depends
     get-details
