@@ -120,7 +120,7 @@ pk_package_sack_get_ids (PkPackageSack *sack)
 
 	array = sack->priv->array;
 	package_ids = g_new0 (gchar *, array->len + 1);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		package_ids[i] = g_strdup (pk_package_get_id (package));
 	}
@@ -476,7 +476,7 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	array = sack->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		id = pk_package_get_id (package);
 		if (g_strcmp0 (package_id, id) == 0) {
@@ -666,7 +666,7 @@ pk_package_sack_get_total_bytes (PkPackageSack *sack)
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 
 	array = sack->priv->array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		g_object_get (package,
 			      "size", &bytes_tmp,
@@ -692,7 +692,7 @@ pk_package_sack_get_package_ids (PkPackageSack *sack)
 	/* create array of package_ids */
 	array = sack->priv->array;
 	package_ids = g_new0 (gchar *, array->len+1);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		id = pk_package_get_id (package);
 		package_ids[i] = g_strdup (id);
@@ -771,7 +771,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	}
 
 	/* set data on each item */
-	for (i=0; i<packages->len; i++) {
+	for (i = 0; i < packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
 		g_object_get (item,
 			      "info", &info,
@@ -924,7 +924,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	}
 
 	/* set data on each item */
-	for (i=0; i<details->len; i++) {
+	for (i = 0; i < details->len; i++) {
 		item = g_ptr_array_index (details, i);
 
 		g_object_get (item,
@@ -1062,7 +1062,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* set data on each item */
-	for (i=0; i<update_details->len; i++) {
+	for (i = 0; i < update_details->len; i++) {
 		item = g_ptr_array_index (update_details, i);
 		g_object_get (item,
 			      "package-id", &package_id,
