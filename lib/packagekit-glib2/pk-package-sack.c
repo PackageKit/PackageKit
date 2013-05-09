@@ -445,6 +445,7 @@ pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 
 	/* remove from array */
+	g_hash_table_remove (sack->priv->table, pk_package_get_id (package));
 	ret = g_ptr_array_remove (sack->priv->array, package);
 
 	return ret;
@@ -467,7 +468,6 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 				      const gchar *package_id)
 {
 	PkPackage *package;
-	const gchar *id;
 	gboolean ret = FALSE;
 	guint i;
 	GPtrArray *array;
@@ -478,9 +478,8 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 	array = sack->priv->array;
 	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		id = pk_package_get_id (package);
-		if (g_strcmp0 (package_id, id) == 0) {
-			g_ptr_array_remove_index (array, i);
+		if (g_strcmp0 (package_id, pk_package_get_id (package)) == 0) {
+			pk_package_sack_remove_package (sack, package);
 			ret = TRUE;
 			break;
 		}
