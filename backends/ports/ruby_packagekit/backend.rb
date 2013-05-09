@@ -14,15 +14,44 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# Copyright (C) 2009 Anders F Bjorklund <afb@users.sourceforge.net>
+# Copyright (C) 2009, 2013 Anders F Bjorklund <afb@users.sourceforge.net>
 #
 # This file contain the base classes to implement a PackageKit ruby backend
 #
 
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
+FLAGS_DELIM = ';'
 
 class PackageKitBaseBackend
+  @locked = false
+
+  def do_lock()
+    # Generic locking, override and extend in subclass
+    @locked = true
+  end
+
+  def un_lock()
+    # Generic locking, override and extend in subclass
+    @locked = false
+  end
+
+  def locked?
+    return @locked
+  end
+
+  def error(err, description, exit=true)
+    if exit and locked?:
+      un_lock()
+    end
+    error_description(err, description)
+    if exit
+      # Paradoxically, we don't want to print "finished" to stdout here.
+      #
+      # Leave PackageKit to clean up for us in this case.
+      exit(254)
+    end
+  end
 
   def dispatch_command(cmd, args)
     case
@@ -32,40 +61,40 @@ class PackageKitBaseBackend
         download_packages(directory, package_ids)
         finished()
     when cmd == 'get-packages'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         get_packages(filters)
         finished()
     when cmd == 'get-repo-list'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         get_repo_list(filters)
         finished()
     when cmd == 'resolve'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
         resolve(filters, package_ids)
         finished()
     when cmd == 'search-details'
-        options = args[0]
-        searchterms = args[1]
+        options = args[0].split(FLAGS_DELIM)
+        searchterms = args[1].split(PACKAGE_IDS_DELIM)
         search_details(options, searchterms)
         finished()
     when cmd == 'search-file'
-        options = args[0]
-        searchterms = args[1]
+        options = args[0].split(FLAGS_DELIM)
+        searchterms = args[1].split(PACKAGE_IDS_DELIM)
         search_file(options, searchterms)
         finished()
     when cmd == 'search-group'
-        options = args[0]
-        searchterms = args[1]
+        options = args[0].split(FLAGS_DELIM)
+        searchterms = args[1].split(PACKAGE_IDS_DELIM)
         search_group(options, searchterms)
         finished()
     when cmd == 'search-name'
-        options = args[0]
-        searchterms = args[1]
+        options = args[0].split(FLAGS_DELIM)
+        searchterms = args[1].split(PACKAGE_IDS_DELIM)
         search_name(options, searchterms)
         finished()
     when cmd == 'get-depends'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
         recursive = to_b(args[2])
         get_depends(filters, package_ids, recursive)
@@ -79,7 +108,7 @@ class PackageKitBaseBackend
         get_files(package_ids)
         finished()
     when cmd == 'get-requires'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
         recursive = to_b(args[2])
         get_requires(filters, package_ids, recursive)
@@ -89,32 +118,34 @@ class PackageKitBaseBackend
         get_update_detail(package_ids)
         finished()
     when cmd == 'get-updates'
-        filters = args[0]
+        filters = args[0].split(FLAGS_DELIM)
         get_updates(filters)
         finished()
     when cmd == 'install-files'
-        only_trusted = to_b(args[0])
+        transaction_flags = args[0].split(FLAGS_DELIM)
         files_to_inst = args[1].split(FILENAME_DELIM)
-        install_files(only_trusted, files_to_inst)
+        install_files(transaction_flags, files_to_inst)
         finished()
     when cmd == 'install-packages'
-        only_trusted = to_b(args[0])
+        transaction_flags = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
-        install_packages(only_trusted, package_ids)
+        install_packages(transaction_flags, package_ids)
+        finished()
+    when cmd == 'update-packages'
+        transaction_flags = args[0].split(FLAGS_DELIM)
+        package_ids = args[1].split(PACKAGE_IDS_DELIM)
+        update_packages(transaction_flags, package_ids)
         finished()
     when cmd == 'refresh-cache'
         force = to_b(args[0])
         refresh_cache(force)
         finished()
     when cmd == 'remove-packages'
-        allowdeps = to_b(args[0])
-        autoremove = to_b(args[1])
-        package_ids = args[2].split(PACKAGE_IDS_DELIM)
-        remove_packages(allowdeps, autoremove, package_ids)
-        finished()
-    when cmd == 'update-system'
-        only_trusted = to_b(args[0])
-        update_system(only_trusted)
+        transaction_flags = args[0].split(FLAGS_DELIM)
+        package_ids = args[1].split(PACKAGE_IDS_DELIM)
+        allowdeps = to_b(args[2])
+        autoremove = to_b(args[3])
+        remove_packages(transaction_flags, package_ids, allowdeps, autoremove)
         finished()
     else
         errmsg = "command '#{cmd}' is not known"
