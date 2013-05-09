@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 #

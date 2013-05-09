@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 # Licensed under the GNU General Public License Version 2
 # This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@ sleep ${time}
 echo -e "package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon"
 echo -e "package\tinstalled\tpolkit-gnome;0.0.1;i386;data\tPolicyKit helper (•) for GNOME"
 sleep ${time}
-echo -e -n "package\tavailable\tConsoleKit"
+printf "package\tavailable\tConsoleKit"
 sleep ${time}
 echo -e "\tSystem console checker"
 echo -e "percentage\t50"
