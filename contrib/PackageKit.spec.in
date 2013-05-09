@@ -85,6 +85,7 @@ Provides: PackageKit-backend
 
 %description zif
 A backend for PackageKit to enable Zif functionality.
+%endif
 
 %if 0%{?rhel} == 0
 %package smart
@@ -173,7 +174,7 @@ Headers to compile out of tree PackageKit backends.
 Summary: Browser Plugin for PackageKit
 Group: Development/Libraries
 Requires: gtk2
-Requires: PackageKit-glib = %{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: mozilla-filesystem
 
 %description browser-plugin
