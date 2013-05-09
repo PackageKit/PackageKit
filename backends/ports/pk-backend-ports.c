@@ -135,6 +135,7 @@ pk_backend_get_mime_types (PkBackend *backend)
 	const gchar *mime_types[] = {
 				"application/x-compressed-tar",		/* .tgz */
 				"application/x-bzip-compressed-tar",	/* .tbz */
+				"application/x-xz-compressed-tar",	/* .txz */
 				NULL };
 	return g_strdupv ((gchar **) mime_types);
 }
