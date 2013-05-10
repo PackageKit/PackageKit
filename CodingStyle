@@ -1,6 +1,7 @@
 == Indent ==
 
-Use "indent -kr -i8 -pcs -lps -psl *.c" to convert to "mostly correct" indenting levels.
+Use "indent -kr -i8 -pcs -lp -lps -psl *.c" to convert to "mostly correct"
+indenting levels.
 
 == Tabs ==
 
@@ -8,7 +9,7 @@ Tabs are the size of 8 spaces, and should be used in preference to spaces.
 
 == Overlong lines ==
 
-Functions that are two long for one line are intented with tabs and then 
+Functions that are too long for one line are indented with tabs and then
 spaces to the start of the bracket:
 
 libnotify_event ("HAL does not have PowerManagement capability",
@@ -28,4 +29,3 @@ Braces not-ommitted for single line:
 if (!false) {
 	g_warning ("Cannot find icon");
 }
-
