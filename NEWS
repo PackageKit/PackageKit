@@ -3,7 +3,7 @@ Version 0.8.8
 Released: 2013-05-08
 
 Notes:
- - PackageKit now wllow local active users to install signed software without
+ - PackageKit now allow local active users to install signed software without
    prompting for authentication. If you need to change this you will need to
    either install a PolicyKit override or just patch the policy file.
 
