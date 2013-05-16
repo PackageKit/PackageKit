@@ -44,6 +44,7 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
+from yum.Errors import YumBaseError
 import rpmUtils
 import exceptions
 import types
@@ -120,7 +121,9 @@ def sigquit(signum, frame):
     sys.exit(1)
 
 def _to_unicode(txt, encoding='utf-8'):
-    if isinstance(txt, basestring):
+    if isinstance(txt, YumBaseError):
+        txt = unicode(txt)
+    elif isinstance(txt, basestring):
         if not isinstance(txt, unicode):
             txt = unicode(txt, encoding, errors='replace')
     return txt
