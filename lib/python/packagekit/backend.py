@@ -25,7 +25,6 @@
 from __future__ import print_function
 
 import sys
-import codecs
 import traceback
 import os.path
 
@@ -118,9 +117,9 @@ class PackageKitBaseBackend:
         @param percent: Progress percentage (int preferred)
         '''
         if percent == None:
-            print("no-percentage-updates")
+            sys.stdout.write(_to_utf8("no-percentage-updates\n"))
         elif percent == 0 or percent > self.percentage_old:
-            print("percentage\t%i" % (percent))
+            sys.stdout.write(_to_utf8("percentage\t%i\n" % percent))
             self.percentage_old = percent
         sys.stdout.flush()
 
@@ -129,7 +128,7 @@ class PackageKitBaseBackend:
         Write progress speed
         @param bps: Progress speed (int, bytes per second)
         '''
-        print("speed\t%i" % (bps))
+        sys.stdout.write(_to_utf8("speed\t%i\n" % bps))
         sys.stdout.flush()
 
     def item_progress(self, package_id, status, percent=None):
@@ -138,7 +137,7 @@ class PackageKitBaseBackend:
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param percent: percentage of the current item (int preferred)
         '''
-        print("item-progress\t%s\t%s\t%i" % (package_id, status, percent))
+        sys.stdout.write(_to_utf8("item-progress\t%s\t%s\t%i\n" % (package_id, status, percent)))
         sys.stdout.flush()
 
     def error(self, err, description, exit=True):
@@ -153,7 +152,7 @@ class PackageKitBaseBackend:
             self.unLock()
 
         # this should be fast now
-        print("error\t%s\t%s" % (err, _to_utf8(description)))
+        sys.stdout.write(_to_utf8("error\t%s\t%s\n" % (err, description)))
         sys.stdout.flush()
         if exit:
             # Paradoxically, we don't want to print "finished" to stdout here.
@@ -168,7 +167,7 @@ class PackageKitBaseBackend:
         send 'message' signal
         @param typ: MESSAGE_BROKEN_MIRROR
         '''
-        print("message\t%s\t%s" % (typ, _to_utf8(msg)))
+        sys.stdout.write(_to_utf8("message\t%s\t%s\n" % (typ, msg)))
         sys.stdout.flush()
 
     def package(self, package_id, status, summary):
@@ -178,7 +177,7 @@ class PackageKitBaseBackend:
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
         '''
-        print("package\t%s\t%s\t%s" % (status, package_id, _to_utf8(summary)), file=sys.stdout)
+        sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\n" % (status, package_id, summary)))
         sys.stdout.flush()
 
     def media_change_required(self, mtype, id, text):
@@ -188,7 +187,7 @@ class PackageKitBaseBackend:
         @param id: the localised label of the media
         @param text: the localised text describing the media
         '''
-        print("media-change-required\t%s\t%s\t%s" % (mtype, id, _to_utf8(text)), file=sys.stdout)
+        sys.stdout.write(_to_utf8("media-change-required\t%s\t%s\t%s\n" % (mtype, id, text)))
         sys.stdout.flush()
 
     def distro_upgrade(self, dtype, name, summary):
@@ -198,7 +197,7 @@ class PackageKitBaseBackend:
         @param name: The distro name, e.g. "fedora-9"
         @param summary: The localised distribution name and description
         '''
-        print("distro-upgrade\t%s\t%s\t%s" % (dtype, name, _to_utf8(summary)), file=sys.stdout)
+        sys.stdout.write(_to_utf8("distro-upgrade\t%s\t%s\t%s\n" % (dtype, name, summary)))
         sys.stdout.flush()
 
     def status(self, state):
@@ -206,7 +205,7 @@ class PackageKitBaseBackend:
         send 'status' signal
         @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
-        print("status\t%s" % (state))
+        sys.stdout.write(_to_utf8("status\t%s\n" % state))
         sys.stdout.flush()
 
     def repo_detail(self, repoid, name, state):
@@ -215,7 +214,7 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print("repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_string(state)), file=sys.stdout)
+        sys.stdout.write(_to_utf8("repo-detail\t%s\t%s\t%s\n" % (repoid, name, _bool_to_string(state))))
         sys.stdout.flush()
 
     def data(self, data):
@@ -223,7 +222,7 @@ class PackageKitBaseBackend:
         send 'data' signal:
         @param data:  The current worked on package
         '''
-        print("data\t%s" % (data))
+        sys.stdout.write(_to_utf8("data\t%s\n" % data))
         sys.stdout.flush()
 
     def details(self, package_id, package_license, group, desc, url, bytes):
@@ -236,7 +235,7 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         '''
-        print("details\t%s\t%s\t%s\t%s\t%s\t%ld" % (package_id, package_license, _to_utf8(group), _to_utf8(desc), url, bytes), file=sys.stdout)
+        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%ld\n" % (package_id, package_license, group, desc, url, bytes)))
         sys.stdout.flush()
 
     def files(self, package_id, file_list):
@@ -244,7 +243,7 @@ class PackageKitBaseBackend:
         Send 'files' signal
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print("files\t%s\t%s" % (package_id, file_list), file=sys.stdout)
+        sys.stdout.write(_to_utf8("files\t%s\t%s\n" % (package_id, file_list)))
         sys.stdout.flush()
 
     def category(self, parent_id, cat_id, name, summary, icon):
@@ -256,14 +255,14 @@ class PackageKitBaseBackend:
         summery   : a summary of the category in current locale.
         icon      : an icon name to represent the category
         '''
-        print("category\t%s\t%s\t%s\t%s\t%s" % (parent_id, cat_id, _to_utf8(name), _to_utf8(summary), icon), file=sys.stdout)
+        sys.stdout.write(_to_utf8("category\t%s\t%s\t%s\t%s\t%s\n" % (parent_id, cat_id, name, summary, icon)))
         sys.stdout.flush()
 
     def finished(self):
         '''
         Send 'finished' signal
         '''
-        print("finished", file=sys.stdout)
+        sys.stdout.write(_to_utf8("finished\n"))
         sys.stdout.flush()
 
     def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated):
@@ -282,7 +281,7 @@ class PackageKitBaseBackend:
         @param issued:
         @param updated:
         '''
-        print("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, _to_utf8(update_text), _to_utf8(changelog), state, issued, updated), file=sys.stdout)
+        sys.stdout.write(_to_utf8("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated)))
         sys.stdout.flush()
 
     def require_restart(self, restart_type, details):
@@ -291,7 +290,7 @@ class PackageKitBaseBackend:
         @param restart_type: RESTART_SYSTEM, RESTART_APPLICATION, RESTART_SESSION
         @param details: Optional details about the restart
         '''
-        print("requirerestart\t%s\t%s" % (restart_type, _to_utf8(details)))
+        sys.stdout.write(_to_utf8("requirerestart\t%s\t%s\n" % (restart_type, details)))
         sys.stdout.flush()
 
     def allow_cancel(self, allow):
@@ -303,7 +302,7 @@ class PackageKitBaseBackend:
             data = 'true'
         else:
             data = 'false'
-        print("allow-cancel\t%s" % (data))
+        sys.stdout.write(_to_utf8("allow-cancel\t%s\n" % data))
         sys.stdout.flush()
 
     def repo_signature_required(self, package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type):
@@ -318,9 +317,9 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param sig_type:        Key type (GPG)
         '''
-        print("repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
-            package_id, repo_name, key_url, _to_utf8(key_userid), key_id, key_fingerprint, key_timestamp, sig_type
-            ))
+        sys.stdout.write(_to_utf8("repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+            package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type
+            )))
         sys.stdout.flush()
 
     def eula_required(self, eula_id, package_id, vendor_name, license_agreement):
@@ -331,9 +330,9 @@ class PackageKitBaseBackend:
         @param vendor_name:     Name of the vendor that wrote the EULA
         @param license_agreement: The license text
         '''
-        print("eula-required\t%s\t%s\t%s\t%s" % (
-            eula_id, package_id, _to_utf8(vendor_name), _to_utf8(license_agreement)
-            ))
+        sys.stdout.write(_to_utf8("eula-required\t%s\t%s\t%s\t%s\n" % (
+            eula_id, package_id, vendor_name, license_agreement
+            )))
         sys.stdout.flush()
 
 #
