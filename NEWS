@@ -1,3 +1,21 @@
+Version 0.8.9
+~~~~~~~~~~~~~
+Released: 2013-05-20
+
+Backends:
+ - yum: Update the comps->group mapping for Fedora 19 (Richard Hughes)
+ - yum: When converting to unicode special case YumBaseError (Richard Hughes)
+
+New Features:
+ - Add 'pkcon backend-details' to be get details of the selected backend (Richard Hughes)
+
+Bugfixes:
+ - Add fallback for older libarchive (Anders F Bjorklund)
+ - Do not rely on Python2 to write UTF-8 strings (Richard Hughes)
+ - Do not use -fPIE when calling g-ir-scanner (Richard Hughes)
+ - Ensure the package is removed from the sack properly (Richard Hughes)
+ - Modify CodingStyle (Murilo Opsfelder Araujo)
+
 Version 0.8.8
 ~~~~~~~~~~~~~
 Released: 2013-05-08
