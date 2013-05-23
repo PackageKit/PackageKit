@@ -228,8 +228,8 @@ MaximumItemsToResolve=1200
 # Setting this lower decreases the risk of a local denial of service, but may
 # cause errors if the desktop client is trying to do a large transaction.
 #
-# default=2500
-MaximumPackagesToProcess=2500
+# default=5000
+MaximumPackagesToProcess=5000
 
 # How long the transaction is valid before it's destroyed, in seconds
 #
