@@ -2,6 +2,11 @@
 NULL =
 
 if SECURITY_TYPE_POLKIT
+polkit_rulesdir = $(datadir)/polkit-1/rules.d
+dist_polkit_rules_DATA =					\
+	org.freedesktop.packagekit.rules			\
+	$(NULL)
+
 polkit_policydir = $(datadir)/polkit-1/actions
 dist_polkit_policy_DATA =					\
 	org.freedesktop.packagekit.policy			\
