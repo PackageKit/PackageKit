@@ -28,12 +28,9 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <glib.h>
+#include <glib-unix.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-debug.h>
-
-#if GLIB_CHECK_VERSION(2,29,19)
- #include <glib-unix.h>
-#endif
 
 #include "pk-conf.h"
 #include "pk-engine.h"
@@ -85,38 +82,17 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 	g_main_loop_quit (mainloop);
 }
 
-#if GLIB_CHECK_VERSION(2,29,19)
-
 /**
  * pk_main_sigint_cb:
  **/
 static gboolean
 pk_main_sigint_cb (gpointer user_data)
 {
+	GMainLoop *mainloop = (GMainLoop *) user_data;
 	g_debug ("Handling SIGINT");
-	g_main_loop_quit (loop);
+	g_main_loop_quit (mainloop);
 	return FALSE;
 }
-
-#else
-
-/**
- * pk_main_sigint_handler:
- **/
-static void
-pk_main_sigint_handler (int sig)
-{
-	g_debug ("Handling SIGINT");
-
-	/* restore default ASAP, as the finalisers might hang */
-	signal (SIGINT, SIG_DFL);
-
-	/* exit loop */
-	g_main_loop_quit (loop);
-}
-
-#endif
-
 
 /**
  * pk_main_sort_backends_cb:
@@ -255,16 +231,12 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-#if GLIB_CHECK_VERSION(2,29,19)
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
 				SIGINT,
 				pk_main_sigint_cb,
 				loop,
 				NULL);
-#else
-	signal (SIGINT, pk_main_sigint_handler);
-#endif
 
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon && daemon (0, 0)) {
