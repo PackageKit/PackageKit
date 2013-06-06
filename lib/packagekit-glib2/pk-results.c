@@ -564,8 +564,11 @@ pk_results_get_error_code (PkResults *results)
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 
 	/* failed, but no exit code? */
-	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
-		g_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_string (results->priv->exit_enum));
+	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		g_warning ("internal error: failed, but no error code: %s",
+			   pk_exit_enum_to_string (results->priv->exit_enum));
+		return NULL;
+	}
 
 	if (results->priv->error_code == NULL)
 		return NULL;
