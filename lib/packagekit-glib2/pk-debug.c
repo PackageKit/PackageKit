@@ -19,9 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
 #include <glib/gi18n.h>
 #include <unistd.h>
 #include <stdio.h>
+
+#define __USE_GNU
+#include <dlfcn.h>
+
+#define UNW_LOCAL_ONLY
+#include <libunwind.h>
 
 #include <pk-debug.h>
 
@@ -182,6 +189,80 @@ pk_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer
 	_console = (isatty (fileno (stdout)) == 1);
 	g_debug ("Verbose debugging %s (on console %i)", _verbose ? "enabled" : "disabled", _console);
 	return TRUE;
+}
+
+/**
+ * pk_debug_sigsegv_cb:
+ **/
+static void
+pk_debug_sigsegv_cb (int sig)
+{
+	const gchar *filename;
+	Dl_info dlinfo;
+	gchar procname[256];
+	gint ret, i = 0;
+	unw_context_t context;
+	unw_cursor_t cursor;
+	unw_proc_info_t pip;
+	unw_word_t off;
+
+	pip.unwind_info = NULL;
+	ret = unw_getcontext (&context);
+	if  (ret) {
+		g_warning ("unw_getcontext: %d\n", ret);
+		goto out;
+	}
+
+	ret = unw_init_local (&cursor, &context);
+	if  (ret) {
+		g_warning ("unw_init_local: %d\n", ret);
+		goto out;
+	}
+
+	ret = unw_step (&cursor);
+	while  (ret > 0) {
+		ret = unw_get_proc_info (&cursor, &pip);
+		if  (ret) {
+			g_warning ("unw_get_proc_info: %d\n", ret);
+			break;
+		}
+
+		ret = unw_get_proc_name (&cursor, procname, 256, &off);
+		if  (ret && ret != -UNW_ENOMEM) {
+			if  (ret != -UNW_EUNSPEC)
+				g_warning ("unw_get_proc_name: %d\n", ret);
+			procname[0] = '?';
+			procname[1] = 0;
+		}
+
+		if  (dladdr ( (void *) (pip.start_ip + off), &dlinfo) && dlinfo.dli_fname &&
+		    *dlinfo.dli_fname)
+			filename = dlinfo.dli_fname;
+		else
+			filename = "?";
+
+		g_print ("%u: %s  (%s%s+0x%x) [%p]\n", i++, filename, procname,
+			 ret == -UNW_ENOMEM ? "..." : "",  (int)off,  (void *) (pip.start_ip + off));
+
+		ret = unw_step (&cursor);
+		if  (ret < 0)
+			g_warning ("unw_step: %d\n", ret);
+	}
+out:
+	raise (SIGTRAP);
+	return;
+}
+
+
+/**
+ * pk_debug_segfault_backtrace: (skip)
+ *
+ * Registers with a signal handler so that the backtrace is shown to the user.
+ */
+void
+pk_debug_segfault_backtrace (void)
+{
+	signal (SIGSEGV, pk_debug_sigsegv_cb);
 }
 
 /**

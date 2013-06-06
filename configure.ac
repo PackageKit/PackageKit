@@ -188,6 +188,7 @@ PKG_CHECK_MODULES(SQLITE, sqlite3)
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
+PKG_CHECK_MODULES(LIBUNWIND, libunwind)
 
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)

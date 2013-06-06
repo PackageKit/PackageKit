@@ -12,6 +12,7 @@ AM_CPPFLAGS = \
 	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
+	$(LIBUNWIND_CFLAGS)					\
 	-I$(top_srcdir)/lib					\
 	-I$(top_builddir)/lib					\
 	-I.							\
@@ -170,6 +171,7 @@ libpackagekit_glib2_la_LIBADD =					\
 	$(GIO_LIBS)						\
 	$(ARCHIVE_LIBS)						\
 	$(SQLITE_LIBS)						\
+	$(LIBUNWIND_LIBS)					\
 	$(NULL)
 
 libpackagekit_glib2_la_LDFLAGS =				\
@@ -224,6 +226,7 @@ pk_self_test_LDADD =						\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(ARCHIVE_LIBS)						\
+	$(LIBUNWIND_LIBS)					\
 	$(NULL)
 
 pk_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)
