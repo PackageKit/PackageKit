@@ -442,7 +442,7 @@ main (int argc, char *argv[])
 	GFile *file = NULL;
 	gint retval;
 	GMainLoop *loop = NULL;
-	PkResults *results;
+	PkResults *results = NULL;
 	PkTask *task = NULL;
 	PkProgressBar *progressbar = NULL;
 
@@ -531,6 +531,8 @@ out:
 		g_object_unref (progressbar);
 	if (file != NULL)
 		g_object_unref (file);
+	if (results != NULL)
+		g_object_unref (results);
 	if (task != NULL)
 		g_object_unref (task);
 	if (loop != NULL)
