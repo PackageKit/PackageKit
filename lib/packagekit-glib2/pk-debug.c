@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 
 #include <glib/gi18n.h>
 #include <unistd.h>
@@ -27,12 +28,12 @@
 #define __USE_GNU
 #include <dlfcn.h>
 
+#ifdef HAVE_LIBUNWIND
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#endif
 
 #include <pk-debug.h>
-
-#include "config.h"
 
 static gboolean _verbose = FALSE;
 static gboolean _console = FALSE;
@@ -191,6 +192,7 @@ pk_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer
 	return TRUE;
 }
 
+#ifdef HAVE_LIBUNWIND
 /**
  * pk_debug_sigsegv_cb:
  **/
@@ -252,7 +254,7 @@ out:
 	raise (SIGTRAP);
 	return;
 }
-
+#endif
 
 /**
  * pk_debug_segfault_backtrace: (skip)
@@ -262,7 +264,9 @@ out:
 void
 pk_debug_segfault_backtrace (void)
 {
+#ifdef HAVE_LIBUNWIND
 	signal (SIGSEGV, pk_debug_sigsegv_cb);
+#endif
 }
 
 /**

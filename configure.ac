@@ -188,7 +188,6 @@ PKG_CHECK_MODULES(SQLITE, sqlite3)
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
-PKG_CHECK_MODULES(LIBUNWIND, libunwind)
 
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
@@ -483,6 +482,8 @@ if test x$build_systemd_updates = xyes; then
 		    [],
 		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+	PKG_CHECK_MODULES(LIBUNWIND, libunwind)
+	AC_DEFINE(HAVE_LIBUNWIND, 1, [Define if we have libunwind])
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 
