@@ -28,6 +28,10 @@ if BACKEND_TYPE_ENTROPY
 SUBDIRS += entropy
 endif
 
+if BACKEND_TYPE_HAWKEY
+SUBDIRS += hawkey
+endif
+
 if BACKEND_TYPE_OPKG
 SUBDIRS += opkg
 endif
