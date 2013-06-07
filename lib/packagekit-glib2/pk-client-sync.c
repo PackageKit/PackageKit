@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <gio/gio.h>
 #include <glib.h>
 #include <packagekit-glib2/pk-results.h>
@@ -85,6 +86,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -139,6 +141,7 @@ pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GC
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -194,6 +197,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -247,6 +251,7 @@ pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, G
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -300,6 +305,7 @@ pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GC
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -353,6 +359,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *canc
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -406,6 +413,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -459,6 +467,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -511,6 +520,7 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cance
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -563,6 +573,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -617,6 +628,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -669,6 +681,7 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -723,6 +736,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -779,6 +793,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -831,6 +846,7 @@ pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -883,6 +899,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancel
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -934,6 +951,7 @@ pk_client_get_categories (PkClient *client, GCancellable *cancellable,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -996,6 +1014,7 @@ pk_client_remove_packages (PkClient *client,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1059,6 +1078,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancell
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1117,6 +1137,7 @@ pk_client_install_packages (PkClient *client,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1171,6 +1192,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1229,6 +1251,7 @@ pk_client_update_packages (PkClient *client,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1288,6 +1311,7 @@ pk_client_install_files (PkClient *client,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1338,6 +1362,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *can
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1390,6 +1415,7 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *can
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1443,6 +1469,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1498,6 +1525,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1555,6 +1583,7 @@ pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKin
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1616,6 +1645,7 @@ pk_client_repair_system (PkClient *client,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1673,6 +1703,7 @@ pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *ca
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
@@ -1737,6 +1768,7 @@ pk_client_get_progress (PkClient *client, const gchar *transaction_id, GCancella
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
 	helper.context = g_main_context_new ();
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
