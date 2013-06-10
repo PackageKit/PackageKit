@@ -299,32 +299,49 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             # Force needed?
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, e)
 
-    def install_packages(self, only_trusted, package_ids):
+    def install_packages(self, transaction_flags, package_ids):
         """ Installs given package into system"""
         # FIXME: fetch/install progress
         self.allow_cancel(False)
         self.percentage(None)
 
-        # FIXME: use only_trusted
+        packages = list()
 
-        package = self.get_package_from_id(package_ids[0])[0]
-        
+        # FIXME: use only_trusted
+        for package_id in package_ids:
+            package = self.get_package_from_id (package_id)[0]
+            if self.installdb.has_package (package):
+                self.error (ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
+            packages.append (package)
+
         def progress_cb (**kw):			
             self.percentage (int(kw['percent']))
             
         ui = SimplePisiHandler ()
 
-        if self.packagedb.has_package(package):
-            self.status(STATUS_INSTALL)
-            pisi.api.set_userinterface (ui)
-            ui.the_callback = progress_cb
-            try:
-                pisi.api.install([package])
-            except pisi.Error,e:
-                self.error(ERROR_UNKNOWN, e)
-            pisi.api.set_userinterface (None)
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
+        self.status(STATUS_INSTALL)
+        pisi.api.set_userinterface (ui)
+        ui.the_callback = progress_cb
+
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+            # Simulated, not real.
+            self.status (STATUS_INSTALL)
+            for package in packages:
+                deps = self.packagedb.get_package(package).runtimeDependencies()
+                # TODO: Add support to report conflicting packages requiring removal
+                #conflicts = self.packagedb.get_package (package).conflicts
+                for dep in deps:
+                    dep_pkg = self.packagedb.get_package (dep.name())
+                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                    self.package (pkg_id, INFO_INSTALLING, dep_pkg.summary)
+            return
+        try:
+            pisi.api.install(packages)
+        except pisi.Error,e:
+            self.error(ERROR_UNKNOWN, e)
+        pisi.api.set_userinterface (None)
+
 
     def refresh_cache(self, force):
         """ Updates repository indexes """
@@ -348,26 +365,37 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(None)
         # TODO: use autoremove
-
+        packages = list()
+        
+        for package_id in package_ids:
+            package = self.get_package_from_id (package_id)[0]
+            if not self.installdb.has_package (package):
+                self.error (ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
+            packages.append (package)
+    
         def progress_cb (**kw):			
             self.percentage (int(kw['percent']))
             
         ui = SimplePisiHandler ()
         
         package = self.get_package_from_id(package_ids[0])[0]
+        self.status (STATUS_REMOVE)
 
-        if self.installdb.has_package(package):
-            self.status(STATUS_REMOVE)
-            pisi.api.set_userinterface (ui)
-            ui.the_callback = progress_cb
-            try:
-                pisi.api.remove([package])
-            except pisi.Error,e:
-                # system.base packages cannot be removed from system
-                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
-            pisi.api.set_userinterface (None)
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+            # Simulated, not real.
+            for package in packages:
+                rev_deps = self.installdb.get_rev_deps(package)
+                for rev_dep, depinfo in rev_deps:
+                    dep_pkg = self.packagedb.get_package (depinfo.name())
+                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                    self.package (pkg_id, INFO_REMOVING, dep_pkg.summary)
+            return
+        try:
+            pisi.api.remove(packages)
+        except pisi.Error,e:
+            self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
+        pisi.api.set_userinterface (None)
 
     def repo_set_data(self, repo_id, parameter, value):
         """ Sets a parameter for the repository specified """
