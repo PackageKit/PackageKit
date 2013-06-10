@@ -170,14 +170,16 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         if self.packagedb.has_package(package):
             pkg = self.packagedb.get_package(package)
+            repo = self.packagedb.get_package_repo (pkg.name, None)
+            pkg_id = self.get_package_id (pkg.name, self.__get_package_version(pkg), pkg.architecture, repo[1])
 
             if self.groups.has_key(pkg.partOf):
                 group = self.groups[pkg.partOf]
             else:
                 group = GROUP_UNKNOWN
 
-            self.details("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
-                            pkg.license,
+            self.details(pkg_id,
+                            ",".join (pkg.license),
                             group,
                             pkg.description,
                             pkg.packageURI,
@@ -193,14 +195,16 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         package = self.get_package_from_id(package_ids[0])[0]
 
         if self.installdb.has_package(package):
+            pkg = self.packagedb.get_package(package)
+            repo = self.packagedb.get_package_repo (pkg.name, None)
+            pkg_id = self.get_package_id (pkg.name, self.__get_package_version(pkg), pkg.architecture, repo[1])
+			
             pkg = self.installdb.get_files(package)
 
-            # FIXME: Add "/" as suffix
-            files = map(lambda y: y.path, pkg.list)
+            files = map(lambda y: "/%s" % y.path, pkg.list)
 
             file_list = ";".join(files)
-
-            self.files(package, file_list)
+            self.files(pkg_id, file_list)
 
     def get_repo_list(self, filters):
         """ Prints available repositories """
@@ -296,7 +300,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.percentage(100)
 
-    def remove_packages(self, allowdeps, autoremove, package_ids):
+    def remove_packages(self, transaction_flags, package_ids, allowdeps, autoremove):
         """ Removes given package from system"""
         self.allow_cancel(False)
         self.percentage(None)
