@@ -188,6 +188,18 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 }
 
 /**
+ * pk_backend_get_update_detail:
+ */
+void
+pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-update-detail", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * pk_backend_install_packages:
  */
 void

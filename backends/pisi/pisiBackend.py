@@ -25,6 +25,7 @@ from packagekit.backend import *
 from packagekit.package import PackagekitPackage
 from packagekit import enums
 import os.path
+import piksemel
 
 class SimplePisiHandler(pisi.ui.UI):
     
@@ -201,6 +202,50 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
+    def _extract_update_details (self, pindex, package_name):
+		document = piksemel.parse (pindex)
+		packages = document.tags ("Package")
+		for pkg in packages:
+			if pkg.getTagData ("Name") == package_name:
+				history = pkg.getTag("History")
+				update = history.tags ("Update")
+				update_message = "Updated"
+				update_release = 0
+				update_data = ""
+				for update in update:
+					if int(update.getAttribute ("release")) > update_release:
+						update_release = int(update.getAttribute ("release"))
+						updater = update.getTagData ("Name")
+						update_message = update.getTagData ("Comment")
+						update_message = update_message.replace ("\n\n", ";").replace ("\n", " ")
+						update_date = update.getTagData ("Date")
+				return (update_message,update_date)
+			pkg = pkg.nextTag ("Package")
+		return "Great its an update."
+		
+    def get_update_detail(self, package_ids):
+        for package_id in package_ids:
+            package = self.get_package_from_id (package_id)[0]
+            the_package = self.installdb.get_package (package)
+            updates = [package_id]
+            obsoletes = ""
+            bugzilla_url = "" # TODO: Add regex matching for #FIXES:ID or something similar
+            cve_url = ""
+            package_url = the_package.source.homepage
+            vendor_url = package_url if package_url is not None else ""
+            issued = ""
+            repo = self.packagedb.get_package_repo (package, None)[1]
+            pindex = "/var/lib/pisi/index/%s/pisi-index.xml" % repo
+
+            changelog = ""  
+            issued = updated = "" # TODO: Set to security_issued if security update     
+            update_message,security_issued = self._extract_update_details (pindex, package)
+            state = UPDATE_STATE_STABLE # TODO: Add tagging to repo's, or a mapping file
+            
+            self.update_detail(package_id, updates, obsoletes, vendor_url,
+                bugzilla_url, cve_url, "none", update_message, changelog,
+                state, issued, updated)
+    
     def install_files(self, only_trusted, files):
         """ Installs given package into system"""
 
