@@ -134,12 +134,14 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 group = self.groups[pkg.partOf]
             else:
                 group = GROUP_UNKNOWN
+                
+            homepage = pkg.source.homepage if pkg.source.homepage is not None else ''
 
             self.details(pkg_id,
                             ",".join (pkg.license),
                             group,
                             pkg.description,
-                            pkg.packageURI,
+                            homepage,
                             pkg.packageSize)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
