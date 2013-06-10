@@ -2369,9 +2369,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             package_list = []
             for txmbr in self.yumbase.tsInfo:
                 if txmbr.output_state in (TS_UPDATE, TS_INSTALL):
-                    self._show_package(txmbr.po, INFO_DOWNLOADING)
                     repo = self.yumbase.repos.getRepo(txmbr.po.repoid)
+
+                    # is package already downloaded?
+                    local_file = os.path.join(txmbr.po.repo._dir_setup_pkgdir, os.path.basename(txmbr.po.relativepath))
+                    if (os.path.exists(local_file) and os.path.getsize(local_file) == int(txmbr.po.packagesize)):
+                        continue
                     try:
+                        self._show_package(txmbr.po, INFO_DOWNLOADING)
                         path = repo.getPackage(txmbr.po)
                     except yum.Errors.RepoError, e:
                         self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download file: %s" % _to_unicode(e), exit=False)
