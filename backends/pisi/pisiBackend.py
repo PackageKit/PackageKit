@@ -20,10 +20,19 @@
 # Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
 
 import pisi
+import pisi.ui
 from packagekit.backend import *
 from packagekit.package import PackagekitPackage
 from packagekit import enums
 import os.path
+
+class SimplePisiHandler(pisi.ui.UI):
+    
+    def __init(self):
+        pisi.ui.UI.__init__(self, False, False)
+        
+    def display_progress (self, **ka):
+        self.the_callback (**ka)
 
 class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         
@@ -218,13 +227,21 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         # FIXME: use only_trusted
 
         package = self.get_package_from_id(package_ids[0])[0]
+        
+        def progress_cb (**kw):			
+            self.percentage (int(kw['percent']))
+            
+        ui = SimplePisiHandler ()
 
         if self.packagedb.has_package(package):
             self.status(STATUS_INSTALL)
+            pisi.api.set_userinterface (ui)
+            ui.the_callback = progress_cb
             try:
                 pisi.api.install([package])
             except pisi.Error,e:
                 self.error(ERROR_UNKNOWN, e)
+            pisi.api.set_userinterface (None)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
@@ -251,15 +268,23 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         # TODO: use autoremove
 
+        def progress_cb (**kw):			
+            self.percentage (int(kw['percent']))
+            
+        ui = SimplePisiHandler ()
+        
         package = self.get_package_from_id(package_ids[0])[0]
 
         if self.installdb.has_package(package):
             self.status(STATUS_REMOVE)
+            pisi.api.set_userinterface (ui)
+            ui.the_callback = progress_cb
             try:
                 pisi.api.remove([package])
             except pisi.Error,e:
                 # system.base packages cannot be removed from system
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
+            pisi.api.set_userinterface (None)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
 
