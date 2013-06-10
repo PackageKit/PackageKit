@@ -122,6 +122,20 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
+ * pk_backend_download_packages:
+ */
+void
+pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * pk_backend_get_depends:
  */
 void

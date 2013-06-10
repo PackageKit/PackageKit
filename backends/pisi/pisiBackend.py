@@ -245,7 +245,43 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             self.update_detail(package_id, updates, obsoletes, vendor_url,
                 bugzilla_url, cve_url, "none", update_message, changelog,
                 state, issued, updated)
-    
+
+    def download_packages(self, directory, package_ids):
+        """ Download the given packages to a directory """
+        self.allow_cancel (False)
+        self.percentage (None)
+        self.status (STATUS_DOWNLOAD)
+        
+        packages = list()
+        
+        def progress_cb (**kw):
+            self.percentage (int(kw['percent']))
+            
+        ui = SimplePisiHandler ()
+        for package_id in package_ids:
+            package = self.get_package_from_id (package_id)[0]
+            packages.append (package)
+            try:
+                pkg = self.packagedb.get_package (package)
+            except:
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
+        try:
+            pisi.api.set_userinterface (ui)
+            ui.the_callback = progress_cb
+            if directory is None:
+                directory = os.path.curdir
+            pisi.api.fetch (packages, directory)
+            # Scan for package
+            for package in packages:
+                package_obj = self.packagedb.get_package (package)
+                uri = package_obj.packageURI.split("/")[-1]
+                location = os.path.join (directory, uri)
+                self.files (package_id, location)
+            pisi.api.set_userinterface (None)
+        except Exception, e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
+        self.percentage (None)        
+            
     def install_files(self, only_trusted, files):
         """ Installs given package into system"""
 
