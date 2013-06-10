@@ -451,5 +451,5 @@ pk_backend_get_description (PkBackend *backend)
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return "S.Çağlar Onur <caglar@pardus.org.tr>";
+	return "S.Çağlar Onur <caglar@pardus.org.tr>\nIkey Doherty <ikey@solusos.com>";
 }
