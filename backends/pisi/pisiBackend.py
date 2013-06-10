@@ -52,6 +52,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         # Do not ask any question to users
         self.options = pisi.config.Options()
         self.options.yes_all = True
+        
+        self.saved_ui = pisi.context.ui
 
     def _load_mapping_from_disk (self):
         """ Load the PK Group-> PiSi component mapping """
@@ -153,7 +155,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             pkg = self.packagedb.get_package(package)
             repo = self.packagedb.get_package_repo (pkg.name, None)
             pkg_id = self.get_package_id (pkg.name, self.__get_package_version(pkg), pkg.architecture, repo[1])
-			
+            
             pkg = self.installdb.get_files(package)
 
             files = map(lambda y: "/%s" % y.path, pkg.list)
@@ -203,25 +205,25 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.package(id, INFO_NORMAL, pkg.summary)
 
     def _extract_update_details (self, pindex, package_name):
-		document = piksemel.parse (pindex)
-		packages = document.tags ("Package")
-		for pkg in packages:
-			if pkg.getTagData ("Name") == package_name:
-				history = pkg.getTag("History")
-				update = history.tags ("Update")
-				update_message = "Updated"
-				update_release = 0
-				update_data = ""
-				for update in update:
-					if int(update.getAttribute ("release")) > update_release:
-						update_release = int(update.getAttribute ("release"))
-						updater = update.getTagData ("Name")
-						update_message = update.getTagData ("Comment")
-						update_message = update_message.replace ("\n\n", ";").replace ("\n", " ")
-						update_date = update.getTagData ("Date")
-				return (update_message,update_date)
-			pkg = pkg.nextTag ("Package")
-		return "Great its an update."
+        document = piksemel.parse (pindex)
+        packages = document.tags ("Package")
+        for pkg in packages:
+            if pkg.getTagData ("Name") == package_name:
+                history = pkg.getTag("History")
+                update = history.tags ("Update")
+                update_message = "Updated"
+                update_release = 0
+                update_data = ""
+                for update in update:
+                    if int(update.getAttribute ("release")) > update_release:
+                        update_release = int(update.getAttribute ("release"))
+                        updater = update.getTagData ("Name")
+                        update_message = update.getTagData ("Comment")
+                        update_message = update_message.replace ("\n\n", ";").replace ("\n", " ")
+                        update_date = update.getTagData ("Date")
+                return (update_message,update_date)
+            pkg = pkg.nextTag ("Package")
+        return ("Log not found", "")
 		
     def get_update_detail(self, package_ids):
         for package_id in package_ids:
@@ -251,9 +253,9 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel (False)
         self.percentage (None)
         self.status (STATUS_DOWNLOAD)
-        
+
         packages = list()
-        
+
         def progress_cb (**kw):
             self.percentage (int(kw['percent']))
             
@@ -277,7 +279,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 uri = package_obj.packageURI.split("/")[-1]
                 location = os.path.join (directory, uri)
                 self.files (package_id, location)
-            pisi.api.set_userinterface (None)
+            pisi.api.set_userinterface (self.saved_ui)
         except Exception, e:
             self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         self.percentage (None)        
@@ -325,22 +327,22 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             # Simulated, not real.
-            self.status (STATUS_INSTALL)
             for package in packages:
                 deps = self.packagedb.get_package(package).runtimeDependencies()
                 # TODO: Add support to report conflicting packages requiring removal
                 #conflicts = self.packagedb.get_package (package).conflicts
                 for dep in deps:
-                    dep_pkg = self.packagedb.get_package (dep.name())
-                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
-                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
-                    self.package (pkg_id, INFO_INSTALLING, dep_pkg.summary)
+                    if not self.installdb.has_package (dep.name()):
+                        dep_pkg = self.packagedb.get_package (dep.name())
+                        repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                        pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                        self.package (pkg_id, INFO_INSTALLING, dep_pkg.summary)
             return
         try:
             pisi.api.install(packages)
         except pisi.Error,e:
             self.error(ERROR_UNKNOWN, e)
-        pisi.api.set_userinterface (None)
+        pisi.api.set_userinterface (self.saved_ui)
 
 
     def refresh_cache(self, force):
@@ -386,16 +388,17 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             for package in packages:
                 rev_deps = self.installdb.get_rev_deps(package)
                 for rev_dep, depinfo in rev_deps:
-                    dep_pkg = self.packagedb.get_package (depinfo.name())
-                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
-                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
-                    self.package (pkg_id, INFO_REMOVING, dep_pkg.summary)
+                    if self.installdb.has_package (rev_dep):
+                        dep_pkg = self.packagedb.get_package (rev_dep)
+                        repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                        pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                        self.package (pkg_id, INFO_REMOVING, dep_pkg.summary)
             return
         try:
             pisi.api.remove(packages)
         except pisi.Error,e:
             self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
-        pisi.api.set_userinterface (None)
+        pisi.api.set_userinterface (self.saved_ui)
 
     def repo_set_data(self, repo_id, parameter, value):
         """ Sets a parameter for the repository specified """
@@ -412,12 +415,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 pisi.api.update_repo(repo_id)
             except pisi.fetcher.FetchError:
                 pisi.api.remove_repo(repo_id)
-                self.error(ERROR_REPO_NOT_FOUND, "Could not be reached to repository, removing from system")
+                self.error(ERROR_REPO_NOT_FOUND, "Could not reach the repository, removing from system")
         elif parameter == "remove-repo":
             try:
                 pisi.api.remove_repo(repo_id)
             except pisi.Error:
-                self.error(ERROR_REPO_NOT_FOUND, "Repository is not exists")
+                self.error(ERROR_REPO_NOT_FOUND, "Repository does not exist")
         else:
             self.error(ERROR_NOT_SUPPORTED, "Parameter not supported")
 
