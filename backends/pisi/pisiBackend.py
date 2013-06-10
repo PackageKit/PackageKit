@@ -293,14 +293,45 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(None)
 
+        def progress_cb (**kw):			
+            self.percentage (int(kw['percent']))
+            
+        ui = SimplePisiHandler ()
+
+        self.status(STATUS_INSTALL)
+        pisi.api.set_userinterface (ui)
+        ui.the_callback = progress_cb
+
         try:
             self.status(STATUS_INSTALL)
-            pisi.api.install([file])
+            pisi.api.install(files)
         except pisi.Error,e:
             # FIXME: Error: internal-error : Package re-install declined
             # Force needed?
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, e)
+        pisi.api.set_userinterface (self.saved_ui)
 
+    def _report_all_for_package (self, package, remove=False):
+        """ Report all deps for the given package """
+        if not remove:
+            deps = self.packagedb.get_package(package).runtimeDependencies()
+            # TODO: Add support to report conflicting packages requiring removal
+            #conflicts = self.packagedb.get_package (package).conflicts
+            for dep in deps:
+                if not self.installdb.has_package (dep.name()):
+                    dep_pkg = self.packagedb.get_package (dep.name())
+                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                    self.package (pkg_id, INFO_INSTALLING, dep_pkg.summary)
+        else:
+            rev_deps = self.installdb.get_rev_deps(package)
+            for rev_dep, depinfo in rev_deps:
+                if self.installdb.has_package (rev_dep):
+                    dep_pkg = self.packagedb.get_package (rev_dep)
+                    repo = self.packagedb.get_package_repo (dep_pkg.name, None)
+                    pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
+                    self.package (pkg_id, INFO_REMOVING, dep_pkg.summary)
+                                                        
     def install_packages(self, transaction_flags, package_ids):
         """ Installs given package into system"""
         # FIXME: fetch/install progress
@@ -328,15 +359,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             # Simulated, not real.
             for package in packages:
-                deps = self.packagedb.get_package(package).runtimeDependencies()
-                # TODO: Add support to report conflicting packages requiring removal
-                #conflicts = self.packagedb.get_package (package).conflicts
-                for dep in deps:
-                    if not self.installdb.has_package (dep.name()):
-                        dep_pkg = self.packagedb.get_package (dep.name())
-                        repo = self.packagedb.get_package_repo (dep_pkg.name, None)
-                        pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
-                        self.package (pkg_id, INFO_INSTALLING, dep_pkg.summary)
+                self._report_all_for_package (package)
             return
         try:
             pisi.api.install(packages)
@@ -386,13 +409,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
             # Simulated, not real.
             for package in packages:
-                rev_deps = self.installdb.get_rev_deps(package)
-                for rev_dep, depinfo in rev_deps:
-                    if self.installdb.has_package (rev_dep):
-                        dep_pkg = self.packagedb.get_package (rev_dep)
-                        repo = self.packagedb.get_package_repo (dep_pkg.name, None)
-                        pkg_id = self.get_package_id (dep_pkg.name, self.__get_package_version(dep_pkg), dep_pkg.architecture, repo[1])
-                        self.package (pkg_id, INFO_REMOVING, dep_pkg.summary)
+                self._report_all_for_package (package, remove=True)
             return
         try:
             pisi.api.remove(packages)
@@ -482,7 +499,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             for pkg in pisi.api.search_package([value]):
                 self.__get_package(pkg, filters)
 
-    def update_packages(self, only_trusted, package_ids):
+    def update_packages(self, transaction_flags, package_ids):
         """ Updates given package to its latest version """
 
         # FIXME: use only_trusted
@@ -490,16 +507,31 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         # FIXME: fetch/install progress
         self.allow_cancel(False)
         self.percentage(None)
+        
+        packages = list()
+        for package_id in package_ids:
+            package = self.get_package_from_id (package_id)[0]
+            if not self.installdb.has_package (package):
+                self.error (ERROR_PACKAGE_NOT_INSTALLED, "Cannot update a package that is not installed")
+            packages.append (package)
 
-        package = self.get_package_from_id(package_ids[0])[0]
+        def progress_cb (**kw):			
+            self.percentage (int(kw['percent']))
 
-        if self.installdb.has_package(package):
-            try:
-                pisi.api.upgrade([package])
-            except pisi.Error,e:
-                self.error(ERROR_UNKNOWN, e)
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
+        ui = SimplePisiHandler ()
+        pisi.api.set_userinterface (ui)
+        ui.the_callback = progress_cb
+        
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+            for package in packages:
+                self._report_all_for_package (package)
+            return
+        try:
+            pisi.api.upgrade(packages)
+        except pisi.Error,e:
+            self.error(ERROR_UNKNOWN, e)
+        pisi.api.set_userinterface (self.saved_ui)
+
 
     def update_system(self, only_trusted):
         """ Updates all available packages """
