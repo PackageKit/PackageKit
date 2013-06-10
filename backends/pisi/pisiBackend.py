@@ -22,85 +22,15 @@
 import pisi
 from packagekit.backend import *
 from packagekit.package import PackagekitPackage
+from packagekit import enums
+import os.path
 
 class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
-
-    # It's an ugly way to sync with PK Groups and PiSi Components
-    # Maybe we can provide these with our index?
-    groups = {
-            "applications" : GROUP_OTHER,
-            "applications.admin" : GROUP_ADMIN_TOOLS,
-            "applications.archive" : GROUP_OTHER,
-            "applications.crypto" : GROUP_SECURITY,
-            "applications.doc" : GROUP_PUBLISHING,
-            "applications.doc.docbook" : GROUP_PUBLISHING,
-            "applications.editors" : GROUP_ACCESSORIES,
-            "applications.editors.emacs" : GROUP_ACCESSORIES,
-            "applications.emulators" : GROUP_OTHER,
-            "applications.filesystems" : GROUP_OTHER,
-            "applications.games" : GROUP_GAMES,
-            "applications.hardware" : GROUP_OTHER,
-            "applications.multimedia" : GROUP_MULTIMEDIA,
-            "applications.network" : GROUP_INTERNET,
-            "applications.network.mozilla" : GROUP_INTERNET,
-            "applications.pda" : GROUP_ACCESSORIES,
-            "applications.powermanagement" : GROUP_POWER_MANAGEMENT,
-            "applications.printing" : GROUP_PUBLISHING,
-            "applications.science" : GROUP_EDUCATION,
-            "applications.science.astronomy" : GROUP_EDUCATION,
-            "applications.science.electronics" : GROUP_EDUCATION,
-            "applications.science.mathematics" : GROUP_EDUCATION,
-            "applications.security" : GROUP_SECURITY,
-            "applications.shells" : GROUP_OTHER,
-            "applications.tex" : GROUP_PUBLISHING,
-            "applications.util" : GROUP_ACCESSORIES,
-            "applications.virtualization" : GROUP_VIRTUALIZATION,
-            "desktop.fonts" : GROUP_FONTS,
-            "desktop.freedesktop" : GROUP_DESKTOP_OTHER,
-            "desktop.freedesktop.inputmethods" : GROUP_LOCALIZATION,
-            "desktop.freedesktop.xorg" : GROUP_DESKTOP_OTHER,
-            "desktop.freedesktop.xorg.lib" : GROUP_DESKTOP_OTHER,
-            "desktop.gnome" : GROUP_DESKTOP_GNOME,
-            "desktop.kde" : GROUP_DESKTOP_KDE,
-            "desktop.kde.base" : GROUP_DESKTOP_KDE,
-            "desktop.kde.i18n" : GROUP_LOCALIZATION,
-            "kernel" : GROUP_SYSTEM,
-            "kernel.drivers" : GROUP_SYSTEM,
-            "kernel.firmware" : GROUP_SYSTEM,
-            "kernel-xen" : GROUP_VIRTUALIZATION,
-            "kernel-xen.dom0" : GROUP_VIRTUALIZATION,
-            "kernel-xen.dom0.drivers" : GROUP_VIRTUALIZATION,
-            "kernel-xen.dom0.firmware" : GROUP_VIRTUALIZATION,
-            "kernel-xen.domU" : GROUP_VIRTUALIZATION,
-            "programming" : GROUP_PROGRAMMING,
-            "programming.environments" : GROUP_PROGRAMMING,
-            "programming.environments.eclipse" : GROUP_PROGRAMMING,
-            "programming.languages" : GROUP_PROGRAMMING,
-            "programming.languages.dotnet" : GROUP_PROGRAMMING,
-            "programming.languages.gambas" : GROUP_PROGRAMMING,
-            "programming.languages.haskell" : GROUP_PROGRAMMING,
-            "programming.languages.java" : GROUP_PROGRAMMING,
-            "programming.languages.lisp" : GROUP_PROGRAMMING,
-            "programming.languages.pascal" : GROUP_PROGRAMMING,
-            "programming.languages.perl" : GROUP_PROGRAMMING,
-            "programming.languages.php" : GROUP_PROGRAMMING,
-            "programming.languages.python" : GROUP_PROGRAMMING,
-            "programming.languages.tcl" : GROUP_PROGRAMMING,
-            "programming.libs" : GROUP_PROGRAMMING,
-            "programming.tools" : GROUP_PROGRAMMING,
-            "server" : GROUP_SERVERS,
-            "server.database" : GROUP_SERVERS,
-            "server.mail" : GROUP_SERVERS,
-            "server.nis" : GROUP_SERVERS,
-            "server.www" : GROUP_SERVERS,
-            "system" : GROUP_SYSTEM,
-            "system.base" : GROUP_SYSTEM,
-            "system.devel" : GROUP_PROGRAMMING,
-            "system.doc" : GROUP_SYSTEM,
-            "system.locale" : GROUP_LOCALIZATION
-        }
+        
+    MAPPING_FILE = "/etc/PackageKit/pisi.conf"
 
     def __init__(self, args):
+        self._load_mapping_from_disk ()
         PackageKitBaseBackend.__init__(self, args)
 
         self.componentdb = pisi.db.componentdb.ComponentDB()
@@ -113,6 +43,21 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.options = pisi.config.Options()
         self.options.yes_all = True
 
+    def _load_mapping_from_disk (self):
+        """ Load the PK Group-> PiSi component mapping """
+        if os.path.exists (self.MAPPING_FILE):
+            with open (self.MAPPING_FILE, "r") as mapping:
+                self.groups = {}
+                for line in mapping.readlines():
+                    line = line.replace("\r","").replace("\n","").strip()
+                    if line.strip() == "" or "#" in line: continue
+                    splits = line.split ("=")
+                    pisi_component = splits[0].strip()
+                    pk_group = splits[1].strip()
+                    self.groups [pisi_component] = pk_group
+        else:
+            self.groups = {}
+                    
     def __get_package_version(self, package):
         """ Returns version string of given package """
         # Internal FIXME: PiSi may provide this
@@ -379,14 +324,16 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
 
         for value in values:
-            try:
-                packages = self.componentdb.get_packages(value, walk=True)
-            except:
-                self.error(ERROR_GROUP_NOT_FOUND,
-                           "Component %s was not found" % value)
-
-            for pkg in packages:
-                self.__get_package(pkg, filters)
+			packages = list()
+			for item in self.groups:
+				if self.groups[item] == value:		
+					try:
+						packages.extend (self.componentdb.get_packages(item, walk=False))
+					except:
+						self.error(ERROR_GROUP_NOT_FOUND,
+								   "Component %s was not found" % value)
+			for pkg in packages:
+				self.__get_package(pkg, filters)
 
     def search_name(self, filters, values):
         """ Prints a list of packages contains search term in its name """
