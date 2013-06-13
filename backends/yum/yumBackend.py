@@ -2365,27 +2365,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.percentage(100)
             return
 
+        # just download packages ready for the actual transaction
         if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
-            package_list = []
             for txmbr in self.yumbase.tsInfo:
-                if txmbr.output_state in (TS_UPDATE, TS_INSTALL):
-                    repo = self.yumbase.repos.getRepo(txmbr.po.repoid)
-
-                    # is package already downloaded?
-                    local_file = os.path.join(txmbr.po.repo._dir_setup_pkgdir, os.path.basename(txmbr.po.relativepath))
-                    if (os.path.exists(local_file) and os.path.getsize(local_file) == int(txmbr.po.packagesize)):
-                        continue
+                if txmbr.output_state in TS_INSTALL_STATES:
                     try:
                         self._show_package(txmbr.po, INFO_DOWNLOADING)
-                        path = repo.getPackage(txmbr.po)
-                    except yum.Errors.RepoError, e:
-                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download file: %s" % _to_unicode(e), exit=False)
-                        return
-                    except IOError, e:
-                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file: %s" % _to_unicode(e), exit=False)
-                        return
+                        self.yumbase.downloadPkgs([txmbr.po])
                     except Exception, e:
-                        raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                        self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot download packages: %s" % _to_unicode(e), exit=False)
+                        return
             self.percentage(100)
             return
 
