@@ -262,20 +262,33 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	guint i;
 	guint len;
 	const gchar *package_id;
+	const gchar *to_strv[4];
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
 		package_id = package_ids[i];
-		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0)
-			pk_backend_job_files (job, package_id, "/usr/share/man/man1/boo;/usr/bin/xchat-gnome");
-		else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
-			pk_backend_job_files (job, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz;/usr/lib/firefox-3.5.7/firefox");
-		else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
-			pk_backend_job_files (job, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session;/lib/libselinux.so.1");
-		else
-			pk_backend_job_files (job, package_id, "/usr/share/gnome-power-manager;/usr/bin/ck-xinit-session");
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
+			to_strv[0] = "/usr/share/man/man1/boo";
+			to_strv[1] = "/usr/bin/xchat-gnome";
+			to_strv[2] = NULL;
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
+			to_strv[0] = "/usr/share/man/man1";
+			to_strv[1] = "/usr/share/man/man1/gnome-power-manager.1.gz";
+			to_strv[2] = "/usr/lib/firefox-3.5.7/firefox";
+			to_strv[3] = NULL;
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
+			to_strv[0] = "/usr/share/man/man1";
+			to_strv[1] = "/usr/bin/ck-xinit-session";
+			to_strv[2] = "/lib/libselinux.so.1";
+			to_strv[3] = NULL;
+		} else {
+			to_strv[0] = "/usr/share/gnome-power-manager";
+			to_strv[1] = "/usr/bin/ck-xinit-session";
+			to_strv[2] = NULL;
+		}
+		pk_backend_job_files (job, package_id, (gchar **) to_strv);
 	}
 	pk_backend_job_finished (job);
 }
@@ -1575,6 +1588,7 @@ void
 pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
 	gchar *filename;
+	gchar *to_strv[] = { NULL, NULL };
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 
@@ -1583,7 +1597,8 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	g_file_set_contents (filename, "powertop data", -1, NULL);
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
 				"powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora", filename);
+	to_strv[0] = filename;
+	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora", to_strv);
 	g_free (filename);
 
 	/* second package */
@@ -1591,7 +1606,8 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	g_file_set_contents (filename, "powertop-common data", -1, NULL);
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
 				"powertop-common;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora", filename);
+	to_strv[0] = filename;
+	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora", to_strv);
 	g_free (filename);
 
 	pk_backend_job_finished (job);
