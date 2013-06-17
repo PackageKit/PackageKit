@@ -245,12 +245,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		pk_backend_spawn_start_kill_timer (backend_spawn);
 
 	} else if (g_strcmp0 (command, "files") == 0) {
+		gchar **tmp;
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_job_files (job, sections[1], sections[2]);
+		tmp = g_strsplit (sections[2], ";", -1);
+		pk_backend_job_files (job, sections[1], tmp);
+		g_strfreev (tmp);
 	} else if (g_strcmp0 (command, "repo-detail") == 0) {
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

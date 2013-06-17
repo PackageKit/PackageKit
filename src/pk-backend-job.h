@@ -203,7 +203,7 @@ void		 pk_backend_job_details			(PkBackendJob	*job,
 							 gulong	  size);
 void	 	 pk_backend_job_files 			(PkBackendJob	*job,
 							 const gchar	*package_id,
-							 const gchar 	*filelist);
+							 gchar	 	**files);
 void	 	 pk_backend_job_distro_upgrade		(PkBackendJob	*job,
 							 PkDistroUpgradeEnum type,
 							 const gchar 	*name,

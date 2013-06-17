@@ -1402,14 +1402,13 @@ out:
 void
 pk_backend_job_files (PkBackendJob *job,
 		      const gchar *package_id,
-		      const gchar *filelist)
+		      gchar **files)
 {
 	gboolean ret;
 	PkFiles *item = NULL;
-	gchar **files = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (filelist != NULL);
+	g_return_if_fail (files != NULL);
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
@@ -1425,7 +1424,6 @@ pk_backend_job_files (PkBackendJob *job,
 	}
 
 	/* form PkFiles struct */
-	files = g_strsplit (filelist, ";", -1);
 	item = pk_files_new ();
 	g_object_set (item,
 		      "package-id", package_id,
@@ -1442,7 +1440,6 @@ pk_backend_job_files (PkBackendJob *job,
 	/* success */
 	job->priv->download_files++;
 out:
-	g_strfreev (files);
 	if (item != NULL)
 		g_object_unref (item);
 }
