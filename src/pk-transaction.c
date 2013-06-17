@@ -661,7 +661,7 @@ pk_transaction_files_cb (PkBackendJob *job,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Files",
 				       g_variant_new ("(s^as)",
-						      package_id,
+						      package_id != NULL ? package_id : "",
 						      files),
 				       NULL);
 	g_free (package_id);
