@@ -1952,6 +1952,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 {
 	const gchar *directory;
 	const gchar *filename;
+	const gchar *to_strv[] = { NULL, NULL };
 	gboolean ret;
 	gchar *basename;
 	gchar **package_ids;
@@ -2124,7 +2125,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		/* send a signal for the daemon so the file is copied */
 		basename = g_path_get_basename (filename);
 		path = g_build_filename (directory, basename, NULL);
-		pk_backend_job_files (job, zif_package_get_id (package), path);
+		to_strv[0] = path;
+		pk_backend_job_files (job, zif_package_get_id (package), (gchar **) to_strv);
 		g_free (basename);
 		g_free (path);
 
@@ -2957,15 +2959,13 @@ pk_backend_sort_string_cb (const gchar **a, const gchar **b)
 static void
 pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	const gchar *file;
 	const gchar *id;
 	gboolean ret;
 	gchar **package_ids;
 	GError *error = NULL;
 	GPtrArray *files;
 	GPtrArray *store_array = NULL;
-	GString *files_str;
-	guint i, j;
+	guint i;
 	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 	ZifPackage *package;
 	ZifState *state_local;
@@ -3067,12 +3067,8 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 		/* sort these by name and add to list */
 		g_ptr_array_sort (files,
 				  (GCompareFunc) pk_backend_sort_string_cb);
-		files_str = g_string_new ("");
-		for (j=0; j<files->len; j++) {
-			file = g_ptr_array_index (files, j);
-			g_string_append_printf (files_str, "%s\n", file);
-		}
-		pk_backend_job_files (job, package_ids[i], files_str->str);
+		g_ptr_array_add (files, NULL);
+		pk_backend_job_files (job, package_ids[i], (gchar**) files->pdata);
 
 		/* this section done */
 		ret = zif_state_done (state_loop, &error);
@@ -3084,8 +3080,6 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 			g_error_free (error);
 			goto out;
 		}
-
-		g_string_free (files_str, TRUE);
 		g_object_unref (package);
 	}
 out:
