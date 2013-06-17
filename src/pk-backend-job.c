@@ -1416,11 +1416,13 @@ pk_backend_job_files (PkBackendJob *job,
 		goto out;
 	}
 
-	/* check we are valid */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
-		g_warning ("package_id invalid and cannot be processed: %s", package_id);
-		goto out;
+	/* check we are valid if specified */
+	if (package_id != NULL) {
+		ret = pk_package_id_check (package_id);
+		if (!ret) {
+			g_warning ("package_id invalid and cannot be processed: %s", package_id);
+			goto out;
+		}
 	}
 
 	/* form PkFiles struct */
