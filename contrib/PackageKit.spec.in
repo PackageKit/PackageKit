@@ -46,7 +46,6 @@ BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
-BuildRequires: libunwind-devel
 %if !0%{?rhel}
 BuildRequires: zif-devel >= 0.2.5
 BuildRequires: bash-completion

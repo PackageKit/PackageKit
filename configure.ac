@@ -482,8 +482,6 @@ if test x$build_systemd_updates = xyes; then
 		    [],
 		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
-	PKG_CHECK_MODULES(LIBUNWIND, libunwind)
-	AC_DEFINE(HAVE_LIBUNWIND, 1, [Define if we have libunwind])
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 

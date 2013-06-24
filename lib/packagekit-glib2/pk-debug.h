@@ -32,6 +32,5 @@ gboolean	 pk_debug_is_verbose		(void);
 GOptionGroup	*pk_debug_get_option_group	(void);
 void		 pk_debug_add_log_domain	(const gchar	*log_domain);
 void		 pk_debug_set_verbose		(gboolean	 verbose);
-void		 pk_debug_segfault_backtrace	(void);
 
 #endif /* __PK_DEBUG_H__ */

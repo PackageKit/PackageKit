@@ -460,9 +460,6 @@ main (int argc, char *argv[])
 	/* always do this first to avoid a loop if this tool segfaults */
 	g_unlink (PK_OFFLINE_UPDATE_TRIGGER_FILENAME);
 
-	/* print a backtrace if we crash and burn */
-	pk_debug_segfault_backtrace ();
-
 	/* get the list of packages to update */
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				   &packages_data,
