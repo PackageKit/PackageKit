@@ -15,8 +15,6 @@ libpk_backend_hawkey_la_SOURCES =					\
 	hif-lock.h							\
 	hif-package.c							\
 	hif-package.h							\
-	hif-package-md.c						\
-	hif-package-md.h						\
 	hif-rpmts.c							\
 	hif-rpmts.h							\
 	hif-source.c							\

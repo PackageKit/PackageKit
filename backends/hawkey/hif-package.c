@@ -24,32 +24,53 @@
 #include <hawkey/reldep.h>
 
 #include "hif-package.h"
-#include "hif-package-md.h"
+
+typedef struct {
+	gchar		*filename;
+} HifPackagePrivate;
+
+/**
+ * hif_package_destroy_func:
+ **/
+static void
+hif_package_destroy_func (void *userdata)
+{
+	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
+	g_free (priv->filename);
+	g_slice_free (HifPackagePrivate, priv);
+}
 
 /**
  * hif_package_get_filename:
  **/
 const gchar *
-hif_package_get_filename (GHashTable *fixme, HyPackage pkg)
+hif_package_get_filename (HyPackage pkg)
 {
-	const gchar *filename;
-	filename = hif_package_md_get_data (fixme,
-					    pkg,
-					    "downloaded-filename");
-	return filename;
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return NULL;
+	return priv->filename;
 }
 
 /**
  * hif_package_set_filename:
  **/
 void
-hif_package_set_filename (GHashTable *fixme, HyPackage pkg, const gchar *filename)
+hif_package_set_filename (HyPackage pkg, const gchar *filename)
 {
-	hif_package_md_set_data (fixme,
-				 pkg,
-				 "downloaded-filename",
-				 g_strdup (filename),
-				 g_free);
+	HifPackagePrivate *priv;
+
+	/* create private area */
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL) {
+		priv = g_slice_new0 (HifPackagePrivate);
+		hy_package_set_userdata (pkg, priv, hif_package_destroy_func);
+	}
+
+	/* replace contents */
+	g_free (priv->filename);
+	priv->filename = g_strdup (filename);
 }
 
 /**
@@ -106,13 +127,13 @@ hif_package_is_devel (HyPackage pkg)
  * hif_package_is_downloaded:
  **/
 gboolean
-hif_package_is_downloaded (GHashTable *fixme, HyPackage pkg)
+hif_package_is_downloaded (HyPackage pkg)
 {
 	const gchar *filename;
 
 	if (hy_package_installed (pkg))
 		return FALSE;
-	filename = hif_package_get_filename (fixme, pkg);
+	filename = hif_package_get_filename (pkg);
 	if (filename == NULL) {
 		g_warning ("Failed to get cache filename for %s",
 			   hy_package_get_name (pkg));

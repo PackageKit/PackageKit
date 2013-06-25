@@ -44,7 +44,6 @@
 
 #include "hif-config.h"
 #include "hif-keyring.h"
-#include "hif-package-md.h"	//FIXME: remove when we have HyPackage private data
 #include "hif-package.h"
 #include "hif-rpmts.h"
 #include "hif-source.h"
@@ -61,7 +60,6 @@ typedef struct {
 	GPtrArray	*enabled_sources;
 	GCancellable	*cancellable;
 	HifState	*state;
-	GHashTable	*package_md;
 	rpmts		 ts;
 	rpmKeyring	 keyring;
 } PkBackendHifJobData;
@@ -297,9 +295,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
-	/* we can't add extra fields to HyPackage */
-	job_data->package_md = hif_package_md_new ();
-
 	/* we don't want to enable this for normal runtime */
 	hif_state_set_enable_profile (job_data->state, TRUE);
 }
@@ -313,7 +308,6 @@ pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	hif_state_reset (job_data->state);
-	g_hash_table_remove_all (job_data->package_md);
 	g_cancellable_reset (job_data->cancellable);
 }
 #endif
@@ -326,7 +320,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	g_hash_table_unref (job_data->package_md);
 	g_object_unref (job_data->cancellable);
 	if (job_data->state != NULL)
 		g_object_unref (job_data->state);
@@ -683,7 +676,7 @@ out:
  * hif_package_ensure_filename:
  */
 static gboolean
-hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GHashTable *fixme, GError **error)
+hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar *basename = NULL;
@@ -707,7 +700,7 @@ hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GHashTable *fixm
 				     "packages",
 				     basename,
 				     NULL);
-	hif_package_set_filename (fixme, pkg, filename);
+	hif_package_set_filename (pkg, filename);
 out:
 	g_free (filename);
 	g_free (basename);
@@ -720,7 +713,6 @@ out:
 static gboolean
 hif_package_ensure_filename_list (GPtrArray *sources,
 				  HyPackageList pkglist,
-				  GHashTable *fixme,
 				  GError **error)
 {
 	gboolean ret = TRUE;
@@ -728,7 +720,7 @@ hif_package_ensure_filename_list (GPtrArray *sources,
 	HyPackage pkg;
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
-		ret = hif_package_ensure_filename (sources, pkg, fixme, error);
+		ret = hif_package_ensure_filename (sources, pkg, error);
 		if (!ret)
 			goto out;
 	}
@@ -847,7 +839,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED)) {
 		ret = hif_package_ensure_filename_list (job_data->enabled_sources,
 							pkglist,
-							job_data->package_md,
 							&error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -856,8 +847,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		}
 	}
 
-	/* FIXME: we want to get rid of the package-md */
-	hif_emit_package_list_filter (job, filters, pkglist, job_data->package_md);
+	hif_emit_package_list_filter (job, filters, pkglist);
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
@@ -1682,8 +1672,7 @@ hif_utils_is_upgrade (HyGoal goal, HyPackage package)
  * pk_backend_transaction_download:
  */
 static gboolean
-pk_backend_transaction_download (GHashTable *package_md,
-				 GPtrArray *sources,
+pk_backend_transaction_download (GPtrArray *sources,
 				 HyGoal goal,
 				 HifState *state,
 				 GError **error)
@@ -1721,6 +1710,11 @@ pk_backend_transaction_download (GHashTable *package_md,
 			goto out;
 		}
 
+		/* get correct package source */
+		ret = hif_package_ensure_filename (sources, pkg, error);
+		if (!ret)
+			goto out;
+
 		/* download package: TODO: check if package already exists and checksum is okay */
 		state_local = hif_state_get_child (state);
 		tmp = hif_source_download_package (src, pkg, NULL, state_local, error);
@@ -1730,7 +1724,7 @@ pk_backend_transaction_download (GHashTable *package_md,
 		}
 
 		/* save for later */
-		hif_package_set_filename (package_md, pkg, tmp);
+		hif_package_set_filename (pkg, tmp);
 		g_free (tmp);
 
 		/* done */
@@ -1798,8 +1792,7 @@ out:
  * pk_backend_transaction_check_untrusted:
  */
 static gboolean
-pk_backend_transaction_check_untrusted (GHashTable *package_md,
-					rpmKeyring keyring,
+pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 					HyGoal goal,
 					GError **error)
 {
@@ -1825,7 +1818,7 @@ pk_backend_transaction_check_untrusted (GHashTable *package_md,
 		pkg = g_ptr_array_index (install, i);
 
 		/* find the location of the local file */
-		filename = hif_package_get_filename (package_md, pkg);
+		filename = hif_package_get_filename (pkg);
 		if (filename == NULL) {
 			ret = FALSE;
 			g_set_error (error,
@@ -1862,7 +1855,6 @@ typedef struct {
 	HifTransactionStep	 step;
 	GTimer			*timer;
 	guint			 last_progress;
-	GHashTable		*package_md;		//FIXME: remove and use HyPackage userdata
 	GPtrArray		*remove;
 	GPtrArray		*install;
 } HifTransactionCommit;
@@ -1982,8 +1974,7 @@ hif_find_pkg_from_header (GPtrArray *array, Header hdr)
  * hif_find_pkg_from_filename_suffix:
  **/
 static HyPackage
-hif_find_pkg_from_filename_suffix (GHashTable *package_md,
-				   GPtrArray *array,
+hif_find_pkg_from_filename_suffix (GPtrArray *array,
 				   const gchar *filename_suffix)
 {
 	const gchar *filename;
@@ -1993,7 +1984,7 @@ hif_find_pkg_from_filename_suffix (GHashTable *package_md,
 	/* find in array */
 	for (i = 0; i < array->len; i++) {
 		pkg = g_ptr_array_index (array, i);
-		filename = hif_package_get_filename (package_md, pkg);
+		filename = hif_package_get_filename (pkg);
 		if (filename == NULL)
 			continue;
 		if (g_str_has_suffix (filename, filename_suffix))
@@ -2059,8 +2050,7 @@ hif_commit_ts_progress_cb (const void *arg,
 	case RPMCALLBACK_INST_START:
 
 		/* find pkg */
-		pkg = hif_find_pkg_from_filename_suffix (commit->package_md,
-							 commit->install,
+		pkg = hif_find_pkg_from_filename_suffix (commit->install,
 							 filename);
 		if (pkg == NULL)
 			g_assert_not_reached ();
@@ -2090,8 +2080,7 @@ hif_commit_ts_progress_cb (const void *arg,
 		}
 
 		/* find pkg */
-		pkg = hif_find_pkg_from_filename_suffix (commit->package_md,
-							 commit->remove,
+		pkg = hif_find_pkg_from_filename_suffix (commit->remove,
 							 filename);
 		if (pkg == NULL) {
 			g_debug ("cannot find %s", filename);
@@ -2135,8 +2124,7 @@ hif_commit_ts_progress_cb (const void *arg,
 		/* update UI */
 		pkg = hif_find_pkg_from_header (commit->install, hdr);
 		if (pkg == NULL) {
-			pkg = hif_find_pkg_from_filename_suffix (commit->package_md,
-								 commit->install,
+			pkg = hif_find_pkg_from_filename_suffix (commit->install,
 								 filename);
 		}
 		if (pkg == NULL) {
@@ -2170,8 +2158,7 @@ hif_commit_ts_progress_cb (const void *arg,
 		/* update UI */
 		pkg = hif_find_pkg_from_header (commit->remove, hdr);
 		if (pkg == NULL) {
-			pkg = hif_find_pkg_from_filename_suffix (commit->package_md,
-								 commit->remove,
+			pkg = hif_find_pkg_from_filename_suffix (commit->remove,
 								 filename);
 		}
 		if (pkg == NULL) {
@@ -2263,7 +2250,6 @@ hif_rpm_verbosity_string_to_value (const gchar *value)
  **/
 static gboolean
 hif_transaction_delete_packages (GPtrArray *install,
-				 GHashTable *package_md,	//FIXME: remove
 				 HifState *state,
 				 GError **error)
 {
@@ -2290,7 +2276,7 @@ hif_transaction_delete_packages (GPtrArray *install,
 		pkg = g_ptr_array_index (install, i);
 
 		/* don't delete files not in the repo */
-		filename = hif_package_get_filename (package_md, pkg);
+		filename = hif_package_get_filename (pkg);
 		if (g_str_has_prefix (filename, cachedir)) {
 			file = g_file_new_for_path (filename);
 			ret = g_file_delete (file, NULL, error);
@@ -2316,7 +2302,6 @@ out:
 static gboolean
 pk_backend_transaction_commit (rpmts ts,
 			       gboolean allow_untrusted,
-			       GHashTable *package_md,	//FIXME: remove
 			       HyGoal goal,
 			       HifState *state,
 			       GError **error)
@@ -2364,7 +2349,6 @@ pk_backend_transaction_commit (rpmts ts,
 
 	/* setup the transaction */
 	commit = g_new0 (HifTransactionCommit, 1);
-	commit->package_md = package_md;
 	commit->timer = g_timer_new ();
 	rc = rpmtsSetRootDir (ts, "/");
 	if (rc < 0) {
@@ -2394,7 +2378,7 @@ pk_backend_transaction_commit (rpmts ts,
 
 		/* add the install */
 		pkg = g_ptr_array_index (commit->install, i);
-		filename = hif_package_get_filename (package_md, pkg);
+		filename = hif_package_get_filename (pkg);
 		ret = hif_rpmts_add_install_filename (ts,
 							 filename,
 							 allow_untrusted,
@@ -2503,7 +2487,6 @@ pk_backend_transaction_commit (rpmts ts,
 	if (!keep_cache) {
 		state_local = hif_state_get_child (state);
 		ret = hif_transaction_delete_packages (commit->install,
-						       commit->package_md,
 						       state_local,
 						       error);
 		if (!ret)
@@ -2612,8 +2595,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 
 	/* download */
 	state_local = hif_state_get_child (state);
-	ret = pk_backend_transaction_download (job_data->package_md,
-					       job_data->enabled_sources,
+	ret = pk_backend_transaction_download (job_data->enabled_sources,
 					       goal,
 					       state_local,
 					       error);
@@ -2636,8 +2618,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 
 	/* find any packages without valid GPG signatures */
 	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
-		ret = pk_backend_transaction_check_untrusted (job_data->package_md,
-							      job_data->keyring,
+		ret = pk_backend_transaction_check_untrusted (job_data->keyring,
 							      goal,
 							      error);
 		if (!ret)
@@ -2648,7 +2629,6 @@ pk_backend_transaction_run (PkBackendJob *job,
 	state_local = hif_state_get_child (state);
 	ret = pk_backend_transaction_commit (job_data->ts,
 					     !pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED),
-					     job_data->package_md,
 					     goal,
 					     state_local,
 					     error);
