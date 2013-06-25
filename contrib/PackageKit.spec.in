@@ -51,6 +51,12 @@ BuildRequires: zif-devel >= 0.2.5
 BuildRequires: bash-completion
 %endif
 
+%if !0%{?rhel}
+BuildRequires: hawkey-devel >= 0.3.13
+BuildRequires: rpm-devel >= 4.11.0
+BuildRequires: librepo >= 0.0.4
+%endif
+
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
 Obsoletes: udev-packagekit < %{version}-%{release}
@@ -85,6 +91,17 @@ Provides: PackageKit-backend
 
 %description zif
 A backend for PackageKit to enable Zif functionality.
+%endif
+
+%if 0%{?rhel} == 0
+%package hawkey
+Summary: PackageKit Hawkey backend
+Group: System Environment/Libraries
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Provides: PackageKit-backend
+
+%description hawkey
+A backend for PackageKit to enable Hawkey functionality.
 %endif
 
 %if 0%{?rhel} == 0
@@ -233,6 +250,7 @@ user to restart the computer or remove and re-insert the device.
         --enable-yum \
 %if 0%{?rhel} == 0
         --enable-zif \
+        --enable-hawkey \
         --enable-smart \
         --enable-introspection \
 %endif
@@ -359,6 +377,13 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_zif.so
 %dir %{_datadir}/PackageKit/helpers/zif
 %{_datadir}/PackageKit/helpers/zif/*
+%endif
+
+%if 0%{?rhel} == 0
+%files hawkey
+%defattr(-,root,root,-)
+%config(noreplace) %{_sysconfdir}/PackageKit/Hif.conf
+%{_libdir}/packagekit-backend/libpk_backend_hawkey.so
 %endif
 
 %files yum-plugin
