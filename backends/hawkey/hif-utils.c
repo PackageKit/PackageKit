@@ -312,37 +312,6 @@ hif_package_is_devel (HyPackage pkg)
 	return FALSE;
 }
 
-#if 0
-/**
- * hif_package_is_application:
- **/
-static gboolean
-hif_package_is_application (HifPackage *package)
-{
-	const gchar *filename;
-	gboolean ret = FALSE;
-	GPtrArray *files;
-	guint i;
-
-	/* get file lists and see if it installs a desktop file */
-	files = hif_package_get_files (package);
-	if (files == NULL)
-		goto out;
-	for (i = 0; i < files->len; i++) {
-		filename = g_ptr_array_index (files, i);
-		if (g_str_has_prefix (filename, "/usr/share/applications/") &&
-		    g_str_has_suffix (filename, ".desktop")) {
-			ret = TRUE;
-			goto out;
-		}
-	}
-out:
-	if (files != NULL)
-		g_ptr_array_unref (files);
-	return ret;
-}
-#endif
-
 /**
  * hif_emit_package_list_filter:
  */
