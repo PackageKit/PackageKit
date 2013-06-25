@@ -1331,12 +1331,11 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
 // used to emit files it reads the info directly from the files
 void AptIntf::emitPackageFiles(const gchar *pi)
 {
-    static string filelist;
+    GPtrArray *files;
     string line;
     gchar **parts;
 
     parts = pk_package_id_split(pi);
-    filelist.erase(filelist.begin(), filelist.end());
 
     string fName;
     if (m_isMultiArch) {
@@ -1363,22 +1362,20 @@ void AptIntf::emitPackageFiles(const gchar *pi)
         if (!in != 0) {
             return;
         }
-        while (in.eof() == false && filelist.empty()) {
-            getline(in, line);
-            filelist += line;
-        }
+        
+        files = g_ptr_array_new_with_free_func(g_free);
         while (in.eof() == false) {
             getline(in, line);
             if (!line.empty()) {
-                filelist += ";" + line;
+                g_ptr_array_add(files, g_strdup(line.c_str()));
             }
         }
-
-        if (!filelist.empty()) {
-            gchar **files  = g_strsplit(filelist.c_str(), ";", 0);
-            pk_backend_job_files(m_job, pi, files);
-            g_strfreev(files);
+        
+        if (files->len) {
+            g_ptr_array_add(files, NULL);
+            pk_backend_job_files(m_job, pi, (gchar **) files->pdata);
         }
+        g_ptr_array_unref(files);
     }
 }
 

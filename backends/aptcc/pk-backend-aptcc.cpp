@@ -538,7 +538,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
         // get a fetcher
         pkgAcquire fetcher;
         fetcher.Setup(&Stat);
-        string filelist;
         gchar *pi;
 
         // TODO this might be useful when the item is in the cache
@@ -597,12 +596,12 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                     apt->emitFinished();
                     return;
                 }
-                string destFile = directory + "/" + flNotDir(storeFileName);
-                if (filelist.empty()) {
-                    filelist = destFile;
-                } else {
-                    filelist.append(";" + destFile);
-                }
+
+                gchar **files = (gchar **) g_malloc(2 * sizeof(gchar *));
+                files[0] = g_strdup_printf("%s/%s", directory.c_str(), flNotDir(storeFileName).c_str());
+                files[1] = NULL;
+                pk_backend_job_files(job, pi, files);
+                g_strfreev(files);
             }
         }
 
@@ -614,10 +613,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
             return;
         }
 
-        // send the filelist
-        gchar **files  = g_strsplit(filelist.c_str(), ";", 0);
-        pk_backend_job_files(job, NULL, files);
-        g_strfreev(files);
     } else {
         pk_backend_job_error_code(job,
                                   PK_ERROR_ENUM_NO_NETWORK,
