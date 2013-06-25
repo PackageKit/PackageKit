@@ -43,6 +43,7 @@
 #include <rpm/rpmkeyring.h>
 
 #include "hif-config.h"
+#include "hif-goal.h"
 #include "hif-keyring.h"
 #include "hif-package.h"
 #include "hif-rpmts.h"
@@ -1544,131 +1545,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * pk_backend_transaction_depsolve:
- */
-static gboolean
-pk_backend_transaction_depsolve (HyGoal goal, GError **error)
-{
-	gboolean ret = TRUE;
-	gchar *tmp;
-	gint cnt;
-	gint j;
-	gint rc;
-	GString *string = NULL;
-	HyPackageList pkglist;
-
-	rc = hy_goal_run_flags (goal, HY_ALLOW_UNINSTALL);
-	if (rc) {
-		ret = FALSE;
-		string = g_string_new ("Could not depsolve transaction; ");
-		cnt = hy_goal_count_problems (goal);
-		if (cnt == 1)
-			g_string_append_printf (string, "%i problem detected:\n", cnt);
-		else
-			g_string_append_printf (string, "%i problems detected:\n", cnt);
-		for (j = 0; j < cnt; j++) {
-			tmp = hy_goal_describe_problem (goal, j);
-			g_string_append_printf (string, "%i. %s\n", j, tmp);
-			hy_free (tmp);
-		}
-		g_string_truncate (string, string->len - 1);
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_PACKAGE_CONFLICTS,
-				     string->str);
-		goto out;
-	}
-
-	/* anything to do? */
-	if (hy_goal_req_length (goal) == 0) {
-		ret = FALSE;
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
-				     "The transaction was empty");
-		goto out;
-	}
-
-	/* prevent downgrades */
-	pkglist = hy_goal_list_downgrades (goal);
-	if (hy_packagelist_count (pkglist) > 0) {
-		ret = FALSE;
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED,
-				     "Downgrading packages is prevented by policy");
-		goto out;
-	}
-out:
-	if (string != NULL)
-		g_string_free (string, TRUE);
-	return ret;
-}
-
-/**
- * hif_utils_get_package_list_from_goal:
- */
-static GPtrArray *
-hif_utils_get_package_list_from_goal (HyGoal goal, PkBitfield types)
-{
-	GPtrArray *array;
-	guint i;
-	HyPackageList pkglist;
-	HyPackage pkg;
-
-	array = g_ptr_array_new ();
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_REMOVING)) {
-		pkglist = hy_goal_list_erasures (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_INSTALLING)) {
-		pkglist = hy_goal_list_installs (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_OBSOLETING)) {
-		pkglist = hy_goal_list_obsoleted (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_REINSTALLING)) {
-		pkglist = hy_goal_list_reinstalls (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_UPDATING)) {
-		pkglist = hy_goal_list_upgrades (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	if (pk_bitfield_contain (types, PK_INFO_ENUM_DOWNGRADING)) {
-		pkglist = hy_goal_list_downgrades (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			g_ptr_array_add (array, pkg);
-	}
-	return array;
-}
-
-/**
- * hif_utils_is_upgrade:
- */
-static gboolean
-hif_utils_is_upgrade (HyGoal goal, HyPackage package)
-{
-	guint i;
-	HyPackageList pkglist;
-	HyPackage pkg;
-
-	pkglist = hy_goal_list_upgrades (goal);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		if (hy_package_cmp (pkg, package) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * pk_backend_transaction_download:
  */
 static gboolean
@@ -1692,7 +1568,7 @@ pk_backend_transaction_download (GPtrArray *sources,
 					PK_INFO_ENUM_DOWNGRADING,
 					PK_INFO_ENUM_UPDATING,
 					-1);
-	downloads = hif_utils_get_package_list_from_goal (goal, types);
+	downloads = hif_goal_get_packages (goal, types);
 	if (downloads->len == 0)
 		goto out;
 
@@ -1761,7 +1637,7 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 					-1);
 
 	/* find any packages in untrusted repos */
-	install = hif_utils_get_package_list_from_goal (goal, types);
+	install = hif_goal_get_packages (goal, types);
 	array = g_ptr_array_new ();
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
@@ -1809,7 +1685,7 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 					PK_INFO_ENUM_DOWNGRADING,
 					PK_INFO_ENUM_UPDATING,
 					-1);
-	install = hif_utils_get_package_list_from_goal (goal, types);
+	install = hif_goal_get_packages (goal, types);
 	if (install->len == 0)
 		goto out;
 
@@ -2370,7 +2246,7 @@ pk_backend_transaction_commit (rpmts ts,
 					   PK_INFO_ENUM_DOWNGRADING,
 					   PK_INFO_ENUM_UPDATING,
 					   -1);
-	commit->install = hif_utils_get_package_list_from_goal (goal, selector);
+	commit->install = hif_goal_get_packages (goal, selector);
 	if (commit->install->len > 0)
 		hif_state_set_number_steps (state_local,
 					    commit->install->len);
@@ -2382,7 +2258,7 @@ pk_backend_transaction_commit (rpmts ts,
 		ret = hif_rpmts_add_install_filename (ts,
 							 filename,
 							 allow_untrusted,
-							 hif_utils_is_upgrade (goal, pkg),
+							 hif_goal_is_upgrade_package (goal, pkg),
 							 error);
 		if (!ret)
 			goto out;
@@ -2400,7 +2276,7 @@ pk_backend_transaction_commit (rpmts ts,
 
 	/* add things to remove */
 	selector = pk_bitfield_from_enums (PK_INFO_ENUM_REMOVING, -1);
-	commit->remove = hif_utils_get_package_list_from_goal (goal, selector);
+	commit->remove = hif_goal_get_packages (goal, selector);
 	for (i = 0; i < commit->remove->len; i++) {
 		pkg = g_ptr_array_index (commit->remove, i);
 		ret = hif_rpmts_add_remove_pkg (ts, pkg, error);
@@ -2548,7 +2424,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 		goto out;
 
 	/* depsolve */
-	ret = pk_backend_transaction_depsolve (goal, error);
+	ret = hif_goal_depsolve (goal, error);
 	if (!ret)
 		goto out;
 

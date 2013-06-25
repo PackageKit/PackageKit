@@ -9,6 +9,8 @@ libpk_backend_hawkey_la_SOURCES =					\
 	pk-backend-hawkey.c						\
 	hif-config.c							\
 	hif-config.h							\
+	hif-goal.c							\
+	hif-goal.h							\
 	hif-keyring.c							\
 	hif-keyring.h							\
 	hif-lock.c							\
