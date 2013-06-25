@@ -58,7 +58,7 @@ typedef struct {
 } PkBackendHifPrivate;
 
 typedef struct {
-	GPtrArray	*sources;
+	GPtrArray	*enabled_sources;
 	GCancellable	*cancellable;
 	HifState	*state;
 	GHashTable	*package_md;
@@ -330,8 +330,8 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	g_object_unref (job_data->cancellable);
 	if (job_data->state != NULL)
 		g_object_unref (job_data->state);
-	if (job_data->sources != NULL)
-		g_ptr_array_unref (job_data->sources);
+	if (job_data->enabled_sources != NULL)
+		g_ptr_array_unref (job_data->enabled_sources);
 	rpmtsFree (job_data->ts);
 	rpmKeyringFree (job_data->keyring);
 	g_free (job_data);
@@ -431,6 +431,32 @@ out:
 	return ret;
 }
 
+
+
+/**
+ * pk_backend_ensure_enabled_sources:
+ */
+static gboolean
+pk_backend_ensure_enabled_sources (PkBackendHifJobData *job_data, GError **error)
+{
+	gboolean ret = TRUE;
+
+	/* already set */
+	if (job_data->enabled_sources != NULL)
+		goto out;
+
+	/* set the list of repos */
+	job_data->enabled_sources = hif_source_find_all (priv->repos_dir,
+							 HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
+							 error);
+	if (job_data->enabled_sources == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+out:
+	return ret;
+}
+
 /**
  * hif_utils_add_remote:
  */
@@ -452,14 +478,10 @@ hif_utils_add_remote (PkBackendJob *job,
 	if (!ret)
 		goto out;
 
-	/* get the list of repos */
-	job_data->sources = hif_source_find_all (priv->repos_dir,
-						 HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
-						 error);
-	if (job_data->sources == NULL) {
-		ret = FALSE;
+	/* set the list of repos */
+	ret = pk_backend_ensure_enabled_sources (job_data, error);
+	if (!ret)
 		goto out;
-	}
 
 	/* done */
 	ret = hif_state_done (state, error);
@@ -468,7 +490,7 @@ hif_utils_add_remote (PkBackendJob *job,
 
 	/* add each repo */
 	state_local = hif_state_get_child (state);
-	ret = hif_utils_add_sources (sack, job_data->sources, state_local, error);
+	ret = hif_utils_add_sources (sack, job_data->enabled_sources, state_local, error);
 	if (!ret)
 		goto out;
 
@@ -658,6 +680,63 @@ out:
 }
 
 /**
+ * hif_package_ensure_filename:
+ */
+static gboolean
+hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GHashTable *fixme, GError **error)
+{
+	gboolean ret = TRUE;
+	gchar *basename = NULL;
+	gchar *filename = NULL;
+	HifSource *src;
+
+	/* get repo */
+	if (hy_package_installed (pkg))
+		goto out;
+	src = hif_source_filter_by_id (sources,
+				       hy_package_get_reponame (pkg),
+				       error);
+	if (src == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* make default cache filename location */
+	basename = g_path_get_basename (hy_package_get_location (pkg));
+	filename = g_build_filename (hif_source_get_location (src),
+				     "packages",
+				     basename,
+				     NULL);
+	hif_package_set_filename (fixme, pkg, filename);
+out:
+	g_free (filename);
+	g_free (basename);
+	return ret;
+}
+
+/**
+ * hif_package_ensure_filename_list:
+ */
+static gboolean
+hif_package_ensure_filename_list (GPtrArray *sources,
+				  HyPackageList pkglist,
+				  GHashTable *fixme,
+				  GError **error)
+{
+	gboolean ret = TRUE;
+	guint i;
+	HyPackage pkg;
+
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		ret = hif_package_ensure_filename (sources, pkg, fixme, error);
+		if (!ret)
+			goto out;
+	}
+out:
+	return ret;
+}
+
+/**
  * pk_backend_search:
  */
 static void
@@ -707,6 +786,14 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		break;
 	}
 
+	/* set the list of repos */
+	ret = pk_backend_ensure_enabled_sources (job_data, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* get sack */
 	state_local = hif_state_get_child (job_data->state);
 	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
@@ -754,7 +841,23 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		break;
 	}
 	pkglist = hy_query_run (query);
-	hif_emit_package_list_filter (job, filters, pkglist);
+
+	/* set the cache filename on each package */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) ||
+	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED)) {
+		ret = hif_package_ensure_filename_list (job_data->enabled_sources,
+							pkglist,
+							job_data->package_md,
+							&error);
+		if (!ret) {
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+
+	/* FIXME: we want to get rid of the package-md */
+	hif_emit_package_list_filter (job, filters, pkglist, job_data->package_md);
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
@@ -871,7 +974,7 @@ pk_backend_get_repo_list (PkBackend *backend,
 	guint i;
 	HifSource *src;
 
-	/* get the list of repos */
+	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	sources = hif_source_find_all (priv->repos_dir,
 				       HIF_SOURCE_SCAN_FLAG_NONE,
@@ -931,7 +1034,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 	GPtrArray *sources;
 	HifSource *src;
 
-	/* get the list of repos */
+	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 	sources = hif_source_find_all (priv->repos_dir,
@@ -998,6 +1101,7 @@ pk_backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DOWNLOADED,
 		-1);
 }
 /**
@@ -1085,26 +1189,23 @@ pk_backend_refresh_cache (PkBackend *backend,
 {
 	gboolean ret;
 	GError *error = NULL;
-	GPtrArray *sources;
 	guint i;
 	HifSource *src;
 	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	/* get the list of repos */
-	sources = hif_source_find_all (priv->repos_dir,
-				       HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
-				       &error);
-	if (sources == NULL) {
+	/* set the list of repos */
+	ret = pk_backend_ensure_enabled_sources (job_data, &error);
+	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* refresh each repo */
-	hif_state_set_number_steps (job_data->state, sources->len);
-	for (i = 0; i < sources->len; i++) {
-		src = g_ptr_array_index (sources, i);
+	hif_state_set_number_steps (job_data->state, job_data->enabled_sources->len);
+	for (i = 0; i < job_data->enabled_sources->len; i++) {
+		src = g_ptr_array_index (job_data->enabled_sources, i);
 
 		/* delete content even if up to date */
 		if (force) {
@@ -1135,8 +1236,6 @@ pk_backend_refresh_cache (PkBackend *backend,
 		}
 	}
 out:
-	if (sources != NULL)
-		g_ptr_array_unref (sources);
 	pk_backend_job_finished (job);
 }
 
@@ -1375,7 +1474,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
-		src = hif_source_filter_by_id (job_data->sources,
+		src = hif_source_filter_by_id (job_data->enabled_sources,
 					       hy_package_get_reponame (pkg),
 					       &error);
 		if (src == NULL) {
@@ -2475,16 +2574,10 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (!ret)
 		goto out;
 
-	/* ensure the sources list exists */
-	if (job_data->sources != NULL) {
-		job_data->sources = hif_source_find_all (priv->repos_dir,
-							 HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
-							 error);
-		if (job_data->sources == NULL) {
-			ret = FALSE;
-			goto out;
-		}
-	}
+	/* set the list of repos */
+	ret = pk_backend_ensure_enabled_sources (job_data, error);
+	if (!ret)
+		goto out;
 
 	/* simulate */
 	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
@@ -2492,7 +2585,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 		/* mark any explicitly-untrusted packages so that the
 		 * transaction skips straight to only_trusted=FALSE after
 		 * simulate */
-		pkg_untrusted_repos = pk_backend_transaction_check_untrusted_repos (job_data->sources, goal, error);
+		pkg_untrusted_repos = pk_backend_transaction_check_untrusted_repos (job_data->enabled_sources, goal, error);
 		if (pkg_untrusted_repos == NULL) {
 			ret = FALSE;
 			goto out;
@@ -2520,7 +2613,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	/* download */
 	state_local = hif_state_get_child (state);
 	ret = pk_backend_transaction_download (job_data->package_md,
-					       job_data->sources,
+					       job_data->enabled_sources,
 					       goal,
 					       state_local,
 					       error);

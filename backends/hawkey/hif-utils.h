@@ -45,5 +45,6 @@ void		 hif_emit_package_array		(PkBackendJob		*job,
 						 GPtrArray		*array);
 void		 hif_emit_package_list_filter	(PkBackendJob		*job,
 						 PkBitfield		 filters,
-						 HyPackageList		 pkglist);
+						 HyPackageList		 pkglist,
+						 GHashTable		*fixme);
 PkBitfield	 hif_get_filter_for_ids		(gchar			**package_ids);

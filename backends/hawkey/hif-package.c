@@ -101,3 +101,22 @@ hif_package_is_devel (HyPackage pkg)
 		return TRUE;
 	return FALSE;
 }
+
+/**
+ * hif_package_is_downloaded:
+ **/
+gboolean
+hif_package_is_downloaded (GHashTable *fixme, HyPackage pkg)
+{
+	const gchar *filename;
+
+	if (hy_package_installed (pkg))
+		return FALSE;
+	filename = hif_package_get_filename (fixme, pkg);
+	if (filename == NULL) {
+		g_warning ("Failed to get cache filename for %s",
+			   hy_package_get_name (pkg));
+		return FALSE;
+	}
+	return g_file_test (filename, G_FILE_TEST_EXISTS);
+}

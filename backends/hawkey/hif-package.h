@@ -31,3 +31,5 @@ void		 hif_package_set_filename		(GHashTable	*fixme,
 							 const gchar	*filename);
 gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
+gboolean	 hif_package_is_downloaded		(GHashTable	*fixme,
+							 HyPackage	 pkg);

@@ -267,8 +267,9 @@ hif_emit_package_array (PkBackendJob *job,
  */
 void
 hif_emit_package_list_filter (PkBackendJob *job,
-				PkBitfield filters,
-				HyPackageList pkglist)
+			      PkBitfield filters,
+			      HyPackageList pkglist,
+			      GHashTable *fixme)
 {
 	guint i;
 	HyPackage pkg;
@@ -285,6 +286,13 @@ hif_emit_package_list_filter (PkBackendJob *job,
 			continue;
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && hif_package_is_devel (pkg))
 			continue;
+
+		/* DOWNLOADED */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) && !hif_package_is_downloaded (fixme, pkg))
+			continue;
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) && hif_package_is_downloaded (fixme, pkg))
+			continue;
+
 		hif_emit_package (job, PK_INFO_ENUM_UNKNOWN, pkg);
 	}
 }
