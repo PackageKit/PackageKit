@@ -615,7 +615,9 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
         }
 
         // send the filelist
-        pk_backend_job_files(job, NULL, filelist.c_str());
+        gchar **files  = g_strsplit(filelist.c_str(), ";", 0);
+        pk_backend_job_files(job, NULL, files);
+        g_strfreev(files);
     } else {
         pk_backend_job_error_code(job,
                                   PK_ERROR_ENUM_NO_NETWORK,

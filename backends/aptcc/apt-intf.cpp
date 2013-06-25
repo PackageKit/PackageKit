@@ -1375,7 +1375,9 @@ void AptIntf::emitPackageFiles(const gchar *pi)
         }
 
         if (!filelist.empty()) {
-            pk_backend_job_files(m_job, pi, filelist.c_str());
+            gchar **files  = g_strsplit(filelist.c_str(), ";", 0);
+            pk_backend_job_files(m_job, pi, files);
+            g_strfreev(files);
         }
     }
 }
