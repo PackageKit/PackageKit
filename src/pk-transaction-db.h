@@ -55,6 +55,8 @@ typedef struct
 
 GType		 pk_transaction_db_get_type		(void);
 PkTransactionDb	*pk_transaction_db_new			(void);
+gboolean	 pk_transaction_db_load			(PkTransactionDb	*tdb,
+							 GError			**error);
 gboolean	 pk_transaction_db_empty		(PkTransactionDb	*tdb);
 gboolean	 pk_transaction_db_add			(PkTransactionDb	*tdb,
 							 const gchar		*tid);

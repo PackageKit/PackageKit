@@ -854,30 +854,30 @@ pk_transaction_db_ensure_file_directory (const gchar *path)
 }
 
 /**
- * pk_transaction_db_init:
+ * pk_transaction_db_load:
  **/
-static void
-pk_transaction_db_init (PkTransactionDb *tdb)
+gboolean
+pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 {
 	const gchar *statement;
-	gint rc;
+	gboolean ret = TRUE;
 	gchar *error_msg = NULL;
 	gchar *text;
-	gboolean ret;
+	gint rc;
 
-	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
-
-	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
-	tdb->priv->db = NULL;
-	tdb->priv->database_save_id = 0;
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	g_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	pk_transaction_db_ensure_file_directory (PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc != SQLITE_OK) {
-		g_error ("Can't open transaction database: %s\n", sqlite3_errmsg (tdb->priv->db));
+		ret = FALSE;
+		g_set_error (error,
+			     1, 0,
+			     "Can't open transaction database: %s\n",
+			     sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
-		return;
+		goto out;
 	}
 
 	/* we don't need to keep doing fsync */
@@ -975,6 +975,20 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		statement = "ALTER TABLE proxy ADD COLUMN pac TEXT;";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 	}
+
+	/* success */
+	ret = TRUE;
+out:
+	return ret;
+}
+
+/**
+ * pk_transaction_db_init:
+ **/
+static void
+pk_transaction_db_init (PkTransactionDb *tdb)
+{
+	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
 }
 
 /**

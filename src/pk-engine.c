@@ -1143,6 +1143,11 @@ pk_engine_load_backend (PkEngine *engine, GError **error)
 	if (!ret)
 		goto out;
 
+	/* load anything that can fail */
+	ret = pk_transaction_db_load (engine->priv->transaction_db, error);
+	if (!ret)
+		goto out;
+
 	/* create a new backend so we can get the static stuff */
 	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
 	engine->priv->provides = pk_backend_get_provides (engine->priv->backend);
