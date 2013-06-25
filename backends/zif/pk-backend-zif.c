@@ -304,6 +304,31 @@ out:
 }
 
 /**
+ * zif_package_is_downloaded:
+ **/
+static gboolean
+zif_package_is_downloaded (ZifPackage *package)
+{
+	const gchar *fn;
+	gboolean ret = FALSE;
+	GError *error = NULL;
+	ZifState *state;
+
+	/*we don't care about status */
+	state = zif_state_new ();
+	fn = zif_package_get_cache_filename (package, state, &error);
+	if (fn == NULL) {
+		g_warning ("Failed to get cache filename: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	ret = g_file_test (fn, G_FILE_TEST_EXISTS);
+out:
+	g_object_unref (state);
+	return ret;
+}
+
+/**
  * pk_backend_filter_package_array:
  **/
 static GPtrArray *
@@ -432,6 +457,16 @@ pk_backend_filter_package_array (GPtrArray *array,
 		} else if (pk_bitfield_contain (filters,
 						PK_FILTER_ENUM_NOT_ARCH)) {
 			if (zif_package_is_native (package))
+				continue;
+		}
+
+		if (pk_bitfield_contain (filters,
+					 PK_FILTER_ENUM_DOWNLOADED)) {
+			if (!zif_package_is_downloaded (package))
+				continue;
+		} else if (pk_bitfield_contain (filters,
+						PK_FILTER_ENUM_NOT_DOWNLOADED)) {
+			if (zif_package_is_downloaded (package))
 				continue;
 		}
 
@@ -1909,6 +1944,7 @@ pk_backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_NEWEST,
 		PK_FILTER_ENUM_ARCH,
 		PK_FILTER_ENUM_APPLICATION,
+		PK_FILTER_ENUM_DOWNLOADED,
 		-1);
 }
 
