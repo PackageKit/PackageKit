@@ -256,6 +256,8 @@ static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_COLLECTIONS,	"~collections"},
 	{PK_FILTER_ENUM_APPLICATION,		"application"},
 	{PK_FILTER_ENUM_NOT_APPLICATION,	"~application"},
+	{PK_FILTER_ENUM_DOWNLOADED,		"downloaded"},
+	{PK_FILTER_ENUM_NOT_DOWNLOADED,		"~downloaded"},
 	{0, NULL}
 };
 
