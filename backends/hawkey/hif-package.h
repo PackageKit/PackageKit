@@ -29,3 +29,5 @@ const gchar	*hif_package_get_filename		(GHashTable	*fixme,
 void		 hif_package_set_filename		(GHashTable	*fixme,
 							 HyPackage	 pkg,
 							 const gchar	*filename);
+gboolean	 hif_package_is_gui			(HyPackage	 pkg);
+gboolean	 hif_package_is_devel			(HyPackage	 pkg);
