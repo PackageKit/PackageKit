@@ -27,6 +27,7 @@
 
 typedef struct {
 	gchar		*filename;
+	PkInfoEnum	 info;
 } HifPackagePrivate;
 
 /**
@@ -54,6 +55,25 @@ hif_package_get_filename (HyPackage pkg)
 }
 
 /**
+ * hif_package_get_priv:
+ **/
+static HifPackagePrivate *
+hif_package_get_priv (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+
+	/* create private area */
+	priv = hy_package_get_userdata (pkg);
+	if (priv != NULL)
+		return priv;
+
+	priv = g_slice_new0 (HifPackagePrivate);
+	priv->info = PK_INFO_ENUM_UNKNOWN;
+	hy_package_set_userdata (pkg, priv, hif_package_destroy_func);
+	return priv;
+}
+
+/**
  * hif_package_set_filename:
  **/
 void
@@ -61,16 +81,38 @@ hif_package_set_filename (HyPackage pkg, const gchar *filename)
 {
 	HifPackagePrivate *priv;
 
-	/* create private area */
-	priv = hy_package_get_userdata (pkg);
-	if (priv == NULL) {
-		priv = g_slice_new0 (HifPackagePrivate);
-		hy_package_set_userdata (pkg, priv, hif_package_destroy_func);
-	}
-
 	/* replace contents */
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
 	g_free (priv->filename);
 	priv->filename = g_strdup (filename);
+}
+
+/**
+ * hif_package_get_info:
+ */
+PkInfoEnum
+hif_package_get_info (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return PK_INFO_ENUM_UNKNOWN;
+	return priv->info;
+}
+
+/**
+ * hif_package_set_info:
+ */
+void
+hif_package_set_info (HyPackage pkg, PkInfoEnum info)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	priv->info = info;
 }
 
 /**

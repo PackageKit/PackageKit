@@ -27,6 +27,9 @@
 const gchar	*hif_package_get_filename		(HyPackage	 pkg);
 void		 hif_package_set_filename		(HyPackage	 pkg,
 							 const gchar	*filename);
+PkInfoEnum	 hif_package_get_info			(HyPackage	 pkg);
+void		 hif_package_set_info			(HyPackage	 pkg,
+							 PkInfoEnum	 info);
 gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);

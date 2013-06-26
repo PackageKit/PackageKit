@@ -848,6 +848,14 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		}
 	}
 
+	/* FIXME: actually get the right update severity */
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
+		guint i;
+		HyPackage pkg;
+		FOR_PACKAGELIST(pkg, pkglist, i)
+			hif_package_set_info (pkg, PK_INFO_ENUM_NORMAL);
+	}
+
 	hif_emit_package_list_filter (job, filters, pkglist);
 
 	/* done */

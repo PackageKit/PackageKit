@@ -221,6 +221,8 @@ hif_emit_package (PkBackendJob *job, PkInfoEnum info, HyPackage pkg)
 
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
+		info = hif_package_get_info (pkg);
+	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = hy_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 	package_id = hif_package_get_id (pkg);
 	pk_backend_job_package (job,
