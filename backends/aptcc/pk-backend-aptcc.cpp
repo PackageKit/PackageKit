@@ -519,7 +519,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     g_variant_get(params, "(^a&ss)",
                   &package_ids,
                   &tmpDir);
-    directory = _config->FindDir("Dir::Cache::archives") + "partial/";
+    directory = _config->FindDir("Dir::Cache::archives");
     pk_backend_job_set_allow_cancel(job, true);
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
