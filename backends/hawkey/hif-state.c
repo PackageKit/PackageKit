@@ -360,8 +360,8 @@ hif_state_set_percentage (HifState *state, guint percentage)
 	if (percentage < state->priv->last_percentage) {
 		if (state->priv->enable_profile) {
 			hif_state_print_parent_chain (state, 0);
-			g_critical ("percentage should not go down from %i to %i on %p!",
-				    state->priv->last_percentage, percentage, state);
+			g_warning ("percentage should not go down from %i to %i on %p!",
+				   state->priv->last_percentage, percentage, state);
 		}
 		goto out;
 	}
