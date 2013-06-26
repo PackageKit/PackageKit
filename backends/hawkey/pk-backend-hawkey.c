@@ -1608,9 +1608,6 @@ pk_backend_transaction_download (GPtrArray *sources,
 			ret = FALSE;
 			goto out;
 		}
-
-		/* save for later */
-		hif_package_set_filename (pkg, tmp);
 		g_free (tmp);
 
 		/* done */
@@ -1679,6 +1676,7 @@ out:
  */
 static gboolean
 pk_backend_transaction_check_untrusted (rpmKeyring keyring,
+					GPtrArray *sources,
 					HyGoal goal,
 					GError **error)
 {
@@ -1702,6 +1700,9 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 	/* find any packages in untrusted repos */
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
+
+		/* ensure the filename is set */
+		ret = hif_package_ensure_filename (sources, pkg, error);
 
 		/* find the location of the local file */
 		filename = hif_package_get_filename (pkg);
@@ -2195,6 +2196,7 @@ out:
  */
 static gboolean
 pk_backend_transaction_commit (rpmts ts,
+			       GPtrArray *sources,
 			       gboolean allow_untrusted,
 			       HyGoal goal,
 			       HifState *state,
@@ -2270,14 +2272,18 @@ pk_backend_transaction_commit (rpmts ts,
 					    commit->install->len);
 	for (i = 0; i < commit->install->len; i++) {
 
-		/* add the install */
 		pkg = g_ptr_array_index (commit->install, i);
+		ret = hif_package_ensure_filename (sources, pkg, error);
+		if (!ret)
+			goto out;
+
+		/* add the install */
 		filename = hif_package_get_filename (pkg);
 		ret = hif_rpmts_add_install_filename (ts,
-							 filename,
-							 allow_untrusted,
-							 hif_goal_is_upgrade_package (goal, pkg),
-							 error);
+						      filename,
+						      allow_untrusted,
+						      hif_goal_is_upgrade_package (goal, pkg),
+						      error);
 		if (!ret)
 			goto out;
 
@@ -2398,8 +2404,10 @@ out:
 	g_free (verbosity_string);
 	if (commit != NULL) {
 		g_timer_destroy (commit->timer);
-		g_ptr_array_unref (commit->install);
-		g_ptr_array_unref (commit->remove);
+		if (commit->install != NULL)
+			g_ptr_array_unref (commit->install);
+		if (commit->remove != NULL)
+			g_ptr_array_unref (commit->remove);
 		g_free (commit);
 	}
 	return ret;
@@ -2513,6 +2521,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	/* find any packages without valid GPG signatures */
 	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		ret = pk_backend_transaction_check_untrusted (job_data->keyring,
+							      job_data->enabled_sources,
 							      goal,
 							      error);
 		if (!ret)
@@ -2522,6 +2531,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	/* run transaction */
 	state_local = hif_state_get_child (state);
 	ret = pk_backend_transaction_commit (job_data->ts,
+					     job_data->enabled_sources,
 					     !pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED),
 					     goal,
 					     state_local,
