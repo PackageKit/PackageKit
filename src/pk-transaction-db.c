@@ -854,6 +854,30 @@ pk_transaction_db_ensure_file_directory (const gchar *path)
 }
 
 /**
+ * pk_transaction_db_execute:
+ **/
+static gboolean
+pk_transaction_db_execute (PkTransactionDb *tdb,
+			   const gchar *statement,
+			   GError **error)
+{
+	gboolean ret = TRUE;
+	gint rc;
+
+	/* wrap this up */
+	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	if (rc != SQLITE_OK) {
+		ret = FALSE;
+		g_set_error (error,
+			     1, 0,
+			     "Failed to execute statement '%s': %s\n",
+			     statement,
+			     sqlite3_errmsg (tdb->priv->db));
+	}
+	return ret;
+}
+
+/**
  * pk_transaction_db_load:
  **/
 gboolean
@@ -863,6 +887,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	gboolean ret = TRUE;
 	gchar *error_msg = NULL;
 	gchar *text;
+	GError *error_local = NULL;
 	gint rc;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
@@ -881,13 +906,15 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	}
 
 	/* we don't need to keep doing fsync */
-	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+	ret = pk_transaction_db_execute (tdb, "PRAGMA synchronous=OFF", error);
+	if (!ret)
+		goto out;
 
 	/* check transactions */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM transactions LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("creating table to repair: %s", error_msg);
-		sqlite3_free (error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT * FROM transactions LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("creating table to repair: %s", error_local->message);
+		g_clear_error (&error_local);
 		statement = "CREATE TABLE transactions ("
 			    "transaction_id TEXT PRIMARY KEY,"
 			    "timespec TEXT,"
@@ -898,38 +925,53 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 			    "description TEXT,"
 			    "uid INTEGER DEFAULT 0,"
 			    "cmdline TEXT);";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 	}
 
 	/* check transactions has enough data (since 0.3.11) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT uid, cmdline FROM transactions LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("altering table to repair: %s", error_msg);
-		sqlite3_free (error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT uid, cmdline FROM transactions LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("altering table to repair: %s", error_local->message);
+		g_clear_error (&error_local);
 		statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 		statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 	}
 
 	/* check last_action (since 0.3.10) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM last_action LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("adding last action details: %s", error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT * FROM last_action LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("adding last action details: %s", error_local->message);
+		g_clear_error (&error_local);
 		statement = "CREATE TABLE last_action (role TEXT PRIMARY KEY, timespec TEXT);";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 	}
 
 	/* check config (since 0.4.6) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM config LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("adding config: %s", error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT * FROM config LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("adding config: %s", error_local->message);
+		g_clear_error (&error_local);
+
 		statement = "CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT);";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 
 		/* save creation version */
 		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('version', '%s')", PACKAGE_VERSION);
-		sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, text, error);
+		if (!ret)
+			goto out;
 		g_free (text);
 
 		/* get the old job count from the text file (this is a legacy file) */
@@ -940,12 +982,14 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 
 		/* save job id */
 		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('job_count', '%i')", tdb->priv->job_count);
-		sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, text, error);
+		if (!ret)
+			goto out;
 		g_free (text);
 	} else {
 		/* get the job count */
 		statement = "SELECT value FROM config WHERE key = 'job_count'";
-		rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
+		sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
 		if (rc != SQLITE_OK) {
 			g_warning ("failed to get job id: %s\n", error_msg);
 			sqlite3_free (error_msg);
@@ -954,26 +998,36 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	}
 
 	/* session proxy saving (since 0.5.1) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM proxy LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("adding table proxy: %s", error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT * FROM proxy LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("adding table proxy: %s", error_local->message);
 		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_https TEXT, proxy_ftp TEXT, proxy_socks TEXT, no_proxy TEXT, pac TEXT, uid INTEGER, session TEXT);";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 	}
 
 	/* session no_proxy proxy */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT no_proxy FROM proxy LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("altering table to repair: %s", error_msg);
-		sqlite3_free (error_msg);
+	ret = pk_transaction_db_execute (tdb, "SELECT no_proxy FROM proxy LIMIT 1", &error_local);
+	if (!ret) {
+		g_debug ("altering table to repair: %s", error_local->message);
+		g_clear_error (&error_local);
 		statement = "ALTER TABLE proxy ADD COLUMN proxy_https TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 		statement = "ALTER TABLE proxy ADD COLUMN proxy_socks TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 		statement = "ALTER TABLE proxy ADD COLUMN no_proxy TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 		statement = "ALTER TABLE proxy ADD COLUMN pac TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+		ret = pk_transaction_db_execute (tdb, statement, error);
+		if (!ret)
+			goto out;
 	}
 
 	/* success */
