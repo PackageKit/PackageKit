@@ -989,10 +989,13 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	} else {
 		/* get the job count */
 		statement = "SELECT value FROM config WHERE key = 'job_count'";
-		sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
+		rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
 		if (rc != SQLITE_OK) {
-			g_warning ("failed to get job id: %s\n", error_msg);
+			ret = FALSE;
+			g_set_error (error, 1, 0,
+				     "failed to get job id: %s\n", error_msg);
 			sqlite3_free (error_msg);
+			goto out;
 		}
 		g_debug ("job count is now at %i", tdb->priv->job_count);
 	}
