@@ -5703,6 +5703,7 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
+	gboolean ret;
 	GError *error = NULL;
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->allow_cancel = TRUE;
@@ -5733,6 +5734,12 @@ pk_transaction_init (PkTransaction *transaction)
 #endif
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
+	ret = pk_transaction_db_load (transaction->priv->transaction_db, &error);
+	if (!ret) {
+		g_error ("PkEngine: failed to load transaction db: %s",
+			 error->message);
+		g_error_free (error);
+	}
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_transaction_transaction_cb), transaction);
 
