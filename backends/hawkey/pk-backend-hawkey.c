@@ -2153,7 +2153,15 @@ hif_transaction_delete_packages (GPtrArray *install,
 
 	/* get the cachedir so we only delete packages in the actual
 	 * cache, not local-install packages */
-	cachedir = hif_config_get_string (priv->config, "cachedir", NULL);
+	cachedir = hif_config_get_string (priv->config, "CacheDir", NULL);
+	if (cachedir == NULL) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+				     "Failed to get value for CacheDir");
+		goto out;
+	}
 
 	/* delete each downloaded file */
 	state_local = hif_state_get_child (state);
