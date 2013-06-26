@@ -827,7 +827,9 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		hy_query_filter_provides (query, HY_EQ, search[0], NULL);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
+		//* FIXME: We should really use hy_goal_upgrade_all */
 		hy_query_filter_upgrades (query, TRUE);
+		hy_query_filter_latest (query, TRUE);
 		break;
 	default:
 		g_assert_not_reached ();
