@@ -735,8 +735,8 @@ hif_source_download_package (HifSource *src,
 				  hif_source_checksum_hy_to_lr (checksum_type),
 				  checksum_str,
 				  NULL, /* baseurl not required */
-				  FALSE);
-	if (rc) {
+				  TRUE);
+	if (rc && rc != LRE_ALREADYDOWNLOADED) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
