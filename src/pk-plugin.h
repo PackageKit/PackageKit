@@ -61,6 +61,9 @@ typedef const gchar	*(*PkPluginGetDescFunc)		(void);
 typedef void		 (*PkPluginFunc)		(PkPlugin	*plugin);
 typedef void		 (*PkPluginTransactionFunc)	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
+typedef const gchar	*(*PkPluginGetActionFunc)	(PkPlugin	*plugin,
+							 PkTransaction	*transaction,
+							 const gchar	*action_id);
 
 const gchar	*pk_plugin_get_description		(void);
 void		 pk_plugin_initialize			(PkPlugin	*plugin);
@@ -76,6 +79,9 @@ void		 pk_plugin_transaction_finished_end	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
 void		 pk_plugin_transaction_content_types	(PkPlugin	*plugin,
 							 PkTransaction	*transaction);
+const gchar	*pk_plugin_transaction_get_action	(PkPlugin	*plugin,
+							 PkTransaction	*transaction,
+							 const gchar	*action_id);
 
 G_END_DECLS
 

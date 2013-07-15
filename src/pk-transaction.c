@@ -2829,6 +2829,61 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 }
 
 /**
+ * pk_transaction_plugin_get_action:
+ *
+ * Allow plugins to override the default PolicyKit action.
+ **/
+static const gchar *
+pk_transaction_plugin_get_action (PkTransaction *transaction,
+				  const gchar *action_id)
+{
+	const gchar *function = "pk_plugin_transaction_get_action";
+	gboolean ran_one = FALSE;
+	gboolean ret;
+	guint i;
+	PkBackendJob *job;
+	PkPlugin *plugin;
+	PkPluginGetActionFunc plugin_func = NULL;
+
+	if (transaction->priv->plugins == NULL)
+		goto out;
+
+	/* run each plugin */
+	for (i = 0; i < transaction->priv->plugins->len; i++) {
+		plugin = g_ptr_array_index (transaction->priv->plugins, i);
+		ret = g_module_symbol (plugin->module,
+				       function,
+				       (gpointer *) &plugin_func);
+		if (!ret)
+			continue;
+
+		ran_one = TRUE;
+		g_debug ("run %s on %s",
+			 function,
+			 g_module_name (plugin->module));
+		job = pk_backend_job_new ();
+		pk_backend_start_job (transaction->priv->backend, job);
+		pk_transaction_signals_reset (transaction, job);
+		plugin->job = job;
+		plugin->backend = transaction->priv->backend;
+		action_id = plugin_func (plugin, transaction, action_id);
+		pk_backend_stop_job (transaction->priv->backend, job);
+		plugin->job = NULL;
+		plugin->backend = NULL;
+	}
+
+out:
+	/* set this to a known state */
+	if (transaction->priv->job != NULL) {
+		pk_transaction_signals_reset (transaction,
+					      transaction->priv->job);
+	}
+	if (!ran_one)
+		g_debug ("no plugins provided %s", function);
+	return action_id;
+}
+
+/**
  * pk_transaction_obtain_authorization:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
@@ -2886,6 +2941,10 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	} else {
 		action_id = pk_transaction_role_to_action_allow_untrusted (role);
 	}
+
+	/* allow plugins to override */
+	action_id = pk_transaction_plugin_get_action (transaction, action_id);
+
 	if (action_id == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
 		goto out;
