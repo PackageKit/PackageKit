@@ -68,7 +68,7 @@ bool AptIntf::init()
     gchar *locale;
     gchar *http_proxy;
     gchar *ftp_proxy;
-    
+
     // pkgInitSystem is needed to compare the changelog verstion to
     // current package using DoCmpVersion()
     if (pkgInitConfig(*_config) == false ||
@@ -135,7 +135,7 @@ bool AptIntf::init()
 
     // Create the AptCacheFile class to search for packages
     m_cache = new AptCacheFile(m_job);
-    
+
     int timeout = 10;
     // TODO test this
     while (m_cache->Open(withLock) == false) {
@@ -730,7 +730,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
         srcpkg = pkg.Name();
     } else {
         srcpkg = rec.SourcePkg();
-    }    
+    }
 
     // Create a random temp dir
     char dirName[] = "/tmp/aptccXXXXXXXX";
@@ -764,7 +764,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                                     G_REGEX_CASELESS,
                                     G_REGEX_MATCH_ANCHORED,
                                     0);
-            
+
             while (getline(in, line)) {
                 // no need to free str later, it is allocated in a static buffer
                 const char *str = utf8(line.c_str());
@@ -1000,7 +1000,7 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
         if (values[i] == NULL) {
             pk_backend_job_error_code(m_job,
                                       PK_ERROR_ENUM_GROUP_NOT_FOUND,
-                                      "An empty group was recieved");
+                                      "An empty group was received");
             pk_backend_job_finished(m_job);
             return output;
         } else {
@@ -1586,7 +1586,7 @@ pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
             return *it;
         }
     }
-    
+
     const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() == true ||
@@ -2015,11 +2015,11 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
 void AptIntf::refreshCache()
 {
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_REFRESH_CACHE);
-    
+
     if (m_cache->BuildSourceList() == false) {
         return;
     }
-    
+
     // Create the progress
     AcqPackageKitStatus Stat(this, m_job);
 
@@ -2160,7 +2160,7 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
                                   aptArch.c_str());
         return false;
     }
-    
+
     // Close the package cache to release the lock
     m_cache->Close();
 
@@ -2357,7 +2357,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
             return false;
         }
     }
-    
+
     // Read the source list
     if (m_cache->BuildSourceList() == false) {
         return false;
@@ -2370,7 +2370,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
             _error->PendingError() == true) {
         return false;
     }
-    
+
     // Display statistics
     unsigned long long FetchBytes = fetcher.FetchNeeded();
     unsigned long long FetchPBytes = fetcher.PartialPresent();
@@ -2384,7 +2384,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     if (FetchBytes != 0) {
         // Emit the remainig download size
         pk_backend_job_set_download_size_remaining(m_job, FetchBytes);
-        
+
         // check network state if we are going to download
         // something or if we are not simulating
         if (!simulate && !pk_backend_is_online(backend)) {
@@ -2442,7 +2442,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         // We failed and we did not cancel
         show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         return false;
-    }    
+    }
 
     if (_error->PendingError() == true) {
         cout << "PendingError download" << endl;
