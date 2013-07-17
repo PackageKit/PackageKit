@@ -145,6 +145,14 @@ pk_backend_initialize (PkBackend *backend)
 		g_error_free (error);
 	}
 
+	/* set defaults */
+	hif_config_set_boolean (priv->config, "DiskSpaceCheck", TRUE, NULL);
+	hif_config_set_boolean (priv->config, "RpmCheckDebug", TRUE, NULL);
+	hif_config_set_string (priv->config, "CacheDir", "/var/cache/PackageKit/metadata", NULL);
+	hif_config_set_string (priv->config, "PidFile", "/var/run/hif", NULL);
+	hif_config_set_string (priv->config, "ReposDir", "/etc/yum.repos.d", NULL);
+	hif_config_set_string (priv->config, "RpmVerbosity", "info", NULL);
+
 	/* setup a file monitor on the repos directory */
 	priv->repos_dir = hif_config_get_string (priv->config, "ReposDir", &error);
 	g_assert (priv->repos_dir != NULL);

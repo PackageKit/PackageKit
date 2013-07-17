@@ -382,7 +382,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %if 0%{?rhel} == 0
 %files hawkey
 %defattr(-,root,root,-)
-%config(noreplace) %{_sysconfdir}/PackageKit/Hif.conf
 %{_libdir}/packagekit-backend/libpk_backend_hawkey.so
 %endif
 

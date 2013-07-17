@@ -67,8 +67,8 @@ static gboolean
 hif_config_load (HifConfig *config, GError **error)
 {
 	gboolean ret = TRUE;
+	gboolean file_exists;
 	GError *error_local = NULL;
-	guint config_schema_version;
 
 	/* lock other threads */
 	g_mutex_lock (&config->priv->mutex);
@@ -88,6 +88,15 @@ hif_config_load (HifConfig *config, GError **error)
 		goto out;
 	}
 
+	/* check file exists */
+	file_exists = g_file_test (config->priv->filename, G_FILE_TEST_IS_REGULAR);
+	if (!file_exists) {
+		g_debug ("override config file %s does not exist",
+			 config->priv->filename);
+		config->priv->loaded = TRUE;
+		goto out;
+	}
+
 	/* load files */
 	g_debug ("loading config file %s", config->priv->filename);
 	ret = g_key_file_load_from_file (config->priv->file_default,
@@ -102,36 +111,6 @@ hif_config_load (HifConfig *config, GError **error)
 			     config->priv->filename,
 			     error_local->message);
 		g_error_free (error_local);
-		goto out;
-	}
-
-	/* check schema version key exists */
-	config_schema_version = g_key_file_get_integer (config->priv->file_default,
-							"Backend",
-							"ConfigSchemaVersion",
-							&error_local);
-	if (config_schema_version == 0) {
-		ret = FALSE;
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "failed to load config file %s: %s - "
-			     "check your installation of Hif",
-			     config->priv->filename,
-			     error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	/* check schema version */
-	if (config_schema_version != 1) {
-		ret = FALSE;
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "failed to load config file %s - "
-			     "check your installation of Hif",
-			     config->priv->filename);
 		goto out;
 	}
 
@@ -318,7 +297,7 @@ hif_config_set_filename (HifConfig *config,
 			 GError **error)
 {
 	const gchar *text;
-	gboolean ret = FALSE;
+	gboolean ret = TRUE;
 	gchar *basearch = NULL;
 	GError *error_local = NULL;
 	GPtrArray *array;
@@ -345,18 +324,7 @@ hif_config_set_filename (HifConfig *config,
 	} else {
 		config->priv->filename = g_strdup (filename);
 	}
-
-	/* check file exists */
 	g_debug ("using config %s", config->priv->filename);
-	ret = g_file_test (config->priv->filename, G_FILE_TEST_IS_REGULAR);
-	if (!ret) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "config file %s does not exist",
-			     config->priv->filename);
-		goto out;
-	}
 
 	/* calculate the valid basearchs */
 	basearch = hif_config_get_string (config, "basearch", &error_local);

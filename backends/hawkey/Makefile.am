@@ -30,10 +30,4 @@ libpk_backend_hawkey_la_LDFLAGS = -module -avoid-version
 libpk_backend_hawkey_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 libpk_backend_hawkey_la_LIBADD += $(HAWKEY_LIBS)
 
-confdir = $(PK_CONF_DIR)
-conf_DATA = Hif.conf
-
-EXTRA_DIST =								\
-	$(conf_DATA)
-
 -include $(top_srcdir)/git.mk
