@@ -316,6 +316,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_localstatedir}/cache/PackageKit
 %ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
+%dir %{_localstatedir}/cache/PackageKit/metadata
 %{python_sitelib}/packagekit/*py*
 %if !0%{?rhel}
 %{_datadir}/bash-completion/completions/pkcon
