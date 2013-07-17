@@ -326,7 +326,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
 %dir %{_datadir}/PackageKit/helpers/test_spawn
-%dir %{_datadir}/PackageKit/icons
+%{_datadir}/PackageKit/icons
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/pkcon.1.gz
 %{_datadir}/man/man1/pkmon.1.gz
