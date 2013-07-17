@@ -210,13 +210,11 @@ pk_backend_state_action_changed_cb (HifState *state,
 				    const gchar *action_hint,
 				    PkBackendJob *job)
 {
-	PkStatusEnum status = PK_STATUS_ENUM_UNKNOWN;
-
 	g_debug ("got state %s with hint %s",
 		 pk_status_enum_to_string (action),
 		 action_hint);
-	if (status != PK_STATUS_ENUM_UNKNOWN)
-		pk_backend_job_set_status (job, status);
+	if (action != PK_STATUS_ENUM_UNKNOWN)
+		pk_backend_job_set_status (job, action);
 
 	switch (action) {
 	case PK_STATUS_ENUM_DOWNLOAD:
