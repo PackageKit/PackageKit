@@ -328,10 +328,6 @@ hif_source_update_state_cb (void *user_data,
 	percentage = 100.0f * now_downloaded / total_to_download;
 	hif_state_set_percentage (state, percentage);
 
-	/* drain events */
-	while (g_main_context_pending (NULL))
-		g_main_context_iteration (NULL, FALSE);
-
 	return 0;
 }
 
