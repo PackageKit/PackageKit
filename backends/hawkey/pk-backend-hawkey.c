@@ -379,13 +379,19 @@ hif_utils_add_source (HySack sack,
 		goto out;
 
 	/* load solv */
+	g_debug ("Loading repo %s", hif_source_get_id (src));
 	hif_state_action_start (state, PK_STATUS_ENUM_LOADING_CACHE, NULL);
 	rc = hy_sack_load_yum_repo (sack,
 				    hif_source_get_repo (src),
-				    HY_LOAD_FILELISTS | HY_BUILD_CACHE);
+				    HY_LOAD_FILELISTS |
+				    HY_LOAD_UPDATEINFO |
+				    HY_BUILD_CACHE);
 	ret = hif_rc_to_gerror (rc, error);
-	if (!ret)
+	if (!ret) {
+		g_prefix_error (error, "Failed to load repo %s: ",
+				hif_source_get_id (src));
 		goto out;
+	}
 
 	/* done */
 	ret = hif_state_done (state, error);
@@ -552,8 +558,10 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
 	ret = hif_rc_to_gerror (rc, error);
-	if (!ret)
+	if (!ret) {
+		g_prefix_error (error, "Failed to load system repo: ");
 		goto out;
+	}
 
 	/* done */
 	ret = hif_state_done (state, error);
@@ -860,8 +868,13 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		guint i;
 		HyPackage pkg;
-		FOR_PACKAGELIST(pkg, pkglist, i)
-			hif_package_set_info (pkg, PK_INFO_ENUM_NORMAL);
+		HyUpdateSeverity severity;
+		PkInfoEnum info_enum;
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			severity = hy_package_get_update_severity (pkg);
+			info_enum = hif_update_severity_to_info_enum (severity);
+			hif_package_set_info (pkg, info_enum);
+		}
 	}
 
 	hif_emit_package_list_filter (job, filters, pkglist);
@@ -3242,14 +3255,97 @@ pk_backend_get_files (PkBackend *backend,
 	pk_backend_job_thread_create (job, pk_backend_get_files_thread, NULL, NULL);
 }
 
-#if 0
-
 /**
- * pk_backend_get_categories:
+ * pk_backend_get_update_detail_thread:
  */
-void
-pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
+static void
+pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	gchar **package_ids;
+	gboolean ret;
+	GError *error = NULL;
+	GHashTable *hash = NULL;
+	guint i;
+	HifState *state_local;
+	HyPackage pkg;
+	HySack sack = NULL;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters;
+
+	/* set state */
+	ret = hif_state_set_steps (job_data->state, NULL,
+				   50, /* add repos */
+				   49, /* find packages */
+				   1, /* emit update details */
+				   -1);
+	g_assert (ret);
+
+	/* get sack */
+	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* find remote packages */
+	g_variant_get (params, "(^a&s)", &package_ids);
+	hash = hif_utils_find_package_ids (sack, package_ids, &error);
+	if (hash == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* emit details for each */
+	for (i = 0; package_ids[i] != NULL; i++) {
+		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		g_assert (pkg != NULL);
+		pk_backend_job_update_detail (job,
+					      package_ids[i],
+					      NULL,
+					      NULL,
+					      hy_package_get_update_urls_vendor (pkg),
+					      hy_package_get_update_urls_bugzilla (pkg),
+					      hy_package_get_update_urls_cve (pkg),
+					      PK_RESTART_ENUM_NONE, /* FIXME */
+					      hy_package_get_update_description (pkg),
+					      NULL,
+					      PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
+					      NULL, /* issued */
+					      NULL /* updated */);
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	if (hash != NULL)
+		g_hash_table_unref (hash);
+	if (sack != NULL)
+		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3260,6 +3356,17 @@ void
 pk_backend_get_update_detail (PkBackend *backend,
 			      PkBackendJob *job,
 			      gchar **package_ids)
+{
+	pk_backend_job_thread_create (job, pk_backend_get_update_detail_thread, NULL, NULL);
+}
+
+#if 0
+
+/**
+ * pk_backend_get_categories:
+ */
+void
+pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_finished (job);
 }

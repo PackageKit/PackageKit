@@ -333,3 +333,37 @@ hif_get_filter_for_ids (gchar **package_ids)
 out:
 	return filters;
 }
+
+/**
+ * hif_update_severity_to_info_enum:
+ */
+PkInfoEnum
+hif_update_severity_to_info_enum (HyUpdateSeverity severity)
+{
+	PkInfoEnum info_enum = HY_UPDATE_SEVERITY_UNKNOWN;
+	switch (severity) {
+	case HY_UPDATE_SEVERITY_SECURITY:
+		info_enum = PK_INFO_ENUM_SECURITY;
+		break;
+	case HY_UPDATE_SEVERITY_IMPORTANT:
+		info_enum = PK_INFO_ENUM_IMPORTANT;
+		break;
+	case HY_UPDATE_SEVERITY_BUGFIX:
+		info_enum = PK_INFO_ENUM_BUGFIX;
+		break;
+	case HY_UPDATE_SEVERITY_NORMAL:
+	case HY_UPDATE_SEVERITY_UNKNOWN:
+		info_enum = PK_INFO_ENUM_NORMAL;
+		break;
+	case HY_UPDATE_SEVERITY_ENHANCEMENT:
+		info_enum = PK_INFO_ENUM_ENHANCEMENT;
+		break;
+	case HY_UPDATE_SEVERITY_LOW:
+		info_enum = PK_INFO_ENUM_LOW;
+		break;
+	default:
+		g_warning ("Failed to find HyUpdateSeverity enum %i", severity);
+		break;
+	}
+	return info_enum;
+}

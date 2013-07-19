@@ -337,7 +337,11 @@ hif_source_update_state_cb (void *user_data,
 gboolean
 hif_source_check (HifSource *src, HifState *state, GError **error)
 {
-	const gchar *download_list[] = { "primary", "filelists", "group", NULL};
+	const gchar *download_list[] = { "primary",
+					 "filelists",
+					 "group",
+					 "updateinfo",
+					 NULL};
 	const gchar *tmp;
 	gboolean ret = TRUE;
 	lr_Rc rc;
@@ -382,6 +386,9 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 	tmp = lr_yum_repo_path(yum_repo, "filelists");
 	if (tmp != NULL)
 		hy_repo_set_string (src->repo, HY_REPO_FILELISTS_FN, tmp);
+	tmp = lr_yum_repo_path(yum_repo, "updateinfo");
+	if (tmp != NULL)
+		hy_repo_set_string (src->repo, HY_REPO_UPDATEINFO_FN, tmp);
 out:
 	return ret;
 }
