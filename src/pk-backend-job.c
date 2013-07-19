@@ -1770,7 +1770,8 @@ pk_backend_job_error_code (PkBackendJob *job,
 	va_list args;
 	gchar *buffer;
 	gboolean need_untrusted;
-	PkError *item = NULL;
+	PkError *error = NULL;
+	PkError *error_old = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
@@ -1781,8 +1782,8 @@ pk_backend_job_error_code (PkBackendJob *job,
 	/* did we set a duplicate error? (we can override LOCK_REQUIRED errors,
 	 * so the transaction list can fail transactions) */
 	if (job->priv->set_error) {
-		item = pk_results_get_error_code (job->priv->results);
-		if (pk_error_get_code (item) == PK_ERROR_ENUM_LOCK_REQUIRED) {
+		error_old = pk_results_get_error_code (job->priv->results);
+		if (pk_error_get_code (error_old) == PK_ERROR_ENUM_LOCK_REQUIRED) {
 			/* reset the exit status, we're resetting the error now */
 			job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 			job->priv->finished = FALSE;
@@ -1790,8 +1791,6 @@ pk_backend_job_error_code (PkBackendJob *job,
 			g_warning ("More than one error emitted! You tried to set '%s'", buffer);
 			goto out;
 		}
-		g_object_unref (item);
-		item = NULL;
 	}
 	job->priv->set_error = TRUE;
 
@@ -1810,8 +1809,8 @@ pk_backend_job_error_code (PkBackendJob *job,
 	}
 
 	/* form PkError struct */
-	item = pk_error_new ();
-	g_object_set (item,
+	error = pk_error_new ();
+	g_object_set (error,
 		      "code", error_code,
 		      "details", buffer,
 		      NULL);
@@ -1819,12 +1818,14 @@ pk_backend_job_error_code (PkBackendJob *job,
 	/* emit */
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_ERROR_CODE,
-				   g_object_ref (item),
+				   g_object_ref (error),
 				   g_object_unref);
-	pk_results_set_error_code (job->priv->results, item);
+	pk_results_set_error_code (job->priv->results, error);
 out:
-	if (item != NULL)
-		g_object_unref (item);
+	if (error != NULL)
+		g_object_unref (error);
+	if (error_old != NULL)
+		g_object_unref (error_old);
 	g_free (buffer);
 }
 
