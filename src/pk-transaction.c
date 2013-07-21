@@ -4169,7 +4169,8 @@ pk_transaction_install_files (PkTransaction *transaction,
 		/* supported content type? */
 		ret = pk_transaction_is_supported_content_type (transaction, content_type);
 		if (!ret) {
-			if (g_strcmp0 ("application/x-app-package", content_type) == 0) {
+			if (g_strcmp0 ("application/x-app-package", content_type) == 0 ||
+			    g_str_has_suffix (full_paths[i], ".ipk") == TRUE) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 						"Listaller is required to install %s", full_paths[i]);
 			} else {
