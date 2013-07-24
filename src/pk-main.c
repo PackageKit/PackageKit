@@ -231,13 +231,6 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-	/* do stuff on ctrl-c */
-	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
-				SIGINT,
-				pk_main_sigint_cb,
-				loop,
-				NULL);
-
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon && daemon (0, 0)) {
 		g_print ("Could not daemonize: %s\n", g_strerror (errno));
@@ -296,6 +289,13 @@ main (int argc, char *argv[])
 	engine = pk_engine_new ();
 	g_signal_connect (engine, "quit",
 			  G_CALLBACK (pk_main_quit_cb), loop);
+
+	/* do stuff on ctrl-c */
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
+				SIGINT,
+				pk_main_sigint_cb,
+				loop,
+				NULL);
 
 	/* load the backend */
 	ret = pk_engine_load_backend (engine, &error);
