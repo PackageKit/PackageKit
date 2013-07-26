@@ -1,3 +1,71 @@
+Version 0.8.10
+~~~~~~~~~~~~~~
+Released: 2013-07-26
+
+Libraries:
+ - glib: Actually return the error if any PkClient methods failed (Richard Hughes)
+ - glib: Fix a potential segfault when getting the error code for the results (Richard Hughes)
+ - ruby_packagekit: update enums with enum-convertor (Anders F Bjorklund)
+ - ruby_packagekit: update prints with commands (Anders F Bjorklund)
+ - ruby_packagekit: update the backend API (Anders F Bjorklund)
+
+Backends:
+ - aptcc: Don't store downloads in partial (Daniel Nicoletti)
+ - aptcc: Fix compilation for the backend API where seding package files gets an array of gchar (Daniel Nicoletti)
+ - aptcc: Use glib types to deal with the files emit (Daniel Nicoletti)
+ - dummy: Adapt to pk_backend_job_files change (Richard Hughes)
+ - hawkey: Add a new backend designed to replace the yum and zif backends (Richard Hughes)
+ - hawkey: Add update states and update info details (Richard Hughes)
+ - hawkey: Always filter the updates list to the newest packages only (Richard Hughes)
+ - hawkey: Remove the cached .rpm files after they have been used for install (Richard Hughes)
+ - hawkey: Support the DOWNLOADED filter (Richard Hughes)
+ - hawkey: Use the new hy_package_get_userdata() functionality (Richard Hughes)
+ - pisi: Basic fixes required to make backend functional again (Ikey Doherty)
+ - pisi: Coding cleanups and hiccups removals, better handling of deps, etc. (Ikey Doherty)
+ - pisi: Fix homepage in details (Ikey Doherty)
+ - pisi: Implement 'download-packages' (Ikey Doherty)
+ - pisi: Implement 'get-update-detail' (Ikey Doherty)
+ - pisi: Load PiSi components -> PK Group mappings from file (Ikey Doherty)
+ - pisi: Mark myself as maintainer in pk-backend-pisi (Ikey Doherty)
+ - pisi: Report installation and removal progress to PackageKit (Ikey Doherty)
+ - pisi: Report progress in all relevant transactions, use factory deps method, clean up (Ikey Doherty)
+ - pisi: Support simulated transactions, allow multiple package removal and installation (Ikey Doherty)
+ - ports: Add the mime-type for .txz packages (Anders F Bjorklund)
+ - ports: Remove the update_system function (Anders F Bjorklund)
+ - ports: Upgrade the backend for portupgrade to 0.8 (Anders F Bjorklund)
+ - yum: Only download the offline update packages if not already in the cache (Richard Hughes)
+ - yum: Use yb.downloadPkgs() to download updates (Richard Hughes)
+ - zif: Adapt to pk_backend_job_files change (Richard Hughes)
+ - zif: Add support for the DOWNLOADED filter (Richard Hughes)
+
+New Features:
+ - Add a 'DOWNLOADED' filter to select only packages already in the cache (Richard Hughes)
+ - Add three pkcon sub-commands for offline updates (Richard Hughes)
+ - Allow local active users in the wheel group to install signed packages without a password (Richard Hughes)
+ - Allow plugins to override PolicyKit action IDs (Colin Watson)
+
+Bugfixes:
+ - Also look for libraries in type txt from lsof (Anders F Bjorklund)
+ - Correctly handle SIGINT signals again (Matthias Klumpp)
+ - Default lsof installation path on FreeBSD (Anders F Bjorklund)
+ - Depend on GLib 2.30.0 for the UNIX signal handling features (Richard Hughes)
+ - Do not start the daemon if we cannot get a valid starting ID (Richard Hughes)
+ - Don't cause warnings if /proc/net/route is missing (Anders F Bjorklund)
+ - Do proper error checking when modifying the transaction database (Richard Hughes)
+ - Emit error for Listaller package installs, if Listaller is not installed (Matthias Klumpp)
+ - Ensure we create the per-system metadata cache location (Richard Hughes)
+ - Fix Listaller compat check if IPK mime type is not installed (Matthias Klumpp)
+ - Generate the python files to get the path right (Anders F Bjorklund)
+ - If the transaction database is missing, show an error and cleanly shutdown (Richard Hughes)
+ - Load an instance of the transaction database for each transaction (Richard Hughes)
+ - Make pk_backend_job_files() accept an array of strings (Richard Hughes)
+ - Make the client-helper run on non-Linux systems (Anders F Bjorklund)
+ - Make the test scripts use a standard shell (Anders F Bjorklund)
+ - Only check the package-id of ::Files when specified (Richard Hughes)
+ - Only search newest packages when resolving 'pkcon update foo' (Richard Hughes)
+ - Raise the package process threshold to 5000 (Richard Hughes)
+ - systemd-updates: Do not exit with an error for a race condition (Richard Hughes)
+
 Version 0.8.9
 ~~~~~~~~~~~~~
 Released: 2013-05-20

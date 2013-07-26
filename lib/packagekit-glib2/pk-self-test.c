@@ -1129,7 +1129,7 @@ pk_test_desktop_func (void)
 	/* file does not exist */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
-		g_warning ("skipping checks as database does not exist");
+		g_debug ("skipping checks as database does not exist");
 		goto out;
 	}
 
