@@ -1306,9 +1306,11 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "get-categories");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
 		g_string_append_printf (string, "  %s\n", "repair");
+#ifdef PK_HAS_OFFLINE_UPDATES
 	g_string_append_printf (string, "  %s\n", "offline-get-prepared");
 	g_string_append_printf (string, "  %s\n", "offline-trigger");
 	g_string_append_printf (string, "  %s\n", "offline-status");
+#endif
 	return g_string_free (string, FALSE);
 }
 
