@@ -245,7 +245,7 @@ pk_client_fixup_dbus_error (GError *error)
 	g_dbus_error_strip_remote_error (error);
 	if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
 		name_suffix = &name[39];
-	if (g_strcmp0 (name_suffix, "PermissionDenied") == 0 ||
+	if (g_strcmp0 (name_suffix, "Denied") == 0 ||
 	    g_strcmp0 (name_suffix, "RefusedByPolicy") == 0) {
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
 		goto out;
