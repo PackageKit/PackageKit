@@ -60,18 +60,21 @@ ________________________________________________________________________
  *  Observe there are no PolicyKit dialogs shown as the command completes
  *  Ensure /var/lib/PackageKit/prepared-update contains just the powertop
     package on a single line
+    [You can also use 'pkcon offline-get-prepared' to do the same thing]
  *  Download the new colorhug-client update with:
     pkcon --only-download update colorhug-client
  *  Ensure /var/lib/PackageKit/prepared-update contains both powertop and
     colorhug-client on two lines
  *  Run pkexec /usr/libexec/pk-trigger-offline-update and confirm that
     the system-update symlink exists on '/'.
+    [You can also use 'pkcon offline-trigger' to do the same thing]
  *  Observe that pkexec ran without showing a PolicyKit dialog
  *  Run sudo PK_OFFLINE_UPDATE_TEST=1 /usr/libexec/pk-offline-update and
     observe that the two updates are applied
  *  Confirm that /var/lib/PackageKit/prepared-update has been deleted
  *  Confirm that /var/lib/PackageKit/offline-update-competed exists
     and no error messages have been logged.
+    [You can also use 'pkcon offline-status' to do the same thing]
  *  Downgrade powertop and colorhug-client again, and do:
     pkcon --only-download update powertop colorhug-client
     pkexec /usr/libexec/pk-trigger-offline-update

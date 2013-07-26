@@ -38,6 +38,9 @@ __pkcon_commandlist="
     install
     install-local
     list-create
+    offline-get-prepared
+    offline-status
+    offline-trigger
     refresh
     remove
     repo-disable

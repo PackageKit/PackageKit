@@ -1306,6 +1306,9 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "get-categories");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
 		g_string_append_printf (string, "  %s\n", "repair");
+	g_string_append_printf (string, "  %s\n", "offline-get-prepared");
+	g_string_append_printf (string, "  %s\n", "offline-trigger");
+	g_string_append_printf (string, "  %s\n", "offline-status");
 	return g_string_free (string, FALSE);
 }
 
@@ -1330,6 +1333,129 @@ pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	g_print ("time is %is\n", time_ms);
 out:
 	g_main_loop_quit (loop);
+}
+
+/**
+ * pk_console_offline_get_prepared:
+ **/
+static gboolean
+pk_console_offline_get_prepared (GError **error)
+{
+	gboolean ret;
+	gchar *data = NULL;
+	gchar **split = NULL;
+	gchar *tmp;
+	guint i;
+
+	/* get data */
+	ret = g_file_get_contents ("/var/lib/PackageKit/prepared-update",
+				   &data, NULL, NULL);
+	if (!ret) {
+		g_set_error_literal (error,
+				     1,
+				     PK_EXIT_CODE_FILE_NOT_FOUND,
+				     "No offline updates have been prepared");
+		goto out;
+	}
+	split = g_strsplit (data, "\n", -1);
+	g_print ("Prepared updates:\n");
+	for (i = 0; split[i] != NULL; i++) {
+		tmp = pk_package_id_to_printable (split[i]);
+		g_print ("Update %02i: %s\n", i, tmp);
+		g_free (tmp);
+	}
+out:
+	g_free (data);
+	return ret;
+}
+
+/**
+ * pk_console_offline_trigger:
+ **/
+static gboolean
+pk_console_offline_trigger (GError **error)
+{
+	gboolean ret;
+	gchar *cmdline;
+
+	cmdline = g_strdup_printf ("pkexec %s/pk-trigger-offline-update", LIBEXECDIR);
+	ret = g_spawn_command_line_sync (cmdline,
+					 NULL,
+					 NULL,
+					 NULL,
+					 error);
+	g_free (cmdline);
+	return ret;
+}
+
+#define PK_OFFLINE_UPDATE_RESULTS	"PackageKit Offline Update Results"
+
+/**
+ * pk_console_offline_status:
+ **/
+static gboolean
+pk_console_offline_status (GError **error)
+{
+	gboolean ret;
+	gboolean success;
+	gchar *data = NULL;
+	gchar **split = NULL;
+	gchar *tmp;
+	GKeyFile *file;
+	guint i;
+
+	/* load data */
+	file = g_key_file_new ();
+	ret = g_key_file_load_from_file (file,
+					 "/var/lib/PackageKit/offline-update-competed",
+					 G_KEY_FILE_NONE,
+					 NULL);
+	if (!ret) {
+		g_set_error_literal (error,
+				     1,
+				     PK_EXIT_CODE_FILE_NOT_FOUND,
+				     "No offline updates have been processed");
+		goto out;
+	}
+
+	/* did it succeed */
+	success = g_key_file_get_boolean (file,
+					  PK_OFFLINE_UPDATE_RESULTS,
+					  "Success",
+					  NULL);
+	if (!success) {
+		g_print ("Status:\tFailed\n");
+		tmp = g_key_file_get_string (file,
+					     PK_OFFLINE_UPDATE_RESULTS,
+					     "ErrorCode",
+					     NULL);
+		if (tmp != NULL)
+			g_print ("ErrorCode:\%s\n", tmp);
+		g_free (tmp);
+		tmp = g_key_file_get_string (file,
+					     PK_OFFLINE_UPDATE_RESULTS,
+					     "ErrorDetails",
+					     NULL);
+		if (tmp != NULL)
+			g_print ("ErrorDetails:\%s\n", tmp);
+		g_free (tmp);
+	} else {
+		g_print ("Status:\tSuccess\n");
+		data = g_key_file_get_string (file,
+					      PK_OFFLINE_UPDATE_RESULTS,
+					      "Packages",
+					      NULL);
+		split = g_strsplit (data, ";", -1);
+		for (i = 0; split[i] != NULL; i++) {
+			tmp = pk_package_id_to_printable (split[i]);
+			g_print ("Updated %02i: %s\n", i, tmp);
+			g_free (tmp);
+		}
+	}
+out:
+	g_key_file_free (file);
+	g_free (data);
+	return ret;
 }
 
 /**
@@ -1853,6 +1979,27 @@ main (int argc, char *argv[])
 		g_print ("%s\n", text);
 		g_free (text);
 		run_mainloop = FALSE;
+
+	} else if (strcmp (mode, "offline-get-prepared") == 0) {
+
+		run_mainloop = FALSE;
+		ret = pk_console_offline_get_prepared (&error);
+		if (!ret)
+			retval = error->code;
+
+	} else if (strcmp (mode, "offline-trigger") == 0) {
+
+		run_mainloop = FALSE;
+		ret = pk_console_offline_trigger (&error);
+		if (!ret)
+			retval = error->code;
+
+	} else if (strcmp (mode, "offline-status") == 0) {
+
+		run_mainloop = FALSE;
+		ret = pk_console_offline_status (&error);
+		if (!ret)
+			retval = error->code;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
 		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, cancellable,

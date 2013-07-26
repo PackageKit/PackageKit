@@ -39,6 +39,7 @@ AM_CPPFLAGS =						\
 	-DPREFIX=\""$(prefix)"\" 			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
 	-DLIBDIR=\""$(libdir)"\" 			\
+	-DLIBEXECDIR=\""$(libexecdir)"\" 		\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
