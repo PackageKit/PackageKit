@@ -16,8 +16,6 @@ manpage.1: manpage.xml
 	docbook-to-man in your Build-Depends control field.
   -->
 
-  <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY date        "<date>29 March,2006</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY package     "pkcon">
@@ -27,6 +25,8 @@ manpage.1: manpage.xml
 
 <refentry>
   <refentryinfo>
+    <title>pkcon</title>
+    <productname>PackageKit</productname>
     <address>
       <email>richard@hughsie.com</email>;
     </address>
@@ -35,14 +35,15 @@ manpage.1: manpage.xml
       <surname>Hughes</surname>
     </author>
     <copyright>
-      <year>2007</year>
+      <year>2007 - 2013</year>
       <holder>Richard Hughes</holder>
     </copyright>
-    &date;
+    <date>July 29, 2013</date>
   </refentryinfo>
   <refmeta>
     <refentrytitle>pkcon</refentrytitle>
     <manvolnum>1</manvolnum>
+    <refmiscinfo class="manual">User Commands</refmiscinfo>
   </refmeta>
   <refnamediv>
     <refname>&package;</refname>
@@ -51,9 +52,8 @@ manpage.1: manpage.xml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&package;</command>
-      <arg><option>search</option></arg>
-      <arg><option>debug install</option></arg>
-      <arg><option>remove</option></arg>
+      <arg choice="opt" rep="repeat"><option>OPTION</option></arg>
+      <arg><option choice="req">COMMAND</option></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -64,6 +64,196 @@ manpage.1: manpage.xml
     <para>
       <command>&package;</command> is the command line client for PackageKit.
     </para>
+  </refsect1>
+  <refsect1>
+    <title>Commands</title>
+    <para>&package; knows about the following commands. Depending on the
+    backend in use, not all of them may be available.</para>
+    <variablelist>
+      <varlistentry>
+        <term>backend-details</term>
+        <listitem><para>Print information about the PackageKit backend in use.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-roles</term>
+        <listitem><para>List the roles that a transaction can have.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-groups</term>
+        <listitem><para>List the available package groups.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-filters</term>
+        <listitem><para>List the available filters.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-transactions</term>
+        <listitem><para>List known transactions.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-time <replaceable>ROLE</replaceable></term>
+        <listitem><para>Print the time that has passed since the last
+        transaction with the given role.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>search [name|details|group|file] <replaceable>DATA</replaceable></term>
+        <listitem><para>Search for a package matching the given data.
+        The search is performed in the package information that is
+        indicated by the first argument: name, details, group or
+        files.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>install <replaceable>PACKAGES</replaceable></term>
+        <listitem><para>Install the given packages from repositories.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>install-local <replaceable>FILES</replaceable></term>
+        <listitem><para>Install the given packages from the local filesystem.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>download <replaceable>DIRECTORY</replaceable> <replaceable>PACKAGES</replaceable></term>
+        <listitem><para>Download the given packages from repositories, and
+        store them in the given directory.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>install-sig <replaceable>TYPE</replaceable> <replaceable>KEY_ID</replaceable> <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Install a package signature. Only GPG signatures are supported at this time.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>remove <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Remove the given package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>update [<replaceable>PACKAGES</replaceable>]</term>
+        <listitem><para>Update the system by installing available updates. If
+        a list of packages is specified, only install updates for these packages.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>refresh [force]</term>
+        <listitem><para>Refresh the cached information about available updates.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>resolve <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Resolve the given package name and print information
+        about installed or available packages and updates.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>upgrade-system <replaceable>DISTRIBUTION</replaceable> [minimal|default|complete]</term>
+        <listitem><para>Upgrade the system to the given distribution.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-updates</term>
+        <listitem><para>List available updates.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-distro-upgrades</term>
+        <listitem><para>List available distribution upgrades.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-depends <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>List dependencies fo the given package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-requires <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>List packages that require the given package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-details <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Print details about the available or installed
+        package with the given name.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-files <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>List the files contained in the given package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-update-detail <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Print the package changelog for the given package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-packages</term>
+        <listitem><para>List all available and installed packages.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>repo-list</term>
+        <listitem><para>List all configured package repositories.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>repo-enable <replaceable>REPOSITORY</replaceable></term>
+        <listitem><para>Enable the given repository.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>repo-disable <replaceable>REPOSITORY</replaceable></term>
+        <listitem><para>Disable the given repository.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>repo-set-data <replaceable>REPOSITORY</replaceable> <replaceable>PARAMETER</replaceable> <replaceable>DATA</replaceable></term>
+        <listitem><para>Set the given parameter to the given value for the repository.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>what-provides <replaceable>STRING</replaceable></term>
+        <listitem><para>List packages that provide the given string.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>accept-eula <replaceable>EULA_ID</replaceable></term>
+        <listitem><para>Accept the EULA with the given id.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>get-categories</term>
+        <listitem><para>List available categories.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>repair</term>
+        <listitem><para>Attempt to repair the system package database.</para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Options</title>
+    <para>The following options can be used to influence the behavior
+    of <command>&package;</command>.</para>
+    <variablelist>
+      <varlistentry>
+        <term>--version</term>
+        <listitem><para>Print the program version and exit.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-h, --help</term>
+        <listitem><para>Show help options.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help-all</term>
+        <listitem><para>Show all help options.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--filter <replaceable>FILTER</replaceable></term>
+        <listitem><para>Set the filter to use.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-y, --noninteractive</term>
+        <listitem><para>Install packages without asking for confirmation.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--only-download</term>
+        <listitem><para>Prepare the transaction by downloading packages only.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-n, --background</term>
+        <listitem><para>Run the command using idle network bandwith and also using less power.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-p, --plain</term>
+        <listitem><para>Print to screen a machine-readable output, rather than using animated widgets.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-v, --verbose</term>
+        <listitem><para>Show debugging information.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-c, --cache-age <replaceable>AGE</replaceable></term>
+        <listitem><para>Set the maximum acceptable age for cached metadata, in seconds. Use -1 for 'never'.</para></listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
   <refsect1>
     <title>Return values</title>
