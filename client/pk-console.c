@@ -1247,6 +1247,7 @@ pk_console_get_summary (void)
 				_("Subcommands:"));
 
 	/* always */
+	g_string_append_printf (string, "  %s\n", "backend-details");
 	g_string_append_printf (string, "  %s\n", "get-roles");
 	g_string_append_printf (string, "  %s\n", "get-groups");
 	g_string_append_printf (string, "  %s\n", "get-filters");
@@ -1304,6 +1305,8 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_CATEGORIES))
 		g_string_append_printf (string, "  %s\n", "get-categories");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM))
+		g_string_append_printf (string, "  %s\n", "upgrade-system [distro-name] [minimal|default|complete]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
 		g_string_append_printf (string, "  %s\n", "repair");
 #ifdef PK_HAS_OFFLINE_UPDATES
