@@ -206,6 +206,20 @@ manpage.1: manpage.xml
         <term>repair</term>
         <listitem><para>Attempt to repair the system package database.</para></listitem>
       </varlistentry>
+      <varlistentry>
+        <term>offline-get-prepared</term>
+        <listitem><para>Print information about the prepared offline update.
+        If no offline update is prepared, exit with an exit code of 1.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>offline-trigger</term>
+        <listitem><para>Trigger an offline update.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>offline-status</term>
+        <listitem><para>Print information about the result of the last
+        offline update.</para></listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
