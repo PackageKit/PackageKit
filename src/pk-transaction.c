@@ -2192,6 +2192,12 @@ pk_transaction_run (PkTransaction *transaction)
 		 priv->tid,
 		 pk_role_enum_to_string (priv->role));
 
+	/* mark running */
+	priv->allow_cancel = FALSE;
+
+	/* reset after the pre-transaction checks */
+	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
+
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
@@ -2213,12 +2219,6 @@ pk_transaction_run (PkTransaction *transaction)
 		ret = TRUE;
 		goto out;
 	}
-
-	/* mark running */
-	priv->allow_cancel = FALSE;
-
-	/* reset after the pre-transaction checks */
-	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* do the correct action with the cached parameters */
 	switch (priv->role) {
