@@ -1,6 +1,7 @@
 AM_CPPFLAGS = \
 	$(HAWKEY_CFLAGS)						\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"				\
+	-DLOCALSTATEDIR=\""$(localstatedir)"\"				\
 	-DG_LOG_DOMAIN=\"PackageKit-Hawkey\"
 
 plugindir = $(PK_PLUGIN_DIR)
@@ -9,6 +10,8 @@ libpk_backend_hawkey_la_SOURCES =					\
 	pk-backend-hawkey.c						\
 	hif-config.c							\
 	hif-config.h							\
+	hif-db.c							\
+	hif-db.h							\
 	hif-goal.c							\
 	hif-goal.h							\
 	hif-keyring.c							\

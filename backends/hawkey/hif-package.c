@@ -22,10 +22,13 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <hawkey/reldep.h>
+#include <hawkey/util.h>
 
 #include "hif-package.h"
 
 typedef struct {
+	char		*checksum_str;
+	gboolean	 user_action;
 	gchar		*filename;
 	PkInfoEnum	 info;
 } HifPackagePrivate;
@@ -38,6 +41,7 @@ hif_package_destroy_func (void *userdata)
 {
 	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
 	g_free (priv->filename);
+	hy_free (priv->checksum_str);
 	g_slice_free (HifPackagePrivate, priv);
 }
 
@@ -52,6 +56,31 @@ hif_package_get_filename (HyPackage pkg)
 	if (priv == NULL)
 		return NULL;
 	return priv->filename;
+}
+
+/**
+ * hif_package_get_pkgid:
+ **/
+const gchar *
+hif_package_get_pkgid (HyPackage pkg)
+{
+	const unsigned char *checksum;
+	HifPackagePrivate *priv;
+	int checksum_type;
+
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return NULL;
+	if (priv->checksum_str != NULL)
+		goto out;
+
+	/* calculate and cache */
+	checksum = hy_package_get_hdr_chksum (pkg, &checksum_type);
+	if (checksum == NULL)
+		goto out;
+	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
+out:
+	return priv->checksum_str;
 }
 
 /**
@@ -113,6 +142,32 @@ hif_package_set_info (HyPackage pkg, PkInfoEnum info)
 	if (priv == NULL)
 		return;
 	priv->info = info;
+}
+
+/**
+ * hif_package_get_user_action:
+ */
+gboolean
+hif_package_get_user_action (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return FALSE;
+	return priv->user_action;
+}
+
+/**
+ * hif_package_set_user_action:
+ */
+void
+hif_package_set_user_action (HyPackage pkg, gboolean user_action)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	priv->user_action = user_action;
 }
 
 /**

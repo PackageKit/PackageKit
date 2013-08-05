@@ -30,6 +30,10 @@ void		 hif_package_set_filename		(HyPackage	 pkg,
 PkInfoEnum	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 PkInfoEnum	 info);
+gboolean	 hif_package_get_user_action		(HyPackage	 pkg);
+void		 hif_package_set_user_action		(HyPackage	 pkg,
+							 gboolean	 user_action);
 gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);
+const gchar	*hif_package_get_pkgid			(HyPackage	 pkg);

@@ -43,6 +43,7 @@
 #include <rpm/rpmkeyring.h>
 
 #include "hif-config.h"
+#include "hif-db.h"
 #include "hif-goal.h"
 #include "hif-keyring.h"
 #include "hif-package.h"
@@ -60,6 +61,7 @@ typedef struct {
 typedef struct {
 	GPtrArray	*enabled_sources;
 	GCancellable	*cancellable;
+	HifDb		*db;
 	HifState	*state;
 	rpmts		 ts;
 	rpmKeyring	 keyring;
@@ -302,6 +304,21 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
+	/* #HifDb is a simple flat file 'database' for stroring details about
+	 * installed packages, such as the command line that installed them,
+	 * the uid of the user performing the action and the repository they
+	 * came from.
+	 *
+	 * A yumdb is not really a database at all, and is really slow to read
+	 * and especially slow to write data for packages. It is provided for
+	 * compatibility with existing users of yum, but long term this
+	 * functionality should either be folded into rpm itself, or just put
+	 * into an actual database format like sqlite.
+	 *
+	 * Using the filesystem as a database probably wasn't a great design
+	 * decision. */
+	job_data->db = hif_db_new ();
+
 	/* we don't want to enable this for normal runtime */
 	hif_state_set_enable_profile (job_data->state, TRUE);
 }
@@ -334,6 +351,7 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		g_ptr_array_unref (job_data->enabled_sources);
 	rpmtsFree (job_data->ts);
 	rpmKeyringFree (job_data->keyring);
+	g_object_unref (job_data->db);
 	g_free (job_data);
 	pk_backend_job_set_user_data (job, NULL);
 }
@@ -2209,12 +2227,234 @@ out:
 }
 
 /**
+ * pk_hy_convert_to_system_repo:
+ **/
+static HyPackage
+pk_hy_convert_to_system_repo (PkBackendJob *job, HyPackage pkg, HifState *state, GError **error)
+{
+	HyPackageList pkglist = NULL;
+	HyPackage pkg_installed = NULL;
+	HyQuery query = NULL;
+	HySack sack = NULL;
+
+	/* get local packages */
+	sack = hif_utils_create_sack_for_filters (job, 0, state, error);
+	if (sack == NULL)
+		goto out;
+
+	/* find exact package */
+	query = hy_query_create (sack);
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, hy_package_get_name (pkg));
+	hy_query_filter (query, HY_PKG_EVR, HY_EQ, hy_package_get_evr (pkg));
+	hy_query_filter (query, HY_PKG_ARCH, HY_EQ, hy_package_get_arch (pkg));
+	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	pkglist = hy_query_run (query);
+	if (hy_packagelist_count (pkglist) != 1) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+			     "Failed to find installed version of %s [%i]",
+			     hy_package_get_name (pkg),
+			     hy_packagelist_count (pkglist));
+		goto out;
+	}
+
+	/* success */
+	pkg_installed = hy_packagelist_get (pkglist, 0);
+out:
+	if (query != NULL)
+		hy_query_free (query);
+	if (pkglist != NULL)
+		hy_packagelist_free (pkglist);
+	return pkg_installed;
+}
+
+/**
+ * hif_transaction_write_yumdb_install_item:
+ **/
+static gboolean
+hif_transaction_write_yumdb_install_item (PkBackendJob *job,
+					  HifTransactionCommit *commit,
+					  HyPackage pkg,
+					  HifState *state,
+					  GError **error)
+{
+	const gchar *reason;
+	gboolean ret;
+	gchar *releasever = NULL;
+	gchar *tmp;
+	HifState *state_local;
+	HyPackage pkg_installed;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	/* set steps */
+	hif_state_set_number_steps (state, 5);
+
+	/* need to find the HyPackage in the rpmdb, not the remote one that we
+	 * just installed */
+	state_local = hif_state_get_child (state);
+	pkg_installed = pk_hy_convert_to_system_repo (job, pkg, state_local, error);
+	if (pkg_installed == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* set the repo this came from */
+	ret = hif_db_set_string (job_data->db,
+				 pkg_installed,
+				 "from_repo",
+				 hy_package_get_reponame (pkg),
+				 error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* write euid */
+	tmp = g_strdup_printf ("%i", pk_backend_job_get_uid (job));
+	ret = hif_db_set_string (job_data->db,
+				 pkg_installed,
+				 "installed_by",
+				 tmp,
+				 error);
+	g_free (tmp);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* set the correct reason */
+	if (hif_package_get_user_action (pkg)) {
+		reason = "user";
+	} else {
+		reason = "dep";
+	}
+	ret = hif_db_set_string (job_data->db,
+				 pkg_installed,
+				 "reason",
+				 reason,
+				 error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* set the correct release */
+	releasever = hif_config_get_string (priv->config,
+					    "releasever",
+					     NULL);
+	ret = hif_db_set_string (job_data->db,
+				 pkg_installed,
+				 "releasever",
+				 releasever,
+				 error);
+	if (!ret)
+		goto out;
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+out:
+	g_free (releasever);
+	return ret;
+}
+
+/**
+ * hif_transaction_write_yumdb:
+ **/
+static gboolean
+hif_transaction_write_yumdb (PkBackendJob *job,
+			     HifTransactionCommit *commit,
+			     HifState *state,
+			     GError **error)
+{
+	gboolean ret;
+	guint i;
+	HifState *state_local;
+	HifState *state_loop;
+	HyPackage pkg;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	ret = hif_state_set_steps (state,
+				   error,
+				   50, /* remove */
+				   50, /* add */
+				   -1);
+	if (!ret)
+		goto out;
+
+	/* remove all the old entries */
+	state_local = hif_state_get_child (state);
+	if (commit->remove->len > 0)
+		hif_state_set_number_steps (state_local,
+					    commit->remove->len);
+	for (i = 0; i < commit->remove->len; i++) {
+		pkg = g_ptr_array_index (commit->remove, i);
+		ret = hif_db_remove_all (job_data->db,
+					 pkg,
+					 error);
+		if (!ret)
+			goto out;
+		ret = hif_state_done (state_local, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* add all the new entries */
+	if (commit->install->len > 0)
+		hif_state_set_number_steps (state_local,
+					    commit->install->len);
+	for (i = 0; i < commit->install->len; i++) {
+		pkg = g_ptr_array_index (commit->install, i);
+		state_loop = hif_state_get_child (state_local);
+		ret = hif_transaction_write_yumdb_install_item (job,
+								commit,
+								pkg,
+								state_loop,
+								error);
+		if (!ret)
+			goto out;
+		ret = hif_state_done (state_local, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
  * pk_backend_transaction_commit:
  *
  * FIXME: move to hif-rpmts.c
  */
 static gboolean
-pk_backend_transaction_commit (rpmts ts,
+pk_backend_transaction_commit (PkBackendJob *job,
+			       rpmts ts,
 			       GPtrArray *sources,
 			       gboolean allow_untrusted,
 			       HyGoal goal,
@@ -2250,7 +2490,8 @@ pk_backend_transaction_commit (rpmts ts,
 				   2, /* remove */
 				   10, /* test-commit */
 				   83, /* commit */
-				   3, /* delete files */
+				   1, /* write yumDB */
+				   2, /* delete files */
 				   -1);
 	if (!ret)
 		goto out;
@@ -2395,6 +2636,20 @@ pk_backend_transaction_commit (rpmts ts,
 			     commit->step);
 		goto out;
 	}
+
+	/* this section done */
+	ret = hif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* write to the yumDB */
+	state_local = hif_state_get_child (state);
+	ret = hif_transaction_write_yumdb (job,
+					   commit,
+					   state_local,
+					   error);
+	if (!ret)
+		goto out;
 
 	/* this section done */
 	ret = hif_state_done (state, error);
@@ -2549,7 +2804,8 @@ pk_backend_transaction_run (PkBackendJob *job,
 
 	/* run transaction */
 	state_local = hif_state_get_child (state);
-	ret = pk_backend_transaction_commit (job_data->ts,
+	ret = pk_backend_transaction_commit (job,
+					     job_data->ts,
 					     job_data->enabled_sources,
 					     !pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED),
 					     goal,
@@ -2718,6 +2974,7 @@ pk_backend_remove_packages (PkBackend *backend,
 	goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_erase (goal, pkg);
 	}
 
@@ -2837,6 +3094,7 @@ pk_backend_install_packages (PkBackend *backend,
 	goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_install (goal, pkg);
 	}
 
@@ -3070,6 +3328,7 @@ pk_backend_update_packages (PkBackend *backend,
 	goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_upgrade_to (goal, pkg);
 	}
 
