@@ -28,6 +28,7 @@
 #include <librepo/librepo.h>
 #include <hawkey/util.h>
 
+#include "hif-config.h"
 #include "hif-source.h"
 #include "hif-utils.h"
 
@@ -140,11 +141,14 @@ hif_source_parse (GPtrArray *sources,
 	gboolean has_enabled;
 	gboolean is_enabled;
 	gboolean ret = TRUE;
+	gchar *basearch = NULL;
+	gchar *fedora_release = NULL;
 	gchar **repos = NULL;
 	gint rc;
 	GKeyFile *keyfile;
 	guint64 val;
 	guint i;
+	HifConfig *config = NULL;
 
 	/* load non-standard keyfile */
 	keyfile = hif_load_multiline_key_file (filename, error);
@@ -152,6 +156,11 @@ hif_source_parse (GPtrArray *sources,
 		ret = FALSE;
 		goto out;
 	}
+
+	/* get common things */
+	config = hif_config_new ();
+	basearch = hif_config_get_string (config, "basearch", NULL);
+	fedora_release = hif_config_get_string (config, "os-version-id", NULL);
 
 	/* save all the repos listed in the file */
 	repos = g_key_file_get_groups (keyfile, NULL);
@@ -193,8 +202,8 @@ hif_source_parse (GPtrArray *sources,
 		src->gpgcheck = (val == 1) ? 1 : 0;
 
 		// FIXME: don't hardcode
-		src->urlvars = lr_urlvars_set (src->urlvars, "releasever", "19");
-		src->urlvars = lr_urlvars_set (src->urlvars, "basearch", "x86_64");
+		src->urlvars = lr_urlvars_set (src->urlvars, "releasever", fedora_release);
+		src->urlvars = lr_urlvars_set (src->urlvars, "basearch", basearch);
 		lr_handle_setopt (src->repo_handle, LRO_VARSUB, src->urlvars);
 
 		/* ensure exists */
@@ -227,7 +236,11 @@ hif_source_parse (GPtrArray *sources,
 		g_ptr_array_add (sources, src);
 	}
 out:
+	g_free (basearch);
+	g_free (fedora_release);
 	g_strfreev (repos);
+	if (config != NULL)
+		g_object_unref (config);
 	if (keyfile != NULL)
 		g_key_file_unref (keyfile);
 	return ret;

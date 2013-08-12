@@ -289,6 +289,46 @@ hif_config_get_basearch_array (HifConfig *config)
 }
 
 /**
+ * hif_config_set_os_release:
+ **/
+static gboolean
+hif_config_set_os_release (HifConfig *config, GError **error)
+{
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *version = NULL;
+	GKeyFile *key_file = NULL;
+	GString *str = NULL;
+
+	/* make a valid GKeyFile from the .ini data by prepending a header */
+	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
+	if (!ret)
+		goto out;
+	str = g_string_new (contents);
+	g_string_prepend (str, "[os-release]\n");
+	key_file = g_key_file_new ();
+	ret = g_key_file_load_from_data (key_file, str->str, -1, G_KEY_FILE_NONE, error);
+	if (!ret)
+		goto out;
+
+	/* get keys */
+	version = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
+	if (version == NULL)
+		goto out;
+	ret = hif_config_set_string (config, "os-version-id", version, error);
+	if (!ret)
+		goto out;
+out:
+	if (key_file != NULL)
+		g_key_file_free (key_file);
+	if (str != NULL)
+		g_string_free (str, TRUE);
+	g_free (version);
+	g_free (contents);
+	return ret;
+}
+
+/**
  * hif_config_set_filename:
  **/
 gboolean
@@ -348,6 +388,11 @@ hif_config_set_filename (HifConfig *config,
 		g_ptr_array_add (array, g_strdup ("i586"));
 		g_ptr_array_add (array, g_strdup ("i686"));
 	}
+
+	/* get the os-release information */
+	ret = hif_config_set_os_release (config, error);
+	if (!ret)
+		goto out;
 
 	/* copy into GStrv array */
 	config->priv->basearch_list = g_new0 (gchar*, array->len+1);
