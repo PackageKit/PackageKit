@@ -189,7 +189,6 @@ pk_backend_destroy (PkBackend *backend)
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
 	g_free (priv);
-	lr_global_cleanup ();
 }
 
 /**

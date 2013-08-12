@@ -21,12 +21,6 @@ These are some key file locations:
 * /etc/PackageKit/Hawkey.conf : the hardcoded PackageKit-hawkey config file
 * $libdir/packagekit-backend/ : location of PackageKit backend objects
 
-Still left to do:
-
-* Only trusted logic
-* Running the transaction
-* Update metadata
-
 Things that probably have to be fixed before this backend is useful:
 
 * https://github.com/akozumpl/hawkey/issues/created_by/hughsie?state=open
@@ -34,6 +28,4 @@ Things that probably have to be fixed before this backend is useful:
 
 Things we haven't yet decided:
 
-* yumdb or something sqlite-y?
-* Log to the same file for all tools?
 * How to access comps data

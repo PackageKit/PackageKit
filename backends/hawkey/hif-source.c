@@ -41,9 +41,9 @@ struct HifSource {
 	gchar		*packages;	/* /var/cache/PackageKit/metadata/fedora/packages */
 	GKeyFile	*keyfile;
 	HyRepo		 repo;
-	lr_Handle	 repo_handle;
-	lr_Result	 repo_result;
-	lr_UrlVars	*urlvars;
+	LrHandle	*repo_handle;
+	LrResult	*repo_result;
+	LrUrlVars	*urlvars;
 };
 
 /**
@@ -357,24 +357,27 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 					 NULL};
 	const gchar *tmp;
 	gboolean ret = TRUE;
-	lr_Rc rc;
-	lr_YumRepo yum_repo;
+	GError *error_local = NULL;
+	LrRc rc;
+	LrYumRepo *yum_repo;
+	const gchar *urls[] = { "", NULL };
 
 	/* Yum metadata */
 	hif_state_action_start (state, PK_STATUS_ENUM_LOADING_CACHE, NULL);
-	lr_handle_setopt (src->repo_handle, LRO_URL, src->location);
+	urls[0] = src->location;
+	lr_handle_setopt (src->repo_handle, LRO_URL, urls);
 	lr_handle_setopt (src->repo_handle, LRO_LOCAL, TRUE);
 	lr_handle_setopt (src->repo_handle, LRO_CHECKSUM, TRUE);
 	lr_handle_setopt (src->repo_handle, LRO_YUMDLIST, download_list);
 	lr_result_clear (src->repo_result);
-	rc = lr_handle_perform (src->repo_handle, src->repo_result);
-	if (rc) {
-		ret = FALSE;
+	ret = lr_handle_perform (src->repo_handle, src->repo_result, &error_local);
+	if (!ret) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     "repodata %s was not complete: %s",
-			     src->id, lr_strerror (rc));
+			     src->id, error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
@@ -386,20 +389,21 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 			     HIF_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     "failed to get yum-repo: %s",
-			     lr_strerror (rc));
+			     error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* create a HyRepo */
 	src->repo = hy_repo_create (src->id);
 	hy_repo_set_string (src->repo, HY_REPO_MD_FN, yum_repo->repomd);
-	tmp = lr_yum_repo_path(yum_repo, "primary");
+	tmp = lr_yum_repo_path (yum_repo, "primary");
 	if (tmp != NULL)
 		hy_repo_set_string (src->repo, HY_REPO_PRIMARY_FN, tmp);
-	tmp = lr_yum_repo_path(yum_repo, "filelists");
+	tmp = lr_yum_repo_path (yum_repo, "filelists");
 	if (tmp != NULL)
 		hy_repo_set_string (src->repo, HY_REPO_FILELISTS_FN, tmp);
-	tmp = lr_yum_repo_path(yum_repo, "updateinfo");
+	tmp = lr_yum_repo_path (yum_repo, "updateinfo");
 	if (tmp != NULL)
 		hy_repo_set_string (src->repo, HY_REPO_UPDATEINFO_FN, tmp);
 out:
@@ -449,11 +453,12 @@ hif_source_set_keyfile_data (HifSource *src)
 	gchar *pwd;
 	gchar *str;
 	gchar *usr;
+	gchar **baseurls;
 
 	/* baseurl is optional */
-	str = g_key_file_get_string (src->keyfile, src->id, "baseurl", NULL);
-	lr_handle_setopt (src->repo_handle, LRO_URL, str);
-	g_free (str);
+	baseurls = g_key_file_get_string_list (src->keyfile, src->id, "baseurl", NULL, NULL);
+	lr_handle_setopt (src->repo_handle, LRO_URL, baseurls);
+	g_strfreev (baseurls);
 
 	/* mirrorlist is optional */
 	str = g_key_file_get_string (src->keyfile, src->id, "mirrorlist", NULL);
@@ -497,8 +502,8 @@ gboolean
 hif_source_update (HifSource *src, HifState *state, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 	HifState *state_local;
-	lr_Rc rc;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -525,16 +530,14 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 	lr_handle_setopt (src->repo_handle, LRO_PROGRESSCB, hif_source_update_state_cb);
 	lr_result_clear (src->repo_result);
 	hif_state_action_start (state_local, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY, NULL);
-	rc = lr_handle_perform (src->repo_handle, src->repo_result);
-	if (rc) {
-		ret = FALSE;
+	ret = lr_handle_perform (src->repo_handle, src->repo_result, &error_local);
+	if (!ret) {
 		g_set_error (error,
 			     HIF_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "cannot update repo: %s [%s:%s]",
-			     lr_strerror (rc),
-			     lr_handle_last_curl_strerror (src->repo_handle),
-			     lr_handle_last_curlm_strerror (src->repo_handle));
+			     "cannot update repo: %s",
+			     error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
@@ -693,7 +696,7 @@ hif_source_is_devel (HifSource *src)
 /**
  * hif_source_checksum_hy_to_lr:
  **/
-static lr_ChecksumType
+static LrChecksumType
 hif_source_checksum_hy_to_lr (int checksum_hy)
 {
 	if (checksum_hy == HY_CHKSUM_MD5)
@@ -717,12 +720,13 @@ hif_source_download_package (HifSource *src,
 {
 	char *checksum_str = NULL;
 	const unsigned char *checksum;
+	gboolean ret;
 	gchar *basename = NULL;
 	gchar *directory_slash;
 	gchar *loc = NULL;
 	gchar *package_id = NULL;
+	GError *error_local = NULL;
 	int checksum_type;
-	int rc;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {
@@ -745,24 +749,31 @@ hif_source_download_package (HifSource *src,
 	checksum_str = hy_chksum_str (checksum, checksum_type);
 	package_id = hif_package_get_id (pkg);
 	hif_state_action_start (state, PK_STATUS_ENUM_DOWNLOAD, package_id);
-	rc = lr_download_package (src->repo_handle,
+	ret = lr_download_package (src->repo_handle,
 				  hy_package_get_location (pkg),
 				  directory_slash,
 				  hif_source_checksum_hy_to_lr (checksum_type),
 				  checksum_str,
 				  NULL, /* baseurl not required */
-				  TRUE);
-	if (rc && rc != LRE_ALREADYDOWNLOADED) {
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "cannot download %s to %s: %s [%s:%s]",
-			     hy_package_get_location (pkg),
-			     directory_slash,
-			     lr_strerror (rc),
-			     lr_handle_last_curl_strerror (src->repo_handle),
-			     lr_handle_last_curlm_strerror (src->repo_handle));
-		goto out;
+				  TRUE,
+				  &error_local);
+	if (!ret) {
+		if (g_error_matches (error_local,
+				     LR_PACKAGE_DOWNLOADER_ERROR,
+				     LRE_ALREADYDOWNLOADED)) {
+			/* ignore */
+			g_clear_error (&error_local);
+		} else {
+			g_set_error (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     "cannot download %s to %s: %s",
+				     hy_package_get_location (pkg),
+				     directory_slash,
+				     error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
 	}
 
 	/* build return value */
