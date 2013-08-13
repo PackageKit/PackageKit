@@ -3083,7 +3083,9 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			temp = "Only available for installed packages";
 		}
 
-		pk_backend_job_files (job, package_ids[i], temp.c_str ());	// file_list
+		const gchar *to_strv[] = { NULL, NULL };
+		to_strv[0] = temp.c_str ();
+		pk_backend_job_files (job, package_ids[i], (gchar **) to_strv);	// file_list
 	}
 
 	pk_backend_job_finished (job);
@@ -3570,7 +3572,9 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			target += "/";
 			target += tmp_file->basename();
 			filesystem::hardlinkCopy(tmp_file, target);
-			pk_backend_job_files (job, package_ids[i], target.c_str());
+			const gchar *to_strv[] = { NULL, NULL };
+			to_strv[0] =  target.c_str();
+			pk_backend_job_files (job, package_ids[i],(gchar **) to_strv);
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING, package_ids[i], item->summary ().c_str());
 		}
 	} catch (const Exception &ex) {
