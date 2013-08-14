@@ -534,7 +534,7 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 	if (!ret) {
 		g_set_error (error,
 			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
+			     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,
 			     "cannot update repo: %s",
 			     error_local->message);
 		g_error_free (error_local);

@@ -1192,7 +1192,7 @@ pk_backend_refresh_source (HifSource *src, HifState *state, GError **error)
 	if (!src_okay) {
 		g_debug ("repo %s not okay [%s], refreshing",
 			 hif_source_get_id (src), error_local->message);
-		g_error_free (error_local);
+		g_clear_error (&error_local);
 	}
 
 	/* done */
@@ -1203,9 +1203,20 @@ pk_backend_refresh_source (HifSource *src, HifState *state, GError **error)
 	/* update repo, TODO: if we have network access */
 	if (!src_okay) {
 		state_local = hif_state_get_child (state);
-		ret = hif_source_update (src, state_local, error);
-		if (!ret)
-			goto out;
+		ret = hif_source_update (src, state_local, &error_local);
+		if (!ret) {
+			if (g_error_matches (error_local,
+					     HIF_ERROR,
+					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
+				g_warning ("Skipping refresh of %s: %s",
+					   hif_source_get_id (src),
+					   error_local->message);
+				g_clear_error (&error_local);
+			} else {
+				g_propagate_error (error, error_local);
+				goto out;
+			}
+		}
 	}
 
 	/* done */
