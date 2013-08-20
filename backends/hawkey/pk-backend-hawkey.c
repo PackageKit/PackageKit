@@ -383,11 +383,23 @@ hif_utils_add_source (HySack sack,
 	if (!ret) {
 		g_debug ("failed to check, attempting update: %s",
 			 error_local->message);
-		g_error_free (error_local);
+		g_clear_error (&error_local);
 		hif_state_reset (state_local);
-		ret = hif_source_update (src, state_local, error);
-		if (!ret)
+		ret = hif_source_update (src, state_local, &error_local);
+		if (!ret) {
+			if (g_error_matches (error_local,
+					     HIF_ERROR,
+					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
+				ret = TRUE;
+				g_warning ("Skipping refresh of %s: %s",
+					   hif_source_get_id (src),
+					   error_local->message);
+				g_error_free (error_local);
+			} else {
+				g_propagate_error (error, error_local);
+			}
 			goto out;
+		}
 	}
 
 	/* done */
