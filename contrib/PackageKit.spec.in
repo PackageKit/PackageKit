@@ -64,6 +64,9 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
 
+# No more smart in Fedora
+Obsoletes: PackageKit-smart < %{version}-%{release}
+
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
@@ -102,18 +105,6 @@ Provides: PackageKit-backend
 
 %description hawkey
 A backend for PackageKit to enable Hawkey functionality.
-%endif
-
-%if 0%{?rhel} == 0
-%package smart
-Summary: PackageKit SMART backend
-Group: System Environment/Libraries
-Requires: smart
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Provides: PackageKit-backend
-
-%description smart
-A backend for PackageKit to enable SMART functionality.
 %endif
 
 %package docs
@@ -251,7 +242,6 @@ user to restart the computer or remove and re-insert the device.
 %if 0%{?rhel} == 0
         --enable-zif \
         --enable-hawkey \
-        --enable-smart \
         --enable-introspection \
 %endif
         --with-default-backend=auto \
@@ -356,14 +346,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files docs
 %defattr(-,root,root,-)
 %{_datadir}/gtk-doc/html/PackageKit
-
-%if 0%{?rhel} == 0
-%files smart
-%defattr(-,root,root,-)
-%{_libdir}/packagekit-backend/libpk_backend_smart.so
-%dir %{_datadir}/PackageKit/helpers/smart
-%{_datadir}/PackageKit/helpers/smart/*
-%endif
 
 %files yum
 %defattr(-,root,root,-)
