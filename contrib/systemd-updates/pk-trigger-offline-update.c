@@ -43,6 +43,17 @@ main (int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	if (argc > 1 && strcmp (argv[1], "--cancel") == 0) {
+		rc = unlink (PK_OFFLINE_UPDATE_GENERATOR_FLAG);
+		if (rc < 0) {
+			fprintf (stderr, "Failed to remove file " PK_OFFLINE_UPDATE_GENERATOR_FLAG ": %s\n",
+				 strerror (errno));
+			return EXIT_FAILURE;
+		}
+
+		return EXIT_SUCCESS;
+	}
+
 	/* create symlink for the systemd-system-update-generator */
 	rc = symlink ("/var/cache", PK_OFFLINE_UPDATE_GENERATOR_FLAG);
 	if (rc < 0) {
