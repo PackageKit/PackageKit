@@ -2683,6 +2683,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Implement the get-updates functionality
         @param filters: package types to show
         '''
+        # do not use network access if we're only returning ONLY_DOWNLOAD
+        if FILTER_DOWNLOADED in filters:
+            self.has_network = False
         try:
             self._check_init()
         except PkError, e:
