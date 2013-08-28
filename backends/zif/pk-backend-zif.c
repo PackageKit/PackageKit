@@ -3156,6 +3156,11 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
+	/* do not use network access if we're only returning ONLY_DOWNLOAD */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED)) {
+		zif_config_set_uint (priv->config, "metadata_expire", G_MAXUINT, NULL);
+	}
+
 	/* set steps */
 	background = zif_config_get_boolean (priv->config, "background", NULL);
 	if (!background) {
