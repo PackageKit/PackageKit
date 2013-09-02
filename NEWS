@@ -1,3 +1,29 @@
+Version 0.8.11
+~~~~~~~~~~~~~~
+Released: 2013-09-02
+
+Backends:
+ - hawkey: Adapt to the new API in librepo (Richard Hughes)
+ - hawkey: Do not abort the refresh if a specific repo is not available (Richard Hughes)
+ - hawkey: Do not fail to refresh if a single repo is unavailable (Richard Hughes)
+ - hawkey: Do not hardcode version numbers and architecture details (Richard Hughes)
+ - hawkey: Port to the new librepo API (Richard Hughes)
+ - hawkey: Write to the yumdb when running a transaction (Richard Hughes)
+ - pisi: Major code cleanups to pass lint tests (Ikey Doherty)
+ - yum: Do not check for infra packages when getting the update list (Richard Hughes)
+ - yum: Do not use network access if we're filtering with ONLY_DOWNLOAD (Richard Hughes)
+ - zif: Do not use network access if we're filtering with ONLY_DOWNLOAD (Richard Hughes)
+ - zypp: Adapt to pk_backend_job_files change (Dominique Leuenberger)
+
+New Features:
+ - Make it possible to cancel an offline update (Matthias Clasen)
+
+Bugfixes:
+ - Add offline update commands to the pkcon man page (Matthias Clasen)
+ - Make sure basic stuff is set up before entering the STARTED plugin phase (Matthias Klumpp)
+ - pkcon: Add a few missing subcommands to the help output (Matthias Clasen)
+ - pkcon: Document commands and options (Matthias Clasen)
+
 Version 0.8.10
 ~~~~~~~~~~~~~~
 Released: 2013-07-26
