@@ -225,6 +225,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 update_message = "Updated"
                 update_release = 0
                 update_data = ""
+                needsReboot = False
                 for update in update:
                     if int(update.getAttribute("release")) > update_release:
                         update_release = int(update.getAttribute("release"))
@@ -232,9 +233,17 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                         update_message = update.getTagData("Comment")
                         update_message = update_message.replace("\n", ";")
                         update_date = update.getTagData("Date")
-                return (update_message, update_date)
+                        needsReboot = False
+                        try:
+                            requires = update.getTag("Requires")
+                            action = requires.getTagData("Action")
+                            if action == "systemRestart":
+                                needsReboot = True
+                        except Exception:
+                            pass
+                return (update_message, update_date, needsReboot)
             pkg = pkg.nextTag("Package")
-        return("Log not found", "")
+        return("Log not found", "", False)
 
     def get_update_detail(self, package_ids):
         for package_id in package_ids:
@@ -254,13 +263,14 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             changelog = ""
             # TODO: Set to security_issued if security update
             issued = updated = ""
-            update_message, security_issued = \
+            update_message, security_issued, needsReboot = \
                 self._extract_update_details(pindex, package)
             # TODO: Add tagging to repo's, or a mapping file
             state = UPDATE_STATE_STABLE
+            reboot = "system" if needsReboot else "none"
 
             self.update_detail(package_id, updates, obsoletes, vendor_url,
-                               bugzilla_url, cve_url, "none", update_message,
+                               bugzilla_url, cve_url, reboot, update_message,
                                changelog, state, issued, updated)
 
     def download_packages(self, directory, package_ids):
