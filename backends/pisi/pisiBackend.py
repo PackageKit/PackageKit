@@ -18,6 +18,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
+# Copyright (C) 2013 Ikey Doherty <ikey@solusos.com>
+
+# Notes to PiSi based distribution maintainers
+# /etc/PackageKit/pisi.conf must contain a mapping of PiSi component to
+# PackageKit groups for correct operation, i.e.
+#   system.utils       = system
+#   desktop.gnome      = desktop-gnome
+# If you have a BTS you must also provide Bug-Regex and Bug-URI fields, i.e:
+#   Bug-Regex = Bug-SolusOS: T(\d+)
+#   Bug-URI = http://inf.solusos.com/T%s
+# We use simple python string formatting to replace the %s with the first
+# matched group in the regular expression. So in the example above, we expect
+# to see "Bug-SolusOS: T9" for example, on its own line in a package update
+# comment.
 
 import pisi
 import pisi.ui
@@ -26,7 +40,7 @@ from packagekit.package import PackagekitPackage
 from packagekit import enums
 import os.path
 import piksemel
-
+import re
 
 class SimplePisiHandler(pisi.ui.UI):
 
@@ -39,10 +53,12 @@ class SimplePisiHandler(pisi.ui.UI):
 
 class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
-    MAPPING_FILE = "/etc/PackageKit/pisi.conf"
+    SETTINGS_FILE = "/etc/PackageKit/pisi.conf"
 
     def __init__(self, args):
-        self._load_mapping_from_disk()
+        self.bug_regex = None
+        self.bug_uri = None
+        self._load_settings()
         PackageKitBaseBackend.__init__(self, args)
 
         self.componentdb = pisi.db.componentdb.ComponentDB()
@@ -57,19 +73,28 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.saved_ui = pisi.context.ui
 
-    def _load_mapping_from_disk(self):
+    def _load_settings(self):
         """ Load the PK Group-> PiSi component mapping """
-        if os.path.exists(self.MAPPING_FILE):
-            with open(self.MAPPING_FILE, "r") as mapping:
+        if os.path.exists(self.SETTINGS_FILE):
+            with open(self.SETTINGS_FILE, "r") as mapping:
                 self.groups = {}
                 for line in mapping.readlines():
                     line = line.replace("\r", "").replace("\n", "").strip()
                     if line.strip() == "" or "#" in line:
                         continue
+
                     splits = line.split("=")
-                    pisi_component = splits[0].strip()
-                    pk_group = splits[1].strip()
-                    self.groups[pisi_component] = pk_group
+                    key = splits[0].strip()
+                    value = splits[1].strip()
+
+                    # Check if this contains our bug keys
+                    if key == "Bug-Regex":
+                        self.bug_regex = re.compile(value)
+                        continue
+                    if key == "Bug-URI":
+                        self.bug_uri = value
+                        continue
+                    self.groups[key] = value
         else:
             self.groups = {}
 
@@ -198,13 +223,19 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
+        self._updates = dict()
         for package in pisi.api.list_upgradable():
-
             pkg = self.packagedb.get_package(package)
-
             version = self.__get_package_version(pkg)
             id = self.get_package_id(pkg.name, version, pkg.architecture, "")
             installed_package = self.installdb.get_package(package)
+
+            repo = self.packagedb.get_package_repo(pkg.name, None)[1]
+            pindex = "/var/lib/pisi/index/%s/pisi-index.xml" % repo
+
+            self._updates[pkg.name] = \
+                self._extract_update_details(pindex, pkg.name)
+            bug_uri = self._updates[pkg.name][3]
 
             # FIXME: PiSi must provide this information as a single API call :(
             updates = [i for i in self.packagedb.get_package(package).history
@@ -212,6 +243,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                        installed_package.release]
             if pisi.util.any(lambda i: i.type == "security", updates):
                 self.package(id, INFO_SECURITY, pkg.summary)
+            elif bug_uri != "":
+                self.package(id, INFO_BUGFIX, pkg.summary)
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
@@ -224,12 +257,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 update = history.tags("Update")
                 update_message = "Updated"
                 update_release = 0
-                update_data = ""
+                update_date = ""
                 needsReboot = False
+                bugURI = ""
                 for update in update:
                     if int(update.getAttribute("release")) > update_release:
                         update_release = int(update.getAttribute("release"))
-                        updater = update.getTagData("Name")
+                        # updater = update.getTagData("Name")
                         update_message = update.getTagData("Comment")
                         update_message = update_message.replace("\n", ";")
                         update_date = update.getTagData("Date")
@@ -241,9 +275,15 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                                 needsReboot = True
                         except Exception:
                             pass
-                return (update_message, update_date, needsReboot)
+                # Determine if this is a bug fix
+                for line in update_message.split(";"):
+                    m = self.bug_regex.match(line)
+                    if m is not None:
+                        bugURI = self.bug_uri % m.group(1)
+                        break
+                return (update_message, update_date, needsReboot, bugURI)
             pkg = pkg.nextTag("Package")
-        return("Log not found", "", False)
+        return("Log not found", "", False, "")
 
     def get_update_detail(self, package_ids):
         for package_id in package_ids:
@@ -252,25 +292,23 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             updates = [package_id]
             obsoletes = ""
             # TODO: Add regex matching for #FIXES:ID or something similar
-            bugzilla_url = ""
             cve_url = ""
             package_url = the_package.source.homepage
             vendor_url = package_url if package_url is not None else ""
             issued = ""
-            repo = self.packagedb.get_package_repo(package, None)[1]
-            pindex = "/var/lib/pisi/index/%s/pisi-index.xml" % repo
 
             changelog = ""
             # TODO: Set to security_issued if security update
             issued = updated = ""
-            update_message, security_issued, needsReboot = \
-                self._extract_update_details(pindex, package)
+            update_message, security_issued, needsReboot, bugURI = \
+                self._updates[package]
+
             # TODO: Add tagging to repo's, or a mapping file
             state = UPDATE_STATE_STABLE
             reboot = "system" if needsReboot else "none"
 
             self.update_detail(package_id, updates, obsoletes, vendor_url,
-                               bugzilla_url, cve_url, reboot, update_message,
+                               bugURI, cve_url, reboot, update_message,
                                changelog, state, issued, updated)
 
     def download_packages(self, directory, package_ids):
