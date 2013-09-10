@@ -77,7 +77,7 @@ gboolean	 pk_transaction_db_set_finished		(PkTransactionDb	*tdb,
 gboolean	 pk_transaction_db_set_data		(PkTransactionDb	*tdb,
 							 const gchar		*tid,
 							 const gchar		*data);
-gboolean	 pk_transaction_db_get_list		(PkTransactionDb	*tdb,
+GList		*pk_transaction_db_get_list		(PkTransactionDb	*tdb,
 							 guint			 limit);
 gboolean	 pk_transaction_db_action_time_reset	(PkTransactionDb	*tdb,
 							 PkRoleEnum		 role);

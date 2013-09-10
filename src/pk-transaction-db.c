@@ -56,13 +56,6 @@ struct PkTransactionDbPrivate
 	guint			 database_save_id;
 };
 
-enum {
-	SIGNAL_TRANSACTION,
-	SIGNAL_LAST
-};
-
-static guint signals [SIGNAL_LAST] = { 0 };
-
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
 
 typedef struct {
@@ -79,21 +72,21 @@ typedef struct {
  * pk_transaction_sqlite_transaction_cb:
  **/
 static gint
-pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+pk_transaction_db_add_transaction_cb (void *data,
+				      gint argc,
+				      gchar **argv,
+				      gchar **col_name)
 {
 	PkTransactionPast *item;
-	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
+	GList **list = (GList **) data;
 	gint i;
 	gchar *col;
 	gchar *value;
 	guint temp;
 	gboolean ret;
 
-	g_return_val_if_fail (tdb != NULL, 0);
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
-
 	item = pk_transaction_past_new ();
-	for (i=0; i<argc; i++) {
+	for (i = 0; i < argc; i++) {
 		col = col_name[i];
 		value = argv[i];
 		if (g_strcmp0 (col, "succeeded") == 0) {
@@ -137,10 +130,9 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 		}
 	}
 
-	/* emit signal */
-	g_signal_emit (tdb, signals [SIGNAL_TRANSACTION], 0, item);
+	/* add to start of the list */
+	*list = g_list_prepend (*list, item);
 
-	g_object_unref (item);
 	return 0;
 }
 
@@ -156,7 +148,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
-	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_transaction_cb, tdb, &error_msg);
+	rc = sqlite3_exec (tdb->priv->db, sql, NULL, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
@@ -307,24 +299,36 @@ out:
 /**
  * pk_transaction_db_get_list:
  **/
-gboolean
+GList *
 pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 {
+	gchar *error_msg = NULL;
 	gchar *statement;
+	gint rc;
+	GList *list = NULL;
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), NULL);
 
-	if (limit == 0)
+	if (limit == 0) {
 		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 				      "FROM transactions ORDER BY timespec DESC");
-	else
+	} else {
 		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 					     "FROM transactions ORDER BY timespec DESC LIMIT %i", limit);
-
-	pk_transaction_db_sql_statement (tdb, statement);
+	}
+	rc = sqlite3_exec (tdb->priv->db,
+			   statement,
+			   pk_transaction_db_add_transaction_cb,
+			   &list,
+			   &error_msg);
+	if (rc != SQLITE_OK) {
+		g_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+out:
 	g_free (statement);
-
-	return TRUE;
+	return list;
 }
 
 /**
@@ -830,11 +834,6 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_transaction_db_finalize;
-	signals [SIGNAL_TRANSACTION] =
-		g_signal_new ("transaction",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
