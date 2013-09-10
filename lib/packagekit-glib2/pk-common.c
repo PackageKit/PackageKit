@@ -131,6 +131,50 @@ out:
 }
 
 /**
+ * pk_iso8601_to_datetime: (skip)
+ * @iso_date: The ISO8601 date to convert
+ *
+ * Return value: If valid then a new %GDateTime, else NULL
+ *
+ * Since: 0.8.11
+ **/
+GDateTime *
+pk_iso8601_to_datetime (const gchar *iso_date)
+{
+	gboolean ret = FALSE;
+	guint retval;
+	guint d = 0;
+	guint m = 0;
+	guint y = 0;
+	GTimeVal time_val;
+	GDateTime *date = NULL;
+
+	if (iso_date == NULL || iso_date[0] == '\0')
+		goto out;
+
+	/* try to parse complete ISO8601 date */
+	if (g_strstr_len (iso_date, -1, " ") != NULL)
+		ret = g_time_val_from_iso8601 (iso_date, &time_val);
+	if (ret && time_val.tv_sec != 0) {
+		g_debug ("Parsed %s %i", iso_date, ret);
+		date = g_date_time_new_from_timeval_utc (&time_val);
+		goto out;
+	}
+
+	/* g_time_val_from_iso8601() blows goats and won't
+	 * accept a valid ISO8601 formatted date without a
+	 * time value - try and parse this case */
+	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
+	if (retval != 3)
+		goto out;
+
+	/* create valid object */
+	date = g_date_time_new_utc (y, m, d, 0, 0, 0);
+out:
+	return date;
+}
+
+/**
  * pk_ptr_array_to_strv:
  * @array: the GPtrArray of strings
  *
