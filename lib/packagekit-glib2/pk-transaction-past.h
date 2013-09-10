@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-source.h>
 
 G_BEGIN_DECLS
@@ -62,6 +63,15 @@ struct _PkTransactionPastClass
 
 GType			 pk_transaction_past_get_type		(void);
 PkTransactionPast	*pk_transaction_past_new		(void);
+const gchar		*pk_transaction_past_get_cmdline	(PkTransactionPast	*past);
+const gchar		*pk_transaction_past_get_data		(PkTransactionPast	*past);
+const gchar		*pk_transaction_past_get_id		(PkTransactionPast	*past);
+const gchar		*pk_transaction_past_get_timespec	(PkTransactionPast	*past);
+GDateTime		*pk_transaction_past_get_datetime	(PkTransactionPast	*past);
+gboolean		 pk_transaction_past_get_succeeded	(PkTransactionPast	*past);
+guint			 pk_transaction_past_get_duration	(PkTransactionPast	*past);
+guint			 pk_transaction_past_get_uid		(PkTransactionPast	*past);
+PkRoleEnum		 pk_transaction_past_get_role		(PkTransactionPast	*past);
 
 G_END_DECLS
 

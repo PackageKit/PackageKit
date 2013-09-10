@@ -33,6 +33,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-transaction-past.h>
+#include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 
 static void     pk_transaction_past_finalize	(GObject     *object);
@@ -70,6 +71,161 @@ enum {
 };
 
 G_DEFINE_TYPE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOURCE)
+
+/**
+ * pk_transaction_past_get_id:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction ID value;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+const gchar *
+pk_transaction_past_get_id (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	return past->priv->tid;
+}
+
+/**
+ * pk_transaction_past_get_timespec:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction timespec value;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+const gchar *
+pk_transaction_past_get_timespec (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	return past->priv->timespec;
+}
+
+/**
+ * pk_transaction_past_get_datetime:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction date & time value;
+ *
+ * Return value: The transaction data, or %NULL if it's not available
+ *
+ * Since: 0.8.11
+ **/
+GDateTime *
+pk_transaction_past_get_datetime (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	if (past->priv->timespec == NULL)
+		return NULL;
+	return pk_iso8601_to_datetime (past->priv->timespec);
+}
+
+/**
+ * pk_transaction_past_get_succeeded:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction succeeded value;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+gboolean
+pk_transaction_past_get_succeeded (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), FALSE);
+	return past->priv->succeeded;
+}
+
+/**
+ * pk_transaction_past_get_role:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction role;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+PkRoleEnum
+pk_transaction_past_get_role (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), PK_ROLE_ENUM_UNKNOWN);
+	return past->priv->role;
+}
+
+/**
+ * pk_transaction_past_get_duration:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction duration;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+guint
+pk_transaction_past_get_duration (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
+	return past->priv->duration;
+}
+
+/**
+ * pk_transaction_past_get_data:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction data;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+const gchar *
+pk_transaction_past_get_data (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	return past->priv->data;
+}
+
+/**
+ * pk_transaction_past_get_uid:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction uid;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+guint
+pk_transaction_past_get_uid (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
+	return past->priv->uid;
+}
+
+/**
+ * pk_transaction_past_get_cmdline:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction cmdline value;
+ *
+ * Return value: The transaction data
+ *
+ * Since: 0.8.11
+ **/
+const gchar *
+pk_transaction_past_get_cmdline (PkTransactionPast *past)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	return past->priv->cmdline;
+}
 
 /**
  * pk_transaction_past_get_property:
