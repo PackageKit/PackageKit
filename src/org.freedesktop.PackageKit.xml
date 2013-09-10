@@ -316,6 +316,53 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="GetPackageHistory">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the history for a given package name.
+            This uses the internal PackageKit history database and will not
+            return transactions done outside of PackageKit using a distribution
+            native tool.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="name" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The package name to return history for, e.g. <doc:tt>colord</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="count" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The maximum number of past transactions to return, or 0 for no limit.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="a{sv}" name="history" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The list of actions performed on this package. The array may contain
+              the following keys of types:
+              <doc:tt>info[uint]</doc:tt>,
+              <doc:tt>user-id[uint]</doc:tt>,
+              <doc:tt>source[string]</doc:tt>,
+              <doc:tt>timestamp[uint64]</doc:tt>.
+              Other keys and values may be added in the future.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetDaemonState">
       <doc:doc>
         <doc:description>

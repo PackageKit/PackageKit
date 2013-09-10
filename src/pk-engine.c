@@ -1255,6 +1255,93 @@ out:
 }
 
 /**
+ * pk_engine_get_package_history:
+ **/
+static GVariant *
+pk_engine_get_package_history (PkEngine *engine,
+			       const gchar *package_name,
+			       guint max_size,
+			       GError **error)
+{
+	const gchar *data;
+	gboolean ret;
+	gchar **package_lines;
+	GDateTime *datetime;
+	GList *l;
+	GList *list;
+	guint cnt = 0;
+	guint i;
+	GVariantBuilder builder;
+	GVariant *value = NULL;
+	PkPackage *package_tmp;
+	PkTransactionPast *item;
+
+	list = pk_transaction_db_get_list (engine->priv->transaction_db, max_size);
+
+	/* simplify the loop */
+	if (max_size == 0)
+		max_size = G_MAXUINT;
+
+	package_tmp = pk_package_new ();
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	for (l = list; l != NULL && cnt < max_size; l = l->next) {
+		item = PK_TRANSACTION_PAST (l->data);
+
+		/* ignore anything that failed */
+		if (!pk_transaction_past_get_succeeded (item))
+			continue;
+
+		/* split up data */
+		data = pk_transaction_past_get_data (item);
+		if (data == NULL)
+			continue;
+		package_lines = g_strsplit (data, "\n", -1);
+		for (i = 0; package_lines[i] != NULL; i++) {
+			ret = pk_package_parse (package_tmp, package_lines[i], error);
+			g_assert (ret);
+			/* not the package we care about */
+			if (g_strcmp0 (pk_package_get_name (package_tmp), package_name) != 0)
+				continue;
+			datetime = pk_transaction_past_get_datetime (item);
+			if (datetime == NULL)
+				continue;
+
+			/* add to results */
+			cnt++;
+			g_variant_builder_add (&builder, "{sv}", "info",
+					       g_variant_new_uint32 (pk_package_get_info (package_tmp)));
+			g_variant_builder_add (&builder, "{sv}", "source",
+					       g_variant_new_string (pk_package_get_data (package_tmp)));
+			g_variant_builder_add (&builder, "{sv}", "timestamp",
+					       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
+			g_variant_builder_add (&builder, "{sv}", "user-id",
+					       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
+
+			/* debug */
+			g_debug ("info=%i", pk_package_get_info (package_tmp));
+			g_debug ("source=%s", pk_package_get_data (package_tmp));
+			g_debug ("timestamp=%li", g_date_time_to_unix (datetime));
+			g_debug ("user-id=%i", pk_transaction_past_get_uid (item));
+			g_date_time_unref (datetime);
+		}
+		g_strfreev (package_lines);
+	}
+
+	/* no history returns an empty array */
+	if (cnt == 0) {
+		value = g_variant_new_array (G_VARIANT_TYPE ("{sv}"), NULL, 0);
+		goto out;
+	}
+
+	/* success */
+	value = g_variant_builder_end (&builder);
+out:
+	g_object_unref (package_tmp);
+	g_list_free_full (list, (GDestroyNotify) g_object_unref);
+	return value;
+}
+
+/**
  * pk_engine_daemon_method_call:
  **/
 static void
@@ -1269,6 +1356,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	GError *error = NULL;
 	guint time_since;
 	GVariant *value = NULL;
+	GVariant *tuple = NULL;
 	PkAuthorizeEnum result_enum;
 	PkEngine *engine = PK_ENGINE (user_data);
 	PkRoleEnum role;
@@ -1295,6 +1383,32 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		data = pk_transaction_list_get_state (engine->priv->transaction_list);
 		value = g_variant_new ("(s)", data);
 		g_dbus_method_invocation_return_value (invocation, value);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetPackageHistory") == 0) {
+		g_variant_get (parameters, "(&su)", &tmp, &size);
+		if (tmp == NULL || tmp[0] == '\0') {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_NOT_SUPPORTED,
+							       "history for package name %s invalid",
+							       tmp);
+			goto out;
+		}
+		value = pk_engine_get_package_history (engine, tmp, size, &error);
+		if (value == NULL) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_NOT_SUPPORTED,
+							       "history for package name %s failed: %s",
+							       tmp,
+							       error->message);
+			g_error_free (error);
+			goto out;
+		}
+		tuple = g_variant_new_tuple (&value, 1);
+		g_dbus_method_invocation_return_value (invocation, tuple);
 		goto out;
 	}
 
