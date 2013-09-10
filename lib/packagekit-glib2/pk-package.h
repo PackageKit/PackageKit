@@ -72,6 +72,9 @@ void		 pk_package_test			(gpointer	 user_data);
 gboolean	 pk_package_set_id			(PkPackage	*package,
 							 const gchar	*package_id,
 							 GError		**error);
+gboolean	 pk_package_parse			(PkPackage	*package,
+							 const gchar	*data,
+							 GError		**error);
 void		 pk_package_print			(PkPackage	*package);
 gboolean	 pk_package_equal			(PkPackage	*package1,
 							 PkPackage	*package2);

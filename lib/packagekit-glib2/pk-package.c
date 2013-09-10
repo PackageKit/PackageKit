@@ -196,6 +196,46 @@ out:
 }
 
 /**
+ * pk_package_parse:
+ * @package: a valid #PkPackage instance
+ * @data: the data describing the package
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Parses the data to populate the #PkPackage.
+ *
+ * Return value: %TRUE if the data was parsed correcty
+ *
+ * Since: 0.8.11
+ **/
+gboolean
+pk_package_parse (PkPackage *package, const gchar *data, GError **error)
+{
+	gboolean ret = TRUE;
+	gchar **sections;
+
+	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* split */
+	sections = g_strsplit (data, "\t", -1);
+	if (g_strv_length (sections) != 3) {
+		ret = FALSE;
+		g_set_error_literal (error, 1, 0, "data invalid");
+	}
+
+	/* parse object */
+	package->priv->info = pk_info_enum_from_string (sections[0]);
+	ret = pk_package_set_id (package, sections[1], error);
+	if (!ret)
+		goto out;
+	g_free (package->priv->summary);
+	package->priv->summary = g_strdup (sections[2]);
+out:
+	g_strfreev (sections);
+	return ret;
+}
+
+/**
  * pk_package_get_info:
  * @package: a valid #PkPackage instance
  *
