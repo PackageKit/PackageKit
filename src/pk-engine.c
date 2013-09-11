@@ -1273,6 +1273,7 @@ pk_engine_get_package_history (PkEngine *engine,
 	guint i;
 	GVariantBuilder builder;
 	GVariant *value = NULL;
+	GPtrArray *array = NULL;
 	PkPackage *package_tmp;
 	PkTransactionPast *item;
 
@@ -1282,8 +1283,8 @@ pk_engine_get_package_history (PkEngine *engine,
 	if (max_size == 0)
 		max_size = G_MAXUINT;
 
+	array = g_ptr_array_new ();
 	package_tmp = pk_package_new ();
-	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
 	for (l = list; l != NULL && cnt < max_size; l = l->next) {
 		item = PK_TRANSACTION_PAST (l->data);
 
@@ -1308,6 +1309,7 @@ pk_engine_get_package_history (PkEngine *engine,
 
 			/* add to results */
 			cnt++;
+			g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
 			g_variant_builder_add (&builder, "{sv}", "info",
 					       g_variant_new_uint32 (pk_package_get_info (package_tmp)));
 			g_variant_builder_add (&builder, "{sv}", "source",
@@ -1318,12 +1320,7 @@ pk_engine_get_package_history (PkEngine *engine,
 					       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
 			g_variant_builder_add (&builder, "{sv}", "user-id",
 					       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
-
-			/* debug */
-			g_debug ("info=%i", pk_package_get_info (package_tmp));
-			g_debug ("source=%s", pk_package_get_data (package_tmp));
-			g_debug ("timestamp=%li", g_date_time_to_unix (datetime));
-			g_debug ("user-id=%i", pk_transaction_past_get_uid (item));
+			g_ptr_array_add (array, g_variant_builder_end (&builder));
 			g_date_time_unref (datetime);
 		}
 		g_strfreev (package_lines);
@@ -1331,13 +1328,14 @@ pk_engine_get_package_history (PkEngine *engine,
 
 	/* no history returns an empty array */
 	if (cnt == 0) {
-		value = g_variant_new_array (G_VARIANT_TYPE ("{sv}"), NULL, 0);
+		value = g_variant_new_array (G_VARIANT_TYPE ("a{sv}"), NULL, 0);
 		goto out;
 	}
 
 	/* success */
-	value = g_variant_builder_end (&builder);
+	value = g_variant_new_array (NULL, (GVariant * const *) array->pdata, array->len);
 out:
+	g_ptr_array_unref (array);
 	g_object_unref (package_tmp);
 	g_list_free_full (list, (GDestroyNotify) g_object_unref);
 	return value;
