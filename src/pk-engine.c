@@ -1312,6 +1312,8 @@ pk_engine_get_package_history (PkEngine *engine,
 					       g_variant_new_uint32 (pk_package_get_info (package_tmp)));
 			g_variant_builder_add (&builder, "{sv}", "source",
 					       g_variant_new_string (pk_package_get_data (package_tmp)));
+			g_variant_builder_add (&builder, "{sv}", "version",
+					       g_variant_new_string (pk_package_get_version (package_tmp)));
 			g_variant_builder_add (&builder, "{sv}", "timestamp",
 					       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
 			g_variant_builder_add (&builder, "{sv}", "user-id",

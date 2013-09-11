@@ -353,6 +353,7 @@
               the following keys of types:
               <doc:tt>info[uint]</doc:tt>,
               <doc:tt>user-id[uint]</doc:tt>,
+              <doc:tt>version[string]</doc:tt>,
               <doc:tt>source[string]</doc:tt>,
               <doc:tt>timestamp[uint64]</doc:tt>.
               Other keys and values may be added in the future.
