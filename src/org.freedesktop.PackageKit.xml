@@ -327,11 +327,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="name" direction="in">
+      <arg type="as" name="names" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The package name to return history for, e.g. <doc:tt>colord</doc:tt>.
+              The package names to return history for, e.g. <doc:tt>[ colord ]</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -345,7 +345,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="aa{sv}" name="history" direction="out">
+      <arg type="a{saa{sv}}" name="history" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>

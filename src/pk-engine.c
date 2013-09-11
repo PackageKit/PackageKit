@@ -1255,25 +1255,75 @@ out:
 }
 
 /**
+ * pk_engine_package_name_in_strv:
+ **/
+static gboolean
+pk_engine_package_name_in_strv (gchar **strv, PkPackage *pkg)
+{
+	guint i;
+	for (i = 0; strv[i] != NULL; i++) {
+		if (g_strcmp0 (strv[i], pk_package_get_name (pkg)) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_engine_get_package_history_pkg:
+ *
+ * Create a 'a{sv}' GVariant instance from all the PkTransactionPast data
+ **/
+static GVariant *
+pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
+{
+	GDateTime *datetime;
+	GVariantBuilder builder;
+	GVariant *value = NULL;
+
+	/* get the modification date */
+	datetime = pk_transaction_past_get_datetime (item);
+	if (datetime == NULL)
+		goto out;
+
+	/* add to results */
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	g_variant_builder_add (&builder, "{sv}", "info",
+			       g_variant_new_uint32 (pk_package_get_info (pkg)));
+	g_variant_builder_add (&builder, "{sv}", "source",
+			       g_variant_new_string (pk_package_get_data (pkg)));
+	g_variant_builder_add (&builder, "{sv}", "version",
+			       g_variant_new_string (pk_package_get_version (pkg)));
+	g_variant_builder_add (&builder, "{sv}", "timestamp",
+			       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
+	g_variant_builder_add (&builder, "{sv}", "user-id",
+			       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
+	value = g_variant_builder_end (&builder);
+out:
+	if (datetime != NULL)
+		g_date_time_unref (datetime);
+	return value;
+}
+/**
  * pk_engine_get_package_history:
  **/
 static GVariant *
 pk_engine_get_package_history (PkEngine *engine,
-			       const gchar *package_name,
+			       gchar **package_names,
 			       guint max_size,
 			       GError **error)
 {
 	const gchar *data;
+	const gchar *pkgname;
 	gboolean ret;
 	gchar **package_lines;
-	GDateTime *datetime;
+	GHashTable *pkgname_hash;
+	GList *keys = NULL;
 	GList *l;
 	GList *list;
-	guint cnt = 0;
+	GPtrArray *array = NULL;
 	guint i;
 	GVariantBuilder builder;
 	GVariant *value = NULL;
-	GPtrArray *array = NULL;
 	PkPackage *package_tmp;
 	PkTransactionPast *item;
 
@@ -1283,9 +1333,9 @@ pk_engine_get_package_history (PkEngine *engine,
 	if (max_size == 0)
 		max_size = G_MAXUINT;
 
-	array = g_ptr_array_new ();
+	pkgname_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
 	package_tmp = pk_package_new ();
-	for (l = list; l != NULL && cnt < max_size; l = l->next) {
+	for (l = list; l != NULL; l = l->next) {
 		item = PK_TRANSACTION_PAST (l->data);
 
 		/* ignore anything that failed */
@@ -1301,41 +1351,49 @@ pk_engine_get_package_history (PkEngine *engine,
 			ret = pk_package_parse (package_tmp, package_lines[i], error);
 			g_assert (ret);
 			/* not the package we care about */
-			if (g_strcmp0 (pk_package_get_name (package_tmp), package_name) != 0)
+			if (!pk_engine_package_name_in_strv (package_names, package_tmp))
 				continue;
-			datetime = pk_transaction_past_get_datetime (item);
-			if (datetime == NULL)
+			value = pk_engine_get_package_history_pkg (item, package_tmp);
+			if (value == NULL)
 				continue;
 
-			/* add to results */
-			cnt++;
-			g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
-			g_variant_builder_add (&builder, "{sv}", "info",
-					       g_variant_new_uint32 (pk_package_get_info (package_tmp)));
-			g_variant_builder_add (&builder, "{sv}", "source",
-					       g_variant_new_string (pk_package_get_data (package_tmp)));
-			g_variant_builder_add (&builder, "{sv}", "version",
-					       g_variant_new_string (pk_package_get_version (package_tmp)));
-			g_variant_builder_add (&builder, "{sv}", "timestamp",
-					       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
-			g_variant_builder_add (&builder, "{sv}", "user-id",
-					       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
-			g_ptr_array_add (array, g_variant_builder_end (&builder));
-			g_date_time_unref (datetime);
+			/* find the array */
+			pkgname = pk_package_get_name (package_tmp);
+			array = g_hash_table_lookup (pkgname_hash, pkgname);
+			if (array == NULL) {
+				array = g_ptr_array_new ();
+				g_hash_table_insert (pkgname_hash,
+						     g_strdup (pkgname),
+						     array);
+			}
+			g_ptr_array_add (array, value);
 		}
 		g_strfreev (package_lines);
 	}
 
 	/* no history returns an empty array */
-	if (cnt == 0) {
-		value = g_variant_new_array (G_VARIANT_TYPE ("a{sv}"), NULL, 0);
+	if (g_hash_table_size (pkgname_hash) == 0) {
+		value = g_variant_new_array (G_VARIANT_TYPE ("{saa{sv}}"), NULL, 0);
 		goto out;
 	}
 
-	/* success */
-	value = g_variant_new_array (NULL, (GVariant * const *) array->pdata, array->len);
+	/* we have a hash of pkgname:GPtrArray where the GPtrArray is an array
+	 * of GVariants of type a{sv} */
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	keys = g_hash_table_get_keys (pkgname_hash);
+	for (l = keys; l != NULL; l = l->next) {
+		pkgname = l->data;
+		array = g_hash_table_lookup (pkgname_hash, pkgname);
+		/* create aa{sv} */
+		value = g_variant_new_array (NULL,
+					     (GVariant * const *) array->pdata,
+					     MIN (array->len, max_size));
+		g_variant_builder_add (&builder, "{s@aa{sv}}", pkgname, value);
+	}
+	value = g_variant_builder_end (&builder);
 out:
-	g_ptr_array_unref (array);
+	g_list_free (keys);
+	g_hash_table_unref (pkgname_hash);
 	g_object_unref (package_tmp);
 	g_list_free_full (list, (GDestroyNotify) g_object_unref);
 	return value;
@@ -1362,6 +1420,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	PkRoleEnum role;
 	gchar **transaction_list;
 	gchar **array = NULL;
+	gchar **package_names;
 	guint size;
 	gboolean is_priority = TRUE;
 
@@ -1387,22 +1446,21 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetPackageHistory") == 0) {
-		g_variant_get (parameters, "(&su)", &tmp, &size);
-		if (tmp == NULL || tmp[0] == '\0') {
+		g_variant_get (parameters, "(^a&su)", &package_names, &size);
+		if (package_names == NULL || g_strv_length (package_names) == 0) {
 			g_dbus_method_invocation_return_error (invocation,
 							       PK_ENGINE_ERROR,
 							       PK_ENGINE_ERROR_NOT_SUPPORTED,
-							       "history for package name %s invalid",
-							       tmp);
+							       "history for package name invalid");
 			goto out;
 		}
-		value = pk_engine_get_package_history (engine, tmp, size, &error);
+		value = pk_engine_get_package_history (engine, package_names, size, &error);
 		if (value == NULL) {
 			g_dbus_method_invocation_return_error (invocation,
 							       PK_ENGINE_ERROR,
 							       PK_ENGINE_ERROR_NOT_SUPPORTED,
 							       "history for package name %s failed: %s",
-							       tmp,
+							       package_names[0],
 							       error->message);
 			g_error_free (error);
 			goto out;
