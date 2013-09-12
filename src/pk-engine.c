@@ -1350,9 +1350,16 @@ pk_engine_get_package_history (PkEngine *engine,
 		for (i = 0; package_lines[i] != NULL; i++) {
 			ret = pk_package_parse (package_tmp, package_lines[i], error);
 			g_assert (ret);
+
 			/* not the package we care about */
 			if (!pk_engine_package_name_in_strv (package_names, package_tmp))
 				continue;
+
+			/* not a state we care about */
+			if (pk_package_get_info (package_tmp) == PK_INFO_ENUM_CLEANUP)
+				continue;
+
+			/* get the blob for this data item */
 			value = pk_engine_get_package_history_pkg (item, package_tmp);
 			if (value == NULL)
 				continue;
