@@ -1276,16 +1276,7 @@ pk_engine_package_name_in_strv (gchar **strv, PkPackage *pkg)
 static GVariant *
 pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 {
-	GDateTime *datetime;
 	GVariantBuilder builder;
-	GVariant *value = NULL;
-
-	/* get the modification date */
-	datetime = pk_transaction_past_get_datetime (item);
-	if (datetime == NULL)
-		goto out;
-
-	/* add to results */
 	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
 	g_variant_builder_add (&builder, "{sv}", "info",
 			       g_variant_new_uint32 (pk_package_get_info (pkg)));
@@ -1294,14 +1285,10 @@ pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 	g_variant_builder_add (&builder, "{sv}", "version",
 			       g_variant_new_string (pk_package_get_version (pkg)));
 	g_variant_builder_add (&builder, "{sv}", "timestamp",
-			       g_variant_new_uint64 (g_date_time_to_unix (datetime)));
+			       g_variant_new_uint64 (pk_transaction_past_get_timestamp (item)));
 	g_variant_builder_add (&builder, "{sv}", "user-id",
 			       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
-	value = g_variant_builder_end (&builder);
-out:
-	if (datetime != NULL)
-		g_date_time_unref (datetime);
-	return value;
+	return g_variant_builder_end (&builder);
 }
 /**
  * pk_engine_get_package_history:
@@ -1315,8 +1302,11 @@ pk_engine_get_package_history (PkEngine *engine,
 	const gchar *data;
 	const gchar *pkgname;
 	gboolean ret;
+	gchar *key;
 	gchar **package_lines;
+	GHashTable *deduplicate_hash;
 	GHashTable *pkgname_hash;
+	gint64 timestamp;
 	GList *keys = NULL;
 	GList *l;
 	GList *list;
@@ -1334,6 +1324,7 @@ pk_engine_get_package_history (PkEngine *engine,
 		max_size = G_MAXUINT;
 
 	pkgname_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
+	deduplicate_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	package_tmp = pk_package_new ();
 	for (l = list; l != NULL; l = l->next) {
 		item = PK_TRANSACTION_PAST (l->data);
@@ -1358,6 +1349,21 @@ pk_engine_get_package_history (PkEngine *engine,
 			/* not a state we care about */
 			if (pk_package_get_info (package_tmp) == PK_INFO_ENUM_CLEANUP)
 				continue;
+
+			/* transactions without a timestamp are not interesting */
+			timestamp = pk_transaction_past_get_timestamp (item);
+			if (timestamp == 0)
+				continue;
+
+			/* de-duplicate the entry, in the case of multiarch */
+			key = g_strdup_printf ("%s-%" G_GINT64_FORMAT,
+					       pk_package_get_name (package_tmp),
+					       timestamp);
+			if (g_hash_table_lookup (deduplicate_hash, key) != NULL) {
+				g_free (key);
+				continue;
+			}
+			g_hash_table_insert (deduplicate_hash, key, package_lines[i]);
 
 			/* get the blob for this data item */
 			value = pk_engine_get_package_history_pkg (item, package_tmp);
@@ -1401,6 +1407,7 @@ pk_engine_get_package_history (PkEngine *engine,
 out:
 	g_list_free (keys);
 	g_hash_table_unref (pkgname_hash);
+	g_hash_table_unref (deduplicate_hash);
 	g_object_unref (package_tmp);
 	g_list_free_full (list, (GDestroyNotify) g_object_unref);
 	return value;
