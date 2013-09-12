@@ -68,6 +68,7 @@ const gchar		*pk_transaction_past_get_data		(PkTransactionPast	*past);
 const gchar		*pk_transaction_past_get_id		(PkTransactionPast	*past);
 const gchar		*pk_transaction_past_get_timespec	(PkTransactionPast	*past);
 GDateTime		*pk_transaction_past_get_datetime	(PkTransactionPast	*past);
+gint64			 pk_transaction_past_get_timestamp	(PkTransactionPast	*past);
 gboolean		 pk_transaction_past_get_succeeded	(PkTransactionPast	*past);
 guint			 pk_transaction_past_get_duration	(PkTransactionPast	*past);
 guint			 pk_transaction_past_get_uid		(PkTransactionPast	*past);

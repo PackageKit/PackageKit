@@ -126,6 +126,32 @@ pk_transaction_past_get_datetime (PkTransactionPast *past)
 }
 
 /**
+ * pk_transaction_past_get_timestamp:
+ * @past: a valid #PkTransactionPast instance
+ *
+ * Gets the past transaction timestamp
+ *
+ * Return value: The transaction data, or 0 if it's not available
+ *
+ * Since: 0.8.11
+ **/
+gint64
+pk_transaction_past_get_timestamp (PkTransactionPast *past)
+{
+	GDateTime *datetime;
+	gint64 timestamp;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
+
+	datetime = pk_transaction_past_get_datetime (past);
+	if (datetime == NULL)
+		return 0;
+	timestamp = g_date_time_to_unix (datetime);
+	g_date_time_unref (datetime);
+	return timestamp;
+}
+
+/**
  * pk_transaction_past_get_succeeded:
  * @past: a valid #PkTransactionPast instance
  *
