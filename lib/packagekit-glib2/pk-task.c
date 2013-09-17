@@ -726,8 +726,8 @@ out:
 gboolean
 pk_task_user_accepted (PkTask *task, guint request)
 {
-	guint idle_id;
 	PkTaskState *state;
+	GSource *idle_source;
 
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
@@ -736,8 +736,10 @@ pk_task_user_accepted (PkTask *task, guint request)
 		return FALSE;
 	}
 
-	idle_id = g_idle_add ((GSourceFunc) pk_task_user_accepted_idle_cb, state);
-	g_source_set_name_by_id (idle_id, "[PkTask] user-accept");
+	idle_source = g_idle_source_new ();
+	g_source_set_callback (idle_source, (GSourceFunc) pk_task_user_accepted_idle_cb, state, NULL);
+	g_source_set_name (idle_source, "[PkTask] user-accept");
+	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
 }
 
@@ -776,8 +778,8 @@ out:
 gboolean
 pk_task_user_declined (PkTask *task, guint request)
 {
-	guint idle_id;
 	PkTaskState *state;
+	GSource *idle_source;
 
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
@@ -786,8 +788,10 @@ pk_task_user_declined (PkTask *task, guint request)
 		return FALSE;
 	}
 
-	idle_id = g_idle_add ((GSourceFunc) pk_task_user_declined_idle_cb, state);
-	g_source_set_name_by_id (idle_id, "[PkTask] user-declined");
+	idle_source = g_idle_source_new ();
+	g_source_set_callback (idle_source, (GSourceFunc) pk_task_user_declined_idle_cb, state, NULL);
+	g_source_set_name (idle_source, "[PkTask] user-accept");
+	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
 }
 
