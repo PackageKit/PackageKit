@@ -33,6 +33,7 @@
 /* tiny helper to help us do the async operation */
 typedef struct {
 	GError		**error;
+	GMainContext    *context;
 	GMainLoop	*loop;
 	PkResults	*results;
 } PkTaskHelper;
@@ -87,8 +88,10 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
+	helper->context = g_main_context_new ();
 	helper->loop = g_main_loop_new (NULL, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_remove_packages_async (task, package_ids, allow_deps, autoremove, cancellable, progress_callback, progress_user_data,
@@ -99,7 +102,9 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -135,8 +140,10 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_install_packages_async (task, package_ids, cancellable, progress_callback, progress_user_data,
@@ -147,7 +154,9 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -183,8 +192,10 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_update_packages_async (task, package_ids, cancellable, progress_callback, progress_user_data,
@@ -195,7 +206,9 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -232,8 +245,10 @@ pk_task_install_files_sync (PkTask *task, gchar **files, GCancellable *cancellab
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_install_files_async (task, files, cancellable, progress_callback, progress_user_data,
@@ -244,7 +259,9 @@ pk_task_install_files_sync (PkTask *task, gchar **files, GCancellable *cancellab
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -279,8 +296,10 @@ pk_task_resolve_sync (PkTask *task, PkBitfield filters, gchar **packages, GCance
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_resolve_async (task, filters, packages, cancellable, progress_callback, progress_user_data,
@@ -291,7 +310,9 @@ pk_task_resolve_sync (PkTask *task, PkBitfield filters, gchar **packages, GCance
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -326,8 +347,10 @@ pk_task_search_names_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_search_names_async (task, filters, values, cancellable, progress_callback, progress_user_data,
@@ -338,7 +361,9 @@ pk_task_search_names_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -373,8 +398,10 @@ pk_task_search_details_sync (PkTask *task, PkBitfield filters, gchar **values, G
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_search_details_async (task, filters, values, cancellable, progress_callback, progress_user_data,
@@ -385,7 +412,9 @@ pk_task_search_details_sync (PkTask *task, PkBitfield filters, gchar **values, G
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -420,8 +449,10 @@ pk_task_search_groups_sync (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_search_groups_async (task, filters, values, cancellable, progress_callback, progress_user_data,
@@ -432,7 +463,9 @@ pk_task_search_groups_sync (PkTask *task, PkBitfield filters, gchar **values, GC
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -467,8 +500,10 @@ pk_task_search_files_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_search_files_async (task, filters, values, cancellable, progress_callback, progress_user_data,
@@ -479,7 +514,9 @@ pk_task_search_files_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -513,8 +550,10 @@ pk_task_get_details_sync (PkTask *task, gchar **package_ids, GCancellable *cance
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_details_async (task, package_ids, cancellable, progress_callback, progress_user_data,
@@ -525,7 +564,9 @@ pk_task_get_details_sync (PkTask *task, gchar **package_ids, GCancellable *cance
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -559,8 +600,10 @@ pk_task_get_update_detail_sync (PkTask *task, gchar **package_ids, GCancellable 
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_update_detail_async (task, package_ids, cancellable, progress_callback, progress_user_data,
@@ -571,7 +614,9 @@ pk_task_get_update_detail_sync (PkTask *task, gchar **package_ids, GCancellable 
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -606,8 +651,10 @@ pk_task_download_packages_sync (PkTask *task, gchar **package_ids, const gchar *
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_download_packages_async (task, package_ids, directory, cancellable, progress_callback, progress_user_data,
@@ -618,7 +665,9 @@ pk_task_download_packages_sync (PkTask *task, gchar **package_ids, const gchar *
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -652,8 +701,10 @@ pk_task_get_updates_sync (PkTask *task, PkBitfield filters, GCancellable *cancel
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_updates_async (task, filters, cancellable, progress_callback, progress_user_data,
@@ -664,7 +715,9 @@ pk_task_get_updates_sync (PkTask *task, PkBitfield filters, GCancellable *cancel
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -700,8 +753,10 @@ pk_task_get_depends_sync (PkTask *task, PkBitfield filters, gchar **package_ids,
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_depends_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
@@ -712,7 +767,9 @@ pk_task_get_depends_sync (PkTask *task, PkBitfield filters, gchar **package_ids,
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -746,8 +803,10 @@ pk_task_get_packages_sync (PkTask *task, PkBitfield filters, GCancellable *cance
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_packages_async (task, filters, cancellable, progress_callback, progress_user_data,
@@ -758,7 +817,9 @@ pk_task_get_packages_sync (PkTask *task, PkBitfield filters, GCancellable *cance
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -794,8 +855,10 @@ pk_task_get_requires_sync (PkTask *task, PkBitfield filters, gchar **package_ids
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_requires_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
@@ -806,7 +869,9 @@ pk_task_get_requires_sync (PkTask *task, PkBitfield filters, gchar **package_ids
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -842,8 +907,10 @@ pk_task_what_provides_sync (PkTask *task, PkBitfield filters, PkProvidesEnum pro
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_what_provides_async (task, filters, provides, values, cancellable, progress_callback, progress_user_data,
@@ -854,7 +921,9 @@ pk_task_what_provides_sync (PkTask *task, PkBitfield filters, PkProvidesEnum pro
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -888,8 +957,10 @@ pk_task_get_files_sync (PkTask *task, gchar **package_ids, GCancellable *cancell
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_files_async (task, package_ids, cancellable, progress_callback, progress_user_data,
@@ -900,7 +971,9 @@ pk_task_get_files_sync (PkTask *task, gchar **package_ids, GCancellable *cancell
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -933,8 +1006,10 @@ pk_task_get_categories_sync (PkTask *task, GCancellable *cancellable,
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_categories_async (task, cancellable, progress_callback, progress_user_data,
@@ -945,7 +1020,9 @@ pk_task_get_categories_sync (PkTask *task, GCancellable *cancellable,
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -979,8 +1056,10 @@ pk_task_refresh_cache_sync (PkTask *task, gboolean force, GCancellable *cancella
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_refresh_cache_async (task, force, cancellable, progress_callback, progress_user_data,
@@ -991,7 +1070,9 @@ pk_task_refresh_cache_sync (PkTask *task, gboolean force, GCancellable *cancella
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -1025,8 +1106,10 @@ pk_task_get_repo_list_sync (PkTask *task, PkBitfield filters, GCancellable *canc
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_get_repo_list_async (task, filters, cancellable, progress_callback, progress_user_data,
@@ -1037,7 +1120,9 @@ pk_task_get_repo_list_sync (PkTask *task, PkBitfield filters, GCancellable *canc
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -1072,8 +1157,10 @@ pk_task_repo_enable_sync (PkTask *task, const gchar *repo_id, gboolean enabled, 
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_repo_enable_async (task, repo_id, enabled, cancellable, progress_callback, progress_user_data,
@@ -1084,7 +1171,9 @@ pk_task_repo_enable_sync (PkTask *task, const gchar *repo_id, gboolean enabled, 
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
@@ -1121,8 +1210,10 @@ pk_task_repair_system_sync (PkTask *task, GCancellable *cancellable,
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->context = g_main_context_new ();
+	helper->loop = g_main_loop_new (helper->context, FALSE);
 	helper->error = error;
+	g_main_context_push_thread_default (helper->context);
 
 	/* run async method */
 	pk_task_repair_system_async (task, cancellable, progress_callback, progress_user_data,
@@ -1134,7 +1225,9 @@ pk_task_repair_system_sync (PkTask *task, GCancellable *cancellable,
 	results = helper->results;
 
 	/* free temp object */
+	g_main_context_pop_thread_default (helper->context);
 	g_main_loop_unref (helper->loop);
+	g_main_context_unref (helper->context);
 	g_free (helper);
 
 	return results;
