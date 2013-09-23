@@ -2447,6 +2447,24 @@ pk_control_name_appeared_cb (GDBusConnection *connection,
 }
 
 /**
+ * pk_control_proxy_destroy:
+ **/
+static void
+pk_control_proxy_destroy (PkControl *control)
+{
+	if (control->priv->proxy == NULL)
+		return;
+	g_signal_handlers_disconnect_by_func (control->priv->proxy,
+					      G_CALLBACK (pk_control_properties_changed_cb),
+					      control);
+	g_signal_handlers_disconnect_by_func (control->priv->proxy,
+					      G_CALLBACK (pk_control_signal_cb),
+					      control);
+	g_object_unref (control->priv->proxy);
+	control->priv->proxy = NULL;
+}
+
+/**
  * pk_control_name_vanished_cb:
  **/
 static void
@@ -2458,6 +2476,11 @@ pk_control_name_vanished_cb (GDBusConnection *connection,
 	control->priv->connected = FALSE;
 	g_debug ("notify::connected");
 	g_object_notify (G_OBJECT(control), "connected");
+
+	/* destroy the proxy, as even though it's "well known" we get a
+	 * GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown if we try to
+	 * use this after the server has restarted */
+	pk_control_proxy_destroy (control);
 }
 
 /**
@@ -2497,6 +2520,9 @@ pk_control_finalize (GObject *object)
 	g_cancellable_cancel (priv->cancellable);
 	g_bus_unwatch_name (priv->watch_id);
 
+	/* disconnect proxy and destroy it */
+	pk_control_proxy_destroy (control);
+
 	/* remove pending sources */
 	if (priv->transaction_list_changed_id != 0)
 		g_source_remove (priv->transaction_list_changed_id);
@@ -2506,15 +2532,6 @@ pk_control_finalize (GObject *object)
 		g_source_remove (priv->updates_changed_id);
 	if (priv->repo_list_changed_id != 0)
 		g_source_remove (priv->repo_list_changed_id);
-	if (priv->proxy != NULL) {
-		g_signal_handlers_disconnect_by_func (priv->proxy,
-						      G_CALLBACK (pk_control_properties_changed_cb),
-						      control);
-		g_signal_handlers_disconnect_by_func (priv->proxy,
-						      G_CALLBACK (pk_control_signal_cb),
-						      control);
-		g_object_unref (priv->proxy);
-	}
 
 	g_free (priv->backend_name);
 	g_free (priv->backend_description);
