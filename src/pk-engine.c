@@ -1290,6 +1290,28 @@ pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 			       g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
 	return g_variant_builder_end (&builder);
 }
+
+/**
+ * pk_engine_is_package_history_interesing:
+ **/
+static gboolean
+pk_engine_is_package_history_interesing (PkPackage *package)
+{
+	gboolean ret;
+
+	switch (pk_package_get_info (package)) {
+	case PK_INFO_ENUM_INSTALLING:
+	case PK_INFO_ENUM_REMOVING:
+	case PK_INFO_ENUM_UPDATING:
+		ret = TRUE;
+		break;
+	default:
+		ret = FALSE;
+		break;
+	}
+	return ret;
+}
+
 /**
  * pk_engine_get_package_history:
  **/
@@ -1347,7 +1369,7 @@ pk_engine_get_package_history (PkEngine *engine,
 				continue;
 
 			/* not a state we care about */
-			if (pk_package_get_info (package_tmp) == PK_INFO_ENUM_CLEANUP)
+			if (!pk_engine_is_package_history_interesing (package_tmp))
 				continue;
 
 			/* transactions without a timestamp are not interesting */
