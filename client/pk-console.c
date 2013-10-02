@@ -1502,7 +1502,7 @@ main (int argc, char *argv[])
 		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
 			/* command line argument, do we ask questions */
 			_("Install the packages without asking for confirmation"), NULL },
-		{ "only-download", 'y', 0, G_OPTION_ARG_NONE, &only_download,
+		{ "only-download", 'd', 0, G_OPTION_ARG_NONE, &only_download,
 			/* command line argument, do we just download or apply changes */
 			_("Prepare the transaction by downloading pakages only"), NULL },
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
