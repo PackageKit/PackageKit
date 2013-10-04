@@ -876,7 +876,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* CACHE_AGE */
 	cache_age = pk_backend_job_get_cache_age (priv->job);
 	if (cache_age > 0)
-		g_hash_table_replace (env_table, g_strdup ("CACHE_AGE"), g_strdup_printf ("%i", cache_age));
+		g_hash_table_replace (env_table, g_strdup ("CACHE_AGE"), g_strdup_printf ("%u", cache_age));
 
 	/* copy hashed environment key/value pairs to envp */
 	envp = g_new0 (gchar *, g_hash_table_size (env_table) + 1);
