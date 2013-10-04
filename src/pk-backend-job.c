@@ -468,7 +468,7 @@ pk_backend_job_set_cache_age (PkBackendJob *job, guint cache_age)
 	 * Cache is 2 days 23 hours 59 minutes old
 	 * Backend sees it's not 3 days old, does nothing
 	 */
-	if (cache_age > cache_age_offset)
+	if (cache_age != G_MAXUINT && cache_age > cache_age_offset)
 		cache_age -= cache_age_offset;
 
 	g_debug ("cache-age changed to %i", cache_age);
