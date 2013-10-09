@@ -33,7 +33,6 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-details.h>
-#include <packagekit-glib2/pk-enum.h>
 
 static void     pk_details_finalize	(GObject     *object);
 
@@ -66,6 +65,108 @@ enum {
 };
 
 G_DEFINE_TYPE (PkDetails, pk_details, PK_TYPE_SOURCE)
+
+/**
+ * pk_details_get_package_id:
+ * @details: a #PkDetails instance
+ *
+ * Gets the PackageId for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+const gchar *
+pk_details_get_package_id (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, NULL);
+	return details->priv->package_id;
+}
+
+/**
+ * pk_details_get_license:
+ * @details: a #PkDetails instance
+ *
+ * Gets the license for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+const gchar *
+pk_details_get_license (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, NULL);
+	return details->priv->license;
+}
+
+/**
+ * pk_details_get_group:
+ * @details: a #PkDetails instance
+ *
+ * Gets the group for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+PkGroupEnum
+pk_details_get_group (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return details->priv->group;
+}
+
+/**
+ * pk_details_get_description:
+ * @details: a #PkDetails instance
+ *
+ * Gets the description for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+const gchar *
+pk_details_get_description (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, NULL);
+	return details->priv->description;
+}
+
+/**
+ * pk_details_get_url:
+ * @details: a #PkDetails instance
+ *
+ * Gets the url for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+const gchar *
+pk_details_get_url (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, NULL);
+	return details->priv->url;
+}
+
+/**
+ * pk_details_get_size:
+ * @details: a #PkDetails instance
+ *
+ * Gets the size for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.8.12
+ **/
+guint64
+pk_details_get_size (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, G_MAXUINT64);
+	return details->priv->size;
+}
 
 /**
  * pk_details_get_property:
