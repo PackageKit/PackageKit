@@ -1,3 +1,28 @@
+Version 0.8.12
+~~~~~~~~~~~~~~
+Released: 2013-10-18
+
+Libraries:
+ - Add a method to parse a PkPackage from it's description (Richard Hughes)
+ - Add pk_transaction_past_get_timestamp() as a helper (Richard Hughes)
+ - Add some simple getters for PkDetails (Richard Hughes)
+ - Add some simple getters for PkTransactionPast (Richard Hughes)
+ - Destroy and re-create the control proxy if the server changes (Richard Hughes)
+ - Do not have duplicate 'interactive' properties (Richard Hughes)
+ - Make PkTask thread-default-context aware (Giovanni Campagna)
+
+Backends:
+ - pisi: Detect when reboot is required and report it (Ikey Doherty)
+ - pisi: Fix parsing of package update messages (Ikey Doherty)
+ - pisi: Support INFO_BUGFIX when listing new updates (Ikey Doherty)
+
+New Features:
+ - Add GetPackageHistory() that returns history data for packages (Richard Hughes)
+
+Bugfixes:
+ - Check for packagekitd in the right location (Dominique Leuenberger)
+ - Do not send the backend a cache age of -308 when using UINT_MAX (Richard Hughes)
+
 Version 0.8.11
 ~~~~~~~~~~~~~~
 Released: 2013-09-02
