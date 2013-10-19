@@ -148,6 +148,9 @@ static PkBackendPoldekPriv *priv = NULL;
  * Returns TRUE on success, FALSE when some error occurs.
  **/
 static gboolean
+execute_command (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
+
+static gboolean
 execute_command (const gchar *format, ...)
 {
 	struct poclidek_rcmd *rcmd;
@@ -185,6 +188,9 @@ execute_command (const gchar *format, ...)
  * Returns on success pointer to the tn_array containing packages which are the
  * result of specified command. On failure returns NULL.
  **/
+static tn_array*
+execute_packages_command (const gchar *format, ...) G_GNUC_PRINTF(1, 2);
+
 static tn_array*
 execute_packages_command (const gchar *format, ...)
 {
@@ -1851,7 +1857,7 @@ update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	command = g_string_free (cmd, FALSE);
 
 	if (toupdate > 0) {
-		if (execute_command (command) == FALSE) {
+		if (execute_command ("%s", command) == FALSE) {
 			pb_error_show (job, PK_ERROR_ENUM_TRANSACTION_ERROR);
 		}
 	}
@@ -2021,7 +2027,7 @@ pb_error_check (PkBackendJob *job)
 		errorcode = PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED;
 
 	if (errorcode != PK_ERROR_ENUM_UNKNOWN) {
-		pk_backend_job_error_code (job, errorcode, pberror->tslog->str);
+		pk_backend_job_error_code (job, errorcode, "%s", pberror->tslog->str);
 		return TRUE;
 	}
 
@@ -2506,12 +2512,14 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			struct pkg *pkg = n_array_nth (pkgs, i);
 			gchar *package_id;
 			gchar *path;
+			gchar *to_strv[] = { NULL, NULL };
 			gchar buf[256];
 
 			package_id = package_id_from_pkg (pkg, NULL, PK_FILTER_ENUM_NONE);
 			path = g_build_filename (destdir, pkg_filename (pkg, buf, sizeof (buf)), NULL);
+			to_strv[0] = path;
 
-			pk_backend_job_files (job, package_id, path);
+			pk_backend_job_files (job, package_id, to_strv);
 
 			g_free (package_id);
 			g_free (path);
@@ -2670,19 +2678,15 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 		if (pkg != NULL) {
 			struct pkgflist *flist = pkg_get_flist (pkg);
-			GString *filelist;
-			gchar *result;
-			const gchar *sep;
+			GPtrArray *files;
 			gint i, j;
-
-			sep = "";
 
 			if (flist == NULL) {
 				pkg_free (pkg);
 				continue;
 			}
 
-			filelist = g_string_new ("");
+			files = g_ptr_array_new_with_free_func(g_free);
 
 			for (i = 0; i < n_tuple_size (flist->fl); i++) {
 				struct pkgfl_ent *flent = n_tuple_nth (flist->fl, i);
@@ -2692,22 +2696,20 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 				for (j = 0; j < flent->items; j++) {
 					struct flfile *f = flent->files[j];
+					gchar *fname;
 
 					if (strcmp (dirname, "/") == 0)
-						g_string_append_printf (filelist, "%s/%s", sep, f->basename);
+						fname = g_strdup_printf("/%s", f->basename);
 					else
-						g_string_append_printf (filelist, "%s%s/%s", sep, dirname, f->basename);
-
-					sep = ";";
+						fname = g_strdup_printf("%s/%s", dirname, f->basename);
+					g_ptr_array_add (files, fname);
 				}
 				g_free (dirname);
 			}
 
-			result = g_string_free (filelist, FALSE);
-
-			pk_backend_job_files (job, package_ids[n], result);
-
-			g_free (result);
+			g_ptr_array_add(files, NULL);
+			pk_backend_job_files (job, package_ids[n], (gchar**)files->pdata);
+			g_ptr_array_unref (files);
 
 			pkg_free (pkg);
 		}
@@ -2773,7 +2775,7 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	}
 
 	if (sigint_reached ())
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "");
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled");
 	else
 		pk_backend_job_set_percentage (job, 100);
 
@@ -3081,7 +3083,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-	if (execute_command (command)) {
+	if (execute_command ("%s", command)) {
 		pb_error_check (job);
 	} else {
 		pb_error_show (job, PK_ERROR_ENUM_TRANSACTION_ERROR);
@@ -3221,8 +3223,8 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-	if (execute_command (command) == FALSE) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, pberror->tslog->str);
+	if (execute_command ("%s", command) == FALSE) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "%s", pberror->tslog->str);
 	}
 
 	g_free (command);
