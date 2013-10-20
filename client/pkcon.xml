@@ -253,7 +253,7 @@ manpage.1: manpage.xml
       </varlistentry>
       <varlistentry>
         <term>-n, --background</term>
-        <listitem><para>Run the command using idle network bandwith and also using less power.</para></listitem>
+        <listitem><para>Run the command using idle network bandwidth and also using less power.</para></listitem>
       </varlistentry>
       <varlistentry>
         <term>-p, --plain</term>
