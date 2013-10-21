@@ -1807,7 +1807,7 @@ static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction,
 				  GError **error)
 {
-	gboolean ret = FALSE;
+	gboolean ret = TRUE;
 	gchar *session = NULL;
 	gchar *proxy_http = NULL;
 	gchar *proxy_https = NULL;
@@ -1821,6 +1821,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	/* get session */
 	session = pk_dbus_get_session (priv->dbus, priv->sender);
 	if (session == NULL) {
+		ret = FALSE;
 		g_set_error_literal (error, 1, 0, "failed to get the session");
 		goto out;
 	}
