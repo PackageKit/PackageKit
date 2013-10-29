@@ -289,6 +289,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	g_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_string (spawn->priv->exit));
 	g_signal_emit (spawn, signals [SIGNAL_EXIT], 0, spawn->priv->exit);
 
+	spawn->priv->poll_id = 0;
 	return FALSE;
 }
 
@@ -320,6 +321,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	}
 
 	/* never repeat */
+	spawn->priv->kill_id = 0;
 	return FALSE;
 }
 

@@ -537,10 +537,8 @@ pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 
 	/* turn off fsync */
 	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-
-	/* allow this to happen again */
-	tdb->priv->database_save_id = 0;
 out:
+	tdb->priv->database_save_id = 0;
 	g_free (statement);
 	return FALSE;
 }
