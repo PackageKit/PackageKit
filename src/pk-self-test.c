@@ -1108,6 +1108,7 @@ pk_test_transaction_db_func (void)
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
 	guint seconds;
+	GError *error = NULL;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1119,10 +1120,12 @@ pk_test_transaction_db_func (void)
 		g_assert (value == 0);
 	}
 #endif
-
 	/* check we created quickly */
 	g_test_timer_start ();
 	db = pk_transaction_db_new ();
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 	ms = g_test_timer_elapsed ();
 	g_assert_cmpfloat (ms, <, 1.5);
 	g_object_unref (db);
@@ -1130,6 +1133,9 @@ pk_test_transaction_db_func (void)
 	/* check we opened quickly */
 	g_test_timer_start ();
 	db = pk_transaction_db_new ();
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 	ms = g_test_timer_elapsed ();
 	g_assert_cmpfloat (ms, <, 0.1);
 
@@ -1157,12 +1163,7 @@ pk_test_transaction_db_func (void)
 
 	/* do the deferred write */
 	g_test_timer_start ();
-	while (g_main_context_pending (NULL))
-		g_main_context_iteration (NULL, TRUE);
-	ms = g_test_timer_elapsed ();
-	g_assert_cmpfloat (ms, >, 0.001);
-
-	g_usleep (2*1000*1000);
+	_g_test_loop_wait (2000);
 
 	/* do we get the correct time */
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
