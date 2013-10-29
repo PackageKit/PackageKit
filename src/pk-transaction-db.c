@@ -51,6 +51,7 @@ static void     pk_transaction_db_finalize	(GObject        *object);
 
 struct PkTransactionDbPrivate
 {
+	gboolean		 loaded;
 	sqlite3			*db;
 	guint			 job_count;
 	guint			 database_save_id;
@@ -891,6 +892,10 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
+	/* already loaded */
+	if (tdb->priv->loaded)
+		return TRUE;
+
 	g_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	pk_transaction_db_ensure_file_directory (PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
@@ -1033,6 +1038,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	}
 
 	/* success */
+	tdb->priv->loaded = TRUE;
 	ret = TRUE;
 out:
 	return ret;
