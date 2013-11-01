@@ -20,6 +20,7 @@
  */
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <packagekit-glib2/packagekit.h>
@@ -143,6 +144,12 @@ pk_offline_update_progress_cb (PkProgress *progress,
 		if (percentage < 0)
 			goto out;
 
+		/* TRANSLATORS: this is the message we send plymouth to
+		 * advise of the new percentage completion */
+		msg = g_strdup_printf ("%s - %i%%", _("Installing Updates"), percentage);
+		if (percentage > 10)
+			pk_offline_update_set_plymouth_msg (msg);
+
 		/* print on terminal */
 		pk_progress_bar_set_percentage (progressbar, percentage);
 
@@ -176,7 +183,8 @@ pk_offline_update_reboot (void)
 
 	/* reboot using systemd */
 	pk_offline_update_set_plymouth_mode ("shutdown");
-	pk_offline_update_set_plymouth_msg ("Rebooting after installing updates...");
+	/* TRANSLATORS: we've finished doing offline updates */
+	pk_offline_update_set_plymouth_msg (_("Rebooting after installing updates…"));
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
 		g_warning ("Failed to get system bus connection: %s",
@@ -481,6 +489,8 @@ main (int argc, char *argv[])
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
+	/* TRANSLATORS: we've started doing offline updates */
+	pk_offline_update_set_plymouth_msg (_("Installing updates, this could take a while…"));
 	package_ids = g_strsplit (packages_data, "\n", -1);
 	pk_offline_update_write_dummy_results (package_ids);
 	results = pk_client_update_packages (PK_CLIENT (task),
