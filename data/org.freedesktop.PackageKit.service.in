@@ -2,4 +2,5 @@
 Name=org.freedesktop.PackageKit
 Exec=@servicedir@/packagekitd
 User=@PACKAGEKIT_USER@
+SystemdService=packagekit.service
 

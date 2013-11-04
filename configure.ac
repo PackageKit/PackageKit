@@ -278,6 +278,8 @@ AM_CONDITIONAL(PK_BUILD_SYSTEMD, test x$enable_systemd = xyes)
 if test x$enable_systemd = xyes; then
 	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login)
 	AC_DEFINE(PK_BUILD_SYSTEMD,1,[Build systemd code])
+	with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
+	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
 
 dnl ---------------------------------------------------------------------------

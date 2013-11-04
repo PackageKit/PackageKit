@@ -341,6 +341,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
 /usr/lib/systemd/system/packagekit-offline-update.service
+/usr/lib/systemd/system/packagekit.service
 %{_libexecdir}/pk-*offline-update
 
 %files docs

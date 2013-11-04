@@ -30,6 +30,16 @@ servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
+systemdservice_in_files = packagekit.service.in
+
+if PK_BUILD_SYSTEMD
+systemdservicedir       = $(systemdsystemunitdir)
+systemdservice_DATA     = $(systemdservice_in_files:.service.in=.service)
+$(systemdservice_DATA): $(systemdservice_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@.tmp && mv $@.tmp $@
+endif
+
+
 databasedir = $(PK_DB_DIR)
 database_DATA =						\
 	transactions.db					\
@@ -46,6 +56,7 @@ EXTRA_DIST =						\
 	$(servicemain_in_files)				\
 	$(servicetest_in_files)				\
 	$(serviceapt_in_files)				\
+	$(systemdservice_in_files)			\
 	$(mime_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
