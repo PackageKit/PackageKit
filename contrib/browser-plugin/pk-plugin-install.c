@@ -245,13 +245,6 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		pk_plugin_install_set_available_package_name (self, split[0]);
 		pk_plugin_install_set_available_version (self, split[1]);
 		g_strfreev (split);
-#if 0
-		/* if we have data from the repo, override the user:
-		 *  * we don't want the remote site pretending to install another package
-		 *  * it might be localised if the backend supports it */
-		if (summary != NULL && summary[0] != '\0')
-			self->priv->display_name = g_strdup (summary);
-#endif
 
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
@@ -312,19 +305,6 @@ pk_plugin_install_recheck (PkPluginInstall *self)
 		data = pk_plugin_get_data (PK_PLUGIN (self), "packagenames");
 		self->priv->package_names = g_strsplit (data, " ", -1);
 	}
-
-#if 0
-	for (i=0; self->priv->package_names[i] != NULL; i++) {
-		package_ids = pk_package_ids_from_id (self->priv->package_names[i]);
-
-		/* do async resolve */
-		pk_client_resolve_async (self->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), package_ids, NULL,
-					 (PkProgressCallback) pk_plugin_install_progress_cb, self,
-					 (GAsyncReadyCallback) pk_plugin_install_finished_cb, self);
-
-		g_strfreev (package_ids);
-	}
-#endif
 
 	/* do async resolve */
 	pk_client_resolve_async (self->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1),
