@@ -183,6 +183,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
 		g_warning ("finished twice!");
+		spawn->priv->poll_id = 0;
 		return FALSE;
 	}
 
@@ -304,7 +305,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
 		g_debug ("already finished, ignoring");
-		return FALSE;
+		goto out;
 	}
 
 	/* set this in case the script catches the signal and exits properly */
@@ -314,12 +315,12 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
 		g_warning ("The signum argument is an invalid or unsupported number");
-		return FALSE;
+		goto out;
 	} else if (retval == EPERM) {
 		g_warning ("You do not have the privilege to send a signal to the process");
-		return FALSE;
+		goto out;
 	}
-
+out:
 	/* never repeat */
 	spawn->priv->kill_id = 0;
 	return FALSE;

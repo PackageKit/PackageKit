@@ -118,6 +118,7 @@ pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 		g_debug ("closing dispatcher as running and is idle");
 		pk_spawn_exit (backend_spawn->priv->spawn);
 	}
+	backend_spawn->priv->kill_id = 0;
 	return FALSE;
 }
 
