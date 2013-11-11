@@ -784,6 +784,10 @@ pk_backend_job_thread_setup (gpointer thread_data)
 	/* run original function */
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
 
+	/* unref the thread here as it holds a reference itself and we do
+	 * not need to join() this at any stage */
+	g_thread_unref (helper->job->priv->thread);
+
 	/* destroy helper */
 	g_object_unref (helper->job);
 	if (helper->destroy_func != NULL)
