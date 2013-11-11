@@ -822,16 +822,9 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	helper->user_data = user_data;
 
 	/* create a thread */
-#if GLIB_CHECK_VERSION(2,31,0)
 	job->priv->thread = g_thread_new ("PK-Backend",
 					  pk_backend_job_thread_setup,
 					  helper);
-#else
-	job->priv->thread = g_thread_create (pk_backend_job_thread_setup,
-					     helper,
-					     FALSE,
-					     NULL);
-#endif
 	if (job->priv->thread == NULL) {
 		g_warning ("failed to create thread");
 		ret = FALSE;

@@ -26,9 +26,7 @@
 #endif
 
 #include <glib.h>
-#if GLIB_CHECK_VERSION(2,29,19)
 #include <glib-unix.h>
-#endif
 #include <signal.h>
 #include <rpm/rpmsq.h>
 
