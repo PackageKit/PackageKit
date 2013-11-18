@@ -160,7 +160,7 @@ hif_source_parse (GPtrArray *sources,
 	/* get common things */
 	config = hif_config_new ();
 	basearch = hif_config_get_string (config, "basearch", NULL);
-	fedora_release = hif_config_get_string (config, "os-version-id", NULL);
+	fedora_release = hif_config_get_string (config, "releasever", NULL);
 	cache_dir = hif_config_get_string (config, "CacheDir", NULL);
 
 	/* save all the repos listed in the file */

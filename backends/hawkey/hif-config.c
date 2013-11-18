@@ -315,7 +315,7 @@ hif_config_set_os_release (HifConfig *config, GError **error)
 	version = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
 	if (version == NULL)
 		goto out;
-	ret = hif_config_set_string (config, "os-version-id", version, error);
+	ret = hif_config_set_string (config, "releasever", version, error);
 	if (!ret)
 		goto out;
 out:

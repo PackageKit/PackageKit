@@ -63,14 +63,20 @@ out:
 static gchar *
 hif_db_get_dir_for_package (HyPackage package)
 {
-	gchar *dir;
+	const gchar *pkgid;
+	gchar *dir = NULL;
+
+	pkgid = hif_package_get_pkgid (package);
+	if (pkgid == NULL)
+		goto out;
 	dir = g_strdup_printf ("%s/lib/yum/yumdb/%c/%s-%s-%s-%s",
 			       LOCALSTATEDIR,
 			       hy_package_get_name (package)[0],
-			       hif_package_get_pkgid (package),
+			       pkgid,
 			       hy_package_get_name (package),
 			       hy_package_get_version (package),
 			       hy_package_get_arch (package));
+out:
 	return dir;
 }
 
@@ -92,6 +98,16 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 
 	/* get file contents */
 	index_dir = hif_db_get_dir_for_package (package);
+	if (index_dir == NULL) {
+		ret = FALSE;
+		index_dir = hif_package_get_id (package);
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "cannot create index for %s", index_dir);
+		goto out;
+	}
+
 	filename = g_build_filename (index_dir, key, NULL);
 
 	/* check it exists */
@@ -119,7 +135,11 @@ out:
  * hif_db_set_string:
  **/
 gboolean
-hif_db_set_string (HifDb *db, HyPackage package, const gchar *key, const gchar *value, GError **error)
+hif_db_set_string (HifDb *db,
+		   HyPackage package,
+		   const gchar *key,
+		   const gchar *value,
+		   GError **error)
 {
 	gboolean ret = TRUE;
 	gchar *index_dir = NULL;
@@ -128,10 +148,20 @@ hif_db_set_string (HifDb *db, HyPackage package, const gchar *key, const gchar *
 	g_return_val_if_fail (HIF_IS_DB (db), FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (value != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (package);
+	if (index_dir == NULL) {
+		ret = FALSE;
+		index_dir = hif_package_get_id (package);
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "cannot create index for %s", index_dir);
+		goto out;
+	}
 	ret = hif_db_create_dir (index_dir, error);
 	if (!ret)
 		goto out;
@@ -167,6 +197,15 @@ hif_db_remove (HifDb *db, HyPackage package,
 
 	/* create the index directory */
 	index_dir = hif_db_get_dir_for_package (package);
+	if (index_dir == NULL) {
+		ret = FALSE;
+		index_dir = hif_package_get_id (package);
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "cannot create index for %s", index_dir);
+		goto out;
+	}
 
 	/* delete the value */
 	g_debug ("deleting %s from %s", key, index_dir);
@@ -202,6 +241,15 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 
 	/* get the folder */
 	index_dir = hif_db_get_dir_for_package (package);
+	if (index_dir == NULL) {
+		ret = FALSE;
+		index_dir = hif_package_get_id (package);
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "cannot create index for %s", index_dir);
+		goto out;
+	}
 	ret = g_file_test (index_dir, G_FILE_TEST_IS_DIR);
 	if (!ret) {
 		g_debug ("Nothing to delete in %s", index_dir);

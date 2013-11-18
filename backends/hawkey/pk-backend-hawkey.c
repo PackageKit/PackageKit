@@ -2385,7 +2385,11 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 	/* set the correct release */
 	releasever = hif_config_get_string (priv->config,
 					    "releasever",
-					     NULL);
+					     error);
+	if (releasever == NULL) {
+		ret = FALSE;
+		goto out;
+	}
 	ret = hif_db_set_string (job_data->db,
 				 pkg_installed,
 				 "releasever",
