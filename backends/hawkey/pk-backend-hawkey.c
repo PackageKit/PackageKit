@@ -1308,6 +1308,7 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 	const gchar *reponame;
 	gboolean ret = TRUE;
 	gchar **split;
+	gchar *tmp;
 	GHashTable *hash;
 	guint i;
 	HyPackageList pkglist = NULL;
@@ -1337,7 +1338,9 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 			g_set_error (error,
 				     HIF_ERROR,
 				     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-				     "Failed to find %s", package_ids[i]);
+				     "Failed to find %s in %i packages",
+				     package_ids[i],
+				     hy_sack_count (sack));
 			goto out;
 		}
 
@@ -1348,6 +1351,11 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 				     HIF_ERROR,
 				     PK_ERROR_ENUM_PACKAGE_CONFLICTS,
 				     "Multiple matches of %s", package_ids[i]);
+			FOR_PACKAGELIST(pkg, pkglist, i) {
+				tmp = hif_package_get_id (pkg);
+				g_debug ("possible matches: %s", tmp);
+				g_free (tmp);
+			}
 			goto out;
 		}
 
