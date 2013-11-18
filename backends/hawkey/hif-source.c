@@ -38,7 +38,7 @@ struct HifSource {
 	gchar		*filename;
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
-	gchar		*packages;	/* /var/cache/PackageKit/metadata/fedora/packages */
+	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
 	GKeyFile	*keyfile;
 	HyRepo		 repo;
 	LrHandle	*repo_handle;
@@ -55,7 +55,7 @@ hif_source_free (gpointer data)
 	HifSource *src = (HifSource *) data;
 	g_free (src->filename);
 	g_free (src->id);
-	g_free (src->packages);
+	g_free (src->location_tmp);
 	g_free (src->location);
 	if (src->repo_result != NULL)
 		lr_result_free (src->repo_result);
@@ -143,8 +143,8 @@ hif_source_parse (GPtrArray *sources,
 	gboolean ret = TRUE;
 	gchar *basearch = NULL;
 	gchar *fedora_release = NULL;
+	gchar *cache_dir = NULL;
 	gchar **repos = NULL;
-	gint rc;
 	GKeyFile *keyfile;
 	guint64 val;
 	guint i;
@@ -161,6 +161,7 @@ hif_source_parse (GPtrArray *sources,
 	config = hif_config_new ();
 	basearch = hif_config_get_string (config, "basearch", NULL);
 	fedora_release = hif_config_get_string (config, "os-version-id", NULL);
+	cache_dir = hif_config_get_string (config, "CacheDir", NULL);
 
 	/* save all the repos listed in the file */
 	repos = g_key_file_get_groups (keyfile, NULL);
@@ -190,8 +191,8 @@ hif_source_parse (GPtrArray *sources,
 		src->keyfile = g_key_file_ref (keyfile);
 		src->filename = g_strdup (filename);
 		src->id = g_strdup (repos[i]);
-		src->location = g_build_filename ("/var/cache/PackageKit/metadata", repos[i], NULL);
-		src->packages = g_build_filename (src->location, "packages", NULL);
+		src->location = g_build_filename (cache_dir, repos[i], NULL);
+		src->location_tmp = g_strdup_printf ("%s.tmp", src->location);
 		src->repo_handle = lr_handle_init ();
 		ret = lr_handle_setopt (src->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
 		if (!ret)
@@ -212,37 +213,12 @@ hif_source_parse (GPtrArray *sources,
 		if (!ret)
 			goto out;
 
-		/* ensure exists */
-		if (!g_file_test (src->location, G_FILE_TEST_EXISTS)) {
-			rc = g_mkdir (src->location, 0755);
-			if (rc != 0) {
-				ret = FALSE;
-				g_set_error (error,
-					     HIF_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "Failed to create %s", src->location);
-				goto out;
-			}
-		}
-
-		/* ensure exists */
-		if (!g_file_test (src->packages, G_FILE_TEST_EXISTS)) {
-			rc = g_mkdir (src->packages, 0755);
-			if (rc != 0) {
-				ret = FALSE;
-				g_set_error (error,
-					     HIF_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "Failed to create %s", src->packages);
-				goto out;
-			}
-		}
-
 		g_debug ("added source %s\t%s", filename, repos[i]);
 		g_ptr_array_add (sources, src);
 	}
 out:
 	g_free (basearch);
+	g_free (cache_dir);
 	g_free (fedora_release);
 	g_strfreev (repos);
 	if (config != NULL)
@@ -330,6 +306,7 @@ hif_source_update_state_cb (void *user_data,
 			    gdouble total_to_download,
 			    gdouble now_downloaded)
 {
+	gboolean ret;
 	gdouble percentage;
 	HifState *state = (HifState *) user_data;
 
@@ -540,9 +517,10 @@ out:
 gboolean
 hif_source_update (HifSource *src, HifState *state, GError **error)
 {
-	gboolean ret;
 	GError *error_local = NULL;
 	HifState *state_local;
+	gboolean ret;
+	gint rc;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -552,36 +530,61 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 	if (!ret)
 		goto out;
 
-	/* clean and start again */
-	ret = hif_source_clean (src, error);
-	if (!ret)
-		goto out;
+	/* remove the temporary space if it already exists */
+	if (g_file_test (src->location_tmp, G_FILE_TEST_EXISTS)) {
+		ret = pk_directory_remove_contents (src->location_tmp);
+		if (!ret) {
+			g_set_error (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     "Failed to remove %s",
+				     src->location_tmp);
+			goto out;
+		}
+	}
+
+	/* ensure exists */
+	if (!g_file_test (src->location_tmp, G_FILE_TEST_EXISTS)) {
+		rc = g_mkdir (src->location_tmp, 0755);
+		if (rc != 0) {
+			ret = FALSE;
+			g_set_error (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     "Failed to create %s", src->location_tmp);
+			goto out;
+		}
+	}
 
 	g_debug ("Attempting to update %s", src->id);
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_LOCAL, FALSE);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_LOCAL, FALSE);
 	if (!ret)
 		goto out;
-//	ret = lr_handle_setopt (src->repo_handle, error, LRO_UPDATE, TRUE);
-//	if (!ret)
-//		goto out;
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_DESTDIR, src->location);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_DESTDIR, src->location_tmp);
 	if (!ret)
 		goto out;
 	ret = hif_source_set_keyfile_data (src, error);
 	if (!ret)
 		goto out;
 
-	// Callback to display progress of downloading
+	/* Callback to display progress of downloading */
 	state_local = hif_state_get_child (state);
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_PROGRESSDATA, state_local);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_PROGRESSDATA, state_local);
 	if (!ret)
 		goto out;
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_PROGRESSCB, hif_source_update_state_cb);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_PROGRESSCB, hif_source_update_state_cb);
 	if (!ret)
 		goto out;
 	lr_result_clear (src->repo_result);
-	hif_state_action_start (state_local, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY, NULL);
-	ret = lr_handle_perform (src->repo_handle, src->repo_result, &error_local);
+	hif_state_action_start (state_local,
+				PK_STATUS_ENUM_DOWNLOAD_REPOSITORY, NULL);
+	ret = lr_handle_perform (src->repo_handle,
+				 src->repo_result,
+				 &error_local);
 	if (!ret) {
 		g_set_error (error,
 			     HIF_ERROR,
@@ -591,6 +594,27 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 		g_error_free (error_local);
 		goto out;
 	}
+
+	/* delete old /var/cache/PackageKit/metadata/$REPO/ */
+	ret = hif_source_clean (src, error);
+	if (!ret)
+		goto out;
+
+	/* rename .tmp actual name */
+	rc = g_rename (src->location_tmp, src->location);
+	if (rc != 0) {
+		ret = FALSE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,
+			     "cannot move %s to %s",
+			     src->location_tmp, src->location);
+		goto out;
+	}
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_DESTDIR, src->location_tmp);
+	if (!ret)
+		goto out;
 
 	/* done */
 	ret = hif_state_done (state, error);
@@ -777,11 +801,24 @@ hif_source_download_package (HifSource *src,
 	gchar *loc = NULL;
 	gchar *package_id = NULL;
 	GError *error_local = NULL;
+	gint rc;
 	int checksum_type;
 
 	/* if nothing specified then use cachedir */
 	if (directory == NULL) {
 		directory_slash = g_build_filename (src->location, "packages", "/", NULL);
+		if (!g_file_test (directory_slash, G_FILE_TEST_EXISTS)) {
+			rc = g_mkdir (directory_slash, 0755);
+			if (rc != 0) {
+				ret = FALSE;
+				g_set_error (error,
+					     HIF_ERROR,
+					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "Failed to create %s",
+					     directory_slash);
+				goto out;
+			}
+		}
 	} else {
 		/* librepo uses the GNU basename() function to find out if the
 		 * output directory is fully specified as a filename, but
@@ -793,14 +830,18 @@ hif_source_download_package (HifSource *src,
 	ret = hif_source_set_keyfile_data (src, error);
 	if (!ret)
 		goto out;
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_PROGRESSDATA, state);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_PROGRESSDATA, state);
 	if (!ret)
 		goto out;
 	//TODO: this doesn't actually report sane things
-	ret = lr_handle_setopt (src->repo_handle, error, LRO_PROGRESSCB, hif_source_update_state_cb);
+	ret = lr_handle_setopt (src->repo_handle, error,
+				LRO_PROGRESSCB, hif_source_update_state_cb);
 	if (!ret)
 		goto out;
-	g_debug ("downloading %s to %s", hy_package_get_location (pkg), directory_slash);
+	g_debug ("downloading %s to %s",
+		 hy_package_get_location (pkg),
+		 directory_slash);
 
 	checksum = hy_package_get_chksum (pkg, &checksum_type);
 	checksum_str = hy_chksum_str (checksum, checksum_type);

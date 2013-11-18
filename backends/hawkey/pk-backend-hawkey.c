@@ -150,7 +150,8 @@ pk_backend_initialize (PkBackend *backend)
 	/* set defaults */
 	hif_config_set_boolean (priv->config, "DiskSpaceCheck", TRUE, NULL);
 	hif_config_set_boolean (priv->config, "RpmCheckDebug", TRUE, NULL);
-	hif_config_set_string (priv->config, "CacheDir", "/var/cache/PackageKit/metadata", NULL);
+	hif_config_set_string (priv->config, "CacheDir",
+			       "/var/cache/PackageKit/metadata", NULL);
 	hif_config_set_string (priv->config, "PidFile", "/var/run/hif", NULL);
 	hif_config_set_string (priv->config, "ReposDir", "/etc/yum.repos.d", NULL);
 	hif_config_set_string (priv->config, "RpmVerbosity", "info", NULL);
