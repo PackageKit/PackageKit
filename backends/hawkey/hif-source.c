@@ -337,15 +337,18 @@ hif_source_update_state_cb (void *user_data,
 	if (total_to_download <= 0 || now_downloaded <= 0)
 		return 0;
 
-	g_debug ("update state %.0f/%.0f", now_downloaded, total_to_download);
-
 	/* abort */
 	if (!hif_state_check (state, NULL))
 		return -1;
 
 	/* set percentage */
 	percentage = 100.0f * now_downloaded / total_to_download;
-	hif_state_set_percentage (state, percentage);
+	ret = hif_state_set_percentage (state, percentage);
+	if (ret) {
+		g_debug ("update state %.0f/%.0f",
+			 now_downloaded,
+			 total_to_download);
+	}
 
 	return 0;
 }
