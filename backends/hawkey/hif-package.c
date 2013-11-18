@@ -59,31 +59,6 @@ hif_package_get_filename (HyPackage pkg)
 }
 
 /**
- * hif_package_get_pkgid:
- **/
-const gchar *
-hif_package_get_pkgid (HyPackage pkg)
-{
-	const unsigned char *checksum;
-	HifPackagePrivate *priv;
-	int checksum_type;
-
-	priv = hy_package_get_userdata (pkg);
-	if (priv == NULL)
-		return NULL;
-	if (priv->checksum_str != NULL)
-		goto out;
-
-	/* calculate and cache */
-	checksum = hy_package_get_hdr_chksum (pkg, &checksum_type);
-	if (checksum == NULL)
-		goto out;
-	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
-out:
-	return priv->checksum_str;
-}
-
-/**
  * hif_package_get_priv:
  **/
 static HifPackagePrivate *
@@ -100,6 +75,31 @@ hif_package_get_priv (HyPackage pkg)
 	priv->info = PK_INFO_ENUM_UNKNOWN;
 	hy_package_set_userdata (pkg, priv, hif_package_destroy_func);
 	return priv;
+}
+
+/**
+ * hif_package_get_pkgid:
+ **/
+const gchar *
+hif_package_get_pkgid (HyPackage pkg)
+{
+	const unsigned char *checksum;
+	HifPackagePrivate *priv;
+	int checksum_type;
+
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return NULL;
+	if (priv->checksum_str != NULL)
+		goto out;
+
+	/* calculate and cache */
+	checksum = hy_package_get_hdr_chksum (pkg, &checksum_type);
+	if (checksum == NULL)
+		goto out;
+	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
+out:
+	return priv->checksum_str;
 }
 
 /**
