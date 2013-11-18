@@ -629,7 +629,7 @@ hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
 
 	/* newest */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
-		hy_query_filter_latest (query, TRUE);
+		hy_query_filter_latest_per_arch (query, TRUE);
 
 	/* arch */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH))
@@ -873,7 +873,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	case PK_ROLE_ENUM_GET_UPDATES:
 		//* FIXME: We should really use hy_goal_upgrade_all */
 		hy_query_filter_upgrades (query, TRUE);
-		hy_query_filter_latest (query, TRUE);
+		hy_query_filter_latest_per_arch (query, TRUE);
 		break;
 	default:
 		g_assert_not_reached ();

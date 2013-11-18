@@ -646,7 +646,7 @@ if test x$enable_hawkey = xyes; then
 	AC_ARG_ENABLE(hawkey, AS_HELP_STRING([--enable-hawkey],[Build Hawkey experimental code]),
 		      enable_hawkey=$enableval,enable_hawkey=yes)
 	if test x$enable_hawkey = xyes; then
-		PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.2.8 librepo rpm >= 4.11.0,
+		PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.5 librepo rpm >= 4.11.0,
 			          build_hawkey=yes, build_hawkey=no)
 	fi
 	if test "x$build_hawkey" = "xyes"; then
