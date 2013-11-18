@@ -482,6 +482,13 @@ hif_source_set_keyfile_data (HifSource *src, GError **error)
 		goto out;
 	g_free (str);
 
+	/* metalink is optional */
+	str = g_key_file_get_string (src->keyfile, src->id, "metalink", NULL);
+	ret = lr_handle_setopt (src->repo_handle, error, LRO_METALINKURL, str);
+	if (!ret)
+		goto out;
+	g_free (str);
+
 	/* gpgcheck is optional */
 	// FIXME: https://github.com/Tojaj/librepo/issues/16
 	//ret = lr_handle_setopt (src->repo_handle, error, LRO_GPGCHECK, src->gpgcheck == 1 ? 1 : 0);
