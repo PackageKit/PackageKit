@@ -299,7 +299,6 @@ hif_state_set_speed (HifState *state, guint64 speed)
 	if (sum_cnt > 0)
 		sum /= sum_cnt;
 
-	g_debug ("speed = %" G_GUINT64_FORMAT " kb/sec", sum / 1024);
 	hif_state_set_speed_internal (state, sum);
 }
 

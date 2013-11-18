@@ -2072,7 +2072,6 @@ hif_commit_ts_progress_cb (const void *arg,
 
 		/* progress */
 		percentage = (100.0f / (gfloat) total) * (gfloat) amount;
-		g_debug ("progress %i/%i", (gint32) amount, (gint32) total);
 		if (commit->child != NULL)
 			hif_state_set_percentage (commit->child, percentage);
 
@@ -2106,7 +2105,6 @@ hif_commit_ts_progress_cb (const void *arg,
 
 		/* progress */
 		percentage = (100.0f / (gfloat) total) * (gfloat) amount;
-		g_debug ("progress %i/%i", (gint32) amount, (gint32) total);
 		if (commit->child != NULL)
 			hif_state_set_percentage (commit->child, percentage);
 
