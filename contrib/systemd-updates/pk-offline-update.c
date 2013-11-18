@@ -60,18 +60,6 @@ pk_log_write (PkOfflineUpdateHelper *helper)
 }
 
 /**
- * pk_log_raw:
- **/
-static void
-pk_log_raw (PkOfflineUpdateHelper *helper, const gchar *buffer)
-{
-	gint delta_ms = (g_get_real_time () - helper->time_started) / 1000;
-	g_string_append_printf (helper->log,
-				"%07" G_GINT64_FORMAT "ms\t%s\n",
-				delta_ms, buffer);
-}
-
-/**
  * pk_warning:
  **/
 G_GNUC_PRINTF(2,3)
@@ -79,17 +67,14 @@ static void
 pk_log_warning (PkOfflineUpdateHelper *helper, const gchar *format, ...)
 {
 	gchar *buffer = NULL;
-	gchar *tmp;
 	va_list args;
-
+	gint64 delta_ms = (g_get_real_time () - helper->time_started) / 1000;
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
-
-	tmp = g_strdup_printf ("WARNING: %s", buffer);
-	pk_log_raw (helper, tmp);
-
-	g_free (tmp);
+	g_string_append_printf (helper->log,
+				"WARNING: %07" G_GINT64_FORMAT "ms\t%s\n",
+				delta_ms, buffer);
 	g_free (buffer);
 }
 
@@ -101,17 +86,14 @@ static void
 pk_log_info (PkOfflineUpdateHelper *helper, const gchar *format, ...)
 {
 	gchar *buffer = NULL;
-	gchar *tmp;
 	va_list args;
-
+	gint64 delta_ms = (g_get_real_time () - helper->time_started) / 1000;
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
-
-	tmp = g_strdup_printf ("INFO: %s", buffer);
-	pk_log_raw (helper, tmp);
-
-	g_free (tmp);
+	g_string_append_printf (helper->log,
+				"INFO: %07" G_GINT64_FORMAT "ms\t%s\n",
+				delta_ms, buffer);
 	g_free (buffer);
 }
 
@@ -257,7 +239,6 @@ pk_offline_update_progress_cb (PkProgress *progress,
 		g_object_get (progress, "status", &status, NULL);
 		pk_log_info (helper, "status %s",
 			     pk_status_enum_to_string (status));
-	}
 
 	default:
 		break;
