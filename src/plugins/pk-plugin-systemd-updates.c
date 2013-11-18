@@ -24,6 +24,8 @@
 #include <glib/gstdio.h>
 #include <pk-plugin.h>
 
+#define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
+
 /**
  * pk_plugin_get_description:
  */
@@ -99,23 +101,18 @@ pk_plugin_array_str_exists (GPtrArray *array, const gchar *str)
 void
 pk_plugin_state_changed (PkPlugin *plugin)
 {
-	gchar *file;
-
 	/* if the state changed because of a yum command that could
 	 * have changed the updates list then nuke the prepared-updates
 	 * file */
-	file = g_build_filename (LOCALSTATEDIR,
-				 "lib",
-				 "PackageKit",
-				 "prepared-update",
-				 NULL);
-	if (g_file_test (file, G_FILE_TEST_EXISTS)) {
-		g_debug ("Removing %s as state has changed", file);
-		g_unlink (file);
+	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+			 G_FILE_TEST_EXISTS)) {
+		g_debug ("Removing %s as state has changed",
+			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+		g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	} else {
-		g_debug ("No %s needed to be deleted", file);
+		g_debug ("No %s needed to be deleted",
+			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	}
-	g_free (file);
 }
 
 /**
@@ -127,7 +124,6 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	gboolean ret;
 	gchar **package_ids;
 	gchar *packages_str = NULL;
-	gchar *path = NULL;
 	GError *error = NULL;
 	GPtrArray *packages;
 	guint i;
@@ -146,12 +142,7 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 		goto out;
 
 	/* get the existing prepared updates */
-	path = g_build_filename (LOCALSTATEDIR,
-				 "lib",
-				 "PackageKit",
-				 "prepared-update",
-				 NULL);
-	packages = pk_plugin_get_existing_prepared_updates (path);
+	packages = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 
 	/* add any new ones */
 	package_ids = pk_transaction_get_package_ids (transaction);
@@ -165,19 +156,19 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 
 	/* write filename */
 	packages_str = g_strjoinv ("\n", (gchar **) packages->pdata);
-	ret = g_file_set_contents (path,
+	ret = g_file_set_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				   packages_str,
 				   -1,
 				   &error);
 	if (!ret) {
 		g_warning ("failed to write %s: %s",
-			   path, error->message);
+			   PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+			   error->message);
 		g_error_free (error);
 		goto out;
 	}
 out:
 	g_free (packages_str);
-	g_free (path);
 	return;
 }
 
@@ -187,30 +178,26 @@ out:
 static void
 pk_plugin_transaction_get_updates (PkTransaction *transaction)
 {
-	gchar *path;
 	GPtrArray *array;
 	PkResults *results;
 
 	results = pk_transaction_get_results (transaction);
-	path = g_build_filename (LOCALSTATEDIR,
-				 "lib",
-				 "PackageKit",
-				 "prepared-update",
-				 NULL);
 	array = pk_results_get_package_array (results);
 	if (array->len != 0) {
 		g_debug ("got %i updates, so ignoring %s",
-			 array->len, path);
+			 array->len, PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 		goto out;
 	}
-	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
-		g_debug ("Removing %s as no updates", path);
-		g_unlink (path);
+	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+			 G_FILE_TEST_EXISTS)) {
+		g_debug ("Removing %s as no updates",
+			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+		g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	} else {
-		g_debug ("No %s present, so no need to delete", path);
+		g_debug ("No %s present, so no need to delete",
+			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	}
 out:
-	g_free (path);
 	g_ptr_array_unref (array);
 }
 
@@ -235,8 +222,11 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* check for success */
 	results = pk_transaction_get_results (transaction);
 	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		g_debug ("not writing %s as transaction failed",
+			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 		goto out;
+	}
 
 	/* if we're doing only-download then update prepared-updates */
 	role = pk_transaction_get_role (transaction);
