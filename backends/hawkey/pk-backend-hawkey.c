@@ -2289,7 +2289,7 @@ pk_hy_convert_to_system_repo (PkBackendJob *job, HyPackage pkg, HifState *state,
 	}
 
 	/* success */
-	pkg_installed = hy_packagelist_get (pkglist, 0);
+	pkg_installed = hy_package_link (hy_packagelist_get (pkglist, 0));
 out:
 	if (query != NULL)
 		hy_query_free (query);
@@ -2313,7 +2313,7 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 	gchar *releasever = NULL;
 	gchar *tmp;
 	HifState *state_local;
-	HyPackage pkg_installed;
+	HyPackage pkg_installed = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	/* set steps */
@@ -2399,6 +2399,8 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 	if (!ret)
 		goto out;
 out:
+	if (pkg_installed != NULL)
+		hy_package_free (pkg_installed);
 	g_free (releasever);
 	return ret;
 }
