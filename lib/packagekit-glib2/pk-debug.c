@@ -81,6 +81,10 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 	time_t the_time;
 	guint len;
 	guint i;
+	static GMutex mutex;
+
+	/* lock */
+	g_mutex_lock (&mutex);
 
 	/* time header */
 	time (&the_time);
@@ -119,6 +123,9 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		/* debug in blue */
 		g_print ("%c[%dm%s\n%c[%dm", 0x1B, CONSOLE_BLUE, message, 0x1B, CONSOLE_RESET);
 	}
+
+	/* unlock */
+	g_mutex_unlock (&mutex);
 }
 
 /**
