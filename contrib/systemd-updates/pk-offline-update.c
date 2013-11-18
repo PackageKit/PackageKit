@@ -20,6 +20,7 @@
  */
 
 #include <glib.h>
+#include <glib-unix.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gio/gio.h>
@@ -527,6 +528,18 @@ pk_offline_update_loop_quit_cb (gpointer user_data)
 }
 
 /**
+ * pk_offline_update_sigint_cb:
+ **/
+static gboolean
+pk_offline_update_sigint_cb (gpointer user_data)
+{
+	PkOfflineUpdateHelper *helper = (PkOfflineUpdateHelper *) user_data;
+	pk_log_warning (helper, "Handling SIGINT");
+	pk_log_write (helper);
+	return FALSE;
+}
+
+/**
  * main:
  **/
 int
@@ -561,6 +574,13 @@ main (int argc, char *argv[])
 	helper = g_new0 (PkOfflineUpdateHelper, 1);
 	helper->log = g_string_new ("started\n");
 	helper->time_started = g_get_real_time ();
+
+	/* do stuff on ctrl-c */
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
+				SIGINT,
+				pk_offline_update_sigint_cb,
+				helper,
+				NULL);
 
 	/* get the list of packages to update */
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
