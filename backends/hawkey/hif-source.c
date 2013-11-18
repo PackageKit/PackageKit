@@ -430,6 +430,9 @@ hif_source_clean (HifSource *src, GError **error)
 {
 	gboolean ret;
 
+	if (!g_file_test (src->location, G_FILE_TEST_EXISTS))
+		return TRUE;
+
 	ret = pk_directory_remove_contents (src->location);
 	if (!ret) {
 		g_set_error (error,
