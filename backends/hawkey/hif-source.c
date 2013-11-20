@@ -814,7 +814,6 @@ hif_source_download_package (HifSource *src,
 		if (!g_file_test (directory_slash, G_FILE_TEST_EXISTS)) {
 			rc = g_mkdir (directory_slash, 0755);
 			if (rc != 0) {
-				ret = FALSE;
 				g_set_error (error,
 					     HIF_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,

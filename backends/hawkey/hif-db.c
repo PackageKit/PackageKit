@@ -98,7 +98,6 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 	/* get file contents */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		ret = FALSE;
 		index_dir = hif_package_get_id (package);
 		g_set_error (error,
 			     HIF_ERROR,

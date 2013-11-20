@@ -1743,6 +1743,8 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 
 		/* ensure the filename is set */
 		ret = hif_package_ensure_source (sources, pkg, error);
+		if (!ret)
+			goto out;
 
 		/* find the location of the local file */
 		filename = hif_package_get_filename (pkg);
