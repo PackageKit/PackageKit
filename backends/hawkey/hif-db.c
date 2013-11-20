@@ -69,8 +69,7 @@ hif_db_get_dir_for_package (HyPackage package)
 	pkgid = hif_package_get_pkgid (package);
 	if (pkgid == NULL)
 		goto out;
-	dir = g_strdup_printf ("%s/lib/yum/yumdb/%c/%s-%s-%s-%s",
-			       LOCALSTATEDIR,
+	dir = g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s",
 			       hy_package_get_name (package)[0],
 			       pkgid,
 			       hy_package_get_name (package),
