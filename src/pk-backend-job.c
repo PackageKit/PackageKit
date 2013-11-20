@@ -1011,7 +1011,8 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 
 	/* already this? */
 	if (job->priv->status == status) {
-		g_debug ("already set same status");
+		g_debug ("already set same status '%s",
+			 pk_status_enum_to_string (status));
 		return;
 	}
 
