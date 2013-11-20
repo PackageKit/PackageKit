@@ -1635,6 +1635,7 @@ pk_backend_transaction_download (GPtrArray *sources,
 				 GError **error)
 {
 	gboolean ret = TRUE;
+	gboolean valid;
 	gchar *tmp;
 	GPtrArray *downloads;
 	guint i;
@@ -1672,14 +1673,24 @@ pk_backend_transaction_download (GPtrArray *sources,
 		if (!ret)
 			goto out;
 
-		/* download package: TODO: check if package already exists and checksum is okay */
-		state_local = hif_state_get_child (state);
-		tmp = hif_source_download_package (src, pkg, NULL, state_local, error);
-		if (tmp == NULL) {
-			ret = FALSE;
+		/* check package exists and checksum is okay */
+		ret = hif_source_package_check (src, pkg, &valid, error);
+		if (!ret)
 			goto out;
+
+		/* download package */
+		if (valid) {
+			g_debug ("%s already exists in cache",
+				 hy_package_get_name (pkg));
+		} else {
+			state_local = hif_state_get_child (state);
+			tmp = hif_source_download_package (src, pkg, NULL, state_local, error);
+			if (tmp == NULL) {
+				ret = FALSE;
+				goto out;
+			}
+			g_free (tmp);
 		}
-		g_free (tmp);
 
 		/* done */
 		ret = hif_state_done (state, error);
