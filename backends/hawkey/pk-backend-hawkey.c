@@ -2990,28 +2990,35 @@ hif_is_installed_package_id (HySack sack, const gchar *package_id)
 }
 
 /**
- * pk_backend_remove_packages:
+ * pk_backend_remove_packages_thread:
  *
  * FIXME: Use autoremove
  * FIXME: Use allow_deps
  */
-void
-pk_backend_remove_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids,
-			    gboolean allow_deps,
-			    gboolean autoremove)
+static void
+pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	gboolean ret;
 	GError *error = NULL;
 	GHashTable *hash = NULL;
-	guint i;
+	HifState *state_local;
 	HyPackage pkg;
 	HySack sack = NULL;
-	PkBitfield filters;
-	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters;
+	gboolean allow_deps;
+	gboolean autoremove;
+	gboolean ret;
+	gchar **package_ids;
+	guint i;
+
+	g_variant_get (params, "(t^a&sbb)",
+		       &job_data->transaction_flags,
+		       &package_ids,
+		       &allow_deps,
+		       &autoremove);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3106,7 +3113,6 @@ pk_backend_remove_packages (PkBackend *backend,
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	job_data->transaction_flags = transaction_flags;
 	ret = pk_backend_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -3130,23 +3136,41 @@ out:
 }
 
 /**
- * pk_backend_install_packages:
+ * pk_backend_remove_packages:
  */
 void
-pk_backend_install_packages (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     gchar **package_ids)
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids,
+			    gboolean allow_deps,
+			    gboolean autoremove)
 {
-	gboolean ret;
+	pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_install_packages_thread:
+ */
+static void
+pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
 	GError *error = NULL;
 	GHashTable *hash = NULL;
-	guint i;
 	HifState *state_local;
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	gboolean ret;
+	gchar **package_ids;
+	guint i;
+
+	g_variant_get (params, "(t^a&s)",
+		       &job_data->transaction_flags,
+		       &package_ids);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3224,7 +3248,6 @@ pk_backend_install_packages (PkBackend *backend,
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	job_data->transaction_flags = transaction_flags;
 	ret = pk_backend_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -3248,24 +3271,40 @@ out:
 }
 
 /**
- * pk_backend_install_files:
+ * pk_backend_install_packages:
  */
 void
-pk_backend_install_files (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield transaction_flags,
-			  gchar **full_paths)
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job,
+			     PkBitfield transaction_flags,
+			     gchar **package_ids)
 {
-	gboolean ret;
+	pk_backend_job_thread_create (job, pk_backend_install_packages_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_install_files_thread:
+ */
+static void
+pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
 	GError *error = NULL;
 	GHashTable *hash = NULL;
 	GPtrArray *array = NULL;
-	guint i;
 	HifState *state_local;
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	gboolean ret;
+	gchar **full_paths;
+	guint i;
+
+	g_variant_get (params, "(t^a&s)",
+		       &job_data->transaction_flags,
+		       &full_paths);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3335,7 +3374,6 @@ pk_backend_install_files (PkBackend *backend,
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	job_data->transaction_flags = transaction_flags;
 	ret = pk_backend_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -3361,23 +3399,39 @@ out:
 }
 
 /**
- * pk_backend_update_packages:
+ * pk_backend_install_files:
  */
 void
-pk_backend_update_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids)
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar **full_paths)
 {
-	gboolean ret;
+	pk_backend_job_thread_create (job, pk_backend_install_files_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_update_packages_thread:
+ */
+static void
+pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
 	GError *error = NULL;
 	GHashTable *hash = NULL;
-	guint i;
 	HifState *state_local;
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	gboolean ret;
+	gchar **package_ids;
+	guint i;
+
+	g_variant_get (params, "(t^a&s)",
+		       &job_data->transaction_flags,
+		       &package_ids);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3454,7 +3508,6 @@ pk_backend_update_packages (PkBackend *backend,
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	job_data->transaction_flags = transaction_flags;
 	ret = pk_backend_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -3475,6 +3528,16 @@ out:
 	if (sack != NULL)
 		hy_sack_free (sack);
 	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_update_packages:
+ */
+void
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job,
+			    PkBitfield transaction_flags, gchar **package_ids)
+{
+	pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
 /**
