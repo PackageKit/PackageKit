@@ -67,9 +67,5 @@ gchar		*hif_source_download_package	(HifSource		*src,
 						 const gchar		*directory,
 						 HifState		*state,
 						 GError			**error);
-gboolean	 hif_source_package_check	(HifSource		*src,
-						 HyPackage		 pkg,
-						 gboolean		*valid,
-						 GError			**error);
 
 #endif /* __HIF_SOURCE_H */

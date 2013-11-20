@@ -45,5 +45,12 @@ gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);
 const gchar	*hif_package_get_pkgid			(HyPackage	 pkg);
+gchar		*hif_package_download			(HyPackage	 pkg,
+							 const gchar	*directory,
+							 HifState	*state,
+							 GError		**error);
+gboolean	 hif_package_check_filename		(HyPackage	 pkg,
+							 gboolean	*valid,
+							 GError		**error);
 
 #endif /* __HIF_PACKAGE_H */

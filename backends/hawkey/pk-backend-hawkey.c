@@ -725,15 +725,13 @@ out:
 }
 
 /**
- * hif_package_ensure_filename:
+ * hif_package_ensure_source:
  */
 static gboolean
-hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GError **error)
+hif_package_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *basename = NULL;
-	gchar *filename = NULL;
 	HifSource *src;
+	gboolean ret = TRUE;
 
 	/* get repo */
 	if (hy_package_installed (pkg))
@@ -745,34 +743,25 @@ hif_package_ensure_filename (GPtrArray *sources, HyPackage pkg, GError **error)
 		ret = FALSE;
 		goto out;
 	}
-
-	/* make default cache filename location */
-	basename = g_path_get_basename (hy_package_get_location (pkg));
-	filename = g_build_filename (hif_source_get_location (src),
-				     "packages",
-				     basename,
-				     NULL);
-	hif_package_set_filename (pkg, filename);
+	hif_package_set_source (pkg, src);
 out:
-	g_free (filename);
-	g_free (basename);
 	return ret;
 }
 
 /**
- * hif_package_ensure_filename_list:
+ * hif_package_ensure_source_list:
  */
 static gboolean
-hif_package_ensure_filename_list (GPtrArray *sources,
-				  HyPackageList pkglist,
-				  GError **error)
+hif_package_ensure_source_list (GPtrArray *sources,
+				HyPackageList pkglist,
+				GError **error)
 {
 	gboolean ret = TRUE;
 	guint i;
 	HyPackage pkg;
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
-		ret = hif_package_ensure_filename (sources, pkg, error);
+		ret = hif_package_ensure_source (sources, pkg, error);
 		if (!ret)
 			goto out;
 	}
@@ -891,7 +880,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	/* set the cache filename on each package */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) ||
 	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED)) {
-		ret = hif_package_ensure_filename_list (job_data->enabled_sources,
+		ret = hif_package_ensure_source_list (job_data->enabled_sources,
 							pkglist,
 							&error);
 		if (!ret) {
@@ -1643,7 +1632,6 @@ pk_backend_transaction_download (GPtrArray *sources,
 	gchar *tmp;
 	GPtrArray *downloads;
 	guint i;
-	HifSource *src;
 	HifState *state_local;
 	PkBitfield types;
 	HyPackage pkg;
@@ -1663,22 +1651,13 @@ pk_backend_transaction_download (GPtrArray *sources,
 	for (i = 0; i < downloads->len; i++) {
 		pkg = g_ptr_array_index (downloads, i);
 
-		/* find repo */
-		src = hif_source_filter_by_id (sources,
-					       hy_package_get_reponame (pkg),
-					       error);
-		if (src == NULL) {
-			ret = FALSE;
-			goto out;
-		}
-
 		/* get correct package source */
-		ret = hif_package_ensure_filename (sources, pkg, error);
+		ret = hif_package_ensure_source (sources, pkg, error);
 		if (!ret)
 			goto out;
 
 		/* check package exists and checksum is okay */
-		ret = hif_source_package_check (src, pkg, &valid, error);
+		ret = hif_package_check_filename (pkg, &valid, error);
 		if (!ret)
 			goto out;
 
@@ -1688,7 +1667,7 @@ pk_backend_transaction_download (GPtrArray *sources,
 				 hy_package_get_name (pkg));
 		} else {
 			state_local = hif_state_get_child (state);
-			tmp = hif_source_download_package (src, pkg, NULL, state_local, error);
+			tmp = hif_package_download (pkg, NULL, state_local, error);
 			if (tmp == NULL) {
 				ret = FALSE;
 				goto out;
@@ -1788,7 +1767,7 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 		pkg = g_ptr_array_index (install, i);
 
 		/* ensure the filename is set */
-		ret = hif_package_ensure_filename (sources, pkg, error);
+		ret = hif_package_ensure_source (sources, pkg, error);
 
 		/* find the location of the local file */
 		filename = hif_package_get_filename (pkg);
@@ -2602,7 +2581,7 @@ pk_backend_transaction_commit (PkBackendJob *job,
 	for (i = 0; i < commit->install->len; i++) {
 
 		pkg = g_ptr_array_index (commit->install, i);
-		ret = hif_package_ensure_filename (sources, pkg, error);
+		ret = hif_package_ensure_source (sources, pkg, error);
 		if (!ret)
 			goto out;
 

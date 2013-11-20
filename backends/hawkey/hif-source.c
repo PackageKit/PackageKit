@@ -788,68 +788,6 @@ hif_source_checksum_hy_to_lr (int checksum_hy)
 }
 
 /**
- * hif_source_checksum_hy_to_glib:
- **/
-static GChecksumType
-hif_source_checksum_hy_to_glib (int checksum_hy)
-{
-	if (checksum_hy == HY_CHKSUM_MD5)
-		return G_CHECKSUM_MD5;
-	if (checksum_hy == HY_CHKSUM_SHA1)
-		return G_CHECKSUM_SHA1;
-	if (checksum_hy == HY_CHKSUM_SHA256)
-		return G_CHECKSUM_SHA256;
-	return G_CHECKSUM_SHA512;
-}
-
-/**
- * hif_source_package_check:
- **/
-gboolean
-hif_source_package_check (HifSource *src,
-			  HyPackage pkg,
-			  gboolean *valid,
-			  GError **error)
-{
-	GChecksumType checksum_type_glib;
-	char *checksum_valid = NULL;
-	const unsigned char *checksum;
-	gboolean ret = TRUE;
-	gchar *basename;
-	gchar *checksum_actual = NULL;
-	gchar *data = NULL;
-	gchar *path;
-	gsize size;
-	int checksum_type_hy;
-
-	/* check if the file does not exist */
-	basename = g_path_get_basename (hy_package_get_location (pkg));
-	path = g_build_filename (src->location, "packages", basename, NULL);
-	g_debug ("checking if %s already exists...", path);
-	if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
-		*valid = FALSE;
-		goto out;
-	}
-
-	/* check the checksum */
-	checksum = hy_package_get_chksum (pkg, &checksum_type_hy);
-	checksum_valid = hy_chksum_str (checksum, checksum_type_hy);
-	checksum_type_glib = hif_source_checksum_hy_to_glib (checksum_type_hy);
-	ret = g_file_get_contents (path, &data, &size, error);
-	if (!ret)
-		goto out;
-	checksum_actual = g_compute_checksum_for_string (checksum_type_glib,
-							 data, size);
-	*valid = g_strcmp0 (checksum_valid, checksum_actual) == 0;
-out:
-	g_free (basename);
-	g_free (checksum_actual);
-	g_free (data);
-	hy_free (checksum_valid);
-	return ret;
-}
-
-/**
  * hif_source_download_package:
  **/
 gchar *
