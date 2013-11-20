@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_KEYRING_H
+#define __HIF_KEYRING_H
+
 #include <glib.h>
 
 #include <rpm/rpmkeyring.h>
@@ -31,3 +34,5 @@ gboolean	 hif_keyring_add_public_keys	(rpmKeyring		 keyring,
 gboolean	 hif_keyring_check_untrusted_file (rpmKeyring		 keyring,
 						 const gchar		*filename,
 						 GError			**error);
+
+#endif /* __HIF_KEYRING_H */

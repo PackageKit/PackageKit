@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_PACKAGE_H
+#define __HIF_PACKAGE_H
+
 #include <glib.h>
 #include <pk-backend.h>
 
@@ -37,3 +40,5 @@ gboolean	 hif_package_is_gui			(HyPackage	 pkg);
 gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);
 const gchar	*hif_package_get_pkgid			(HyPackage	 pkg);
+
+#endif /* __HIF_PACKAGE_H */

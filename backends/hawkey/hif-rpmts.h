@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_RPMTS_H
+#define __HIF_RPMTS_H
+
 #include <glib.h>
 #include <rpm/rpmts.h>
 #include <hawkey/package.h>
@@ -33,3 +36,5 @@ gboolean	 hif_rpmts_add_remove_pkg	(rpmts		 ts,
 						 GError		**error);
 gboolean	 hif_rpmts_look_for_problems	(rpmts		 ts,
 						 GError		**error);
+
+#endif /* __HIF_RPMTS_H */

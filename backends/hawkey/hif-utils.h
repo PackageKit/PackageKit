@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_UTILS_H
+#define __HIF_UTILS_H
+
 #include <glib.h>
 #include <pk-backend.h>
 
@@ -48,3 +51,5 @@ void		 hif_emit_package_list_filter	(PkBackendJob		*job,
 						 PkBitfield		 filters,
 						 HyPackageList		 pkglist);
 PkBitfield	 hif_get_filter_for_ids		(gchar			**package_ids);
+
+#endif /* __HIF_UTILS_H */

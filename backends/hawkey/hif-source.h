@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_SOURCE_H
+#define __HIF_SOURCE_H
+
 #include <glib.h>
 
 #include <hawkey/repo.h>
@@ -68,3 +71,5 @@ gboolean	 hif_source_package_check	(HifSource		*src,
 						 HyPackage		 pkg,
 						 gboolean		*valid,
 						 GError			**error);
+
+#endif /* __HIF_SOURCE_H */

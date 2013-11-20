@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __HIF_GOAL_H
+#define __HIF_GOAL_H
+
 #include <glib.h>
 #include <pk-backend.h>
 
@@ -31,3 +34,5 @@ gboolean	 hif_goal_depsolve			(HyGoal		 goal,
 							 GError		**error);
 GPtrArray	*hif_goal_get_packages			(HyGoal		 goal,
 							 PkBitfield	 types);
+
+#endif /* __HIF_GOAL_H */
