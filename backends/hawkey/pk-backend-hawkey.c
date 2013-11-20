@@ -2413,6 +2413,19 @@ out:
 }
 
 /**
+ * _hif_state_get_step_multiple_pair:
+ *
+ * 3,3	= 50
+ * 3,0	= 99 (we can't use 100 as an index value)
+ * 0,3	= 1  (we can't use 0 as an index value)
+ **/
+static guint
+_hif_state_get_step_multiple_pair (guint first, guint second)
+{
+	return 1 + (first * 98.0 / (first + second));
+}
+
+/**
  * hif_transaction_write_yumdb:
  **/
 static gboolean
@@ -2421,17 +2434,20 @@ hif_transaction_write_yumdb (PkBackendJob *job,
 			     HifState *state,
 			     GError **error)
 {
-	gboolean ret;
-	guint i;
 	HifState *state_local;
 	HifState *state_loop;
 	HyPackage pkg;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	gboolean ret;
+	guint i;
+	guint steps_auto;
 
+	steps_auto = _hif_state_get_step_multiple_pair (commit->remove->len,
+							commit->install->len);
 	ret = hif_state_set_steps (state,
 				   error,
-				   50, /* remove */
-				   50, /* add */
+				   steps_auto,		/* remove */
+				   100 - steps_auto,	/* install */
 				   -1);
 	if (!ret)
 		goto out;
@@ -2748,14 +2764,14 @@ pk_backend_transaction_run (PkBackendJob *job,
 	} else if (pk_bitfield_contain (transaction_flags,
 					PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		ret = hif_state_set_steps (state, error,
-					   50, /* depsolve */
-					   50, /* download */
+					   5, /* depsolve */
+					   95, /* download */
 					   -1);
 	} else {
 		ret = hif_state_set_steps (state, error,
-					   50, /* depsolve */
-					   25, /* download */
-					   25, /* install/remove */
+					   5, /* depsolve */
+					   50, /* download */
+					   45, /* install/remove */
 					   -1);
 	}
 	if (!ret)
@@ -2927,10 +2943,10 @@ pk_backend_remove_packages (PkBackend *backend,
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   50, /* add repos */
-				   25, /* check installed */
-				   12, /* find packages */
-				   13, /* run transaction */
+				   3, /* add repos */
+				   1, /* check installed */
+				   1, /* find packages */
+				   95, /* run transaction */
 				   -1);
 	g_assert (ret);
 
@@ -3064,10 +3080,10 @@ pk_backend_install_packages (PkBackend *backend,
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   50, /* add repos */
-				   25, /* check installed */
-				   12, /* find packages */
-				   13, /* run transaction */
+				   3, /* add repos */
+				   1, /* check installed */
+				   1, /* find packages */
+				   95, /* run transaction */
 				   -1);
 	g_assert (ret);
 
@@ -3459,9 +3475,9 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   50, /* add repos */
-				   25, /* find packages */
-				   25, /* emit files */
+				   90, /* add repos */
+				   5, /* find packages */
+				   5, /* emit files */
 				   -1);
 	g_assert (ret);
 
