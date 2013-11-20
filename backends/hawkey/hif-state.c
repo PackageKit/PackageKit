@@ -986,6 +986,12 @@ hif_state_show_profile (HifState *state)
 	guint i;
 	guint uncumalitive = 0;
 
+	/* get the total time */
+	for (i = 0; i < state->priv->steps; i++)
+		total_time += state->priv->step_profile[i];
+	if (total_time < 0.01)
+		return;
+
 	/* get the total time so we can work out the divisor */
 	result = g_string_new ("Raw timing data was { ");
 	for (i = 0; i < state->priv->steps; i++) {
@@ -995,11 +1001,6 @@ hif_state_show_profile (HifState *state)
 	if (state->priv->steps > 0)
 		g_string_set_size (result, result->len - 2);
 	g_string_append (result, " }\n");
-
-	/* get the total time so we can work out the divisor */
-	for (i = 0; i < state->priv->steps; i++)
-		total_time += state->priv->step_profile[i];
-	division = total_time / 100.0f;
 
 	/* what we set */
 	g_string_append (result, "steps were set as [ ");
@@ -1011,6 +1012,7 @@ hif_state_show_profile (HifState *state)
 
 	/* what we _should_ have set */
 	g_string_append_printf (result, "-1 ] but should have been: [ ");
+	division = total_time / 100.0f;
 	for (i = 0; i < state->priv->steps; i++) {
 		g_string_append_printf (result, "%.0f, ",
 					state->priv->step_profile[i] / division);
