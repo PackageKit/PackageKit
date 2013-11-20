@@ -221,6 +221,7 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 	if (g_strv_length (sections) != 3) {
 		ret = FALSE;
 		g_set_error_literal (error, 1, 0, "data invalid");
+		goto out;
 	}
 
 	/* parse object */
