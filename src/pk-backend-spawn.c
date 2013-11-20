@@ -50,6 +50,8 @@
 #include "pk-time.h"
 #include "pk-conf.h"
 
+//#define ENABLE_STRACE
+
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
 
@@ -920,6 +922,12 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	return envp;
 }
 
+#ifdef ENABLE_STRACE
+ #define PK_BACKEND_SPAWN_ARGV0		4
+#else
+ #define PK_BACKEND_SPAWN_ARGV0		0
+#endif
+
 /**
  * pk_backend_spawn_va_list_to_argv:
  * @string_first: the first string
@@ -933,7 +941,6 @@ static gchar **
 pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 {
 	GPtrArray *ptr_array;
-	gchar **array;
 	gchar *value_temp;
 	guint i;
 
@@ -942,6 +949,13 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 
 	/* find how many elements we have in a temp array */
 	ptr_array = g_ptr_array_new ();
+#ifdef ENABLE_STRACE
+	g_ptr_array_add (ptr_array, g_strdup ("strace"));
+	g_ptr_array_add (ptr_array, g_strdup ("-T"));
+	g_ptr_array_add (ptr_array, g_strdup ("-tt"));
+	g_ptr_array_add (ptr_array, g_strdup_printf ("-o/var/log/PackageKit-strace-%06i",
+						     g_random_int_range (1, 999999)));
+#endif
 	g_ptr_array_add (ptr_array, g_strdup (string_first));
 
 	/* process all the va_list entries */
@@ -952,13 +966,8 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 		g_ptr_array_add (ptr_array, g_strdup (value_temp));
 	}
 
-	/* convert the array to a strv type */
-	array = pk_ptr_array_to_strv (ptr_array);
-
-	/* get rid of the array, and free the contents */
-	g_ptr_array_foreach (ptr_array, (GFunc) g_free, NULL);
-	g_ptr_array_free (ptr_array, TRUE);
-	return array;
+	g_ptr_array_add (ptr_array, NULL);
+	return (gchar **) g_ptr_array_free (ptr_array, FALSE);
 }
 
 /**
@@ -977,6 +986,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	PkHintEnum background;
 	GError *error = NULL;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
+	PkSpawnArgvFlags flags = PK_SPAWN_ARGV_FLAGS_NONE;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
@@ -996,25 +1006,29 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	if (g_str_has_prefix (directory, "test_"))
 		directory = "test";
 
-	filename = g_build_filename ("..", "backends", directory, "helpers", argv[0], NULL);
+	filename = g_build_filename ("..", "backends", directory, "helpers",
+				     argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename ("..", "backends", directory, argv[0], NULL);
+		filename = g_build_filename ("..", "backends", directory,
+					     argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 	}
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
+		filename = g_build_filename (DATADIR, "PackageKit", "helpers",
+					     priv->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 	}
 #else
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers",
+				     priv->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 #endif
 	g_debug ("using spawn filename %s", filename);
 
 	/* replace the filename with the full path */
-	g_free (argv[0]);
-	argv[0] = g_strdup (filename);
+	g_free (argv[PK_BACKEND_SPAWN_ARGV0]);
+	argv[PK_BACKEND_SPAWN_ARGV0] = g_strdup (filename);
 
 	/* copy idle setting from backend to PkSpawn instance */
 	background = pk_backend_job_get_background (job);
@@ -1022,14 +1036,20 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 		      "background", (background == PK_HINT_ENUM_TRUE),
 		      NULL);
 
+#ifdef ENABLE_STRACE
+	/* we can't reuse when using strace */
+	flags |= PK_SPAWN_ARGV_FLAGS_NEVER_REUSE;
+#endif
+
 	priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);
-	ret = pk_spawn_argv (priv->spawn, argv, envp, &error);
+	ret = pk_spawn_argv (priv->spawn, argv, envp, flags, &error);
 	if (!ret) {
 		pk_backend_job_error_code (priv->job,
 					   PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "Spawn of helper '%s' failed: %s",
-					   argv[0], error->message);
+					   argv[PK_BACKEND_SPAWN_ARGV0],
+					   error->message);
 		g_error_free (error);
 		pk_backend_job_finished (priv->job);
 	}

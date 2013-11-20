@@ -63,12 +63,19 @@ typedef enum {
 	PK_SPAWN_EXIT_TYPE_UNKNOWN
 } PkSpawnExitType;
 
+typedef enum {
+	PK_SPAWN_ARGV_FLAGS_NONE,
+	PK_SPAWN_ARGV_FLAGS_NEVER_REUSE,
+	PK_SPAWN_ARGV_FLAGS_LAST
+} PkSpawnArgvFlags;
+
 GType		 pk_spawn_get_type		  	(void);
 PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 							 gchar		**argv,
 							 gchar		**envp,
+							 PkSpawnArgvFlags flags,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_spawn_is_running			(PkSpawn	*spawn);

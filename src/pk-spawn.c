@@ -524,7 +524,8 @@ pk_strvequal (gchar **id1, gchar **id2)
  *
  **/
 gboolean
-pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
+	       PkSpawnArgvFlags flags, GError **error)
 {
 	gboolean ret = TRUE;
 	GError *error_local = NULL;
@@ -565,6 +566,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 			g_debug ("argv did not match, not reusing");
 		} else if (!pk_strvequal (spawn->priv->last_envp, envp)) {
 			g_debug ("envp did not match, not reusing");
+		} else if ((flags & PK_SPAWN_ARGV_FLAGS_NEVER_REUSE) > 0) {
+			g_debug ("not re-using instance due to policy");
 		} else {
 			/* join with tabs, as spaces could be in file name */
 			command = g_strjoinv ("\t", &argv[1]);

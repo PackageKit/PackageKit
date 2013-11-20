@@ -764,7 +764,7 @@ pk_test_spawn_func (void)
 	/* make sure return error for missing file */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_error (error, 1, 0);
 	g_strfreev (argv);
 	g_assert (!ret);
@@ -776,7 +776,7 @@ pk_test_spawn_func (void)
 	/* make sure run correct helper */
 	mexit = -1;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -801,7 +801,7 @@ pk_test_spawn_func (void)
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-proxy.sh", " ", 0);
 	envp = g_strsplit ("http_proxy=username:password@server:port "
 			   "ftp_proxy=username:password@server:port", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, envp, &error);
+	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -816,7 +816,7 @@ pk_test_spawn_func (void)
 	/* make sure run correct helper, and cancel it using SIGKILL */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -837,7 +837,7 @@ pk_test_spawn_func (void)
 	g_object_set (spawn,
 		      "allow-sigkill", FALSE,
 		      NULL);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -855,7 +855,7 @@ pk_test_spawn_func (void)
 	/* make sure run correct helper, and SIGQUIT it */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-sigquit.py", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -869,7 +869,7 @@ pk_test_spawn_func (void)
 
 	/* run lots of data for profiling */
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-profiling.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, &error);
+	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_strfreev (argv);
@@ -881,7 +881,7 @@ pk_test_spawn_func (void)
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager", "\t", 0);
 	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE INTERACTIVE=TRUE", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, envp, &error);
+	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
@@ -895,7 +895,7 @@ pk_test_spawn_func (void)
 	g_assert (pk_spawn_is_running (spawn));
 
 	/* run the dispatcher with new input */
-	ret = pk_spawn_argv (spawn, argv, envp, &error);
+	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
