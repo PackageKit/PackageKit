@@ -27,6 +27,11 @@
 
 #include <hawkey/package.h>
 
+#include "hif-source.h"
+
+HifSource	*hif_package_get_source			(HyPackage	 pkg);
+void		 hif_package_set_source			(HyPackage	 pkg,
+							 HifSource	*src);
 const gchar	*hif_package_get_filename		(HyPackage	 pkg);
 void		 hif_package_set_filename		(HyPackage	 pkg,
 							 const gchar	*filename);

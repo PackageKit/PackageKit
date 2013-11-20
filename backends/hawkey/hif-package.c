@@ -35,6 +35,7 @@ typedef struct {
 	gboolean	 user_action;
 	gchar		*filename;
 	PkInfoEnum	 info;
+	HifSource	*src;
 } HifPackagePrivate;
 
 /**
@@ -120,6 +121,46 @@ hif_package_set_filename (HyPackage pkg, const gchar *filename)
 		return;
 	g_free (priv->filename);
 	priv->filename = g_strdup (filename);
+}
+
+/**
+ * hif_package_set_source:
+ **/
+void
+hif_package_set_source (HyPackage pkg, HifSource *src)
+{
+	HifPackagePrivate *priv;
+	gchar *basename = NULL;
+
+	/* replace contents */
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	priv->src = src;
+
+	/* default cache filename location */
+	if (!hy_package_installed (pkg)) {
+		basename = g_path_get_basename (hy_package_get_location (pkg));
+		g_free (priv->filename);
+		priv->filename = g_build_filename (hif_source_get_location (src),
+						   "packages",
+						   basename,
+						   NULL);
+		g_free (basename);
+	}
+}
+
+/**
+ * hif_package_get_source:
+ **/
+HifSource *
+hif_package_get_source (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return NULL;
+	return priv->src;
 }
 
 /**
