@@ -3737,28 +3737,3 @@ pk_backend_get_update_detail (PkBackend *backend,
 {
 	pk_backend_job_thread_create (job, pk_backend_get_update_detail_thread, NULL, NULL);
 }
-
-#if 0
-
-/**
- * pk_backend_get_categories:
- */
-void
-pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
-{
-	pk_backend_job_finished (job);
-}
-
-/**
- * pk_backend_search_groups:
- */
-void
-pk_backend_search_groups (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield filters,
-			  gchar **values)
-{
-	pk_backend_job_finished (job);
-}
-
-#endif
