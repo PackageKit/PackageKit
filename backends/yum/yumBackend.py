@@ -2313,6 +2313,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         message = ''
         try:
             self.yumbase.conf.skip_broken = 0
+            self.yumbase.rpmdb.auto_close = False
             rc, msgs = self.yumbase.buildTransaction()
             message = _format_msgs(msgs)
         except yum.Errors.RepoError, e:
@@ -3082,6 +3083,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # clear previous transaction data
         self.yumbase._tsInfo = None
 
+        # auto_close is good for ad-hoc queries, but shouldn't be used
+        # when running a transaction
+        self.yumbase.rpmdb.auto_close = True
+
         # we are working offline
         if not self.has_network:
             self.yumbase.conf.cache = 1
@@ -3132,7 +3137,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-        self.yumbase.rpmdb.auto_close = True
         self.dnlCallback = DownloadCallback(self, showNames=True)
         self.yumbase.repos.setProgressBar(self.dnlCallback)
 
