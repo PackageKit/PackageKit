@@ -2135,7 +2135,10 @@ pk_hy_convert_to_system_repo (PkBackendJob *job, HyPackage pkg, HifState *state,
 	HySack sack = NULL;
 
 	/* get local packages */
-	sack = hif_utils_create_sack_for_filters (job, 0, state, error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+						  state,
+						  error);
 	if (sack == NULL)
 		goto out;
 
