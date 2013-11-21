@@ -2518,9 +2518,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	/* run the test transaction */
 	if (hif_config_get_boolean (priv->config, "RpmCheckDebug", NULL)) {
 		g_debug ("running test transaction");
-		hif_state_action_start (state,
-					PK_STATUS_ENUM_TEST_COMMIT,
-					NULL);
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_TEST_COMMIT);
 		commit->state = hif_state_get_child (state);
 		commit->step = HIF_TRANSACTION_STEP_IGNORE;
 		/* the output value of rpmtsCheck is not meaningful */
