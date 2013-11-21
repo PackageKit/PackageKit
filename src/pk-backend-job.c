@@ -1046,6 +1046,22 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 
 	job->priv->status = status;
 
+	/* don't emit some states when simulating */
+	if (pk_bitfield_contain (job->priv->transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		switch (status) {
+		case PK_STATUS_ENUM_DOWNLOAD:
+		case PK_STATUS_ENUM_UPDATE:
+		case PK_STATUS_ENUM_INSTALL:
+		case PK_STATUS_ENUM_REMOVE:
+		case PK_STATUS_ENUM_CLEANUP:
+		case PK_STATUS_ENUM_OBSOLETE:
+			return;
+		default:
+			break;
+		}
+	}
+
 	/* emit */
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_STATUS_CHANGED,
