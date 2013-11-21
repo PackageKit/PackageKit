@@ -314,13 +314,19 @@ hif_source_update_state_cb (void *user_data,
 	gdouble percentage;
 	HifState *state = (HifState *) user_data;
 
-	/* nothing sensible */
-	if (total_to_download <= 0 || now_downloaded <= 0)
-		return 0;
-
 	/* abort */
 	if (!hif_state_check (state, NULL))
 		return -1;
+
+	/* the number of files has changed */
+	if (total_to_download <= 0.01 && now_downloaded <= 0.01) {
+		hif_state_reset (state);
+		return 0;
+	}
+
+	/* nothing sensible */
+	if (total_to_download < 0)
+		return 0;
 
 	/* set percentage */
 	percentage = 100.0f * now_downloaded / total_to_download;
