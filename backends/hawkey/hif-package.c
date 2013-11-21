@@ -24,11 +24,18 @@
 #endif
 
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <glib.h>
+#include <glib/gstdio.h>
+
 #include <hawkey/reldep.h>
 #include <hawkey/util.h>
+#include <librepo/librepo.h>
 
 #include "hif-package.h"
+#include "hif-utils.h"
 
 typedef struct {
 	char		*checksum_str;
@@ -285,17 +292,17 @@ hif_package_is_downloaded (HyPackage pkg)
 }
 
 /**
- * hif_source_checksum_hy_to_glib:
+ * hif_source_checksum_hy_to_lr:
  **/
 static GChecksumType
-hif_source_checksum_hy_to_glib (int checksum_hy)
+hif_source_checksum_hy_to_lr (int checksum_hy)
 {
 	if (checksum_hy == HY_CHKSUM_MD5)
-		return G_CHECKSUM_MD5;
+		return LR_CHECKSUM_MD5;
 	if (checksum_hy == HY_CHKSUM_SHA1)
-		return G_CHECKSUM_SHA1;
+		return LR_CHECKSUM_SHA1;
 	if (checksum_hy == HY_CHKSUM_SHA256)
-		return G_CHECKSUM_SHA256;
+		return LR_CHECKSUM_SHA256;
 	return G_CHECKSUM_SHA512;
 }
 
@@ -305,15 +312,13 @@ hif_source_checksum_hy_to_glib (int checksum_hy)
 gboolean
 hif_package_check_filename (HyPackage pkg, gboolean *valid, GError **error)
 {
-	GChecksumType checksum_type_glib;
+	LrChecksumType checksum_type_lr;
 	char *checksum_valid = NULL;
 	const gchar *path;
 	const unsigned char *checksum;
 	gboolean ret = TRUE;
-	gchar *checksum_actual = NULL;
-	gchar *data = NULL;
-	gsize size;
 	int checksum_type_hy;
+	int fd;
 
 	/* check if the file does not exist */
 	path = hif_package_get_filename (pkg);
@@ -326,16 +331,30 @@ hif_package_check_filename (HyPackage pkg, gboolean *valid, GError **error)
 	/* check the checksum */
 	checksum = hy_package_get_chksum (pkg, &checksum_type_hy);
 	checksum_valid = hy_chksum_str (checksum, checksum_type_hy);
-	checksum_type_glib = hif_source_checksum_hy_to_glib (checksum_type_hy);
-	ret = g_file_get_contents (path, &data, &size, error);
+	checksum_type_lr = hif_source_checksum_hy_to_lr (checksum_type_hy);
+	fd = g_open (path, O_RDONLY, 0);
+	if (fd < 0) {
+		ret = FALSE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_INTERNAL_ERROR,
+			     "Failed to open %s", path);
+		goto out;
+	}
+	ret = lr_checksum_fd_cmp(checksum_type_lr,
+				 fd,
+				 checksum_valid,
+				 TRUE, /* use xattr value */
+				 valid,
+				 error);
+	if (!ret) {
+		g_close (fd, NULL);
+		goto out;
+	}
+	ret = g_close (fd, error);
 	if (!ret)
 		goto out;
-	checksum_actual = g_compute_checksum_for_string (checksum_type_glib,
-							 data, size);
-	*valid = g_strcmp0 (checksum_valid, checksum_actual) == 0;
 out:
-	g_free (checksum_actual);
-	g_free (data);
 	hy_free (checksum_valid);
 	return ret;
 }
