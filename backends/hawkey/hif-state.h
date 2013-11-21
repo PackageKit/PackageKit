@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include <pk-backend.h>
+
 #include "hif-lock.h"
 
 G_BEGIN_DECLS

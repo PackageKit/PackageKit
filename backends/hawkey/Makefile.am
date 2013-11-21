@@ -22,6 +22,8 @@ libpk_backend_hawkey_la_SOURCES =					\
 	hif-package.h							\
 	hif-rpmts.c							\
 	hif-rpmts.h							\
+	hif-sack.c							\
+	hif-sack.h							\
 	hif-source.c							\
 	hif-source.h							\
 	hif-state.c							\

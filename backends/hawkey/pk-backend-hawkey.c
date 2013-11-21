@@ -52,6 +52,7 @@
 #include "hif-keyring.h"
 #include "hif-package.h"
 #include "hif-rpmts.h"
+#include "hif-sack.h"
 #include "hif-source.h"
 #include "hif-state.h"
 #include "hif-utils.h"
@@ -372,119 +373,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * hif_utils_add_source:
- */
-static gboolean
-hif_utils_add_source (HySack sack,
-		      HifSource *src,
-		      HifState *state,
-		      GError **error)
-{
-	gboolean ret = TRUE;
-	GError *error_local = NULL;
-	gint rc;
-	HifState *state_local;
-
-	/* set state */
-	ret = hif_state_set_steps (state, error,
-				   5, /* check repo */
-				   95, /* load solv */
-				   -1);
-	if (!ret)
-		goto out;
-
-	/* check repo */
-	state_local = hif_state_get_child (state);
-	ret = hif_source_check (src, state_local, &error_local);
-	if (!ret) {
-		g_debug ("failed to check, attempting update: %s",
-			 error_local->message);
-		g_clear_error (&error_local);
-		hif_state_reset (state_local);
-		ret = hif_source_update (src, state_local, &error_local);
-		if (!ret) {
-			if (g_error_matches (error_local,
-					     HIF_ERROR,
-					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
-				ret = TRUE;
-				g_warning ("Skipping refresh of %s: %s",
-					   hif_source_get_id (src),
-					   error_local->message);
-				g_error_free (error_local);
-			} else {
-				g_propagate_error (error, error_local);
-			}
-			goto out;
-		}
-	}
-
-	/* done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
-
-	/* load solv */
-	g_debug ("Loading repo %s", hif_source_get_id (src));
-	hif_state_action_start (state, PK_STATUS_ENUM_LOADING_CACHE, NULL);
-	rc = hy_sack_load_yum_repo (sack,
-				    hif_source_get_repo (src),
-				    HY_LOAD_FILELISTS |
-				    HY_LOAD_UPDATEINFO |
-				    HY_BUILD_CACHE);
-	ret = hif_rc_to_gerror (rc, error);
-	if (!ret) {
-		g_prefix_error (error, "Failed to load repo %s: ",
-				hif_source_get_id (src));
-		goto out;
-	}
-
-	/* done */
-	ret = hif_state_done (state, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
-}
-
-/**
- * hif_utils_add_sources:
- */
-static gboolean
-hif_utils_add_sources (HySack sack,
-		       GPtrArray *sources,
-		       HifState *state,
-		       GError **error)
-{
-	gboolean ret = TRUE;
-	guint i;
-	HifSource *src;
-	HifState *state_local;
-
-	/* add each repo */
-	hif_state_set_number_steps (state, sources->len);
-	for (i = 0; i < sources->len; i++) {
-		src = g_ptr_array_index (sources, i);
-
-		state_local = hif_state_get_child (state);
-		ret = hif_utils_add_source (sack, src, state_local, error);
-		if (!ret)
-			goto out;
-
-		/* done */
-		ret = hif_state_done (state, error);
-		if (!ret)
-			goto out;
-	}
-
-	/* success */
-	ret = TRUE;
-out:
-	return ret;
-}
-
-
-
-/**
  * pk_backend_ensure_enabled_sources:
  */
 static gboolean
@@ -518,6 +406,7 @@ hif_utils_add_remote (PkBackendJob *job,
 		      GError **error)
 {
 	gboolean ret = TRUE;
+	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
 	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
@@ -539,9 +428,14 @@ hif_utils_add_remote (PkBackendJob *job,
 	if (!ret)
 		goto out;
 
+	/* only load updateinfo when required */
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
+
 	/* add each repo */
 	state_local = hif_state_get_child (state);
-	ret = hif_utils_add_sources (sack, job_data->enabled_sources, state_local, error);
+	ret = hif_sack_add_sources (sack, job_data->enabled_sources,
+				    flags, state_local, error);
 	if (!ret)
 		goto out;
 
