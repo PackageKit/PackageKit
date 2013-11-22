@@ -277,10 +277,14 @@ AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and log
 AM_CONDITIONAL(PK_BUILD_SYSTEMD, test x$enable_systemd = xyes)
 if test x$enable_systemd = xyes; then
 	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login)
+	AC_ARG_WITH([systemdsystemunitdir],
+		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
+		    [],
+		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
 	AC_DEFINE(PK_BUILD_SYSTEMD,1,[Build systemd code])
-	with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
+AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
@@ -479,15 +483,9 @@ AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build 
 	      build_systemd_updates=$enableval,build_systemd_updates=yes)
 AM_CONDITIONAL(PK_BUILD_SYSTEMD_UPDATES, test $build_systemd_updates = "yes")
 if test x$build_systemd_updates = xyes; then
-	AC_ARG_WITH([systemdsystemunitdir],
-		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
-		    [],
-		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
-	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 	PKG_CHECK_MODULES(LIBSYSTEMD_JOURNAL, libsystemd-journal)
 	AC_DEFINE(PK_HAS_OFFLINE_UPDATES,1,[Has offline updates])
 fi
-AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
@@ -869,6 +867,7 @@ echo "
         systemd-updates:           ${build_systemd_updates}
         pm-utils scripts:          ${build_pm_utils}
         python3:                   ${enable_python3}
+        systemd system unit dir:   ${with_systemdsystemunitdir}
 
         Backends:
         ALPM backend:              ${enable_alpm}
