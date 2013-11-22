@@ -519,6 +519,9 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 		if (!ret)
 			goto out;
 	}
+
+	/* creates repo for command line rpms */
+	hy_sack_create_cmdline_repo (sack);
 out:
 	if (!ret && sack != NULL) {
 		hy_sack_free (sack);
@@ -633,7 +636,17 @@ static gboolean
 hif_package_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
 {
 	HifSource *src;
+	char *location;
 	gboolean ret = TRUE;
+
+	/* this is a local file */
+	if (g_strcmp0 (hy_package_get_reponame (pkg),
+		       HY_CMDLINE_REPO_NAME) == 0) {
+		location = hy_package_get_location (pkg);
+		hif_package_set_filename (pkg, location);
+		hy_free (location);
+		goto out;
+	}
 
 	/* get repo */
 	if (hy_package_installed (pkg))
@@ -1582,6 +1595,14 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 	array = g_ptr_array_new ();
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
+
+		/* this is a standalone file, so by definition is from an
+		 * untrusted repo */
+		if (g_strcmp0 (hy_package_get_reponame (pkg),
+			       HY_CMDLINE_REPO_NAME) == 0) {
+			g_ptr_array_add (array, pkg);
+			continue;
+		}
 
 		/* find repo */
 		src = hif_source_filter_by_id (sources,
@@ -2808,6 +2829,12 @@ pk_backend_transaction_run (PkBackendJob *job,
 		if (!ret)
 			goto out;
 
+		/* this is a local file */
+		if (g_strcmp0 (hy_package_get_reponame (pkg),
+			       HY_CMDLINE_REPO_NAME) == 0) {
+			continue;
+		}
+
 		/* check package exists and checksum is okay */
 		ret = hif_package_check_filename (pkg, &valid, error);
 		if (!ret)
@@ -3241,6 +3268,9 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 						   full_paths[i]);
 			goto out;
 		}
+
+		/* we don't download this, we just use it */
+		hif_package_set_filename (pkg, full_paths[i]);
 
 		/* keep for later */
 		g_ptr_array_add (array, pkg);
