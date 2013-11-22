@@ -28,81 +28,18 @@
 #include <packagekit-glib2/packagekit-private.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <systemd/sd-journal.h>
 
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
 #define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
 #define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
-#define PK_OFFLINE_UPDATE_LOG_DEBUG		"/var/log/PackageKit-offline-update"
 #define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
-
-typedef struct {
-	PkProgressBar	*progressbar;
-	gint64		 time_started;
-	GString		*log;
-} PkOfflineUpdateHelper;
-
-/**
- * pk_log_write:
- **/
-static void
-pk_log_write (PkOfflineUpdateHelper *helper)
-{
-	gboolean ret;
-	GError *error = NULL;
-
-	ret = g_file_set_contents (PK_OFFLINE_UPDATE_LOG_DEBUG,
-				   helper->log->str,
-				   helper->log->len,
-				   &error);
-	if (!ret) {
-		g_warning ("failed to save log: %s", error->message);
-		g_error_free (error);
-	}
-}
-
-/**
- * pk_warning:
- **/
-G_GNUC_PRINTF(2,3)
-static void
-pk_log_warning (PkOfflineUpdateHelper *helper, const gchar *format, ...)
-{
-	gchar *buffer = NULL;
-	va_list args;
-	gint64 delta_ms = (g_get_real_time () - helper->time_started) / 1000;
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-	g_string_append_printf (helper->log,
-				"WARNING: %07" G_GINT64_FORMAT "ms\t%s\n",
-				delta_ms, buffer);
-	g_free (buffer);
-}
-
-/**
- * pk_info:
- **/
-G_GNUC_PRINTF(2,3)
-static void
-pk_log_info (PkOfflineUpdateHelper *helper, const gchar *format, ...)
-{
-	gchar *buffer = NULL;
-	va_list args;
-	gint64 delta_ms = (g_get_real_time () - helper->time_started) / 1000;
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-	g_string_append_printf (helper->log,
-				"INFO: %07" G_GINT64_FORMAT "ms\t%s\n",
-				delta_ms, buffer);
-	g_free (buffer);
-}
 
 /**
  * pk_offline_update_set_plymouth_msg:
  **/
 static void
-pk_offline_update_set_plymouth_msg (PkOfflineUpdateHelper *helper, const gchar *msg)
+pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
 	gboolean ret;
 	gchar *cmd;
@@ -114,11 +51,13 @@ pk_offline_update_set_plymouth_msg (PkOfflineUpdateHelper *helper, const gchar *
 	cmd = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
 	ret = g_spawn_command_line_async (cmd, &error);
 	if (!ret) {
-		pk_log_warning (helper, "failed to display message '%s' on splash: %s",
-				msg, error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to display message on splash: %s",
+				  error->message);
 		g_error_free (error);
+		error = NULL;
 	} else {
-		pk_log_info (helper, "sent text to plymouth '%s'", msg);
+		sd_journal_print (LOG_INFO, "sent msg to plymouth '%s'", msg);
 	}
 	g_free (cmd);
 }
@@ -127,7 +66,7 @@ pk_offline_update_set_plymouth_msg (PkOfflineUpdateHelper *helper, const gchar *
  * pk_offline_update_set_plymouth_mode:
  **/
 static void
-pk_offline_update_set_plymouth_mode (PkOfflineUpdateHelper *helper, const gchar *mode)
+pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -139,11 +78,12 @@ pk_offline_update_set_plymouth_mode (PkOfflineUpdateHelper *helper, const gchar 
 	cmdline = g_strdup_printf ("plymouth change-mode --%s", mode);
 	ret = g_spawn_command_line_async (cmdline, &error);
 	if (!ret) {
-		pk_log_warning (helper, "failed to change mode for splash: %s",
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to change mode for splash: %s",
+				  error->message);
 		g_error_free (error);
 	} else {
-		pk_log_info (helper, "sent text to plymouth '%s'", mode);
+		sd_journal_print (LOG_INFO, "sent mode to plymouth '%s'", mode);
 	}
 	g_free (cmdline);
 }
@@ -152,8 +92,7 @@ pk_offline_update_set_plymouth_mode (PkOfflineUpdateHelper *helper, const gchar 
  * pk_offline_update_set_plymouth_percentage:
  **/
 static void
-pk_offline_update_set_plymouth_percentage (PkOfflineUpdateHelper *helper,
-					   guint percentage)
+pk_offline_update_set_plymouth_percentage (guint percentage)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -166,11 +105,14 @@ pk_offline_update_set_plymouth_percentage (PkOfflineUpdateHelper *helper,
 				   percentage);
 	ret = g_spawn_command_line_async (cmdline, &error);
 	if (!ret) {
-		pk_log_warning (helper, "failed to set percentage for splash: %s",
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to set percentage for splash: %s",
+				  error->message);
 		g_error_free (error);
 	} else {
-		pk_log_info (helper, "sent percentage to plymouth %i%%", percentage);
+		sd_journal_print (LOG_INFO,
+				  "sent progress to plymouth '%i'",
+				  percentage);
 	}
 	g_free (cmdline);
 }
@@ -184,16 +126,16 @@ pk_offline_update_progress_cb (PkProgress *progress,
 			       gpointer user_data)
 {
 	PkInfoEnum info;
-	PkOfflineUpdateHelper *helper = (PkOfflineUpdateHelper *) user_data;
 	PkPackage *pkg = NULL;
+	PkProgressBar *progressbar = PK_PROGRESS_BAR (user_data);
 	PkStatusEnum status;
 	gchar *msg = NULL;
 	gint percentage;
 
 	switch (type) {
 	case PK_PROGRESS_TYPE_ROLE:
-		pk_progress_bar_start (helper->progressbar, "Updating system");
-		pk_log_info (helper, "assigned role");
+		sd_journal_print (LOG_INFO, "assigned role");
+		pk_progress_bar_start (progressbar, "Updating system");
 		break;
 	case PK_PROGRESS_TYPE_PACKAGE:
 		g_object_get (progress, "package", &pkg, NULL);
@@ -201,46 +143,44 @@ pk_offline_update_progress_cb (PkProgress *progress,
 		if (info == PK_INFO_ENUM_UPDATING) {
 			msg = g_strdup_printf ("Updating %s",
 					       pk_package_get_name (pkg));
-			pk_progress_bar_start (helper->progressbar, msg);
+			pk_progress_bar_start (progressbar, msg);
 		} else if (info == PK_INFO_ENUM_INSTALLING) {
 			msg = g_strdup_printf ("Installing %s",
 					       pk_package_get_name (pkg));
-			pk_progress_bar_start (helper->progressbar, msg);
+			pk_progress_bar_start (progressbar, msg);
 		} else if (info == PK_INFO_ENUM_REMOVING) {
 			msg = g_strdup_printf ("Removing %s",
 					       pk_package_get_name (pkg));
-			pk_progress_bar_start (helper->progressbar, msg);
+			pk_progress_bar_start (progressbar, msg);
 		}
-		pk_log_info (helper,
-			     "package %s\t%s",
-			     pk_info_enum_to_string (info),
-			     pk_package_get_name (pkg));
+		sd_journal_print (LOG_INFO,
+				  "package %s\t%s",
+				  pk_info_enum_to_string (info),
+				  pk_package_get_name (pkg));
 		break;
-
 	case PK_PROGRESS_TYPE_PERCENTAGE:
 		g_object_get (progress, "percentage", &percentage, NULL);
 		if (percentage < 0)
 			goto out;
-		pk_log_info (helper, "percentage %i%%", percentage);
+		sd_journal_print (LOG_INFO, "percentage %i%%", percentage);
 
 		/* TRANSLATORS: this is the message we send plymouth to
 		 * advise of the new percentage completion */
 		msg = g_strdup_printf ("%s - %i%%", _("Installing Updates"), percentage);
 		if (percentage > 10)
-			pk_offline_update_set_plymouth_msg (helper, msg);
+			pk_offline_update_set_plymouth_msg (msg);
 
 		/* print on terminal */
-		pk_progress_bar_set_percentage (helper->progressbar, percentage);
+		pk_progress_bar_set_percentage (progressbar, percentage);
 
 		/* update plymouth */
-		pk_offline_update_set_plymouth_percentage (helper, percentage);
+		pk_offline_update_set_plymouth_percentage (percentage);
 		break;
-
 	case PK_PROGRESS_TYPE_STATUS:
 		g_object_get (progress, "status", &status, NULL);
-		pk_log_info (helper, "status %s",
-			     pk_status_enum_to_string (status));
-
+		sd_journal_print (LOG_INFO,
+				  "status %s",
+				  pk_status_enum_to_string (status));
 	default:
 		break;
 	}
@@ -254,7 +194,7 @@ out:
  * pk_offline_update_reboot:
  **/
 static void
-pk_offline_update_reboot (PkOfflineUpdateHelper *helper)
+pk_offline_update_reboot (void)
 {
 	GDBusConnection *connection;
 	GError *error = NULL;
@@ -267,13 +207,15 @@ pk_offline_update_reboot (PkOfflineUpdateHelper *helper)
 	}
 
 	/* reboot using systemd */
-	pk_offline_update_set_plymouth_mode (helper, "shutdown");
+	sd_journal_print (LOG_INFO, "rebooting");
+	pk_offline_update_set_plymouth_mode ("shutdown");
 	/* TRANSLATORS: we've finished doing offline updates */
-	pk_offline_update_set_plymouth_msg (helper, _("Rebooting after installing updates…"));
+	pk_offline_update_set_plymouth_msg (_("Rebooting after installing updates…"));
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
-		pk_log_warning (helper, "Failed to get system bus connection: %s",
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "Failed to get system bus connection: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -289,7 +231,9 @@ pk_offline_update_reboot (PkOfflineUpdateHelper *helper)
 					   NULL,
 					   &error);
 	if (val == NULL) {
-		pk_log_warning (helper, "Failed to reboot: %s", error->message);
+		sd_journal_print (LOG_WARNING,
+				  "Failed to reboot: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -304,7 +248,7 @@ out:
  * pk_offline_update_write_error:
  **/
 static void
-pk_offline_update_write_error (PkOfflineUpdateHelper *helper, const GError *error)
+pk_offline_update_write_error (const GError *error)
 {
 	gboolean ret;
 	gchar *data = NULL;
@@ -313,7 +257,6 @@ pk_offline_update_write_error (PkOfflineUpdateHelper *helper, const GError *erro
 	PkErrorEnum error_enum = PK_ERROR_ENUM_UNKNOWN;
 
 	/* just write what we've got */
-	pk_log_info (helper, "writing error");
 	key_file = g_key_file_new ();
 	g_key_file_set_boolean (key_file,
 				PK_OFFLINE_UPDATE_RESULTS_GROUP,
@@ -335,8 +278,9 @@ pk_offline_update_write_error (PkOfflineUpdateHelper *helper, const GError *erro
 	/* write file */
 	data = g_key_file_to_data (key_file, NULL, &error_local);
 	if (data == NULL) {
-		pk_log_warning (helper, "failed to get keyfile data: %s",
-				error_local->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to get keyfile data: %s",
+				  error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -345,8 +289,9 @@ pk_offline_update_write_error (PkOfflineUpdateHelper *helper, const GError *erro
 				   -1,
 				   &error_local);
 	if (!ret) {
-		pk_log_warning (helper, "failed to write file: %s",
-				error_local->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to write file: %s",
+				  error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -359,7 +304,7 @@ out:
  * pk_offline_update_write_results:
  **/
 static void
-pk_offline_update_write_results (PkOfflineUpdateHelper *helper, PkResults *results)
+pk_offline_update_write_results (PkResults *results)
 {
 	gboolean ret;
 	gchar *data = NULL;
@@ -371,7 +316,7 @@ pk_offline_update_write_results (PkOfflineUpdateHelper *helper, PkResults *resul
 	PkError *pk_error;
 	PkPackage *package;
 
-	pk_log_info (helper, "writing actual results");
+	sd_journal_print (LOG_INFO, "writing actual results");
 	key_file = g_key_file_new ();
 	pk_error = pk_results_get_error_code (results);
 	if (pk_error != NULL) {
@@ -422,8 +367,9 @@ pk_offline_update_write_results (PkOfflineUpdateHelper *helper, PkResults *resul
 	/* write file */
 	data = g_key_file_to_data (key_file, NULL, &error);
 	if (data == NULL) {
-		pk_log_warning (helper, "failed to get keyfile data: %s",
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to get keyfile data: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -432,7 +378,9 @@ pk_offline_update_write_results (PkOfflineUpdateHelper *helper, PkResults *resul
 				   -1,
 				   &error);
 	if (!ret) {
-		pk_log_warning (helper, "failed to write file: %s", error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to write file: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -452,7 +400,7 @@ out:
  * bad happened.
  **/
 static void
-pk_offline_update_write_dummy_results (PkOfflineUpdateHelper *helper, gchar **package_ids)
+pk_offline_update_write_dummy_results (gchar **package_ids)
 {
 	gboolean ret;
 	gchar *data = NULL;
@@ -461,7 +409,7 @@ pk_offline_update_write_dummy_results (PkOfflineUpdateHelper *helper, gchar **pa
 	GString *string;
 	guint i;
 
-	pk_log_info (helper, "writing dummy results");
+	sd_journal_print (LOG_INFO, "writing dummy results");
 	key_file = g_key_file_new ();
 	g_key_file_set_boolean (key_file,
 				PK_OFFLINE_UPDATE_RESULTS_GROUP,
@@ -491,8 +439,9 @@ pk_offline_update_write_dummy_results (PkOfflineUpdateHelper *helper, gchar **pa
 	/* write file */
 	data = g_key_file_to_data (key_file, NULL, &error);
 	if (data == NULL) {
-		pk_log_warning (helper, "failed to get keyfile data: %s",
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to get keyfile data: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -501,9 +450,10 @@ pk_offline_update_write_dummy_results (PkOfflineUpdateHelper *helper, gchar **pa
 				   -1,
 				   &error);
 	if (!ret) {
-		pk_log_warning (helper, "failed to write dummy %s: %s",
-				PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to write dummy %s: %s",
+				  PK_OFFLINE_UPDATE_RESULTS_FILENAME,
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -533,9 +483,7 @@ pk_offline_update_loop_quit_cb (gpointer user_data)
 static gboolean
 pk_offline_update_sigint_cb (gpointer user_data)
 {
-	PkOfflineUpdateHelper *helper = (PkOfflineUpdateHelper *) user_data;
-	pk_log_warning (helper, "Handling SIGINT");
-	pk_log_write (helper);
+	sd_journal_print (LOG_WARNING, "Handling SIGINT");
 	return FALSE;
 }
 
@@ -554,7 +502,7 @@ main (int argc, char *argv[])
 	GMainLoop *loop = NULL;
 	PkResults *results = NULL;
 	PkTask *task = NULL;
-	PkOfflineUpdateHelper *helper = NULL;
+	PkProgressBar *progressbar = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();
@@ -564,22 +512,18 @@ main (int argc, char *argv[])
 	if (getuid () != 0 || geteuid () != 0) {
 		retval = EXIT_FAILURE;
 		g_print ("This program can only be used using root\n");
+		sd_journal_print (LOG_WARNING, "not called with the root user");
 		goto out;
 	}
 
 	/* always do this first to avoid a loop if this tool segfaults */
 	g_unlink (PK_OFFLINE_UPDATE_TRIGGER_FILENAME);
 
-	/* create a private helper */
-	helper = g_new0 (PkOfflineUpdateHelper, 1);
-	helper->log = g_string_new ("started\n");
-	helper->time_started = g_get_real_time ();
-
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
 				SIGINT,
 				pk_offline_update_sigint_cb,
-				helper,
+				NULL,
 				NULL);
 
 	/* get the list of packages to update */
@@ -589,42 +533,45 @@ main (int argc, char *argv[])
 				   &error);
 	if (!ret) {
 		retval = EXIT_FAILURE;
-		pk_log_warning (helper, "failed to read %s: %s",
-				PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-				error->message);
+		sd_journal_print (LOG_WARNING,
+				  "failed to read %s: %s",
+				  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
 
 	/* use a progress bar when the user presses <esc> in plymouth */
-	helper->progressbar = pk_progress_bar_new ();
-	pk_progress_bar_set_size (helper->progressbar, 25);
-	pk_progress_bar_set_padding (helper->progressbar, 30);
+	progressbar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (progressbar, 25);
+	pk_progress_bar_set_padding (progressbar, 30);
 
 	/* just update the system */
 	task = pk_task_new ();
 	pk_task_set_interactive (task, FALSE);
-	pk_offline_update_set_plymouth_mode (helper, "updates");
+	pk_offline_update_set_plymouth_mode ("updates");
 	/* TRANSLATORS: we've started doing offline updates */
-	pk_offline_update_set_plymouth_msg (helper, _("Installing updates, this could take a while…"));
+	pk_offline_update_set_plymouth_msg (_("Installing updates, this could take a while…"));
 	package_ids = g_strsplit (packages_data, "\n", -1);
-	pk_offline_update_write_dummy_results (helper, package_ids);
+	pk_offline_update_write_dummy_results (package_ids);
 	results = pk_client_update_packages (PK_CLIENT (task),
 					     0,
 					     package_ids,
 					     NULL, /* GCancellable */
 					     pk_offline_update_progress_cb,
-					     helper, /* user_data */
+					     progressbar, /* user_data */
 					     &error);
 	if (results == NULL) {
 		retval = EXIT_FAILURE;
-		pk_offline_update_write_error (helper, error);
-		pk_log_warning (helper, "failed to update system: %s", error->message);
+		pk_offline_update_write_error (error);
+		sd_journal_print (LOG_WARNING,
+				  "failed to update system: %s",
+				  error->message);
 		g_error_free (error);
 		goto out;
 	}
-	pk_progress_bar_end (helper->progressbar);
-	pk_offline_update_write_results (helper, results);
+	pk_progress_bar_end (progressbar);
+	pk_offline_update_write_results (results);
 
 	/* delete prepared-update file if it's not already been done by the
 	 * pk-plugin-systemd-update daemon plugin */
@@ -633,9 +580,10 @@ main (int argc, char *argv[])
 	if (!ret) {
 		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
 			retval = EXIT_FAILURE;
-			pk_log_warning (helper, "failed to delete %s: %s",
-					PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-					error->message);
+			sd_journal_print (LOG_WARNING,
+					  "failed to delete %s: %s",
+					  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+					  error->message);
 			g_error_free (error);
 			goto out;
 		}
@@ -650,17 +598,11 @@ out:
 		g_timeout_add_seconds (10, pk_offline_update_loop_quit_cb, loop);
 		g_main_loop_run (loop);
 	}
-	pk_log_info (helper, "rebooting");
-	pk_log_write (helper);
-	pk_offline_update_reboot (helper);
+	pk_offline_update_reboot ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
-	if (helper != NULL) {
-		g_string_free (helper->log, TRUE);
-		if (helper->progressbar != NULL)
-			g_object_unref (helper->progressbar);
-		g_free (helper);
-	}
+	if (progressbar != NULL)
+		g_object_unref (progressbar);
 	if (file != NULL)
 		g_object_unref (file);
 	if (results != NULL)

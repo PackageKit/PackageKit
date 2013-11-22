@@ -1,6 +1,7 @@
 AM_CPPFLAGS =						\
 	$(PIE_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
+	$(LIBSYSTEMD_JOURNAL_CFLAGS)			\
 	-DPK_COMPILATION				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-I$(top_builddir)/lib				\
@@ -35,6 +36,7 @@ pk_offline_update_SOURCES =				\
 pk_offline_update_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
+	$(LIBSYSTEMD_JOURNAL_LIBS)			\
 	$(PK_GLIB2_LIBS)
 
 pk_offline_update_LDFLAGS =				\
