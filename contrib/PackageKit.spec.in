@@ -16,7 +16,7 @@ Requires: shared-mime-info
 Requires: comps-extras
 Requires: systemd
 
-BuildRequires: glib2-devel >= 2.16.1
+BuildRequires: glib2-devel >= 2.32.0
 BuildRequires: dbus-devel  >= 1.1.1
 BuildRequires: dbus-glib-devel >= 0.74
 BuildRequires: pam-devel
@@ -54,7 +54,8 @@ BuildRequires: bash-completion
 %if !0%{?rhel}
 BuildRequires: hawkey-devel >= 0.3.13
 BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: librepo >= 0.0.4
+BuildRequires: librepo-devel >= 1.0.0
+BuildRequires: libsolv-devel
 %endif
 
 # functionality moved to udev itself
@@ -143,7 +144,7 @@ GLib libraries for accessing PackageKit.
 %package cron
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
-Requires: cronie
+Requires: crontabs
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description cron
@@ -337,6 +338,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
+%dir %{_libdir}/packagekit-plugins
 %{_libdir}/packagekit-plugins/*.so
 %{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
