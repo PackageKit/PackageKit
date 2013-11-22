@@ -780,8 +780,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
-		//FIXME: we want to use hy_query_filter_provides_in()
+#if HY_VERSION_CHECK(0,4,6)
+		hy_query_filter_provides_in (query, search);
+#else
 		hy_query_filter_provides (query, HY_EQ, search[0], NULL);
+#endif
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		//* FIXME: We should really use hy_goal_upgrade_all */
