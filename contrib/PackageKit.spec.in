@@ -47,7 +47,6 @@ BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
 %if !0%{?rhel}
-BuildRequires: zif-devel >= 0.2.5
 BuildRequires: bash-completion
 %endif
 
@@ -86,23 +85,13 @@ Provides: PackageKit-backend
 A backend for PackageKit to enable yum functionality.
 
 %if 0%{?rhel} == 0
-%package zif
-Summary: PackageKit Zif backend
-Group: System Environment/Libraries
-Requires: zif >= 0.2.5
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Provides: PackageKit-backend
-
-%description zif
-A backend for PackageKit to enable Zif functionality.
-%endif
-
-%if 0%{?rhel} == 0
 %package hawkey
 Summary: PackageKit Hawkey backend
 Group: System Environment/Libraries
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Provides: PackageKit-backend
+Provides: PackageKit-zif = %{version}-%{release}
+Obsoletes: PackageKit-zif < 0.8.13-2
 
 %description hawkey
 A backend for PackageKit to enable Hawkey functionality.
@@ -241,7 +230,6 @@ user to restart the computer or remove and re-insert the device.
         --disable-static \
         --enable-yum \
 %if 0%{?rhel} == 0
-        --enable-zif \
         --enable-hawkey \
         --enable-introspection \
 %endif
@@ -356,14 +344,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_yum.so
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
-
-%if 0%{?rhel} == 0
-%files zif
-%defattr(-,root,root,-)
-%{_libdir}/packagekit-backend/libpk_backend_zif.so
-%dir %{_datadir}/PackageKit/helpers/zif
-%{_datadir}/PackageKit/helpers/zif/*
-%endif
 
 %if 0%{?rhel} == 0
 %files hawkey

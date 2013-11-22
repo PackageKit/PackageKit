@@ -60,10 +60,6 @@ if BACKEND_TYPE_ZYPP
 SUBDIRS += zypp
 endif
 
-if BACKEND_TYPE_ZIF
-SUBDIRS += zif
-endif
-
 if BACKEND_TYPE_POLDEK
 SUBDIRS += poldek
 endif
