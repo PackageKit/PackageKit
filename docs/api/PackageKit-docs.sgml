@@ -41,10 +41,10 @@
       </para>
     </partintro>
     <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
-    <xi:include href="spec/pk-introduction.xml"/>
-    <xi:include href="spec/pk-concepts.xml"/>
-    <xi:include href="spec/pk-backend-compiled.xml"/>
-    <xi:include href="spec/pk-backend-spawn.xml"/>
+    <xi:include href="spec/pk-introduction.xml"><xi:fallback /></xi:include>
+    <xi:include href="spec/pk-concepts.xml"><xi:fallback /></xi:include>
+    <xi:include href="spec/pk-backend-compiled.xml"><xi:fallback /></xi:include>
+    <xi:include href="spec/pk-backend-spawn.xml"><xi:fallback /></xi:include>
   </reference>
 
   <reference id="api-reference">
@@ -114,7 +114,7 @@
         This part has answers to developer frequently asked questions.
       </para>
     </partintro>
-    <xi:include href="spec/pk-developer-faq.xml"/>
+    <xi:include href="spec/pk-developer-faq.xml"><xi:fallback /></xi:include>
   </reference>
 
 </book>
