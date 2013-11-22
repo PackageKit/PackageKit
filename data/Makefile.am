@@ -67,6 +67,7 @@ clean-local:
 	rm -f *~
 
 DISTCLEANFILES =					\
+	$(systemdservice_DATA)				\
 	$(mime_DATA)					\
 	org.freedesktop.PackageKit.service		\
 	$(NULL)
