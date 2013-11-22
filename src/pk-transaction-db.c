@@ -530,7 +530,7 @@ pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 	statement = g_strdup_printf ("UPDATE config SET value = '%i' WHERE key = 'job_count'", tdb->priv->job_count);
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
-		g_error ("failed to set job id: %s\n", error_msg);
+		g_warning ("failed to set job id: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
