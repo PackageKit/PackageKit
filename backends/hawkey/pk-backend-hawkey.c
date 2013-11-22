@@ -655,6 +655,8 @@ hif_package_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
 				       hy_package_get_reponame (pkg),
 				       error);
 	if (src == NULL) {
+		g_prefix_error (error, "Failed to ensure %s: ",
+				hy_package_get_name (pkg));
 		ret = FALSE;
 		goto out;
 	}
@@ -1458,6 +1460,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 					       hy_package_get_reponame (pkg),
 					       &error);
 		if (src == NULL) {
+			g_prefix_error (&error, "Not sure where to download %s: ",
+					hy_package_get_name (pkg));
 			pk_backend_job_error_code (job, error->code,
 						   "%s", error->message);
 			g_error_free (error);
@@ -1609,6 +1613,8 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 					       hy_package_get_reponame (pkg),
 					       error);
 		if (src == NULL) {
+			g_prefix_error (error, "Can't GPG check %s: ",
+					hy_package_get_name (pkg));
 			ret = FALSE;
 			goto out;
 		}
@@ -1658,8 +1664,10 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 
 		/* ensure the filename is set */
 		ret = hif_package_ensure_source (sources, pkg, error);
-		if (!ret)
+		if (!ret) {
+			g_prefix_error (error, "Failed to check untrusted: ");
 			goto out;
+		}
 
 		/* find the location of the local file */
 		filename = hif_package_get_filename (pkg);
