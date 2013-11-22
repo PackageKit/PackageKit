@@ -1,3 +1,51 @@
+Version 0.8.13
+~~~~~~~~~~~~~~
+Released: 2013-11-22
+
+Backends:
+ - hawkey: Calculate the pkgid in all cases to fix a crash on remove (Richard Hughes)
+ - hawkey: Calibrate the progress bars on more transactions (Richard Hughes)
+ - hawkey: Check if the package is downloaded before trying to download (Richard Hughes)
+ - hawkey: Do not crash when installing local files (Richard Hughes)
+ - hawkey: Do not explode in a ball of fire if the dbpath couldn't be generated (Richard Hughes)
+ - hawkey: Do not load all the repos just to write the yumdb entry (Richard Hughes)
+ - hawkey: Do not load the updateinfo unless required (Richard Hughes)
+ - hawkey: Do not log the state if the combined time is less than 1ms (Richard Hughes)
+ - hawkey: Don't try to clean the source if it does not yet exist (Richard Hughes)
+ - hawkey: Download to a temp location before nuking the previous metadata (Richard Hughes)
+ - hawkey: Fix a crash when writing the yumdb metadata (Richard Hughes)
+ - hawkey: Never go back to the test-commit phase when running the transaction (Richard Hughes)
+ - hawkey: Run all the backend methods in threads (Richard Hughes)
+ - hawkey: Support .repo files having metalink and not mirrorlist (Richard Hughes)
+ - hawkey: Switch the backend job to 'running' when it's been set up (Richard Hughes)
+ - hawkey: Use hy_query_filter_latest_per_arch() to fix multiarch (Richard Hughes)
+ - hawkey: Use the new hy_query_filter_provides_in() (Richard Hughes)
+ - hawkey: Use the xattr hash value when checking files (Richard Hughes)
+ - hawkey: librepo now tells us when the download size has been recalculated (Richard Hughes)
+ - poldek: Adapt to the new API (Jakub Bogusz)
+ - yum: Do not auto-close the rpmdb when running a transaction (Richard Hughes)
+
+New Features:
+ - Add a systemd packagekit.service file (Colin Walters)
+ - Provide a way to run the spawned backend under strace (Richard Hughes)
+ - Raise the GLib dep to 2.32 (Richard Hughes)
+
+Bugfixes:
+ - Fix the --with-systemdsystemunitdir option to actually work (Richard Hughes)
+ - Do not abort the daemon if we can't write to a database (Richard Hughes)
+ - Do not proxy the action states when simulating (Richard Hughes)
+ - Don't crash if ProxyHTTP is set (Richard Hughes)
+ - Fix a small memory leak spotted by clang (Richard Hughes)
+ - Fix critical warning when killing a backend with new versions of GLib (Richard Hughes)
+ - Fix memory leak when running plugins (Thomas Perl)
+ - Fix memory leak when using new versions of GLib (Richard Hughes)
+ - Ignore the prefix when dealing with the PackageKit prepared update (Richard Hughes)
+ - Make the debugging print formatter thread safe (Richard Hughes)
+ - Remove duplicate assignment of pkcon '-y' option (Thomas Perl)
+ - browser-plugin: Never use the application icon (Richard Hughes)
+ - systemd-updates: Log all warnings and notices to the journal (Richard Hughes)
+ - systemd-updates: Show some text progress (Richard Hughes)
+
 Version 0.8.12
 ~~~~~~~~~~~~~~
 Released: 2013-10-18
