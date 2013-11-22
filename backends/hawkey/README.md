@@ -21,11 +21,6 @@ These are some key file locations:
 * /etc/PackageKit/Hawkey.conf : the hardcoded PackageKit-hawkey config file
 * $libdir/packagekit-backend/ : location of PackageKit backend objects
 
-Things that probably have to be fixed before this backend is useful:
-
-* https://github.com/akozumpl/hawkey/issues/created_by/hughsie?state=open
-* https://github.com/Tojaj/librepo/issues/created_by/hughsie?state=open
-
 Things we haven't yet decided:
 
 * How to access comps data
