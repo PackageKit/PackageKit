@@ -25,31 +25,7 @@ import traceback
 
 
 # packagekit imports
-from packagekit.enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
-    ERROR_INTERNAL_ERROR, ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, \
-    ERROR_CANNOT_DISABLE_REPOSITORY, ERROR_PACKAGE_FAILED_TO_INSTALL, \
-    ERROR_DEP_RESOLUTION_FAILED, ERROR_PACKAGE_FAILED_TO_CONFIGURE, \
-    ERROR_PACKAGE_FAILED_TO_REMOVE, ERROR_GROUP_LIST_INVALID, \
-    ERROR_UPDATE_NOT_FOUND, ERROR_REPO_CONFIGURATION_ERROR, \
-    ERROR_RESTRICTED_DOWNLOAD, ERROR_PACKAGE_FAILED_TO_BUILD, \
-    ERROR_CANNOT_GET_FILELIST, ERROR_CANNOT_GET_REQUIRES, \
-    ERROR_PACKAGE_ALREADY_INSTALLED, ERROR_PACKAGE_NOT_INSTALLED, \
-    ERROR_PACKAGE_NOT_FOUND, ERROR_MISSING_GPG_SIGNATURE, FILTER_INSTALLED, \
-    FILTER_NOT_INSTALLED, ERROR_GROUP_LIST_INVALID, FILTER_NOT_DEVELOPMENT, \
-    FILTER_FREE, GROUP_ACCESSIBILITY, GROUP_PROGRAMMING, GROUP_GAMES, \
-    FILTER_NOT_FREE, FILTER_NEWEST, \
-    GROUP_DESKTOP_GNOME, GROUP_DESKTOP_KDE, GROUP_DESKTOP_OTHER, \
-    GROUP_MULTIMEDIA, GROUP_NETWORK, GROUP_OFFICE, GROUP_SCIENCE, \
-    GROUP_SYSTEM, GROUP_SECURITY, GROUP_OTHER, GROUP_DESKTOP_XFCE, \
-    GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
-    INFO_INSTALLED, INFO_REMOVING, INFO_INSTALLING, INFO_SECURITY, \
-    ERROR_INVALID_PACKAGE_FILE, ERROR_FILE_NOT_FOUND, \
-    INFO_AVAILABLE, MESSAGE_UNKNOWN, \
-    MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
-    MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
-    STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
-    STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
-    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED
+from packagekit.enums import *
 
 from packagekit.backend import PackageKitBaseBackend, \
     get_package_id, split_package_id
@@ -250,6 +226,16 @@ class PackageKitPortageMixin(object):
     def _unblock_output(self):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
+
+    def _is_only_trusted(self, transaction_flags):
+        return (TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags) or (
+            TRANSACTION_FLAG_SIMULATE in transaction_flags)
+
+    def _is_simulate(self, transaction_flags):
+        return TRANSACTION_FLAG_SIMULATE in transaction_flags
+
+    def _is_only_download(self, transaction_flags):
+        return TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags
 
     def _is_repo_enabled(self, layman_db, repo_name):
         if repo_name in layman_db.overlays.keys():
@@ -1294,10 +1280,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in cpv_updates[cp][slot]:
                     self._package(cpv, INFO_NORMAL)
 
-    def install_packages(self, only_trusted, pkgs):
-        return self._install_packages(False, pkgs)
+    def install_packages(self, transaction_flags, pkgs):
 
-    def _install_packages(self, only_trusted, pkgs, simulate=False):
+        only_trusted = self._is_only_trusted(transaction_flags)
+        simulate = self._is_simulate(transaction_flags)
+        only_download = self._is_only_download(transaction_flags)
+
+        return self._install_packages(only_trusted, pkgs, simulate=simulate,
+                                      only_download=only_download)
+
+    def _install_packages(self, only_trusted, pkgs, simulate=False,
+                          only_download=False):
         # NOTES:
         # can't install an already installed packages
         # even if it happens to be needed in Gentoo but probably not this API
@@ -1334,6 +1327,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # creating installation depgraph
         myopts = {}
+        if only_download:
+            myopts['--fetchonly'] = True
+
         favorites = []
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
@@ -1781,10 +1777,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         self.percentage(100)
 
-    def update_packages(self, only_trusted, pkgs):
-        return self._update_packages(only_trusted, pkgs)
+    def update_packages(self, transaction_flags, pkgs):
 
-    def _update_packages(self, only_trusted, pkgs, simulate=False):
+        only_trusted = self._is_only_trusted(transaction_flags)
+        simulate = self._is_simulate(transaction_flags)
+        only_download = self._is_only_download(transaction_flags)
+
+        return self._update_packages(only_trusted, pkgs, simulate=simulate,
+                                     only_download=only_download)
+
+    def _update_packages(self, only_trusted, pkgs, simulate=False,
+                         only_download=False):
         # TODO: manage errors
         # TODO: manage config file updates
         # TODO: every updated pkg should emit self.package()
@@ -1815,6 +1818,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # creating update depgraph
         myopts = {}
+        if only_download:
+            myopts['--fetchonly'] = True
         favorites = []
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
