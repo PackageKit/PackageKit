@@ -45,7 +45,7 @@ from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.cache import EntropyCacher
 from entropy.exceptions import SystemDatabaseError, DependenciesNotFound, \
-    DependenciesCollision
+    DependenciesCollision, EntropyPackageException
 from entropy.db.exceptions import Error as EntropyRepositoryError
 try:
     from entropy.exceptions import DependenciesNotRemovable
@@ -1405,14 +1405,16 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         pkg_ids = []
         for etp_file in inst_files:
-            repo_id = os.path.basename(etp_file)
-            status, atomsfound = self._entropy.add_package_to_repositories(
-                etp_file)
-            if status != 0:
+            try:
+                atomsfound = self._entropy.add_package_repository(etp_file)
+            except EntropyPackageException:
+                atomsfound = None
+
+            if not atomsfound:
                 self.error(ERROR_INVALID_PACKAGE_FILE,
-                    "Error while trying to add %s repository" % (repo_id,))
+                    "Error while trying to add %s repository" % (etp_file,))
                 return
-            for idpackage, atom in atomsfound:
+            for idpackage, repo_id in atomsfound:
                 pkg_ids.append((idpackage, repo_id))
 
         self._log_message(__name__, "install_files: generated", pkg_ids)
