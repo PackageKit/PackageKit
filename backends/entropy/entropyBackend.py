@@ -518,18 +518,24 @@ class PackageKitEntropyMixin(object):
 
             metaopts = {}
             metaopts['removeconfig'] = False
-            package = self._entropy.Package()
-            package.prepare((pkg_id,), "remove", metaopts)
-            if 'remove_installed_vanished' not in package.pkgmeta:
-                x_rc = package.run()
-                if x_rc != 0:
-                    pk_pkg = match_map.get(pkg_id, (None, None, None))[2]
-                    self.error(ERROR_PACKAGE_FAILED_TO_REMOVE,
-                        "Cannot remove package: %s" % (pk_pkg,))
-                    return
 
-            package.kill()
-            del package
+            if self._action_factory is None:
+                package = self._entropy.Package()
+                package.prepare((pkg_id,), self._remove_action, metaopts)
+                x_rc = package.run()
+                package.kill()
+            else:
+                package = self._action_factory.get(
+                    self._remove_action, (pkg_id, pkg_c_repo.name),
+                    opts=metaopts)
+                x_rc = package.start()
+                package.finalize()
+
+            if x_rc != 0:
+                pk_pkg = match_map.get(pkg_id, (None, None, None))[2]
+                self.error(ERROR_PACKAGE_FAILED_TO_REMOVE,
+                           "Cannot remove package: %s" % (pk_pkg,))
+                return
 
         self.finished()
 
@@ -661,6 +667,7 @@ class PackageKitEntropyMixin(object):
             self.percentage(percent)
 
             pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
+            pkg_repo = pkg_c_repo.name
             pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
             self.package(pk_pkg, INFO_DOWNLOADING, pkg_desc)
 
@@ -673,23 +680,32 @@ class PackageKitEntropyMixin(object):
             if fetch_path is not None:
                 metaopts['fetch_path'] = fetch_path
 
-            package = self._entropy.Package()
-            package.prepare(match, "fetch", metaopts)
-            myrepo = package.pkgmeta['repository']
-            obj = down_data.setdefault(myrepo, set())
-            obj.add(entropy.dep.dep_getkey(package.pkgmeta['atom']))
+            pkg_atom = pkg_c_repo.retrieveAtom(pkg_id)
+            obj = down_data.setdefault(pkg_repo, set())
+            obj.add(entropy.dep.dep_getkey(pkg_atom))
 
-            x_rc = package.run()
+            if self._action_factory is None:
+                package = self._entropy.Package()
+                package.prepare(match, self._fetch_action, metaopts)
+                x_rc = package.run()
+                package.kill()
+            else:
+                package = self._action_factory.get(
+                    self._fetch_action, match,
+                    opts = metaopts)
+                x_rc = package.start()
+                package.finalize()
+
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
                     "Cannot download package: %s" % (pk_pkg,))
                 return
 
             # emit the file we downloaded
-            self.files(pk_pkg, package.pkgmeta['pkgpath'])
-
-            package.kill()
-            del package
+            if self._action_factory is None:
+                self.files(pk_pkg, package.pkgmeta['pkgpath'])
+            else:
+                self.files(pk_pkg, package.package_path())
 
         # spawn UGC
         if not simulate:
@@ -730,17 +746,21 @@ class PackageKitEntropyMixin(object):
                 metaopts['install_source'] = \
                     etpConst['install_sources']['automatic_dependency']
 
-            package = self._entropy.Package()
-            package.prepare(match, "install", metaopts)
+            if self._action_factory is None:
+                package = self._entropy.Package()
+                package.prepare(match, self._install_action, metaopts)
+                x_rc = package.run()
+                package.kill()
+            else:
+                package = self._action_factory.get(
+                    self._install_action, match, opts=metaopts)
+                x_rc = package.start()
+                package.finalize()
 
-            x_rc = package.run()
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
                     "Cannot install package: %s" % (pk_pkg,))
                 return
-
-            package.kill()
-            del package
 
         self._config_files_message()
         self.finished()
@@ -840,6 +860,18 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         PackageKitBaseBackend.__init__(self, args)
 
         self._entropy = PackageKitEntropyClient()
+        try:
+            self._action_factory = self._entropy.PackageActionFactory()
+            self._remove_action = self._action_factory.REMOVE_ACTION
+            self._install_action = self._action_factory.INSTALL_ACTION
+            self._fetch_action = self._action_factory.FETCH_ACTION
+        except AttributeError:
+            # old API
+            self._action_factory = None
+            self._remove_action = "remove"
+            self._install_action = "install"
+            self._fetch_action = "fetch"
+
         self.doLock()
         # PkUrlFetcher._pk_progress = self.sub_percentage
         self._repo_name_cache = {}
