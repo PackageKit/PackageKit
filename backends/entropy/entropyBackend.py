@@ -27,29 +27,7 @@ import signal
 import time
 import traceback
 
-from packagekit.enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
-    ERROR_INTERNAL_ERROR, \
-    ERROR_CANNOT_DISABLE_REPOSITORY, ERROR_PACKAGE_FAILED_TO_INSTALL, \
-    ERROR_DEP_RESOLUTION_FAILED, ERROR_PACKAGE_FAILED_TO_CONFIGURE, \
-    ERROR_PACKAGE_FAILED_TO_REMOVE, ERROR_GROUP_LIST_INVALID, \
-    ERROR_UPDATE_NOT_FOUND, ERROR_REPO_CONFIGURATION_ERROR, \
-    ERROR_PACKAGE_NOT_FOUND, ERROR_MISSING_GPG_SIGNATURE, FILTER_INSTALLED, \
-    FILTER_NOT_INSTALLED, ERROR_GROUP_LIST_INVALID, FILTER_NOT_DEVELOPMENT, \
-    FILTER_FREE, GROUP_ACCESSIBILITY, GROUP_PROGRAMMING, GROUP_GAMES, \
-    GROUP_DESKTOP_GNOME, GROUP_DESKTOP_KDE, GROUP_DESKTOP_OTHER, \
-    GROUP_MULTIMEDIA, GROUP_NETWORK, GROUP_OFFICE, GROUP_SCIENCE, \
-    GROUP_SYSTEM, GROUP_SECURITY, GROUP_OTHER, GROUP_DESKTOP_XFCE, \
-    GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
-    INFO_INSTALLED, INFO_REMOVING, INFO_INSTALLING, \
-    ERROR_INVALID_PACKAGE_FILE, ERROR_FILE_NOT_FOUND, \
-    INFO_AVAILABLE, MESSAGE_UNKNOWN, \
-    MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
-    MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
-    STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
-    STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
-    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED, \
-    PROVIDES_MIMETYPE, PROVIDES_HARDWARE_DRIVER, PROVIDES_FONT, \
-    PROVIDES_CODEC, ERROR_NOT_SUPPORTED
+from packagekit.enums import *
 
 from packagekit.backend import PackageKitBaseBackend, get_package_id, \
     split_package_id
@@ -925,6 +903,16 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 info = INFO_AVAILABLE
         return self.package(self._etp_to_id(pkg_match), info, desc)
 
+    def _is_only_trusted(self, transaction_flags):
+        return (TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags) or (
+            TRANSACTION_FLAG_SIMULATE in transaction_flags)
+
+    def _is_simulate(self, transaction_flags):
+        return TRANSACTION_FLAG_SIMULATE in transaction_flags
+
+    def _is_only_download(self, transaction_flags):
+        return TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags
+
     def get_depends(self, filters, package_ids, recursive):
 
         self._log_message(__name__, "get_depends: got %s and %s and %s" % (
@@ -1366,10 +1354,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def install_files(self, only_trusted, inst_files):
-        return self._install_files(only_trusted, inst_files)
+    def install_files(self, transaction_flags, inst_files):
 
-    def _install_files(self, only_trusted, inst_files, simulate = False):
+        only_trusted = self._is_only_trusted(transaction_flags)
+        simulate = self._is_simulate(transaction_flags)
 
         self._log_message(__name__, "install_files: got", only_trusted,
             "and", inst_files, "and", simulate)
@@ -1416,7 +1404,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
 
-    def _install_packages(self, only_trusted, pk_pkgs, simulate = False):
+    def install_packages(self, transaction_flags, pk_pkgs):
+
+        only_trusted = self._is_only_trusted(transaction_flags)
+        simulate = self._is_simulate(transaction_flags)
+        only_download = self._is_only_download(transaction_flags)
 
         self._log_message(__name__, "install_packages: got", only_trusted,
             "and", pk_pkgs, "and", simulate)
@@ -1433,10 +1425,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
-
-    def install_packages(self, only_trusted, package_ids):
-        return self._install_packages(only_trusted, package_ids)
+        self._execute_etp_pkgs_install(
+            pkgs, only_trusted, simulate = simulate,
+            only_fetch = only_download, calculate_deps = not only_download)
 
     def download_packages(self, directory, package_ids):
 
@@ -1793,10 +1784,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def update_packages(self, only_trusted, package_ids):
-        return self._update_packages(only_trusted, package_ids)
+    def update_packages(self, transaction_flags, pk_pkgs):
 
-    def _update_packages(self, only_trusted, pk_pkgs, simulate = False):
+        only_trusted = self._is_only_trusted(transaction_flags)
+        simulate = self._is_simulate(transaction_flags)
+        only_download = self._is_only_download(transaction_flags)
 
         self._log_message(__name__, "update_packages: got", only_trusted,
             "and", pk_pkgs, "and", simulate)
@@ -1813,7 +1805,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
+        self._execute_etp_pkgs_install(
+            pkgs, only_trusted, simulate = simulate,
+            only_fetch = only_download, calculate_deps = not only_download)
 
     def _what_provides_mime(self, filters, values):
 
