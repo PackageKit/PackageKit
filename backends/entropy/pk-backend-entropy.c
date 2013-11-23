@@ -355,13 +355,16 @@ pk_backend_install_packages(PkBackend *backend,
 			    gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string(package_ids);
-	pk_backend_spawn_helper (spawn, job, BACKEND_FILE,
-				 "install-packages",
-				 pk_backend_bool_to_string(only_trusted),
-				 package_ids_temp, NULL);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string(transaction_flags);
+	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
+				"install-packages",
+				transaction_flags_temp,
+				package_ids_temp, NULL);
+	g_free(transaction_flags_temp);
 	g_free(package_ids_temp);
 }
 
@@ -374,15 +377,19 @@ pk_backend_install_files(PkBackend *backend,
 			 PkBitfield transaction_flags,
 			 gchar **full_paths)
 {
-    gchar *package_ids_temp;
+	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 
-    /* send the complete list as stdin */
-    package_ids_temp = g_strjoinv(PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-    pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
-			    "install-files",
-			    pk_backend_bool_to_string(only_trusted),
-			    package_ids_temp, NULL);
-    g_free(package_ids_temp);
+	/* send the complete list as stdin */
+	package_ids_temp = g_strjoinv(PK_BACKEND_SPAWN_FILENAME_DELIM,
+				      full_paths);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
+				"install-files",
+				transaction_flags_temp,
+				package_ids_temp, NULL);
+	g_free(transaction_flags_temp);
+	g_free(package_ids_temp);
 }
 
 /**
@@ -554,13 +561,16 @@ pk_backend_update_packages(PkBackend *backend,
 			   gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	gchar *transaction_flags_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string(package_ids);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
 				"update-packages",
-				pk_backend_bool_to_string(only_trusted),
+				transaction_flags_temp,
 				package_ids_temp, NULL);
+	g_free(transaction_flags_temp);
 	g_free(package_ids_temp);
 }
 
