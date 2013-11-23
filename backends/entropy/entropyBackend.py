@@ -835,17 +835,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         'unknown': GROUP_UNKNOWN,
     }
 
-    def __sigquit(self, signum, frame):
-        self._entropy.shutdown()
-        raise SystemExit(0)
-
     def __init__(self, args):
         PackageKitEntropyMixin.__init__(self)
         PackageKitBaseBackend.__init__(self, args)
 
         self._entropy = PackageKitEntropyClient()
         self.doLock()
-        signal.signal(signal.SIGQUIT, self.__sigquit)
         # PkUrlFetcher._pk_progress = self.sub_percentage
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
