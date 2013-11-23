@@ -855,17 +855,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._entropy.shutdown()
         raise SystemExit(0)
 
-    def destroy(self):
-        if hasattr(self, "_entropy"):
-            try:
-                self._entropy.shutdown()
-            except NameError:
-                EntropyCacher().stop()
-                self._entropy.destroy()
-
-    def __del__(self):
-        self.destroy()
-
     def __init__(self, args):
         PackageKitEntropyMixin.__init__(self)
         PackageKitBaseBackend.__init__(self, args)
@@ -873,7 +862,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._entropy = PackageKitEntropyClient()
         self.doLock()
         signal.signal(signal.SIGQUIT, self.__sigquit)
-        PkUrlFetcher._pk_progress = self.sub_percentage
+        # PkUrlFetcher._pk_progress = self.sub_percentage
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
         PackageKitEntropyClient._pk_message = self._generic_message
@@ -884,7 +873,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             filename = self._log_fname, header = "[packagekit]")
 
     def unLock(self):
-        self.destroy()
         PackageKitBaseBackend.unLock(self)
 
     def _convert_date_to_iso8601(self, unix_time_str):
