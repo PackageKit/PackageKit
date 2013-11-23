@@ -1833,33 +1833,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
 
-    def update_system(self, only_trusted):
-
-        self._log_message(__name__, "update_system: got %s" % (
-            only_trusted,))
-
-        self.status(STATUS_RUNNING)
-        self.allow_cancel(True)
-
-        # this is the part that takes time
-        self.percentage(0)
-        try:
-            update, remove, fine, spm_fine = self._entropy.calculate_updates()
-        except SystemDatabaseError as err:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "System Repository error: %s" % (err,))
-            return
-        self.percentage(100)
-
-        pkgs = []
-        for pkg_id, repo_id in update:
-            repo_db = self._entropy.open_repository(repo_id)
-            pkg = (pkg_id, repo_db)
-            pk_pkg = self._etp_to_id(pkg)
-            pkgs.append((pkg[0], pkg[1], pk_pkg,))
-
-        self._execute_etp_pkgs_install(pkgs, only_trusted)
-
     def _what_provides_mime(self, filters, values):
 
         self.status(STATUS_QUERY)
