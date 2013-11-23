@@ -166,7 +166,6 @@ pk_backend_get_roles (PkBackend *backend)
 	PK_ROLE_ENUM_SEARCH_GROUP,
 	PK_ROLE_ENUM_SEARCH_NAME,
 	PK_ROLE_ENUM_UPDATE_PACKAGES,
-	PK_ROLE_ENUM_UPDATE_SYSTEM,
 	PK_ROLE_ENUM_GET_REPO_LIST,
 	PK_ROLE_ENUM_REPO_ENABLE,
 	//PK_ROLE_ENUM_REPO_SET_DATA,
@@ -456,15 +455,6 @@ pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_update_system:
- */
-void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 /**

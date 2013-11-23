@@ -1872,66 +1872,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         self._signal_config_update()
 
-    def update_system(self, only_trusted):
-        self.status(STATUS_RUNNING)
-        self.allow_cancel(False)
-        self.percentage(None)
-
-        if only_trusted:
-            self.error(ERROR_MISSING_GPG_SIGNATURE,
-                    "Portage backend does not support GPG signature")
-            return
-
-        myopts = {}
-        myopts["--deep"] = True
-        myopts["--newuse"] = True
-        myopts["--update"] = True
-
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "")
-
-        self.status(STATUS_DEP_RESOLVE)
-
-        # creating list of ebuilds needed for the system update
-        # using backtrack_depgraph to prevent errors
-        retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
-                self.pvar.settings, self.pvar.trees, myopts, myparams, "",
-                ["@system", "@world"], None)
-        if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
-                    "Wasn't able to get dependency graph")
-            return
-
-        # check fetch restrict, can stop the function via error signal
-        self._check_fetch_restrict(depgraph.altlist())
-
-        self.status(STATUS_INSTALL)
-
-        # get elog messages
-        portage.elog.add_listener(self._elog_listener)
-
-        try:
-            self._block_output()
-            # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
-                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
-                    depgraph.altlist(), None, depgraph.schedulerGraph())
-            rval = mergetask.merge()
-        finally:
-            self._unblock_output()
-
-        # when an error is found print error messages
-        if rval != os.EX_OK:
-            self._send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
-
-        # show elog messages and clean
-        portage.elog.remove_listener(self._elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
-        self._elog_messages = []
-
-        self._signal_config_update()
 
 def main():
     backend = PackageKitPortageBackend("")
