@@ -1375,9 +1375,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def install_files(self, only_trusted, inst_files):
         return self._install_files(only_trusted, inst_files)
 
-    def simulate_install_files(self, inst_files):
-        return self._install_files(False, inst_files, simulate = True)
-
     def _install_files(self, only_trusted, inst_files, simulate = False):
 
         self._log_message(__name__, "install_files: got", only_trusted,
@@ -1447,9 +1444,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def install_packages(self, only_trusted, package_ids):
         return self._install_packages(only_trusted, package_ids)
 
-    def simulate_install_packages(self, package_ids):
-        return self._install_packages(False, package_ids, simulate = True)
-
     def download_packages(self, directory, package_ids):
 
         self._log_message(__name__, "download_packages: got %s and %s" % (
@@ -1517,9 +1511,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def remove_packages(self, allowdep, autoremove, package_ids):
         return self._remove_packages(allowdep, autoremove, package_ids)
-
-    def simulate_remove_packages(self, package_ids):
-        return self._remove_packages(True, False, package_ids, simulate = True)
 
     def _remove_packages(self, allowdep, autoremove, pk_pkgs, simulate = False):
 
@@ -1810,9 +1801,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def update_packages(self, only_trusted, package_ids):
         return self._update_packages(only_trusted, package_ids)
-
-    def simulate_update_packages(self, package_ids):
-        return self._update_packages(False, package_ids, simulate = True)
 
     def _update_packages(self, only_trusted, pk_pkgs, simulate = False):
 
