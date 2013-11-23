@@ -1294,9 +1294,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in cpv_updates[cp][slot]:
                     self._package(cpv, INFO_NORMAL)
 
-    def simulate_install_packages(self, pkgs):
-        return self._install_packages(False, pkgs, simulate=True)
-
     def install_packages(self, only_trusted, pkgs):
         return self._install_packages(False, pkgs)
 
@@ -1424,9 +1421,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
     def remove_packages(self, allowdep, autoremove, pkgs):
         return self._remove_packages(allowdep, autoremove, pkgs)
-
-    def simulate_remove_packages(self, pkgs):
-        return self._remove_packages(True, False, pkgs, simulate=True)
 
     def _remove_packages(self, allowdep, autoremove, pkgs, simulate=False):
         # TODO: every to-be-removed pkg should emit self.package()
@@ -1789,9 +1783,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
     def update_packages(self, only_trusted, pkgs):
         return self._update_packages(only_trusted, pkgs)
-
-    def simulate_update_packages(self, pkgs):
-        return self._update_packages(False, pkgs, simulate=True)
 
     def _update_packages(self, only_trusted, pkgs, simulate=False):
         # TODO: manage errors

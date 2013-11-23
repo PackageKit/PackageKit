@@ -170,10 +170,6 @@ pk_backend_get_roles (PkBackend *backend)
 	PK_ROLE_ENUM_REPO_ENABLE,
 	//PK_ROLE_ENUM_REPO_SET_DATA,
 	PK_ROLE_ENUM_GET_CATEGORIES,
-	//PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-	PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-	PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-	PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 	-1);
 
     return roles;
@@ -455,48 +451,6 @@ pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_remove_packages:
- */
-void
-pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
-{
-    gchar *package_ids_temp;
-
-    /* send the complete list as stdin */
-    package_ids_temp = pk_package_ids_to_string (package_ids);
-    pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "simulate-remove-packages", package_ids_temp, NULL);
-    g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_update_packages:
- */
-void
-pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
-{
-    gchar *package_ids_temp;
-
-    /* send the complete list as stdin */
-    package_ids_temp = pk_package_ids_to_string (package_ids);
-    pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "simulate-update-packages", package_ids_temp, NULL);
-    g_free (package_ids_temp);
-}
-
-/**
- * pk_backend_simulate_install_packages:
- */
-void
-pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
-{
-    gchar *package_ids_temp;
-
-    /* send the complete list as stdin */
-    package_ids_temp = pk_package_ids_to_string (package_ids);
-    pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "simulate-install-packages", package_ids_temp, NULL);
-    g_free (package_ids_temp);
 }
 
 /**
