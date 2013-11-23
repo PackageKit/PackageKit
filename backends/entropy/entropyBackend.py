@@ -427,11 +427,17 @@ class PackageKitEntropyMixin(object):
         Return translated Entropy packages category description.
         """
         cat_desc = "No description"
-        cat_desc_data = self._entropy.get_category_description(category)
-        if _LOCALE in cat_desc_data:
-            cat_desc = cat_desc_data[_LOCALE]
-        elif 'en' in cat_desc_data:
-            cat_desc = cat_desc_data['en']
+
+        for repository_id in self._entropy.repositories():
+            repo = self._entropy.open_repository(repository_id)
+            cat_desc_data = repo.retrieveCategoryDescription(category)
+            if cat_desc_data:
+                if _LOCALE in cat_desc_data:
+                    cat_desc = cat_desc_data[_LOCALE]
+                elif 'en' in cat_desc_data:
+                    cat_desc = cat_desc_data['en']
+                break
+
         return cat_desc
 
     def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove,
