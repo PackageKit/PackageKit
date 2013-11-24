@@ -3,6 +3,7 @@
 # vim:set shiftwidth=4 tabstop=4 expandtab:
 #
 # Copyright (C) 2009 Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
+# Copyright (C) 2010-2013 Fabio Erculiani (lxnay) <lxnay@gentoo.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
