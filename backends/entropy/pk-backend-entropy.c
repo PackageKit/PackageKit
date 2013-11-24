@@ -649,3 +649,12 @@ pk_backend_get_author (PkBackend *backend)
 {
 	return "Fabio Erculiani (lxnay) <lxnay@sabayon.org>";
 }
+
+/**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return FALSE;
+}
