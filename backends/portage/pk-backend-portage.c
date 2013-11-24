@@ -474,3 +474,12 @@ pk_backend_get_author (PkBackend *backend)
 {
     return "Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, Fabio Erculiani <lxnay@sabayon.org>";
 }
+
+/**
+ * pk_backend_supports_parallelization:
+ */
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return TRUE;
+}
