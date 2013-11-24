@@ -688,12 +688,14 @@ class PackageKitEntropyMixin(object):
                 package = self._entropy.Package()
                 package.prepare(match, self._fetch_action, metaopts)
                 x_rc = package.run()
+                package_path = package.pkgmeta['pkgpath']
                 package.kill()
             else:
                 package = self._action_factory.get(
                     self._fetch_action, match,
                     opts = metaopts)
                 x_rc = package.start()
+                package_path = package.package_path()
                 package.finalize()
 
             if x_rc != 0:
@@ -703,9 +705,9 @@ class PackageKitEntropyMixin(object):
 
             # emit the file we downloaded
             if self._action_factory is None:
-                self.files(pk_pkg, package.pkgmeta['pkgpath'])
+                self.files(pk_pkg, package_path)
             else:
-                self.files(pk_pkg, package.package_path())
+                self.files(pk_pkg, package_path)
 
         # spawn UGC
         if not simulate:
