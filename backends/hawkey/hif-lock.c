@@ -38,11 +38,12 @@
 #include <glib/gstdio.h>
 #include <gio/gio.h>
 
-#include "hif-config.h"
 #include "hif-lock.h"
 #include "hif-utils.h"
 
 #define HIF_LOCK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_LOCK, HifLockPrivate))
+
+#define HIF_LOCK_PID_FILE "/var/run/hif"
 
 /**
  * HifLockPrivate:
@@ -52,7 +53,6 @@
 struct _HifLockPrivate
 {
 	GMutex			 mutex;
-	HifConfig		*config;
 	GPtrArray		*item_array;
 };
 
@@ -216,21 +216,10 @@ hif_lock_get_filename_for_type (HifLock *lock,
 				HifLockType type,
 				GError **error)
 {
-	gchar *pidfile = NULL;
 	gchar *filename = NULL;
-
-	/* get the lock file root */
-	pidfile = hif_config_get_string (lock->priv->config,
-					 "PidFile", error);
-	if (pidfile == NULL)
-		goto out;
-
-	/* get filename */
 	filename = g_strdup_printf ("%s-%s.lock",
-				    pidfile,
+				    HIF_LOCK_PID_FILE,
 				    hif_lock_type_to_string (type));
-out:
-	g_free (pidfile);
 	return filename;
 }
 
@@ -537,7 +526,6 @@ hif_lock_finalize (GObject *object)
 		}
 	}
 
-	g_object_unref (lock->priv->config);
 	g_ptr_array_unref (lock->priv->item_array);
 
 	G_OBJECT_CLASS (hif_lock_parent_class)->finalize (object);
@@ -569,7 +557,6 @@ static void
 hif_lock_init (HifLock *lock)
 {
 	lock->priv = HIF_LOCK_GET_PRIVATE (lock);
-	lock->priv->config = hif_config_new ();
 	lock->priv->item_array = g_ptr_array_new_with_free_func (g_free);
 }
 

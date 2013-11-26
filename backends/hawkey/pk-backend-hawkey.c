@@ -46,7 +46,6 @@
 #include <rpm/rpmts.h>
 #include <rpm/rpmkeyring.h>
 
-#include "hif-config.h"
 #include "hif-db.h"
 #include "hif-goal.h"
 #include "hif-keyring.h"
@@ -58,8 +57,7 @@
 #include "hif-utils.h"
 
 typedef struct {
-	HifConfig	*config;
-	gchar		*repos_dir;
+	GKeyFile	*config;
 	GFileMonitor	*monitor;
 } PkBackendHifPrivate;
 
@@ -117,15 +115,62 @@ pk_backend_yum_repos_changed_cb (GFileMonitor *monitor_,
 }
 
 /**
+ * pk_backend_set_os_release:
+ **/
+static gboolean
+pk_backend_set_os_release (GKeyFile *config, GError **error)
+{
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *version = NULL;
+	GKeyFile *key_file = NULL;
+	GString *str = NULL;
+
+	/* make a valid GKeyFile from the .ini data by prepending a header */
+	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
+	if (!ret)
+		goto out;
+	str = g_string_new (contents);
+	g_string_prepend (str, "[os-release]\n");
+	key_file = g_key_file_new ();
+	ret = g_key_file_load_from_data (key_file,
+					 str->str, -1,
+					 G_KEY_FILE_NONE,
+					 error);
+	if (!ret)
+		goto out;
+
+	/* get keys */
+	version = g_key_file_get_string (key_file,
+					 "os-release",
+					 "VERSION_ID",
+					 error);
+	if (version == NULL)
+		goto out;
+	g_key_file_set_string (config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::ReleaseVersion", version);
+out:
+	if (key_file != NULL)
+		g_key_file_free (key_file);
+	if (str != NULL)
+		g_string_free (str, TRUE);
+	g_free (version);
+	g_free (contents);
+	return ret;
+}
+
+/**
  * pk_backend_initialize:
  */
 void
 pk_backend_initialize (PkBackend *backend)
 {
-	gboolean ret;
 	GError *error = NULL;
-	gint retval;
 	GFile *file = NULL;
+	const gchar *value;
+	gchar *repos_dir;
+	gint retval;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -146,28 +191,63 @@ pk_backend_initialize (PkBackend *backend)
 	if (retval != 0)
 		g_error ("failed to read rpm config files");
 
-	/* HifConfig */
-	priv->config = hif_config_new ();
-	ret = hif_config_set_filename (priv->config, NULL, &error);
-	if (!ret) {
-		g_warning ("failed to set config: %s",
-			   error->message);
-		g_error_free (error);
-	}
-
 	/* set defaults */
-	hif_config_set_boolean (priv->config, "DiskSpaceCheck", TRUE, NULL);
-	hif_config_set_boolean (priv->config, "RpmCheckDebug", TRUE, NULL);
-	hif_config_set_string (priv->config, "CacheDir",
-			       "/var/cache/PackageKit/metadata", NULL);
-	hif_config_set_string (priv->config, "PidFile", "/var/run/hif", NULL);
-	hif_config_set_string (priv->config, "ReposDir", "/etc/yum.repos.d", NULL);
-	hif_config_set_string (priv->config, "RpmVerbosity", "info", NULL);
+	priv->config = g_key_file_new ();
+	g_key_file_set_boolean (priv->config,
+				HIF_CONFIG_GROUP_NAME,
+				"Hawkey::DiskSpaceCheck",
+				TRUE);
+	g_key_file_set_boolean (priv->config,
+				HIF_CONFIG_GROUP_NAME,
+				"Hawkey::RpmCheckDebug",
+				TRUE);
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::CacheDir",
+			       "/var/cache/PackageKit/metadata");
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::ReposDir",
+			       "/etc/yum.repos.d");
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::RpmVerbosity",
+			       "info");
+
+	/* get info from RPM */
+	rpmGetOsInfo (&value, NULL);
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::OsInfo", value);
+	rpmGetArchInfo (&value, NULL);
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::ArchInfo", value);
+	rpmGetArchInfo (&value, NULL);
+	if (g_strcmp0 (value, "i486") == 0 ||
+	    g_strcmp0 (value, "i586") == 0 ||
+	    g_strcmp0 (value, "i686") == 0)
+		value = "i386";
+	if (g_strcmp0 (value, "armv7l") == 0 ||
+	    g_strcmp0 (value, "armv6l") == 0 ||
+	    g_strcmp0 (value, "armv5tejl") == 0 ||
+	    g_strcmp0 (value, "armv5tel") == 0)
+		value = "arm";
+	if (g_strcmp0 (value, "armv7hnl") == 0 ||
+	    g_strcmp0 (value, "armv7hl") == 0)
+		value = "armhfp";
+	g_key_file_set_string (priv->config,
+			       HIF_CONFIG_GROUP_NAME,
+			       "Hawkey::BaseArch", value);
+
+	/* get info from OS release file */
+	pk_backend_set_os_release (priv->config, NULL);
 
 	/* setup a file monitor on the repos directory */
-	priv->repos_dir = hif_config_get_string (priv->config, "ReposDir", &error);
-	g_assert (priv->repos_dir != NULL);
-	file = g_file_new_for_path (priv->repos_dir);
+	repos_dir = g_key_file_get_string (priv->config,
+					   HIF_CONFIG_GROUP_NAME,
+					   "Hawkey::ReposDir", NULL);
+	file = g_file_new_for_path (repos_dir);
 	priv->monitor = g_file_monitor_directory (file,
 						  G_FILE_MONITOR_NONE,
 						  NULL,
@@ -180,6 +260,7 @@ pk_backend_initialize (PkBackend *backend)
 			   error->message);
 		g_error_free (error);
 	}
+	g_free (repos_dir);
 
 	lr_global_init ();
 
@@ -385,7 +466,7 @@ pk_backend_ensure_enabled_sources (PkBackendHifJobData *job_data, GError **error
 		goto out;
 
 	/* set the list of repos */
-	job_data->enabled_sources = hif_source_find_all (priv->repos_dir,
+	job_data->enabled_sources = hif_source_find_all (priv->config,
 							 HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
 							 error);
 	if (job_data->enabled_sources == NULL) {
@@ -942,7 +1023,7 @@ pk_backend_get_repo_list (PkBackend *backend,
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = hif_source_find_all (priv->repos_dir,
+	sources = hif_source_find_all (priv->config,
 				       HIF_SOURCE_SCAN_FLAG_NONE,
 				       &error);
 	if (sources == NULL) {
@@ -1003,7 +1084,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	sources = hif_source_find_all (priv->repos_dir,
+	sources = hif_source_find_all (priv->config,
 				       HIF_SOURCE_SCAN_FLAG_NONE,
 				       &error);
 	if (sources == NULL) {
@@ -2120,7 +2201,9 @@ hif_transaction_delete_packages (GPtrArray *install,
 
 	/* get the cachedir so we only delete packages in the actual
 	 * cache, not local-install packages */
-	cachedir = hif_config_get_string (priv->config, "CacheDir", NULL);
+	cachedir = g_key_file_get_string (priv->config,
+					  HIF_CONFIG_GROUP_NAME,
+					  "Hawkey::CacheDir", NULL);
 	if (cachedir == NULL) {
 		ret = FALSE;
 		g_set_error_literal (error,
@@ -2286,8 +2369,9 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 		goto out;
 
 	/* set the correct release */
-	releasever = hif_config_get_string (priv->config,
-					    "releasever",
+	releasever = g_key_file_get_string (priv->config,
+					    HIF_CONFIG_GROUP_NAME,
+					    "Hawkey::ReleaseVersion",
 					     error);
 	if (releasever == NULL) {
 		ret = FALSE;
@@ -2467,7 +2551,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	hif_state_action_start (state, PK_STATUS_ENUM_REQUEST, NULL);
 
 	/* get verbosity from the config file */
-	verbosity_string = hif_config_get_string (priv->config, "RpmVerbosity", NULL);
+	verbosity_string = g_key_file_get_string (priv->config,
+						  HIF_CONFIG_GROUP_NAME,
+						  "Hawkey::RpmVerbosity", NULL);
 	verbosity = hif_rpm_verbosity_string_to_value (verbosity_string);
 	rpmSetVerbosity (verbosity);
 
@@ -2548,7 +2634,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	rpmtsOrder (job_data->ts);
 
 	/* run the test transaction */
-	if (hif_config_get_boolean (priv->config, "RpmCheckDebug", NULL)) {
+	if (g_key_file_get_boolean (priv->config,
+				    HIF_CONFIG_GROUP_NAME,
+				    "Hawkey::RpmCheckDebug", NULL)) {
 		g_debug ("running test transaction");
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_TEST_COMMIT);
 		commit->state = hif_state_get_child (state);
@@ -2571,7 +2659,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	rpmtsSetVSFlags (job_data->ts, vs_flags);
 
 	/* filter diskspace */
-	if (!hif_config_get_boolean (priv->config, "DiskSpaceCheck", NULL))
+	if (!g_key_file_get_boolean (priv->config,
+				     HIF_CONFIG_GROUP_NAME,
+				     "Hawkey::DiskSpaceCheck", NULL))
 		problems_filter += RPMPROB_FILTER_DISKSPACE;
 
 	/* run the transaction */
@@ -2626,7 +2716,10 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		goto out;
 
 	/* remove the files we downloaded */
-	keep_cache = hif_config_get_boolean (priv->config, "KeepCache", NULL);
+	keep_cache = g_key_file_get_boolean (priv->config,
+					     HIF_CONFIG_GROUP_NAME,
+					     "Hawkey::KeepCache",
+					     NULL);
 	if (!keep_cache) {
 		state_local = hif_state_get_child (state);
 		ret = hif_transaction_delete_packages (commit->install,

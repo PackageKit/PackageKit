@@ -37,7 +37,7 @@ typedef enum {
 	HIF_SOURCE_SCAN_FLAG_LAST
 } HifSourceScanFlags;
 
-GPtrArray	*hif_source_find_all		(const gchar		*repos_dir,
+GPtrArray	*hif_source_find_all		(GKeyFile		*config,
 						 HifSourceScanFlags	 flags,
 						 GError			**error);
 HifSource	*hif_source_filter_by_id	(GPtrArray		*sources,

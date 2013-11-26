@@ -30,6 +30,8 @@
 
 #define HIF_ERROR				(hif_error_quark ())
 
+#define HIF_CONFIG_GROUP_NAME			"HawkeyConfig"
+
 gboolean	 hif_rc_to_gerror		(gint			 rc,
 						 GError			**error);
 PkErrorEnum	 hif_rc_to_error_enum		(gint			 rc);

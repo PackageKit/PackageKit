@@ -32,7 +32,6 @@
 #include <librepo/librepo.h>
 #include <hawkey/util.h>
 
-#include "hif-config.h"
 #include "hif-source.h"
 #include "hif-utils.h"
 
@@ -137,7 +136,8 @@ out:
  * hif_source_parse:
  */
 static gboolean
-hif_source_parse (GPtrArray *sources,
+hif_source_parse (GKeyFile *config,
+		  GPtrArray *sources,
 		  const gchar *filename,
 		  HifSourceScanFlags flags,
 		  GError **error)
@@ -152,7 +152,6 @@ hif_source_parse (GPtrArray *sources,
 	GKeyFile *keyfile;
 	guint64 val;
 	guint i;
-	HifConfig *config = NULL;
 
 	/* load non-standard keyfile */
 	keyfile = hif_load_multiline_key_file (filename, error);
@@ -162,10 +161,15 @@ hif_source_parse (GPtrArray *sources,
 	}
 
 	/* get common things */
-	config = hif_config_new ();
-	basearch = hif_config_get_string (config, "basearch", NULL);
-	fedora_release = hif_config_get_string (config, "releasever", NULL);
-	cache_dir = hif_config_get_string (config, "CacheDir", NULL);
+	basearch = g_key_file_get_string (config,
+					  HIF_CONFIG_GROUP_NAME,
+					  "Hawkey::BaseArch", NULL);
+	fedora_release = g_key_file_get_string (config,
+						HIF_CONFIG_GROUP_NAME,
+						"Hawkey::ReleaseVersion", NULL);
+	cache_dir = g_key_file_get_string (config,
+					   HIF_CONFIG_GROUP_NAME,
+					   "Hawkey::CacheDir", NULL);
 
 	/* save all the repos listed in the file */
 	repos = g_key_file_get_groups (keyfile, NULL);
@@ -225,8 +229,6 @@ out:
 	g_free (cache_dir);
 	g_free (fedora_release);
 	g_strfreev (repos);
-	if (config != NULL)
-		g_object_unref (config);
 	if (keyfile != NULL)
 		g_key_file_unref (keyfile);
 	return ret;
@@ -236,17 +238,24 @@ out:
  * hif_source_find_all:
  */
 GPtrArray *
-hif_source_find_all (const gchar *repos_dir,
+hif_source_find_all (GKeyFile *config,
 		     HifSourceScanFlags flags,
 		     GError **error)
 {
 	const gchar *file;
-	const gchar *repo_path = "/etc/yum.repos.d";
 	gboolean ret;
 	gchar *path_tmp;
+	gchar *repo_path;
 	GDir *dir;
 	GPtrArray *array = NULL;
 	GPtrArray *sources = NULL;
+
+	/* get the repo dir */
+	repo_path = g_key_file_get_string (config,
+					   HIF_CONFIG_GROUP_NAME,
+					   "Hawkey::ReposDir", error);
+	if (repo_path == NULL)
+		goto out;
 
 	/* open dir */
 	dir = g_dir_open (repo_path, 0, error);
@@ -259,7 +268,7 @@ hif_source_find_all (const gchar *repos_dir,
 		if (!g_str_has_suffix (file, ".repo"))
 			continue;
 		path_tmp = g_build_filename (repo_path, file, NULL);
-		ret = hif_source_parse (array, path_tmp, flags, error);
+		ret = hif_source_parse (config, array, path_tmp, flags, error);
 		g_free (path_tmp);
 		if (!ret)
 			goto out;
@@ -268,6 +277,7 @@ hif_source_find_all (const gchar *repos_dir,
 	/* all okay */
 	sources = g_ptr_array_ref (array);
 out:
+	g_free (repo_path);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (dir != NULL)
