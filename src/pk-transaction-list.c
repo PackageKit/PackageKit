@@ -850,14 +850,10 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 
 	/* is one of the current running transactions background, and this new
 	 * transaction foreground? */
-	ret = pk_conf_get_bool (tlist->priv->conf,
-				"CancelBackgroundTransactions");
-	if (ret) {
-		if (!item->background && pk_transaction_list_get_background_running (tlist)) {
-			g_debug ("cancelling running background transactions and instead running %s",
-				item->tid);
-			pk_transaction_list_cancel_background (tlist);
-		}
+	if (!item->background && pk_transaction_list_get_background_running (tlist)) {
+		g_debug ("cancelling running background transactions and instead running %s",
+			item->tid);
+		pk_transaction_list_cancel_background (tlist);
 	}
 
 	/* do the transaction now, if possible */

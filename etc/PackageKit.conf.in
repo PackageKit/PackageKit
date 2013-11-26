@@ -136,20 +136,3 @@ MaximumPackagesToProcess=5000
 #
 # default=300
 TransactionCreateCommitTimeout=300
-
-# If background tasks should be cancelled if a foreground one is committed
-#
-# This allows us to have session agents automatically using PackageKit,
-# and for any in-flight requests to be cancelled and automatically
-# requeued if a high-priority transaction is added.
-#
-# This avoids the user waiting for actions such as installing software
-# or when getting lists of uninstalled software for BASH when programs
-# like gnome-settings-daemon are checking for updates or refreshing the
-# cache in the background.
-#
-# Set this value to be false if transactions cannot be safely or sanely
-# cancelled.
-#
-# default=true
-CancelBackgroundTransactions=true
