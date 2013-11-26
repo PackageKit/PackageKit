@@ -175,23 +175,6 @@ MaximumPackagesToProcess=5000
 # default=300
 TransactionCreateCommitTimeout=300
 
-# Processes that cannot be updated when they are running
-#
-# Some processes do not cope well when they are upgraded when the binary is
-# running. These include things like firefox, where updating causes the original
-# instance to misbehave as some components are not locked in memory.
-#
-# Applications can be added here that do not cope well with being updated.
-#
-# NOTE: you should not list applications here that the user has no permission
-# or cannot shutdown without the session exploding. For instance, listing
-# /sbin/dbus-daemon or /usr/sbin/haldaemon would be a really bad idea.
-#
-# Separate entries can be separated with the ';' character.
-#
-# default=/usr/lib*/*/firefox
-NoUpdateProcessList=
-
 # If background tasks should be cancelled if a foreground one is committed
 #
 # This allows us to have session agents automatically using PackageKit,

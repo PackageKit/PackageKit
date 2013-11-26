@@ -56,7 +56,6 @@ noinst_LTLIBRARIES =					\
 plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
 	libpk_plugin-update-package-cache.la		\
-	libpk_plugin-no-update-process.la		\
 	libpk_plugin-scan-desktop-files.la		\
 	libpk_plugin-systemd-updates.la			\
 	libpk_plugin-update-check-processes.la		\
@@ -91,12 +90,6 @@ libpk_plugin_update_package_cache_la_SOURCES = \
 libpk_plugin_update_package_cache_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_package_cache_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_package_cache_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_no_update_process_la_SOURCES =		\
-	pk-plugin-no-update-process.c
-libpk_plugin_no_update_process_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_no_update_process_la_LDFLAGS = -module -avoid-version
-libpk_plugin_no_update_process_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_scan_desktop_files_la_SOURCES = pk-plugin-scan-desktop-files.c
 libpk_plugin_scan_desktop_files_la_LIBADD = $(PK_PLUGIN_LIBS)
