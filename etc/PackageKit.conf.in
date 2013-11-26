@@ -160,14 +160,6 @@ UpdateCheckProcesses=true
 # default=true
 CheckSharedLibrariesInUse=true
 
-# Check for updates in testing repositories when we check for updates
-#
-# NOTE: Don't enable this if you do not want testing updates to be checked
-# as this will increase the network bandwidth used.
-#
-# default=true
-CheckTestingRepos=true
-
 # Use update cache when possible to avoid using the backend
 #
 # NOTE: Enabling this reduces calls to the backend, although using the
