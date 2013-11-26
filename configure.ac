@@ -94,24 +94,6 @@ fi
 PYTHON_PACKAGE_DIR=${pythondir}/packagekit
 AC_SUBST(PYTHON_PACKAGE_DIR)
 
-dnl ---------------------------------------------------------------------------
-dnl - Use strict options (default enabled for devs, disabled in releases)
-dnl ---------------------------------------------------------------------------
-dnl if .git directory is present, considering we are working in the repository
-if test -d ".git"; then
-	default_strict=yes
-else
-	default_strict=no
-fi
-
-AC_ARG_ENABLE(strict, AS_HELP_STRING([--enable-strict],[Enable strict compilation options]), enable_strict=$enableval,
-							enable_strict=$default_strict)
-if test x$enable_strict != xno; then
-	if test "$GCC" = "yes"; then
-		WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Werror"
-	fi
-fi
-
 if test "$GCC" = "yes"; then
 	# work both in C and C++
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wall"
