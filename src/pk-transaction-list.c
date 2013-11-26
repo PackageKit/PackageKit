@@ -74,6 +74,9 @@ static void     pk_transaction_list_finalize	(GObject	*object);
 /* the interval between each CST, in seconds */
 #define PK_TRANSACTION_WEDGE_CHECK			10
 
+/* How long the transaction should be queriable after it is finished */
+#define PK_TRANSACTION_KEEP_FINISHED_TIMOUT		5 /* s */
+
 struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
@@ -499,7 +502,6 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
 					     PkTransactionList *tlist)
 {
 	gboolean ret;
-	guint timeout;
 	PkTransactionItem *item;
 	PkTransactionState state;
 	PkBackendJob *job;
@@ -554,8 +556,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
 		}
 
 		/* give the client a few seconds to still query the runner */
-		timeout = pk_conf_get_int (tlist->priv->conf, "TransactionKeepFinishedTimeout");
-		item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
+		item->remove_id = g_timeout_add_seconds (PK_TRANSACTION_KEEP_FINISHED_TIMOUT, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
 		g_source_set_name_by_id (item->remove_id, "[PkTransactionList] remove");
 	}
 

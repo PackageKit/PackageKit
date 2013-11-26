@@ -175,15 +175,6 @@ MaximumPackagesToProcess=5000
 # default=300
 TransactionCreateCommitTimeout=300
 
-# How long the transaction should be queriable after it is finished, in seconds
-#
-# Give the client a few seconds to still query the transaction after it has
-# finished by keeping it on the bus. Setting this larger allows clients to query
-# the transaction without accessing the database, but increases memory usage.
-#
-# default=5
-TransactionKeepFinishedTimeout=5
-
 # If certain operations should be done using IDLE bandwidth
 #
 # TCP Low Priority is a congestion control algorithm included in the kernel.
