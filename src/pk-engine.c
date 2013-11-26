@@ -43,7 +43,6 @@
 #endif
 
 #include "pk-backend.h"
-#include "pk-cache.h"
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
@@ -70,7 +69,6 @@ struct PkEnginePrivate
 	gboolean		 using_hardcoded_proxy;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
-	PkCache			*cache;
 	PkBackend		*backend;
 	PkNetwork		*network;
 	PkNotify		*notify;
@@ -390,9 +388,6 @@ pk_engine_state_changed_cb (gpointer data)
 		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
 		return TRUE;
 	}
-
-	g_debug ("unreffing updates cache as state may have changed");
-	pk_cache_invalidate (engine->priv->cache);
 
 	pk_notify_updates_changed (engine->priv->notify);
 
@@ -1791,9 +1786,6 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv->timer = g_timer_new ();
 
-	/* we save a cache of the latest update lists sowe can do cached responses */
-	engine->priv->cache = pk_cache_new ();
-
 	/* we need the uid and the session for the proxy setting mechanism */
 	engine->priv->dbus = pk_dbus_new ();
 
@@ -1929,7 +1921,6 @@ pk_engine_finalize (GObject *object)
 #endif
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
-	g_object_unref (engine->priv->cache);
 	g_object_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
 	g_ptr_array_unref (engine->priv->plugins);

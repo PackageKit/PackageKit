@@ -50,7 +50,6 @@
 #endif
 
 #include "pk-backend.h"
-#include "pk-cache.h"
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-marshal.h"
@@ -99,7 +98,6 @@ struct PkTransactionPrivate
 	guint			 watch_id;
 	PkBackend		*backend;
 	PkBackendJob		*job;
-	PkCache			*cache;
 	PkConf			*conf;
 	PkNotify		*notify;
 	PkDbus			*dbus;
@@ -295,9 +293,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
-	/* copy this into the cache */
-	pk_cache_set_results (priv->cache, priv->role, priv->results);
-
 	/* could the update list have changed? */
 	if (pk_bitfield_contain (transaction->priv->cached_transaction_flags,
 				  PK_TRANSACTION_FLAG_ENUM_SIMULATE))
@@ -310,10 +305,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-
-		/* the cached list is no longer valid */
-		g_debug ("invalidating caches");
-		pk_cache_invalidate (priv->cache);
 
 		/* this needs to be done after a small delay */
 		pk_notify_wait_updates_changed (priv->notify,
@@ -3955,89 +3946,6 @@ out:
 }
 
 /**
- * pk_transaction_try_emit_cache:
- **/
-static gboolean
-pk_transaction_try_emit_cache (PkTransaction *transaction)
-{
-	PkResults *results;
-	gboolean ret = FALSE;
-	GPtrArray *package_array = NULL;
-	GPtrArray *message_array = NULL;
-	PkPackage *package;
-	PkMessage *message;
-	PkExitEnum exit_enum;
-	guint i;
-	guint idle_id;
-
-	/* not allowed to use a cache */
-	ret = pk_conf_get_bool (transaction->priv->conf, "UseUpdateCache");
-	if (!ret)
-		goto out;
-
-	/* get results */
-	results = pk_cache_get_results (transaction->priv->cache, transaction->priv->role);
-	if (results == NULL)
-		goto out;
-
-	/* failed last time */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("failed last time with: %s", pk_exit_enum_to_string (exit_enum));
-		goto out;
-	}
-
-	g_debug ("we have cached data we should use");
-
-	/* packages */
-	package_array = pk_results_get_package_array (results);
-	for (i = 0; i < package_array->len; i++) {
-		package = g_ptr_array_index (package_array, i);
-		g_dbus_connection_emit_signal (transaction->priv->connection,
-					       NULL,
-					       transaction->priv->tid,
-					       PK_DBUS_INTERFACE_TRANSACTION,
-					       "Package",
-					       g_variant_new ("(uss)",
-							      pk_package_get_info (package),
-							      pk_package_get_id (package),
-							      pk_package_get_summary (package)),
-					       NULL);
-	}
-
-	/* messages */
-	message_array = pk_results_get_message_array (results);
-	for (i = 0; i < message_array->len; i++) {
-		message = g_ptr_array_index (message_array, i);
-		g_dbus_connection_emit_signal (transaction->priv->connection,
-					       NULL,
-					       transaction->priv->tid,
-					       PK_DBUS_INTERFACE_TRANSACTION,
-					       "Message",
-					       g_variant_new ("(us)",
-							      pk_message_get_kind (message),
-							      pk_message_get_details (message)),
-					       NULL);
-	}
-
-	/* success */
-	ret = TRUE;
-
-	/* set finished */
-	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-
-	/* we are done */
-	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-	g_source_set_name_by_id (idle_id, "[PkTransaction] try-emit-cache");
-out:
-	if (package_array != NULL)
-		g_ptr_array_unref (package_array);
-	if (message_array != NULL)
-		g_ptr_array_unref (message_array);
-	return ret;
-}
-
-/**
  * pk_transaction_get_updates:
  **/
 void
@@ -4069,11 +3977,6 @@ pk_transaction_get_updates (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
-
-	/* try and reuse cache */
-	ret = pk_transaction_try_emit_cache (transaction);
-	if (ret)
-		goto out;
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -4438,9 +4341,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
-
-	/* we unref the update cache if it exists */
-	pk_cache_invalidate (transaction->priv->cache);
 
 	/* save so we can run later */
 	transaction->priv->cached_force = force;
@@ -5762,7 +5662,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
-	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
@@ -5882,7 +5781,6 @@ pk_transaction_finalize (GObject *object)
 
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);
-	g_object_unref (transaction->priv->cache);
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->transaction_list);

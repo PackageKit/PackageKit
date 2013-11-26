@@ -27,7 +27,6 @@
 
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
-#include "pk-cache.h"
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
@@ -535,17 +534,6 @@ pk_test_backend_spawn_func (void)
 	g_object_unref (job);
 	g_object_unref (backend);
 	g_object_unref (conf);
-}
-
-static void
-pk_test_cache_func (void)
-{
-	PkCache *cache;
-
-	cache = pk_cache_new ();
-	g_assert (cache != NULL);
-
-	g_object_unref (cache);
 }
 
 static void
@@ -1797,7 +1785,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/syslog", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
-	g_test_add_func ("/packagekit/cache", pk_test_conf_func);
 	g_test_add_func ("/packagekit/store", pk_test_store_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);

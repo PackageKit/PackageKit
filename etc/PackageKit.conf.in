@@ -105,15 +105,6 @@ UpdatePackageList=false
 # default=true
 UpdateCheckProcesses=false
 
-# Use update cache when possible to avoid using the backend
-#
-# NOTE: Enabling this reduces calls to the backend, although using the
-# SetHints(cache-age) parameter will return unpredicable results for
-# transactions.
-#
-# default=false
-UseUpdateCache=false
-
 # The time in seconds to wait when we get the StateHasChanged method
 #
 # This should be used when a native tool has been used, and the update UIs

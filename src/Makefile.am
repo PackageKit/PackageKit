@@ -103,8 +103,6 @@ shared_SOURCES =					\
 	pk-conf.h					\
 	pk-store.c					\
 	pk-store.h					\
-	pk-cache.c					\
-	pk-cache.h					\
 	pk-notify.c					\
 	pk-notify.h					\
 	pk-spawn.c					\
