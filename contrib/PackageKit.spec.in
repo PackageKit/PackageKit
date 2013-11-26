@@ -42,7 +42,6 @@ BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
 BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: pango-devel
-BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
@@ -325,7 +324,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
-%{_libdir}/pm-utils/sleep.d/95packagekit
 %dir %{_libdir}/packagekit-plugins
 %{_libdir}/packagekit-plugins/*.so
 %{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
