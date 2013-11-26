@@ -5,17 +5,14 @@ if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) \
-							 --add-include-path=$(top_builddir)/lib/packagekit-glib2
+			     --add-include-path=$(top_builddir)/lib/packagekit-glib2
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) \
-							  --includedir=$(top_builddir)/lib/packagekit-glib2
+			      --includedir=$(top_builddir)/lib/packagekit-glib2
 endif
 
 SUBDIRS = plugins
 
-NULL =
-
-PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-		$(NULL)
+PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
 
 AM_CPPFLAGS =						\
 	$(GIO_CFLAGS)					\
@@ -43,11 +40,10 @@ AM_CPPFLAGS =						\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit\"			\
 	-I$(top_builddir)/lib				\
-	-I$(top_srcdir)/lib				\
-	$(NULL)
+	-I$(top_srcdir)/lib
 
 pluginincludedir=$(includedir)/PackageKit/plugin
-plugininclude_HEADERS =				\
+plugininclude_HEADERS =					\
 	packagekit-plugin.h				\
 	pk-shared.h					\
 	pk-backend.h					\
@@ -68,8 +64,7 @@ plugininclude_GIRSOURCES =				\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-shared.c					\
-	pk-shared.h					\
-	$(NULL)
+	pk-shared.h
 
 shared_SOURCES =					\
 	pk-dbus.c					\
@@ -112,8 +107,7 @@ shared_SOURCES =					\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
 	pk-transaction-list.c				\
-	pk-transaction-list.h				\
-	$(NULL)
+	pk-transaction-list.h
 
 if PK_BUILD_NETWORKMANAGER
 shared_SOURCES +=					\
@@ -125,14 +119,11 @@ shared_SOURCES +=					\
 	pk-network-stack-connman.c
 endif
 
-libexec_PROGRAMS =					\
-	packagekitd					\
-	$(NULL)
+libexec_PROGRAMS = packagekitd
 
 packagekitd_SOURCES =					\
 	pk-main.c					\
-	$(shared_SOURCES)				\
-	$(NULL)
+	$(shared_SOURCES)
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
@@ -145,8 +136,7 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
-	$(SYSTEMD_LIBS)					\
-	$(NULL)
+	$(SYSTEMD_LIBS)
 
 packagekitd_LDFLAGS =					\
 	$(PIE_LDFLAGS)					\
@@ -154,25 +144,14 @@ packagekitd_LDFLAGS =					\
 
 packagekitd_CFLAGS =					\
 	$(PIE_CFLAGS)					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-if BACKEND_TYPE_BOX
-packagekitd_AM_CPPFLAGS =					\
-	$(BOX_CFLAGS)
-packagekitd_LDADD +=					\
-	$(BOX_LIBS)
-endif
-
-if EGG_BUILD_TESTS
+	$(WARNINGFLAGS_C)
 
 check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
 	pk-self-test.c					\
-	$(shared_SOURCES)				\
-	$(NULL)
+	$(shared_SOURCES)
 
 pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
@@ -184,17 +163,14 @@ pk_self_test_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
-	$(SYSTEMD_LIBS)					\
-	$(NULL)
+	$(SYSTEMD_LIBS)
 
-pk_self_test_CFLAGS =
+pk_self_test_CFLAGS =					\
 	-DEGG_TEST					\
 	$(AM_CFLAGS)					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 TESTS = pk-self-test
-endif
 
 install-data-hook:
 	if test -w $(DESTDIR)$(prefix)/; then \
@@ -220,8 +196,7 @@ if HAVE_INTROSPECTION
 # Build dummy library for g-ir-scanner to parse
 noinst_LTLIBRARIES = libpkplugins.la
 
-libpkplugins_la_SOURCES = $(plugininclude_GIRSOURCES) \
-			$(shared_SOURCES)
+libpkplugins_la_SOURCES = $(plugininclude_GIRSOURCES) $(shared_SOURCES)
 
 libpkplugins_la_LIBADD =				\
 	$(GLIB_LIBS)					\
@@ -234,13 +209,11 @@ libpkplugins_la_LIBADD =				\
 	$(POLKIT_LIBS)					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
-	$(SYSTEMD_LIBS)					\
-	$(NULL)
+	$(SYSTEMD_LIBS)
 
 libpkplugins_la_CFLAGS =				\
 	$(PIE_CFLAGS)					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 PackageKitPlugin-1.0.gir: libpkplugins.la $(plugininclude_GIRSOURCES)
 PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0

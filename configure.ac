@@ -317,16 +317,6 @@ AC_SUBST(PACKAGEKIT_USER)
 AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PackageKit daemon])
 
 dnl ---------------------------------------------------------------------------
-dnl - Build self tests
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
-	      enable_tests=$enableval,enable_tests=yes)
-AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
-if test x$enable_tests = xyes; then
-	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
-fi
-
-dnl ---------------------------------------------------------------------------
 dnl - Able to run from a checkout?
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),

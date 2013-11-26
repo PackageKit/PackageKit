@@ -1,5 +1,3 @@
-NULL =
-
 if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
@@ -25,12 +23,10 @@ AM_CPPFLAGS = \
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = 						\
-	packagekit-glib2.pc					\
-	$(NULL)
+	packagekit-glib2.pc
 
 lib_LTLIBRARIES =						\
-	libpackagekit-glib2.la					\
-	$(NULL)
+	libpackagekit-glib2.la
 
 libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 
@@ -72,13 +68,11 @@ HEADER_FILES =							\
 	pk-transaction-past.h					\
 	pk-transaction-list.h					\
 	pk-update-detail.h					\
-	pk-version.h						\
-	$(NULL)
+	pk-version.h
 
 libpackagekit_glib2_include_HEADERS =				\
 	$(HEADER_FILES)						\
-	pk-enum-types.h						\
-	$(NULL)
+	pk-enum-types.h
 
 libpackagekit_glib2_la_SOURCES =				\
 	packagekit.h						\
@@ -160,27 +154,23 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-update-detail.h					\
 	pk-spawn-polkit-agent.c				\
 	pk-spawn-polkit-agent.h				\
-	pk-version.h						\
-	$(NULL)
+	pk-version.h
 
 libpackagekit_glib2_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(GIO_LIBS)						\
 	$(ARCHIVE_LIBS)						\
-	$(SQLITE_LIBS)						\
-	$(NULL)
+	$(SQLITE_LIBS)
 
 libpackagekit_glib2_la_LDFLAGS =				\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\
 	-no-undefined						\
-	-export-symbols-regex '^pk_.*'				\
-	$(NULL)
+	-export-symbols-regex '^pk_.*'
 
 libpackagekit_glib2_la_CFLAGS =					\
 	$(PIE_CFLAGS)						\
-	$(WARNINGFLAGS_C)					\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 noinst_LIBRARIES = libpackagekitprivate.a
 libpackagekitprivate_a_SOURCES =				\
@@ -193,26 +183,22 @@ libpackagekitprivate_a_SOURCES =				\
 	pk-task-text.h						\
 	pk-task-wrapper.c					\
 	pk-task-wrapper.h					\
-	pk-spawn-polkit-agent.h				\
-	$(NULL)
+	pk-spawn-polkit-agent.h
 
 libpackagekitprivate_a_CFLAGS =					\
 	$(PIE_CFLAGS)						\
-	$(WARNINGFLAGS_C)					\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 noinst_PROGRAMS = pk-socket-example
 pk_socket_example_SOURCES = pk-socket-example.c
 pk_socket_example_LDADD = $(GIO_LIBS) $(GLIB_LIBS)
 pk_socket_example_CFLAGS = $(WARNINGFLAGS_C)
 
-if EGG_BUILD_TESTS
 check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
-	pk-self-test.c						\
-	$(NULL)
+	pk-self-test.c
 
 pk_self_test_LDADD =						\
 	libpackagekit-glib2.la					\
@@ -221,25 +207,21 @@ pk_self_test_LDADD =						\
 	$(SELFTEST_LIBS)					\
 	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
-	$(ARCHIVE_LIBS)						\
-	$(NULL)
+	$(ARCHIVE_LIBS)
 
 pk_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)
 
 TESTS = pk-self-test
-endif
 
 EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
 	pk-version.h.in						\
 	pk-enum-types.h.template				\
-	pk-enum-types.c.template				\
-	$(NULL)
+	pk-enum-types.c.template
 
 BUILT_SOURCES = 						\
 	pk-enum-types.h						\
-	pk-enum-types.c						\
-	$(NULL)
+	pk-enum-types.c
 
 pk-enum-types.h: pk-enum-types.h.template $(HEADER_FILES)
 	$(AM_V_GEN) $(GLIB_MKENUMS) --template $^ > $@
