@@ -175,26 +175,6 @@ MaximumPackagesToProcess=5000
 # default=300
 TransactionCreateCommitTimeout=300
 
-# If certain operations should be done using IDLE bandwidth
-#
-# TCP Low Priority is a congestion control algorithm included in the kernel.
-# Connections using this algorithm will use only idle bandwidth. In other words,
-# it is a self-tuning TCP stack. Setting this to FALSE will mean that the check
-# for updates happens more quickly, at the expense of other network applications
-# such as firefox and other file downloaders.
-#
-# If the user is running the network at 100% for extended periods of time, then
-# the update check may be starved and take a very long time to complete. In this
-# rare case, this setting should be set to FALSE.
-#
-# By also setting this setting to TRUE makes the possibility of a environment
-# mismatch much higher for a spawned backend. This will make switching from idle
-# operations (such as GetUpdates) and full speed operations (such as
-# InstallPackages) take longer. If this is a concern, then set this to FALSE.
-#
-# default=true
-UseIdleBandwidth=true
-
 # Processes that cannot be updated when they are running
 #
 # Some processes do not cope well when they are upgraded when the binary is

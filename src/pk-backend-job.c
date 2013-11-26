@@ -1971,13 +1971,6 @@ pk_backend_job_get_exit_code (PkBackendJob *job)
 gboolean
 pk_backend_job_use_background (PkBackendJob *job)
 {
-	gboolean ret;
-
-	/* check we are allowed */
-	ret = pk_conf_get_bool (job->priv->conf, "UseIdleBandwidth");
-	if (!ret)
-		return FALSE;
-
 	/* the session has set it one way or the other */
 	if (job->priv->background == PK_HINT_ENUM_TRUE)
 		return TRUE;
