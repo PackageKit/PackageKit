@@ -23,28 +23,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = 					\
 	packagekit-plugin.pc
 
-if EGG_BUILD_TESTS
-
-check_PROGRAMS =					\
-	pk-self-test
-
-pk_self_test_SOURCES =					\
-	pk-self-test.c					\
-	pk-lsof.h					\
-	pk-lsof.c
-
-pk_self_test_LDADD =					\
-	$(GLIB_LIBS)					\
-	$(GMODULE_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(GIO_LIBS)
-
-pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
-
-TESTS = pk-self-test
-endif
-
 clean-local:
 	rm -f *~
 
@@ -59,7 +37,6 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-scan-desktop-files.la		\
 	libpk_plugin-systemd-updates.la			\
 	libpk_plugin-update-check-processes.la		\
-	libpk_plugin-check-shared-libraries-in-use.la	\
 	libpk_plugin-require-restart.la			\
 	libpk_plugin-clear-firmware-requests.la
 
@@ -101,14 +78,6 @@ libpk_plugin_update_check_processes_la_SOURCES =	\
 libpk_plugin_update_check_processes_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_update_check_processes_la_LDFLAGS = -module -avoid-version
 libpk_plugin_update_check_processes_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_check_shared_libraries_in_use_la_SOURCES =	\
-	pk-plugin-check-shared-libraries-in-use.c	\
-	pk-lsof.h					\
-	pk-lsof.c
-libpk_plugin_check_shared_libraries_in_use_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_check_shared_libraries_in_use_la_LDFLAGS = -module -avoid-version
-libpk_plugin_check_shared_libraries_in_use_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_require_restart_la_SOURCES =		\
 	pk-plugin-require-restart.c

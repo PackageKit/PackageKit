@@ -105,15 +105,6 @@ UpdatePackageList=false
 # default=true
 UpdateCheckProcesses=false
 
-# Check for shared libraries that are in use, that are replaced by packages
-# that are marked as security updates.
-#
-# NOTE: Don't enable this for backends that are slow doing GetFiles() on
-# installed files.
-#
-# default=true
-CheckSharedLibrariesInUse=false
-
 # Use update cache when possible to avoid using the backend
 #
 # NOTE: Enabling this reduces calls to the backend, although using the
