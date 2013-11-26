@@ -1318,7 +1318,6 @@ pk_transaction_message_cb (PkBackend *backend,
 			   PkMessage *item,
 			   PkTransaction *transaction)
 {
-	gboolean developer_mode;
 	gchar *details;
 	PkMessageEnum type;
 
@@ -1330,15 +1329,6 @@ pk_transaction_message_cb (PkBackend *backend,
 		      "type", &type,
 		      "details", &details,
 		      NULL);
-
-	/* if not running in developer mode, then skip these types */
-	developer_mode = pk_conf_get_bool (transaction->priv->conf, "DeveloperMode");
-	if (!developer_mode &&
-	    (type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
-	     type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
-		g_debug ("ignoring message (turn on DeveloperMode): %s", details);
-		return;
-	}
 
 	/* add to results */
 	pk_results_add_message (transaction->priv->results, item);

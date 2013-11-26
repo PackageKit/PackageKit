@@ -341,13 +341,6 @@ pk_test_backend_func (void)
 	pk_backend_reset_job (backend, job);
 	pk_backend_job_set_allow_cancel (job, FALSE);
 
-	/* if running in developer mode, then expect a Message */
-	developer_mode = pk_conf_get_bool (conf, "DeveloperMode");
-	if (developer_mode) {
-		/* check we enforce finished after error_code */
-		g_assert_cmpint (number_messages, ==, 1);
-	}
-
 	/* stop the job again */
 	pk_backend_stop_job (backend, job);
 

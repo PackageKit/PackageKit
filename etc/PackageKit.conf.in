@@ -143,18 +143,6 @@ CheckSharedLibrariesInUse=true
 # default=false
 UseUpdateCache=false
 
-# Use strict developer checking in the daemon
-#
-# This should be set to TRUE if the backend should be run in strict compliance
-# mode, which is useful when developing a backend. Normal sane users should not
-# have to use this mode.
-#
-# If this is set to FALSE, then the daemon will try to 'fix' any craziness in
-# the backend without notifying the end user.
-#
-# default=false
-DeveloperMode=false
-
 # The time in seconds to wait when we get the StateHasChanged method
 #
 # This should be used when a native tool has been used, and the update UIs
