@@ -62,7 +62,7 @@ gboolean	 pk_backend_spawn_exit			(PkBackendSpawn	*backend_spawn);
 const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_set_name		(PkBackendSpawn	*backend_spawn,
 							 const gchar	*name);
-gboolean	 pk_backend_spawn_set_allow_sigkill	(PkBackendSpawn	*backend_spawn,
+void		 pk_backend_spawn_set_allow_sigkill	(PkBackendSpawn	*backend_spawn,
 							 gboolean	 allow_sigkill);
 
 PkBackend	*pk_backend_spawn_get_backend		(PkBackendSpawn	*backend_spawn);

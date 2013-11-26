@@ -1161,26 +1161,13 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
 /**
  * pk_backend_spawn_set_allow_sigkill:
  **/
-gboolean
+void
 pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allow_sigkill)
 {
-	gboolean ret = TRUE;
-
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* have we banned this in the config ile */
-	if (!backend_spawn->priv->allow_sigkill && allow_sigkill) {
-		g_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
-		ret = FALSE;
-		goto out;
-	}
-
-	/* set this property */
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 	g_object_set (backend_spawn->priv->spawn,
 		      "allow-sigkill", allow_sigkill,
 		      NULL);
-out:
-	return ret;
 }
 
 /**
@@ -1238,12 +1225,6 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
 	g_signal_connect (backend_spawn->priv->spawn, "stderr",
 			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
-
-	/* set if SIGKILL is allowed */
-	backend_spawn->priv->allow_sigkill = pk_conf_get_bool (backend_spawn->priv->conf, "BackendSpawnAllowSIGKILL");
-	g_object_set (backend_spawn->priv->spawn,
-		      "allow-sigkill", backend_spawn->priv->allow_sigkill,
-		      NULL);
 }
 
 /**

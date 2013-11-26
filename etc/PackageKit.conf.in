@@ -43,21 +43,6 @@ BackendSpawnIdleIO=true
 # default=true
 BackendSpawnIdleIOBackground=true
 
-# Set whether the spawned backends are allowed to be SIGKILLed if they do not
-# respond to SIGQUIT. This ensures that Cancel() works as expected, but
-# somtimes can corrupt databases if they are open.
-#
-# Only change this to FALSE if your backend can not be SIGKILLed without
-# database corruption.
-#
-# Even if this is set TRUE, the backend can still enforce this FALSE if it it
-# explicitly set in the compiled backend. You can think of this as a fallback
-# value that is used when backends do not enforce policy, or as a way to disable
-# SIGKILL even for backends that calim to support it.
-#
-# default=true
-BackendSpawnAllowSIGKILL=true
-
 # Default backends, as chosen in the configure script. This will be used
 # where no --backend="foo" option is given to the daemon.
 #
