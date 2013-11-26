@@ -8,15 +8,6 @@
 # default=true
 TransactionLogging=true
 
-# If we should use the estimated time value.
-# This will be inaccurate where backends do not send proportional percentage
-# changed signals, or when updates are not frequent enough.
-# Estimated time will then only be used when the prediction accuracy is high
-# enough and will not be set at the very start or end of a transaction.
-#
-# default=true
-UseRemainingTimeEstimation=true
-
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
 #
 # default=300
