@@ -3,11 +3,6 @@
 
 [Daemon]
 
-# Should we log transactions to the database.
-#
-# default=true
-TransactionLogging=true
-
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
 #
 # default=300

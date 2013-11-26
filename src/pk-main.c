@@ -176,7 +176,6 @@ main (int argc, char *argv[])
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
-	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
 	PkEngine *engine = NULL;
 	PkConf *conf = NULL;
@@ -255,10 +254,6 @@ main (int argc, char *argv[])
 	/* log the startup */
 	syslog = pk_syslog_new ();
 	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon start");
-
-	/* do we log? */
-	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
-	g_debug ("Log all transactions: %i", do_logging);
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
