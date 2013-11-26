@@ -123,7 +123,7 @@ UpdatePackageList=false
 # installed files.
 #
 # default=true
-UpdateCheckProcesses=true
+UpdateCheckProcesses=false
 
 # Check for shared libraries that are in use, that are replaced by packages
 # that are marked as security updates.
@@ -132,7 +132,7 @@ UpdateCheckProcesses=true
 # installed files.
 #
 # default=true
-CheckSharedLibrariesInUse=true
+CheckSharedLibrariesInUse=false
 
 # Use update cache when possible to avoid using the backend
 #
