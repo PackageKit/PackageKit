@@ -567,12 +567,12 @@ pk_test_conf_func (void)
 
 	/* get the default backend */
 	text = pk_conf_get_string (conf, "DefaultBackend");
-	g_assert (text != PK_CONF_VALUE_STRING_MISSING);
+	g_assert (text != NULL);
 	g_free (text);
 
 	/* get a string that doesn't exist */
 	text = pk_conf_get_string (conf, "FooBarBaz");
-	g_assert (text == PK_CONF_VALUE_STRING_MISSING);
+	g_assert (text == NULL);
 	g_free (text);
 
 	/* get the shutdown timeout */

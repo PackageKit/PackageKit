@@ -39,7 +39,6 @@
 struct PkConfPrivate
 {
 	GKeyFile		*keyfile;
-	GHashTable		*overrides;
 };
 
 G_DEFINE_TYPE (PkConf, pk_conf, G_TYPE_OBJECT)
@@ -52,12 +51,8 @@ void
 pk_conf_set_bool (PkConf *conf, const gchar *key, gboolean value)
 {
 	g_return_if_fail (PK_IS_CONF (conf));
-	g_return_if_fail (key != NULL);
-
-	g_hash_table_remove (conf->priv->overrides, key);
-	g_hash_table_insert (conf->priv->overrides,
-			     g_strdup (key),
-			     value ? g_strdup ("1") : g_strdup ("0"));
+	g_key_file_set_boolean (conf->priv->keyfile,
+				PK_CONF_GROUP_NAME, key, value);
 }
 
 /**
@@ -67,13 +62,8 @@ void
 pk_conf_set_string (PkConf *conf, const gchar *key, const gchar *value)
 {
 	g_return_if_fail (PK_IS_CONF (conf));
-	g_return_if_fail (key != NULL);
-	g_return_if_fail (value != NULL);
-
-	g_hash_table_remove (conf->priv->overrides, key);
-	g_hash_table_insert (conf->priv->overrides,
-			     g_strdup (key),
-			     g_strdup (value));
+	g_key_file_set_string (conf->priv->keyfile,
+			       PK_CONF_GROUP_NAME, key, value);
 }
 
 /**
@@ -84,26 +74,16 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 {
 	gchar *value = NULL;
 	GError *error = NULL;
-	gpointer found;
 
 	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
 	g_return_val_if_fail (key != NULL, NULL);
 
-	/* an override? */
-	found = g_hash_table_lookup (conf->priv->overrides, key);
-	if (found != NULL) {
-		value = g_strdup (found);
-		goto out;
-	}
-
-	value = g_key_file_get_string (conf->priv->keyfile, "Daemon", key, &error);
-	if (error != NULL) {
-		/* set to missing value */
-		value = PK_CONF_VALUE_STRING_MISSING;
+	value = g_key_file_get_string (conf->priv->keyfile,
+				       PK_CONF_GROUP_NAME, key, &error);
+	if (value == NULL) {
 		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
-out:
 	return value;
 }
 
@@ -117,26 +97,17 @@ pk_conf_get_strv (PkConf *conf, const gchar *key)
 {
 	gchar **value = NULL;
 	GError *error = NULL;
-	gpointer found;
 
 	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
 	g_return_val_if_fail (key != NULL, NULL);
 
-	/* an override? */
-	found = g_hash_table_lookup (conf->priv->overrides, key);
-	if (found != NULL) {
-		value = g_strsplit (found, ",", -1);
-		goto out;
-	}
-
-	value = g_key_file_get_string_list (conf->priv->keyfile, "Daemon", key, NULL, &error);
-	if (error != NULL) {
-		/* set to missing value */
-		value = PK_CONF_VALUE_STRING_MISSING;
+	value = g_key_file_get_string_list (conf->priv->keyfile,
+					    PK_CONF_GROUP_NAME, key,
+					    NULL, &error);
+	if (value == NULL) {
 		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
-out:
 	return value;
 }
 
@@ -148,26 +119,18 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 {
 	GError *error = NULL;
 	gint value;
-	gpointer found;
 
 	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
 
-	/* an override? */
-	found = g_hash_table_lookup (conf->priv->overrides, key);
-	if (found != NULL) {
-		value = atoi (found);
-		goto out;
-	}
-
-	value = g_key_file_get_integer (conf->priv->keyfile, "Daemon", key, &error);
+	value = g_key_file_get_integer (conf->priv->keyfile,
+					PK_CONF_GROUP_NAME, key, &error);
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_INT_MISSING;
 		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
-out:
 	return value;
 }
 
@@ -179,24 +142,16 @@ pk_conf_get_bool (PkConf *conf, const gchar *key)
 {
 	gboolean value;
 	GError *error = NULL;
-	gpointer found;
 
 	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
 
-	/* an override? */
-	found = g_hash_table_lookup (conf->priv->overrides, key);
-	if (found != NULL) {
-		value = atoi (found);
-		goto out;
-	}
-
-	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
+	value = g_key_file_get_boolean (conf->priv->keyfile,
+					PK_CONF_GROUP_NAME, key, &error);
 	if (error != NULL) {
 		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
-out:
 	return value;
 }
 
@@ -210,7 +165,6 @@ pk_conf_finalize (GObject *object)
 	g_return_if_fail (PK_IS_CONF (object));
 	conf = PK_CONF (object);
 
-	g_hash_table_unref (conf->priv->overrides);
 	g_key_file_free (conf->priv->keyfile);
 
 	G_OBJECT_CLASS (pk_conf_parent_class)->finalize (object);
@@ -238,17 +192,15 @@ pk_conf_get_filename (void)
 #if PK_BUILD_LOCAL
 	/* try a local path first */
 	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
 		goto out;
-	}
 	g_debug ("local config file not found '%s'", path);
 	g_free (path);
 #endif
 	/* check the prefix path */
 	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
 		goto out;
-	}
 
 	/* none found! */
 	g_warning ("config file not found '%s'", path);
@@ -272,10 +224,6 @@ pk_conf_init (PkConf *conf)
 	gchar *path;
 
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
-	conf->priv->overrides = g_hash_table_new_full (g_str_hash,
-						       g_str_equal,
-						       g_free,
-						       g_free);
 	path = pk_conf_get_filename ();
 	if (path == NULL)
 		g_error ("config file not found");

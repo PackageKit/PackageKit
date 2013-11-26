@@ -33,6 +33,8 @@ G_BEGIN_DECLS
 #define PK_IS_CONF_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CONF))
 #define PK_CONF_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CONF, PkConfClass))
 
+#define PK_CONF_GROUP_NAME	"Daemon"
+
 typedef struct PkConfPrivate PkConfPrivate;
 
 typedef struct
@@ -47,7 +49,6 @@ typedef struct
 } PkConfClass;
 
 #define PK_CONF_VALUE_INT_MISSING	-1
-#define PK_CONF_VALUE_STRING_MISSING	NULL
 
 GType		 pk_conf_get_type		(void);
 PkConf		*pk_conf_new			(void);
