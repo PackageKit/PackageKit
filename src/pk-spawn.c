@@ -529,7 +529,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 {
 	gboolean ret = TRUE;
 	GError *error_local = NULL;
-	gboolean idleio;
 	guint i;
 	guint len;
 	gint nice_value;
@@ -630,12 +629,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	}
 #endif
 
-	/* perhaps set idle IO priority */
-	key = "BackendSpawnIdleIO";
-	if (spawn->priv->background)
-		key = "BackendSpawnIdleIOBackground";
-	idleio = pk_conf_get_bool (spawn->priv->conf, key);
-	if (idleio) {
+	/* set idle IO priority */
+	if (spawn->priv->background) {
 		g_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (spawn->priv->child_pid);
 	}

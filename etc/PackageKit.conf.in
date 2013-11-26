@@ -31,18 +31,6 @@ BackendSpawnNiceValue=0
 # default=10
 BackendSpawnNiceValueBackground=10
 
-# Set the iopriority class of the spawned backend to idle.
-# This ensures the process does not hog the disk when performing actions.
-#
-# default=true
-BackendSpawnIdleIO=true
-
-# Set the iopriority class of the spawned backend to idle for low priority tasks.
-# This ensures the process does not hog the disk when performing actions.
-#
-# default=true
-BackendSpawnIdleIOBackground=true
-
 # Default backends, as chosen in the configure script. This will be used
 # where no --backend="foo" option is given to the daemon.
 #
