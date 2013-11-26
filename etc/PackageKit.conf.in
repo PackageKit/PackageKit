@@ -8,23 +8,6 @@
 # default=true
 TransactionLogging=true
 
-# Use NetworkManager where available. If disabled, then NM state will be ignored.
-#
-# default=true
-UseNetworkManager=true
-
-# Use Connman where available. If disabled, then Connman state will be ignored.
-#
-# default=false
-UseNetworkConnman=false
-
-# If neither NetworkManager nor ConnMan is not available, then use the presence
-# of default route to indicate a viable network connection.
-# If disabled, and no NM or CM, then the network is assumed to be always online.
-#
-# default=true
-UseNetworkHeuristic=true
-
 # If we should use the estimated time value.
 # This will be inaccurate where backends do not send proportional percentage
 # changed signals, or when updates are not frequent enough.

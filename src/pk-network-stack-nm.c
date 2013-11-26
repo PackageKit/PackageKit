@@ -27,7 +27,6 @@
 #include <NetworkManager.h>
 
 #include "pk-network-stack-nm.h"
-#include "pk-conf.h"
 #include "pk-marshal.h"
 
 #ifndef NM_CHECK_VERSION
@@ -37,7 +36,6 @@
 struct PkNetworkStackNmPrivate
 {
 	guint			 watch_id;
-	PkConf			*conf;
 	GDBusConnection		*bus;
 	gboolean		 is_enabled;
 	GDBusProxy		*proxy_changed;
@@ -280,11 +278,8 @@ pk_network_stack_nm_appeared_cb (GDBusConnection *connection,
 				 const gchar *name_owner,
 				 gpointer user_data)
 {
-	gboolean ret;
 	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (user_data);
-	ret = pk_conf_get_bool (nstack_nm->priv->conf,
-				"UseNetworkManager");
-	nstack_nm->priv->is_enabled = ret;
+	nstack_nm->priv->is_enabled = TRUE;
 }
 
 /**
@@ -336,7 +331,6 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	GError *error = NULL;
 
 	nstack_nm->priv = PK_NETWORK_STACK_NM_GET_PRIVATE (nstack_nm);
-	nstack_nm->priv->conf = pk_conf_new ();
 
 	/* get system connection */
 	nstack_nm->priv->bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
@@ -386,7 +380,6 @@ pk_network_stack_nm_finalize (GObject *object)
 	nstack_nm = PK_NETWORK_STACK_NM (object);
 
 	g_object_unref (nstack_nm->priv->proxy_changed);
-	g_object_unref (nstack_nm->priv->conf);
 	g_bus_unwatch_name (nstack_nm->priv->watch_id);
 
 	G_OBJECT_CLASS (pk_network_stack_nm_parent_class)->finalize (object);

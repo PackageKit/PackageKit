@@ -28,13 +28,11 @@
 #include <dbus/dbus-glib.h>
 
 #include "pk-network-stack-connman.h"
-#include "pk-conf.h"
 #include "pk-marshal.h"
 
 struct PkNetworkStackConnmanPrivate
 {
 	guint			 watch_id;
-	PkConf			*conf;
 	gboolean		 is_enabled;
 	GDBusConnection		*bus;
 	GDBusProxy		*proxy;
@@ -257,11 +255,8 @@ pk_network_stack_connman_appeared_cb (GDBusConnection *connection,
 				      const gchar *name_owner,
 				      gpointer user_data)
 {
-	gboolean ret;
 	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (user_data);
-	ret = pk_conf_get_bool (nstack_connman->priv->conf,
-				"UseNetworkConnman");
-	nstack_connman->priv->is_enabled = ret;
+	nstack_connman->priv->is_enabled = TRUE;
 }
 
 /**
@@ -286,7 +281,6 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	GDBusProxy *proxy;
 
 	nstack_connman->priv = PK_NETWORK_STACK_CONNMAN_GET_PRIVATE (nstack_connman);
-	nstack_connman->priv->conf = pk_conf_new ();
 
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_BOXED,
 					   G_TYPE_NONE, G_TYPE_STRING,
@@ -345,7 +339,6 @@ pk_network_stack_connman_finalize (GObject *object)
 	g_return_if_fail (nstack_connman->priv != NULL);
 
 	g_bus_unwatch_name (nstack_connman->priv->watch_id);
-	g_object_unref (nstack_connman->priv->conf);
 	if (nstack_connman->priv->proxy != NULL)
 		g_object_unref (nstack_connman->priv->proxy);
 

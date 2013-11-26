@@ -41,7 +41,6 @@
 #include "pk-network-stack-connman.h"
 #include "pk-network-stack-nm.h"
 #include "pk-marshal.h"
-#include "pk-conf.h"
 
 static void     pk_network_finalize	(GObject        *object);
 
@@ -54,7 +53,6 @@ static void     pk_network_finalize	(GObject        *object);
  **/
 struct _PkNetworkPrivate
 {
-	PkConf			*conf;
 	GPtrArray		*nstacks;
 };
 
@@ -140,7 +138,6 @@ pk_network_init (PkNetwork *network)
 {
 	PkNetworkStack *nstack;
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
-	network->priv->conf = pk_conf_new ();
 
 	/* array of PkNetworkStacks, in order of preference */
 	network->priv->nstacks = g_ptr_array_new ();
@@ -179,7 +176,6 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
-	g_object_unref (network->priv->conf);
 
 	/* free all network stacks in use */
 	g_ptr_array_foreach (network->priv->nstacks, (GFunc) g_object_unref, NULL);

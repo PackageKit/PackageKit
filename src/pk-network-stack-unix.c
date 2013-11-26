@@ -39,11 +39,9 @@
 
 #include "pk-network-stack-unix.h"
 #include "pk-marshal.h"
-#include "pk-conf.h"
 
 struct PkNetworkStackUnixPrivate
 {
-	PkConf			*conf;
 	PkNetworkEnum		 state_old;
 	GFileMonitor		*monitor;
 	gboolean		 is_enabled;
@@ -223,11 +221,7 @@ pk_network_stack_unix_init (PkNetworkStackUnix *nstack_unix)
 
 	nstack_unix->priv = PK_NETWORK_STACK_UNIX_GET_PRIVATE (nstack_unix);
 	nstack_unix->priv->state_old = PK_NETWORK_ENUM_UNKNOWN;
-	nstack_unix->priv->conf = pk_conf_new ();
-
-	/* do we use this code? */
-	nstack_unix->priv->is_enabled = pk_conf_get_bool (nstack_unix->priv->conf,
-							  "UseNetworkHeuristic");
+	nstack_unix->priv->is_enabled = TRUE;
 
 	/* monitor the route file for changes */
 	file = g_file_new_for_path (PK_NETWORK_PROC_ROUTE);
@@ -261,7 +255,6 @@ pk_network_stack_unix_finalize (GObject *object)
 	nstack_unix = PK_NETWORK_STACK_UNIX (object);
 	g_return_if_fail (nstack_unix->priv != NULL);
 
-	g_object_unref (nstack_unix->priv->conf);
 	g_object_unref (nstack_unix->priv->monitor);
 
 	G_OBJECT_CLASS (pk_network_stack_unix_parent_class)->finalize (object);
