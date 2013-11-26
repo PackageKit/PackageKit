@@ -33,7 +33,6 @@
 #include <glib.h>
 
 #include "pk-notify.h"
-#include "pk-marshal.h"
 
 #define PK_NOTIFY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NOTIFY, PkNotifyPrivate))
 

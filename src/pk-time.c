@@ -40,7 +40,6 @@
 #include <glib/gi18n.h>
 
 #include "pk-time.h"
-#include "pk-marshal.h"
 
 static void     pk_time_finalize	(GObject     *object);
 

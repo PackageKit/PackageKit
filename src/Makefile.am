@@ -72,8 +72,6 @@ plugininclude_GIRSOURCES =				\
 	$(NULL)
 
 shared_SOURCES =					\
-	pk-marshal.c					\
-	pk-marshal.h					\
 	pk-dbus.c					\
 	pk-dbus.h					\
 	pk-transaction.c				\
@@ -166,17 +164,6 @@ packagekitd_LDADD +=					\
 	$(BOX_LIBS)
 endif
 
-BUILT_SOURCES =						\
-	pk-marshal.c					\
-	pk-marshal.h
-
-pk-marshal.c: pk-marshal.list
-	echo "#include \"pk-marshal.h\"" > $@ && \
-	glib-genmarshal $< --prefix=pk_marshal --body >> $@
-
-pk-marshal.h: pk-marshal.list
-	glib-genmarshal $< --prefix=pk_marshal --header > $@
-
 if EGG_BUILD_TESTS
 
 check_PROGRAMS =					\
@@ -221,16 +208,11 @@ dist_introspection_DATA = 				\
 	org.freedesktop.PackageKit.xml			\
 	org.freedesktop.PackageKit.Transaction.xml
 
-EXTRA_DIST =						\
-	pk-marshal.list
-
 clean-local:
 	rm -f *~
 
 CLEANFILES =						\
 	$(BUILT_SOURCES)				\
-	pk-marshal.c					\
-	pk-marshal.h					\
 	transactions.db
 
 if HAVE_INTROSPECTION

@@ -40,7 +40,6 @@
 #include "pk-network-stack-unix.h"
 #include "pk-network-stack-connman.h"
 #include "pk-network-stack-nm.h"
-#include "pk-marshal.h"
 
 static void     pk_network_finalize	(GObject        *object);
 

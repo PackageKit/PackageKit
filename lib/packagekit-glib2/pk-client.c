@@ -42,7 +42,6 @@
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-debug.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-marshal.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 

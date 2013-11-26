@@ -46,7 +46,6 @@
 #include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-marshal.h"
 #include "pk-network.h"
 #include "pk-notify.h"
 #include "pk-plugin.h"

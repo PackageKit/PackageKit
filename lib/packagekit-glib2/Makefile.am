@@ -118,8 +118,6 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-eula-required.h					\
 	pk-files.c						\
 	pk-files.h						\
-	pk-marshal.c						\
-	pk-marshal.h						\
 	pk-media-change-required.c				\
 	pk-media-change-required.h				\
 	pk-message.c						\
@@ -234,24 +232,14 @@ endif
 EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
 	pk-version.h.in						\
-	pk-marshal.list						\
 	pk-enum-types.h.template				\
 	pk-enum-types.c.template				\
 	$(NULL)
 
 BUILT_SOURCES = 						\
-	pk-marshal.c						\
-	pk-marshal.h						\
 	pk-enum-types.h						\
 	pk-enum-types.c						\
 	$(NULL)
-
-pk-marshal.c: pk-marshal.list
-	echo "#include \"pk-marshal.h\"" > $@ && \
-	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --body >> $@
-
-pk-marshal.h: pk-marshal.list
-	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
 
 pk-enum-types.h: pk-enum-types.h.template $(HEADER_FILES)
 	$(AM_V_GEN) $(GLIB_MKENUMS) --template $^ > $@

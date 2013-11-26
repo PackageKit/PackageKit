@@ -38,7 +38,6 @@
 #include <gio/gio.h>
 
 #include "pk-network-stack-unix.h"
-#include "pk-marshal.h"
 
 struct PkNetworkStackUnixPrivate
 {

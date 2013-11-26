@@ -36,7 +36,6 @@
 
 #include "pk-conf.h"
 #include "pk-network.h"
-#include "pk-marshal.h"
 #include "pk-backend.h"
 #include "pk-conf.h"
 #include "pk-shared.h"

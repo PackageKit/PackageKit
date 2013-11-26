@@ -44,7 +44,6 @@
 
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
-#include "pk-marshal.h"
 #include "pk-spawn.h"
 #include "pk-shared.h"
 #include "pk-time.h"

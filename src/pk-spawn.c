@@ -41,7 +41,6 @@
 #include <glib/gi18n.h>
 
 #include "pk-spawn.h"
-#include "pk-marshal.h"
 #include "pk-shared.h"
 #include "pk-conf.h"
 

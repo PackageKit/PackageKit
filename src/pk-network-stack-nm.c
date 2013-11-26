@@ -27,7 +27,6 @@
 #include <NetworkManager.h>
 
 #include "pk-network-stack-nm.h"
-#include "pk-marshal.h"
 
 #ifndef NM_CHECK_VERSION
 #define NM_CHECK_VERSION(x,y,z) 0
