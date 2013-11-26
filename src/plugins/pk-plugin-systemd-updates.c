@@ -127,19 +127,12 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	GError *error = NULL;
 	GPtrArray *packages;
 	guint i;
-	PkConf *conf;
 
 /* only do this if we have systemd */
 #ifndef PK_BUILD_SYSTEMD
 	g_debug ("No systemd, so no PreparedUpdates");
 	return;
 #endif
-
-	/* check the config file */
-	conf = pk_transaction_get_conf (transaction);
-	ret = pk_conf_get_bool (conf, "WritePreparedUpdates");
-	if (!ret)
-		goto out;
 
 	/* get the existing prepared updates */
 	packages = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
