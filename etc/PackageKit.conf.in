@@ -85,14 +85,6 @@ UpdatePackageCache=false
 # default=true
 UpdatePackageList=false
 
-# Check for running processes when we update packages
-#
-# NOTE: Don't enable this for backends that are slow doing GetFiles() on
-# installed files.
-#
-# default=true
-UpdateCheckProcesses=false
-
 # The time in seconds to wait when we get the StateHasChanged method
 #
 # This should be used when a native tool has been used, and the update UIs
