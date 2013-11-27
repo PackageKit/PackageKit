@@ -819,69 +819,6 @@ pk_test_spawn_func (void)
 }
 
 static void
-pk_test_store_func (void)
-{
-	PkStore *store;
-	gboolean ret;
-	const gchar *data_string;
-	guint data_uint;
-	gboolean data_bool;
-
-	store = pk_store_new ();
-	g_assert (store != NULL);
-
-	/* set a blank string */
-	ret = pk_store_set_string (store, "dave2", "");
-	g_assert (ret);
-
-	/* set a ~bool */
-	ret = pk_store_set_bool (store, "roger2", FALSE);
-	g_assert (ret);
-
-	/* set a zero uint */
-	ret = pk_store_set_uint (store, "linda2", 0);
-	g_assert (ret);
-
-	/* get a blank string */
-	data_string = pk_store_get_string (store, "dave2");
-	g_assert_cmpstr (data_string, ==, "");
-
-	/* get a ~bool */
-	data_bool = pk_store_get_bool (store, "roger2");
-	g_assert (!data_bool);
-
-	/* get a zero uint */
-	data_uint = pk_store_get_uint (store, "linda2");
-	g_assert_cmpint (data_uint, ==, 0);
-
-	/* set a string */
-	ret = pk_store_set_string (store, "dave", "ania");
-	g_assert (ret);
-
-	/* set a bool */
-	ret = pk_store_set_bool (store, "roger", TRUE);
-	g_assert (ret);
-
-	/* set a uint */
-	ret = pk_store_set_uint (store, "linda", 999);
-	g_assert (ret);
-
-	/* get a string */
-	data_string = pk_store_get_string (store, "dave");
-	g_assert_cmpstr (data_string, ==, "ania");
-
-	/* get a bool */
-	data_bool = pk_store_get_bool (store, "roger");
-	g_assert (data_bool);
-
-	/* get a uint */
-	data_uint = pk_store_get_uint (store, "linda");
-	g_assert_cmpint (data_uint, ==, 999);
-
-	g_object_unref (store);
-}
-
-static void
 pk_test_time_func (void)
 {
 	PkTime *pktime = NULL;
@@ -1676,7 +1613,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
-	g_test_add_func ("/packagekit/store", pk_test_store_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);

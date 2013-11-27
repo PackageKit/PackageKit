@@ -90,8 +90,6 @@ shared_SOURCES =					\
 	pk-network-stack-connman.h			\
 	pk-conf.c					\
 	pk-conf.h					\
-	pk-store.c					\
-	pk-store.h					\
 	pk-notify.c					\
 	pk-notify.h					\
 	pk-spawn.c					\
