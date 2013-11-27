@@ -725,7 +725,6 @@ contrib/command-not-found/Makefile
 contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
 contrib/device-rebind/Makefile
-contrib/pm-utils/Makefile
 contrib/systemd-updates/Makefile
 backends/Makefile
 backends/alpm/Makefile
