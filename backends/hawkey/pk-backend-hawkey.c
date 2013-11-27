@@ -57,8 +57,16 @@
 #include "hif-utils.h"
 
 typedef struct {
+	HySack		 sack;
+	gboolean	 valid;
+	gchar		*key;
+} HifSackCacheItem;
+
+typedef struct {
 	GKeyFile	*config;
 	GFileMonitor	*monitor;
+	GHashTable	*sack_cache;	/* of HifSackCacheItem */
+	GMutex		 sack_mutex;
 } PkBackendHifPrivate;
 
 typedef struct {
@@ -103,6 +111,29 @@ pk_backend_supports_parallelization (PkBackend *backend)
 }
 
 /**
+ * pk_backend_sack_cache_invalidate:
+ **/
+static void
+pk_backend_sack_cache_invalidate (void)
+{
+	GList *values;
+	GList *l;
+	HifSackCacheItem *cache_item;
+
+	/* set all the cached sacks as invalid */
+	g_mutex_lock (&priv->sack_mutex);
+	values = g_hash_table_get_values (priv->sack_cache);
+	for (l = values; l != NULL; l = l->next) {
+		cache_item = l->data;
+		if (cache_item->valid) {
+			g_debug ("invalidating %s", cache_item->key);
+			cache_item->valid = FALSE;
+		}
+	}
+	g_mutex_unlock (&priv->sack_mutex);
+}
+
+/**
  * pk_backend_yum_repos_changed_cb:
  **/
 static void
@@ -111,6 +142,7 @@ pk_backend_yum_repos_changed_cb (GFileMonitor *monitor_,
 				 GFileMonitorEvent event_type,
 				 PkBackend *backend)
 {
+	pk_backend_sack_cache_invalidate ();
 	pk_backend_repo_list_changed (backend);
 }
 
@@ -161,6 +193,17 @@ out:
 }
 
 /**
+ * hif_sack_cache_item_free:
+ */
+static void
+hif_sack_cache_item_free (HifSackCacheItem *cache_item)
+{
+	hy_sack_free (cache_item->sack);
+	g_free (cache_item->key);
+	g_slice_free (HifSackCacheItem, cache_item);
+}
+
+/**
  * pk_backend_initialize:
  */
 void
@@ -186,6 +229,19 @@ pk_backend_initialize (PkBackend *backend)
 		 LR_VERSION_MAJOR,
 		 LR_VERSION_MINOR,
 		 LR_VERSION_PATCH);
+
+	/* a cache of HySacks with the key being which sacks are loaded
+	 *
+	 * notes:
+	 * - this deals with deallocating the sack when the backend is unloaded
+	 * - all the cached sacks are dropped on any transaction that can
+	 *   modify state or if the repos or rpmdb are changed
+	 */
+	g_mutex_init (&priv->sack_mutex);
+	priv->sack_cache = g_hash_table_new_full (g_str_hash,
+						  g_str_equal,
+						  g_free,
+						  (GDestroyNotify) hif_sack_cache_item_free);
 
 	retval = rpmReadConfigFiles (NULL, NULL);
 	if (retval != 0)
@@ -278,6 +334,8 @@ pk_backend_destroy (PkBackend *backend)
 		g_key_file_unref (priv->config);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
+	g_mutex_clear (&priv->sack_mutex);
+	g_hash_table_unref (priv->sack_cache);
 	g_free (priv);
 }
 
@@ -538,9 +596,9 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	gchar *cache_key = NULL;
 	gint rc;
 	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
+	HifSackCacheItem *cache_item;
 	HifState *state_local;
 	HySack sack = NULL;
-	HySack sack_tmp;
 
 	/* don't add if we're going to filter out anyway */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
@@ -549,6 +607,23 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* only load updateinfo when required */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
 		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
+
+	/* do we have anything in the cache */
+	cache_key = g_strdup_printf ("HySack::%i", flags);
+	cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
+	if (cache_item != NULL) {
+		if (cache_item->valid) {
+			ret = TRUE;
+			g_debug ("using cached sack %s", cache_key);
+			sack = cache_item->sack;
+			goto out;
+		} else {
+			/* we have to do this now rather than rely on the
+			 * callback of the hash table */
+			g_debug ("disposing of cached sack %s", cache_key);
+			g_hash_table_remove (priv->sack_cache, cache_key);
+		}
+	}
 
 	/* update status */
 	hif_state_action_start (state, PK_STATUS_ENUM_QUERY, NULL);
@@ -605,7 +680,18 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* creates repo for command line rpms */
 	hy_sack_create_cmdline_repo (sack);
+
+	/* save in cache */
+	g_mutex_lock (&priv->sack_mutex);
+	cache_item = g_slice_new (HifSackCacheItem);
+	cache_item->key = g_strdup (cache_key);
+	cache_item->sack = sack;
+	cache_item->valid = TRUE;
+	g_debug ("created cached sack %s", cache_item->key);
+	g_hash_table_insert (priv->sack_cache, g_strdup (cache_key), cache_item);
+	g_mutex_unlock (&priv->sack_mutex);
 out:
+	g_free (cache_key);
 	if (!ret && sack != NULL) {
 		hy_sack_free (sack);
 		sack = NULL;
@@ -770,7 +856,7 @@ out:
 }
 
 /**
- * pk_backend_search:
+ * pk_backend_search_thread:
  */
 static void
 pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -921,8 +1007,6 @@ out:
 		hy_packagelist_free (pkglist);
 	if (query != NULL)
 		hy_query_free (query);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -1459,8 +1543,6 @@ pk_backend_get_details (PkBackend *backend,
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -1596,8 +1678,6 @@ out:
 		g_ptr_array_unref (files);
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -2703,6 +2783,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	if (!ret)
 		goto out;
 
+	/* all sacks are invalid now */
+	pk_backend_sack_cache_invalidate ();
+
 	/* write to the yumDB */
 	state_local = hif_state_get_child (state);
 	ret = hif_transaction_write_yumdb (job,
@@ -3160,8 +3243,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3295,8 +3376,6 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3426,8 +3505,6 @@ out:
 		g_ptr_array_unref (array);
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3558,8 +3635,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3713,8 +3788,6 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
@@ -3818,8 +3891,6 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
-	if (sack != NULL)
-		hy_sack_free (sack);
 	pk_backend_job_finished (job);
 }
 
