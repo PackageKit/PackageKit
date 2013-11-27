@@ -1434,7 +1434,6 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 	const gchar *reponame;
 	gboolean ret = TRUE;
 	gchar **split;
-	gchar *tmp;
 	GHashTable *hash;
 	guint i;
 	HyPackageList pkglist = NULL;
@@ -1478,9 +1477,8 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 				     PK_ERROR_ENUM_PACKAGE_CONFLICTS,
 				     "Multiple matches of %s", package_ids[i]);
 			FOR_PACKAGELIST(pkg, pkglist, i) {
-				tmp = hif_package_get_id (pkg);
-				g_debug ("possible matches: %s", tmp);
-				g_free (tmp);
+				g_debug ("possible matches: %s",
+					 hif_package_get_id (pkg));
 			}
 			goto out;
 		}
@@ -2066,7 +2064,6 @@ hif_commit_ts_progress_cb (const void *arg,
 	const char *filename = (const char *) key;
 	const gchar *name = NULL;
 	gboolean ret;
-	gchar *package_id = NULL;
 	GError *error_local = NULL;
 	guint percentage;
 	guint speed;
@@ -2150,10 +2147,9 @@ hif_commit_ts_progress_cb (const void *arg,
 		/* remove start */
 		commit->step = HIF_TRANSACTION_STEP_WRITING;
 		commit->child = hif_state_get_child (commit->state);
-		package_id = hif_package_get_id (pkg);
 		hif_state_action_start (commit->child,
 					PK_STATUS_ENUM_REMOVE,
-					package_id);
+					hif_package_get_id (pkg));
 		g_debug ("remove start: %s size=%i", filename, (gint32) total);
 		break;
 
@@ -2191,9 +2187,8 @@ hif_commit_ts_progress_cb (const void *arg,
 			break;
 		}
 
-		package_id = hif_package_get_id (pkg);
 		hif_state_set_package_progress (commit->state,
-						package_id,
+						hif_package_get_id (pkg),
 						PK_STATUS_ENUM_INSTALL,
 						percentage);
 		break;
@@ -2223,9 +2218,8 @@ hif_commit_ts_progress_cb (const void *arg,
 			g_debug ("cannot find %s", name);
 			break;
 		}
-		package_id = hif_package_get_id (pkg);
 		hif_state_set_package_progress (commit->state,
-						package_id,
+						hif_package_get_id (pkg),
 						PK_STATUS_ENUM_REMOVE,
 						percentage);
 		break;
@@ -2277,8 +2271,6 @@ hif_commit_ts_progress_cb (const void *arg,
 			   hif_commit_rpmcb_type_to_string (what));
 		break;
 	}
-
-	g_free (package_id);
 	return rc;
 }
 

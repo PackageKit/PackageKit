@@ -32,6 +32,7 @@
 #include <librepo/librepo.h>
 #include <hawkey/util.h>
 
+#include "hif-package.h"
 #include "hif-source.h"
 #include "hif-utils.h"
 
@@ -819,7 +820,6 @@ hif_source_download_package (HifSource *src,
 	gchar *basename = NULL;
 	gchar *directory_slash;
 	gchar *loc = NULL;
-	gchar *package_id = NULL;
 	GError *error_local = NULL;
 	gint rc;
 	int checksum_type;
@@ -864,8 +864,9 @@ hif_source_download_package (HifSource *src,
 
 	checksum = hy_package_get_chksum (pkg, &checksum_type);
 	checksum_str = hy_chksum_str (checksum, checksum_type);
-	package_id = hif_package_get_id (pkg);
-	hif_state_action_start (state, PK_STATUS_ENUM_DOWNLOAD, package_id);
+	hif_state_action_start (state,
+				PK_STATUS_ENUM_DOWNLOAD,
+				hif_package_get_id (pkg));
 	ret = lr_download_package (src->repo_handle,
 				  hy_package_get_location (pkg),
 				  directory_slash,
@@ -904,7 +905,6 @@ out:
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
 	hy_free (checksum_str);
 	g_free (basename);
-	g_free (package_id);
 	g_free (directory_slash);
 	return loc;
 }

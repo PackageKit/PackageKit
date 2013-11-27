@@ -35,6 +35,7 @@ void		 hif_package_set_source			(HyPackage	 pkg,
 const gchar	*hif_package_get_filename		(HyPackage	 pkg);
 void		 hif_package_set_filename		(HyPackage	 pkg,
 							 const gchar	*filename);
+const gchar	*hif_package_get_id			(HyPackage	 pkg);
 PkInfoEnum	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 PkInfoEnum	 info);

@@ -98,11 +98,11 @@ hif_db_get_string (HifDb *db, HyPackage package, const gchar *key, GError **erro
 	/* get file contents */
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
-		index_dir = hif_package_get_id (package);
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
-			     "cannot create index for %s", index_dir);
+			     "cannot create index for %s",
+			     hif_package_get_id (package));
 		goto out;
 	}
 
@@ -153,11 +153,11 @@ hif_db_set_string (HifDb *db,
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
 		ret = FALSE;
-		index_dir = hif_package_get_id (package);
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
-			     "cannot create index for %s", index_dir);
+			     "cannot create index for %s",
+			     hif_package_get_id (package));
 		goto out;
 	}
 	ret = hif_db_create_dir (index_dir, error);
@@ -197,11 +197,11 @@ hif_db_remove (HifDb *db, HyPackage package,
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
 		ret = FALSE;
-		index_dir = hif_package_get_id (package);
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
-			     "cannot create index for %s", index_dir);
+			     "cannot create index for %s",
+			     hif_package_get_id (package));
 		goto out;
 	}
 
@@ -241,11 +241,11 @@ hif_db_remove_all (HifDb *db, HyPackage package, GError **error)
 	index_dir = hif_db_get_dir_for_package (package);
 	if (index_dir == NULL) {
 		ret = FALSE;
-		index_dir = hif_package_get_id (package);
 		g_set_error (error,
 			     HIF_ERROR,
 			     HIF_ERROR_FAILED,
-			     "cannot create index for %s", index_dir);
+			     "cannot create index for %s",
+			     hif_package_get_id (package));
 		goto out;
 	}
 	ret = g_file_test (index_dir, G_FILE_TEST_IS_DIR);

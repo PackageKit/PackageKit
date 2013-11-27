@@ -41,6 +41,7 @@ typedef struct {
 	char		*checksum_str;
 	gboolean	 user_action;
 	gchar		*filename;
+	gchar		*package_id;
 	PkInfoEnum	 info;
 	HifSource	*src;
 } HifPackagePrivate;
@@ -53,6 +54,7 @@ hif_package_destroy_func (void *userdata)
 {
 	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
 	g_free (priv->filename);
+	g_free (priv->package_id);
 	hy_free (priv->checksum_str);
 	g_slice_free (HifPackagePrivate, priv);
 }
@@ -112,6 +114,34 @@ hif_package_get_pkgid (HyPackage pkg)
 	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
 out:
 	return priv->checksum_str;
+}
+
+
+/**
+ * hif_package_get_id:
+ **/
+const gchar *
+hif_package_get_id (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	const gchar *reponame;
+
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return NULL;
+	if (priv->package_id != NULL)
+		goto out;
+
+	/* calculate and cache */
+	reponame = hy_package_get_reponame (pkg);
+	if (g_strcmp0 (reponame, HY_SYSTEM_REPO_NAME) == 0)
+		reponame = "installed";
+	priv->package_id = pk_package_id_build (hy_package_get_name (pkg),
+						hy_package_get_evr (pkg),
+						hy_package_get_arch (pkg),
+						reponame);
+out:
+	return priv->package_id;
 }
 
 /**

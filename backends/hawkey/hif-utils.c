@@ -199,41 +199,20 @@ hif_rc_to_error_str (gint rc)
 }
 
 /**
- * hif_package_get_id:
- */
-gchar *
-hif_package_get_id (HyPackage pkg)
-{
-	const gchar *reponame;
-
-	reponame = hy_package_get_reponame (pkg);
-	if (g_strcmp0 (reponame, HY_SYSTEM_REPO_NAME) == 0)
-		reponame = "installed";
-	return pk_package_id_build (hy_package_get_name (pkg),
-				    hy_package_get_evr (pkg),
-				    hy_package_get_arch (pkg),
-				    reponame);
-}
-
-/**
  * hif_emit_package:
  */
 void
 hif_emit_package (PkBackendJob *job, PkInfoEnum info, HyPackage pkg)
 {
-	gchar *package_id;
-
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = hif_package_get_info (pkg);
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = hy_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-	package_id = hif_package_get_id (pkg);
 	pk_backend_job_package (job,
 				info,
-				package_id,
+				hif_package_get_id (pkg),
 				hy_package_get_summary (pkg));
-	g_free (package_id);
 }
 
 /**

@@ -39,7 +39,6 @@ const gchar	*hif_rc_to_error_str		(gint			 rc);
 PkInfoEnum	 hif_update_severity_to_info_enum (HyUpdateSeverity	 severity);
 GQuark		 hif_error_quark		(void);
 
-gchar		*hif_package_get_id		(HyPackage		 pkg);
 void		 hif_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
 						 HyPackage		 pkg);
