@@ -68,6 +68,7 @@ typedef struct {
 	GFileMonitor	*monitor_rpmdb;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
+	gchar		**native_arches;
 } PkBackendHifPrivate;
 
 typedef struct {
@@ -295,18 +296,22 @@ pk_backend_initialize (PkBackend *backend)
 			       HIF_CONFIG_GROUP_NAME,
 			       "Hawkey::ArchInfo", value);
 	rpmGetArchInfo (&value, NULL);
+	priv->native_arches = g_new0 (gchar *, 3);
+	priv->native_arches[0] = g_strdup (value);
+	priv->native_arches[1] = g_strdup ("noarch");
 	if (g_strcmp0 (value, "i486") == 0 ||
 	    g_strcmp0 (value, "i586") == 0 ||
-	    g_strcmp0 (value, "i686") == 0)
+	    g_strcmp0 (value, "i686") == 0) {
 		value = "i386";
-	if (g_strcmp0 (value, "armv7l") == 0 ||
-	    g_strcmp0 (value, "armv6l") == 0 ||
-	    g_strcmp0 (value, "armv5tejl") == 0 ||
-	    g_strcmp0 (value, "armv5tel") == 0)
+	} else if (g_strcmp0 (value, "armv7l") == 0 ||
+		   g_strcmp0 (value, "armv6l") == 0 ||
+		   g_strcmp0 (value, "armv5tejl") == 0 ||
+		   g_strcmp0 (value, "armv5tel") == 0) {
 		value = "arm";
-	if (g_strcmp0 (value, "armv7hnl") == 0 ||
-	    g_strcmp0 (value, "armv7hl") == 0)
+	} else if (g_strcmp0 (value, "armv7hnl") == 0 ||
+		 g_strcmp0 (value, "armv7hl") == 0) {
 		value = "armhfp";
+	}
 	g_key_file_set_string (priv->config,
 			       HIF_CONFIG_GROUP_NAME,
 			       "Hawkey::BaseArch", value);
@@ -368,6 +373,7 @@ pk_backend_destroy (PkBackend *backend)
 		g_object_unref (priv->monitor_repos);
 	if (priv->monitor_rpmdb != NULL)
 		g_object_unref (priv->monitor_rpmdb);
+	g_strfreev (priv->native_arches);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
 	g_free (priv);
@@ -740,17 +746,19 @@ static void
 hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
 {
 	const gchar *application_glob = "/usr/share/applications/*.desktop";
-	const gchar *native_arches[] = { "x86_64", NULL };
 
 	/* newest */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
 		hy_query_filter_latest_per_arch (query, TRUE);
 
 	/* arch */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH))
-		hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ, (const gchar **) native_arches);
-	else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH))
-		hy_query_filter_in (query, HY_PKG_ARCH, HY_NEQ, (const gchar **) native_arches);
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
+		hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
+				    (const gchar **) priv->native_arches);
+	} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH)) {
+		hy_query_filter_in (query, HY_PKG_ARCH, HY_NEQ,
+				    (const gchar **) priv->native_arches);
+	}
 
 	/* installed */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
