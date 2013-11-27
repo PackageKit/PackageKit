@@ -53,7 +53,6 @@ struct _PkResultsPrivate
 	PkProgress		*progress;
 	PkExitEnum		 exit_enum;
 	PkError			*error_code;
-	GPtrArray		*package_array;
 	GPtrArray		*details_array;
 	GPtrArray		*update_detail_array;
 	GPtrArray		*category_array;
@@ -187,11 +186,7 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 		g_warning ("internal error: finished packages cannot be added to a PkResults object");
 		return FALSE;
 	}
-
-	/* copy and add to array */
 	pk_package_sack_add_package (results->priv->package_sack, item);
-	g_ptr_array_add (results->priv->package_array, g_object_ref (item));
-
 	return TRUE;
 }
 
@@ -590,7 +585,7 @@ GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->package_array);
+	return pk_package_sack_get_array (results->priv->package_sack);
 }
 
 /**
@@ -922,7 +917,6 @@ pk_results_init (PkResults *results)
 	results->priv->inputs = 0;
 	results->priv->progress = NULL;
 	results->priv->error_code = NULL;
-	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->package_sack = pk_package_sack_new ();
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -947,7 +941,6 @@ pk_results_finalize (GObject *object)
 	PkResults *results = PK_RESULTS (object);
 	PkResultsPrivate *priv = results->priv;
 
-	g_ptr_array_unref (priv->package_array);
 	g_ptr_array_unref (priv->details_array);
 	g_ptr_array_unref (priv->update_detail_array);
 	g_ptr_array_unref (priv->category_array);
