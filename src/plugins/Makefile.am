@@ -32,8 +32,7 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
 	libpk_plugin-update-package-cache.la		\
 	libpk_plugin-scan-desktop-files.la		\
-	libpk_plugin-systemd-updates.la			\
-	libpk_plugin-clear-firmware-requests.la
+	libpk_plugin-systemd-updates.la
 
 libpk_plugin_systemd_updates_la_SOURCES = pk-plugin-systemd-updates.c
 libpk_plugin_systemd_updates_la_LIBADD = $(PK_PLUGIN_LIBS)
@@ -44,11 +43,6 @@ libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
 libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_scripts_la_LDFLAGS = -module -avoid-version
 libpk_plugin_scripts_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_clear_firmware_requests_la_SOURCES = pk-plugin-clear-firmware-requests.c
-libpk_plugin_clear_firmware_requests_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_clear_firmware_requests_la_LDFLAGS = -module -avoid-version
-libpk_plugin_clear_firmware_requests_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_update_package_cache_la_SOURCES = \
 						pk-plugin-update-package-cache.c \

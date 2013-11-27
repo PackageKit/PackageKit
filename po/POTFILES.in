@@ -7,7 +7,6 @@ client/pk-monitor.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c
 contrib/debuginfo-install/pk-debuginfo-install.c
-contrib/device-rebind/pk-device-rebind.c
 contrib/systemd-updates/pk-offline-update.c
 data/packagekit-catalog.xml.in
 data/packagekit-package-list.xml.in

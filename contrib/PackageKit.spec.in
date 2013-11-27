@@ -66,6 +66,10 @@ Obsoletes: PackageKit-gtk-module < %{version}-%{release}
 # No more smart in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
 
+# Udev no longer provides this functionality
+Provides: PackageKit-rebind = %{version}-%{release}
+Obsoletes: PackageKit-rebind < 0.8.13-2
+
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
@@ -210,16 +214,6 @@ Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 %description command-not-found
 A simple helper that offers to install new packages on the command line
 using PackageKit.
-
-%package device-rebind
-Summary: Device rebind functionality for PackageKit
-Group: Development/Libraries
-Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-
-%description device-rebind
-The device rebind functionality offer the ability to re-initialize devices
-after firmware has been installed by PackageKit. This removes the need for the
-user to restart the computer or remove and re-insert the device.
 
 %prep
 %setup -q
@@ -389,11 +383,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
 %config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
-
-%files device-rebind
-%defattr(-,root,root,-)
-%{_sbindir}/pk-device-rebind
-%{_datadir}/man/man1/pk-device-rebind.1.gz
 
 %files glib-devel
 %defattr(-,root,root,-)

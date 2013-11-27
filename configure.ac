@@ -422,19 +422,6 @@ AC_ARG_ENABLE(debuginfo-install, AS_HELP_STRING([--enable-debuginfo-install],[Bu
 AM_CONDITIONAL(PK_BUILD_DEBUGINFO_INSTALL, test $build_debuginfo_install = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - Able to use device rebind functionality
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(device-rebind, AS_HELP_STRING([--enable-device-rebind],[Build device rebind functionality]),
-	      build_device_rebind=$enableval,build_device_rebind=yes)
-if test x$build_device_rebind = xyes; then
-	PKG_CHECK_MODULES(GUDEV, gudev-1.0,
-			  build_device_rebind=yes, build_device_rebind=no)
-else
-	build_device_rebind=no
-fi
-AM_CONDITIONAL(PK_BUILD_DEVICE_REBIND, test $build_device_rebind = "yes")
-
-dnl ---------------------------------------------------------------------------
 dnl - Able to use systemd updates functionality
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build systemd updates functionality]),
@@ -675,7 +662,6 @@ contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
-contrib/device-rebind/Makefile
 contrib/systemd-updates/Makefile
 backends/Makefile
 backends/alpm/Makefile
@@ -749,7 +735,6 @@ echo "
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
-        device-rebind:             ${build_device_rebind}
         systemd-updates:           ${build_systemd_updates}
         python3:                   ${enable_python3}
         systemd system unit dir:   ${with_systemdsystemunitdir}
