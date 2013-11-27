@@ -704,7 +704,6 @@ src/Makefile
 src/plugins/Makefile
 src/plugins/packagekit-plugin.pc
 client/Makefile
-tools/Makefile
 po/Makefile.in
 ],[
 chmod +x data/tests/pk-client-helper-test.py

@@ -10,7 +10,6 @@ SUBDIRS = 						\
 	lib						\
 	src						\
 	client						\
-	tools						\
 	backends					\
 	contrib						\
 	docs
