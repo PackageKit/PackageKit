@@ -545,19 +545,9 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
-build_hawkey=no
 if test x$enable_hawkey = xyes; then
-	AC_ARG_ENABLE(hawkey, AS_HELP_STRING([--enable-hawkey],[Build Hawkey experimental code]),
-		      enable_hawkey=$enableval,enable_hawkey=yes)
-	if test x$enable_hawkey = xyes; then
-		PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.5 librepo rpm >= 4.11.0,
-			          build_hawkey=yes, build_hawkey=no)
-	fi
-	if test "x$build_hawkey" = "xyes"; then
-		AC_DEFINE([HAVE_HAWKEY], [1], [If Hawkey support should be enabled])
-	fi
+	PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.5 librepo rpm >= 4.11.0)
 fi
-AM_CONDITIONAL(PK_BUILD_HAWKEY, test $build_hawkey = "yes")
 
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
@@ -768,7 +758,6 @@ echo "
         debuginfo-install:         ${build_debuginfo_install}
         device-rebind:             ${build_device_rebind}
         systemd-updates:           ${build_systemd_updates}
-        pm-utils scripts:          ${build_pm_utils}
         python3:                   ${enable_python3}
         systemd system unit dir:   ${with_systemdsystemunitdir}
 
