@@ -238,8 +238,8 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
 	g_ptr_array_add (sack->priv->array,
 			 g_object_ref (package));
 	g_hash_table_insert (sack->priv->table,
-			     g_strdup (pk_package_get_id (package)),
-			     g_object_ref (package));
+			     (gpointer) pk_package_get_id (package),
+			     (gpointer) package);
 
 	return TRUE;
 }
@@ -1210,7 +1210,7 @@ pk_package_sack_init (PkPackageSack *sack)
 	sack->priv = PK_PACKAGE_SACK_GET_PRIVATE (sack);
 	priv = sack->priv;
 
-	priv->table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+	priv->table = g_hash_table_new (g_str_hash, g_str_equal);
 	priv->array = g_ptr_array_new_with_free_func (g_object_unref);
 	priv->client = pk_client_new ();
 }
