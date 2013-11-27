@@ -172,7 +172,6 @@ main (int argc, char *argv[])
 	gboolean ret = TRUE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
-	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
@@ -187,9 +186,6 @@ main (int argc, char *argv[])
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. yum, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
-		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
-		  /* TRANSLATORS: if we should run in the background */
-		  _("Daemonize and detach from the terminal"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
 		  /* TRANSLATORS: if we should not monitor how long we are inactive for */
 		  _("Disable the idle timer"), NULL },
@@ -227,12 +223,6 @@ main (int argc, char *argv[])
 
 	if (version) {
 		g_print ("Version %s\n", VERSION);
-		goto exit_program;
-	}
-
-	/* we need to daemonize before we get a system connection */
-	if (use_daemon && daemon (0, 0)) {
-		g_print ("Could not daemonize: %s\n", g_strerror (errno));
 		goto exit_program;
 	}
 
