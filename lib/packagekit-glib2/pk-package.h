@@ -84,7 +84,11 @@ gboolean	 pk_package_equal_id			(PkPackage	*package1,
 /* accessors */
 const gchar	*pk_package_get_id			(PkPackage	*package);
 PkInfoEnum	 pk_package_get_info			(PkPackage	*package);
+void		 pk_package_set_info			(PkPackage	*package,
+							 PkInfoEnum	 info);
 const gchar	*pk_package_get_summary			(PkPackage	*package);
+void		 pk_package_set_summary			(PkPackage	*package,
+							 const gchar	*summary);
 const gchar	*pk_package_get_name			(PkPackage	*package);
 const gchar	*pk_package_get_version			(PkPackage	*package);
 const gchar	*pk_package_get_arch			(PkPackage	*package);

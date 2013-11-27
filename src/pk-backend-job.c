@@ -1133,11 +1133,8 @@ pk_backend_job_package (PkBackendJob *job,
 	/* replace unsafe chars */
 	summary_safe = pk_backend_strsafe (summary);
 
-	/* create a new package object AFTER we emulate the info value */
-	g_object_set (item,
-		      "info", info,
-		      "summary", summary_safe,
-		      NULL);
+	pk_package_set_info (item, info);
+	pk_package_set_summary (item, summary_safe);
 
 	/* is it the same? */
 	ret = (job->priv->last_package != NULL && pk_package_equal (job->priv->last_package, item));

@@ -254,6 +254,39 @@ pk_package_get_info (PkPackage *package)
 }
 
 /**
+ * pk_package_set_info:
+ * @package: a valid #PkPackage instance
+ * @info: the %PkInfoEnum
+ *
+ * Sets the package info enum.
+ *
+ * Since: 0.8.14
+ **/
+void
+pk_package_set_info (PkPackage *package, PkInfoEnum info)
+{
+	g_return_if_fail (PK_IS_PACKAGE (package));
+	package->priv->info = info;
+}
+
+/**
+ * pk_package_set_summary:
+ * @package: a valid #PkPackage instance
+ * @summary: the package summary
+ *
+ * Sets the package summary.
+ *
+ * Since: 0.8.14
+ **/
+void
+pk_package_set_summary (PkPackage *package, const gchar *summary)
+{
+	g_return_if_fail (PK_IS_PACKAGE (package));
+	g_free (package->priv->summary);
+	package->priv->summary = g_strdup (summary);
+}
+
+/**
  * pk_package_get_id:
  * @package: a valid #PkPackage instance
  *
@@ -462,11 +495,10 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 
 	switch (prop_id) {
 	case PROP_INFO:
-		priv->info = g_value_get_uint (value);
+		pk_package_set_info (package, g_value_get_uint (value));
 		break;
 	case PROP_SUMMARY:
-		g_free (priv->summary);
-		priv->summary = g_strdup (g_value_get_string (value));
+		pk_package_set_summary (package, g_value_get_string (value));
 		break;
 	case PROP_LICENSE:
 		g_free (priv->license);

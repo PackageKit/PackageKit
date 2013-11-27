@@ -173,17 +173,12 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 gboolean
 pk_results_add_package (PkResults *results, PkPackage *item)
 {
-	PkInfoEnum info;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* do not allow finished types */
-	g_object_get (item,
-		      "info", &info,
-		      NULL);
-	if (info == PK_INFO_ENUM_FINISHED) {
-		g_warning ("internal error: finished packages cannot be added to a PkResults object");
+	if (pk_package_get_info (item) == PK_INFO_ENUM_FINISHED) {
+		g_warning ("Finished packages cannot be added to PkResults");
 		return FALSE;
 	}
 	pk_package_sack_add_package (results->priv->package_sack, item);
