@@ -483,11 +483,11 @@ out:
 static gboolean
 hif_utils_add_remote (PkBackendJob *job,
 		      HySack sack,
+		      HifSackAddFlags flags,
 		      HifState *state,
 		      GError **error)
 {
 	gboolean ret = TRUE;
-	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
 	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
@@ -508,10 +508,6 @@ hif_utils_add_remote (PkBackendJob *job,
 	ret = hif_state_done (state, error);
 	if (!ret)
 		goto out;
-
-	/* only load updateinfo when required */
-	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
-		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
 
 	/* add each repo */
 	state_local = hif_state_get_child (state);
@@ -538,21 +534,27 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 				   GError **error)
 {
 	const gchar *cachedir = "/var/cache/PackageKit/hawkey";
-	gboolean add_repos = TRUE;
 	gboolean ret;
+	gchar *cache_key = NULL;
 	gint rc;
+	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
 	HifState *state_local;
 	HySack sack = NULL;
+	HySack sack_tmp;
 
 	/* don't add if we're going to filter out anyway */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
-		add_repos = FALSE;
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
+		flags |= HIF_SACK_ADD_FLAG_REMOTE;
+
+	/* only load updateinfo when required */
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
 
 	/* update status */
 	hif_state_action_start (state, PK_STATUS_ENUM_QUERY, NULL);
 
 	/* set state */
-	if (add_repos) {
+	if ((flags & HIF_SACK_ADD_FLAG_REMOTE) > 0) {
 		ret = hif_state_set_steps (state, error,
 					   8, /* add installed */
 					   92, /* add remote */
@@ -564,7 +566,6 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* create empty sack */
-	//FIXME: get from config
 	sack = hy_sack_create (cachedir, NULL, NULL, HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
 		ret = FALSE;
@@ -589,9 +590,10 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 		goto out;
 
 	/* add remote packages */
-	if (add_repos) {
+	if ((flags & HIF_SACK_ADD_FLAG_REMOTE) > 0) {
 		state_local = hif_state_get_child (state);
-		ret = hif_utils_add_remote (job, sack, state_local, error);
+		ret = hif_utils_add_remote (job, sack, flags,
+					    state_local, error);
 		if (!ret)
 			goto out;
 
