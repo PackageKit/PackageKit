@@ -1807,40 +1807,30 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* get from config file */
-	proxy_http = pk_conf_get_string (priv->conf, "ProxyHTTP");
-	proxy_https = pk_conf_get_string (priv->conf, "ProxyHTTPS");
-	proxy_ftp = pk_conf_get_string (priv->conf, "ProxyFTP");
-	proxy_socks = pk_conf_get_string (priv->conf, "ProxySOCKS");
-	no_proxy = pk_conf_get_string (priv->conf, "NoProxy");
-	pac = pk_conf_get_string (priv->conf, "PAC");
-
-	/* fall back to database */
-	if (proxy_http == NULL) {
-		ret = pk_transaction_db_get_proxy (priv->transaction_db,
-						   priv->uid,
-						   session,
-						   &proxy_http,
-						   &proxy_https,
-						   &proxy_ftp,
-						   &proxy_socks,
-						   &no_proxy,
-						   &pac);
-		if (!ret) {
-			g_set_error_literal (error, 1, 0,
-					     "failed to get the proxy from the database");
-			goto out;
-		}
+	/* get from database */
+	ret = pk_transaction_db_get_proxy (priv->transaction_db,
+					   priv->uid,
+					   session,
+					   &proxy_http,
+					   &proxy_https,
+					   &proxy_ftp,
+					   &proxy_socks,
+					   &no_proxy,
+					   &pac);
+	if (!ret) {
+		g_set_error_literal (error, 1, 0,
+				     "failed to get the proxy from the database");
+		goto out;
 	}
 
 	/* try to set the new proxy */
 	pk_backend_job_set_proxy (priv->job,
-				    proxy_http,
-				    proxy_https,
-				    proxy_ftp,
-				    proxy_socks,
-				    no_proxy,
-				    pac);
+				  proxy_http,
+				  proxy_https,
+				  proxy_ftp,
+				  proxy_socks,
+				  no_proxy,
+				  pac);
 
 	/* try to set the new uid and cmdline */
 	cmdline = g_strdup_printf ("PackageKit: %s",

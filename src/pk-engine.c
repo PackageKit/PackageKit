@@ -65,7 +65,6 @@ struct PkEnginePrivate
 	GTimer			*timer;
 	gboolean		 notify_clients_of_upgrade;
 	gboolean		 shutdown_as_soon_as_possible;
-	gboolean		 using_hardcoded_proxy;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkBackend		*backend;
@@ -548,13 +547,6 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "failed to obtain auth");
 		g_dbus_method_invocation_return_gerror (state->context, error);
-		goto out;
-	}
-
-	/* admin already set value, so silently refuse value */
-	if (priv->using_hardcoded_proxy) {
-		g_debug ("cannot override admin set proxy");
-		g_dbus_method_invocation_return_value (state->context, NULL);
 		goto out;
 	}
 
@@ -1747,7 +1739,6 @@ static void
 pk_engine_init (PkEngine *engine)
 {
 	gchar *filename;
-	gchar *proxy_http;
 	GError *error = NULL;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
@@ -1811,13 +1802,6 @@ pk_engine_init (PkEngine *engine)
 	}
 #endif
 
-	/* set the default proxy */
-	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
-
-	/* ignore the users proxy setting */
-	if (proxy_http != NULL)
-		engine->priv->using_hardcoded_proxy = TRUE;
-
 	/* get the StateHasChanged timeouts */
 	engine->priv->timeout_priority = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutPriority");
 	engine->priv->timeout_normal = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutNormal");
@@ -1851,8 +1835,6 @@ pk_engine_init (PkEngine *engine)
 	/* initialize plugins */
 	pk_engine_plugin_phase (engine,
 				PK_PLUGIN_PHASE_INIT);
-
-	g_free (proxy_http);
 }
 
 /**

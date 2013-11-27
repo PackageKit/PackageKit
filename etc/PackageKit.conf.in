@@ -46,21 +46,6 @@ DefaultBackend=@defaultbackend@
 # default=false
 UseSyslog=false
 
-# Proxy settings, uncomment as required
-#
-# NOTE: PackageKit does not use these settings, they are passed to backends.
-# Backends may ignore these values. If either of ProxyHTTP or ProxyFTP
-# are set then the users proxy settings are ignored.
-#
-# They are in the format username:password@server:port
-#
-# ProxyHTTP=username:password@server.lan:8080
-# ProxyHTTPS=username:password@server.lan:8080
-# ProxyFTP=server.lan:21
-# ProxySOCKS=server.lan:21
-# NoProxy=internal.webserver
-# PAC=/etc/proxy.pac
-
 # Scan installed desktop files when we update or install packages
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()
