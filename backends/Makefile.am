@@ -12,10 +12,6 @@ if BACKEND_TYPE_APTCC
 SUBDIRS += aptcc
 endif
 
-if BACKEND_TYPE_BOX
-SUBDIRS += box
-endif
-
 if BACKEND_TYPE_CONARY
 SUBDIRS += conary
 endif
