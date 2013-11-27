@@ -180,10 +180,8 @@ pk_test_backend_func (void)
 	PkBackendJob *job;
 	PkConf *conf;
 	const gchar *text;
-	gchar *text_safe;
 	gboolean ret;
 	const gchar *filename;
-	gboolean developer_mode;
 	GError *error = NULL;
 
 	/* get an backend */
@@ -379,10 +377,8 @@ pk_test_backend_spawn_func (void)
 	PkBackendJob *job;
 	PkConf *conf;
 	const gchar *text;
-	guint refcount;
 	gboolean ret;
 	gchar *uri;
-	gchar **array;
 
 	/* get an backend_spawn */
 	backend_spawn = pk_backend_spawn_new ();
@@ -431,7 +427,7 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage", NULL);
 	g_assert (!ret);
 
-	/* test pk_backend_spawn_inject_data NoPercentageUpdates");
+	/* test pk_backend_spawn_inject_data NoPercentageUpdates */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "no-percentage-updates", NULL);
 	g_assert (ret);
 
@@ -583,96 +579,6 @@ pk_test_dbus_func (void)
 	g_object_unref (dbus);
 }
 
-static PkNotify *notify = NULL;
-static gboolean _quit = FALSE;
-static gboolean _locked = FALSE;
-static gboolean _restart_schedule = FALSE;
-
-/**
- * pk_test_engine_quit_cb:
- **/
-static void
-pk_test_engine_quit_cb (PkEngine *engine, gpointer user_data)
-{
-	_quit = TRUE;
-}
-
-/**
- * pk_test_engine_changed_cb:
- **/
-static void
-pk_test_engine_changed_cb (PkEngine *engine, gpointer user_data)
-{
-	g_object_get (engine,
-		      "locked", &_locked,
-		      NULL);
-}
-
-/**
- * pk_test_engine_updates_changed_cb:
- **/
-static void
-pk_test_engine_updates_changed_cb (PkEngine *engine, gpointer user_data)
-{
-	_g_test_loop_quit ();
-}
-
-/**
- * pk_test_engine_repo_list_changed_cb:
- **/
-static void
-pk_test_engine_repo_list_changed_cb (PkEngine *engine, gpointer user_data)
-{
-	_g_test_loop_quit ();
-}
-
-/**
- * pk_test_engine_restart_schedule_cb:
- **/
-static void
-pk_test_engine_restart_schedule_cb (PkEngine *engine, gpointer user_data)
-{
-	_restart_schedule = TRUE;
-	_g_test_loop_quit ();
-}
-
-/**
- * pk_test_engine_emit_updates_changed_cb:
- **/
-static gboolean
-pk_test_engine_emit_updates_changed_cb (void)
-{
-	PkNotify *notify2;
-	notify2 = pk_notify_new ();
-	pk_notify_updates_changed (notify2);
-	g_object_unref (notify2);
-	return FALSE;
-}
-
-/**
- * pk_test_engine_emit_repo_list_changed_cb:
- **/
-static gboolean
-pk_test_engine_emit_repo_list_changed_cb (void)
-{
-	PkNotify *notify2;
-	notify2 = pk_notify_new ();
-	pk_notify_repo_list_changed (notify2);
-	g_object_unref (notify2);
-	return FALSE;
-}
-
-static void
-pk_test_notify_func (void)
-{
-	PkNotify *notify;
-
-	notify = pk_notify_new ();
-	g_assert (notify != NULL);
-
-	g_object_unref (notify);
-}
-
 PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 guint stdout_count = 0;
 guint finished_count = 0;
@@ -734,10 +640,8 @@ pk_test_spawn_func (void)
 	PkSpawn *spawn = NULL;
 	GError *error = NULL;
 	gboolean ret;
-	gchar *file;
 	gchar **argv;
 	gchar **envp;
-	guint elapsed;
 
 	new_spawn_object (&spawn);
 
@@ -1076,7 +980,6 @@ pk_test_transaction_db_func (void)
 	gdouble ms;
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
-	guint seconds;
 	GError *error = NULL;
 
 	/* remove the self check file */
@@ -1232,7 +1135,6 @@ static void
 pk_test_transaction_list_func (void)
 {
 	PkTransactionList *tlist;
-	PkCache *cache;
 	gboolean ret;
 	gchar *tid;
 	guint size;
@@ -1243,6 +1145,7 @@ pk_test_transaction_list_func (void)
 	gchar *tid_item3;
 	PkBackend *backend;
 	PkConf *conf;
+	GError *error = NULL;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1255,9 +1158,10 @@ pk_test_transaction_list_func (void)
 	}
 #endif
 
-	/* we get a cache object to reproduce the engine having it ref'd */
-	cache = pk_cache_new ();
 	db = pk_transaction_db_new ();
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* try to load a valid backend */
 	backend = pk_backend_new ();
@@ -1347,6 +1251,8 @@ pk_test_transaction_list_func (void)
 	size = g_strv_length (array);
 	g_assert_cmpint (size, ==, 1);
 	g_strfreev (array);
+
+//g_error ("Moo");
 
 	/* wait for Finished */
 	_g_test_loop_run_with_timeout (2000);
@@ -1533,7 +1439,6 @@ pk_test_transaction_list_func (void)
 
 	g_object_unref (tlist);
 	g_object_unref (backend);
-	g_object_unref (cache);
 	g_object_unref (db);
 	g_object_unref (conf);
 }
@@ -1542,7 +1447,6 @@ static void
 pk_test_transaction_list_parallel_func (void)
 {
 	PkTransactionList *tlist;
-	PkCache *cache;
 	guint size;
 	gboolean ret;
 	guint i;
@@ -1550,7 +1454,6 @@ pk_test_transaction_list_parallel_func (void)
 	PkTransaction *transaction1;
 	PkTransaction *transaction2;
 	PkTransaction *transaction3;
-	PkTransactionState state;
 	gchar *tid_item1;
 	gchar *tid_item2;
 	gchar *tid_item3;
@@ -1558,10 +1461,12 @@ pk_test_transaction_list_parallel_func (void)
 	gchar *tid_item5;
 	PkBackend *backend;
 	PkConf *conf;
+	GError *error = NULL;
 
-	/* we get a cache object to reproduce the engine having it ref'd */
-	cache = pk_cache_new ();
 	db = pk_transaction_db_new ();
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* try to load a valid backend */
 	backend = pk_backend_new ();
@@ -1751,7 +1656,6 @@ pk_test_transaction_list_parallel_func (void)
 
 	g_object_unref (tlist);
 	g_object_unref (backend);
-	g_object_unref (cache);
 	g_object_unref (db);
 	g_object_unref (conf);
 }

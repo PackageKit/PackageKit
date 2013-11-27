@@ -522,12 +522,19 @@ pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 	gchar *error_msg = NULL;
 	gint rc;
 
+	/* not loaded! */
+	if (tdb->priv->db == NULL) {
+		g_warning ("PkTransactionDb not loaded");
+		goto out;
+	}
+
 	/* force fsync as we don't want to repeat this number */
 	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=ON", NULL, NULL, NULL);
 
 	/* save the job count */
 	g_debug ("doing deferred write syncronous");
-	statement = g_strdup_printf ("UPDATE config SET value = '%i' WHERE key = 'job_count'", tdb->priv->job_count);
+	statement = g_strdup_printf ("UPDATE config SET value = '%i' WHERE key = 'job_count'",
+				     tdb->priv->job_count);
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_warning ("failed to set job id: %s\n", error_msg);
