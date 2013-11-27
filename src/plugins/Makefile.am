@@ -28,9 +28,6 @@ clean-local:
 
 # plugins
 plugindir = $(LIBDIR)/packagekit-plugins
-noinst_LTLIBRARIES =					\
-	libpk_plugin_example.la
-
 plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
 	libpk_plugin-update-package-cache.la		\
@@ -38,11 +35,6 @@ plugin_LTLIBRARIES =					\
 	libpk_plugin-systemd-updates.la			\
 	libpk_plugin-require-restart.la			\
 	libpk_plugin-clear-firmware-requests.la
-
-libpk_plugin_example_la_SOURCES = pk-plugin-example.c
-libpk_plugin_example_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_example_la_LDFLAGS = -module -avoid-version
-libpk_plugin_example_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 libpk_plugin_systemd_updates_la_SOURCES = pk-plugin-systemd-updates.c
 libpk_plugin_systemd_updates_la_LIBADD = $(PK_PLUGIN_LIBS)
