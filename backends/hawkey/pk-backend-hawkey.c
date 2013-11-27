@@ -275,7 +275,7 @@ void
 pk_backend_destroy (PkBackend *backend)
 {
 	if (priv->config != NULL)
-		g_object_unref (priv->config);
+		g_key_file_unref (priv->config);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
 	g_free (priv);
