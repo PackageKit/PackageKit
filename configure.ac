@@ -538,42 +538,10 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           auto,alpm,apt,aptcc,box,conary,dummy,entropy,hawkey,opkg,pisi,portage,ports,slapt,smart,urpmi,yum,zypp (dummy)]))
-# default to a sane option for the installed tool
+                           auto,alpm,apt,aptcc,box,conary,dummy,entropy,hawkey,opkg,pisi,portage,ports,slapt,smart,urpmi,yum,zypp (auto)]))
 if test x$with_default_backend = x; then
-	if test -f /usr/bin/yum ; then
-		with_default_backend=yum
-	elif test -f /usr/lib/libalpm.so; then
-		with_default_backend=alpm
-	elif test -f /usr/bin/apt-get ; then
-		with_default_backend=aptcc
-	elif test -f /usr/bin/conary ; then
-		with_default_backend=conary
-	elif test -f /usr/bin/box-repos ; then
-		with_default_backend=box
-	elif test -f /usr/sbin/slapt-get ; then
-		with_default_backend=slapt
-	elif test -f /usr/bin/smart ; then
-		with_default_backend=smart
-	elif test -f /usr/bin/pisi ; then
-		with_default_backend=pisi
-	elif test -f /usr/bin/poldek ; then
-		with_default_backend=poldek
-	elif test -f /usr/bin/urpmq ; then
-		with_default_backend=urpmi
-	elif test -f /usr/bin/zypper ; then
-		with_default_backend=zypp
-	elif test -d /usr/lib/entropy ; then
-		with_default_backend=entropy
-	elif test -f /usr/bin/emerge ; then
-		with_default_backend=portage
-	elif test -f /usr/local/sbin/portupgrade ; then
-		with_default_backend=ports
-	else
-		with_default_backend=dummy
-	fi
+	with_default_backend=auto
 fi
-
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
