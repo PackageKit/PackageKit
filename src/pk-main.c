@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#include <syslog.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -34,7 +35,6 @@
 
 #include "pk-conf.h"
 #include "pk-engine.h"
-#include "pk-syslog.h"
 #include "pk-transaction.h"
 
 static guint exit_idle_time;
@@ -179,7 +179,6 @@ main (int argc, char *argv[])
 	gchar *backend_name = NULL;
 	PkEngine *engine = NULL;
 	PkConf *conf = NULL;
-	PkSyslog *syslog = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 	guint timer_id = 0;
@@ -213,6 +212,7 @@ main (int argc, char *argv[])
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
+	openlog ("PackageKit", LOG_NDELAY, LOG_USER);
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();
@@ -252,8 +252,7 @@ main (int argc, char *argv[])
 	pk_conf_set_bool (conf, "KeepEnvironment", keep_environment);
 
 	/* log the startup */
-	syslog = pk_syslog_new ();
-	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon start");
+	syslog (LOG_DAEMON, "daemon start");
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
@@ -321,14 +320,14 @@ main (int argc, char *argv[])
 	g_main_loop_run (loop);
 out:
 	/* log the shutdown */
-	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon quit");
+	syslog (LOG_DAEMON, "daemon quit");
+	closelog ();
 
 	if (timer_id > 0)
 		g_source_remove (timer_id);
 
 	if (loop != NULL)
 		g_main_loop_unref (loop);
-	g_object_unref (syslog);
 	g_object_unref (conf);
 	if (engine != NULL)
 		g_object_unref (engine);

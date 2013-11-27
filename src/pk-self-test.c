@@ -33,7 +33,6 @@
 #include "pk-notify.h"
 #include "pk-spawn.h"
 #include "pk-store.h"
-#include "pk-syslog.h"
 #include "pk-time.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -979,17 +978,6 @@ pk_test_store_func (void)
 }
 
 static void
-pk_test_syslog_func (void)
-{
-	PkSyslog *syslog;
-
-	syslog = pk_syslog_new ();
-	g_assert (syslog != NULL);
-
-	g_object_unref (syslog);
-}
-
-static void
 pk_test_time_func (void)
 {
 	PkTime *pktime = NULL;
@@ -1783,7 +1771,6 @@ main (int argc, char **argv)
 	/* components */
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
-	g_test_add_func ("/packagekit/syslog", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
 	g_test_add_func ("/packagekit/store", pk_test_store_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);

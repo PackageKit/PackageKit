@@ -41,11 +41,6 @@ BackendSpawnNiceValueBackground=10
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@
 
-# Use syslog to audit and log actions where available.
-#
-# default=false
-UseSyslog=false
-
 # Scan installed desktop files when we update or install packages
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()

@@ -35,6 +35,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <syslog.h>
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
@@ -55,7 +56,6 @@
 #include "pk-notify.h"
 #include "pk-plugin.h"
 #include "pk-shared.h"
-#include "pk-syslog.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -106,7 +106,6 @@ struct PkTransactionPrivate
 	GCancellable		*cancellable;
 #endif
 	gboolean		 skip_auth_check;
-	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -1253,9 +1252,13 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			if (info == PK_INFO_ENUM_REMOVING ||
 			    info == PK_INFO_ENUM_INSTALLING ||
 			    info == PK_INFO_ENUM_UPDATING) {
-				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
-					       transaction->priv->tid, pk_role_enum_to_string (transaction->priv->role),
-					       package_id, pk_info_enum_to_string (info), transaction->priv->uid);
+				syslog (LOG_DAEMON,
+					"in %s for %s package %s was %s for uid %i",
+					transaction->priv->tid,
+					pk_role_enum_to_string (transaction->priv->role),
+					package_id,
+					pk_info_enum_to_string (info),
+					transaction->priv->uid);
 			}
 			g_free (package_id);
 		}
@@ -1283,13 +1286,22 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	//TODO: on main interface
 
 	/* report to syslog */
-	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID)
-		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
-			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid,
-			       transaction->priv->uid, pk_exit_enum_to_string (exit_enum), time_ms);
-	else
-		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
-			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_string (exit_enum), time_ms);
+	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID) {
+		syslog (LOG_DAEMON,
+			"%s transaction %s from uid %i finished with %s after %ims",
+			pk_role_enum_to_string (transaction->priv->role),
+			transaction->priv->tid,
+			transaction->priv->uid,
+			pk_exit_enum_to_string (exit_enum),
+			time_ms);
+	} else {
+		syslog (LOG_DAEMON,
+			"%s transaction %s finished with %s after %ims",
+			pk_role_enum_to_string (transaction->priv->role),
+			transaction->priv->tid,
+			pk_exit_enum_to_string (exit_enum),
+			time_ms);
+	}
 
 	/* destroy the job */
 	pk_backend_stop_job (transaction->priv->backend, transaction->priv->job);
@@ -2461,8 +2473,11 @@ pk_transaction_commit (PkTransaction *transaction)
 #endif
 
 		/* report to syslog */
-		pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
-			       pk_role_enum_to_string (priv->role), priv->tid, priv->uid);
+		syslog (LOG_DAEMON,
+			"new %s transaction %s scheduled from uid %i",
+			pk_role_enum_to_string (priv->role),
+			priv->tid,
+			priv->uid);
 	}
 	return TRUE;
 }
@@ -2650,7 +2665,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 						"Failed to obtain authentication.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
-		pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", priv->uid);
+		syslog (LOG_AUTHPRIV, "uid %i failed to obtain auth", priv->uid);
 		goto out;
 	}
 
@@ -2663,7 +2678,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	}
 
 	/* log success too */
-	pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i obtained auth", priv->uid);
+	syslog (LOG_AUTHPRIV, "uid %i obtained auth", priv->uid);
 out:
 	if (result != NULL)
 		g_object_unref (result);
@@ -2862,13 +2877,12 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	}
 
 	/* log */
-	pk_syslog_add (priv->syslog,
-		       PK_SYSLOG_TYPE_AUTH,
-		       "uid %i is trying to obtain %s auth (only_trusted:%i)",
-		       priv->uid,
-		       action_id,
-		       pk_bitfield_contain (transaction->priv->cached_transaction_flags,
-					    PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED));
+	syslog (LOG_AUTHPRIV,
+		"uid %i is trying to obtain %s auth (only_trusted:%i)",
+		priv->uid,
+		action_id,
+		pk_bitfield_contain (transaction->priv->cached_transaction_flags,
+				     PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED));
 
 	/* set transaction state */
 	pk_transaction_set_state (transaction,
@@ -5654,7 +5668,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
-	transaction->priv->syslog = pk_syslog_new ();
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
@@ -5775,7 +5788,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
-	g_object_unref (transaction->priv->syslog);
 	g_object_unref (transaction->priv->results);
 #ifdef USE_SECURITY_POLKIT
 //	g_object_unref (transaction->priv->authority);
