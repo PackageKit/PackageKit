@@ -165,13 +165,6 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* check valid UTF8 */
-	ret = g_utf8_validate (package_id, -1, NULL);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "invalid UTF8!");
-		goto out;
-	}
-
 	/* split by delimeter */
 	sections = g_strsplit (package_id, ";", -1);
 	ret = (g_strv_length (sections) == 4);
