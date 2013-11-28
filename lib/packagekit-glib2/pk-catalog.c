@@ -472,7 +472,9 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	g_return_if_fail (PK_IS_CATALOG (catalog));
 	g_return_if_fail (callback != NULL);
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	res = g_simple_async_result_new (G_OBJECT (catalog), callback, user_data, pk_catalog_lookup_async);
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 	/* save state */
 	state = g_slice_new0 (PkCatalogState);

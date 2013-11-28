@@ -74,13 +74,15 @@ struct _PkCatalogClass
 
 GQuark		 pk_catalog_error_quark			(void);
 GType		 pk_catalog_get_type			(void);
+G_DEPRECATED
 PkCatalog	*pk_catalog_new				(void);
-void		 pk_catalog_test			(gpointer		 user_data);
 
+G_DEPRECATED
 GPtrArray	*pk_catalog_lookup_finish		(PkCatalog		*catalog,
 							 GAsyncResult		*res,
 							 GError			**error);
 
+G_DEPRECATED
 void		 pk_catalog_lookup_async 		(PkCatalog		*catalog,
 							 const gchar		*filename,
 							 GCancellable		*cancellable,
