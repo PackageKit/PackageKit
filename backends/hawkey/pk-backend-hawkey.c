@@ -651,7 +651,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* do we have anything in the cache */
 	cache_key = g_strdup_printf ("HySack::%i", flags);
 	cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
-	if (cache_item != NULL) {
+	if (cache_item != NULL && cache_item->sack != NULL) {
 		if (cache_item->valid) {
 			ret = TRUE;
 			g_debug ("using cached sack %s", cache_key);
