@@ -64,7 +64,7 @@ EXTRA_DIST =						\
 DISTCHECK_CONFIGURE_FLAGS =				\
 	--disable-bash-completion			\
 	--enable-gtk-doc				\
-	--with-security-framework=dummy			\
+	--with-default-backend=dummy			\
 	--with-systemdsystemunitdir=/tmp		\
 	--disable-tests
 

@@ -46,9 +46,7 @@
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-service-pack.h>
-#ifdef USE_SECURITY_POLKIT
 #include <polkit/polkit.h>
-#endif
 
 #include "pk-backend.h"
 #include "pk-conf.h"
@@ -100,11 +98,9 @@ struct PkTransactionPrivate
 	PkConf			*conf;
 	PkNotify		*notify;
 	PkDbus			*dbus;
-#ifdef USE_SECURITY_POLKIT
 	PolkitAuthority		*authority;
 	PolkitSubject		*subject;
 	GCancellable		*cancellable;
-#endif
 	gboolean		 skip_auth_check;
 
 	/* needed for gui coldplugging */
@@ -2401,10 +2397,8 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 				  NULL);
 
 	/* we get the UID for all callers as we need to know when to cancel */
-#ifdef USE_SECURITY_POLKIT
 	transaction->priv->subject = polkit_system_bus_name_new (sender);
 	transaction->priv->cmdline = pk_dbus_get_cmdline (transaction->priv->dbus, sender);
-#endif
 	transaction->priv->uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 
 	return TRUE;
@@ -2467,11 +2461,9 @@ pk_transaction_commit (PkTransaction *transaction)
 		/* save uid */
 		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->uid);
 
-#ifdef USE_SECURITY_POLKIT
 		/* save cmdline in db */
 		if (priv->cmdline != NULL)
 			pk_transaction_db_set_cmdline (priv->transaction_db, priv->tid, priv->cmdline);
-#endif
 
 		/* report to syslog */
 		syslog (LOG_DAEMON,
@@ -2616,7 +2608,6 @@ out:
 	return ret;
 }
 
-#ifdef USE_SECURITY_POLKIT
 /**
  * pk_transaction_action_obtain_authorization:
  **/
@@ -2970,30 +2961,6 @@ out:
 	g_free (package_ids);
 	return ret;
 }
-
-#else
-/**
- * pk_transaction_obtain_authorization:
- **/
-static gboolean
-pk_transaction_obtain_authorization (PkTransaction *transaction,
-				     PkRoleEnum role,
-				     GError **error)
-{
-	gboolean ret;
-
-	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_warning ("Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
-	}
-
-	return ret;
-}
-#endif
 
 /**
  * pk_transaction_skip_auth_checks:
@@ -5672,14 +5639,12 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
-#ifdef USE_SECURITY_POLKIT
 	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
 	if (transaction->priv->authority == NULL) {
 		g_error ("failed to get pokit authority: %s", error->message);
 		g_error_free (error);
 	}
 	transaction->priv->cancellable = g_cancellable_new ();
-#endif
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (transaction->priv->transaction_db, &error);
@@ -5714,9 +5679,7 @@ pk_transaction_dispose (GObject *object)
 
 	/* were we waiting for the client to authorise */
 	if (transaction->priv->waiting_for_auth) {
-#ifdef USE_SECURITY_POLKIT
 		g_cancellable_cancel (transaction->priv->cancellable);
-#endif
 		/* emit an ::ErrorCode() and then ::Finished() */
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "client did not authorize action");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
@@ -5755,10 +5718,8 @@ pk_transaction_finalize (GObject *object)
 
 	transaction = PK_TRANSACTION (object);
 
-#ifdef USE_SECURITY_POLKIT
 	if (transaction->priv->subject != NULL)
 		g_object_unref (transaction->priv->subject);
-#endif
 	if (transaction->priv->watch_id > 0)
 		g_bus_unwatch_name (transaction->priv->watch_id);
 	g_free (transaction->priv->last_package_id);
@@ -5790,10 +5751,8 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->results);
-#ifdef USE_SECURITY_POLKIT
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
-#endif
 	if (transaction->priv->plugins != NULL)
 		g_ptr_array_unref (transaction->priv->plugins);
 

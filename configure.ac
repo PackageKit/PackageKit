@@ -170,6 +170,8 @@ PKG_CHECK_MODULES(SQLITE, sqlite3)
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
+PKG_CHECK_MODULES(POLKIT, \
+		  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
@@ -491,33 +493,6 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 dnl ---------------------------------------------------------------------------
-dnl - Compile time default choice of security framework
-dnl ---------------------------------------------------------------------------
-AC_ARG_WITH([security_framework],
-	    AS_HELP_STRING([--with-security-framework=<option>],
-			   [Default security framework to use polkit,dummy]))
-# try and guess this if nothing is listed
-if test x$with_security_framework = x; then
-	with_security_framework=polkit
-fi
-
-AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default security framework])
-AC_SUBST(security_framework, "$with_security_framework")
-
-if test x$with_security_framework = xpolkit; then
-	PKG_CHECK_MODULES(POLKIT, \
-			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
-	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
-elif test x$with_security_framework = xdummy; then
-	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
-else
-	AC_MSG_ERROR([No valid security framework specified])
-fi
-
-AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy])
-AM_CONDITIONAL(SECURITY_TYPE_POLKIT, [test x$with_security_framework = xpolkit])
-
-dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
@@ -758,11 +733,3 @@ echo "
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "
-
-# warn that dummy is basically broken
-if test x$with_security_framework = xdummy; then
-	echo "*******************************************************************"
-	echo "** YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING! **"
-	echo "*******************************************************************"
-fi
-
