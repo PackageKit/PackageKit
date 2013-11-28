@@ -111,10 +111,12 @@ pk_package_id_build (const gchar *name, const gchar *version,
 		     const gchar *arch, const gchar *data)
 {
 	g_return_val_if_fail (name != NULL, NULL);
-	return g_strdup_printf ("%s;%s;%s;%s", name,
-				version != NULL ? version : "",
-				arch != NULL ? arch : "",
-				data != NULL ? data : "");
+	return g_strjoin (";",
+			  name,
+			  version != NULL ? version : "",
+			  arch != NULL ? arch : "",
+			  data != NULL ? data : "",
+			  NULL);
 }
 
 /**
