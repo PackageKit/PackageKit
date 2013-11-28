@@ -50,7 +50,8 @@ struct _PkPackagePrivate
 {
 	PkInfoEnum		 info;
 	gchar			*package_id;
-	gchar			**package_id_split;
+	gchar			*package_id_data;
+	const gchar		*package_id_split[4];
 	gchar			*summary;
 	gchar			*license;
 	PkGroupEnum		 group;
@@ -158,21 +159,31 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
 gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 {
-	gboolean ret;
 	PkPackagePrivate *priv = package->priv;
+	gboolean ret;
+	guint cnt = 0;
+	guint i;
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	g_return_val_if_fail (priv->package_id == NULL, FALSE);
 
-	/* save */
+	/* copy the package-id into package_id_data, change the ';' into '\0'
+	 * and reference the pointers in the const gchar * array */
 	priv->package_id = g_strdup (package_id);
-
-	/* split by delimeter */
-	priv->package_id_split = g_strsplit (package_id, ";", -1);
-	ret = (g_strv_length (priv->package_id_split) == 4);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "invalid number of sections");
+	priv->package_id_data = g_strdup (package_id);
+	priv->package_id_split[0] = priv->package_id_data;
+	for (i = 0; priv->package_id_data[i] != '\0'; i++) {
+		if (package_id[i] == ';') {
+			if (++cnt > 3)
+				continue;
+			priv->package_id_split[cnt] = &priv->package_id_data[i+1];
+			priv->package_id_data[i] = '\0';
+		}
+	}
+	if (cnt != 3) {
+		ret = FALSE;
+		g_set_error (error, 1, 0, "invalid number of sections %i", cnt);
 		goto out;
 	}
 
@@ -803,6 +814,10 @@ static void
 pk_package_init (PkPackage *package)
 {
 	package->priv = PK_PACKAGE_GET_PRIVATE (package);
+	package->priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
+	package->priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
+	package->priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	package->priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 }
 
 /**
@@ -829,7 +844,7 @@ pk_package_finalize (GObject *object)
 	g_free (priv->update_changelog);
 	g_free (priv->update_issued);
 	g_free (priv->update_updated);
-	g_strfreev (priv->package_id_split);
+	g_free (priv->package_id_data);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);
 }

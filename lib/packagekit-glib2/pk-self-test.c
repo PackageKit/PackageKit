@@ -2024,6 +2024,7 @@ pk_test_package_func (void)
 	PkPackage *package;
 	const gchar *id;
 	gchar *text;
+	GError *error = NULL;
 
 	/* get package */
 	package = pk_package_new ();
@@ -2039,19 +2040,40 @@ pk_test_package_func (void)
 	g_free (text);
 
 	/* set invalid id */
-	ret = pk_package_set_id (package, "gnome-power-manager", NULL);
+	ret = pk_package_set_id (package, "gnome-power-manager", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_object_unref (package);
+	g_clear_error (&error);
 
 	/* set invalid id (sections) */
-	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386", NULL);
+	package = pk_package_new ();
+	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_object_unref (package);
+	g_clear_error (&error);
+
+	/* set invalid id (sections) */
+	package = pk_package_new ();
+	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora;dave", &error);
+	g_assert_error (error, 1, 0);
+	g_assert (!ret);
+	g_object_unref (package);
+	g_clear_error (&error);
 
 	/* set invalid name */
-	ret = pk_package_set_id (package, ";0.1.2;i386;fedora", NULL);
+	package = pk_package_new ();
+	ret = pk_package_set_id (package, ";0.1.2;i386;fedora", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_object_unref (package);
+	g_clear_error (&error);
 
 	/* set valid name */
-	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora", NULL);
+	package = pk_package_new ();
+	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora", &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* get id of set package */
