@@ -1416,10 +1416,12 @@ pk_transaction_package_cb (PkBackend *backend,
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (package_id);
 	summary = pk_package_get_summary (item);
-	g_debug ("emit package %s, %s, %s",
-		 pk_info_enum_to_string (info),
-		 package_id,
-		 summary);
+	if (transaction->priv->role != PK_ROLE_ENUM_GET_PACKAGES) {
+		g_debug ("emit package %s, %s, %s",
+			 pk_info_enum_to_string (info),
+			 package_id,
+			 summary);
+	}
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
