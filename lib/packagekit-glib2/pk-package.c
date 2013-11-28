@@ -159,32 +159,30 @@ gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	gchar **sections = NULL;
 	PkPackagePrivate *priv = package->priv;
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (priv->package_id == NULL, FALSE);
+
+	/* save */
+	priv->package_id = g_strdup (package_id);
 
 	/* split by delimeter */
-	sections = g_strsplit (package_id, ";", -1);
-	ret = (g_strv_length (sections) == 4);
+	priv->package_id_split = g_strsplit (package_id, ";", -1);
+	ret = (g_strv_length (priv->package_id_split) == 4);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "invalid number of sections");
 		goto out;
 	}
 
 	/* name has to be valid */
-	ret = (sections[0][0] != '\0');
+	ret = (priv->package_id_split[0][0] != '\0');
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "name invalid");
 		goto out;
 	}
-
-	/* save */
-	priv->package_id = g_strdup (package_id);
-	priv->package_id_split = g_strdupv (sections);
 out:
-	g_strfreev (sections);
 	return ret;
 }
 
