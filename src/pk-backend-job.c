@@ -1275,7 +1275,10 @@ pk_backend_job_message (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		g_warning ("already set error: message %s", pk_message_enum_to_string (message));
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+		g_warning ("already set error: message %s",
+			   pk_message_enum_to_string (message));
+G_GNUC_END_IGNORE_DEPRECATIONS
 		goto out;
 	}
 
@@ -1284,6 +1287,7 @@ pk_backend_job_message (PkBackendJob *job,
 	va_end (args);
 
 	/* form PkMessage struct */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	item = pk_message_new ();
 	g_object_set (item,
 		      "type", message,
@@ -1296,6 +1300,7 @@ pk_backend_job_message (PkBackendJob *job,
 				   g_object_ref (item),
 				   g_object_unref);
 	pk_results_add_message (job->priv->results, item);
+G_GNUC_END_IGNORE_DEPRECATIONS
 out:
 	g_free (buffer);
 	if (item != NULL)

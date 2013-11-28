@@ -62,10 +62,13 @@ struct _PkMessageClass
 };
 
 GType		 pk_message_get_type		(void);
+G_DEPRECATED
 PkMessage	*pk_message_new			(void);
 
 /* accessors */
+G_DEPRECATED
 const gchar	*pk_message_get_details		(PkMessage	*message);
+G_DEPRECATED
 PkMessageEnum	 pk_message_get_kind		(PkMessage	*message);
 
 G_END_DECLS

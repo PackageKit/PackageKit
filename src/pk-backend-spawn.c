@@ -448,7 +448,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			ret = FALSE;
 			goto out;
 		}
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 		message_enum = pk_message_enum_from_string (sections[1]);
+G_GNUC_END_IGNORE_DEPRECATIONS
 		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Message enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;

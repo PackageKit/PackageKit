@@ -110,6 +110,7 @@ gboolean	 pk_results_add_media_change_required	(PkResults		*results,
 							 PkMediaChangeRequired	*item);
 gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
 							 PkRepoDetail		*item);
+G_DEPRECATED
 gboolean	 pk_results_add_message 		(PkResults		*results,
 							 PkMessage		*item);
 
@@ -134,6 +135,7 @@ GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
 GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
 GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
 GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
+G_DEPRECATED
 GPtrArray	*pk_results_get_message_array		(PkResults		*results);
 
 G_END_DECLS

@@ -1132,6 +1132,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			       "(u&s)",
 			       &tmp_uint,
 			       &tmp_str[1]);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 		item = pk_message_new ();
 		g_object_set (item,
 			      "type", tmp_uint,
@@ -1140,6 +1141,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_message (state->results, item);
+G_GNUC_END_IGNORE_DEPRECATIONS
 		g_object_unref (item);
 		return;
 	}

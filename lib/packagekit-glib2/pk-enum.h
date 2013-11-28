@@ -556,7 +556,9 @@ const gchar	*pk_error_enum_to_string		(PkErrorEnum code);
 PkRestartEnum	 pk_restart_enum_from_string		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_string		(PkRestartEnum	 restart);
 
+G_DEPRECATED
 PkMessageEnum	 pk_message_enum_from_string		(const gchar	*message);
+G_DEPRECATED
 const gchar	*pk_message_enum_to_string		(PkMessageEnum	 message);
 
 PkGroupEnum	 pk_group_enum_from_string		(const gchar	*group);

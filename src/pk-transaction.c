@@ -1332,6 +1332,7 @@ pk_transaction_message_cb (PkBackend *backend,
 		      NULL);
 
 	/* add to results */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	pk_results_add_message (transaction->priv->results, item);
 
 	/* emit */
@@ -1346,6 +1347,7 @@ pk_transaction_message_cb (PkBackend *backend,
 						      type,
 						      details),
 				       NULL);
+G_GNUC_END_IGNORE_DEPRECATIONS
 	g_free (details);
 }
 
