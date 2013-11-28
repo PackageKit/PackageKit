@@ -32,7 +32,6 @@
 #include "pk-engine.h"
 #include "pk-notify.h"
 #include "pk-spawn.h"
-#include "pk-store.h"
 #include "pk-time.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"

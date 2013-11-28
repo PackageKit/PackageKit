@@ -1247,8 +1247,8 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 			goto out;
 		buffer[len] = '\0';
 		if (g_strcmp0 (buffer, "pong\n") == 0) {
-			/* send a message so we can verify in the self checks */
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, "%s", buffer);
+			/* send a category so we can verify in the self checks */
+			pk_backend_job_category (job, NULL, "test", "Test", buffer, NULL);
 
 			/* verify we can write into the socket */
 			wrote = g_socket_send (job_data->socket, "invalid\n", 8, NULL, &error);

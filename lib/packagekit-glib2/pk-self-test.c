@@ -647,7 +647,7 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
 	PkResults *results = NULL;
-	GPtrArray *messages;
+	GPtrArray *categories;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -655,9 +655,9 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 	g_assert (results != NULL);
 
 	/* make sure we handled the ping/pong frontend-socket thing, which is 5 + 1 */
-	messages = pk_results_get_message_array (results);
-	g_assert_cmpint (messages->len, ==, 6);
-	g_ptr_array_unref (messages);
+	categories = pk_results_get_category_array (results);
+	g_assert_cmpint (categories->len, ==, 1);
+	g_ptr_array_unref (categories);
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
