@@ -106,7 +106,7 @@ struct PkBackendJobPrivate
 	PkHintEnum		 interactive;
 	gboolean		 locked;
 	PkPackage		*last_package;
-	PkResults		*results;
+	PkErrorEnum		 last_error_code;
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
 	PkTime			*time;
@@ -1129,10 +1129,6 @@ pk_backend_job_package (PkBackendJob *job,
 				PK_BACKEND_SIGNAL_PACKAGE,
 				g_object_ref (item),
 				   g_object_unref);
-
-	/* add to results if meaningful */
-	if (info != PK_INFO_ENUM_FINISHED)
-		pk_results_add_package (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1209,7 +1205,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_update_detail (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1253,7 +1248,6 @@ pk_backend_job_require_restart (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_require_restart (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1289,6 +1283,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 	/* form PkMessage struct */
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	item = pk_message_new ();
+G_GNUC_END_IGNORE_DEPRECATIONS
 	g_object_set (item,
 		      "type", message,
 		      "details", buffer,
@@ -1299,8 +1294,6 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 				   PK_BACKEND_SIGNAL_MESSAGE,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_message (job->priv->results, item);
-G_GNUC_END_IGNORE_DEPRECATIONS
 out:
 	g_free (buffer);
 	if (item != NULL)
@@ -1346,7 +1339,6 @@ pk_backend_job_details (PkBackendJob *job,
 			       PK_BACKEND_SIGNAL_DETAILS,
 			       g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_details (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1395,7 +1387,6 @@ pk_backend_job_files (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_FILES,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_files (job->priv->results, item);
 
 	/* success */
 	job->priv->download_files++;
@@ -1439,7 +1430,6 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_distro_upgrade (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1494,7 +1484,6 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_repo_signature_required (job->priv->results, item);
 
 	/* success */
 	job->priv->set_signature = TRUE;
@@ -1547,7 +1536,6 @@ pk_backend_job_eula_required (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_EULA_REQUIRED,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_eula_required (job->priv->results, item);
 
 	/* success */
 	job->priv->set_eula = TRUE;
@@ -1590,7 +1578,6 @@ pk_backend_job_media_change_required (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_media_change_required (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1629,7 +1616,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_REPO_DETAIL,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_repo_detail (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1672,7 +1658,6 @@ pk_backend_job_category (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_CATEGORY,
 				   g_object_ref (item),
 				   g_object_unref);
-	pk_results_add_category (job->priv->results, item);
 out:
 	if (item != NULL)
 		g_object_unref (item);
@@ -1711,7 +1696,6 @@ pk_backend_job_error_code (PkBackendJob *job,
 	gchar *buffer;
 	gboolean need_untrusted;
 	PkError *error = NULL;
-	PkError *error_old = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
@@ -1722,8 +1706,7 @@ pk_backend_job_error_code (PkBackendJob *job,
 	/* did we set a duplicate error? (we can override LOCK_REQUIRED errors,
 	 * so the transaction list can fail transactions) */
 	if (job->priv->set_error) {
-		error_old = pk_results_get_error_code (job->priv->results);
-		if (pk_error_get_code (error_old) == PK_ERROR_ENUM_LOCK_REQUIRED) {
+		if (job->priv->last_error_code == PK_ERROR_ENUM_LOCK_REQUIRED) {
 			/* reset the exit status, we're resetting the error now */
 			job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 			job->priv->finished = FALSE;
@@ -1748,6 +1731,9 @@ pk_backend_job_error_code (PkBackendJob *job,
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_REPAIR_REQUIRED);
 	}
 
+	/* save so we can check the parallel failure later */
+	job->priv->last_error_code = error_code;
+
 	/* form PkError struct */
 	error = pk_error_new ();
 	g_object_set (error,
@@ -1760,12 +1746,9 @@ pk_backend_job_error_code (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_ERROR_CODE,
 				   g_object_ref (error),
 				   g_object_unref);
-	pk_results_set_error_code (job->priv->results, error);
 out:
 	if (error != NULL)
 		g_object_unref (error);
-	if (error_old != NULL)
-		g_object_unref (error_old);
 	g_free (buffer);
 }
 
@@ -1991,7 +1974,6 @@ pk_backend_job_finalize (GObject *object)
 	}
 	if (job->priv->params != NULL)
 		g_variant_unref (job->priv->params);
-	g_object_unref (job->priv->results);
 	g_object_unref (job->priv->time);
 	g_object_unref (job->priv->conf);
 
@@ -2016,9 +1998,9 @@ static void
 pk_backend_job_init (PkBackendJob *job)
 {
 	job->priv = PK_BACKEND_JOB_GET_PRIVATE (job);
-	job->priv->results = pk_results_new ();
 	job->priv->time = pk_time_new ();
 	job->priv->conf = pk_conf_new ();
+	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
 	pk_backend_job_reset (job);
 }
 
