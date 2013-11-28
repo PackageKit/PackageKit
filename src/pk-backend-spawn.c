@@ -54,6 +54,8 @@
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
 
+#define	PK_UNSAFE_DELIMITERS	"\\\f\r\t"
+
 struct PkBackendSpawnPrivate
 {
 	PkSpawn			*spawn;
@@ -212,6 +214,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			ret = FALSE;
 			goto out;
 		}
+		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[3], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[3]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 7) {
@@ -225,6 +236,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		package_size = atol (sections[6]);
 		if (package_size > 1073741824) {
 			g_set_error_literal (error, 1, 0, "package size cannot be larger than one Gb");
+			ret = FALSE;
+			goto out;
+		}
+		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[4], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[4]);
 			ret = FALSE;
 			goto out;
 		}
@@ -262,6 +282,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			ret = FALSE;
 			goto out;
 		}
+		g_strdelimit (sections[2], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[2], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[2]);
+			ret = FALSE;
+			goto out;
+		}
 		if (g_strcmp0 (sections[3], "true") == 0) {
 			pk_backend_job_repo_detail (job, sections[1], sections[2], TRUE);
 		} else if (g_strcmp0 (sections[3], "false") == 0) {
@@ -285,6 +314,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		restart = pk_restart_enum_from_string (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
+			ret = FALSE;
+			goto out;
+		}
+		g_strdelimit (sections[12], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[12], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[12]);
 			ret = FALSE;
 			goto out;
 		}
@@ -577,6 +615,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			ret = FALSE;
 			goto out;
 		}
+		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[3], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[3]);
+			ret = FALSE;
+			goto out;
+		}
 
 		pk_backend_job_distro_upgrade (job, distro_upgrade_enum, sections[2], sections[3]);
 		goto out;
@@ -599,6 +646,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		if (pk_strzero (sections[3])) {
 			g_set_error_literal (error, 1, 0, "name cannot not blank");
+			ret = FALSE;
+			goto out;
+		}
+		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
+		ret = g_utf8_validate (sections[4], -1, NULL);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "text '%s' was not valid UTF8!",
+				     sections[4]);
 			ret = FALSE;
 			goto out;
 		}

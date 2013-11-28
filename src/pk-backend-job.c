@@ -1070,40 +1070,6 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 }
 
 /**
- * pk_backend_strsafe:
- * @text: The input text to make safe
- *
- * Replaces chars in the text that may be dangerous, or that may print
- * incorrectly. These chars include new lines, tabs and line feed, and are
- * replaced by spaces.
- *
- * Return value: the new string with no insane chars
- **/
-static gchar *
-pk_backend_strsafe (const gchar *text)
-{
-	gchar *text_safe;
-	gboolean ret;
-	const gchar *delimiters;
-
-	if (text == NULL)
-		return NULL;
-
-	/* is valid UTF8? */
-	ret = g_utf8_validate (text, -1, NULL);
-	if (!ret) {
-		g_warning ("text '%s' was not valid UTF8!", text);
-		return NULL;
-	}
-
-	/* rip out any insane characters */
-	delimiters = "\\\f\r\t";
-	text_safe = g_strdup (text);
-	g_strdelimit (text_safe, delimiters, ' ');
-	return text_safe;
-}
-
-/**
  * pk_backend_job_package:
  **/
 void
@@ -1112,7 +1078,6 @@ pk_backend_job_package (PkBackendJob *job,
 			const gchar *package_id,
 			const gchar *summary)
 {
-	gchar *summary_safe = NULL;
 	PkPackage *item = NULL;
 	gboolean ret;
 	GError *error = NULL;
@@ -1129,12 +1094,8 @@ pk_backend_job_package (PkBackendJob *job,
 		g_error_free (error);
 		goto out;
 	}
-
-	/* replace unsafe chars */
-	summary_safe = pk_backend_strsafe (summary);
-
 	pk_package_set_info (item, info);
-	pk_package_set_summary (item, summary_safe);
+	pk_package_set_summary (item, summary);
 
 	/* is it the same? */
 	ret = (job->priv->last_package != NULL && pk_package_equal (job->priv->last_package, item));
@@ -1183,7 +1144,6 @@ pk_backend_job_package (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (summary_safe);
 }
 
 /**
@@ -1204,7 +1164,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 			      const gchar *issued_text,
 			      const gchar *updated_text)
 {
-	gchar *update_text_safe = NULL;
 	PkUpdateDetail *item = NULL;
 	GTimeVal timeval;
 	gboolean ret;
@@ -1236,9 +1195,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 			g_warning ("failed to parse updated '%s'", updated_text);
 	}
 
-	/* replace unsafe chars */
-	update_text_safe = pk_backend_strsafe (update_text);
-
 	/* form PkUpdateDetail struct */
 	item = pk_update_detail_new ();
 	g_object_set (item,
@@ -1249,7 +1205,7 @@ pk_backend_job_update_detail (PkBackendJob *job,
 		      "bugzilla-urls", bugzilla_urls,
 		      "cve-urls", cve_urls,
 		      "restart", restart,
-		      "update-text", update_text_safe,
+		      "update-text", update_text,
 		      "changelog", changelog,
 		      "state", state,
 		      "issued", issued_text,
@@ -1265,7 +1221,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (update_text_safe);
 }
 
 /**
@@ -1367,7 +1322,6 @@ pk_backend_job_details (PkBackendJob *job,
 			const gchar *url,
 			gulong size)
 {
-	gchar *description_safe = NULL;
 	PkDetails *item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1379,16 +1333,13 @@ pk_backend_job_details (PkBackendJob *job,
 		goto out;
 	}
 
-	/* replace unsafe chars */
-	description_safe = pk_backend_strsafe (description);
-
 	/* form PkDetails struct */
 	item = pk_details_new ();
 	g_object_set (item,
 		      "package-id", package_id,
 		      "license", license,
 		      "group", group,
-		      "description", description_safe,
+		      "description", description,
 		      "url", url,
 		      "size", (guint64) size,
 		      NULL);
@@ -1402,7 +1353,6 @@ pk_backend_job_details (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (description_safe);
 }
 
 /**
@@ -1466,8 +1416,6 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 			       const gchar *name,
 			       const gchar *summary)
 {
-	gchar *name_safe = NULL;
-	gchar *summary_safe = NULL;
 	PkDistroUpgrade *item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1481,16 +1429,12 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 		goto out;
 	}
 
-	/* replace unsafe chars */
-	name_safe = pk_backend_strsafe (name);
-	summary_safe = pk_backend_strsafe (summary);
-
 	/* form PkDistroUpgrade struct */
 	item = pk_distro_upgrade_new ();
 	g_object_set (item,
 		      "state", state,
-		      "name", name_safe,
-		      "summary", summary_safe,
+		      "name", name,
+		      "summary", summary,
 		      NULL);
 
 	/* emit */
@@ -1502,8 +1446,6 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (name_safe);
-	g_free (summary_safe);
 }
 
 /**
@@ -1666,7 +1608,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 			    const gchar *description,
 			    gboolean enabled)
 {
-	gchar *description_safe = NULL;
 	PkRepoDetail *item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1677,9 +1618,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 		g_warning ("already set error, cannot process: repo-detail %s", repo_id);
 		goto out;
 	}
-
-	/* replace unsafe chars */
-	description_safe = pk_backend_strsafe (description);
 
 	/* form PkRepoDetail struct */
 	item = pk_repo_detail_new ();
@@ -1698,7 +1636,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (description_safe);
 }
 
 /**
@@ -1712,7 +1649,6 @@ pk_backend_job_category (PkBackendJob *job,
 			 const gchar *summary,
 			 const gchar *icon)
 {
-	gchar *summary_safe = NULL;
 	PkCategory *item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1723,9 +1659,6 @@ pk_backend_job_category (PkBackendJob *job,
 		g_warning ("already set error, cannot process: category %s", cat_id);
 		goto out;
 	}
-
-	/* replace unsafe chars */
-	summary_safe = pk_backend_strsafe (summary);
 
 	/* form PkCategory struct */
 	item = pk_category_new ();
@@ -1746,7 +1679,6 @@ pk_backend_job_category (PkBackendJob *job,
 out:
 	if (item != NULL)
 		g_object_unref (item);
-	g_free (summary_safe);
 }
 
 /**
