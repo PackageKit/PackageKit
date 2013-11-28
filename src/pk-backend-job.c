@@ -1090,7 +1090,8 @@ pk_backend_job_package (PkBackendJob *job,
 	pk_package_set_summary (item, summary);
 
 	/* is it the same? */
-	ret = (job->priv->last_package != NULL && pk_package_equal (job->priv->last_package, item));
+	ret = (job->priv->last_package != NULL &&
+	       pk_package_equal (job->priv->last_package, item));
 	if (ret) {
 		g_debug ("skipping duplicate %s", package_id);
 		goto out;
@@ -1126,8 +1127,8 @@ pk_backend_job_package (PkBackendJob *job,
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,
-				PK_BACKEND_SIGNAL_PACKAGE,
-				g_object_ref (item),
+				   PK_BACKEND_SIGNAL_PACKAGE,
+				   g_object_ref (item),
 				   g_object_unref);
 out:
 	if (item != NULL)
