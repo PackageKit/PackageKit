@@ -721,8 +721,8 @@ pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 	if (job->priv->role != PK_ROLE_ENUM_UNKNOWN &&
 	    job->priv->role != role) {
 		g_warning ("cannot set role to %s, already %s",
-			     pk_role_enum_to_string (role),
-			     pk_role_enum_to_string (job->priv->role));
+			   pk_role_enum_to_string (role),
+			   pk_role_enum_to_string (job->priv->role));
 	}
 
 	/* reset the timer */
@@ -850,7 +850,7 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: percentage %i", percentage);
+		g_warning ("already set error: percentage %i", percentage);
 		return;
 	}
 
@@ -862,9 +862,7 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 
 	/* check over */
 	if (percentage > PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					"percentage value is invalid: %i",
-					percentage);
+		g_warning ("percentage value is invalid: %i", percentage);
 		return;
 	}
 
@@ -872,10 +870,8 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 	if (percentage < 100 &&
 	    job->priv->percentage < 100 &&
 	    percentage < job->priv->percentage) {
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					"percentage value is going down to %i from %i",
-					percentage,
-					job->priv->percentage);
+		g_warning ("percentage value is going down to %i from %i",
+			   percentage, job->priv->percentage);
 		return;
 	}
 
@@ -913,7 +909,7 @@ pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: speed %i", speed);
+		g_warning ("already set error: speed %i", speed);
 		return;
 	}
 
@@ -942,7 +938,7 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: download-size-remaining");
+		g_warning ("already set error: download-size-remaining");
 		return;
 	}
 
@@ -978,7 +974,7 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: item-progress %i", percentage);
+		g_warning ("already set error: item-progress %i", percentage);
 		return;
 	}
 
@@ -1018,18 +1014,14 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 
 	/* have we already set an error? */
 	if (job->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
-		g_warning ("already set error, cannot process: status %s",
+		g_warning ("already set error: status %s",
 			   pk_status_enum_to_string (status));
 		return;
 	}
 
 	/* backends don't do this */
 	if (status == PK_STATUS_ENUM_WAIT) {
-		g_warning ("backend tried to WAIT, only the runner should set this value");
-		pk_backend_job_message (job,
-					PK_MESSAGE_ENUM_BACKEND_ERROR,
-					"%s shouldn't use STATUS_WAIT",
-					pk_role_enum_to_string (job->priv->role));
+		g_warning ("backend tried to status WAIT");
 		return;
 	}
 
@@ -1111,7 +1103,7 @@ pk_backend_job_package (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: package %s", package_id);
+		g_warning ("already set error: package %s", package_id);
 		goto out;
 	}
 
@@ -1173,7 +1165,7 @@ pk_backend_job_update_detail (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: update_detail %s", package_id);
+		g_warning ("already set error: update_detail %s", package_id);
 		goto out;
 	}
 
@@ -1238,7 +1230,7 @@ pk_backend_job_require_restart (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_string (restart));
+		g_warning ("already set error: require-restart %s", pk_restart_enum_to_string (restart));
 		goto out;
 	}
 
@@ -1283,7 +1275,7 @@ pk_backend_job_message (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		g_warning ("already set error, cannot process: message %s", pk_message_enum_to_string (message));
+		g_warning ("already set error: message %s", pk_message_enum_to_string (message));
 		goto out;
 	}
 
@@ -1329,7 +1321,7 @@ pk_backend_job_details (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: details %s", package_id);
+		g_warning ("already set error: details %s", package_id);
 		goto out;
 	}
 
@@ -1373,7 +1365,7 @@ pk_backend_job_files (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: files %s", package_id);
+		g_warning ("already set error: files %s", package_id);
 		goto out;
 	}
 
@@ -1425,7 +1417,7 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: distro-upgrade");
+		g_warning ("already set error: distro-upgrade");
 		goto out;
 	}
 
@@ -1469,7 +1461,7 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: repo-sig-reqd");
+		g_warning ("already set error: repo-sig-reqd");
 		goto out;
 	}
 
@@ -1526,7 +1518,7 @@ pk_backend_job_eula_required (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: eula required");
+		g_warning ("already set error: eula required");
 		goto out;
 	}
 
@@ -1576,7 +1568,7 @@ pk_backend_job_media_change_required (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: media change required");
+		g_warning ("already set error: media change required");
 		goto out;
 	}
 
@@ -1615,7 +1607,7 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: repo-detail %s", repo_id);
+		g_warning ("already set error: repo-detail %s", repo_id);
 		goto out;
 	}
 
@@ -1656,7 +1648,7 @@ pk_backend_job_category (PkBackendJob *job,
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
-		g_warning ("already set error, cannot process: category %s", cat_id);
+		g_warning ("already set error: category %s", cat_id);
 		goto out;
 	}
 
@@ -1810,7 +1802,7 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 
 	/* have we already set an error? */
 	if (job->priv->set_error && allow_cancel) {
-		g_warning ("already set error, cannot process: allow-cancel %i", allow_cancel);
+		g_warning ("already set error: allow-cancel %i", allow_cancel);
 		return;
 	}
 
@@ -1933,16 +1925,13 @@ pk_backend_job_finished (PkBackendJob *job)
 	if (!job->priv->set_error &&
 	    job->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
 	    job->priv->download_files == 0) {
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send multiple Files() for each package_id!");
+		g_warning ("required multiple Files() for each package_id!");
 	}
 
 	/* check we sent at least one status calls */
 	if (job->priv->set_error == FALSE &&
 	    job->priv->status == PK_STATUS_ENUM_SETUP) {
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "Backends should send status <value> signals for %s!", role_text);
-		g_warning ("GUI will remain unchanged!");
+		g_warning ("required status signals for %s!", role_text);
 	}
 
 	/* make any UI insensitive */
@@ -1978,7 +1967,7 @@ pk_backend_job_finalize (GObject *object)
 	job = PK_BACKEND_JOB (object);
 
 	if (pk_backend_job_get_started (job)) {
-		g_warning ("FINALIZED JOB WITHOUT STOPPING IT BEFORE! Please stop jobs before freeing them!");
+		g_warning ("finalized job without stopping it before");
 		pk_backend_stop_job (job->priv->backend, job);
 	}
 

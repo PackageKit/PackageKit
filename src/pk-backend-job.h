@@ -190,6 +190,7 @@ void		 pk_backend_job_update_detail		(PkBackendJob	*job,
 void		 pk_backend_job_require_restart		(PkBackendJob	*job,
 							 PkRestartEnum	 restart,
 							 const gchar	*package_id);
+G_DEPRECATED
 void		 pk_backend_job_message			(PkBackendJob	*job,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...)

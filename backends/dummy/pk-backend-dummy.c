@@ -1079,13 +1079,6 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 							0);
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,
-						"A newer package preupgrade is available in fedora-updates-testing");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-						"/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
 			if (!priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
 							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
@@ -1177,11 +1170,6 @@ pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 						"The Linux kernel (the core of the Linux operating system)");
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS, "A newer package preupgrade is available in fedora-updates-testing");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "/etc/X11/xorg.conf has been auto-merged, please check before rebooting");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing metadata is invalid");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-debuginfo metadata is invalid");
-			pk_backend_job_message (job, PK_MESSAGE_ENUM_BROKEN_MIRROR, "fedora-updates-testing-source metadata is invalid");
 			if (priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
 							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
@@ -1507,8 +1495,6 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *ri
 		priv->use_trusted = atoi (value);
 	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)
 		priv->use_distro_upgrade = atoi (value);
-	else
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, "invalid parameter %s", parameter);
 	pk_backend_job_finished (job);
 }
 

@@ -586,9 +586,8 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 		      NULL);
 
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
-		pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s emitted 'unknown error' rather than a specific error "
-				    "- this is a backend problem and should be fixed!", pk_role_enum_to_string (transaction->priv->role));
+		g_warning ("%s emitted 'unknown error'",
+			   pk_role_enum_to_string (transaction->priv->role));
 	}
 
 	/* add to results */
@@ -632,9 +631,9 @@ pk_transaction_files_cb (PkBackendJob *job,
 	    transaction->priv->cached_directory != NULL) {
 		for (i=0; files[i] != NULL; i++) {
 			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
-				pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-						    "%s does not have the correct prefix (%s)",
-						    files[i], transaction->priv->cached_directory);
+				g_warning ("%s does not have the correct prefix (%s)",
+					   files[i],
+					   transaction->priv->cached_directory);
 			}
 		}
 	}
@@ -1372,38 +1371,36 @@ pk_transaction_package_cb (PkBackend *backend,
 		return;
 	}
 
-	/* get data */
-
 	/* check the backend is doing the right thing */
 	info = pk_package_get_info (item);
 	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_job_message (transaction->priv->job,
-					    PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "%s emitted 'installed' rather than 'installing' "
-					    "- you need to do the package *before* you do the action", role_text);
+			g_warning ("%s emitted 'installed' rather than 'installing'",
+				   role_text);
 			return;
 		}
 	}
 
 	/* check we are respecting the filters */
-	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+	if (pk_bitfield_contain (transaction->priv->cached_filters,
+				 PK_FILTER_ENUM_NOT_INSTALLED)) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "%s emitted package that was installed when "
-					    "the ~installed filter is in place", role_text);
+			g_warning ("%s emitted package that was installed when "
+				   "the ~installed filter is in place",
+				   role_text);
 			return;
 		}
 	}
-	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
+	if (pk_bitfield_contain (transaction->priv->cached_filters,
+				 PK_FILTER_ENUM_INSTALLED)) {
 		if (info == PK_INFO_ENUM_AVAILABLE) {
 			role_text = pk_role_enum_to_string (transaction->priv->role);
-			pk_backend_job_message (transaction->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "%s emitted package that was ~installed when "
-					    "the installed filter is in place", role_text);
+			g_warning ("%s emitted package that was ~installed when "
+				   "the installed filter is in place",
+				   role_text);
 			return;
 		}
 	}

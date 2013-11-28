@@ -457,7 +457,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		text = g_strdup (sections[2]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 		pk_backend_job_message (job, message_enum, "%s", text);
+G_GNUC_END_IGNORE_DEPRECATIONS
 		g_free (text);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
@@ -753,9 +755,6 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 					    line,
 					    &error);
 	if (!ret) {
-		pk_backend_job_message (backend_spawn->priv->job,
-					PK_MESSAGE_ENUM_BACKEND_ERROR,
-					"Failed to parse output: %s", error->message);
 		g_warning ("failed to parse: %s: %s", line, error->message);
 		g_error_free (error);
 	}
@@ -776,10 +775,7 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 		if (!ret)
 			return;
 	}
-
-	/* send warning up to session, this is never going to be pretty... */
 	g_warning ("STDERR: %s", line);
-	pk_backend_job_message (backend_spawn->priv->job, PK_MESSAGE_ENUM_BACKEND_ERROR, "%s", line);
 }
 
 /**
