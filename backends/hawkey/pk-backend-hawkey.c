@@ -917,8 +917,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   98, /* add repos */
-				   2, /* query */
+				   39, /* add repos */
+				   50, /* query */
+				   1, /* ensure source list */
+				   10, /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -1008,6 +1010,14 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	}
 	pkglist = hy_query_run (query);
 
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* set the cache filename on each package */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) ||
 	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED)) {
@@ -1019,6 +1029,14 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			g_error_free (error);
 			goto out;
 		}
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* FIXME: actually get the right update severity */
