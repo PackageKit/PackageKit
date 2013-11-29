@@ -78,18 +78,22 @@ struct _PkServicePackClass
 
 GQuark		 pk_service_pack_error_quark		(void);
 GType		 pk_service_pack_get_type		(void);
+G_DEPRECATED
 PkServicePack	*pk_service_pack_new			(void);
 void		 pk_service_pack_test			(gpointer		 user_data);
 
 /* used by the server */
+G_DEPRECATED
 gboolean	 pk_service_pack_check_valid		(PkServicePack		*pack,
 							 const gchar		*filename,
 							 GError			**error);
 
 /* used by clients */
+G_DEPRECATED
 gboolean	 pk_service_pack_set_temp_directory	(PkServicePack		*pack,
 							 const gchar		*directory);
 
+G_DEPRECATED
 gboolean	 pk_service_pack_generic_finish		(PkServicePack		*pack,
 							 GAsyncResult		*res,
 							 GError			**error);

@@ -4026,7 +4026,6 @@ pk_transaction_install_files (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	GError *error_local = NULL;
-	PkServicePack *service_pack;
 	gchar *content_type = NULL;
 	guint length;
 	guint i;
@@ -4093,19 +4092,6 @@ pk_transaction_install_files (PkTransaction *transaction,
 			}
 			pk_transaction_release_tid (transaction);
 				goto out;
-		}
-
-		/* valid */
-		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
-			service_pack = pk_service_pack_new ();
-			ret = pk_service_pack_check_valid (service_pack, full_paths[i], &error_local);
-			g_object_unref (service_pack);
-			if (!ret) {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
-				pk_transaction_release_tid (transaction);
-						g_error_free (error_local);
-				goto out;
-			}
 		}
 	}
 

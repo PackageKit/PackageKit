@@ -302,7 +302,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/pkcon.1.gz
 %{_datadir}/man/man1/pkmon.1.gz
-%{_datadir}/man/man1/pkgenpack.1.gz
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/mime/packages/packagekit-*.xml
@@ -311,7 +310,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libexecdir}/pk-trigger-offline-update
 %{_bindir}/pkmon
 %{_bindir}/pkcon
-%{_bindir}/pkgenpack
 %{_bindir}/packagekit-bugreport.sh
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so

@@ -174,29 +174,6 @@ PKG_CHECK_MODULES(POLKIT, \
 		  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
-dnl - Service Packs (default enabled)
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(service-packs, AS_HELP_STRING([--disable-service-packs],[Disable Service Packs support]), enable_servicepacks=$enableval)
-if test x$enable_servicepacks != xno; then
-	AC_CHECK_HEADERS(archive.h,
-			 HAVE_ARCHIVE_H="yes",
-			 HAVE_ARCHIVE_H="no")
-	if test "x$HAVE_ARCHIVE_H" = "xyes"; then
-			AC_DEFINE(HAVE_ARCHIVE_H)
-			ARCHIVE_LIBS=-larchive
-			AC_SUBST(ARCHIVE_LIBS)
-	else
-		if test x$enable_servicepacks = xyes; then
-			AC_MSG_ERROR([Service Packs support need libarchive])
-		fi
-	fi
-else
-	HAVE_ARCHIVE_H="no"
-fi
-
-AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
-
-dnl ---------------------------------------------------------------------------
 dnl - FreeBSD compatibility
 dnl ---------------------------------------------------------------------------
 AC_CHECK_HEADERS([execinfo.h])
@@ -700,7 +677,6 @@ echo "
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
         Use systemd:               ${enable_systemd}
-        Security framework:        ${with_security_framework}
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}

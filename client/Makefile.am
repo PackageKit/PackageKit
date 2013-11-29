@@ -1,20 +1,14 @@
 ## We require new-style dependency handling.
 AUTOMAKE_OPTIONS = 1.7
 
-NULL =
-
 EXTRA_DIST =						\
 	pkcon.xml					\
-	pkmon.xml					\
-	pkgenpack.xml					\
-	$(NULL)
+	pkmon.xml
 
 if HAVE_XSLTPROC
 man_MANS =						\
 	pkcon.1						\
-	pkmon.1						\
-	pkgenpack.1					\
-	$(NULL)
+	pkmon.1
 endif
 
 if HAVE_XSLTPROC
@@ -22,9 +16,6 @@ pkcon.1: pkcon.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 
 pkmon.1: pkmon.xml
-	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
-
-pkgenpack.1: pkgenpack.xml
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
@@ -48,77 +39,47 @@ AM_CPPFLAGS =						\
 	-DPK_COMPILATION				\
 	-DG_LOG_DOMAIN=\"PackageKit\"			\
 	-I$(top_builddir)/lib				\
-	-I$(top_srcdir)/lib				\
-	$(NULL)
+	-I$(top_srcdir)/lib
 
 bin_PROGRAMS =						\
 	pkcon						\
-	pkmon						\
-	pkgenpack					\
-	$(NULL)
+	pkmon
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(NULL)
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a
 
 pkcon_SOURCES =						\
-	pk-console.c					\
-	$(NULL)
+	pk-console.c
 
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
+	$(PK_GLIB2_LIBS)
 
 pkcon_LDFLAGS =						\
 	$(PIE_LDFLAGS)
 
 pkcon_CFLAGS =						\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 pkmon_SOURCES =						\
-	pk-monitor.c					\
-	$(NULL)
+	pk-monitor.c
 
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
+	$(PK_GLIB2_LIBS)
 
 pkmon_LDFLAGS =						\
 	$(PIE_LDFLAGS)
 
 pkmon_CFLAGS =						\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-pkgenpack_SOURCES =					\
-	pk-generate-pack.c				\
-	$(NULL)
-
-pkgenpack_LDADD = 					\
-	$(ARCHIVE_LIBS)					\
-	$(GLIB_LIBS)					\
-	$(GIO_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-pkgenpack_LDFLAGS =					\
-	$(PIE_LDFLAGS)
-
-pkgenpack_CFLAGS =					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 clean-local:
 	rm -f *~
@@ -128,13 +89,9 @@ clean-local:
 
 CLEANFILES = $(BUILT_SOURCES) $(man_MANS)
 
-DISTCLEANFILES =					\
-	$(NULL)
-
 MAINTAINERCLEANFILES =					\
-	*~			      			\
-	Makefile.in					\
-	$(NULL)
+	*~						\
+	Makefile.in
 
 
 -include $(top_srcdir)/git.mk

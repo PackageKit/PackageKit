@@ -13,10 +13,7 @@ upgradescript_SCRIPTS = pk-upgrade-distro.sh
 @INTLTOOL_XML_RULE@
 mimedir = $(datadir)/mime/packages
 mime_in_files = 					\
-	packagekit-catalog.xml.in			\
-	packagekit-package-list.xml.in			\
-	packagekit-servicepack.xml.in			\
-	$(NULL)						
+	packagekit-package-list.xml.in
 mime_DATA = $(mime_in_files:.xml.in=.xml)
 
 dbusdir = ${DBUS_SYS_DIR}
