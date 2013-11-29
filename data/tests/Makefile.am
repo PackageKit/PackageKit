@@ -4,7 +4,6 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 TEST_FILES =						\
-	test.catalog					\
 	pk-client-helper-test.py.in			\
 	pk-spawn-test.sh				\
 	pk-spawn-proxy.sh				\

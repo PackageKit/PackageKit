@@ -65,7 +65,6 @@
         This part documents GObjects used in libpackagekit.
       </para>
     </partintro>
-    <xi:include href="xml/pk-catalog.xml"/>
     <xi:include href="xml/pk-category.xml"/>
     <xi:include href="xml/pk-client.xml"/>
     <xi:include href="xml/pk-control.xml"/>
