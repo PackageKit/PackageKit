@@ -21,41 +21,9 @@
 
 <h2>Precompiled Packages</h2>
 <p>
-Your distribution may already have compiled packages that are much
-easier to install.  Refer to the <a href="pk-users.html">users</a> page for
-more details or use the instructions provided below to get you going using
-your native package manager.
+Your distribution probably has compiled packages that are much
+easier to install.
 </p>
-<ul>
-  <li>
-   Conary: Yes, just run: <code>sudo conary update PackageKit gnome-packagekit</code>
-  </li>
-  <li>
-   Fedora: Yes, starting with 9, just run: <code>yum install PackageKit gnome-packagekit</code> (as root)
-  </li>
-  <li>
-   Debian: Yes, starting with 7 (Wheezy).
-   Just run <code>apt-get install packagekit gnome-packagekit</code> (as root). The KDE frontend Apper is also available.
-  </li>
-  <li>
-   Ubuntu: Yes, starting with Hardy Heron (8.04), that ships an obsolete version (0.1.6) of PackageKit by default.
-   Newer versions are used by more recent releases, but you can find the latest versions of PackageKit for all releases in this <a href="https://launchpad.net/~ximion/+archive/packagekit">Personal Package Archive</a>.
-   <a href="https://help.ubuntu.com/community/Repositories/Ubuntu#Adding_PPAs">Add</a>
-   the repository and <a href="https://help.ubuntu.com/community/InstallingSoftware#Installing_a_Package">
-   install</a> the packages <code>packagekit</code> and <code>gnome-software-manager</code>.
-   (Install <code>apper</code> instead of <code>gnome-software-manager</code> for the KDE frontend)
-  </li>
-  <li>
-   openSUSE: Yes, starting with 11.0, add <a href="http://download.opensuse.org/distribution/11.0/repo/oss/">this</a>
-   repository file and run: <code>zypper install PackageKit gnome-packagekit</code> (as root)
-  </li>
-  <li>
-   Mandriva: Yes, starting with 2009, just run: <code>urpmi packagekit gnome-packagekit</code> (as root)
-  </li>
-  <li>
-   Others: Probably not, although you can compile from source. See below for more details.
-  </li>
-</ul>
 
 <h2>Released Versions</h2>
 <p>
@@ -103,105 +71,6 @@ Releases are less frequent, usually every few months.
 <tr><td>0.7.1</td><td></td><td>2011-11-10</td></tr>
 <tr><td>0.7.0</td><td></td><td>2011-09-05</td></tr>
 </table>
-<h3>
-Obsolete Versions:
-</h3>
-<p>
-These are versions that used to be the ABI stable releases, but are now
-longer supported.
-There will not be any more releases of these versions.
-</p>
-<table>
-<tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
-<tr><td>0.6.18</td><td></td><td>2011-09-05</td></tr>
-<tr><td>0.6.17</td><td></td><td>2011-08-01</td></tr>
-<tr><td>0.6.16</td><td></td><td>2011-07-04</td></tr>
-<tr><td>0.6.15</td><td></td><td>2011-06-07</td></tr>
-<tr><td>0.6.14</td><td></td><td>2011-05-04</td></tr>
-<tr><td>0.6.13</td><td></td><td>2011-03-07</td></tr>
-<tr><td>0.6.12</td><td></td><td>2011-02-01</td></tr>
-<tr><td>0.6.11</td><td></td><td>2010-12-13</td></tr>
-<tr><td>0.6.10</td><td></td><td>2010-11-01</td></tr>
-<tr><td>0.6.9</td><td></td><td>2010-10-04</td></tr>
-<tr><td>0.6.8</td><td></td><td>2010-09-06</td></tr>
-<tr><td>0.6.7</td><td></td><td>2010-08-04</td></tr>
-<tr><td>0.6.6</td><td></td><td>2010-07-01</td></tr>
-<tr><td>0.6.5</td><td></td><td>2010-06-02</td></tr>
-<tr><td>0.6.4</td><td></td><td>2010-05-06</td></tr>
-<tr><td>0.6.3</td><td></td><td>2010-03-29</td></tr>
-<tr><td>0.6.2</td><td></td><td>2010-03-01</td></tr>
-<tr><td>0.6.1</td><td></td><td>2010-02-01</td></tr>
-<tr><td>0.6.0</td><td></td><td>2010-01-04</td></tr>
-<tr><td>0.5.7</td><td></td><td>2010-03-03</td></tr>
-<tr><td>0.5.6</td><td></td><td>2010-01-05</td></tr>
-<tr><td>0.5.5</td><td></td><td>2009-12-07</td></tr>
-<tr><td>0.5.4</td><td></td><td>2009-11-02</td></tr>
-<tr><td>0.5.3</td><td></td><td>2009-10-05</td></tr>
-<tr><td>0.5.2</td><td></td><td>2009-09-07</td></tr>
-<tr><td>0.5.1</td><td></td><td>2009-08-03</td></tr>
-<tr><td>0.5.0</td><td></td><td>2009-07-06</td></tr>
-<tr><td>0.4.9</td><td></td><td>2009-08-03</td></tr>
-<tr><td>0.4.8</td><td></td><td>2009-06-01</td></tr>
-<tr><td>0.4.7</td><td></td><td>2009-05-05</td></tr>
-<tr><td>0.4.6</td><td></td><td>2009-03-30</td></tr>
-<tr><td>0.4.5</td><td></td><td>2009-03-09</td></tr>
-<tr><td>0.4.4</td><td></td><td>2009-02-23</td></tr>
-<tr><td>0.4.3</td><td></td><td>2009-02-02</td></tr>
-<tr><td>0.4.2</td><td></td><td>2009-01-19</td></tr>
-<tr><td>0.4.1</td><td></td><td>2009-01-08</td></tr>
-<tr><td>0.4.0</td><td></td><td>2008-12-09</td></tr>
-<tr><td>0.3.16</td><td></td><td>2009-06-10</td></tr>
-<tr><td>0.3.15</td><td></td><td>2009-03-30</td></tr>
-<tr><td>0.3.14</td><td></td><td>2009-02-02</td></tr>
-<tr><td>0.3.12</td><td></td><td>2008-12-08</td></tr>
-<tr><td>0.3.11</td><td></td><td>2008-11-24</td></tr>
-<tr><td>0.3.10</td><td></td><td>2008-11-10</td></tr>
-<tr><td>0.3.9</td><td></td><td>2008-10-27</td></tr>
-<tr><td>0.3.8</td><td></td><td>2008-10-20</td></tr>
-<tr><td>0.3.7</td><td></td><td>2008-10-13</td></tr>
-<tr><td>0.3.6</td><td></td><td>2008-10-06</td></tr>
-<tr><td>0.3.5</td><td></td><td>2008-09-29</td></tr>
-<tr><td>0.3.4</td><td></td><td>2008-09-22</td></tr>
-<tr><td>0.3.3</td><td></td><td>2008-09-16</td></tr>
-<tr><td>0.3.2</td><td></td><td>2008-09-08</td></tr>
-<tr><td>0.3.1</td><td></td><td>2008-08-27</td></tr>
-<tr><td>0.3.0</td><td></td><td>2008-08-18</td></tr>
-<tr><td>0.2.5</td><td></td><td>2008-09-06</td></tr>
-<tr><td>0.2.4</td><td></td><td>2008-07-30</td></tr>
-<tr><td>0.2.3</td><td></td><td>2008-07-04</td></tr>
-<tr><td>0.2.2</td><td></td><td>2008-06-05</td></tr>
-<tr><td>0.2.1</td><td></td><td>2008-05-09</td></tr>
-<tr><td>0.2.0</td><td></td><td>2008-05-06</td></tr>
-<tr><td>0.1.11</td><td></td><td>2008-04-05</td></tr>
-<tr><td>0.1.10</td><td></td><td>2008-03-28</td></tr>
-<tr><td>0.1.9</td><td></td><td>2008-03-04</td></tr>
-<tr><td>0.1.8</td><td></td><td>2008-02-21</td></tr>
-<tr><td>0.1.7</td><td></td><td>2008-02-14</td></tr>
-<tr><td>0.1.6</td><td></td><td>2008-01-18</td></tr>
-<tr><td>0.1.5</td><td></td><td>2007-12-21</td></tr>
-<tr><td>0.1.4</td><td></td><td>2007-11-26</td></tr>
-<tr><td>0.1.3</td><td></td><td>2007-11-10</td></tr>
-<tr><td>0.1.2</td><td></td><td>2007-11-01</td></tr>
-<tr><td>0.1.1</td><td></td><td>2007-10-23</td></tr>
-<tr><td>0.1.0</td><td></td><td>2007-10-16</td></tr>
-</table>
-
-<h2>Dependencies</h2>
-<p>
-The actual PackageKit daemon requires:
-</p>
-<ul>
-<li><code>glib</code> 2.14.0</li>
-<li><code>dbus</code> 1.1.3</li>
-<li><code>dbus-glib</code> 0.74</li>
-<li><code>libnm</code> 0.6.4 (optional)</li>
-<li><code>polkit</code> 0.9</li>
-</ul>
-
-<p>
-gnome-packagekit will need all the usual GNOME libs as well.
-Just make sure you install PackageKit before gnome-packagekit!
-</p>
 
 <h2>Compiling the latest code</h2>
 <p>
@@ -211,28 +80,10 @@ on <a href="http://gitorious.org/">gitorious.org</a>:
 </p>
 <pre>
 git clone git://gitorious.org/packagekit/packagekit.git
-git clone git://git.gnome.org/gnome-packagekit
 </pre>
 <p>
-<a href="http://kde-apps.org/content/show.php/Apper?content=84745">Apper (was KPackageKit)</a>
-is available from Git in the KDE playground:
-</p>
-<pre>
-git clone git://anongit.kde.org/apper
-</pre>
-<p>
-There are detailed build instructions for different distros available:
-</p>
-<ul>
-<li><a href="https://fedoraproject.org/wiki/BuildingPackageKitFromSource">Fedora</a></li>
-</ul>
-<p>
-If you want to commit changes or a new backend, then please email the
+If you want to commit changes or a add a new backend, then please email the
 mailing list and we can give you access to a developer server.
-The developer server is always up to date, and the anonymous git is synced
-about twice a day.
-Having a two tier server lets developers review code for correctness and
-security problems before it's used in the real world.
 </p>
 
 <h2>Adding backends to PackageKit</h2>
@@ -256,17 +107,10 @@ functionality to install and remove but do not provide dependency or file
 lists for example. See the FAQ <a href="pk-faq.html">here</a> for backends status.
 </p>
 
-<p>
-We need people to create backends, and then package (pardon the pun)
-PackageKit and gnome-packagekit for more distributions.
-I think it's important that installing and updating software should be
-as easy as possible.
-</p>
-
 <p>Back to the <a href="index.html">main page</a></p>
 
 <p class="footer">
- Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2010</a><br/>
+ Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2013</a><br/>
  <a href="http://validator.w3.org/check/referer">Optimized</a>
  for <a href="http://www.w3.org/">standards</a>.
 </p>

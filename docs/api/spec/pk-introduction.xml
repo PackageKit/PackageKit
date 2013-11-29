@@ -51,54 +51,7 @@
       by PackageKit. Each backend advertises the commands and
       options it supports, and the frontend will only show UI
       elements for those commands.
-      Please see the <literal>html/pk-faq.html</literal> file for the current
-      status of the existing backends.
-      Backed maintainers, please keep this file updated.
     </para>
-  </sect1>
-
-  <sect1 id="config-main">
-    <title>Daemon Config Options</title>
-    <para>
-      The config file <literal>/etc/PackageKit/PackageKit.conf</literal> allows to the
-      administrator to change system daemon options.
-      In normal use this file does not have to be changed, but it may be
-      useful to people debugging the daemon or developing backends.
-    </para>
-    <para>
-      The options are:
-    </para>
-    <sect2 id="config-main-logging">
-      <title>TransactionLogging</title>
-      <para>
-        This logs all transactions to <literal>/var/log/PackageKit</literal> so old
-        daemon debugging output can be observed.
-      </para>
-    </sect2>
-    <sect2 id="config-main-shutdown-timeout">
-      <title>ShutdownTimeout</title>
-      <para>
-        This is the time that the daemon waits when idle before shutting down.
-        A smaller number will result in slower response times when running
-        many transactions in a small amount of time.
-        A longer timeout will lock the underlying packaging backend for longer,
-        although the daemon will start and stop less often.
-      </para>
-    </sect2>
-    <sect2 id="config-main-use-syslog">
-      <title>UseSyslog</title>
-      <para>
-        Syslog is used to audit and log actions wherever its available.
-      </para>
-    </sect2>
-    <sect2 id="config-main-default-backend">
-      <title>DefaultBackend</title>
-      <para>
-        The default backend that the daemon should use.
-        The default is set at compile time to the
-        <literal>--default-backend=</literal> configure setting.
-      </para>
-    </sect2>
   </sect1>
 
 </chapter>

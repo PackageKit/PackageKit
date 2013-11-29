@@ -41,11 +41,10 @@
       If you are unable to write scripts that conform to these specifications
       then just launch a PkSpawn object in the compiled helper with stdout
       callbacks and then try to do screenscraping in the backend.
-      This screen-scraping is least popular for obvious reasons.
     </para>
     <para>
       Backends scripts are run with arguments and data is sent to standard out
-      and standard error asynchronously so that PackageKit can proxy this to DBUS.
+      and standard error asynchronously so that PackageKit can proxy this to D-Bus.
       A method has command line arguments separated with tabs, and data is also
       separated with tabs.
     </para>
@@ -57,219 +56,21 @@
       using <literal>sys.stdout.flush()</literal>.
     </para>
     <para>
-      There are two modes of operation for a spawned backend, a one shot mode and
-      a dispatcher mode.
+      The "dispatcher" mode is where a command is used to startup the
+      backend, for instance <literal>yumBackend.py search-name none power</literal>
+      and then the backend then sits and waits for more standard input.
+      Further operations can be done on the loaded backend sending commands
+      to stdin, e.g. <literal>search-name none power</literal>.
+      If there are no more operations after a preset time (default 5 seconds)
+      then the backend is sent <literal>exit</literal> over stdin, and the
+      backend terminates.
+      The daemon will ensure the operations are serialised, and that backends
+      not sending <literal>finished</literal> are cleaned up properly.
     </para>
-    <itemizedlist>
-      <listitem>
-        <para>
-          The "one-shot" mode is where commands are executed
-          (e.g. <literal>search-name.py none power</literal>), which then
-          initialises the package backend, returns results and then exits.
-          This is obviously not ideal, as some backends like smart can take
-          several hundred ms to initialise, and this leads to a "laggy"
-          GUI applications.
-        </para>
-        <para>
-          This however is the easiest mode to implement, and the original one
-          supported by all versions of PackageKit.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          The "dispatcher" mode is where a command is used to startup the
-          backend, for instance <literal>yumBackend.py search-name none power</literal>
-          and then the backend then sits and waits for more standard input.
-          Further operations can be done on the loaded backend sending commands
-          to stdin, e.g. <literal>search-name none power</literal>.
-          If there are no more operations after a preset time (default 5 seconds)
-          then the backend is sent <literal>exit</literal> over stdin, and the
-          backend terminates.
-          The daemon will ensure the operations are serialised, and that backends
-          not sending <literal>finished</literal> are cleaned up properly.
-        </para>
-        <para>
-          This is quite easy to implement (see the end of yumBackend.py), and
-          is supported from PackageKit version 0.3.2.
-          The dispatcher mode does not have to implemented in python; any
-          language that can read from stdin can block and be used in this way.
-        </para>
-      </listitem>
-    </itemizedlist>
-  </sect1>
-
-  <sect1 id="backends-spawn-methods">
-    <title>Methods</title>
     <para>
-      The following method names are mapped from the helper to either
-      command line programs or a dispatcher in the spawn helper.
+      The dispatcher mode does not have to implemented in python; any
+      language that can read from stdin can block and be used in this way.
     </para>
-    <informaltable>
-      <tgroup cols="2">
-        <thead>
-          <row>
-            <entry>Method</entry>
-            <entry>File</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>Search Name</entry>
-            <entry><literal>search-name</literal></entry>
-          </row>
-          <row>
-            <entry>Search Group</entry>
-            <entry><literal>search-group</literal></entry>
-          </row>
-          <row>
-            <entry>Search Details</entry>
-            <entry><literal>search-details</literal></entry>
-          </row>
-          <row>
-            <entry>Search File</entry>
-            <entry><literal>search-file</literal></entry>
-          </row>
-          <row>
-            <entry>Install Package</entry>
-            <entry><literal>install</literal></entry>
-          </row>
-          <row>
-            <entry>Install File</entry>
-            <entry><literal>install-file</literal></entry>
-          </row>
-          <row>
-            <entry>Remove Package</entry>
-            <entry><literal>remove</literal></entry>
-          </row>
-          <row>
-            <entry>Get Depends</entry>
-            <entry><literal>get-depends</literal></entry>
-          </row>
-          <row>
-            <entry>Resolve</entry>
-            <entry><literal>resolve</literal></entry>
-          </row>
-          <row>
-            <entry>Get Requires</entry>
-            <entry><literal>get-requires</literal></entry>
-          </row>
-          <row>
-            <entry>Get Update Detail</entry>
-            <entry><literal>get-update-detail</literal></entry>
-          </row>
-          <row>
-            <entry>Get Details</entry>
-            <entry><literal>get-details</literal></entry>
-          </row>
-          <row>
-            <entry>Get Files</entry>
-            <entry><literal>get-files</literal></entry>
-          </row>
-          <row>
-            <entry>Update Package</entry>
-            <entry><literal>update</literal></entry>
-          </row>
-          <row>
-            <entry>Update System</entry>
-            <entry><literal>update-system</literal></entry>
-          </row>
-          <row>
-            <entry>Get Updates</entry>
-            <entry><literal>get-updates</literal></entry>
-          </row>
-          <row>
-            <entry>Refresh Cache</entry>
-            <entry><literal>refresh-cache</literal></entry>
-          </row>
-          <row>
-            <entry>Get Repo List</entry>
-            <entry><literal>get-repo-list</literal></entry>
-          </row>
-          <row>
-            <entry>Repo Enable</entry>
-            <entry><literal>repo-enable</literal></entry>
-          </row>
-          <row>
-            <entry>Repo Set Data</entry>
-            <entry><literal>repo-set-data</literal></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
-
-  </sect1>
-
-  <sect1 id="backends-spawn-common">
-    <title>Common function outputs</title>
-    <para>
-      The following commands echoed to standard error will
-      automatically make the backend-launcher do the correct action in the
-      compiled helper.
-    </para>
-    <informaltable>
-      <tgroup cols="2">
-        <thead>
-          <row>
-            <entry>Method</entry>
-            <entry>Data</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>Percentage</entry>
-            <entry><literal>percentage[tab]value</literal></entry>
-          </row>
-          <row>
-            <entry>NoPercentageUpdates</entry>
-            <entry><literal>no-percentage-updates</literal></entry>
-          </row>
-          <row>
-            <entry>Error</entry>
-            <entry><literal>error[tab]enum[tab]description</literal></entry>
-          </row>
-          <row>
-            <entry>Status</entry>
-            <entry><literal>status[tab]state</literal></entry>
-          </row>
-          <row>
-            <entry>RequireRestart</entry>
-            <entry><literal>requirerestart[tab]type[tab]details</literal></entry>
-          </row>
-          <row>
-            <entry>AllowUpdate</entry>
-            <entry><literal>allow-cancel[tab]enabled</literal></entry>
-          </row>
-          <row>
-            <entry>Package</entry>
-            <entry><literal>package_id[tab]status[tab]summary</literal></entry>
-          </row>
-          <row>
-            <entry>Details</entry>
-            <entry><literal>details[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes</literal></entry>
-          </row>
-          <row>
-            <entry>Files</entry>
-            <entry><literal>files[tab]package_id[tab]file_list</literal></entry>
-          </row>
-          <row>
-            <entry>UpdateDetail</entry>
-            <entry><literal>package_id[tab]updates[tab]obsoletes[tab]vendor_url[tab]bugzilla_url[tab]cve_url[tab]restart[tab]update_text</literal></entry>
-          </row>
-          <row>
-            <entry>ChangeTransactionData</entry>
-            <entry><literal>change-transaction-data[tab]data</literal></entry>
-          </row>
-          <row>
-            <entry>RepoSignatureRequired</entry>
-            <entry><literal>repository_name[tab]key_url[tab]key_userid[tab]key_id[tab]key_fingerprint[tab]key_timestamp[tab]type</literal></entry>
-          </row>
-          <row>
-            <entry>RepoDetail</entry>
-            <entry><literal>repo-detail[tab]repo_id[tab]description[tab]enabled</literal></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
-  </sect1>
+</sect1>
 
 </chapter>

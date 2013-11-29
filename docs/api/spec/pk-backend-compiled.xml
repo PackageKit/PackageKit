@@ -11,7 +11,7 @@
     libraries) and then just write the simple code to interface
     with the methods of PackageKit.
     A C example can be found in <literal>backends/box</literal> and a
-    C++ example in <literal>backends/apt</literal>.
+    C++ example in <literal>backends/aptcc</literal>.
   </para>
   <para>
     You will have to use threading if your backend does not support async

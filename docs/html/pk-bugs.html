@@ -20,27 +20,11 @@
 <h1>Reporting Bugs</h1>
 
 <p>
-First, please look at the <a href="http://tinyurl.com/2s4tnt">list of PackageKit bugs</a>
-and to that of <a href="http://tinyurl.com/3seuqf3">gnome-PackageKit bugs</a>,
+First, please look at the <a href="http://tinyurl.com/2s4tnt">list of PackageKit bugs</a>,
 so that you are sure the bug you are reporting isn't a duplicate bug that
 someone else has fixed or reported.
 If not present, then please create a new bug attaching all the information
-to this new bug:
-</p>
-
-<ul>
-<li>If the bug affects the GNOME GUI, please
-<a href="https://bugzilla.gnome.org/enter_bug.cgi?product=gnome-packagekit">report it here</a>.
-</li>
-<li>On the other hand,
-<a href="https://bugs.freedesktop.org/enter_bug.cgi?product=PackageKit">report it here</a>
-if you suspect it affects the underlying PackageKit backend.</li>
-</ul>
-
-<p>
-Please do not email individual developers with bug reports, as the volume of
-email we get is already huge.
-Bugzilla lets us keep it all the information in one place, so we don't loose track!
+to this <a href="https://bugs.freedesktop.org/enter_bug.cgi?product=PackageKit">new bug</a>.
 </p>
 
 <h2>General Bugs</h2>
@@ -52,8 +36,7 @@ To help us diagnose the problem, please supply the following information:
 
 <ul>
 <li>The version of packagekit installed</li>
-<li>The version of gnome-packagekit installed</li>
-<li>The installation method you used (i.e. FC8 RPM, tarball)</li>
+<li>The installation method you used (i.e. f19 RPM, tarball)</li>
 <li>Your distribution and version</li>
 <li>The verbose trace from packagekitd</li>
 <li>Any other information that may be relevant</li>
@@ -69,14 +52,6 @@ useful when debugging problems.
 <pre>
 sudo killall packagekitd
 sudo /usr/libexec/packagekitd --verbose
-</pre>
-
-<h2>GConf session settings</h2>
-<p>
-This will display your session user settings for the GNOME PackageKit Tools.
-</p>
-<pre>
-gconftool-2 -R /apps/gnome-packagekit
 </pre>
 
 <h2>Segfaults or random crashes</h2>
@@ -124,7 +99,7 @@ give you more information.
 <p>Back to the <a href="index.html">main page</a></p>
 
 <p class="footer">
- Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2010</a><br/>
+ Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2013</a><br/>
  <a href="http://validator.w3.org/check/referer">Optimized</a>
  for <a href="http://www.w3.org/">standards</a>.
 </p>

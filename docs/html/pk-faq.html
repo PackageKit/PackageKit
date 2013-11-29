@@ -23,15 +23,12 @@
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
 <li><a href="#repo-add-remove">Why can't I add or remove software sources</a></li>
-<li><a href="#catalogs">What's a package catalog?</a></li>
 <li><a href="#markup">Can I include formatting characters in package descriptions?</a></li>
 <li><a href="#1-click-install">Does PackageKit support 1-Click Install?</a></li>
 <li><a href="#command-not-found">How does the command not found functionality work?</a></li>
-<li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
 <li><a href="#session-methods">How do I use PackageKit in my application?</a></li>
 <li><a href="#rawhide-updates">Why don't I get update details with Fedora Rawhide?</a></li>
-<li><a href="#selinux">Why doesn't PackageKit work with SELinux?</a></li>
 <li><a href="#tray-icons">What do the tray icons mean?</a></li>
 <li><a href="#no-percentage-updates">What if we don't support percentage updates?</a></li>
 <li><a href="#remaining-times">Why are the remaining times sometimes wildly wrong?</a></li>
@@ -41,13 +38,8 @@
 <li><a href="#up2date">Does PackageKit replace up2date?</a></li>
 <li><a href="#system-daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
 <li><a href="#dependencies">How does PackageKit handle dependencies?</a></li>
-<li><a href="#rcd">Does PackageKit replace the Red Carpet service?</a></li>
-<li><a href="#how-fast">How fast is PackageKit?</a></li>
 <li><a href="#multiple-users">How does PackageKit work with multiple users?</a></li>
 <li><a href="#use-existing-tools">Can users still use their normal package managers?</a></li>
-<li><a href="#service-pack">What is a Service Pack?</a></li>
-<li><a href="#hughsies-law">What is Hughsie's law?</a></li>
-<li><a href="#translation">How do I translate gnome-packagekit?</a></li>
 <li><a href="#corporate-sponsor">Is there an organization sponsoring development of PackageKit?</a></li>
 </ul>
 
@@ -73,82 +65,6 @@ This is a deliberate design choice chosen for the following reasons:
 <li>Removing the <code>repo-release.rpm</code> removes the repo and any temporary files</li>
 <li>Renaming a repo has no purpose</li>
 </ul>
-
-<h3><a name="catalogs">What's a package catalog?</a></h3>
-<p>
-There's one use case that I'm very interested in, and that is getting new users with the correct
-environment to build and start hacking on software or using other software tools.
-For instance, on <a href="http://www.packagekit.org">www.packagekit.org</a> in the FAQ section,
-we could have a link to install build files to <a href="packagekit.catalog">start hacking on PackageKit</a>.
-</p>
-<p>
-Now, this <code>.catalog</code> file is handled by <code>gpk-install-catalog</code> that parses
-this file and causes the appropriate packages to be installed if they are not already installed.
-This rocks as we can get GTK+, Xorg hackers up to speed with the minimum of fuss and confusion.
-It also lets people put links on webpages to <i>install all the stuff you need</i> when writing a
-<i>How to use a scanner in GIMP</i> howto.
-</p>
-<p>
-So, what does a .catalog file look like?
-</p>
-<pre>
-[PackageKit Catalog]
-
-# Just a package on all versions of fedora that can provide the dependency.
-# If there are multiple packages then the user will be asked to choose
-InstallProvides(fedora)=audio/QCELP
-
-# Just for Fedora 9, install two development files
-InstallPackages(fedora;9)=glib2-devel;PolicyKit-gnome-devel
-
-# On any distro, install the package with this file
-InstallFiles=/usr/bin/fontinst
-
-# For each architecture on Fedora 8, install one of the two different compat files
-InstallFiles(fedora;8;i686)=/usr/lib/pango/1.6.0/modules/pango-arabic-fc.so
-InstallFiles(fedora;8;x64)=/usr/lib64/pango/1.6.0/modules/pango-arabic-fc.so
-</pre>
-<p>
-You'll notice the <code>distro-id</code> in between the <code>()</code>'s - this lets a packager
-fine tune the package name, where for instance in Debian the package is called <code>policykit</code>
-and Fedora <code>PolicyKit</code>.
-You can specify a granularity of distribution, distribution;version or
-distribution;version;architecture - PackageKit will process all the entries that apply.
-It's of course better to not specify a <code>()</code> if possible, as this lets the file work on
-as many distributions as possible out of the box.
-</p>
-<p>
-There's also no version checking - intentionally - the distro should be specified and have the
-correct data.
-If there's an optional package not in earlier versions then you can do something like this:
-</p>
-<pre>
-[PackageKit Catalog]
-
-# Fedora 9 does not have Unique
-InstallPackages(fedora;9)=glib2-devel;PolicyKit-gnome-devel
-
-# Rawhide is fedora 9.90
-InstallPackages(fedora;9.90)=glib2-devel;PolicyKit-gnome-devel;unique-devel
-</pre>
-<p>
-There's also no description of the catalog that needs translating and verifying - they are just
-lists of packages, files and provides that might be useful.
-All the translations come from the distributions metadata, and it's up to the user to verify the
-package lists that are asked to be installed, so there are no signing or trust issues.
-</p>
-<p>
-The supported methods are InstallPackages, InstallProvides and InstallFiles. Any line
-that does not start with these key words will be descarted.
-</p>
-<p>
-InstallCatalog is also available on the session interface.
-</p>
-<p>
-Note: this isn't designed to replace one click install, it just does something that is similar in
-a different way.
-</p>
-<hr/>
 
 <h3><a name="markup">Can I include formatting characters in package descriptions?</a></h3>
 <p>
@@ -248,19 +164,6 @@ Most user just don't have got the technical understanding to handle this well.</
 </p>
 
 <hr/>
-<h3><a name="run-as-root">When run as root, <code>gpk-application</code> and <code>pkcon</code> do not work!</a></h3>
-<p>
-GTK+ tools should not be run as the root user, <b>PERIOD</b>.
-Any GTK+ program run as the root user is a massive security hole -- GTK+ just isn't designed with
-this in mind.
-There are <b>numerous</b> attack vectors when running as root, and programs shouldn't do such
-insane and insecure things.
-</p>
-<p>
-Please see <a href="http://www.gtk.org/setuid.html">the GTK+ explanation</a> for more rationale.
-</p>
-
-<hr/>
 <h3><a name="session-system">Why is there a session service <b>and</b> and a system service?</a></h3>
 <p>
 PackageKit runs a process <code>packagekitd</code> that is a daemon that runs per-system.
@@ -331,46 +234,11 @@ if you have any other questions
 </p>
 
 <hr/>
-<h3><a name="tray-icons">What do the tray icons mean?</a></h3>
-<table>
- <tr>
-  <td><img src="img/pk-update-bugfix.png" alt=""/></td><td>Bugfix update</td>
-  <td><img src="img/pk-update-enhancement.png" alt=""/></td><td>Enhancement update</td>
-  <td><img src="img/pk-update-high.png" alt=""/></td><td>High priority update</td>
- </tr>
- <tr>
-  <td><img src="img/pk-update-low.png" alt=""/></td><td>Low priority update</td>
-  <td><img src="img/pk-update-normal.png" alt=""/></td><td>Normal update</td>
-  <td><img src="img/pk-update-security.png" alt=""/></td><td>Security update</td>
- </tr>
-</table>
-<p>
-<b>NOTE:</b>Not all the icons may show for some backends.
-</p>
-<p>
-If you are using Fedora rawhide then only the bugfix icon will be show due to missing metadata.
-In the released versions of Fedora metadata is added to updates and the type of update can be found.
-</p>
-
-<hr/>
 <h3><a name="rawhide-updates">Why don't I get update details with Fedora Rawhide?</a></h3>
 <p>
 The Rawhide repository does not supply metadata needed for the update-viewer to display extra
 information about the update, such as changelogs, CVE and bugzilla references.
 Only released versions of Fedora have this metadata.
-</p>
-
-<hr/>
-<h3><a name="selinux">Why doesn't PackageKit work with SELinux?</a></h3>
-<p>
-The process <code>packagekitd</code> is not recognized by SELinux if you are
-using old selinux-policy rules.
-Until the policy is updated to handle system activation, you'll have
-to run in permissive mode, rather than enforcing.
-</p>
-<p>
-See <a href="https://bugzilla.redhat.com/show_bug.cgi?id=361151">Red Hat Bugzilla</a>
-for further information.
 </p>
 
 <hr/>
@@ -508,77 +376,26 @@ provided by PackageKit.
 </p>
 
 <hr/>
-<h3><a name="rcd">Does PackageKit replace the Red Carpet service?</a></h3>
-<p>
-PackageKit is not a replacement to red carpet.
-Red carpet was really great and years ahead of it's time, but tried to do
-everything package related on the system, and moved onto the enterprise
-centralized management model.
-Although cool, this latter point made things too political in my opinion.
-</p>
-
-<hr/>
-<h3><a name="how-fast">How fast is PackageKit?</a></h3>
-<p>
-PackageKit is really fast.
-It takes about 1 second to search for installed and available packages
-with "power" in the description - no blocking of the UI happens at all as it's
-all asynchronous.
-All the applications start instantly with no root password needed at startup.
-</p>
-
-<hr/>
 <h3><a name="multiple-users">How does PackageKit work with multiple users?</a></h3>
 <p>
 PackageKit is designed from the ground up to work with fast user switching and
 logging in and out of sessions during upgrades.
-You can start a system upgrade, log out, log in as another user, and be notified
-when the upgrade is complete, all without risking your rpmdb.
+You can start a package install, log out, log in as another user, all without
+corruption.
 </p>
 
 <hr/>
 <h3><a name="use-existing-tools">Can users still use their normal package managers and backends, such as Yum, APT or Conary?</a></h3>
 <p>
-PackageKit does not stop you using the low level tools yourself.
-You can use rpm and yum or dpkg and apt when PK is inactive (99.999% of the time)
-when you really need some command line love.
-No more fighting over <code>yum</code>, <code>yum-updatesd</code>,
-<code>pup</code> and <code>pirut</code>.
-</p>
-
-<hr/>
-<h3><a name="service-pack">What is a Service Pack?</a></h3>
-<p>
-A service pack is a tarball which contains the particular package and its dependencies.
-The user can select the dependencies to be packed using the --with-package-list option.
-Along with the dependencies, a service pack has a file named metadata.conf which contains
-the distribution name and version and the date of creation of the pack.
-Service packs are generated using the command line client <code>pkgenpack</code>.
-</p>
-
-<hr/>
-<h3><a name="hughsies-law">What is Hughsie's law?</a></h3>
-<p>
-A joke that started on IRC late one night in '07.
-Put formally it is: <i>Authentication or license prompts can only be done before the
-transaction has started, and messages or notices about the transaction
-can only be shown after the transaction has completed.</i>
-</p>
-
-<hr/>
-<h3><a name="translation">How do I translate gnome-packagekit?</a></h3>
-<p>
-See the <a href="http://l10n.gnome.org/teams">GNOME Translation Team</a>
-web pages for how to contribute to GNOME localisation.
+PackageKit does not stop you using the low level tools, in fact it quits as soon
+as possible if a native tool is waiting to be run.
 </p>
 
 <hr/>
 <h3><a name="corporate-sponsor">Is there an organization or corporation sponsoring development of PackageKit?</a></h3>
 <p>
-PackageKit is not sponsored by anyone.
-Whilst interning at Red Hat in '07 I spent a few days on the API and some UI designs,
-but all the coding is done in my free time.
-I now work at Red Hat full time.
+PackageKit is not sponsored by anyone, although I now work at Red Hat full time
+on PackageKit and several other projects.
 </p>
 
 <p>Back to the <a href="index.html">main page</a></p>
@@ -590,7 +407,7 @@ I now work at Red Hat full time.
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 <p class="footer">
- Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2010</a><br/>
+ Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2013</a><br/>
  <a href="http://validator.w3.org/check/referer">Optimized</a>
  for <a href="http://www.w3.org/">standards</a>.
 </p>
