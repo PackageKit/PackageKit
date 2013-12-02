@@ -47,8 +47,6 @@ static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
 
-#define PK_TRANSACTION_DB_ID_FILE_OBSOLETE	LOCALSTATEDIR "/lib/PackageKit/job_count.dat"
-
 struct PkTransactionDbPrivate
 {
 	gboolean		 loaded;
@@ -939,21 +937,6 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 			goto out;
 	}
 
-	/* check transactions has enough data (since 0.3.11) */
-	ret = pk_transaction_db_execute (tdb, "SELECT uid, cmdline FROM transactions LIMIT 1", &error_local);
-	if (!ret) {
-		g_debug ("altering table to repair: %s", error_local->message);
-		g_clear_error (&error_local);
-		statement = "ALTER TABLE transactions ADD COLUMN uid INTEGER DEFAULT 0;";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-		statement = "ALTER TABLE transactions ADD COLUMN cmdline TEXT;";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-	}
-
 	/* check last_action (since 0.3.10) */
 	ret = pk_transaction_db_execute (tdb, "SELECT * FROM last_action LIMIT 1", &error_local);
 	if (!ret) {
@@ -976,21 +959,8 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 		if (!ret)
 			goto out;
 
-		/* save creation version */
-		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('version', '%s')", PACKAGE_VERSION);
-		ret = pk_transaction_db_execute (tdb, text, error);
-		if (!ret)
-			goto out;
-		g_free (text);
-
-		/* get the old job count from the text file (this is a legacy file) */
-		ret = g_file_get_contents (PK_TRANSACTION_DB_ID_FILE_OBSOLETE, &text, NULL, NULL);
-		if (ret)
-			pk_strtouint (text, &tdb->priv->job_count);
-		g_free (text);
-
 		/* save job id */
-		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('job_count', '%i')", tdb->priv->job_count);
+		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('job_count', '%i')", 1);
 		ret = pk_transaction_db_execute (tdb, text, error);
 		if (!ret)
 			goto out;
@@ -1014,29 +984,6 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	if (!ret) {
 		g_debug ("adding table proxy: %s", error_local->message);
 		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_https TEXT, proxy_ftp TEXT, proxy_socks TEXT, no_proxy TEXT, pac TEXT, uid INTEGER, session TEXT);";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-	}
-
-	/* session no_proxy proxy */
-	ret = pk_transaction_db_execute (tdb, "SELECT no_proxy FROM proxy LIMIT 1", &error_local);
-	if (!ret) {
-		g_debug ("altering table to repair: %s", error_local->message);
-		g_clear_error (&error_local);
-		statement = "ALTER TABLE proxy ADD COLUMN proxy_https TEXT;";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-		statement = "ALTER TABLE proxy ADD COLUMN proxy_socks TEXT;";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-		statement = "ALTER TABLE proxy ADD COLUMN no_proxy TEXT;";
-		ret = pk_transaction_db_execute (tdb, statement, error);
-		if (!ret)
-			goto out;
-		statement = "ALTER TABLE proxy ADD COLUMN pac TEXT;";
 		ret = pk_transaction_db_execute (tdb, statement, error);
 		if (!ret)
 			goto out;
