@@ -1994,6 +1994,10 @@ main (int argc, char **argv)
 	pk_debug_set_verbose (TRUE);
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
+	/* don't run when using make distcheck */
+	if (g_strcmp0 (DEFAULT_BACKEND, "dummy") == 0)
+		return 0;
+
 	/* some libraries need to know */
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
 

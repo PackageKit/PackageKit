@@ -65,8 +65,7 @@ DISTCHECK_CONFIGURE_FLAGS =				\
 	--disable-bash-completion			\
 	--enable-gtk-doc				\
 	--with-default-backend=dummy			\
-	--with-systemdsystemunitdir=/tmp		\
-	--disable-tests
+	--with-systemdsystemunitdir=/tmp
 
 distclean-local:
 	if test $(srdcir) = .; then :; else \

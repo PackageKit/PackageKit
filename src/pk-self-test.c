@@ -1609,6 +1609,10 @@ main (int argc, char **argv)
 #endif
 	g_test_init (&argc, &argv, NULL);
 
+	/* don't run when using make distcheck */
+	if (g_strcmp0 (DEFAULT_BACKEND, "dummy") == 0)
+		return 0;
+
 #ifndef PK_BUILD_LOCAL
 	g_warning ("you need to compile with --enable-local for make check support");
 #endif
