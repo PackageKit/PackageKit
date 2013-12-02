@@ -2,15 +2,11 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 client/pk-console.c
-client/pk-generate-pack.c
 client/pk-monitor.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c
 contrib/debuginfo-install/pk-debuginfo-install.c
 contrib/systemd-updates/pk-offline-update.c
-data/packagekit-catalog.xml.in
-data/packagekit-package-list.xml.in
-data/packagekit-servicepack.xml.in
 lib/packagekit-glib2/pk-console-shared.c
 lib/packagekit-glib2/pk-debug.c
 lib/packagekit-glib2/pk-enum.c

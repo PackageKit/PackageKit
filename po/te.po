@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-08 09:31+0100\n"
-"PO-Revision-Date: 2013-05-08 08:36+0000\n"
+"POT-Creation-Date: 2013-12-02 14:29+0000\n"
+"PO-Revision-Date: 2013-12-02 14:29+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Telugu (http://www.transifex.com/projects/p/freedesktop/language/te/)\n"
 "MIME-Version: 1.0\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-packages
-#: ../client/pk-console.c:174 ../client/pk-console.c:607
+#: ../client/pk-console.c:174 ../client/pk-console.c:587
 msgid "Transaction"
 msgstr "వ్యవహారము"
 
@@ -136,7 +136,7 @@ msgstr "నవీకరణ గురించి సమాచారము:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:346 ../client/pk-console.c:626
+#: ../client/pk-console.c:346 ../client/pk-console.c:606
 #: ../lib/packagekit-glib2/pk-task-text.c:124
 #: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
@@ -197,7 +197,7 @@ msgstr "విడుదలైన"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:399 ../lib/packagekit-glib2/pk-enum.c:1169
+#: ../client/pk-console.c:399 ../lib/packagekit-glib2/pk-enum.c:1171
 msgid "Updated"
 msgstr "నవీకరించిన"
 
@@ -243,82 +243,76 @@ msgstr "అనువర్తనము పునఃప్రారంభము �
 msgid "Package description"
 msgstr "సంకలనము వివరణ"
 
-#. TRANSLATORS: This a message (like a little note that may be of interest)
-#. from the transaction
-#: ../client/pk-console.c:548
-msgid "Message:"
-msgstr "సందేశము:"
-
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:569
+#: ../client/pk-console.c:549
 msgid "No files"
 msgstr "దస్త్రములు లేవు"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:574
+#: ../client/pk-console.c:554
 msgid "Package files"
 msgstr "సంకలనము దస్త్రములు"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:642
+#: ../client/pk-console.c:622
 msgid "Percentage"
 msgstr "శాతము"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:660
+#: ../client/pk-console.c:640
 msgid "Status"
 msgstr "స్థితి"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:692
+#: ../client/pk-console.c:672
 msgid "Results:"
 msgstr "ఫలితాలు:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:699 ../client/pk-console.c:855
+#: ../client/pk-console.c:679 ../client/pk-console.c:830
 msgid "Fatal error"
 msgstr "ప్రమాదకరమైన దోషము"
 
 #. TRANSLATORS: the user asked to update everything, but there is nothing that
 #. can be updated
-#: ../client/pk-console.c:716
+#: ../client/pk-console.c:696
 msgid "There are no packages to update."
 msgstr ""
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:719
+#: ../client/pk-console.c:699
 #: ../contrib/command-not-found/pk-command-not-found.c:716
 msgid "The transaction failed"
 msgstr "బదిలీకరణ విఫలమైంది"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:748
+#: ../client/pk-console.c:728
 msgid "There are no updates available at this time."
 msgstr "ఈ సమయం వద్ద అక్కడ యెటువంటి నవీకరణలు అందుబాటులో లేవు."
 
-#: ../client/pk-console.c:771
+#: ../client/pk-console.c:751
 msgid "There are no upgrades available at this time."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:838
+#: ../client/pk-console.c:813
 msgid "Please restart the computer to complete the update."
 msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి కంప్యూటర్ పునఃప్రారంభించుము."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:841
+#: ../client/pk-console.c:816
 msgid "Please logout and login to complete the update."
 msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి లాగ్అవుటై మరియు లాగిన్అవ్వుము"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:844
+#: ../client/pk-console.c:819
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr "ముఖ్యమైన నవీకరణలు సంస్థాపించబడినవి కావున దయచేసి నవీకరణ పూర్తిచేయుటకు కంప్యూటర్ పునఃప్రారంభించుము."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:847
+#: ../client/pk-console.c:822
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
@@ -326,7 +320,7 @@ msgstr "ముఖ్యమైన రక్షణ నవీకరణలు సం
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
-#: ../client/pk-console.c:887
+#: ../client/pk-console.c:862
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
@@ -335,27 +329,27 @@ msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:900
+#: ../client/pk-console.c:875
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ఈ సాధనము అందుబాటులో వున్న యే సంకలనములను కనుగొనలేకపోయింది: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:929
+#: ../client/pk-console.c:904
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ఈ సాధనము సంస్థాపిత సంకలనములను కనుగొనలేకపోయింది: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
-#: ../client/pk-console.c:957 ../client/pk-console.c:985
+#: ../client/pk-console.c:932 ../client/pk-console.c:967
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "ఈ సాధనము ప్యాకేజీను కనుగొనలేక పోయింది: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
-#: ../client/pk-console.c:1029
+#: ../client/pk-console.c:1011
 msgid "No packages require updating to newer versions."
 msgstr ""
 
@@ -367,399 +361,281 @@ msgstr ""
 #. detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The
 #. detailed error follows
-#: ../client/pk-console.c:1059 ../client/pk-console.c:1091
-#: ../client/pk-console.c:1119 ../client/pk-console.c:1147
-#: ../client/pk-console.c:1175
+#: ../client/pk-console.c:1041 ../client/pk-console.c:1073
+#: ../client/pk-console.c:1101 ../client/pk-console.c:1129
+#: ../client/pk-console.c:1157
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "ఈ సాధనము అన్ని సంకలనములను కనుగొనలేక పోయింది: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
 #. without a paddle
-#: ../client/pk-console.c:1204
+#: ../client/pk-console.c:1186
 msgid "The daemon crashed mid-transaction!"
 msgstr "వ్యవహారము-మద్యలో డెమోన్ కుప్పకూలినది!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1238
+#: ../client/pk-console.c:1220
 msgid "PackageKit Console Interface"
 msgstr "ప్యాకేజీకిట్ కన్సోల్ ఇంటర్ఫేస్"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1240
+#: ../client/pk-console.c:1222
 msgid "Subcommands:"
 msgstr "ఉపఆదేశములు:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was
 #. last executed
-#: ../client/pk-console.c:1319
+#: ../client/pk-console.c:1309
 msgid "Failed to get the time since this action was last completed"
 msgstr "ఈ చర్య ఆఖరున పూర్తైన కారణముగా సమయమును పొందుటలో విఫలమైంది"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1360 ../client/pk-monitor.c:380
+#: ../client/pk-console.c:1473 ../client/pk-monitor.c:354
 msgid "Show the program version and exit"
 msgstr "ప్రోగ్రామ్ వర్షన్‌ను చూపుము మరియు నిష్క్రమించుము"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1363
+#: ../client/pk-console.c:1476
 msgid "Set the filter, e.g. installed"
 msgstr "వడపోత(ఫిల్టర్) అమర్చుము, ఉ.దా. సంస్థాపించిన"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1366
+#: ../client/pk-console.c:1479
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
 msgid "Install the packages without asking for confirmation"
 msgstr "నిర్ధారణ కొరకు అడుగకుండా ప్యాకేజీలను సంస్థాపించుము"
 
 #. command line argument, do we just download or apply changes
-#: ../client/pk-console.c:1369
+#: ../client/pk-console.c:1482
 msgid "Prepare the transaction by downloading pakages only"
 msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1372
+#: ../client/pk-console.c:1485
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "స్థిరమైన నెట్వర్కు బ్యాండ్‌విడ్తును మరియు తక్కువ శక్తిని వుపయోగించి ఆదేశమును నడుపుము"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1375
+#: ../client/pk-console.c:1488
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "ఏనిమేట్ చేయబడిన విడ్జట్‌లను వుపయోగించుట కన్నా, మిషన్ చదువగల అవుట్పుట్‌ను తెరకు ముద్రించుము"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1378
+#: ../client/pk-console.c:1491
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1410
+#: ../client/pk-console.c:1523
 msgid "Failed to parse command line"
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1534
 msgid "Failed to contact PackageKit"
 msgstr "ప్యాకేజీకిట్‌ను సంప్రదించుటకు విఫలమైంది"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1476
+#: ../client/pk-console.c:1589
 msgid "The proxy could not be set"
 msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1488
+#: ../client/pk-console.c:1601
 msgid "The filter specified was invalid"
 msgstr "తెలుపబడిన వడపోత(ఫిల్టర్) చెల్లనిది"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1510
+#: ../client/pk-console.c:1623
 msgid "A search type is required, e.g. name"
 msgstr "ఒక శోధన రకము అవసరమైంది, ఉ.దా. నామము"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1517 ../client/pk-console.c:1529
-#: ../client/pk-console.c:1541 ../client/pk-console.c:1553
+#: ../client/pk-console.c:1630 ../client/pk-console.c:1642
+#: ../client/pk-console.c:1654 ../client/pk-console.c:1666
 msgid "A search term is required"
 msgstr "ఒక శోధన పదము అవసరమైంది"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1563
+#: ../client/pk-console.c:1676
 msgid "Invalid search type"
 msgstr "చెల్లని సోధన రకము"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1569
+#: ../client/pk-console.c:1682
 msgid "A package name to install is required"
 msgstr "సంస్థాపించుటకు వొక ప్యాకేజీ నామము అవసరమైంది"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1578
+#: ../client/pk-console.c:1691
 msgid "A filename to install is required"
 msgstr "సంస్థాపించుటకు వొక దస్త్రమునామము అవసరమైంది"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1589
+#: ../client/pk-console.c:1702
 msgid "A type, key_id and package_id are required"
 msgstr "ఒక రకము, key_id మరియు package_id అవసరమైంది"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1600
+#: ../client/pk-console.c:1713
 msgid "A package name to remove is required"
 msgstr "తొలగించుటకు సంకలనము నామము అవసరమైంది"
 
 #. TRANSLATORS: the user did not specify anything about what to download or
 #. where
-#: ../client/pk-console.c:1609
+#: ../client/pk-console.c:1722
 msgid "A destination directory and the package names to download are required"
 msgstr "డౌనులోడు చేయుటకు గమ్య డైరెక్టరీ మరియు సంకలనము నామములు అవసరము"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1616
+#: ../client/pk-console.c:1729
 msgid "Directory not found"
 msgstr "డైరెక్టరీ కనబడలేదు"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1625
+#: ../client/pk-console.c:1738
 msgid "A licence identifier (eula-id) is required"
 msgstr "ఒక లైసెన్సు గుర్తింపుదారి (eula-id) అవసరమైంది"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1644
+#: ../client/pk-console.c:1757
 msgid "A package name to resolve is required"
 msgstr "పరిష్కరించుటకు ఒక ప్యాకేజీ నామము అవసరము"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1655 ../client/pk-console.c:1666
+#: ../client/pk-console.c:1768 ../client/pk-console.c:1779
 msgid "A repository name is required"
 msgstr "ఒక రిపోజిటరీ నామము అవసరమైంది"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1677
+#: ../client/pk-console.c:1790
 msgid "A repo name, parameter and value are required"
 msgstr "ఒక రెపో నామము, పారామితి మరియు విలువ అవసరమైంది"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1694
+#: ../client/pk-console.c:1807
 msgid "An action, e.g. 'update-packages' is required"
 msgstr ""
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1701
+#: ../client/pk-console.c:1814
 msgid "A correct role is required"
 msgstr "ఒక సరైన పాత్ర అవసరము"
 
 #. TRANSLATORS: The user did not provide a package name
-#. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1711 ../client/pk-console.c:1725
-#: ../client/pk-console.c:1734 ../client/pk-console.c:1754
-#: ../client/pk-console.c:1763 ../client/pk-generate-pack.c:315
+#: ../client/pk-console.c:1824 ../client/pk-console.c:1838
+#: ../client/pk-console.c:1847 ../client/pk-console.c:1867
+#: ../client/pk-console.c:1876
 msgid "A package name is required"
 msgstr "సంకలనము నామము అవసరమైంది"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
 #. decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1743
+#: ../client/pk-console.c:1856
 msgid "A package provide string is required"
 msgstr "సంకలనము అందించు పదబందము(స్ట్రింగు) అవసరమైంది"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1787
+#: ../client/pk-console.c:1900
 msgid "A distribution name is required"
 msgstr ""
 
 #. TRANSLATORS: The user did not provide an upgrade type
-#: ../client/pk-console.c:1793
+#: ../client/pk-console.c:1906
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:1849
+#: ../client/pk-console.c:2003
 msgid "You need to specify a list file to create"
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename
 #. follows
-#: ../client/pk-console.c:1858
+#: ../client/pk-console.c:2012
 #, c-format
 msgid "File already exists: %s"
 msgstr ""
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
-#: ../client/pk-console.c:1874
+#: ../client/pk-console.c:2028
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ఐచ్చికము '%s' మద్దతీయబడదు"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1884
+#: ../client/pk-console.c:2038
 msgid "Command failed"
 msgstr "ఆదేశము విఫలమైంది"
 
-#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
-#. exist on the target
-#: ../client/pk-generate-pack.c:252
-msgid "Set the file name of dependencies to be excluded"
-msgstr "వదిలివేయవలసిన ఆధారముల(డిపెన్డెన్సీల) దస్త్ర నామమును అమర్చుము"
-
-#. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:255
-msgid ""
-"The output file or directory (the current directory is used if omitted)"
-msgstr ""
-
-#. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:258
-msgid "The package to be put into the service pack"
-msgstr "సర్వీస్ పాక్ నందు వుంచవలసిన సంకలనము"
-
-#. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:261
-msgid "Put all updates available in the service pack"
-msgstr "అందుబాటులో వున్న అన్ని నవీకరణలను సర్వీస్ పాక్ నందు వుంచుము"
-
-#. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:299
-msgid "Neither --package or --updates option selected."
-msgstr "--package లేదా --updates ఐచ్చికము యెంపికచేసుకోవాలి."
-
-#. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:307
-msgid "Both options selected."
-msgstr "రెంచు ఐచ్చికములు యెంపికకాబడినవి."
-
-#. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:323
-msgid "A output directory or file name is required"
-msgstr "ఒక అవుట్పుట్ డైరెక్టరీ లేదా దస్త్ర నామము అవసరమైంది"
-
-#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
-#. startup
-#: ../client/pk-generate-pack.c:341
-msgid "The daemon failed to startup"
-msgstr ""
-
-#. TRANSLATORS: This is when the backend doesn't have the capability to get-
-#. depends
-#. TRANSLATORS: This is when the backend doesn't have the capability to
-#. download
-#: ../client/pk-generate-pack.c:352 ../client/pk-generate-pack.c:358
-msgid "The package manager cannot perform this type of operation."
-msgstr "సంకలనము నిర్వాహిక ఈ రకమైన కార్యక్రమమును నిర్వహించలేదు."
-
-#. TRANSLATORS: This is when the distro didn't include libarchive support into
-#. PK
-#: ../client/pk-generate-pack.c:365
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
-msgstr "ప్యాకేజ్‌కిట్ అనునది లిబ్ఆర్చివ్ మద్దతుతో నిర్మితం కాలేదు కనుక సర్వీస్ ప్యాక్‌లు సృష్టించబడలేవు."
-
-#. TRANSLATORS: the user specified an absolute path, but didn't get the
-#. extension correct
-#: ../client/pk-generate-pack.c:376
-msgid "If specifying a file, the service pack name must end with"
-msgstr "దస్త్రమును తెలుపుతుంటే, సేవా ప్యాక్ నామము దీనితో ముగియాలి"
-
-#. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:392
-msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "ఒక పాక్ అదేనామముతో యిప్పటికే వుంది, మీరు దానిని తిరిగివ్రాద్దామని(వోవర్‌రైట్) అనుకొనుచున్నారా?"
-
-#. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:395
-msgid "The pack was not overwritten."
-msgstr "పాక్ తిరిగివ్రాయబడలేదు."
-
-#. TRANSLATORS: This is when the temporary directory cannot be created, the
-#. directory name follows
-#: ../client/pk-generate-pack.c:408
-msgid "Failed to create directory:"
-msgstr "డైరెక్టరీ సృష్టించుటకు విఫలమైంది:"
-
-#. TRANSLATORS: This is when the list of packages from the remote computer
-#. cannot be opened
-#: ../client/pk-generate-pack.c:420
-msgid "Failed to open package list."
-msgstr "సంకలన జాబితాను తెరువుటకు విఫలమైంది."
-
-#. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:429
-msgid "Finding package name."
-msgstr "సంకలనము నామము కనుగొనుచున్నది."
-
-#. TRANSLATORS: This is when the package cannot be found in any software
-#. source. The detailed error follows
-#: ../client/pk-generate-pack.c:433
-#, c-format
-msgid "Failed to find package '%s': %s"
-msgstr "సంకలనము '%s' కనుగొనుటలో విఫలమైంది: %s"
-
-#. TRANSLATORS: This is telling the user we are in the process of making the
-#. pack
-#: ../client/pk-generate-pack.c:441
-msgid "Creating service pack..."
-msgstr "సేవా పాక్‌ను సృష్టించుచున్నది..."
-
-#. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:456
-#, c-format
-msgid "Service pack created '%s'"
-msgstr "సేవా పాక్ సృష్టించబడింది '%s'"
-
-#. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:461
-#, c-format
-msgid "Failed to create '%s': %s"
-msgstr "'%s' సృష్టించుటకు విఫలమైంది: %s"
-
-#: ../client/pk-monitor.c:293
+#: ../client/pk-monitor.c:267
 msgid "Failed to get daemon state"
 msgstr "డెమోన్ స్థితిని పొందుటకు విఫలమైంది"
 
-#: ../client/pk-monitor.c:358
+#: ../client/pk-monitor.c:332
 msgid "Failed to get properties"
 msgstr ""
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:399
+#: ../client/pk-monitor.c:373
 msgid "PackageKit Monitor"
 msgstr "PackageKit పర్యవేక్షకి"
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:506
+#: ../contrib/browser-plugin/pk-plugin-install.c:422
 msgid "Getting package information..."
 msgstr "సంకలనము సమాచారమును పొందుచున్నది..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:512
+#: ../contrib/browser-plugin/pk-plugin-install.c:428
 #, c-format
 msgid "Run %s"
 msgstr "%s నడుపు"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:518
+#: ../contrib/browser-plugin/pk-plugin-install.c:434
 msgid "Installed version"
 msgstr "సంస్థాపించిన వర్షన్"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:526
+#: ../contrib/browser-plugin/pk-plugin-install.c:442
 #, c-format
 msgid "Run version %s now"
 msgstr "వర్షన్ %s యిప్పుడు నడుపుము"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:532
+#: ../contrib/browser-plugin/pk-plugin-install.c:448
 msgid "Run now"
 msgstr "ఇప్పుడు నడుపుము"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:538
+#: ../contrib/browser-plugin/pk-plugin-install.c:454
 #, c-format
 msgid "Update to version %s"
 msgstr "వర్షన్ %sకు నవీకరించుము"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:544
+#: ../contrib/browser-plugin/pk-plugin-install.c:460
 #, c-format
 msgid "Install %s now"
 msgstr "%s యిప్పుడు సంస్థాపించుము"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:547
+#: ../contrib/browser-plugin/pk-plugin-install.c:463
 msgid "Version"
 msgstr "వర్షన్"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:552
+#: ../contrib/browser-plugin/pk-plugin-install.c:468
 msgid "No packages found for your system"
 msgstr "మీ సిస్టమ్ కొరకు ఎటువంటి సంకలనాలు కనబడలేదు"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:557
+#: ../contrib/browser-plugin/pk-plugin-install.c:473
 msgid "Installing..."
 msgstr "సంస్థాపించుచున్నది..."
 
@@ -1064,109 +940,21 @@ msgstr "డీబగ్గింగ్ మూలములను అచేతన�
 msgid "Disabled %i debugging sources."
 msgstr "అచేతనపరచిన %i డీబగ్గింగ్ మూలములు."
 
-#. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:62
-msgid "Failed to open file"
-msgstr "దస్త్రమును తెరువుటకు విఫలమైంది"
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion
+#: ../contrib/systemd-updates/pk-offline-update.c:169
+msgid "Installing Updates"
+msgstr ""
 
-#. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:71
-msgid "Failed to write to the file"
-msgstr "దస్త్రమునకు వ్రాయుటకు విఫలమైంది"
+#. TRANSLATORS: we've finished doing offline updates
+#: ../contrib/systemd-updates/pk-offline-update.c:213
+msgid "Rebooting after installing updates…"
+msgstr ""
 
-#. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:111
-#: ../contrib/device-rebind/pk-device-rebind.c:148
-msgid "Failed to write to device"
-msgstr "పరికరమునకు వ్రాయుటకు విఫలమైంది"
-
-#. TRANSLATORS: the device could not be found in sysfs
-#: ../contrib/device-rebind/pk-device-rebind.c:176
-msgid "Device could not be found"
-msgstr "పరికరము కనుగొనలేక పోయింది"
-
-#. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:203
-msgid "Failed to unregister driver"
-msgstr "డ్రైవర్ నమోదీకరణ తీయుటకు విఫలమైంది"
-
-#. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:212
-msgid "Failed to register driver"
-msgstr "డ్రైవర్ నమోదీకరణకు విఫలమైంది"
-
-#. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:261
-msgid "Device path not found"
-msgstr "పరికరము పాత్ కనుగొనబడలేదు"
-
-#. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:269
-msgid "Incorrect device path specified"
-msgstr "సరికాని పరికర పాత్ తెలుపబడింది"
-
-#: ../contrib/device-rebind/pk-device-rebind.c:294
-msgid "Show extra debugging information"
-msgstr "అదనపు డీబగ్గింగ్ సమాచారమును చూపుము"
-
-#. command line argument, simulate what would be done, but don't actually do
-#. it
-#: ../contrib/device-rebind/pk-device-rebind.c:297
-msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "యధార్ధంగా హార్డువేరును తాకదు, ఏమి జరగాలో అది జరిగినట్లు భ్రమింపచేస్తుంది"
-
-#. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:300
-msgid "Device paths"
-msgstr "పరికర పాత్‌లు"
-
-#. TRANSLATORS: tool that gets called when the device needs reloading after
-#. installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:317
-msgid "PackageKit Device Reloader"
-msgstr "ప్యాకేజీకిట్ డివైజ్ రీలోడర్"
-
-#. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:325
-msgid "You need to specify at least one valid device path"
-msgstr "మీరు కనీసం వొక చెల్లునటువంటి పరికర పాత్‌నైనా తెలుపవలెను"
-
-#. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:335
-msgid "This script can only be used by the root user"
-msgstr "ఈ స్క్రిప్టు root వినియోగదారి చేత మాత్రమే వుపయోగించబడుతుంది"
-
-#. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:344
-msgid "Verifying device path"
-msgstr "పరికర పాత్‌ను నిర్ధారించుచున్నది"
-
-#. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:349
-msgid "Failed to verify device path"
-msgstr "పరికర పాత్‌ను నిర్ధారించుటకు విఫలమైంది"
-
-#. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:363
-msgid "Attempting to rebind device"
-msgstr "పరికరమును పనఃబందనం చేయుటకు ప్రయత్నించుచున్నది"
-
-#. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:368
-msgid "Failed to rebind device"
-msgstr "పరికరమును పునఃబందనం చేయుటకు విఫలమైంది"
-
-#: ../data/packagekit-catalog.xml.in.h:1
-msgid "PackageKit Catalog"
-msgstr "PackageKit సూచీపత్రము"
-
-#: ../data/packagekit-package-list.xml.in.h:1
-msgid "PackageKit Package List"
-msgstr "PackageKit సంకలనము జాబితా"
-
-#: ../data/packagekit-servicepack.xml.in.h:1
-msgid "PackageKit Service Pack"
-msgstr "PackageKit సేవా పాక్"
+#. TRANSLATORS: we've started doing offline updates
+#: ../contrib/systemd-updates/pk-offline-update.c:554
+msgid "Installing updates, this could take a while…"
+msgstr ""
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1223,7 +1011,7 @@ msgstr "ప్యాకేజీలను తీసివేయుచున్�
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:333
-#: ../lib/packagekit-glib2/pk-enum.c:1314
+#: ../lib/packagekit-glib2/pk-enum.c:1316
 msgid "Downloading packages"
 msgstr "సంకలనాలను డౌనులోడు చేయుచున్నది"
 
@@ -1371,256 +1159,256 @@ msgid "Copying files"
 msgstr "దస్త్రములను నకలుతీయుచున్నది"
 
 #. TRANSLATORS: turn on all debugging
-#: ../lib/packagekit-glib2/pk-debug.c:133
+#: ../lib/packagekit-glib2/pk-debug.c:140
 msgid "Show debugging information for all files"
 msgstr "అన్ని ఫైళ్ళ కొరకు డీబగ్గింగ్ సమాచారమును చూపుము"
 
-#: ../lib/packagekit-glib2/pk-debug.c:201
+#: ../lib/packagekit-glib2/pk-debug.c:208
 msgid "Debugging Options"
 msgstr "డీబగ్గింగ్ ఐచ్చికాలు"
 
-#: ../lib/packagekit-glib2/pk-debug.c:201
+#: ../lib/packagekit-glib2/pk-debug.c:208
 msgid "Show debugging options"
 msgstr "డీబగ్గింగ్ ఐచ్చికాలను చూపుము"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1057
+#: ../lib/packagekit-glib2/pk-enum.c:1059
 msgid "Trivial"
 msgstr "క్లిష్టమైన"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1061
+#: ../lib/packagekit-glib2/pk-enum.c:1063
 msgid "Normal"
 msgstr "సాధారణ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1065
+#: ../lib/packagekit-glib2/pk-enum.c:1067
 msgid "Important"
 msgstr "ముఖ్యమైన"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1069
+#: ../lib/packagekit-glib2/pk-enum.c:1071
 msgid "Security"
 msgstr "రక్షణ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1073
+#: ../lib/packagekit-glib2/pk-enum.c:1075
 msgid "Bug fix "
 msgstr "బగ్ పరిష్కారము"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1077
+#: ../lib/packagekit-glib2/pk-enum.c:1079
 msgid "Enhancement"
 msgstr "వృద్దిఅవుతు"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:1081
+#: ../lib/packagekit-glib2/pk-enum.c:1083
 msgid "Blocked"
 msgstr "బ్లాక్‌డ్"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1086
-#: ../lib/packagekit-glib2/pk-enum.c:1173
+#: ../lib/packagekit-glib2/pk-enum.c:1088
+#: ../lib/packagekit-glib2/pk-enum.c:1175
 msgid "Installed"
 msgstr "సంస్థాపించిన"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-enum.c:1091
+#: ../lib/packagekit-glib2/pk-enum.c:1093
 msgid "Available"
 msgstr "అందుబాటులోవుంది"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1116
+#: ../lib/packagekit-glib2/pk-enum.c:1118
 msgid "Downloading"
 msgstr "డౌనులోడు చేయుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1120
+#: ../lib/packagekit-glib2/pk-enum.c:1122
 msgid "Updating"
 msgstr "నవీకరించుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1124
-#: ../lib/packagekit-glib2/pk-enum.c:1258
+#: ../lib/packagekit-glib2/pk-enum.c:1126
+#: ../lib/packagekit-glib2/pk-enum.c:1260
 msgid "Installing"
 msgstr "సంస్థాపించుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1128
-#: ../lib/packagekit-glib2/pk-enum.c:1254
+#: ../lib/packagekit-glib2/pk-enum.c:1130
+#: ../lib/packagekit-glib2/pk-enum.c:1256
 msgid "Removing"
 msgstr "తీసివేయుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1132
+#: ../lib/packagekit-glib2/pk-enum.c:1134
 msgid "Cleaning up"
 msgstr "శుభ్రపరచుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1136
+#: ../lib/packagekit-glib2/pk-enum.c:1138
 msgid "Obsoleting"
 msgstr "తొలగించుచున్నది"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1140
+#: ../lib/packagekit-glib2/pk-enum.c:1142
 msgid "Reinstalling"
 msgstr "తిరిగిసంస్థాపించుచున్నది"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1165
+#: ../lib/packagekit-glib2/pk-enum.c:1167
 msgid "Downloaded"
 msgstr "డౌనులోడు చేసిన"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1177
+#: ../lib/packagekit-glib2/pk-enum.c:1179
 msgid "Removed"
 msgstr "తొలగించిన"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1181
+#: ../lib/packagekit-glib2/pk-enum.c:1183
 msgid "Cleaned up"
 msgstr "శుభ్రపరచిన"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1185
+#: ../lib/packagekit-glib2/pk-enum.c:1187
 msgid "Obsoleted"
 msgstr "తొలగించిన"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1189
+#: ../lib/packagekit-glib2/pk-enum.c:1191
 msgid "Reinstalled"
 msgstr "తిరిగిసంస్థాపించిన"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1214
+#: ../lib/packagekit-glib2/pk-enum.c:1216
 msgid "Unknown role type"
 msgstr "తెలియని పాత్రరకము"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1218
+#: ../lib/packagekit-glib2/pk-enum.c:1220
 msgid "Getting dependencies"
 msgstr "ఆధారాలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1222
+#: ../lib/packagekit-glib2/pk-enum.c:1224
 msgid "Getting update details"
 msgstr "నవీకరణ వివరములను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1226
+#: ../lib/packagekit-glib2/pk-enum.c:1228
 msgid "Getting details"
 msgstr "వివరాలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1230
+#: ../lib/packagekit-glib2/pk-enum.c:1232
 msgid "Getting requires"
 msgstr "కావలిసినవి పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1234
+#: ../lib/packagekit-glib2/pk-enum.c:1236
 msgid "Getting updates"
 msgstr "నవీకరణలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1238
+#: ../lib/packagekit-glib2/pk-enum.c:1240
 msgid "Searching by details"
 msgstr "వివరముల ప్రకారం శోధించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1242
+#: ../lib/packagekit-glib2/pk-enum.c:1244
 msgid "Searching by file"
 msgstr "దస్త్రము ప్రకారం శోధించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1246
+#: ../lib/packagekit-glib2/pk-enum.c:1248
 msgid "Searching groups"
 msgstr "సమూహాల ప్రాకరం శోధించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1250
+#: ../lib/packagekit-glib2/pk-enum.c:1252
 msgid "Searching by name"
 msgstr "నామము ప్రకారం శోధించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1262
+#: ../lib/packagekit-glib2/pk-enum.c:1264
 msgid "Installing files"
 msgstr "దస్త్రములను సంస్థాపించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1266
+#: ../lib/packagekit-glib2/pk-enum.c:1268
 msgid "Refreshing cache"
 msgstr "క్యాచీను తాజాపరుస్తోంది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1270
+#: ../lib/packagekit-glib2/pk-enum.c:1272
 msgid "Updating packages"
 msgstr "సంకలనాలను నవీకరిస్తోంది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1274
+#: ../lib/packagekit-glib2/pk-enum.c:1276
 msgid "Canceling"
 msgstr "రద్దుచేయుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1278
+#: ../lib/packagekit-glib2/pk-enum.c:1280
 msgid "Getting repositories"
 msgstr "రీపోజిటరీలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1282
+#: ../lib/packagekit-glib2/pk-enum.c:1284
 msgid "Enabling repository"
 msgstr "రిపోజిటరీ చేతనముచేయుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1286
+#: ../lib/packagekit-glib2/pk-enum.c:1288
 msgid "Setting data"
 msgstr "డాటాను అమర్చుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1290
+#: ../lib/packagekit-glib2/pk-enum.c:1292
 msgid "Resolving"
 msgstr "పరిష్కరించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1294
+#: ../lib/packagekit-glib2/pk-enum.c:1296
 msgid "Getting file list"
 msgstr "దస్త్రము జాబితాను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1298
+#: ../lib/packagekit-glib2/pk-enum.c:1300
 msgid "Getting provides"
 msgstr "ఉత్పాదకాలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1302
+#: ../lib/packagekit-glib2/pk-enum.c:1304
 msgid "Installing signature"
 msgstr "సంతకమును సంస్థాపించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1306
+#: ../lib/packagekit-glib2/pk-enum.c:1308
 msgid "Getting packages"
 msgstr "సంకలనాలను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1310
+#: ../lib/packagekit-glib2/pk-enum.c:1312
 msgid "Accepting EULA"
 msgstr "EULA ఆమోదించుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1318
+#: ../lib/packagekit-glib2/pk-enum.c:1320
 msgid "Getting upgrades"
 msgstr "నవీకరణలు పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1322
+#: ../lib/packagekit-glib2/pk-enum.c:1324
 msgid "Getting categories"
 msgstr "వర్గములను పొందుచున్నది"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1326
+#: ../lib/packagekit-glib2/pk-enum.c:1328
 msgid "Getting transactions"
 msgstr "బదిలీకరణలను పొందుచున్నది"
 
@@ -1982,62 +1770,57 @@ msgid "Authentication is required to clear the offline updates message"
 msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:215
+#: ../src/pk-main.c:188
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ఉపయోగించుటకు సంకలనీకరణ బ్యాకెండ్, ఉ.దా. dummy"
 
-#. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:218
-msgid "Daemonize and detach from the terminal"
-msgstr "టెర్మినల్ నుండి డెమొనైజ్ చేసి మరియు వేరుచేయుము"
-
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:221
+#: ../src/pk-main.c:191
 msgid "Disable the idle timer"
 msgstr "వృధాగావున్న సమయగణనిని అచేతనముచేయి"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:224
+#: ../src/pk-main.c:194
 msgid "Show version and exit"
 msgstr "వర్షన్ చూపుము మరియు నిష్క్రమించుము"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:227
+#: ../src/pk-main.c:197
 msgid "Exit after a small delay"
 msgstr "ఒక చిన్న విరామం తర్వాత నిష్క్రమించుము"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:230
+#: ../src/pk-main.c:200
 msgid "Exit after the engine has loaded"
 msgstr "ఇంజన్ లోడైన తర్వాత నిష్క్రమించుము"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: ../src/pk-main.c:233
+#: ../src/pk-main.c:203
 msgid "Don't clear environment on startup"
 msgstr ""
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:247
+#: ../src/pk-main.c:218
 msgid "PackageKit service"
 msgstr "PackageKit సేవ"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2937
+#: ../src/pk-transaction.c:2921
 msgid "The software is not from a trusted source."
 msgstr "సాఫ్టువేరు నమ్మదగిన మూలమునుండి కాదు."
 
-#: ../src/pk-transaction.c:2945
+#: ../src/pk-transaction.c:2929
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "మీకు ఈ సంకలనమును నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#: ../src/pk-transaction.c:2946
+#: ../src/pk-transaction.c:2930
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "మీకు ఈ సంకలనములను నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#: ../src/pk-transaction.c:2956
+#: ../src/pk-transaction.c:2940
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "మీకు ఈ సంకలనమును సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#: ../src/pk-transaction.c:2957
+#: ../src/pk-transaction.c:2941
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "మీకు ఈ సంకలనములను సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
