@@ -1,3 +1,82 @@
+Version 0.8.14
+~~~~~~~~~~~~~~
+Released: 2013-12-02
+
+Notes:
+ - We've removed and deprecated the parts of PackageKit that either didn't
+   work very well, or simply were not being used. The library and soname stays
+   the same, but a lot of daemon cruft has been removed.
+ - If you're wondering why a particular feature was removed, please either
+   look at the commit history or have a look at the ChangeLog.
+ - A lot of the work above focused on speed, and packagekitd is substantially
+   faster on most backends now. 100ms here, 50ms there; things feel a lot more
+   snappy doing the most common operations.
+
+Libraries:
+ - Do not add two refs on the PkPackage when in a sack (Richard Hughes)
+ - Do not check if the package-id name is valid UTF-8 (Richard Hughes)
+ - Do not maintain two arrays of the same packages (Richard Hughes)
+ - Do not use g_strdup_printf() when building a package_id (Richard Hughes)
+ - Optimise pk_package_set_id() by not using g_strsplit() (Richard Hughes)
+ - Remove an overly-cautious dup when setting the package ID (Richard Hughes)
+
+Backends:
+ - box: Remove backend, it's obsolete upstream (Richard Hughes)
+ - entropy: Add PackageActionFactory API support (Fabio Erculiani)
+ - entropy: Handling SIGQUIT is no longer needed (Fabio Erculiani)
+ - entropy: Migrate pk_backend_remove_packages to the new API (Fabio Erculiani)
+ - entropy: Port to the new add_package_repository() API (Fabio Erculiani)
+ - entropy: Remove support for UpdateSystem (Fabio Erculiani)
+ - entropy: Use transaction_flags (Fabio Erculiani)
+ - hawkey: Cache the loaded sacks to save 280ms for repeat transactions (Richard Hughes)
+ - hawkey: Do not hardcode x86_64 as the native architecture (Richard Hughes)
+ - hawkey: Invalidate the sack cache if anything changes the rpmdb (Richard Hughes)
+ - hawkey: Update the percentage allocation when searching (Richard Hughes)
+ - portage: Migrate pk_backend_remove_packages to the new API (Fabio Erculiani)
+ - portage: Remove support for UpdateSystem (Fabio Erculiani)
+ - portage: Use transaction_flags (Fabio Erculiani)
+ - zif: Remove as nearly all functionality is available in hawkey (Richard Hughes)
+
+Deprecations and Removed Features:
+ - Deprecate catalogs in favour of using the low level APIs (Richard Hughes)
+ - Deprecate messages as they are never shown to the user (Richard Hughes)
+ - Do not allow the user to specify the proxy in PackageKit.conf (Richard Hughes)
+ - Do not check for running processes when we update packages (Richard Hughes)
+ - Do not check processes when updating (Richard Hughes)
+ - Do not try and guess the default backend when compiling (Richard Hughes)
+ - Do not use 'DeveloperMode' as nobody uses it (Richard Hughes)
+ - Remove PmUtils script helper (Richard Hughes)
+ - Remove service pack functionality (Richard Hughes)
+ - Remove support for upgrading very old PackageKit databases (Richard Hughes)
+ - Remove the --daemonize command line option (Richard Hughes)
+ - Remove the --enable-tests configure argument (Richard Hughes)
+ - Remove the RequireRestart plugin with the hardcoded package names (Richard Hughes)
+ - Remove the Udev firmware loading functionality (Richard Hughes)
+ - Remove the ability to deselect the network stack at runtime (Richard Hughes)
+ - Remove the config option 'BackendSpawnAllowSIGKILL' (Richard Hughes)
+ - Remove the config option 'BackendSpawnIdleIOBackground' (Richard Hughes)
+ - Remove the config option 'CancelBackgroundTransactions' (Richard Hughes)
+ - Remove the config option 'CheckSharedLibrariesInUse' (Richard Hughes)
+ - Remove the config option 'NoUpdateProcessList' (Richard Hughes)
+ - Remove the config option 'TransactionKeepFinishedTimeout' (Richard Hughes)
+ - Remove the config option 'UseIdleBandwidth' (Richard Hughes)
+ - Remove the config option 'UseSyslog' (Richard Hughes)
+ - Remove the config option 'WritePreparedUpdates' (Richard Hughes)
+ - Remove the maintainer tool to get the free licence list (Richard Hughes)
+
+New Features:
+ - Update the website and developer docs to reflect reality (Richard Hughes)
+
+Bugfixes:
+ - Don't populate a PkResults object just so we can save one PkErrorEnum value (Richard Hughes)
+ - Don't update the text package cache when refreshing (Richard Hughes)
+ - Explicitly mark the required PolicyKit as a hard dep (Richard Hughes)
+ - Never ever use WError (Richard Hughes)
+ - Only get the sender cmdline when the value is going to be used (Richard Hughes)
+ - Only load the transaction introspection once (Richard Hughes)
+ - Only validate UTF-8 text from the spawned backends (Richard Hughes)
+ - Speed up loading the transaction introspection by 13ms (Richard Hughes)
+
 Version 0.8.13
 ~~~~~~~~~~~~~~
 Released: 2013-11-22
