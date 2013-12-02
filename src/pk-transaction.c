@@ -5640,9 +5640,8 @@ pk_transaction_init (PkTransaction *transaction)
 		g_error_free (error);
 	}
 
-	/* load introspection from file */
-	transaction->priv->introspection = pk_load_introspection (DATADIR "/dbus-1/interfaces/"
-								  PK_DBUS_INTERFACE_TRANSACTION ".xml",
+	/* load introspection */
+	transaction->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
 								  &error);
 	if (transaction->priv->introspection == NULL) {
 		g_error ("PkEngine: failed to load transaction introspection: %s",

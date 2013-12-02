@@ -42,6 +42,30 @@ AM_CPPFLAGS =						\
 	-I$(top_builddir)/lib				\
 	-I$(top_srcdir)/lib
 
+introspectiondir = $(datadir)/dbus-1/interfaces
+dist_introspection_DATA = 				\
+	org.freedesktop.PackageKit.xml			\
+	org.freedesktop.PackageKit.Transaction.xml
+
+pk-resources.c: packagekit.gresource.xml $(dist_introspection_DATA)
+	$(AM_V_GEN)					\
+	glib-compile-resources				\
+		--sourcedir=$(srcdir)			\
+		--sourcedir=$(top_builddir)/data	\
+		--target=$@				\
+		--generate-source			\
+		--c-name pk				\
+		$(srcdir)/packagekit.gresource.xml
+pk-resources.h: packagekit.gresource.xml
+	$(AM_V_GEN)					\
+	glib-compile-resources				\
+		--sourcedir=$(srcdir)			\
+		--sourcedir=$(top_builddir)/data	\
+		--target=$@				\
+		--generate-header			\
+		--c-name pk				\
+		$(srcdir)/packagekit.gresource.xml
+
 pluginincludedir=$(includedir)/PackageKit/plugin
 plugininclude_HEADERS =					\
 	packagekit-plugin.h				\
@@ -63,6 +87,8 @@ plugininclude_GIRSOURCES =				\
 	pk-transaction.h				\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-resources.c					\
+	pk-resources.h					\
 	pk-shared.c					\
 	pk-shared.h
 
@@ -92,6 +118,8 @@ shared_SOURCES =					\
 	pk-conf.h					\
 	pk-notify.c					\
 	pk-notify.h					\
+	pk-resources.c					\
+	pk-resources.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-sysdep.h					\
@@ -175,17 +203,19 @@ install-data-hook:
 		mkdir -p $(DESTDIR)$(PK_LOG_DIR); \
 	fi
 
-introspectiondir = $(datadir)/dbus-1/interfaces
-dist_introspection_DATA = 				\
-	org.freedesktop.PackageKit.xml			\
-	org.freedesktop.PackageKit.Transaction.xml
-
 clean-local:
 	rm -f *~
+
+BUILT_SOURCES =						\
+	pk-resources.c					\
+	pk-resources.h
 
 CLEANFILES =						\
 	$(BUILT_SOURCES)				\
 	transactions.db
+
+EXTRA_DIST =						\
+	packagekit.gresource.xml
 
 if HAVE_INTROSPECTION
 

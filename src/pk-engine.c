@@ -1704,9 +1704,8 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 
-	/* load introspection from file */
-	engine->priv->introspection = pk_load_introspection (DATADIR "/dbus-1/interfaces/"
-							     PK_DBUS_INTERFACE ".xml",
+	/* load introspection */
+	engine->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE ".xml",
 							     &error);
 	if (engine->priv->introspection == NULL) {
 		g_error ("PkEngine: failed to load daemon introspection: %s",

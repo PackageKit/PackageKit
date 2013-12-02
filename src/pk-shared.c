@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#include "pk-resources.h"
 #include "pk-shared.h"
 
 /**
@@ -81,32 +82,33 @@ out:
 	return ret;
 }
 
-
 /**
  * pk_load_introspection:
  **/
 GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
-	gboolean ret;
-	gchar *data = NULL;
+	GBytes *data;
+	gchar *path;
 	GDBusNodeInfo *info = NULL;
-	GFile *file;
 
-	/* load file */
-	file = g_file_new_for_path (filename);
-	ret = g_file_load_contents (file, NULL, &data,
-				    NULL, NULL, error);
-	if (!ret)
+	/* lookup data */
+	path = g_build_filename ("/org/freedesktop/PackageKit", filename, NULL);
+	data = g_resource_lookup_data (pk_get_resource (),
+				       path,
+				       G_RESOURCE_LOOKUP_FLAGS_NONE,
+				       error);
+	if (data == NULL)
 		goto out;
 
 	/* build introspection from XML */
-	info = g_dbus_node_info_new_for_xml (data, error);
+	info = g_dbus_node_info_new_for_xml (g_bytes_get_data (data, NULL), error);
 	if (info == NULL)
 		goto out;
 out:
-	g_object_unref (file);
-	g_free (data);
+	g_free (path);
+	if (data != NULL)
+		g_bytes_unref (data);
 	return info;
 }
 

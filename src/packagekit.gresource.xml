@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+ <gresource prefix="/org/freedesktop/PackageKit">
+  <file preprocess="xml-stripblanks" compressed="true">org.freedesktop.PackageKit.xml</file>
+  <file preprocess="xml-stripblanks" compressed="true">org.freedesktop.PackageKit.Transaction.xml</file>
+ </gresource>
+</gresources>
