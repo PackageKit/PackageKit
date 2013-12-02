@@ -5639,15 +5639,6 @@ pk_transaction_init (PkTransaction *transaction)
 			 error->message);
 		g_error_free (error);
 	}
-
-	/* load introspection */
-	transaction->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
-								  &error);
-	if (transaction->priv->introspection == NULL) {
-		g_error ("PkEngine: failed to load transaction introspection: %s",
-			 error->message);
-		g_error_free (error);
-	}
 }
 
 /**
@@ -5750,10 +5741,11 @@ pk_transaction_finalize (GObject *object)
  * Return value: a new PkTransaction object.
  **/
 PkTransaction *
-pk_transaction_new (void)
+pk_transaction_new (GDBusNodeInfo *introspection)
 {
 	PkTransaction *transaction;
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
+	transaction->priv->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }
 

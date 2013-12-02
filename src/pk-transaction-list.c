@@ -63,6 +63,7 @@
 #include <packagekit-glib2/pk-common.h>
 
 #include "pk-conf.h"
+#include "pk-shared.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
@@ -85,6 +86,7 @@ struct PkTransactionListPrivate
 	PkConf			*conf;
 	GPtrArray		*plugins;
 	PkBackend		*backend;
+	GDBusNodeInfo		*introspection;
 };
 
 typedef struct {
@@ -637,7 +639,7 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	item = g_new0 (PkTransactionItem, 1);
 	item->list = g_object_ref (tlist);
 	item->tid = g_strdup (tid);
-	item->transaction = pk_transaction_new ();
+	item->transaction = pk_transaction_new (tlist->priv->introspection);
 	item->finished_id =
 		g_signal_connect_after (item->transaction, "finished",
 					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
@@ -1156,6 +1158,8 @@ pk_transaction_list_init (PkTransactionList *tlist)
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
 	tlist->priv->conf = pk_conf_new ();
 	tlist->priv->array = g_ptr_array_new ();
+	tlist->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
+							    NULL);
 	tlist->priv->unwedge2_id = 0;
 	tlist->priv->unwedge1_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
 							  (GSourceFunc) pk_transaction_list_wedge_check1, tlist);
@@ -1184,6 +1188,7 @@ pk_transaction_list_finalize (GObject *object)
 
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
+	g_dbus_node_info_unref (tlist->priv->introspection);
 	g_object_unref (tlist->priv->conf);
 	if (tlist->priv->plugins != NULL)
 		g_ptr_array_unref (tlist->priv->plugins);

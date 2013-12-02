@@ -886,9 +886,13 @@ pk_test_transaction_func (void)
 	PkTransaction *transaction = NULL;
 	gboolean ret;
 	GError *error = NULL;
+	GDBusNodeInfo *introspection;
+
+	introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml", NULL);
+	g_assert (introspection != NULL);
 
 	/* get PkTransaction object */
-	transaction = pk_transaction_new ();
+	transaction = pk_transaction_new (introspection);
 	g_assert (transaction != NULL);
 
 	/* validate incorrect text */
@@ -904,6 +908,7 @@ pk_test_transaction_func (void)
 	g_clear_error (&error);
 
 	g_object_unref (transaction);
+	g_dbus_node_info_unref (introspection);
 }
 
 static void

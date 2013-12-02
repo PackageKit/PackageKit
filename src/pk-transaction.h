@@ -62,7 +62,7 @@ typedef enum {
 
 GQuark		 pk_transaction_error_quark			(void);
 GType		 pk_transaction_get_type			(void);
-PkTransaction	*pk_transaction_new				(void);
+PkTransaction	*pk_transaction_new				(GDBusNodeInfo	*introspection);
 
 /* go go go! */
 gboolean	 pk_transaction_run				(PkTransaction	*transaction)
