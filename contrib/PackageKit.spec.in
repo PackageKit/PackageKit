@@ -263,11 +263,7 @@ popd > /dev/null
 %find_lang %name
 
 %post
-update-mime-database %{_datadir}/mime &> /dev/null || :
 systemctl enable packagekit-offline-update.service &> /dev/null || :
-
-%postun
-update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %post glib -p /sbin/ldconfig
 
