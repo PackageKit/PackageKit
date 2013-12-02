@@ -190,7 +190,6 @@ pk_self_test_LDADD =					\
 	$(SYSTEMD_LIBS)
 
 pk_self_test_CFLAGS =					\
-	-DEGG_TEST					\
 	$(AM_CFLAGS)					\
 	$(WARNINGFLAGS_C)
 
