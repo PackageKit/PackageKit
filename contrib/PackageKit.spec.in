@@ -67,8 +67,8 @@ Obsoletes: PackageKit-gtk-module < %{version}-%{release}
 Obsoletes: PackageKit-smart < %{version}-%{release}
 
 # Udev no longer provides this functionality
-Provides: PackageKit-rebind = %{version}-%{release}
-Obsoletes: PackageKit-rebind < 0.8.13-2
+Provides: PackageKit-device-rebind = %{version}-%{release}
+Obsoletes: PackageKit-device-rebind < 0.8.13-2
 
 %description
 PackageKit is a D-Bus abstraction layer that allows the session user
