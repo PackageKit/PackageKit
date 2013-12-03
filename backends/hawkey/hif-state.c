@@ -422,10 +422,8 @@ hif_state_action_start (HifState *state, PkStatusEnum action, const gchar *actio
 
 	/* is different? */
 	if (state->priv->action == action &&
-	    g_strcmp0 (action_hint, state->priv->action_hint) == 0) {
-		g_debug ("same action as before, ignoring");
+	    g_strcmp0 (action_hint, state->priv->action_hint) == 0)
 		return FALSE;
-	}
 
 	/* remember for stop */
 	state->priv->last_action = state->priv->action;
@@ -561,8 +559,10 @@ hif_state_child_percentage_changed_cb (HifState *child, guint percentage, HifSta
 	/* restore the pre-child action */
 	if (percentage == 100) {
 		state->priv->last_action = state->priv->child_action;
-		g_debug ("restoring last action %s",
-			 pk_status_enum_to_string (state->priv->child_action));
+		if (state->priv->child_action != PK_STATUS_ENUM_UNKNOWN) {
+			g_debug ("restoring last action %s",
+				 pk_status_enum_to_string (state->priv->child_action));
+		}
 	}
 
 	/* get the extra contributed by the child */

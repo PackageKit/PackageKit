@@ -240,7 +240,7 @@ pk_backend_initialize (PkBackend *backend)
 		 HY_VERSION_MAJOR,
 		 HY_VERSION_MINOR,
 		 HY_VERSION_PATCH);
-	g_debug ("Using librepo %i.%i.%i\n",
+	g_debug ("Using librepo %i.%i.%i",
 		 LR_VERSION_MAJOR,
 		 LR_VERSION_MINOR,
 		 LR_VERSION_PATCH);
@@ -398,11 +398,12 @@ pk_backend_state_action_changed_cb (HifState *state,
 				    const gchar *action_hint,
 				    PkBackendJob *job)
 {
-	g_debug ("got state %s with hint %s",
-		 pk_status_enum_to_string (action),
-		 action_hint);
-	if (action != PK_STATUS_ENUM_UNKNOWN)
+	if (action != PK_STATUS_ENUM_UNKNOWN) {
+		g_debug ("got state %s with hint %s",
+			 pk_status_enum_to_string (action),
+			 action_hint);
 		pk_backend_job_set_status (job, action);
+	}
 
 	switch (action) {
 	case PK_STATUS_ENUM_DOWNLOAD:
@@ -656,7 +657,6 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 		} else {
 			/* we have to do this now rather than rely on the
 			 * callback of the hash table */
-			g_debug ("disposing of cached sack %s", cache_key);
 			g_hash_table_remove (priv->sack_cache, cache_key);
 		}
 	}
@@ -2272,7 +2272,6 @@ hif_commit_ts_progress_cb (const void *arg,
 	case RPMCALLBACK_TRANS_STOP:
 
 		/* don't do anything */
-		g_debug ("transaction stop");
 		break;
 
 	case RPMCALLBACK_INST_STOP:
@@ -2886,9 +2885,6 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	ret = hif_state_done (state, error);
 	if (!ret)
 		goto out;
-
-	/* success */
-	g_debug ("Done!");
 out:
 	g_free (verbosity_string);
 	if (commit != NULL) {
