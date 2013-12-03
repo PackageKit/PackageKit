@@ -343,6 +343,9 @@ pk_backend_job_set_uid (PkBackendJob *job, guint uid)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
+	if (job->priv->uid == uid)
+		return;
+
 	job->priv->uid = uid;
 	g_debug ("install uid now %i", job->priv->uid);
 }
@@ -378,6 +381,9 @@ pk_backend_job_set_locale (PkBackendJob *job, const gchar *code)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (code != NULL);
+
+	if (g_strcmp0 (job->priv->locale, code) == 0)
+		return;
 
 	g_debug ("locale changed to %s", code);
 	g_free (job->priv->locale);
@@ -421,16 +427,17 @@ pk_backend_job_get_frontend_socket (PkBackendJob *job)
 /**
  * pk_backend_job_set_frontend_socket:
  **/
-gboolean
+void
 pk_backend_job_set_frontend_socket (PkBackendJob *job, const gchar *frontend_socket)
 {
-	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+
+	if (g_strcmp0 (job->priv->frontend_socket, frontend_socket) == 0)
+		return;
 
 	g_debug ("frontend_socket changed to %s", frontend_socket);
 	g_free (job->priv->frontend_socket);
 	job->priv->frontend_socket = g_strdup (frontend_socket);
-
-	return TRUE;
 }
 
 /**
@@ -728,7 +735,6 @@ pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 	/* reset the timer */
 	pk_time_reset (job->priv->time);
 
-	g_debug ("setting role to %s", pk_role_enum_to_string (role));
 	job->priv->role = role;
 	job->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_backend_job_call_vfunc (job,
@@ -855,10 +861,8 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 	}
 
 	/* set the same twice? */
-	if (job->priv->percentage == percentage) {
-		g_debug ("duplicate set of %i", percentage);
+	if (job->priv->percentage == percentage)
 		return;
-	}
 
 	/* check over */
 	if (percentage > PK_BACKEND_PERCENTAGE_INVALID) {
@@ -889,7 +893,8 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 
 		/* lets try this and print as debug */
 		remaining = pk_time_get_remaining (job->priv->time);
-		g_debug ("this will now take ~%i seconds", remaining);
+		if (remaining != 0)
+			g_debug ("this will now take ~%i seconds", remaining);
 		job->priv->remaining = remaining;
 		pk_backend_job_call_vfunc (job,
 					   PK_BACKEND_SIGNAL_REMAINING,
@@ -914,10 +919,8 @@ pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 	}
 
 	/* set the same twice? */
-	if (job->priv->speed == speed) {
-		g_debug ("duplicate set of %i", speed);
+	if (job->priv->speed == speed)
 		return;
-	}
 
 	/* set new value */
 	job->priv->speed = speed;
@@ -943,10 +946,8 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
 	}
 
 	/* set the same twice? */
-	if (job->priv->download_size_remaining == download_size_remaining) {
-		g_debug ("duplicate set of download_size_remaining");
+	if (job->priv->download_size_remaining == download_size_remaining)
 		return;
-	}
 
 	/* set new value */
 	job->priv->download_size_remaining = download_size_remaining;
@@ -1006,11 +1007,8 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* already this? */
-	if (job->priv->status == status) {
-		g_debug ("already set same status '%s",
-			 pk_status_enum_to_string (status));
+	if (job->priv->status == status)
 		return;
-	}
 
 	/* have we already set an error? */
 	if (job->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
@@ -1092,10 +1090,8 @@ pk_backend_job_package (PkBackendJob *job,
 	/* is it the same? */
 	ret = (job->priv->last_package != NULL &&
 	       pk_package_equal (job->priv->last_package, item));
-	if (ret) {
-		g_debug ("skipping duplicate %s", package_id);
+	if (ret)
 		goto out;
-	}
 
 	/* update the 'last' package */
 	if (job->priv->last_package != NULL)
@@ -1796,10 +1792,8 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (job->priv->allow_cancel == (PkHintEnum) allow_cancel) {
-		g_debug ("ignoring same allow-cancel state");
+	if (job->priv->allow_cancel == (PkHintEnum) allow_cancel)
 		return;
-	}
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,
@@ -1902,7 +1896,6 @@ pk_backend_job_finished (PkBackendJob *job)
 
 	/* find out what we just did */
 	role_text = pk_role_enum_to_string (job->priv->role);
-	g_debug ("finished role %s", role_text);
 
 	/* check we have not already finished */
 	if (job->priv->finished) {

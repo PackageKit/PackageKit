@@ -344,7 +344,6 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 static void
 pk_transaction_emit_changed (PkTransaction *transaction)
 {
-	g_debug ("emitting changed");
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,

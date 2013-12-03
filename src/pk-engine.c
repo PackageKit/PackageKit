@@ -172,7 +172,6 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	locked = pk_transaction_list_get_locked (tlist);
 	pk_engine_set_locked (engine, locked);
 
-	g_debug ("emitting transaction-list-changed");
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
@@ -194,8 +193,6 @@ static void
 pk_engine_emit_changed (PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	g_debug ("emitting changed");
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -905,16 +902,11 @@ pk_engine_load_plugin (PkEngine *engine,
 		g_module_close (module);
 		goto out;
 	}
+	g_debug ("opened plugin %s", filename);
 
-	/* print what we know */
 	plugin = g_new0 (PkPlugin, 1);
 	plugin->module = module;
-	g_debug ("opened plugin %s: %s",
-		 filename, plugin_desc ());
-
-	/* add to array */
-	g_ptr_array_add (engine->priv->plugins,
-			 plugin);
+	g_ptr_array_add (engine->priv->plugins, plugin);
 out:
 	return;
 }

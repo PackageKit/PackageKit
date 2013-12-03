@@ -151,26 +151,23 @@ pk_time_get_remaining (PkTime *pktime)
 	gfloat grad_ave = 0.0f;
 	gfloat estimated;
 	guint percentage_left;
-	guint elapsed;
 	PkTimeItem *item;
 	PkTimeItem *item_prev;
 
 	g_return_val_if_fail (PK_IS_TIME (pktime), 0);
 
+	/* check array is large enough */
 	length = pktime->priv->array->len;
-	if (length < 2) {
-		g_debug ("array too small");
+	if (length < 2)
 		return 0;
-	}
 
 	/* get as many as we can */
 	for (i=length-1; i>0; i--) {
 		item_prev = g_ptr_array_index (pktime->priv->array, i-1);
 		item = g_ptr_array_index (pktime->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
-//		g_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
-			g_debug ("ignoring gradient: %f", grad);
+			/* ignoring gradient */
 		} else {
 			grad_ave += grad;
 			averaged++;
@@ -180,33 +177,27 @@ pk_time_get_remaining (PkTime *pktime)
 		}
 	}
 
-	g_debug ("averaged %i points", averaged);
-	if (averaged < pktime->priv->average_min) {
-		g_debug ("not enough samples for accurate time: %i", averaged);
+	/* not enough samples for accurate time */
+	if (averaged < pktime->priv->average_min)
 		return 0;
-	}
-	if (averaged  == 0) {
-		g_debug ("no valid gradients, so bailing out");
+
+
+	/* no valid gradients */
+	if (averaged  == 0)
 		return 0;
-	}
 
 	/* normalise to the number of samples */
 	grad_ave /= averaged;
-	g_debug ("grad_ave=%f", grad_ave);
-
-	/* just for debugging */
-	elapsed = pk_time_get_elapsed (pktime);
-	g_debug ("elapsed=%i", elapsed);
 
 	/* 100 percent to be complete */
 	item = g_ptr_array_index (pktime->priv->array, length - 1);
 	percentage_left = 100 - item->percentage;
-	g_debug ("percentage_left=%i", percentage_left);
 	estimated = (gfloat) percentage_left / grad_ave;
 
 	/* turn to ms */
 	estimated /= 1000;
-	g_debug ("estimated=%f seconds", estimated);
+	g_debug ("percentage_left=%i, estimated=%.0fms",
+		 percentage_left, estimated * 1000);
 
 	if (estimated < pktime->priv->value_min) {
 		estimated = 0;
@@ -236,8 +227,6 @@ pk_time_add_data (PkTime *pktime, guint percentage)
 
 	/* get runtime in ms */
 	elapsed = pk_time_get_elapsed (pktime);
-
-	g_debug ("adding %i at %i (ms)", percentage, elapsed);
 
 	/* create a new object and add to the array */
 	item = g_new0 (PkTimeItem, 1);
