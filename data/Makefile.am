@@ -29,14 +29,14 @@ $(systemdservice_DATA): $(systemdservice_in_files) Makefile
 endif
 
 
-databasedir = $(PK_DB_DIR)
+databasedir = $(localstatedir)/lib/PackageKit
 database_DATA =						\
 	transactions.db
 
 install-data-hook:
 	@for file in $(database_DATA); do \
-		echo "Remove global read access for: $(DESTDIR)$(PK_DB_DIR)/$$file"; \
-		chmod o-r $(DESTDIR)$(PK_DB_DIR)/$$file; \
+		echo "Remove global read access for: $(DESTDIR)$(localstatedir)/lib/PackageKit/$$file"; \
+		chmod o-r $(DESTDIR)$(localstatedir)/lib/PackageKit/$$file; \
 	done
 
 EXTRA_DIST =						\

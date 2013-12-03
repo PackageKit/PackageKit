@@ -34,7 +34,6 @@ AM_CPPFLAGS =						\
 	-DVERSION="\"$(VERSION)\""			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
-	-DPK_DB_DIR=\""$(PK_DB_DIR)"\"			\
 	-DTESTDATADIR=\""$(abs_top_srcdir)/data/tests"\"	\
 	-DPK_COMPILATION				\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
@@ -149,6 +148,10 @@ packagekitd_SOURCES =					\
 	pk-main.c					\
 	$(shared_SOURCES)
 
+packagekitd_CPPFLAGS =					\
+	$(AM_CPPFLAGS)					\
+	-DPK_DB_DIR=\""$(localstatedir)/lib/PackageKit"\"
+
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
@@ -188,6 +191,10 @@ pk_self_test_LDADD =					\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
 	$(SYSTEMD_LIBS)
+
+pk_self_test_CPPFLAGS =					\
+	$(AM_CPPFLAGS)					\
+	-DPK_DB_DIR=\""."\"
 
 pk_self_test_CFLAGS =					\
 	$(AM_CFLAGS)					\
@@ -235,6 +242,11 @@ libpkplugins_la_LIBADD =				\
 	$(GIO_LIBS)					\
 	$(ARCHIVE_LIBS)					\
 	$(SYSTEMD_LIBS)
+
+
+libpkplugins_la_CPPFLAGS =				\
+	$(AM_CPPFLAGS)					\
+	-DPK_DB_DIR=\""$(localstatedir)/lib/PackageKit"\"
 
 libpkplugins_la_CFLAGS =				\
 	$(PIE_CFLAGS)					\

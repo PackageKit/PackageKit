@@ -925,11 +925,10 @@ pk_test_transaction_db_func (void)
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
-	ret = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
+	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* remove old local database */
-		g_debug ("Removing %s", PK_TRANSACTION_DB_FILE);
-		value = g_unlink (PK_TRANSACTION_DB_FILE);
+		value = g_unlink ("./transactions.db");
 		g_assert (value == 0);
 	}
 #endif
