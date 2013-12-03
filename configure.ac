@@ -588,9 +588,6 @@ if test x$enable_slapt = xyes; then
 	AC_SUBST(SLAPT_LIBS)
 fi
 
-AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
-AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
-AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib -DPK_COMPILATION $GLIB_CFLAGS $GMODULE_CFLAGS $GIO_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $GMODULE_LIBS $GIO_LIBS")

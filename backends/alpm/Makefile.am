@@ -26,7 +26,7 @@ DEFS = -DPK_BACKEND_CONFIG_FILE=\"$(PK_BACKEND_CONFIG_FILE)\" \
        -DPK_LOG_PREFIX=\"PACKAGEKIT\" \
        -DG_LOG_DOMAIN=\"PackageKit-alpm\"
 
-confdir = $(PK_CONF_DIR)/alpm.d
+confdir = $(sysconfdir)/PackageKit/alpm.d
 conf_DATA = groups.list \
 	    pacman.conf \
 	    repos.list

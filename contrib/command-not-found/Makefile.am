@@ -44,7 +44,7 @@ dist_bashprofile_DATA = PackageKit.sh
 PackageKit.sh: PackageKit.sh.in Makefile
 	sed -e s!\@LIBEXECDIR\@!$(libexecdir)! < $< > $@
 
-confdir = $(PK_CONF_DIR)
+confdir = $(sysconfdir)/PackageKit
 dist_conf_DATA = CommandNotFound.conf
 
 EXTRA_DIST = PackageKit.sh.in
