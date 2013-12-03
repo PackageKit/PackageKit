@@ -60,7 +60,6 @@ struct _HifStatePrivate
 	gulong			 notify_speed_child_id;
 	gulong			 allow_cancel_child_id;
 	gulong			 percentage_child_id;
-	gulong			 subpercentage_child_id;
 	PkStatusEnum		 action;
 	PkStatusEnum		 last_action;
 	PkStatusEnum		 child_action;
@@ -408,17 +407,6 @@ hif_state_get_percentage (HifState *state)
 }
 
 /**
- * hif_state_set_subpercentage:
- **/
-static gboolean
-hif_state_set_subpercentage (HifState *state, guint percentage)
-{
-	/* just emit */
-	g_signal_emit (state, signals [SIGNAL_SUBPERCENTAGE_CHANGED], 0, percentage);
-	return TRUE;
-}
-
-/**
  * hif_state_action_start:
  **/
 gboolean
@@ -541,9 +529,6 @@ hif_state_child_percentage_changed_cb (HifState *child, guint percentage, HifSta
 	if (state->priv->steps == 0)
 		return;
 
-	/* always provide two levels of signals */
-	hif_state_set_subpercentage (state, percentage);
-
 	/* already at >= 100% */
 	if (state->priv->current >= state->priv->steps) {
 		g_warning ("already at %i/%i steps on %p", state->priv->current, state->priv->steps, state);
@@ -587,20 +572,6 @@ hif_state_child_percentage_changed_cb (HifState *child, guint percentage, HifSta
 	parent_percentage = (guint) (offset + extra);
 out:
 	hif_state_set_percentage (state, parent_percentage);
-}
-
-/**
- * hif_state_child_subpercentage_changed_cb:
- **/
-static void
-hif_state_child_subpercentage_changed_cb (HifState *child, guint percentage, HifState *state)
-{
-	/* discard this, unless the HifState has only one step */
-	if (state->priv->steps != 1)
-		return;
-
-	/* propagate up the stack as if the parent didn't exist */
-	hif_state_set_subpercentage (state, percentage);
 }
 
 /**
@@ -676,11 +647,6 @@ hif_state_reset (HifState *state)
 					     state->priv->percentage_child_id);
 		state->priv->percentage_child_id = 0;
 	}
-	if (state->priv->subpercentage_child_id != 0) {
-		g_signal_handler_disconnect (state->priv->child,
-					     state->priv->subpercentage_child_id);
-		state->priv->subpercentage_child_id = 0;
-	}
 	if (state->priv->allow_cancel_child_id != 0) {
 		g_signal_handler_disconnect (state->priv->child,
 					     state->priv->allow_cancel_child_id);
@@ -753,8 +719,6 @@ hif_state_get_child (HifState *state)
 		g_signal_handler_disconnect (state->priv->child,
 					     state->priv->percentage_child_id);
 		g_signal_handler_disconnect (state->priv->child,
-					     state->priv->subpercentage_child_id);
-		g_signal_handler_disconnect (state->priv->child,
 					     state->priv->allow_cancel_child_id);
 		g_signal_handler_disconnect (state->priv->child,
 					     state->priv->action_child_id);
@@ -772,10 +736,6 @@ hif_state_get_child (HifState *state)
 	state->priv->percentage_child_id =
 		g_signal_connect (child, "percentage-changed",
 				  G_CALLBACK (hif_state_child_percentage_changed_cb),
-				  state);
-	state->priv->subpercentage_child_id =
-		g_signal_connect (child, "subpercentage-changed",
-				  G_CALLBACK (hif_state_child_subpercentage_changed_cb),
 				  state);
 	state->priv->allow_cancel_child_id =
 		g_signal_connect (child, "allow-cancel-changed",
@@ -1247,13 +1207,6 @@ hif_state_class_init (HifStateClass *klass)
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (HifStateClass, percentage_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-
-	signals [SIGNAL_SUBPERCENTAGE_CHANGED] =
-		g_signal_new ("subpercentage-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (HifStateClass, subpercentage_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 

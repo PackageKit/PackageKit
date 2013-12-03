@@ -54,8 +54,6 @@ struct _HifStateClass
 	/* Signals */
 	void		(* percentage_changed)		(HifState	*state,
 							 guint		 value);
-	void		(* subpercentage_changed)	(HifState	*state,
-							 guint		 value);
 	void		(* allow_cancel_changed)	(HifState	*state,
 							 gboolean	 allow_cancel);
 	void		(* action_changed)		(HifState	*state,

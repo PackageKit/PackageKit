@@ -171,7 +171,6 @@ static guint _allow_cancel_updates = 0;
 static guint _action_updates = 0;
 static guint _package_progress_updates = 0;
 static guint _last_percent = 0;
-static guint _last_subpercent = 0;
 static guint _updates = 0;
 
 static void
@@ -179,12 +178,6 @@ hif_state_test_percentage_changed_cb (HifState *state, guint value, gpointer dat
 {
 	_last_percent = value;
 	_updates++;
-}
-
-static void
-hif_state_test_subpercentage_changed_cb (HifState *state, guint value, gpointer data)
-{
-	_last_subpercent = value;
 }
 
 static void
@@ -230,7 +223,6 @@ hif_state_func (void)
 	g_object_add_weak_pointer (G_OBJECT (state), (gpointer *) &state);
 	g_assert (state != NULL);
 	g_signal_connect (state, "percentage-changed", G_CALLBACK (hif_state_test_percentage_changed_cb), NULL);
-	g_signal_connect (state, "subpercentage-changed", G_CALLBACK (hif_state_test_subpercentage_changed_cb), NULL);
 	g_signal_connect (state, "allow-cancel-changed", G_CALLBACK (hif_state_test_allow_cancel_changed_cb), NULL);
 	g_signal_connect (state, "action-changed", G_CALLBACK (hif_state_test_action_changed_cb), NULL);
 	g_signal_connect (state, "package-progress-changed", G_CALLBACK (hif_state_test_package_progress_changed_cb), NULL);
@@ -304,7 +296,6 @@ hif_state_child_func (void)
 	hif_state_set_allow_cancel (state, TRUE);
 	hif_state_set_number_steps (state, 2);
 	g_signal_connect (state, "percentage-changed", G_CALLBACK (hif_state_test_percentage_changed_cb), NULL);
-	g_signal_connect (state, "subpercentage-changed", G_CALLBACK (hif_state_test_subpercentage_changed_cb), NULL);
 	g_signal_connect (state, "allow-cancel-changed", G_CALLBACK (hif_state_test_allow_cancel_changed_cb), NULL);
 	g_signal_connect (state, "action-changed", G_CALLBACK (hif_state_test_action_changed_cb), NULL);
 	g_signal_connect (state, "package-progress-changed", G_CALLBACK (hif_state_test_package_progress_changed_cb), NULL);
@@ -410,7 +401,6 @@ hif_state_parent_one_step_proxy_func (void)
 	g_object_add_weak_pointer (G_OBJECT (state), (gpointer *) &state);
 	hif_state_set_number_steps (state, 1);
 	g_signal_connect (state, "percentage-changed", G_CALLBACK (hif_state_test_percentage_changed_cb), NULL);
-	g_signal_connect (state, "subpercentage-changed", G_CALLBACK (hif_state_test_subpercentage_changed_cb), NULL);
 	g_signal_connect (state, "allow-cancel-changed", G_CALLBACK (hif_state_test_allow_cancel_changed_cb), NULL);
 
 	/* now test with a child */
