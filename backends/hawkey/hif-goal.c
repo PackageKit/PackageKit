@@ -30,6 +30,7 @@
 #include <hawkey/util.h>
 
 #include "hif-goal.h"
+#include "hif-package.h"
 #include "hif-utils.h"
 
 /**
@@ -101,11 +102,13 @@ hif_goal_get_packages (HyGoal goal, PkBitfield types)
 gboolean
 hif_goal_depsolve (HyGoal goal, GError **error)
 {
+	HyPackage pkg;
 	gboolean ret = TRUE;
 	gchar *tmp;
 	gint cnt;
 	gint j;
 	gint rc;
+	guint i;
 	GString *string = NULL;
 	HyPackageList pkglist;
 
@@ -145,10 +148,16 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 	pkglist = hy_goal_list_downgrades (goal);
 	if (hy_packagelist_count (pkglist) > 0) {
 		ret = FALSE;
+		string = g_string_new ("Downgrading packages is prevented by policy; ");
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			g_string_append_printf (string, "%s, ",
+						hif_package_get_id (pkg));
+		}
+		g_string_truncate (string, string->len - 2);
 		g_set_error_literal (error,
 				     HIF_ERROR,
 				     PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED,
-				     "Downgrading packages is prevented by policy");
+				     string->str);
 		goto out;
 	}
 out:
