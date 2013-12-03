@@ -226,7 +226,6 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	g_return_val_if_fail (tdb->priv->db != NULL, 0);
 
 	role_text = pk_role_enum_to_string (role);
-	g_debug ("get_time_since_action=%s", role_text);
 
 	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'", role_text);
 	rc = sqlite3_exec (tdb->priv->db, statement, pk_time_action_sqlite_callback, &timespec, &error_msg);
@@ -236,14 +235,11 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 		sqlite3_free (error_msg);
 		return G_MAXUINT;
 	}
-	if (timespec == NULL) {
-		g_debug ("no response, assume maximum value");
+	if (timespec == NULL)
 		return G_MAXUINT;
-	}
 
 	/* work out the difference */
 	time_ms = pk_transaction_db_iso8601_difference (timespec);
-	g_debug ("timespec=%s, difference=%i", timespec, time_ms);
 	g_free (timespec);
 
 	return time_ms;
@@ -272,10 +268,8 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	/* get the previous entry */
 	since = pk_transaction_db_action_time_since (tdb, role);
 	if (since == G_MAXUINT) {
-		g_debug ("set action time=%s to %s", role_text, timespec);
 		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
 	} else {
-		g_debug ("reset action time=%s to %s", role_text, timespec);
 		statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
 	}
 
@@ -340,8 +334,6 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 	gchar *statement;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-
-	g_debug ("adding transaction %s", tid);
 
 	timespec = pk_iso8601_present ();
 	statement = g_strdup_printf ("INSERT INTO transactions (transaction_id, timespec) VALUES ('%s', '%s')", tid, timespec);
@@ -530,7 +522,6 @@ pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 	sqlite3_exec (tdb->priv->db, "PRAGMA synchronous=ON", NULL, NULL, NULL);
 
 	/* save the job count */
-	g_debug ("doing deferred write syncronous");
 	statement = g_strdup_printf ("UPDATE config SET value = '%i' WHERE key = 'job_count'",
 				     tdb->priv->job_count);
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
@@ -564,7 +555,6 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 	/* we don't need to wait for the database write, just do this the
 	 * next time we are idle (but ensure we do this on shutdown) */
 	if (tdb->priv->database_save_id == 0) {
-		g_debug ("deferring low priority write until idle");
 		tdb->priv->database_save_id =
 			g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc)
 					 pk_transaction_db_defer_write_job_count_cb, tdb, NULL);
@@ -677,10 +667,8 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 	}
 
 	/* nothing matched */
-	if (!item->set) {
-		g_debug ("no data");
+	if (!item->set)
 		goto out;
-	}
 
 	/* success, even if we got no data */
 	ret = TRUE;

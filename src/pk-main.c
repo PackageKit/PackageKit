@@ -232,7 +232,6 @@ main (int argc, char *argv[])
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
 #ifdef HAVE_CLEARENV
-	g_debug ("keep_environment: %i\n", keep_environment);
 	if (!keep_environment)
 		clearenv ();
 #endif

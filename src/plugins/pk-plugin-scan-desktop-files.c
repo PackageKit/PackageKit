@@ -697,9 +697,9 @@ pk_plugin_transaction_finished_results (PkPlugin *plugin,
 	}
 
 	/* process file lists on these packages */
-	g_debug ("processing %i packags for desktop files", list->len);
 	if (list->len == 0)
 		goto out;
+	g_debug ("processing %i packages for desktop files", list->len);
 
 	/* get all the files touched in the packages we just installed */
 	pk_backend_reset_job (plugin->backend, plugin->job);

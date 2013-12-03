@@ -912,7 +912,6 @@ pk_backend_finalize (GObject *object)
 		g_object_unref (backend->priv->monitor);
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
-	g_debug ("parent_class->finalize");
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
 

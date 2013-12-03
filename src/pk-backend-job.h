@@ -129,7 +129,7 @@ void		 pk_backend_job_set_cmdline		(PkBackendJob	*job,
 const gchar	*pk_backend_job_get_cmdline		(PkBackendJob	*job);
 void		 pk_backend_job_set_locale		(PkBackendJob	*job,
 							 const gchar	*code);
-gboolean	 pk_backend_job_set_frontend_socket	(PkBackendJob	*job,
+void		 pk_backend_job_set_frontend_socket	(PkBackendJob	*job,
 							 const gchar	*frontend_socket);
 void		 pk_backend_job_set_cache_age		(PkBackendJob	*job,
 							 guint		 cache_age);

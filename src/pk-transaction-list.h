@@ -36,7 +36,7 @@ G_BEGIN_DECLS
 #define PK_IS_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_LIST))
 #define PK_TRANSACTION_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
 #define PK_TRANSACTION_LIST_ERROR		(pk_transaction_list_error_quark ())
-#define PK_TRANSACTION_LIST_TYPE_ERROR		(pk_transaction_list_error_get_type ())
+#define PK_TRANSACTION_LIST_TYPE_ERRORpk_transaction_list_set_background		(pk_transaction_list_error_get_type ())
 
 typedef struct PkTransactionListPrivate PkTransactionListPrivate;
 
@@ -60,7 +60,7 @@ gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
 							 GError			**error);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
 							 const gchar		*tid);
-gboolean	 pk_transaction_list_set_background	(PkTransactionList	*tlist,
+void		 pk_transaction_list_set_background	(PkTransactionList	*tlist,
 							 const gchar		*tid,
 							 gboolean		 background);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
