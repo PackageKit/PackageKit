@@ -2070,6 +2070,24 @@ hif_find_pkg_from_filename_suffix (GPtrArray *array,
 }
 
 /**
+ * hif_find_pkg_from_name:
+ **/
+static HyPackage
+hif_find_pkg_from_name (GPtrArray *array, const gchar *pkgname)
+{
+	guint i;
+	HyPackage pkg;
+
+	/* find in array */
+	for (i = 0; i < array->len; i++) {
+		pkg = g_ptr_array_index (array, i);
+		if (g_strcmp0 (hy_package_get_name (pkg), pkgname))
+			return pkg;
+	}
+	return NULL;
+}
+
+/**
  * hif_commit_ts_progress_cb:
  **/
 static void *
@@ -2228,12 +2246,14 @@ hif_commit_ts_progress_cb (const void *arg,
 
 		/* update UI */
 		pkg = hif_find_pkg_from_header (commit->remove, hdr);
-		if (pkg == NULL) {
+		if (pkg == NULL && filename != NULL) {
 			pkg = hif_find_pkg_from_filename_suffix (commit->remove,
 								 filename);
 		}
+		if (pkg == NULL && name != NULL)
+			pkg = hif_find_pkg_from_name (commit->remove, name);
 		if (pkg == NULL) {
-			g_debug ("cannot find %s", name);
+			g_warning ("cannot find %s", name);
 			break;
 		}
 		hif_state_set_package_progress (commit->state,
