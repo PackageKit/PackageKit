@@ -847,7 +847,7 @@ out:
  * pk_console_install_packages:
  **/
 static gboolean
-pk_console_install_packages (gchar **packages, GError **error)
+pk_console_install_packages (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
@@ -864,10 +864,10 @@ pk_console_install_packages (gchar **packages, GError **error)
 		}
 	}
 
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (PK_CLIENT(task),
-						   pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
-									   PK_FILTER_ENUM_NEWEST,
-									   -1),
+						   filters,
 						   packages,
 						   &error_local);
 	if (package_ids == NULL) {
@@ -892,13 +892,14 @@ out:
  * pk_console_remove_packages:
  **/
 static gboolean
-pk_console_remove_packages (gchar **packages, GError **error)
+pk_console_remove_packages (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages, &error_local);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the installed package: %s"), error_local->message);
@@ -920,13 +921,14 @@ out:
  * pk_console_download_packages:
  **/
 static gboolean
-pk_console_download_packages (gchar **packages, const gchar *directory, GError **error)
+pk_console_download_packages (PkBitfield filters, gchar **packages, const gchar *directory, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);
@@ -948,16 +950,14 @@ out:
  * pk_console_update_packages:
  **/
 static gboolean
-pk_console_update_packages (gchar **packages, GError **error)
+pk_console_update_packages (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids;
 	GError *error_local = NULL;
-	PkBitfield filters;
 
-	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
-					  PK_FILTER_ENUM_NEWEST,
-					  -1);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (PK_CLIENT(task),
 						   filters,
 						   packages,
@@ -1067,7 +1067,7 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -1077,7 +1077,7 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_task_get_depends_async (PK_TASK (task),filters, package_ids, FALSE, cancellable,
+	pk_task_get_depends_async (PK_TASK (task), filters, package_ids, FALSE, cancellable,
 				   (PkProgressCallback) pk_console_progress_cb, NULL,
 				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
@@ -1089,13 +1089,13 @@ out:
  * pk_console_get_details:
  **/
 static gboolean
-pk_console_get_details (gchar **packages, GError **error)
+pk_console_get_details (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -1117,13 +1117,13 @@ out:
  * pk_console_get_files:
  **/
 static gboolean
-pk_console_get_files (gchar **packages, GError **error)
+pk_console_get_files (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -1145,13 +1145,14 @@ out:
  * pk_console_get_update_detail
  **/
 static gboolean
-pk_console_get_update_detail (gchar **packages, GError **error)
+pk_console_get_update_detail (PkBitfield filters, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	pk_bitfield_add (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), filters, packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -1632,7 +1633,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_task_search_names_async (PK_TASK (task),filters, argv+3, cancellable,
+			pk_task_search_names_async (PK_TASK (task), filters, argv+3, cancellable,
 						    (PkProgressCallback) pk_console_progress_cb, NULL,
 						    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1644,7 +1645,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_task_search_details_async (PK_TASK (task),filters, argv+3, cancellable,
+			pk_task_search_details_async (PK_TASK (task), filters, argv+3, cancellable,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1656,7 +1657,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_task_search_groups_async (PK_TASK (task),filters, argv+3, cancellable,
+			pk_task_search_groups_async (PK_TASK (task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1668,7 +1669,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_task_search_files_async (PK_TASK (task),filters, argv+3, cancellable,
+			pk_task_search_files_async (PK_TASK (task), filters, argv+3, cancellable,
 						    (PkProgressCallback) pk_console_progress_cb, NULL,
 						    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
@@ -1683,7 +1684,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_install_packages (argv+2, &error);
+		run_mainloop = pk_console_install_packages (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "install-local") == 0) {
 		if (value == NULL) {
@@ -1714,7 +1715,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_remove_packages (argv+2, &error);
+		run_mainloop = pk_console_remove_packages (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
@@ -1730,7 +1731,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		run_mainloop = pk_console_download_packages (argv+3, value, &error);
+		run_mainloop = pk_console_download_packages (filters, argv+3, value, &error);
 
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
@@ -1748,7 +1749,7 @@ main (int argc, char *argv[])
 			/* do the system update */
 			run_mainloop = pk_console_update_system (filters, &error);
 		} else {
-			run_mainloop = pk_console_update_packages (argv+2, &error);
+			run_mainloop = pk_console_update_packages (filters, argv+2, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -1758,7 +1759,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_task_resolve_async (PK_TASK (task),filters, argv+2, cancellable,
+		pk_task_resolve_async (PK_TASK (task), filters, argv+2, cancellable,
 				       (PkProgressCallback) pk_console_progress_cb, NULL,
 				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1796,7 +1797,7 @@ main (int argc, char *argv[])
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		pk_task_get_repo_list_async (PK_TASK (task),filters, cancellable,
+		pk_task_get_repo_list_async (PK_TASK (task), filters, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1839,7 +1840,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_get_update_detail (argv+2, &error);
+		run_mainloop = pk_console_get_update_detail (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
@@ -1857,7 +1858,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_task_what_provides_async (PK_TASK (task),filters, PK_PROVIDES_ENUM_ANY, argv+2, cancellable,
+		pk_task_what_provides_async (PK_TASK (task), filters, PK_PROVIDES_ENUM_ANY, argv+2, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1868,7 +1869,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_get_details (argv+2, &error);
+		run_mainloop = pk_console_get_details (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
@@ -1877,10 +1878,10 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_get_files (argv+2, &error);
+		run_mainloop = pk_console_get_files (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
-		pk_task_get_updates_async (PK_TASK (task),filters, cancellable,
+		pk_task_get_updates_async (PK_TASK (task), filters, cancellable,
 					   (PkProgressCallback) pk_console_progress_cb, NULL,
 					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1890,7 +1891,7 @@ main (int argc, char *argv[])
 					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
-		pk_task_get_packages_async (PK_TASK (task),filters, cancellable,
+		pk_task_get_packages_async (PK_TASK (task), filters, cancellable,
 					    (PkProgressCallback) pk_console_progress_cb, NULL,
 					    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
