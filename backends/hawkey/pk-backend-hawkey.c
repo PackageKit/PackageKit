@@ -116,7 +116,7 @@ pk_backend_supports_parallelization (PkBackend *backend)
  * pk_backend_sack_cache_invalidate:
  **/
 static void
-pk_backend_sack_cache_invalidate (void)
+pk_backend_sack_cache_invalidate (const gchar *why)
 {
 	GList *values;
 	GList *l;
@@ -128,7 +128,7 @@ pk_backend_sack_cache_invalidate (void)
 	for (l = values; l != NULL; l = l->next) {
 		cache_item = l->data;
 		if (cache_item->valid) {
-			g_debug ("invalidating %s", cache_item->key);
+			g_debug ("invalidating %s as %s", cache_item->key, why);
 			cache_item->valid = FALSE;
 		}
 	}
@@ -144,7 +144,7 @@ pk_backend_yum_repos_changed_cb (GFileMonitor *monitor_,
 				 GFileMonitorEvent event_type,
 				 PkBackend *backend)
 {
-	pk_backend_sack_cache_invalidate ();
+	pk_backend_sack_cache_invalidate ("yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
 }
 
@@ -157,8 +157,7 @@ pk_backend_rpmdb_changed_cb (GFileMonitor *monitor_,
 			     GFileMonitorEvent event_type,
 			     PkBackend *backend)
 {
-	g_debug ("rpmdb changed");
-	pk_backend_sack_cache_invalidate ();
+	pk_backend_sack_cache_invalidate ("rpmdb changed");
 }
 
 /**
@@ -2856,7 +2855,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		goto out;
 
 	/* all sacks are invalid now */
-	pk_backend_sack_cache_invalidate ();
+	pk_backend_sack_cache_invalidate ("transaction performed");
 
 	/* write to the yumDB */
 	state_local = hif_state_get_child (state);
