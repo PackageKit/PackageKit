@@ -166,7 +166,10 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-	g_return_val_if_fail (priv->package_id == NULL, FALSE);
+
+	/* free old data */
+	g_free (priv->package_id);
+	g_free (priv->package_id_data);
 
 	/* copy the package-id into package_id_data, change the ';' into '\0'
 	 * and reference the pointers in the const gchar * array */
