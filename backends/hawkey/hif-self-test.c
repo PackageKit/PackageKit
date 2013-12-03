@@ -745,6 +745,32 @@ hif_state_locking_func (void)
 	g_assert (state == NULL);
 }
 
+static void
+hif_state_small_step_func (void)
+{
+	HifState *state;
+	gboolean ret;
+	GError *error = NULL;
+	guint i;
+
+	_updates = 0;
+
+	state = hif_state_new ();
+	g_signal_connect (state, "percentage-changed",
+			G_CALLBACK (hif_state_test_percentage_changed_cb), NULL);
+	hif_state_set_number_steps (state, 100000);
+
+	/* process all steps, we should get 100 callbacks */
+	for (i = 0; i < 100000; i++) {
+		ret = hif_state_done (state, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+	}
+	g_assert_cmpint (_updates, ==, 100);
+
+	g_object_unref (state);
+}
+
 /* avoid linking into the daemon */
 void pk_backend_job_package (PkBackendJob *job, PkInfoEnum info,
 			     const gchar *package_id, const gchar *summary);
@@ -773,6 +799,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/hif/state[speed]", hif_state_speed_func);
 	g_test_add_func ("/hif/state[locking]", hif_state_locking_func);
 	g_test_add_func ("/hif/state[finished]", hif_state_finished_func);
+	g_test_add_func ("/hif/state[small-step]", hif_state_small_step_func);
 
 	return g_test_run ();
 }

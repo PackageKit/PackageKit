@@ -45,7 +45,6 @@ struct _HifStatePrivate
 	GCancellable		*cancellable;
 	gchar			*action_hint;
 	gchar			*id;
-	gdouble			 global_share;
 	gdouble			*step_profile;
 	gpointer		 error_handler_user_data;
 	gpointer		 lock_handler_user_data;
@@ -390,10 +389,6 @@ hif_state_set_percentage (HifState *state, guint percentage)
 	/* save */
 	state->priv->last_percentage = percentage;
 
-	/* are we so low we don't care */
-	if (state->priv->global_share < 0.001)
-		goto out;
-
 	/* emit */
 	g_signal_emit (state, signals [SIGNAL_PERCENTAGE_CHANGED], 0, percentage);
 
@@ -418,13 +413,8 @@ hif_state_get_percentage (HifState *state)
 static gboolean
 hif_state_set_subpercentage (HifState *state, guint percentage)
 {
-	/* are we so low we don't care */
-	if (state->priv->global_share < 0.01)
-		goto out;
-
 	/* just emit */
 	g_signal_emit (state, signals [SIGNAL_SUBPERCENTAGE_CHANGED], 0, percentage);
-out:
 	return TRUE;
 }
 
@@ -731,15 +721,6 @@ out:
 }
 
 /**
- * hif_state_set_global_share:
- **/
-static void
-hif_state_set_global_share (HifState *state, gdouble global_share)
-{
-	state->priv->global_share = global_share;
-}
-
-/**
  * hif_state_child_notify_speed_cb:
  **/
 static void
@@ -821,9 +802,6 @@ hif_state_get_child (HifState *state)
 	child->priv->action = state->priv->action;
 	state->priv->child_action = state->priv->action;
 
-	/* set the global share on the new child */
-	hif_state_set_global_share (child, state->priv->global_share);
-
 	/* set cancellable, creating if required */
 	if (state->priv->cancellable == NULL)
 		state->priv->cancellable = g_cancellable_new ();
@@ -886,9 +864,6 @@ hif_state_set_number_steps_real (HifState *state, guint steps, const gchar *strl
 
 	/* set steps */
 	state->priv->steps = steps;
-
-	/* global share just got smaller */
-	state->priv->global_share /= steps;
 
 	/* success */
 	ret = TRUE;
@@ -1315,7 +1290,6 @@ hif_state_init (HifState *state)
 	state->priv = HIF_STATE_GET_PRIVATE (state);
 	state->priv->allow_cancel = TRUE;
 	state->priv->allow_cancel_child = TRUE;
-	state->priv->global_share = 1.0f;
 	state->priv->action = PK_STATUS_ENUM_UNKNOWN;
 	state->priv->last_action = PK_STATUS_ENUM_UNKNOWN;
 	state->priv->timer = g_timer_new ();
