@@ -887,9 +887,9 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	if (tdb->priv->loaded)
 		return TRUE;
 
-	g_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
-	pk_transaction_db_ensure_file_directory (PK_TRANSACTION_DB_FILE);
-	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
+	g_debug ("trying to open database '%s'", PK_DB_DIR "/transactions.db");
+	pk_transaction_db_ensure_file_directory (PK_DB_DIR "/transactions.db");
+	rc = sqlite3_open (PK_DB_DIR "/transactions.db", &tdb->priv->db);
 	if (rc != SQLITE_OK) {
 		ret = FALSE;
 		g_set_error (error,
