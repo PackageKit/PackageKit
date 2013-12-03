@@ -1,13 +1,4 @@
-AM_CPPFLAGS = \
-	$(HAWKEY_CFLAGS)						\
-	-DSYSCONFDIR=\""$(sysconfdir)"\"				\
-	-DLOCALSTATEDIR=\""$(localstatedir)"\"				\
-	-DG_LOG_DOMAIN=\"PackageKit-Hawkey\"
-
-plugindir = $(PK_PLUGIN_DIR)
-plugin_LTLIBRARIES = libpk_backend_hawkey.la
-libpk_backend_hawkey_la_SOURCES =					\
-	pk-backend-hawkey.c						\
+shared_SOURCES =							\
 	hif-db.c							\
 	hif-db.h							\
 	hif-goal.c							\
@@ -28,9 +19,44 @@ libpk_backend_hawkey_la_SOURCES =					\
 	hif-state.h							\
 	hif-utils.c							\
 	hif-utils.h
-libpk_backend_hawkey_la_LIBADD = $(PK_PLUGIN_LIBS)
+
+plugindir = $(PK_PLUGIN_DIR)
+plugin_LTLIBRARIES = libpk_backend_hawkey.la
+libpk_backend_hawkey_la_SOURCES =					\
+	$(shared_SOURCES)						\
+	pk-backend-hawkey.c
+libpk_backend_hawkey_la_LIBADD = $(PK_PLUGIN_LIBS) $(HAWKEY_LIBS)
+libpk_backend_hawkey_la_CPPFLAGS =					\
+	$(HAWKEY_CFLAGS)						\
+	-DG_LOG_DOMAIN=\"PackageKit-Hawkey\"				\
+	-DPIDFILE=\""/var/run/hif"\"
 libpk_backend_hawkey_la_LDFLAGS = -module -avoid-version
 libpk_backend_hawkey_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-libpk_backend_hawkey_la_LIBADD += $(HAWKEY_LIBS)
+
+PACKAGEKIT_LIBS =							\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a
+
+check_PROGRAMS =							\
+	hif-self-test
+
+hif_self_test_SOURCES =							\
+	$(shared_SOURCES)						\
+	hif-self-test.c
+
+hif_self_test_LDADD =							\
+	$(GLIB_LIBS)							\
+	$(HAWKEY_LIBS)							\
+	$(PACKAGEKIT_LIBS)						\
+	$(PK_PLUGIN_LIBS)						\
+	$(SQLITE_LIBS)
+
+hif_self_test_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
+hif_self_test_CPPFLAGS =						\
+	$(HAWKEY_CFLAGS)						\
+	-DG_LOG_DOMAIN=\"PackageKit-Hawkey\"				\
+	-DPIDFILE=\""/tmp/hif"\"
+
+TESTS = hif-self-test
 
 -include $(top_srcdir)/git.mk

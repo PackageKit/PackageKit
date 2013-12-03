@@ -43,8 +43,6 @@
 
 #define HIF_LOCK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), HIF_TYPE_LOCK, HifLockPrivate))
 
-#define HIF_LOCK_PID_FILE "/var/run/hif"
-
 /**
  * HifLockPrivate:
  *
@@ -218,7 +216,7 @@ hif_lock_get_filename_for_type (HifLock *lock,
 {
 	gchar *filename = NULL;
 	filename = g_strdup_printf ("%s-%s.lock",
-				    HIF_LOCK_PID_FILE,
+				    PIDFILE,
 				    hif_lock_type_to_string (type));
 	return filename;
 }
