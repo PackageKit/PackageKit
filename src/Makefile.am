@@ -206,7 +206,7 @@ install-data-hook:
 	if test -w $(DESTDIR)$(prefix)/; then \
 		mkdir -p $(DESTDIR)$(localstatedir)/cache/PackageKit/downloads; \
 		mkdir -p $(DESTDIR)$(localstatedir)/cache/PackageKit/metadata; \
-		mkdir -p $(DESTDIR)$(PK_LOG_DIR); \
+		mkdir -p $(DESTDIR)$(localstatedir)/log; \
 	fi
 
 clean-local:

@@ -19,7 +19,7 @@ libpk_backend_yum_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_backend_yum_la_LDFLAGS = -module -avoid-version
 libpk_backend_yum_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
-confdir = $(PK_CONF_DIR)
+confdir = $(sysconfdir)/PackageKit
 conf_DATA = Yum.conf
 
 EXTRA_DIST =							\
