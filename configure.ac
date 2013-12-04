@@ -671,7 +671,6 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         cppflags:                  ${CPPFLAGS}
-        Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
         Use systemd:               ${enable_systemd}
         Networking stacks:         ${networking_apis}
