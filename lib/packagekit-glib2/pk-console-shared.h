@@ -34,14 +34,6 @@ guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
 gboolean	 pk_console_get_prompt			(const gchar	*question,
 							 gboolean	 defaultyes);
-gchar		*pk_console_resolve_package		(PkClient	*client,
-							 PkBitfield	 filter,
-							 const gchar	*package,
-							 GError		**error);
-gchar		**pk_console_resolve_packages		(PkClient	*client,
-							 PkBitfield	 filter,
-							 gchar		**packages,
-							 GError		**error);
 
 G_END_DECLS
 
