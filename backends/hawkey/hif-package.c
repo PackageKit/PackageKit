@@ -136,6 +136,8 @@ hif_package_get_id (HyPackage pkg)
 	reponame = hy_package_get_reponame (pkg);
 	if (g_strcmp0 (reponame, HY_SYSTEM_REPO_NAME) == 0)
 		reponame = "installed";
+	else if (g_strcmp0 (reponame, HY_CMDLINE_REPO_NAME) == 0)
+		reponame = "local";
 	priv->package_id = pk_package_id_build (hy_package_get_name (pkg),
 						hy_package_get_evr (pkg),
 						hy_package_get_arch (pkg),

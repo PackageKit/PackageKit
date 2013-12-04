@@ -1469,6 +1469,8 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 		reponame = split[PK_PACKAGE_ID_DATA];
 		if (g_strcmp0 (reponame, "installed") == 0)
 			reponame = HY_SYSTEM_REPO_NAME;
+		else if (g_strcmp0 (reponame, "local") == 0)
+			reponame = HY_CMDLINE_REPO_NAME;
 		hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
 		hy_query_filter (query, HY_PKG_EVR, HY_EQ, split[PK_PACKAGE_ID_VERSION]);
 		hy_query_filter (query, HY_PKG_ARCH, HY_EQ, split[PK_PACKAGE_ID_ARCH]);
