@@ -105,18 +105,7 @@ _g_test_loop_quit (void)
 
 /**********************************************************************/
 
-static guint number_messages = 0;
 static guint number_packages = 0;
-
-/**
- * pk_test_backend_message_cb:
- **/
-static void
-pk_test_backend_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *details, gpointer data)
-{
-	g_debug ("details=%s", details);
-	number_messages++;
-}
 
 /**
  * pk_test_backend_finished_cb:
@@ -213,10 +202,6 @@ pk_test_backend_func (void)
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
 				  (PkBackendJobVFunc) pk_test_backend_package_cb,
-				  NULL);
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_MESSAGE,
-				  (PkBackendJobVFunc) pk_test_backend_message_cb,
 				  NULL);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_FINISHED,

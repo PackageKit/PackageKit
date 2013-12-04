@@ -1680,40 +1680,6 @@
     </signal>
 
     <!--*********************************************************************-->
-    <signal name="Message">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when the backend wants to send a message to the session.
-          </doc:para>
-          <doc:para>
-            This allows the backend to queue up a message to be shown after the transaction has
-            completed.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="type" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              One of <doc:tt>warning</doc:tt>, <doc:tt>notice</doc:tt>, or
-              <doc:tt>daemon</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="details" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Required details about the message, non-localised.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*********************************************************************-->
     <signal name="Package">
       <doc:doc>
         <doc:description>

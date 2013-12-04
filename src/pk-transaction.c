@@ -1289,46 +1289,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 }
 
 /**
- * pk_transaction_message_cb:
- **/
-static void
-pk_transaction_message_cb (PkBackend *backend,
-			   PkMessage *item,
-			   PkTransaction *transaction)
-{
-	gchar *details;
-	PkMessageEnum type;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	/* get data */
-	g_object_get (item,
-		      "type", &type,
-		      "details", &details,
-		      NULL);
-
-	/* add to results */
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-	pk_results_add_message (transaction->priv->results, item);
-
-	/* emit */
-	g_debug ("emitting message %s, '%s'",
-		 pk_message_enum_to_string (type), details);
-	g_dbus_connection_emit_signal (transaction->priv->connection,
-				       NULL,
-				       transaction->priv->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "Message",
-				       g_variant_new ("(us)",
-						      type,
-						      details),
-				       NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
-	g_free (details);
-}
-
-/**
  * pk_transaction_package_cb:
  **/
 static void
@@ -1934,10 +1894,6 @@ pk_transaction_signals_reset (PkTransaction *transaction,
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_FINISHED,
 				  (PkBackendJobVFunc) pk_transaction_finished_cb,
-				  transaction);
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_MESSAGE,
-				  (PkBackendJobVFunc) pk_transaction_message_cb,
 				  transaction);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,

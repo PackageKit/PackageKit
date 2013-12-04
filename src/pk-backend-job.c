@@ -596,8 +596,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "DistroUpgrade";
 	if (id == PK_BACKEND_SIGNAL_FINISHED)
 		return "Finished";
-	if (id == PK_BACKEND_SIGNAL_MESSAGE)
-		return "Message";
 	if (id == PK_BACKEND_SIGNAL_PACKAGE)
 		return "Package";
 	if (id == PK_BACKEND_SIGNAL_ITEM_PROGRESS)
@@ -1246,53 +1244,6 @@ pk_backend_job_require_restart (PkBackendJob *job,
 				   g_object_ref (item),
 				   g_object_unref);
 out:
-	if (item != NULL)
-		g_object_unref (item);
-}
-
-/**
- * pk_backend_job_message:
- **/
-void
-pk_backend_job_message (PkBackendJob *job,
-			PkMessageEnum message,
-			const gchar *format, ...)
-{
-	va_list args;
-	gchar *buffer = NULL;
-	PkMessage *item = NULL;
-
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-
-	/* have we already set an error? */
-	if (job->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-		g_warning ("already set error: message %s",
-			   pk_message_enum_to_string (message));
-G_GNUC_END_IGNORE_DEPRECATIONS
-		goto out;
-	}
-
-	va_start (args, format);
-	g_vasprintf (&buffer, format, args);
-	va_end (args);
-
-	/* form PkMessage struct */
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-	item = pk_message_new ();
-G_GNUC_END_IGNORE_DEPRECATIONS
-	g_object_set (item,
-		      "type", message,
-		      "details", buffer,
-		      NULL);
-
-	/* emit */
-	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_MESSAGE,
-				   g_object_ref (item),
-				   g_object_unref);
-out:
-	g_free (buffer);
 	if (item != NULL)
 		g_object_unref (item);
 }

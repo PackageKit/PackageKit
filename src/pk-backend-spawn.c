@@ -176,7 +176,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	gint percentage;
 	PkErrorEnum error_enum;
 	PkStatusEnum status_enum;
-	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
 	PkUpdateStateEnum update_state_enum;
@@ -442,27 +441,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			goto out;
 		}
 		pk_backend_job_require_restart (job, restart_enum, sections[2]);
-	} else if (g_strcmp0 (command, "message") == 0) {
-		if (size != 3) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
-		}
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-		message_enum = pk_message_enum_from_string (sections[1]);
-G_GNUC_END_IGNORE_DEPRECATIONS
-		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Message enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
-		}
-		text = g_strdup (sections[2]);
-		/* convert ; to \n as we can't emit them on stdout */
-		g_strdelimit (text, ";", '\n');
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-		pk_backend_job_message (job, message_enum, "%s", text);
-G_GNUC_END_IGNORE_DEPRECATIONS
-		g_free (text);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
