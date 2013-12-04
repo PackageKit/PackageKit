@@ -3564,17 +3564,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 		/* we don't download this, we just use it */
 		hif_package_set_filename (pkg, full_paths[i]);
-
-		/* keep for later */
 		g_ptr_array_add (array, pkg);
-		ret = hif_is_installed_package_name (sack, hy_package_get_name (pkg));
-		if (ret) {
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
-						   "%s is aleady installed",
-						   hy_package_get_name (pkg));
-			goto out;
-		}
 	}
 
 	/* done */

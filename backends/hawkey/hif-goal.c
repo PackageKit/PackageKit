@@ -160,6 +160,23 @@ hif_goal_depsolve (HyGoal goal, GError **error)
 				     string->str);
 		goto out;
 	}
+
+	/* prevent re-installs */
+	pkglist = hy_goal_list_reinstalls (goal);
+	if (hy_packagelist_count (pkglist) > 0) {
+		ret = FALSE;
+		string = g_string_new ("Reinstalling packages is prevented by policy; ");
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			g_string_append_printf (string, "%s, ",
+						hif_package_get_id (pkg));
+		}
+		g_string_truncate (string, string->len - 2);
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED,
+				     string->str);
+		goto out;
+	}
 out:
 	if (string != NULL)
 		g_string_free (string, TRUE);
