@@ -1246,7 +1246,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			if (info == PK_INFO_ENUM_REMOVING ||
 			    info == PK_INFO_ENUM_INSTALLING ||
 			    info == PK_INFO_ENUM_UPDATING) {
-				syslog (LOG_DAEMON,
+				syslog (LOG_DAEMON | LOG_DEBUG,
 					"in %s for %s package %s was %s for uid %i",
 					transaction->priv->tid,
 					pk_role_enum_to_string (transaction->priv->role),
@@ -1281,7 +1281,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 
 	/* report to syslog */
 	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID) {
-		syslog (LOG_DAEMON,
+		syslog (LOG_DAEMON | LOG_INFO,
 			"%s transaction %s from uid %i finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
@@ -1289,7 +1289,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			pk_exit_enum_to_string (exit_enum),
 			time_ms);
 	} else {
-		syslog (LOG_DAEMON,
+		syslog (LOG_DAEMON | LOG_INFO,
 			"%s transaction %s finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
@@ -2473,7 +2473,7 @@ pk_transaction_commit (PkTransaction *transaction)
 			pk_transaction_db_set_cmdline (priv->transaction_db, priv->tid, priv->cmdline);
 
 		/* report to syslog */
-		syslog (LOG_DAEMON,
+		syslog (LOG_DAEMON | LOG_DEBUG,
 			"new %s transaction %s scheduled from uid %i",
 			pk_role_enum_to_string (priv->role),
 			priv->tid,
@@ -2664,7 +2664,9 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 						"Failed to obtain authentication.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
-		syslog (LOG_AUTHPRIV, "uid %i failed to obtain auth", priv->uid);
+		syslog (LOG_AUTH | LOG_NOTICE,
+			"uid %i failed to obtain auth",
+			priv->uid);
 		goto out;
 	}
 
@@ -2677,7 +2679,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	}
 
 	/* log success too */
-	syslog (LOG_AUTHPRIV, "uid %i obtained auth", priv->uid);
+	syslog (LOG_AUTH | LOG_INFO, "uid %i obtained auth", priv->uid);
 out:
 	if (result != NULL)
 		g_object_unref (result);
@@ -2876,7 +2878,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	}
 
 	/* log */
-	syslog (LOG_AUTHPRIV,
+	syslog (LOG_AUTH | LOG_INFO,
 		"uid %i is trying to obtain %s auth (only_trusted:%i)",
 		priv->uid,
 		action_id,

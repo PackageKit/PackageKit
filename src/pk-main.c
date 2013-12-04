@@ -241,7 +241,7 @@ main (int argc, char *argv[])
 	pk_conf_set_bool (conf, "KeepEnvironment", keep_environment);
 
 	/* log the startup */
-	syslog (LOG_DAEMON, "daemon start");
+	syslog (LOG_DAEMON | LOG_DEBUG, "daemon start");
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
@@ -309,7 +309,7 @@ main (int argc, char *argv[])
 	g_main_loop_run (loop);
 out:
 	/* log the shutdown */
-	syslog (LOG_DAEMON, "daemon quit");
+	syslog (LOG_DAEMON | LOG_DEBUG, "daemon quit");
 	closelog ();
 
 	if (timer_id > 0)
