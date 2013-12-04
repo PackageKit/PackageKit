@@ -508,6 +508,11 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	 * decision. */
 	job_data->db = hif_db_new ();
 
+#ifdef PK_BUILD_LOCAL
+	/* we don't want to enable this for normal runtime */
+	hif_state_set_enable_profile (job_data->state, TRUE);
+#endif
+
 	/* no locks to get, so jump straight to 'running' */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_RUNNING);
 }
