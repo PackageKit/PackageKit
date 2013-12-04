@@ -306,6 +306,16 @@ if test x$enable_local = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl - Build self tests
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
+              enable_tests=$enableval,enable_tests=yes)
+AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
+if test x$enable_tests = xyes; then
+        AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl - Able to build browser plugin
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
