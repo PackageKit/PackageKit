@@ -1633,12 +1633,29 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   50, /* add repos */
-				   48, /* find packages */
-				   1, /* download packages */
+				   1, /* ensure repos */
+				   3, /* get sack */
+				   5, /* find packages */
+				   90, /* download packages */
 				   1, /* emit */
 				   -1);
 	g_assert (ret);
+
+	/* set the list of repos */
+	ret = pk_backend_ensure_enabled_sources (job_data, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* get sack */
 	state_local = hif_state_get_child (job_data->state);
@@ -1721,6 +1738,14 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		}
 	}
 	g_ptr_array_add (files, NULL);
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* emit files so that the daemon will copy these */
 	pk_backend_job_files (job, NULL, (gchar **) files->pdata);

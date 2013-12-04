@@ -296,6 +296,9 @@ hif_source_filter_by_id (GPtrArray *sources, const gchar *id, GError **error)
 	HifSource *tmp;
 	HifSource *src = NULL;
 
+	g_return_val_if_fail (sources != NULL, NULL);
+	g_return_val_if_fail (id != NULL, NULL);
+
 	for (i = 0; i < sources->len; i++) {
 		tmp = g_ptr_array_index (sources, i);
 		if (g_strcmp0 (tmp->id, id) == 0) {
