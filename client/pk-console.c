@@ -49,6 +49,8 @@ typedef struct {
 	gboolean	 is_console;
 	gint		 retval;
 	PkBitfield	 filters;
+	guint		 defered_status_id;
+	PkStatusEnum	 defered_status;
 } PkConsoleCtx;
 
 /**
@@ -563,6 +565,36 @@ out:
 }
 
 /**
+ * pk_console_defer_status_update_cb:
+ **/
+static gboolean
+pk_console_defer_status_update_cb (gpointer user_data)
+{
+	PkConsoleCtx *ctx = (PkConsoleCtx *) user_data;
+	const gchar *text;
+
+	text = pk_status_enum_to_localised_text (ctx->defered_status);
+	pk_progress_bar_start (ctx->progressbar, text);
+	g_source_remove (ctx->defered_status_id);
+	ctx->defered_status_id = 0;
+	return FALSE;
+}
+
+/**
+ * pk_console_defer_status_update:
+ **/
+static void
+pk_console_defer_status_update (PkConsoleCtx *ctx, PkStatusEnum status)
+{
+	if (ctx->defered_status_id > 0)
+		g_source_remove (ctx->defered_status_id);
+	ctx->defered_status = status;
+	ctx->defered_status_id = g_timeout_add (50,
+					        pk_console_defer_status_update_cb,
+					        ctx);
+}
+
+/**
  * pk_console_progress_cb:
  **/
 static void
@@ -574,6 +606,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	const gchar *text;
 	gchar *package_id = NULL;
 	gchar *printable = NULL;
+	guint64 transaction_flags;
 	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
 
 	/* role */
@@ -632,19 +665,38 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	/* status */
 	if (type == PK_PROGRESS_TYPE_STATUS) {
 		g_object_get (progress,
+			      "role", &role,
 			      "status", &status,
+			      "transaction-flags", &transaction_flags,
 			      NULL);
-		if (status == PK_STATUS_ENUM_FINISHED)
+
+		/* don't show finished multiple times in the output */
+		if (role == PK_ROLE_ENUM_RESOLVE &&
+		    status == PK_STATUS_ENUM_FINISHED)
 			goto out;
 
 		/* show new status on the bar */
-		text = pk_status_enum_to_localised_text (status);
 		if (!ctx->is_console) {
+			text = pk_status_enum_to_localised_text (status);
 			/* TRANSLATORS: the status of the transaction (e.g. downloading) */
 			g_print ("%s: \t%s\n", _("Status"), text);
 			goto out;
 		}
-		pk_progress_bar_start (ctx->progressbar, text);
+
+		/* defer most status actions for 50ms */
+		if (status != PK_STATUS_ENUM_FINISHED) {
+			if (pk_bitfield_contain (transaction_flags,
+						 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+				/* don't show progress when doing the simulate pass */
+				pk_console_defer_status_update (ctx,
+								PK_STATUS_ENUM_TEST_COMMIT);
+			} else {
+				pk_console_defer_status_update (ctx, status);
+			}
+		} else {
+			text = pk_status_enum_to_localised_text (status);
+			pk_progress_bar_start (ctx->progressbar, text);
+		}
 	}
 out:
 	g_free (printable);
@@ -2094,6 +2146,8 @@ out:
 		g_object_unref (ctx->control);
 		g_object_unref (ctx->task);
 		g_object_unref (ctx->cancellable);
+		if (ctx->defered_status_id > 0)
+			g_source_remove (ctx->defered_status_id);
 		g_free (ctx);
 	}
 out_last:
