@@ -613,8 +613,14 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_object_get (progress,
 			      "role", &role,
+			      "transaction-flags", &transaction_flags,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
+			goto out;
+
+		/* don't show the role when simulating */
+		if (pk_bitfield_contain (transaction_flags,
+					 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 			goto out;
 
 		/* show new status on the bar */
