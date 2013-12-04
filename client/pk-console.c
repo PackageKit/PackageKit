@@ -1584,8 +1584,6 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_CATEGORIES))
 		g_string_append_printf (string, "  %s\n", "get-categories");
-	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_UPGRADE_SYSTEM))
-		g_string_append_printf (string, "  %s\n", "upgrade-system [distro-name] [minimal|default|complete]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
 		g_string_append_printf (string, "  %s\n", "repair");
 #ifdef PK_HAS_OFFLINE_UPDATES
@@ -2340,33 +2338,6 @@ main (int argc, char *argv[])
 					    ctx->cancellable,
 					    pk_console_progress_cb, ctx,
 					    pk_console_finished_cb, ctx);
-
-	} else if (strcmp (mode, "upgrade-system") == 0) {
-		if (value == NULL) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     /* TRANSLATORS: The user did not
-					      * provide a distro name */
-					     "%s", _("A distribution name is required"));
-			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		if (details == NULL) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     /* TRANSLATORS: The user did not
-					      * provide an upgrade type */
-					     _("An upgrade type is required, e.g. "
-					       "'minimal', 'default' or 'complete'"));
-			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		pk_client_upgrade_system_async (PK_CLIENT (ctx->task), value,
-						pk_upgrade_kind_enum_from_string (details),
-						ctx->cancellable,
-						pk_console_progress_cb, ctx,
-						pk_console_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-ctx->roles") == 0) {
 		text = pk_role_bitfield_to_string (ctx->roles);

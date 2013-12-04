@@ -239,6 +239,7 @@ PkResults	*pk_client_repo_set_data		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+G_DEPRECATED
 PkResults	*pk_client_upgrade_system		(PkClient		*client,
 							 const gchar		*distro_id,
 							 PkUpgradeKindEnum	 upgrade_kind,

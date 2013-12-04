@@ -758,15 +758,6 @@ pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * pk_backend_upgrade_system:
- */
-void
-pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
-{
-	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "update-system", NULL);
-}
-
-/**
  * pk_backend_get_provides:
  */
 PkBitfield pk_backend_get_provides(PkBackend *backend)

@@ -345,6 +345,7 @@ void		 pk_client_repo_set_data_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+G_DEPRECATED
 void		 pk_client_upgrade_system_async		(PkClient		*client,
 							 const gchar		*distro_id,
 							 PkUpgradeKindEnum	 upgrade_kind,

@@ -1591,9 +1591,11 @@ pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKin
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	pk_client_upgrade_system_async (client, distro_id, upgrade_kind,
 					cancellable, progress_callback, progress_user_data,
 					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 	g_main_loop_run (helper.loop);
 

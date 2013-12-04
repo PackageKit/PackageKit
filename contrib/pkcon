@@ -50,7 +50,6 @@ __pkcon_commandlist="
     resolve
     search
     update
-    upgrade-system
     repair
     "
 

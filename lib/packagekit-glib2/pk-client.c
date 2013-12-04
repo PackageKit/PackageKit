@@ -4233,7 +4233,9 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_upgrade_system_async);
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
