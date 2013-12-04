@@ -41,6 +41,7 @@ struct PkProgressBarPrivate
 	guint			 timer_id;
 	PkProgressBarPulseState	 pulse_state;
 	gint			 tty_fd;
+	gchar			*old_start_text;
 };
 
 #define PK_PROGRESS_BAR_PERCENTAGE_INVALID	101
@@ -266,6 +267,12 @@ pk_progress_bar_start (PkProgressBar *self, const gchar *text)
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 
+	/* same as last time */
+	if (g_strcmp0 (self->priv->old_start_text, text) == 0)
+		return TRUE;
+	g_free (self->priv->old_start_text);
+	self->priv->old_start_text = g_strdup (text);
+
 	/* finish old value */
 	str = g_string_new ("");
 	if (self->priv->percentage != G_MININT) {
@@ -325,6 +332,7 @@ pk_progress_bar_finalize (GObject *object)
 	g_return_if_fail (PK_IS_PROGRESS_BAR (object));
 	self = PK_PROGRESS_BAR (object);
 
+	g_free (self->priv->old_start_text);
 	if (self->priv->timer_id != 0)
 		g_source_remove (self->priv->timer_id);
 	if (self->priv->tty_fd > 0)
