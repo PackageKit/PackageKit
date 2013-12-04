@@ -633,7 +633,8 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			goto out;
 
 		/* don't show the role when simulating */
-		if (pk_bitfield_contain (transaction_flags,
+		if (ctx->defered_status != PK_STATUS_ENUM_UNKNOWN &&
+		    pk_bitfield_contain (transaction_flags,
 					 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 			goto out;
 
@@ -1813,6 +1814,7 @@ main (int argc, char *argv[])
 
 	/* do stuff on ctrl-c */
 	ctx = g_new0 (PkConsoleCtx, 1);
+	ctx->defered_status = PK_STATUS_ENUM_UNKNOWN;
 	ctx->loop = g_main_loop_new (NULL, FALSE);
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
 				SIGINT,
