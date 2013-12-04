@@ -187,22 +187,6 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 }
 
 /**
- * pk_engine_emit_changed:
- **/
-static void
-pk_engine_emit_changed (PkEngine *engine)
-{
-	g_return_if_fail (PK_IS_ENGINE (engine));
-	g_dbus_connection_emit_signal (engine->priv->connection,
-				       NULL,
-				       PK_DBUS_PATH,
-				       PK_DBUS_INTERFACE,
-				       "Changed",
-				       NULL,
-				       NULL);
-}
-
-/**
  * pk_engine_emit_property_changed:
  **/
 static void
@@ -318,7 +302,6 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 	pk_engine_emit_property_changed (engine,
 					 "Locked",
 					 g_variant_new_boolean (is_locked));
-	pk_engine_emit_changed (engine);
 }
 
 /**
@@ -868,7 +851,6 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	pk_engine_emit_property_changed (engine,
 					 "NetworkState",
 					 g_variant_new_uint32 (network_state));
-	pk_engine_emit_changed (engine);
 }
 
 

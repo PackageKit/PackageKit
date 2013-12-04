@@ -508,17 +508,6 @@
       </doc:doc>
     </signal>
 
-    <!--*********************************************************************-->
-    <signal name="Changed">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when a property on the interface changes.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
-
   </interface>
 </node>
 

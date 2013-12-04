@@ -339,21 +339,6 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 }
 
 /**
- * pk_transaction_emit_changed:
- **/
-static void
-pk_transaction_emit_changed (PkTransaction *transaction)
-{
-	g_dbus_connection_emit_signal (transaction->priv->connection,
-				       NULL,
-				       transaction->priv->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "Changed",
-				       NULL,
-				       NULL);
-}
-
-/**
  * pk_transaction_progress_changed_emit:
  **/
 static void
@@ -379,7 +364,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 	pk_transaction_emit_property_changed (transaction,
 					      "RemainingTime",
 					      g_variant_new_uint32 (remaining));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -402,7 +386,6 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 	pk_transaction_emit_property_changed (transaction,
 					      "AllowCancel",
 					      g_variant_new_boolean (allow_cancel));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -424,7 +407,6 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	pk_transaction_emit_property_changed (transaction,
 					      "Status",
 					      g_variant_new_uint32 (status));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -1870,7 +1852,6 @@ pk_transaction_speed_cb (PkBackendJob *job,
 	pk_transaction_emit_property_changed (transaction,
 					      "Speed",
 					      g_variant_new_uint32 (speed));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -1886,7 +1867,6 @@ pk_transaction_download_size_remaining_cb (PkBackendJob *job,
 	pk_transaction_emit_property_changed (transaction,
 					      "DownloadSizeRemaining",
 					      g_variant_new_uint64 (*download_size_remaining));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -1902,7 +1882,6 @@ pk_transaction_percentage_cb (PkBackendJob *job,
 	pk_transaction_emit_property_changed (transaction,
 					      "Percentage",
 					      g_variant_new_uint32 (percentage));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -1918,7 +1897,6 @@ pk_transaction_remaining_cb (PkBackendJob *job,
 	pk_transaction_emit_property_changed (transaction,
 					      "RemainingTime",
 					      g_variant_new_uint32 (remaining_time));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**
@@ -2364,7 +2342,6 @@ pk_transaction_vanished_cb (GDBusConnection *connection,
 	pk_transaction_emit_property_changed (transaction,
 					      "CallerActive",
 					      g_variant_new_boolean (transaction->priv->caller_active));
-	pk_transaction_emit_changed (transaction);
 }
 
 /**

@@ -379,10 +379,6 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		g_signal_emit (control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 		goto out;
 	}
-	if (g_strcmp0 (signal_name, "Changed") == 0) {
-		/* we don't need to do anything here */
-		goto out;
-	}
 	if (g_strcmp0 (signal_name, "RestartSchedule") == 0) {
 		g_debug ("emit restart-schedule");
 		g_signal_emit (control, signals[SIGNAL_RESTART_SCHEDULE], 0);

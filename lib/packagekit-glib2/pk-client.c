@@ -1464,9 +1464,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 		g_object_unref (item);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Changed") == 0) {
-		return;
-	}
 	if (g_strcmp0 (signal_name, "Destroy") == 0) {
 		return;
 	}
