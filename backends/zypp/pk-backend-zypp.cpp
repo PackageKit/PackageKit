@@ -3258,7 +3258,7 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 			} else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setAutorefresh (FALSE);
 			} else {
-				pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Autorefresh a repo: Enter true or false");
+				pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED, "Autorefresh a repo: Enter true or false");
 			}
 
 			manager.modifyRepository (repo_id, repo);
@@ -3269,7 +3269,7 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 			} else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setKeepPackages (FALSE);
 			} else {
-				pk_backend_job_message (job, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Keep downloaded packages: Enter true or false");
+				pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED, "Keep downloaded packages: Enter true or false");
 			}
 
 			manager.modifyRepository (repo_id, repo);
@@ -3284,13 +3284,13 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 			gint length = strlen (value);
 
 			if (length > 2) {
-				pk_backend_job_message (job, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be between 1 (highest) and 99");
+				pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED, "Priorities has to be between 1 (highest) and 99");
 			} else {
 				for (gint i = 0; i < length; i++) {
 					gint tmp = g_ascii_digit_value (value[i]);
 
 					if (tmp == -1) {
-						pk_backend_job_message (job, PK_MESSAGE_ENUM_PRIORITY_INVALID, "Priorities has to be a number between 1 (highest) and 99");
+						pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED, "Priorities has to be a number between 1 (highest) and 99");
 						prio = 0;
 						break;
 					} else {
