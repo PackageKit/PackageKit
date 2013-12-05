@@ -734,16 +734,14 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	gchar *search_tmp;
 	gchar *filters_text;
-	const gchar *provides_text;
 
-	provides_text = pk_provides_enum_to_string (provides);
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search_tmp = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "what-provides", filters_text, provides_text, search_tmp, NULL);
+	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "what-provides", filters_text, "any", search_tmp, NULL);
 	g_free (filters_text);
 	g_free (search_tmp);
 }
@@ -755,22 +753,4 @@ void
 pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-categories", NULL);
-}
-
-/**
- * pk_backend_get_provides:
- */
-PkBitfield pk_backend_get_provides(PkBackend *backend)
-{
-	PkBitfield provides;
-	provides = pk_bitfield_from_enums(
-		PK_PROVIDES_ENUM_CODEC,
-		PK_PROVIDES_ENUM_FONT,
-		PK_PROVIDES_ENUM_MIMETYPE,
-		PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
-		PK_PROVIDES_ENUM_PLASMA_SERVICE,
-		PK_PROVIDES_ENUM_ANY,
-		-1);
-
-	return provides;
 }
