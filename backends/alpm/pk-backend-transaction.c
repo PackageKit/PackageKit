@@ -386,9 +386,6 @@ pk_backend_output (PkBackend *self, const gchar *output)
 		}
 
 		g_string_append (toutput, output);
-	} else {
-		PkMessageEnum type = PK_MESSAGE_ENUM_UNKNOWN;
-		pk_backend_job_message (self, type, "%s", output);
 	}
 }
 
