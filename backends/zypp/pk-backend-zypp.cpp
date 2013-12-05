@@ -3340,9 +3340,7 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
  * pk_backend_what_provides_decompose: maps enums to provides
  */
 static gchar **
-pk_backend_what_provides_decompose (PkBackendJob *job,
-				    PkProvidesEnum provides,
-				    gchar **values)
+pk_backend_what_provides_decompose (PkBackendJob *job, gchar **values)
 {
 	guint i;
 	guint len;
@@ -3353,48 +3351,15 @@ pk_backend_what_provides_decompose (PkBackendJob *job,
 	len = g_strv_length (values);
 	array = g_ptr_array_new_with_free_func (g_free);
 	for (i=0; i<len; i++) {
-		MIL << provides << " " << values[i] << endl;
 		/* compatibility with previous versions of GPK */
-		if (g_str_has_prefix (values[i], "gstreamer0.10(") ||
-		    g_str_has_prefix (values[i], "gstreamer1(")) {
-			g_ptr_array_add (array, g_strdup (values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
-			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
-			g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_FONT) {
-			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-			g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER) {
-			g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_PLASMA_SERVICE) {
-			/* We need to allow the Plasma version to be specified. */
-			if (g_str_has_prefix (values[i], "plasma")) {
-				g_ptr_array_add (array, g_strdup (values[i]));
-			} else {
-				/* For compatibility, we default to plasma4. */
-				g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
-			}
-		} else if (provides == PK_PROVIDES_ENUM_ANY) {
-			/* We need to allow the Plasma version to be specified. */
-			if (g_str_has_prefix (values[i], "plasma")) {
-				g_ptr_array_add (array, g_strdup (values[i]));
-			} else {
-				g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
-				g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
-			}
-		} else {
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
-						  "provide type %s not supported",
-						  pk_provides_enum_to_string (provides));
-			goto out;
-		}
+		g_ptr_array_add (array, g_strdup (values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
 	}
 	search = pk_ptr_array_to_strv (array);
 	for (i = 0; search[i] != NULL; i++)
@@ -3410,10 +3375,8 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 	
 	gchar **values;
 	PkBitfield _filters;
-	PkProvidesEnum provides;
-	g_variant_get(params, "(tu^a&s)",
+	g_variant_get(params, "(t^a&s)",
 		      &_filters,
-		      &provides,
 		      &values);
 	
 	ZyppJob zjob(job);
@@ -3427,7 +3390,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	ResPool pool = zypp_build_pool (zypp, true);
 
-	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", values[0]) == 0) {
+	if(g_ascii_strcasecmp("drivers_for_attached_hardware", values[0]) == 0) {
 		// solver run
 		Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
@@ -3464,7 +3427,6 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	} else {
 		gchar **search = pk_backend_what_provides_decompose (job,
-								     provides,
 								     values);
 		
 		guint len = g_strv_length (search);
@@ -3489,7 +3451,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
   * pk_backend_what_provides
   */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provide, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, backend_what_provides_thread, NULL, NULL);
 }
@@ -3783,23 +3745,4 @@ ZyppBackend::ZyppBackendReceiver::zypp_signature_required (const string &file)
 		ok = true;
 
 	return ok;
-}
-
-/**
- * pk_backend_get_provides:
- */
-PkBitfield pk_backend_get_provides(PkBackend *backend)
-{
-	PkBitfield provides;
-	provides = pk_bitfield_from_enums(
-		PK_PROVIDES_ENUM_CODEC,
-		PK_PROVIDES_ENUM_FONT,
-		PK_PROVIDES_ENUM_MIMETYPE,
-		PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
-		PK_PROVIDES_ENUM_PLASMA_SERVICE,
-		PK_PROVIDES_ENUM_HARDWARE_DRIVER,
-		PK_PROVIDES_ENUM_ANY,
-		-1);
-
-	return provides;
 }
