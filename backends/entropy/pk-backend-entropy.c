@@ -219,16 +219,13 @@ void
 pk_backend_what_provides(PkBackend *backend,
 			 PkBackendJob *job,
 			 PkBitfield filters,
-			 PkProvidesEnum provides,
 			 gchar **search)
 {
 	gchar *filters_text;
-	const gchar *provides_text;
-	provides_text = pk_provides_enum_to_string(provides);
 	filters_text = pk_filter_bitfield_to_string(filters);
 	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
 				"what-provides", filters_text,
-				provides_text, search, NULL);
+				"any", search, NULL);
 	g_free(filters_text);
 }
 
