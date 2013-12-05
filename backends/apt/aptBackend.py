@@ -156,7 +156,7 @@ MATCH_BUG_CLOSES_UBUNTU = r"lp:\s+\#\d+(?:,\s*\#\d+)*"
 HREF_BUG_UBUNTU = "https://bugs.launchpad.net/bugs/%s"
 
 # Regular expression to find cve references
-MATCH_CVE="CVE-\d{4}-\d{4}"
+MATCH_CVE="CVE-\d{4}-\d{4,}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"

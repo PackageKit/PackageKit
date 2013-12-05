@@ -267,7 +267,7 @@ GPtrArray* getCVEUrls(const string &changelog)
     // Regular expression to find cve references
     GRegex *regex;
     GMatchInfo *match_info;
-    regex = g_regex_new("CVE-\\d{4}-\\d{4}",
+    regex = g_regex_new("CVE-\\d{4}-\\d{4,}",
                         G_REGEX_CASELESS,
                         G_REGEX_MATCH_NEWLINE_ANY,
                         0);
