@@ -1543,7 +1543,7 @@ pk_backend_what_provides_timeout (gpointer data)
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	priv->values = values;
@@ -1670,18 +1670,4 @@ const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	return "Richard Hughes <richard@hughsie.com>";
-}
-
-/**
- * pk_backend_get_provides:
- */
-PkBitfield pk_backend_get_provides(PkBackend *backend)
-{
-	PkBitfield provides;
-	provides = pk_bitfield_from_enums(
-		PK_PROVIDES_ENUM_CODEC,
-		PK_PROVIDES_ENUM_ANY,
-		-1);
-
-	return provides;
 }
