@@ -447,8 +447,7 @@ pk_backend_search_names (PkBackend *self, PkBitfield filters, gchar **values)
 }
 
 void
-pk_backend_what_provides (PkBackend *self, PkBitfield filters,
-			  PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *self, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (values != NULL);
