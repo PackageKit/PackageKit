@@ -5,8 +5,8 @@ PackageKit Release Notes
 git shortlog PACKAGEKIT_0_8_14.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.8.15
-~~~~~~~~~~~~~~
+Version 0.9.1
+~~~~~~~~~~~~~
 Released: 2013-xx-xx
 
 Notes:
@@ -32,8 +32,8 @@ git add po/*.po
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.8.15"
-git tag -s -f -m "Release 0.8.15" PACKAGEKIT_0_8_15
+git commit -a -m "Release version 0.9.1"
+git tag -s -f -m "Release 0.9.1" PACKAGEKIT_0_9_1
 <gpg password>
 git push --tags
 git push
@@ -58,9 +58,8 @@ git push
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 0.8.15 released!
+PackageKit 0.9.1 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
 =================================================
-
