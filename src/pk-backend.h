@@ -103,7 +103,6 @@ const gchar	*pk_backend_get_author			(PkBackend	*backend)
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
-PkBitfield	 pk_backend_get_provides		(PkBackend	*backend);
 gchar		**pk_backend_get_mime_types		(PkBackend	*backend);
 gboolean	 pk_backend_supports_parallelization	(PkBackend	*backend);
 void		 pk_backend_initialize			(PkBackend	*backend);
@@ -207,7 +206,6 @@ void		 pk_backend_repo_set_data		(PkBackend	*backend,
 void		 pk_backend_what_provides		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
-							 PkProvidesEnum provides,
 							 gchar		**search);
 void		 pk_backend_get_packages		(PkBackend	*backend,
 							 PkBackendJob	*job,

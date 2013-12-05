@@ -329,22 +329,6 @@ static const PkEnumMatch enum_upgrade[] = {
 	{0, NULL}
 };
 
-static const PkEnumMatch enum_provides[] = {
-	{PK_PROVIDES_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_PROVIDES_ENUM_ANY,			"any"},
-	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
-	{PK_PROVIDES_ENUM_CODEC,		"codec"},
-	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
-	{PK_PROVIDES_ENUM_HARDWARE_DRIVER,	"driver"},
-	{PK_PROVIDES_ENUM_FONT,			"font"},
-	{PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,	"postscript-driver"},
-	{PK_PROVIDES_ENUM_PLASMA_SERVICE,	"plasma-service"},
-	{PK_PROVIDES_ENUM_SHARED_LIB,		"shared-library"},
-	{PK_PROVIDES_ENUM_PYTHON,		"python-module"},
-	{PK_PROVIDES_ENUM_LANGUAGE_SUPPORT,     "language-support"},
-	{0, NULL}
-};
-
 static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
@@ -504,38 +488,6 @@ const gchar *
 pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade)
 {
 	return pk_enum_find_string (enum_upgrade, upgrade);
-}
-
-/**
- * pk_provides_enum_from_string:
- * @provides: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_PROVIDES_ENUM_MODALIAS
- *
- * Since: 0.5.0
- **/
-PkProvidesEnum
-pk_provides_enum_from_string (const gchar *provides)
-{
-	return pk_enum_find_value (enum_provides, provides);
-}
-
-/**
- * pk_provides_enum_to_string:
- * @provides: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "codec"
- *
- * Since: 0.5.0
- **/
-const gchar *
-pk_provides_enum_to_string (PkProvidesEnum provides)
-{
-	return pk_enum_find_string (enum_provides, provides);
 }
 
 /**

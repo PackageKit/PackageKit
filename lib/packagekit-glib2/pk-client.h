@@ -224,7 +224,6 @@ void		 pk_client_get_requires_async		(PkClient		*client,
 
 void		 pk_client_what_provides_async		(PkClient		*client,
 							 PkBitfield		 filters,
-							 PkProvidesEnum		 provides,
 							 gchar			**values,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,

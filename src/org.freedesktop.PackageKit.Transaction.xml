@@ -1388,15 +1388,6 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="u" name="type" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A PkProvideType, e.g. <doc:tt>PK_PROVIDES_ENUM_CODEC</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
       <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>

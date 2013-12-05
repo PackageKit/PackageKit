@@ -91,7 +91,6 @@ typedef struct {
 	gchar				*transaction_id;
 	gchar				**values;
 	PkBitfield			 filters;
-	PkProvidesEnum			 provides;
 	guint				 retry_id;
 } PkTaskState;
 
@@ -264,7 +263,7 @@ pk_task_do_async_action (PkTaskState *state)
 					      state->cancellable, state->progress_callback, state->progress_user_data,
 					      (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		pk_client_what_provides_async (PK_CLIENT(state->task), state->filters, state->provides, state->values,
+		pk_client_what_provides_async (PK_CLIENT(state->task), state->filters, state->values,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_GET_FILES) {
@@ -1816,7 +1815,6 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
  * pk_task_what_provides_async:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
- * @provides: a #PkProvidesEnum type
  * @values: (array zero-terminated=1): values to search for
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -1829,7 +1827,8 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
  * Since: 0.6.5
  **/
 void
-pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
+pk_task_what_provides_async (PkTask *task, PkBitfield filters,
+			     gchar **values, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1854,7 +1853,6 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
 	state->ret = FALSE;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
-	state->provides = provides;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 

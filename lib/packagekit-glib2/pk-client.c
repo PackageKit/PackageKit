@@ -114,7 +114,6 @@ typedef struct {
 	PkClient			*client;
 	PkProgress			*progress;
 	PkProgressCallback		 progress_callback;
-	PkProvidesEnum			 provides;
 	PkResults			*results;
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
@@ -1708,9 +1707,8 @@ pk_client_set_hints_cb (GObject *source_object,
 			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		g_dbus_proxy_call (state->proxy, "WhatProvides",
-				   g_variant_new ("(tu^a&s)",
+				   g_variant_new ("(t^a&s)",
 						  state->filters,
-						  state->provides,
 						  state->search),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -3070,7 +3068,6 @@ out:
  * pk_client_what_provides_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -3085,7 +3082,10 @@ out:
  * Since: 0.5.2
  **/
 void
-pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
+pk_client_what_provides_async (PkClient *client,
+			       PkBitfield filters,
+			       gchar **values,
+			       GCancellable *cancellable,
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -3113,7 +3113,6 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 							       NULL);
 	}
 	state->filters = filters;
-	state->provides = provides;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;

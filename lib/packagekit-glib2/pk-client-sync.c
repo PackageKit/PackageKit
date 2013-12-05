@@ -764,7 +764,6 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * pk_client_what_provides:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -783,7 +782,10 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
+pk_client_what_provides (PkClient *client,
+			 PkBitfield filters,
+			 gchar **values,
+			 GCancellable *cancellable,
 			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper helper;
@@ -801,7 +803,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_what_provides_async (client, filters, provides, values, cancellable, progress_callback, progress_user_data,
+	pk_client_what_provides_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				       (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
 	g_main_loop_run (helper.loop);

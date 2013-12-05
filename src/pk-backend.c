@@ -167,7 +167,6 @@ typedef struct {
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
-							 PkProvidesEnum	 provides,
 							 gchar		**values);
 	void		(*repair_system)		(PkBackend	*backend,
 							 PkBackendJob	*job,
@@ -338,21 +337,6 @@ pk_backend_get_roles (PkBackend *backend)
 	backend->priv->backend_roles_set = TRUE;
 out:
 	return backend->priv->roles;
-}
-
-/**
- * pk_backend_get_provides:
- **/
-PkBitfield
-pk_backend_get_provides (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_PROVIDES_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->loaded, PK_PROVIDES_ENUM_UNKNOWN);
-
-	/* not compulsory */
-	if (backend->priv->desc->get_provides == NULL)
-		return PK_PROVIDES_ENUM_UNKNOWN;
-	return backend->priv->desc->get_provides (backend);
 }
 
 /**
@@ -1422,7 +1406,8 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job,
+			  PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->what_provides != NULL);
@@ -1433,9 +1418,8 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_WHAT_PROVIDES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(tu^as)",
 							   filters,
-							   provides,
 							   values));
-	backend->priv->desc->what_provides (backend, job, filters, provides, values);
+	backend->priv->desc->what_provides (backend, job, filters, values);
 }
 
 /**

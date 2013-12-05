@@ -4,6 +4,12 @@ Guide to porting backends from 0.8.x to 0.9.x
    cannot or should not be run or just do the right thing. Users don't want to
    see technical messages from a package manager.
 
+ * Remove the PkProvidesEnum parameter from pk_backend_what_provides() -- all
+   provides should be done as if ANY is specified.
+
+ * Remove pk_backend_get_provides() from any backend that implements it, it's no
+   longer needed.
+
 Guide to porting backends from 0.7.x to 0.8.x
 
  * Remove any Simulate* methods from pk-backend-*.c

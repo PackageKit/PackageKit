@@ -213,7 +213,6 @@ void		 pk_task_get_requires_async		(PkTask			*task,
 							 gpointer		 user_data);
 void		 pk_task_what_provides_async		(PkTask			*task,
 							 PkBitfield		 filters,
-							 PkProvidesEnum		 provides,
 							 gchar			**values,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,

@@ -422,27 +422,6 @@ typedef enum {
 } PkSigTypeEnum;
 
 /**
- * PkProvidesEnum:
- *
- * Some component types packages can provide
- **/
-typedef enum {
-	PK_PROVIDES_ENUM_UNKNOWN,
-	PK_PROVIDES_ENUM_ANY,
-	PK_PROVIDES_ENUM_MODALIAS,
-	PK_PROVIDES_ENUM_CODEC,
-	PK_PROVIDES_ENUM_MIMETYPE,
-	PK_PROVIDES_ENUM_FONT,
-	PK_PROVIDES_ENUM_HARDWARE_DRIVER,
-	PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,
-	PK_PROVIDES_ENUM_PLASMA_SERVICE,
-	PK_PROVIDES_ENUM_SHARED_LIB,
-	PK_PROVIDES_ENUM_PYTHON,
-	PK_PROVIDES_ENUM_LANGUAGE_SUPPORT,
-	PK_PROVIDES_ENUM_LAST
-} PkProvidesEnum;
-
-/**
  * PkMediaTypeEnum:
  *
  * The media type
@@ -535,9 +514,6 @@ const gchar	*pk_group_enum_to_string		(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_string		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_string		(PkFilterEnum	 filter);
-
-PkProvidesEnum	 pk_provides_enum_from_string		(const gchar	*provides);
-const gchar	*pk_provides_enum_to_string		(PkProvidesEnum	 provides);
 
 PkDistroUpgradeEnum pk_distro_upgrade_enum_from_string	(const gchar	*upgrade);
 const gchar	*pk_distro_upgrade_enum_to_string	(PkDistroUpgradeEnum upgrade);

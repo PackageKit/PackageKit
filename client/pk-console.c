@@ -2293,7 +2293,6 @@ main (int argc, char *argv[])
 		}
 		pk_task_what_provides_async (PK_TASK (ctx->task),
 					     ctx->filters,
-					     PK_PROVIDES_ENUM_ANY,
 					     argv + 2,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,

@@ -129,7 +129,6 @@ struct PkTransactionPrivate
 	gchar			*cached_value;
 	gchar			*cached_directory;
 	gchar			*cached_cat_id;
-	PkProvidesEnum		 cached_provides;
 	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
@@ -2123,7 +2122,6 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_what_provides (priv->backend,
 					  priv->job,
 					  priv->cached_filters,
-					  priv->cached_provides,
 					  priv->cached_values);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
@@ -5028,7 +5026,6 @@ pk_transaction_what_provides (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	PkProvidesEnum provides;
 	GError *error = NULL;
 	PkBitfield filter;
 	gchar **values;
@@ -5036,13 +5033,11 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(tu^a&s)",
+	g_variant_get (params, "(t^a&s)",
 		       &filter,
-		       &provides,
 		       &values);
 
-	g_debug ("WhatProvides method called: %s, %s",
-		 pk_provides_enum_to_string (provides),
+	g_debug ("WhatProvides method called: %s",
 		 values[0]);
 
 	/* not implemented yet */
@@ -5064,7 +5059,6 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
-	transaction->priv->cached_provides = provides;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
 
 	/* try to commit this */

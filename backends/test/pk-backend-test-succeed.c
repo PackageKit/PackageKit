@@ -325,7 +325,7 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *ri
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_finished (job);
 }

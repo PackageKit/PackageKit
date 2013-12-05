@@ -132,7 +132,6 @@ PkResults	*pk_client_get_requires			(PkClient		*client,
 
 PkResults	*pk_client_what_provides		(PkClient		*client,
 							 PkBitfield		 filters,
-							 PkProvidesEnum		 provides,
 							 gchar			**values,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,

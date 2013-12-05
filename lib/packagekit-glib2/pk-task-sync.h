@@ -159,7 +159,6 @@ PkResults	*pk_task_get_requires_sync		(PkTask			*task,
 
 PkResults	*pk_task_what_provides_sync		(PkTask			*task,
 							 PkBitfield		 filters,
-							 PkProvidesEnum		 provides,
 							 gchar			**values,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
