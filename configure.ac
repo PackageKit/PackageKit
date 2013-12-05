@@ -52,8 +52,8 @@ AC_SUBST(PK_VERSION)
 # - If the interface is the same as the previous version, but bugs are
 #   fixed, change:
 #      REVISION += 1
-LT_CURRENT=17
-LT_REVISION=1
+LT_CURRENT=18
+LT_REVISION=0
 LT_AGE=1
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)

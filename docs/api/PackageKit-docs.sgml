@@ -75,7 +75,6 @@
     <xi:include href="xml/pk-eula-required.xml"/>
     <xi:include href="xml/pk-files.xml"/>
     <xi:include href="xml/pk-media-change-required.xml"/>
-    <xi:include href="xml/pk-message.xml"/>
     <xi:include href="xml/pk-package-sack.xml"/>
     <xi:include href="xml/pk-package.xml"/>
     <xi:include href="xml/pk-progress.xml"/>

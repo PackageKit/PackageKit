@@ -33,7 +33,6 @@ libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 HEADER_FILES =							\
 	packagekit.h						\
 	pk-bitfield.h						\
-	pk-catalog.h						\
 	pk-category.h						\
 	pk-client.h						\
 	pk-client-helper.h					\
@@ -49,7 +48,6 @@ HEADER_FILES =							\
 	pk-eula-required.h					\
 	pk-files.h						\
 	pk-media-change-required.h				\
-	pk-message.h						\
 	pk-item-progress.h					\
 	pk-package.h						\
 	pk-package-id.h						\
@@ -61,7 +59,6 @@ HEADER_FILES =							\
 	pk-repo-signature-required.h				\
 	pk-require-restart.h					\
 	pk-results.h						\
-	pk-service-pack.h					\
 	pk-source.h						\
 	pk-task.h						\
 	pk-task-sync.h						\
@@ -78,8 +75,6 @@ libpackagekit_glib2_la_SOURCES =				\
 	packagekit.h						\
 	pk-bitfield.c						\
 	pk-bitfield.h						\
-	pk-catalog.c						\
-	pk-catalog.h						\
 	pk-category.c						\
 	pk-category.h						\
 	pk-client.c						\
@@ -114,8 +109,6 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-files.h						\
 	pk-media-change-required.c				\
 	pk-media-change-required.h				\
-	pk-message.c						\
-	pk-message.h						\
 	pk-item-progress.c					\
 	pk-item-progress.h					\
 	pk-package.c						\
@@ -138,8 +131,6 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-require-restart.h					\
 	pk-results.c						\
 	pk-results.h						\
-	pk-service-pack.c					\
-	pk-service-pack.h					\
 	pk-source.c						\
 	pk-source.h						\
 	pk-task.c						\

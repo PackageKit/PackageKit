@@ -548,7 +548,7 @@ main (int argc, char *argv[])
 
 	/* just update the system */
 	task = pk_task_new ();
-	pk_task_set_interactive (task, FALSE);
+	pk_client_set_interactive (PK_CLIENT (task), FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
 	/* TRANSLATORS: we've started doing offline updates */
 	pk_offline_update_set_plymouth_msg (_("Installing updates, this could take a while…"));

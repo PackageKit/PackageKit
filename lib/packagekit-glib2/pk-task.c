@@ -2276,44 +2276,6 @@ pk_task_get_only_download (PkTask *task)
 }
 
 /**
- * pk_task_set_interactive:
- * @task: a valid #PkTask instance
- * @interactive: if we are interactive
- *
- * Sets the interactive mode, i.e. if the user is allowed to ask
- * questions.
- *
- * This method is deprecated, use pk_client_set_interactive() instead.
- *
- * Since: 0.6.10
- **/
-void
-pk_task_set_interactive (PkTask *task, gboolean interactive)
-{
-	g_return_if_fail (PK_IS_TASK (task));
-	pk_client_set_interactive (PK_CLIENT (task), interactive);
-}
-
-/**
- * pk_task_get_interactive:
- * @task: a valid #PkTask instance
- *
- * Gets if the transaction is interactive.
- *
- * This method is deprecated, use pk_client_get_interactive() instead.
- *
- * Return value: %TRUE for an interactive transaction.
- *
- * Since: 0.6.10
- **/
-gboolean
-pk_task_get_interactive (PkTask *task)
-{
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	return pk_client_get_interactive (PK_CLIENT (task));
-}
-
-/**
  * pk_task_get_property:
  **/
 static void

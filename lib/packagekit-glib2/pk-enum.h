@@ -78,7 +78,6 @@ typedef enum {
 	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 	PK_ROLE_ENUM_GET_CATEGORIES,
 	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 0.6.11 */
 	PK_ROLE_ENUM_REPAIR_SYSTEM,			/* Since: 0.7.2 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
@@ -229,31 +228,6 @@ typedef enum {
 	PK_RESTART_ENUM_SECURITY_SYSTEM,
 	PK_RESTART_ENUM_LAST
 } PkRestartEnum;
-
-/**
- * PkMessageEnum:
- *
- * What message type we need to show
- **/
-typedef enum {
-	PK_MESSAGE_ENUM_UNKNOWN,
-	PK_MESSAGE_ENUM_BROKEN_MIRROR,
-	PK_MESSAGE_ENUM_CONNECTION_REFUSED,
-	PK_MESSAGE_ENUM_PARAMETER_INVALID,
-	PK_MESSAGE_ENUM_PRIORITY_INVALID,
-	PK_MESSAGE_ENUM_BACKEND_ERROR,
-	PK_MESSAGE_ENUM_DAEMON_ERROR,
-	PK_MESSAGE_ENUM_CACHE_BEING_REBUILT,
-	PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,
-	PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,
-	PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-	PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED,
-	PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED,
-	PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED,
-	PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY,
-	PK_MESSAGE_ENUM_OTHER_UPDATES_HELD_BACK,
-	PK_MESSAGE_ENUM_LAST
-} PkMessageEnum;
 
 /**
  * PkErrorEnum:
@@ -555,11 +529,6 @@ const gchar	*pk_error_enum_to_string		(PkErrorEnum code);
 
 PkRestartEnum	 pk_restart_enum_from_string		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_string		(PkRestartEnum	 restart);
-
-G_DEPRECATED
-PkMessageEnum	 pk_message_enum_from_string		(const gchar	*message);
-G_DEPRECATED
-const gchar	*pk_message_enum_to_string		(PkMessageEnum	 message);
 
 PkGroupEnum	 pk_group_enum_from_string		(const gchar	*group);
 const gchar	*pk_group_enum_to_string		(PkGroupEnum	 group);

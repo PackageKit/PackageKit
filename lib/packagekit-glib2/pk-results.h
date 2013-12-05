@@ -36,7 +36,6 @@
 #include <packagekit-glib2/pk-eula-required.h>
 #include <packagekit-glib2/pk-files.h>
 #include <packagekit-glib2/pk-media-change-required.h>
-#include <packagekit-glib2/pk-message.h>
 #include <packagekit-glib2/pk-package-sack.h>
 #include <packagekit-glib2/pk-repo-detail.h>
 #include <packagekit-glib2/pk-repo-signature-required.h>
@@ -110,9 +109,6 @@ gboolean	 pk_results_add_media_change_required	(PkResults		*results,
 							 PkMediaChangeRequired	*item);
 gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
 							 PkRepoDetail		*item);
-G_DEPRECATED
-gboolean	 pk_results_add_message 		(PkResults		*results,
-							 PkMessage		*item);
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);

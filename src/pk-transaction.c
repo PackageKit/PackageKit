@@ -45,7 +45,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-service-pack.h>
 #include <polkit/polkit.h>
 
 #include "pk-backend.h"

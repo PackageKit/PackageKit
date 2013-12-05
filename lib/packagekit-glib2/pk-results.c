@@ -64,7 +64,6 @@ struct _PkResultsPrivate
 	GPtrArray		*eula_required_array;
 	GPtrArray		*media_change_required_array;
 	GPtrArray		*repo_detail_array;
-	GPtrArray		*message_array;
 	PkPackageSack		*package_sack;
 };
 
@@ -464,29 +463,6 @@ pk_results_set_error_code (PkResults *results, PkError *item)
 }
 
 /**
- * pk_results_add_message:
- * @results: a valid #PkResults instance
- * @item: the object to add to the array
- *
- * Adds some message details to the results set.
- *
- * Return value: %TRUE if the value was set
- *
- * Since: 0.5.2
- **/
-gboolean
-pk_results_add_message (PkResults *results, PkMessage *item)
-{
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
-
-	/* copy and add to array */
-	g_ptr_array_add (results->priv->message_array, g_object_ref (item));
-
-	return TRUE;
-}
-
-/**
  * pk_results_get_exit_code:
  * @results: a valid #PkResults instance
  *
@@ -828,23 +804,6 @@ pk_results_get_repo_detail_array (PkResults *results)
 }
 
 /**
- * pk_results_get_message_array:
- * @results: a valid #PkResults instance
- *
- * Gets the messages from the transaction.
- *
- * Return value: (element-type PkMessage) (transfer container): A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
- *
- * Since: 0.5.2
- **/
-GPtrArray *
-pk_results_get_message_array (PkResults *results)
-{
-	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->message_array);
-}
-
-/**
  * pk_results_class_init:
  **/
 static void
@@ -924,7 +883,6 @@ pk_results_init (PkResults *results)
 	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->message_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
 /**
@@ -947,7 +905,6 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->eula_required_array);
 	g_ptr_array_unref (priv->media_change_required_array);
 	g_ptr_array_unref (priv->repo_detail_array);
-	g_ptr_array_unref (priv->message_array);
 	g_object_unref (priv->package_sack);
 	if (results->priv->progress != NULL)
 		g_object_unref (results->priv->progress);

@@ -28,8 +28,6 @@
 
 #define __PACKAGEKIT_H_INSIDE__
 
-#include <packagekit-glib2/pk-catalog.h>
-#include <packagekit-glib2/pk-category.h>
 #include <packagekit-glib2/pk-category.h>
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-client-sync.h>
@@ -45,7 +43,6 @@
 #include <packagekit-glib2/pk-eula-required.h>
 #include <packagekit-glib2/pk-files.h>
 #include <packagekit-glib2/pk-media-change-required.h>
-#include <packagekit-glib2/pk-message.h>
 #include <packagekit-glib2/pk-item-progress.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
@@ -56,7 +53,6 @@
 #include <packagekit-glib2/pk-repo-signature-required.h>
 #include <packagekit-glib2/pk-require-restart.h>
 #include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-service-pack.h>
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-task-sync.h>
 #include <packagekit-glib2/pk-transaction-past.h>

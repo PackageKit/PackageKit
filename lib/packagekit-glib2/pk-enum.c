@@ -121,7 +121,6 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
 	{PK_ROLE_ENUM_GET_CATEGORIES,			"get-categories"},
 	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
-	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{0, NULL}
 };
@@ -206,26 +205,6 @@ static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_APPLICATION,		"application"},
 	{PK_RESTART_ENUM_SECURITY_SYSTEM,	"security-system"},
 	{PK_RESTART_ENUM_SECURITY_SESSION,	"security-session"},
-	{0, NULL}
-};
-
-static const PkEnumMatch enum_message[] = {
-	{PK_MESSAGE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_MESSAGE_ENUM_BROKEN_MIRROR,		"broken-mirror"},
-	{PK_MESSAGE_ENUM_CONNECTION_REFUSED,	"connection-refused"},
-	{PK_MESSAGE_ENUM_PARAMETER_INVALID,	"parameter-invalid"},
-	{PK_MESSAGE_ENUM_PRIORITY_INVALID,	"priority-invalid"},
-	{PK_MESSAGE_ENUM_BACKEND_ERROR,		"backend-error"},
-	{PK_MESSAGE_ENUM_DAEMON_ERROR,		"daemon-error"},
-	{PK_MESSAGE_ENUM_CACHE_BEING_REBUILT,	"cache-being-rebuilt"},
-	{PK_MESSAGE_ENUM_NEWER_PACKAGE_EXISTS,	"newer-package-exists"},
-	{PK_MESSAGE_ENUM_COULD_NOT_FIND_PACKAGE,	"could-not-find-package"},
-	{PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,	"config-files-changed"},
-	{PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED, "package-already-installed"},
-	{PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "autoremove-ignored"},
-	{PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED, "repo-metadata-download-failed"},
-	{PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY, "repo-for-developers-only"},
-	{PK_MESSAGE_ENUM_OTHER_UPDATES_HELD_BACK, "other-updates-held-back"},
 	{0, NULL}
 };
 
@@ -781,38 +760,6 @@ const gchar *
 pk_restart_enum_to_string (PkRestartEnum restart)
 {
 	return pk_enum_find_string (enum_restart, restart);
-}
-
-/**
- * pk_message_enum_from_string:
- * @message: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- *
- * Since: 0.5.0
- **/
-PkMessageEnum
-pk_message_enum_from_string (const gchar *message)
-{
-	return pk_enum_find_value (enum_message, message);
-}
-
-/**
- * pk_message_enum_to_string:
- * @message: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- *
- * Since: 0.5.0
- **/
-const gchar *
-pk_message_enum_to_string (PkMessageEnum message)
-{
-	return pk_enum_find_string (enum_message, message);
 }
 
 /**

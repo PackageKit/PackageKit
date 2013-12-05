@@ -26,7 +26,6 @@
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "pk-catalog.h"
 #include "pk-client.h"
 #include "pk-client-helper.h"
 #include "pk-common.h"
@@ -47,7 +46,6 @@
 #include "pk-control-sync.h"
 #include "pk-client-sync.h"
 #include "pk-progress-bar.h"
-#include "pk-service-pack.h"
 #include "pk-debug.h"
 
 /** ver:1.0 ***********************************************************/

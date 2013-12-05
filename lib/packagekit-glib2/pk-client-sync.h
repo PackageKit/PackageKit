@@ -239,15 +239,6 @@ PkResults	*pk_client_repo_set_data		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-G_DEPRECATED
-PkResults	*pk_client_upgrade_system		(PkClient		*client,
-							 const gchar		*distro_id,
-							 PkUpgradeKindEnum	 upgrade_kind,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
-
 PkResults	*pk_client_repair_system		(PkClient		*client,
 							 PkBitfield		 transaction_flags,
 							 GCancellable		*cancellable,
