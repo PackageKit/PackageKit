@@ -3368,7 +3368,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	GPtrArray *array = NULL;
 	guint i;
@@ -3381,19 +3381,9 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	array = g_ptr_array_new_with_free_func (g_free);
 
 	for (i = 0; i < g_strv_length (values); i++) {
-		if (provides == PK_PROVIDES_ENUM_ANY) {
-			g_ptr_array_add (array, g_strdup_printf ("%s", values[i]));
-			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10\\(%s\\)", values[i]));
-			g_ptr_array_add (array, g_strdup_printf ("mimetype\\(%s\\)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
-			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10\\(%s\\)", values[i]));
-		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-			g_ptr_array_add (array, g_strdup_printf ("mimetype\\(%s\\)", values[i]));
-		} else {
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
-					       "provide type '%s' not supported",
-					       pk_provides_enum_to_string (provides));
-		}
+		g_ptr_array_add (array, g_strdup_printf ("%s", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10\\(%s\\)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("mimetype\\(%s\\)", values[i]));
 	}
 
 	pk_backend_job_thread_create (job, search_package_thread, array, NULL);
