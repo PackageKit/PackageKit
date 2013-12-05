@@ -624,12 +624,19 @@ out:
 	return ret;
 }
 
+typedef enum {
+	HIF_CREATE_SACK_FLAG_NONE,
+	HIF_CREATE_SACK_FLAG_USE_CACHE,
+	HIF_CREATE_SACK_FLAG_LAST
+} HifCreateSackFlags;
+
 /**
  * hif_utils_create_sack_for_filters:
  */
 static HySack
 hif_utils_create_sack_for_filters (PkBackendJob *job,
 				   PkBitfield filters,
+				   HifCreateSackFlags create_flags,
 				   HifState *state,
 				   GError **error)
 {
@@ -638,7 +645,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	gchar *cache_key = NULL;
 	gint rc;
 	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
-	HifSackCacheItem *cache_item;
+	HifSackCacheItem *cache_item = NULL;
 	HifState *state_local;
 	HySack sack = NULL;
 
@@ -652,7 +659,8 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* do we have anything in the cache */
 	cache_key = g_strdup_printf ("HySack::%i", flags);
-	cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
+	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0)
+		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
 	if (cache_item != NULL && cache_item->sack != NULL) {
 		if (cache_item->valid) {
 			ret = TRUE;
@@ -960,7 +968,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 	/* get sack */
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -1550,7 +1562,11 @@ pk_backend_get_details (PkBackend *backend,
 	filters = hif_get_filter_for_ids (package_ids);
 	g_assert (ret);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -1661,7 +1677,11 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
 	/* get sack */
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -2433,6 +2453,7 @@ pk_hy_convert_to_system_repo (PkBackendJob *job, HyPackage pkg, HifState *state,
 	/* get local packages */
 	sack = hif_utils_create_sack_for_filters (job,
 						  pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
 						  state,
 						  error);
 	if (sack == NULL)
@@ -3267,7 +3288,11 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	/* get sack */
 	filters = pk_bitfield_value (PK_FILTER_ENUM_INSTALLED);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -3403,7 +3428,11 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	/* get sack */
 	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -3535,7 +3564,11 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	g_assert (ret);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_NONE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -3653,7 +3686,11 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	/* get sack */
 	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -3819,7 +3856,11 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	g_variant_get (params, "(^a&s)", &package_ids);
 	filters = hif_get_filter_for_ids (package_ids);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
@@ -3928,7 +3969,11 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	/* get sack */
 	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	state_local = hif_state_get_child (job_data->state);
-	sack = hif_utils_create_sack_for_filters (job, filters, state_local, &error);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		g_error_free (error);
