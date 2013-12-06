@@ -776,7 +776,8 @@ class PackageKitEntropyClient(Client):
     def init_singleton(self):
         Client.init_singleton(self, url_fetcher = PkUrlFetcher)
 
-    def output(self, text, header = "", footer = "", back = False,
+    @classmethod
+    def output(cls, text, header = "", footer = "", back = False,
         importance = 0, level = "info", count = None, percent = False):
         """
         Reimplemented from entropy.output.TextInterface.
