@@ -61,7 +61,12 @@ HTML_IMAGES =						\
 content_files =						\
 	version.xml					\
 	dbus/org.freedesktop.PackageKit.ref.xml		\
-	dbus/org.freedesktop.PackageKit.Transaction.ref.xml
+	dbus/org.freedesktop.PackageKit.Transaction.ref.xml \
+	spec/pk-backend-compiled.xml			\
+	spec/pk-backend-spawn.xml			\
+	spec/pk-concepts.xml				\
+	spec/pk-introduction.xml
+
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
