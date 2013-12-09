@@ -374,7 +374,7 @@ hif_lock_take (HifLock *lock,
 	if (item->owner != g_thread_self ()) {
 		g_set_error (error,
 			     HIF_ERROR,
-			     PK_ERROR_ENUM_CANNOT_GET_LOCK,
+			     PK_ERROR_ENUM_LOCK_REQUIRED,
 			     "failed to obtain lock '%s' already taken by thread %p",
 			     hif_lock_type_to_string (type),
 			     item->owner);
