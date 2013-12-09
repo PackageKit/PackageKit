@@ -78,6 +78,9 @@ static void     pk_transaction_list_finalize	(GObject	*object);
 /* How long the transaction should be queriable after it is finished */
 #define PK_TRANSACTION_KEEP_FINISHED_TIMOUT		5 /* s */
 
+/* how many times we should retry a locked transaction */
+#define PK_TRANSACTION_LIST_MAX_LOCK_RETRIES	4
+
 struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
@@ -531,7 +534,7 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction,
 
 		g_debug ("transaction finished and requires lock now, attempt %i", item->tries);
 
-		if (item->tries > 4) {
+		if (item->tries > PK_TRANSACTION_LIST_MAX_LOCK_RETRIES) {
 			/* fail the transaction */
 			job = pk_transaction_get_backend_job (item->transaction);
 
