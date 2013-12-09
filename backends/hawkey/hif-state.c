@@ -47,7 +47,6 @@ struct _HifStatePrivate
 	gchar			*id;
 	gdouble			*step_profile;
 	gpointer		 error_handler_user_data;
-	gpointer		 lock_handler_user_data;
 	GTimer			*timer;
 	guint64			 speed;
 	guint64			*speed_data;
@@ -65,7 +64,6 @@ struct _HifStatePrivate
 	PkStatusEnum		 child_action;
 	HifState		*child;
 	HifStateErrorHandlerCb	 error_handler_cb;
-	HifStateLockHandlerCb	 lock_handler_cb;
 	HifState		*parent;
 	GPtrArray		*lock_ids;
 	HifLock			*lock;
@@ -113,25 +111,6 @@ hif_state_set_enable_profile (HifState *state, gboolean enable_profile)
 }
 
 /**
- * hif_state_set_lock_handler:
- **/
-void
-hif_state_set_lock_handler (HifState *state,
-			    HifStateLockHandlerCb lock_handler_cb,
-			    gpointer user_data)
-{
-	state->priv->lock_handler_cb = lock_handler_cb;
-	state->priv->lock_handler_user_data = user_data;
-
-	/* if there is an existing child, set the handler on this too */
-	if (state->priv->child != NULL) {
-		hif_state_set_lock_handler (state->priv->child,
-					    lock_handler_cb,
-					    user_data);
-	}
-}
-
-/**
  * hif_state_take_lock:
  **/
 gboolean
@@ -144,23 +123,14 @@ hif_state_take_lock (HifState *state,
 	guint lock_id = 0;
 
 	/* no custom handler */
-	if (state->priv->lock_handler_cb == NULL) {
-		lock_id = hif_lock_take (state->priv->lock,
-					 lock_type,
-					 lock_mode,
-					 error);
-		if (lock_id == 0)
-			ret = FALSE;
-	} else {
-		lock_id = G_MAXUINT;
-		ret = state->priv->lock_handler_cb (state,
-						    state->priv->lock,
-						    lock_type,
-						    error,
-						    state->priv->lock_handler_user_data);
-	}
-	if (!ret)
+	lock_id = hif_lock_take (state->priv->lock,
+				 lock_type,
+				 lock_mode,
+				 error);
+	if (lock_id == 0) {
+		ret = FALSE;
 		goto out;
+	}
 
 	/* add the lock to an array so we can release on completion */
 	g_debug ("adding lock %i", lock_id);
@@ -766,13 +736,6 @@ hif_state_get_child (HifState *state)
 	if (state->priv->cancellable == NULL)
 		state->priv->cancellable = g_cancellable_new ();
 	hif_state_set_cancellable (child, state->priv->cancellable);
-
-	/* set the lock handler if one exists on the child */
-	if (state->priv->lock_handler_cb != NULL) {
-		hif_state_set_lock_handler (child,
-					    state->priv->lock_handler_cb,
-					    state->priv->lock_handler_user_data);
-	}
 
 	/* set the profile state */
 	hif_state_set_enable_profile (child,

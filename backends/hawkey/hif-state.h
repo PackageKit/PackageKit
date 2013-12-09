@@ -72,11 +72,6 @@ struct _HifStateClass
 
 typedef gboolean (*HifStateErrorHandlerCb)		(const GError		*error,
 							 gpointer		 user_data);
-typedef gboolean (*HifStateLockHandlerCb)		(HifState		*state,
-							 HifLock		*lock,
-							 HifLockType		 lock_type,
-							 GError			**error,
-							 gpointer		 user_data);
 
 GType		 hif_state_get_type			(void);
 HifState	*hif_state_new				(void);
@@ -132,9 +127,6 @@ void		 hif_state_set_speed			(HifState		*state,
 							 guint64		 speed);
 
 /* lock handling */
-void		 hif_state_set_lock_handler		(HifState		*state,
-							 HifStateLockHandlerCb	 lock_handler_cb,
-							 gpointer		 user_data);
 gboolean	 hif_state_take_lock			(HifState		*state,
 							 HifLockType		 lock_type,
 							 HifLockMode		 lock_mode,
