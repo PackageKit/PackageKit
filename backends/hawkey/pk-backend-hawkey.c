@@ -4047,3 +4047,86 @@ pk_backend_get_update_detail (PkBackend *backend,
 {
 	pk_backend_job_thread_create (job, pk_backend_get_update_detail_thread, NULL, NULL);
 }
+
+/**
+ * pk_backend_repair_remove_rpm_index:
+ */
+static gboolean
+pk_backend_repair_remove_rpm_index (const gchar *index_fn, GError **error)
+{
+	GFile *file;
+	gboolean ret;
+	gchar *path;
+
+	path = g_build_filename ("/var/lib/rpm", index_fn, NULL);
+	g_debug ("deleting %s", path);
+	file = g_file_new_for_path (path);
+	ret = g_file_delete (file, NULL, error);
+	if (!ret)
+		goto out;
+out:
+	g_object_unref (file);
+	g_free (path);
+	return ret;
+}
+
+/**
+ * pk_backend_repair_system_thread:
+ */
+static void
+pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	GDir *dir = NULL;
+	GError *error = NULL;
+	PkBitfield transaction_flags;
+	const gchar *tmp;
+	gboolean ret;
+
+	/* don't do anything when simulating */
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	transaction_flags = pk_backend_job_get_transaction_flags (job);
+	if (pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+		goto out;
+
+	/* open the directory */
+	dir = g_dir_open ("/var/lib/rpm", 0, &error);
+	if (dir == NULL) {
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
+					   "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* remove the indexes */
+	while ((tmp = g_dir_read_name (dir)) != NULL) {
+		if (!g_str_has_prefix (tmp, "__db."))
+			continue;
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
+		ret = pk_backend_repair_remove_rpm_index (tmp, &error);
+		if (!ret) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_FILE_CONFLICTS,
+						   "Failed to delete %s: %s",
+						   tmp, error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_repair_system:
+ */
+void
+pk_backend_repair_system (PkBackend *backend,
+			  PkBackendJob *job,
+			  PkBitfield transaction_flags)
+{
+	pk_backend_job_thread_create (job, pk_backend_repair_system_thread, NULL, NULL);
+}
