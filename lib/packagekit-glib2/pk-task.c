@@ -687,6 +687,58 @@ out:
 }
 
 /**
+ * pk_task_repair_ready_cb:
+ **/
+static void
+pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
+{
+	PkTask *task = PK_TASK (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	PkError *error_code;
+
+	/* old results no longer valid */
+	if (state->results != NULL) {
+		g_object_unref (state->results);
+		state->results = NULL;
+	}
+
+	/* get the results */
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	if (results == NULL) {
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* we own a copy now */
+	state->results = g_object_ref (G_OBJECT(results));
+
+	/* get exit code */
+	state->exit_enum = pk_results_get_exit_code (state->results);
+
+	/* need untrusted */
+	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		error_code = pk_results_get_error_code (state->results);
+		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
+		error = g_error_new (PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_FAILED,
+				     "failed to repair: %s",
+				     pk_error_get_details (error_code));
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		g_object_unref (error_code);
+		goto out;
+	}
+
+	/* now try the action again */
+	pk_task_do_async_action (state);
+out:
+	if (results != NULL)
+		g_object_unref (results);
+}
+
+/**
  * pk_task_user_accepted_idle_cb:
  **/
 static gboolean
@@ -703,6 +755,18 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
 		g_debug ("need to do accept-eula");
 		pk_task_accept_eulas (state);
+		goto out;
+	}
+
+	/* this needs another step in the dance */
+	if (state->exit_enum == PK_EXIT_ENUM_REPAIR_REQUIRED) {
+		g_debug ("need to do repair");
+		pk_client_repair_system_async (PK_CLIENT(state->task),
+					       pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE),
+					       state->cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       (GAsyncReadyCallback) pk_task_repair_ready_cb, state);
 		goto out;
 	}
 
@@ -886,6 +950,31 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* run the callback */
 		klass->key_question (task, state->request, state->results);
+		goto out;
+	}
+
+	/* need repair */
+	if (state->exit_enum == PK_EXIT_ENUM_REPAIR_REQUIRED) {
+
+		/* running non-interactive */
+		if (!interactive) {
+			g_debug ("working non-interactive, so calling accept");
+			pk_task_user_accepted (state->task, state->request);
+			goto out;
+		}
+
+		/* no support */
+		if (klass->repair_question == NULL) {
+			error = g_error_new (PK_CLIENT_ERROR,
+					     PK_CLIENT_ERROR_NOT_SUPPORTED,
+					     "could not do repair question as no klass support");
+			pk_task_generic_state_finish (state, error);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* run the callback */
+		klass->repair_question (task, state->request, state->results);
 		goto out;
 	}
 

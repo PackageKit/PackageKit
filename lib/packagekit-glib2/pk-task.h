@@ -71,12 +71,14 @@ struct _PkTaskClass
 	void	 (*simulate_question)			(PkTask			*task,
 							 guint			 request,
 							 PkResults		*results);
+	void	 (*repair_question)			(PkTask			*task,
+							 guint			 request,
+							 PkResults		*results);
 	/* padding for future expansion */
 	void (*_pk_reserved1)	(void);
 	void (*_pk_reserved2)	(void);
 	void (*_pk_reserved3)	(void);
 	void (*_pk_reserved4)	(void);
-	void (*_pk_reserved5)	(void);
 };
 
 GType		 pk_task_get_type			(void);

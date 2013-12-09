@@ -1496,7 +1496,6 @@ pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
 							   transaction_flags));
