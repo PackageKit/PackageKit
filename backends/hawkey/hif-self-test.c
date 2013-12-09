@@ -639,17 +639,6 @@ hif_state_speed_func (void)
 	g_assert (state == NULL);
 }
 
-static gboolean
-hif_state_take_lock_cb (HifState *state,
-			HifLock *lock,
-			HifLockType lock_type,
-			GError **error,
-			gpointer user_data)
-{
-	/* just return success without asking or writing any files */
-	return TRUE;
-}
-
 static void
 hif_state_finished_func (void)
 {
@@ -712,8 +701,6 @@ hif_state_locking_func (void)
 	HifState *state;
 
 	state = hif_state_new ();
-	g_object_add_weak_pointer (G_OBJECT (state), (gpointer *) &state);
-	hif_state_set_lock_handler (state, hif_state_take_lock_cb, NULL);
 
 	/* lock once */
 	ret = hif_state_take_lock (state,
@@ -732,7 +719,6 @@ hif_state_locking_func (void)
 	g_assert (ret);
 
 	g_object_unref (state);
-	g_assert (state == NULL);
 }
 
 static void
