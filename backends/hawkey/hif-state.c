@@ -782,9 +782,6 @@ hif_state_set_number_steps_real (HifState *state, guint steps, const gchar *strl
 	if (state->priv->enable_profile)
 		g_timer_start (state->priv->timer);
 
-	/* imply reset */
-	hif_state_reset (state);
-
 	/* set steps */
 	state->priv->steps = steps;
 
