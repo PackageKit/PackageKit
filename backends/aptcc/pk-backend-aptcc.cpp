@@ -440,57 +440,35 @@ void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield fi
 
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PkProvidesEnum provides;
     PkBitfield filters;
     const gchar *provides_text;
     gchar **values;
     bool error = false;
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
-    g_variant_get(params, "(tu^a&s)",
+    g_variant_get(params, "(t^a&s)",
                   &filters,
-                  &provides,
                   &values);
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
     // We can handle libraries, mimetypes and codecs
-    if (provides == PK_PROVIDES_ENUM_SHARED_LIB ||
-            provides == PK_PROVIDES_ENUM_MIMETYPE ||
-            provides == PK_PROVIDES_ENUM_CODEC ||
-            provides == PK_PROVIDES_ENUM_ANY) {
-        if (!apt->init()) {
-            g_debug("Failed to create apt cache");
-            g_strfreev(values);
-            apt->emitFinished();
-            return;
-        }
-
-        pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-
-        PkgList output;
-        if (provides == PK_PROVIDES_ENUM_SHARED_LIB) {
-            apt->providesLibrary(output, values);
-        } else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-            apt->providesMimeType(output, values);
-        } else if (provides == PK_PROVIDES_ENUM_CODEC) {
-            apt->providesCodec(output, values);
-        } else {
-            // PK_PROVIDES_ENUM_ANY, just search for everything a package can provide
-            apt->providesLibrary(output, values);
-            apt->providesCodec(output, values);
-            apt->providesMimeType(output, values);
-        }
-
-        // It's faster to emit the packages here rather than in the matching part
-        apt->emitPackages(output, filters);
-    } else {
-        provides_text = pk_provides_enum_to_string(provides);
-        pk_backend_job_error_code(job,
-                                  PK_ERROR_ENUM_NOT_SUPPORTED,
-                                  "Provides %s not supported",
-                                  provides_text);
+    if (!apt->init()) {
+        g_debug("Failed to create apt cache");
+        g_strfreev(values);
+        apt->emitFinished();
+        return;
     }
+
+    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+
+    PkgList output;
+    apt->providesLibrary(output, values);
+    apt->providesCodec(output, values);
+    apt->providesMimeType(output, values);
+
+    // It's faster to emit the packages here rather than in the matching part
+    apt->emitPackages(output, filters);
 
     apt->emitFinished();
 }
@@ -501,7 +479,6 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
 void pk_backend_what_provides(PkBackend *backend,
                               PkBackendJob *job,
                               PkBitfield filters,
-                              PkProvidesEnum provides,
                               gchar **values)
 {
     pk_backend_job_thread_create(job, backend_what_provides_thread, NULL, NULL);
