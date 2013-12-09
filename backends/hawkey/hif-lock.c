@@ -51,7 +51,7 @@
 struct _HifLockPrivate
 {
 	GMutex			 mutex;
-	GPtrArray		*item_array;
+	GPtrArray		*item_array; /* of HifLockItem */
 };
 
 typedef struct {
