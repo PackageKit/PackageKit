@@ -546,6 +546,14 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 	gboolean ret;
 	gint rc;
 
+	/* take lock */
+	ret = hif_state_take_lock (state,
+				   HIF_LOCK_TYPE_METADATA,
+				   HIF_LOCK_MODE_PROCESS,
+				   error);
+	if (!ret)
+		goto out;
+
 	/* set state */
 	ret = hif_state_set_steps (state, error,
 				   50, /* download */

@@ -1195,8 +1195,23 @@ pk_backend_repo_set_data (PkBackend *backend,
 {
 	gboolean ret = FALSE;
 	GError *error = NULL;
-	GPtrArray *sources;
+	GPtrArray *sources = NULL;
 	HifSource *src;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	/* take lock */
+	ret = hif_state_take_lock (job_data->state,
+				   HIF_LOCK_TYPE_REPO,
+				   HIF_LOCK_MODE_PROCESS,
+				   &error);
+	if (!ret) {
+		pk_backend_job_error_code (job,
+					   error->code,
+					   "failed to get lock: %s",
+					   error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
