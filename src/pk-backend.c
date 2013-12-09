@@ -188,6 +188,8 @@ struct PkBackendPrivate
 	GFileMonitor		*monitor;
 	PkNetwork		*network;
 	gboolean		 backend_roles_set;
+	GHashTable		*thread_hash;
+	GMutex			 thread_hash_mutex;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -236,6 +238,44 @@ pk_backend_supports_parallelization (PkBackend	*backend)
 	if (backend->priv->desc->supports_parallelization == NULL)
 		return FALSE;
 	return backend->priv->desc->supports_parallelization (backend);
+}
+
+/**
+ * pk_backend_thread_start:
+ **/
+void
+pk_backend_thread_start (PkBackend *backend, PkBackendJob *job, gpointer func)
+{
+	GMutex *mutex;
+	gboolean ret;
+
+	g_mutex_lock (&backend->priv->thread_hash_mutex);
+	mutex = g_hash_table_lookup (backend->priv->thread_hash, func);
+	if (mutex == NULL) {
+		mutex = g_new0 (GMutex, 1);
+		g_mutex_init (mutex);
+		g_hash_table_insert (backend->priv->thread_hash, func, mutex);
+	}
+	g_mutex_unlock (&backend->priv->thread_hash_mutex);
+
+	ret = g_mutex_trylock (mutex);
+	if (!ret) {
+		pk_backend_job_set_status (job,
+					   PK_STATUS_ENUM_WAITING_FOR_LOCK);
+		g_mutex_lock (mutex);
+	}
+}
+
+/**
+ * pk_backend_thread_stop:
+ **/
+void
+pk_backend_thread_stop (PkBackend *backend, PkBackendJob *job, gpointer func)
+{
+	GMutex *mutex;
+	mutex = g_hash_table_lookup (backend->priv->thread_hash, func);
+	g_assert (mutex);
+	g_mutex_unlock (mutex);
 }
 
 /**
@@ -885,6 +925,9 @@ pk_backend_finalize (GObject *object)
 	g_object_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
+	g_mutex_clear (&backend->priv->thread_hash_mutex);
+	g_hash_table_unref (backend->priv->thread_hash);
+
 	if (backend->priv->monitor != NULL)
 		g_object_unref (backend->priv->monitor);
 	if (backend->priv->handle != NULL)
@@ -1470,6 +1513,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->conf = pk_conf_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	backend->priv->thread_hash = g_hash_table_new_full (g_direct_hash,
+							    g_direct_equal,
+							    NULL,
+							    g_free);
+	g_mutex_init (&backend->priv->thread_hash_mutex);
 }
 
 /**

@@ -771,6 +771,7 @@ pk_backend_job_get_locked (PkBackendJob *job)
 
 /* simple helper to work around the GThread one pointer limit */
 typedef struct {
+	PkBackend		*backend;
 	PkBackendJob		*job;
 	PkBackendJobThreadFunc	 func;
 	gpointer		 user_data;
@@ -785,8 +786,10 @@ pk_backend_job_thread_setup (gpointer thread_data)
 {
 	PkBackendJobThreadHelper *helper = (PkBackendJobThreadHelper *) thread_data;
 
-	/* run original function */
+	/* run original function with automatic locking */
+	pk_backend_thread_start (helper->backend, helper->job, helper->func);
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
+	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* unref the thread here as it holds a reference itself and we do
 	 * not need to join() this at any stage */
@@ -826,6 +829,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendJobThreadHelper, 1);
 	helper->job = g_object_ref (job);
+	helper->backend = job->priv->backend;
 	helper->func = func;
 	helper->user_data = user_data;
 

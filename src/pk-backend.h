@@ -214,6 +214,14 @@ void		 pk_backend_repair_system		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags);
 
+/* thread helpers */
+void		 pk_backend_thread_start		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 gpointer	 func);
+void		 pk_backend_thread_stop			(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 gpointer	 func);
+
 /* global backend state */
 void		 pk_backend_accept_eula			(PkBackend	*backend,
 							 const gchar	*eula_id);
