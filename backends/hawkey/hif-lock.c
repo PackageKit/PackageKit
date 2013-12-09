@@ -520,7 +520,6 @@ hif_lock_finalize (GObject *object)
 		if (item->refcount > 0) {
 			g_warning ("held lock %s at shutdown",
 				   hif_lock_type_to_string (item->type));
-			hif_lock_release (lock, item->type, NULL);
 		}
 	}
 
