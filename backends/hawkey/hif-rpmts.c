@@ -27,6 +27,7 @@
 
 #include <glib.h>
 #include <rpm/rpmlib.h>
+#include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
 #include "hif-rpmts.h"
@@ -277,24 +278,64 @@ out:
 }
 
 /**
+ * hif_rpmts_log_handler_cb:
+ **/
+static int
+hif_rpmts_log_handler_cb (rpmlogRec rec, rpmlogCallbackData data)
+{
+	GString **string = (GString **) data;
+
+	/* only log errors */
+	if (rpmlogRecPriority (rec) != RPMLOG_ERR)
+		return RPMLOG_DEFAULT;
+
+	/* do not log internal BDB errors */
+	if (g_strstr_len (rpmlogRecMessage (rec), -1, "BDB") != NULL)
+		return 0;
+
+	/* create string if required */
+	if (*string == NULL)
+		*string = g_string_new ("");
+
+	/* if text already exists, join them */
+	if ((*string)->len > 0)
+		g_string_append (*string, ": ");
+	g_string_append (*string, rpmlogRecMessage (rec));
+
+	/* remove the trailing /n which rpm does */
+	if ((*string)->len > 0)
+		g_string_truncate (*string, (*string)->len - 1);
+	return 0;
+}
+
+/**
  * hif_rpmts_find_package:
  **/
 static Header
 hif_rpmts_find_package (rpmts ts, HyPackage pkg, GError **error)
 {
+	GString *rpm_error = NULL;
 	Header hdr = NULL;
 	rpmdbMatchIterator iter;
 	unsigned int recOffset;
 
 	/* find package by db-id */
 	recOffset = hy_package_get_rpmdbid (pkg);
+	rpmlogSetCallback (hif_rpmts_log_handler_cb, &rpm_error);
 	iter = rpmtsInitIterator(ts, RPMDBI_PACKAGES,
 				 &recOffset, sizeof(recOffset));
 	if (iter == NULL) {
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "failed to setup rpmts iter");
+		if (rpm_error != NULL) {
+			g_set_error_literal (error,
+					     HIF_ERROR,
+					     PK_ERROR_ENUM_UNFINISHED_TRANSACTION,
+					     rpm_error->str);
+		} else {
+			g_set_error_literal (error,
+					     HIF_ERROR,
+					     PK_ERROR_ENUM_UNFINISHED_TRANSACTION,
+					     "Fatal error, run database recovery");
+		}
 		goto out;
 	}
 	hdr = rpmdbNextIterator (iter);
@@ -310,6 +351,9 @@ hif_rpmts_find_package (rpmts ts, HyPackage pkg, GError **error)
 	/* success */
 	headerLink (hdr);
 out:
+	rpmlogSetCallback (NULL, NULL);
+	if (rpm_error != NULL)
+		g_string_free (rpm_error, TRUE);
 	if (iter != NULL)
 		rpmdbFreeIterator (iter);
 	return hdr;
