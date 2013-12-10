@@ -1445,8 +1445,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "Destroy") == 0) {
 		return;
 	}
-
-	g_warning ("Unknown signal: %s", signal_name);
 }
 
 /**
