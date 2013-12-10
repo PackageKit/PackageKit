@@ -37,6 +37,12 @@ typedef enum {
 	HIF_SOURCE_SCAN_FLAG_LAST
 } HifSourceScanFlags;
 
+typedef enum {
+	HIF_SOURCE_UPDATE_FLAG_NONE		= 0,
+	HIF_SOURCE_UPDATE_FLAG_FORCE		= 1,
+	HIF_SOURCE_UPDATE_FLAG_LAST
+} HifSourceUpdateFlags;
+
 GPtrArray	*hif_source_find_all		(GKeyFile		*config,
 						 HifSourceScanFlags	 flags,
 						 GError			**error);
@@ -54,6 +60,7 @@ gboolean	 hif_source_check		(HifSource		*src,
 						 HifState		*state,
 						 GError			**error);
 gboolean	 hif_source_update		(HifSource		*src,
+						 HifSourceUpdateFlags	 flags,
 						 HifState		*state,
 						 GError			**error);
 gboolean	 hif_source_clean		(HifSource		*src,

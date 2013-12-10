@@ -1372,7 +1372,10 @@ pk_backend_refresh_source (HifSource *src, HifState *state, GError **error)
 	/* update repo, TODO: if we have network access */
 	if (!src_okay) {
 		state_local = hif_state_get_child (state);
-		ret = hif_source_update (src, state_local, &error_local);
+		ret = hif_source_update (src,
+					 HIF_SOURCE_UPDATE_FLAG_NONE,
+					 state_local,
+					 &error_local);
 		if (!ret) {
 			if (g_error_matches (error_local,
 					     HIF_ERROR,
