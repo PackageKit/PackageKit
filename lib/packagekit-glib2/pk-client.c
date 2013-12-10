@@ -1470,8 +1470,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 	if (g_strcmp0 (signal_name, "Destroy") == 0) {
 		return;
 	}
-
-	g_warning ("Unknown signal: %s", signal_name);
 }
 
 /**
