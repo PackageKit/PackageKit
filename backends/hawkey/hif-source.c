@@ -43,6 +43,7 @@ struct HifSource {
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
 	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
+	gint64		 timestamp;
 	GKeyFile	*keyfile;
 	HyRepo		 repo;
 	LrHandle	*repo_handle;
@@ -410,6 +411,21 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 		goto out;
 	}
 
+	/* get timestamp */
+#if LR_VERSION_CHECK(1,4,1)
+	ret = lr_result_getinfo (src->repo_result, &error_local,
+				 LRR_YUM_TIMESTAMP, &src->timestamp);
+	if (!ret) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_INTERNAL_ERROR,
+			     "failed to get timestamp: %s",
+			     error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+#endif
+
 	/* create a HyRepo */
 	src->repo = hy_repo_create (src->id);
 	hy_repo_set_string (src->repo, HY_REPO_MD_FN, yum_repo->repomd);
@@ -539,12 +555,18 @@ out:
  * hif_source_update:
  */
 gboolean
-hif_source_update (HifSource *src, HifState *state, GError **error)
+hif_source_update (HifSource *src,
+		   HifSourceUpdateFlags flags,
+		   HifState *state,
+		   GError **error)
 {
 	GError *error_local = NULL;
 	HifState *state_local;
 	gboolean ret;
 	gint rc;
+#if LR_VERSION_CHECK(1,4,1)
+	gint64 timestamp_new = 0;
+#endif
 
 	/* take lock */
 	ret = hif_state_take_lock (state,
@@ -626,6 +648,26 @@ hif_source_update (HifSource *src, HifState *state, GError **error)
 		g_error_free (error_local);
 		goto out;
 	}
+
+	/* check the newer metadata is newer */
+#if LR_VERSION_CHECK(1,4,1)
+	ret = lr_result_getinfo (src->repo_result, &error_local,
+				 LRR_YUM_TIMESTAMP, &timestamp_new);
+	if (!ret) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_INTERNAL_ERROR,
+			     "failed to get timestamp: %s",
+			     error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+	if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 ||
+	    timestamp_new < src->timestamp) {
+		g_debug ("fresh metadata was older than what we have, ignoring");
+		goto out;
+	}
+#endif
 
 	/* delete old /var/cache/PackageKit/metadata/$REPO/ */
 	ret = hif_source_clean (src, error);

@@ -58,7 +58,10 @@ hif_sack_add_source (HySack sack,
 			 error_local->message);
 		g_clear_error (&error_local);
 		hif_state_reset (state_local);
-		ret = hif_source_update (src, state_local, &error_local);
+		ret = hif_source_update (src,
+					 HIF_SOURCE_UPDATE_FLAG_FORCE,
+					 state_local,
+					 &error_local);
 		if (!ret) {
 			if (g_error_matches (error_local,
 					     HIF_ERROR,
