@@ -35,10 +35,4 @@ bool show_errors(PkBackendJob *job,
                  PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN,
                  bool errModify = false);
 
-/**
- * Call the Packagekit message dialog
- */
-bool show_warnings(PkBackendJob *job,
-                   PkMessageEnum message = PK_MESSAGE_ENUM_UNKNOWN);
-
 #endif // AAPT_BACKEND_MESSAGES_H

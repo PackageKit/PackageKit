@@ -33,11 +33,6 @@ using namespace std;
 bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
 {
     stringstream errors;
-    stringstream messages;
-
-    PkMessageEnum messageCode = PK_MESSAGE_ENUM_UNKNOWN;
-    if (errorCode == PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)
-        messageCode = PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED;
 
     string Err;
     while (_error->empty() == false) {
@@ -45,7 +40,10 @@ bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
 
         // Ugly workaround to demote the "repo not found" error message to a simple message
         if ((errModify) && (Err.find("404  Not Found") != string::npos)) {
-            messages << "E: " << Err << endl;
+            // TODO this should emit the regular
+            // PK_ERROR_ENUM_CANNOT_FETCH_SOURCES but do not fail the
+            // last-time-update
+//             messages << "E: " << Err << endl;
         } else {
             if (Type == true) {
                 errors << "E: " << Err << endl;
@@ -60,34 +58,5 @@ bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
                                   errorCode,
                                   "%s",
                                   utf8(errors.str().c_str()));
-    }
-
-    if ((errModify) && (!messages.str().empty())) {
-        pk_backend_job_message(job,
-                               messageCode,
-                               "%s",
-                               utf8(messages.str().c_str()));
-    }
-}
-
-bool show_warnings(PkBackendJob *job, PkMessageEnum message)
-{
-    stringstream warnings;
-
-    string Err;
-    while (_error->empty() == false) {
-        bool Type = _error->PopMessage(Err);
-        if (Type == true) {
-            warnings << "E: " << Err << endl;
-        } else {
-            warnings << "W: " << Err << endl;
-        }
-    }
-
-    if (!warnings.str().empty()) {
-        pk_backend_job_message(job,
-                               message,
-                               "%s",
-                               utf8(warnings.str().c_str()));
     }
 }

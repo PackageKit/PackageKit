@@ -1741,14 +1741,14 @@ void AptIntf::updateInterface(int fd, int writeFd)
                     }
                 } else {
                     // either the user didn't choose an option or the front end failed'
-                    pk_backend_job_message(m_job,
-                                           PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-                                           "The configuration file '%s' "
-                                           "(modified by you or a script) "
-                                           "has a newer version '%s'.\n"
-                                           "Please verify your changes and update it manually.",
-                                           orig_file.c_str(),
-                                           new_file.c_str());
+//                     pk_backend_job_message(m_job,
+//                                            PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+//                                            "The configuration file '%s' "
+//                                            "(modified by you or a script) "
+//                                            "has a newer version '%s'.\n"
+//                                            "Please verify your changes and update it manually.",
+//                                            orig_file.c_str(),
+//                                            new_file.c_str());
                     // fall back to keep the current config file
                     if (write(writeFd, "N\n", 2) != 2) {
                         // TODO we need a DPKG patch to use debconf
@@ -2034,8 +2034,8 @@ void AptIntf::refreshCache()
 
     // missing repo gpg signature would appear here
     if (_error->PendingError() == false && _error->empty() == false) {
-        // TODO we need a repo warning
-        show_warnings(m_job, PK_MESSAGE_ENUM_BROKEN_MIRROR);
+        // TODO this shouldn't 
+        show_errors(m_job, PK_ERROR_ENUM_GPG_FAILURE);
     }
 }
 
@@ -2284,7 +2284,6 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
         }
 
         // Call the scored problem resolver
-        Fix.InstallProtect();
         if (Fix.Resolve(true) == false) {
             _error->Discard();
         }
