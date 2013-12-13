@@ -466,10 +466,12 @@ class PackageKitEntropyMixin(object):
         except DependenciesNotRemovable as err:
             c_repo = self._entropy.installed_repository()
             vpkgs = getattr(err, 'value', set())
-            vit_pkgs = ', '.join(sorted([c_repo.retrieveAtom(x[0]) for x in vpkgs],
+            vit_pkgs = ', '.join(sorted(
+                    [c_repo.retrieveAtom(x[0]) for x in vpkgs],
                 key = lambda x: c_repo.retrieveAtom(x)))
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Could not perform remove operation, these packages are vital: %s" % (vit_pkgs,))
+                       "Could not perform remove operation, "
+                       "these packages are vital: %s" % (vit_pkgs,))
             return
 
         added_pkgs = [x for x in run_queue if x not in matches]
@@ -477,7 +479,8 @@ class PackageKitEntropyMixin(object):
         # if there are required packages, allowdep must be on
         if added_pkgs and not allowdep:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Could not perform remove operation, some packages are needed by other packages")
+                       "Could not perform remove operation, "
+                       "some packages are needed by other packages")
             return
 
         self.percentage(0)
@@ -840,7 +843,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._fetch_action = self._action_factory.FETCH_ACTION
 
         self.doLock()
-        # PkUrlFetcher._pk_progress = self.sub_percentage
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
         PackageKitEntropyClient._pk_message = self._generic_message
@@ -1124,7 +1126,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             count += 1
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-            self._log_message(__name__, "get_packages: done %s/100" % (percent,))
+            self._log_message(
+                __name__, "get_packages: done %s/100" % (percent,))
 
             self.percentage(percent)
             try:
@@ -1256,7 +1259,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             updates = []
             keyslot = c_repo.retrieveKeySlotAggregated(pkg_id)
-            matches, m_rc = self._entropy.atom_match(keyslot, multi_match = True,
+            matches, m_rc = self._entropy.atom_match(
+                keyslot, multi_match = True,
                 multi_repo = True)
             for m_pkg_id, m_repo_id in matches:
                 if (m_pkg_id, m_repo_id) == (pkg_id, repo_name):
@@ -1722,12 +1726,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             else:
                 # backward compatibility
                 if selected_categories:
-                    etp_cat_ids = set([cat_id for cat_id, cat_name in \
+                    etp_cat_ids = set([cat_id for cat_id, cat_name in
                         repo_all_cats if cat_name in selected_categories])
                 else:
                     # get all etp category ids excluding all_matched_categories
-                    etp_cat_ids = set([cat_id for cat_id, cat_name in \
-                        repo_all_cats if cat_name not in all_matched_categories])
+                    etp_cat_ids = set([cat_id for cat_id, cat_name in
+                                       repo_all_cats if cat_name not in
+                                       all_matched_categories])
 
                 for cat_id in etp_cat_ids:
                     try:
