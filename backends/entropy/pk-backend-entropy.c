@@ -656,5 +656,5 @@ pk_backend_get_author (PkBackend *backend)
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {
-	return FALSE;
+	return TRUE;
 }
