@@ -52,11 +52,36 @@ from entropy.db.exceptions import Error as EntropyRepositoryError
 from entropy.exceptions import DependenciesNotRemovable
 from entropy.fetchers import UrlFetcher
 from entropy.services.client import WebService
+from entropy.locks import EntropyResourcesLock
 
 import entropy.tools
 import entropy.dep
 
 PK_DEBUG = False
+
+
+def sharedreslock(method):
+    """
+    Entropy Resources Lock decorator for shared mode.
+    """
+    def wrapped(*args, **kwargs):
+        lock = EntropyResourcesLock(output=PackageKitEntropyClient)
+        with lock.shared():
+            return method(*args, **kwargs)
+
+    return wrapped
+
+def exclusivereslock(method):
+    """
+    Entropy Resources Lock decorator for exclusive mode.
+    """
+    def wrapped(*args, **kwargs):
+        lock = EntropyResourcesLock(output=PackageKitEntropyClient)
+        with lock.exclusive():
+            return method(*args, **kwargs)
+
+    return wrapped
+
 
 class PackageKitEntropyMixin(object):
 
@@ -959,6 +984,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def _is_only_download(self, transaction_flags):
         return TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags
 
+    @sharedreslock
     def get_depends(self, filters, package_ids, recursive):
 
         self._log_message(__name__, "get_depends: got %s and %s and %s" % (
@@ -1033,6 +1059,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def get_details(self, package_ids):
 
         self._log_message(__name__, "get_details: got %s" % (package_ids,))
@@ -1083,6 +1110,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
         return sorted(categories)
 
+    @sharedreslock
     def get_categories(self):
 
         self._log_message(__name__, "get_categories: called")
@@ -1115,6 +1143,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.category(nothing, cat_id, name, summary, icon)
 
+    @sharedreslock
     def get_files(self, package_ids):
 
         self._log_message(__name__, "get_files: got %s" % (package_ids,))
@@ -1157,6 +1186,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def get_packages(self, filters):
 
         self._log_message(__name__, "get_packages: got %s" % (
@@ -1194,6 +1224,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def get_repo_list(self, filters):
 
         self._log_message(__name__, "get_repo_list: got %s" % (filters,))
@@ -1226,6 +1257,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for repo_id, desc, enabled, devel in metadata:
             self.repo_detail(repo_id, desc, enabled)
 
+    @sharedreslock
     def get_requires(self, filters, package_ids, recursive):
 
         self._log_message(__name__, "get_requires: got %s and %s and %s" % (
@@ -1278,6 +1310,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def get_update_detail(self, package_ids):
 
         self._log_message(__name__, "get_update_detail: got %s" % (
@@ -1351,6 +1384,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def get_distro_upgrades(self):
         """
         FIXME: should this return only system updates? (pkgs marked as syspkgs)
@@ -1358,6 +1392,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         """
         PackageKitBaseBackend.get_distro_upgrades(self)
 
+    @sharedreslock
     def get_updates(self, filters):
 
         self.status(STATUS_INFO)
@@ -1402,6 +1437,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def install_files(self, transaction_flags, inst_files):
 
         only_trusted = self._is_only_trusted(transaction_flags)
@@ -1454,6 +1490,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
 
+    @sharedreslock
     def install_packages(self, transaction_flags, pk_pkgs):
 
         only_trusted = self._is_only_trusted(transaction_flags)
@@ -1479,6 +1516,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             pkgs, only_trusted, simulate = simulate,
             only_fetch = only_download, calculate_deps = not only_download)
 
+    @sharedreslock
     def download_packages(self, directory, package_ids):
 
         self._log_message(__name__, "download_packages: got %s and %s" % (
@@ -1516,6 +1554,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             except WebService.WebServiceException:
                 continue
 
+    @exclusivereslock
     def refresh_cache(self, force):
 
         self.status(STATUS_REFRESH_CACHE)
@@ -1544,6 +1583,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def remove_packages(self, allowdep, autoremove, package_ids):
         return self._remove_packages(allowdep, autoremove, package_ids)
 
@@ -1567,6 +1607,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._execute_etp_pkgs_remove(pkgs, allowdep, autoremove,
             simulate = simulate)
 
+    @sharedreslock
     def repo_enable(self, repoid, enable):
 
         self._log_message(__name__, "repo_enable: got %s and %s" % (
@@ -1583,6 +1624,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._log_message(__name__, "repo_enable: done")
 
+    @sharedreslock
     def resolve(self, filters, values):
 
         self._log_message(__name__, "resolve: got %s and %s" % (
@@ -1618,6 +1660,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def search_details(self, filters, values):
 
         values = self._encode_string_list(values)
@@ -1657,6 +1700,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def search_file(self, filters, values):
 
         values = self._encode_string_list(values)
@@ -1717,6 +1761,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def search_group(self, filters, values):
 
         values = self._encode_string_list(values)
@@ -1799,6 +1844,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def search_name(self, filters, values):
 
         values = self._encode_string_list(values)
@@ -1835,6 +1881,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def update_packages(self, transaction_flags, pk_pkgs):
 
         only_trusted = self._is_only_trusted(transaction_flags)
@@ -1891,6 +1938,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    @sharedreslock
     def what_provides(self, filters, provides_type, values):
 
         """
