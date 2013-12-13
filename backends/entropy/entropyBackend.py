@@ -26,6 +26,7 @@ import sys
 import signal
 import time
 import traceback
+import threading
 
 from packagekit.enums import *
 
@@ -518,7 +519,8 @@ class PackageKitEntropyMixin(object):
             metaopts['removeconfig'] = False
 
             package = self._action_factory.get(
-                self._remove_action, (pkg_id, pkg_c_repo.name),
+                self._action_factory.REMOVE_ACTION,
+                (pkg_id, pkg_c_repo.name),
                 opts=metaopts)
             x_rc = package.start()
             package.finalize()
@@ -677,7 +679,8 @@ class PackageKitEntropyMixin(object):
             obj.add(entropy.dep.dep_getkey(pkg_atom))
 
             package = self._action_factory.get(
-                self._fetch_action, match,
+                self._action_factory.FETCH_ACTION,
+                match,
                 opts = metaopts)
             x_rc = package.start()
             package_path = package.package_path()
@@ -731,7 +734,8 @@ class PackageKitEntropyMixin(object):
                     etpConst['install_sources']['automatic_dependency']
 
             package = self._action_factory.get(
-                self._install_action, match, opts=metaopts)
+                self._action_factory.INSTALL_ACTION,
+                match, opts=metaopts)
             x_rc = package.start()
             package.finalize()
 
@@ -835,22 +839,76 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         PackageKitEntropyMixin.__init__(self)
         PackageKitBaseBackend.__init__(self, args)
 
-        self._entropy = PackageKitEntropyClient()
+        self._real_settings = None
+        self._real_settings_lock = threading.Lock()
 
-        self._action_factory = self._entropy.PackageActionFactory()
-        self._remove_action = self._action_factory.REMOVE_ACTION
-        self._install_action = self._action_factory.INSTALL_ACTION
-        self._fetch_action = self._action_factory.FETCH_ACTION
+        self._real_action_factory = None
+        self._real_action_factory_lock = threading.Lock()
+
+        self._real_entropy_log = None
+        self._real_entropy_log_lock = threading.Lock()
+
+        self._real_entropy = None
+        self._real_entropy_lock = threading.Lock()
 
         self.doLock()
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
         PackageKitEntropyClient._pk_message = self._generic_message
 
-        self._settings = SystemSettings()
-        self._entropy_log = LogFile(
-            level = self._settings['system']['log_level'],
-            filename = self._log_fname, header = "[packagekit]")
+    @property
+    def _entropy(self):
+        """
+        Return the PackageKitEntropyClient instance.
+        """
+        if self._real_entropy is None:
+            with self._real_entropy_lock:
+
+                if self._real_entropy is None:
+                    self._real_entropy = PackageKitEntropyClient()
+
+        return self._real_entropy
+
+    @property
+    def _entropy_log(self):
+        """
+        Return the Entropy LogFile instance.
+        """
+        if self._real_entropy_log is None:
+            with self._real_entropy_log_lock:
+                if self._real_entropy_log is None:
+                    self._real_entropy_log = LogFile(
+                        level=self._settings['system']['log_level'],
+                        filename=self._log_fname,
+                        header="[packagekit]")
+
+        return self._real_entropy_log
+
+    @property
+    def _action_factory(self):
+        """
+        Return a PackageActionFactory instance.
+        """
+        if self._real_action_factory is None:
+            with self._real_action_factory_lock:
+
+                if self._real_action_factory is None:
+                    factory = self._entropy.PackageActionFactory()
+                    self._real_action_factory = factory
+
+        return self._real_action_factory
+
+    @property
+    def _settings(self):
+        """
+        return a SystemSettings instance.
+        """
+        if self._real_settings is None:
+            with self._real_settings_lock:
+                if self._real_settings is None:
+                    self._real_settings = SystemSettings()
+
+        return self._real_settings
 
     def unLock(self):
         PackageKitBaseBackend.unLock(self)
