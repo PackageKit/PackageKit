@@ -35,6 +35,7 @@ from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
 sys.path.insert(0, '/usr/lib/entropy/lib')
+
 from entropy.output import decolorize
 from entropy.i18n import _, _LOCALE
 from entropy.const import etpConst, const_convert_to_rawstring, \
@@ -47,15 +48,9 @@ from entropy.cache import EntropyCacher
 from entropy.exceptions import SystemDatabaseError, DependenciesNotFound, \
     DependenciesCollision, EntropyPackageException
 from entropy.db.exceptions import Error as EntropyRepositoryError
-try:
-    from entropy.exceptions import DependenciesNotRemovable
-except ImportError:
-    DependenciesNotRemovable = Exception
+from entropy.exceptions import DependenciesNotRemovable
 from entropy.fetchers import UrlFetcher
-try:
-    from entropy.services.client import WebService
-except ImportError:
-    WebService = None
+from entropy.services.client import WebService
 
 import entropy.tools
 import entropy.dep
@@ -519,17 +514,11 @@ class PackageKitEntropyMixin(object):
             metaopts = {}
             metaopts['removeconfig'] = False
 
-            if self._action_factory is None:
-                package = self._entropy.Package()
-                package.prepare((pkg_id,), self._remove_action, metaopts)
-                x_rc = package.run()
-                package.kill()
-            else:
-                package = self._action_factory.get(
-                    self._remove_action, (pkg_id, pkg_c_repo.name),
-                    opts=metaopts)
-                x_rc = package.start()
-                package.finalize()
+            package = self._action_factory.get(
+                self._remove_action, (pkg_id, pkg_c_repo.name),
+                opts=metaopts)
+            x_rc = package.start()
+            package.finalize()
 
             if x_rc != 0:
                 pk_pkg = match_map.get(pkg_id, (None, None, None))[2]
@@ -684,19 +673,12 @@ class PackageKitEntropyMixin(object):
             obj = down_data.setdefault(pkg_repo, set())
             obj.add(entropy.dep.dep_getkey(pkg_atom))
 
-            if self._action_factory is None:
-                package = self._entropy.Package()
-                package.prepare(match, self._fetch_action, metaopts)
-                x_rc = package.run()
-                package_path = package.pkgmeta['pkgpath']
-                package.kill()
-            else:
-                package = self._action_factory.get(
-                    self._fetch_action, match,
-                    opts = metaopts)
-                x_rc = package.start()
-                package_path = package.package_path()
-                package.finalize()
+            package = self._action_factory.get(
+                self._fetch_action, match,
+                opts = metaopts)
+            x_rc = package.start()
+            package_path = package.package_path()
+            package.finalize()
 
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
@@ -704,10 +686,7 @@ class PackageKitEntropyMixin(object):
                 return
 
             # emit the file we downloaded
-            if self._action_factory is None:
-                self.files(pk_pkg, package_path)
-            else:
-                self.files(pk_pkg, package_path)
+            self.files(pk_pkg, package_path)
 
         # spawn UGC
         if not simulate:
@@ -748,16 +727,10 @@ class PackageKitEntropyMixin(object):
                 metaopts['install_source'] = \
                     etpConst['install_sources']['automatic_dependency']
 
-            if self._action_factory is None:
-                package = self._entropy.Package()
-                package.prepare(match, self._install_action, metaopts)
-                x_rc = package.run()
-                package.kill()
-            else:
-                package = self._action_factory.get(
-                    self._install_action, match, opts=metaopts)
-                x_rc = package.start()
-                package.finalize()
+            package = self._action_factory.get(
+                self._install_action, match, opts=metaopts)
+            x_rc = package.start()
+            package.finalize()
 
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
@@ -831,9 +804,6 @@ class PkUrlFetcher(UrlFetcher):
             PkUrlFetcher._pk_progress(cur_prog)
             PkUrlFetcher._last_t = time.time()
 
-    def output(self):
-        """ backward compatibility """
-        return self.update()
 
 class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
@@ -863,17 +833,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         PackageKitBaseBackend.__init__(self, args)
 
         self._entropy = PackageKitEntropyClient()
-        try:
-            self._action_factory = self._entropy.PackageActionFactory()
-            self._remove_action = self._action_factory.REMOVE_ACTION
-            self._install_action = self._action_factory.INSTALL_ACTION
-            self._fetch_action = self._action_factory.FETCH_ACTION
-        except AttributeError:
-            # old API
-            self._action_factory = None
-            self._remove_action = "remove"
-            self._install_action = "install"
-            self._fetch_action = "fetch"
+
+        self._action_factory = self._entropy.PackageActionFactory()
+        self._remove_action = self._action_factory.REMOVE_ACTION
+        self._install_action = self._action_factory.INSTALL_ACTION
+        self._fetch_action = self._action_factory.FETCH_ACTION
 
         self.doLock()
         # PkUrlFetcher._pk_progress = self.sub_percentage
