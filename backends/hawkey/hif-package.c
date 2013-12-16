@@ -55,7 +55,7 @@ hif_package_destroy_func (void *userdata)
 	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
 	g_free (priv->filename);
 	g_free (priv->package_id);
-	hy_free (priv->checksum_str);
+	g_free (priv->checksum_str);
 	g_slice_free (HifPackagePrivate, priv);
 }
 
@@ -97,8 +97,9 @@ hif_package_get_priv (HyPackage pkg)
 const gchar *
 hif_package_get_pkgid (HyPackage pkg)
 {
-	const unsigned char *checksum;
 	HifPackagePrivate *priv;
+	char *checksum_str = NULL;
+	const unsigned char *checksum;
 	int checksum_type;
 
 	priv = hif_package_get_priv (pkg);
@@ -109,10 +110,17 @@ hif_package_get_pkgid (HyPackage pkg)
 
 	/* calculate and cache */
 	checksum = hy_package_get_hdr_chksum (pkg, &checksum_type);
-	if (checksum == NULL)
+	if (checksum == NULL) {
+		/* hawkey does not always retain the SOLVABLE_HDRID data due
+		 * to https://bugzilla.redhat.com/show_bug.cgi?id=1041577 */
+		g_warning ("no hdr checksum for %s", hy_package_get_name (pkg));
+		priv->checksum_str = g_strdup ("0000000000000000000000000000000000000000");
 		goto out;
-	priv->checksum_str = hy_chksum_str (checksum, checksum_type);
+	}
+	checksum_str = hy_chksum_str (checksum, checksum_type);
+	priv->checksum_str = g_strdup (checksum_str);
 out:
+	hy_free (checksum_str);
 	return priv->checksum_str;
 }
 
