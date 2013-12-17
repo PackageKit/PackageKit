@@ -39,6 +39,7 @@
 
 typedef struct {
 	char		*checksum_str;
+	char		*nevra;
 	gboolean	 user_action;
 	gchar		*filename;
 	gchar		*package_id;
@@ -56,6 +57,7 @@ hif_package_destroy_func (void *userdata)
 	g_free (priv->filename);
 	g_free (priv->package_id);
 	hy_free (priv->checksum_str);
+	hy_free (priv->nevra);
 	g_slice_free (HifPackagePrivate, priv);
 }
 
@@ -116,7 +118,6 @@ out:
 	return priv->checksum_str;
 }
 
-
 /**
  * hif_package_get_id:
  **/
@@ -144,6 +145,19 @@ hif_package_get_id (HyPackage pkg)
 						reponame);
 out:
 	return priv->package_id;
+}
+
+/**
+ * hif_package_get_nevra:
+ **/
+const gchar *
+hif_package_get_nevra (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv->nevra == NULL)
+		priv->nevra = hy_package_get_nevra (pkg);
+	return priv->nevra;
 }
 
 /**

@@ -257,6 +257,17 @@ hif_emit_package_list_filter (PkBackendJob *job,
 {
 	guint i;
 	HyPackage pkg;
+	GHashTable *hash;
+
+	/* add all the installed packages to a hash */
+	hash = g_hash_table_new (g_str_hash, g_str_equal);
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		if (!hy_package_installed (pkg))
+			continue;
+		g_hash_table_insert (hash,
+				     (gpointer) hif_package_get_nevra (pkg),
+				     (gpointer) pkg);
+	}
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		/* GUI */
@@ -277,8 +288,15 @@ hif_emit_package_list_filter (PkBackendJob *job,
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) && hif_package_is_downloaded (pkg))
 			continue;
 
+		/* if this package is available and the very same NEVRA is
+		 * installed, skip this package */
+		if (!hy_package_installed (pkg) &&
+		    g_hash_table_lookup (hash, hif_package_get_nevra (pkg)) != NULL)
+			continue;
+
 		hif_emit_package (job, PK_INFO_ENUM_UNKNOWN, pkg);
 	}
+	g_hash_table_unref (hash);
 }
 
 /**
