@@ -1,3 +1,42 @@
+Version 0.8.15
+~~~~~~~~~~~~~~
+Released: 2013-12-17
+
+Notes:
+ - Lots of bugfixes and cleanups, no real new features.
+
+Backends:
+ - alpm: Remove the pathological use of messages (Richard Hughes)
+ - aptcc: Increase timeout for Apt's PK-notification hook (Matthias Klumpp)
+ - hawkey: Actually report progress when using DownloadPackages() (Richard Hughes)
+ - hawkey: Allow upgrading packages using InstallFiles (Richard Hughes)
+ - hawkey: Do not enable profiling by default (Richard Hughes)
+ - hawkey: Do not return available packages that are already installed (Richard Hughes)
+ - hawkey: Emit percentage events when processing a large transaction (Richard Hughes)
+ - hawkey: Implement RepairSystem (Richard Hughes)
+ - hawkey: List the packages in the downgrade warning (Richard Hughes)
+ - hawkey: Never replace newer metadata with an older copy (Richard Hughes)
+ - hawkey: Never use a cached sack when installing local packages (Richard Hughes)
+ - hawkey: Return a better error when the rpmdb is hosed (Richard Hughes)
+ - hawkey: Try harder to get the package name when cleaning up (Richard Hughes)
+ - hawkey: Use 'local' for the package-id data for files (Richard Hughes)
+ - hawkey: Use the correct error code when the lock is required (Richard Hughes)
+ - yum: Do not ship a config file (Richard Hughes)
+
+Bugfixes:
+ - Do not assert when re-using a PkPackage instance (Richard Hughes)
+ - Do not overrride CLEANFILES from gtk-doc, append to it (Alban Browaeys)
+ - Do not update the role when doing the test transaction (Richard Hughes)
+ - For gtk-doc DOC_SOURCE_DIR is relative to builddir (Alban Browaeys)
+ - For gtk-doc add missing setup_files (Alban Browaeys)
+ - Ignore progressbar start text if it unchanged (Richard Hughes)
+ - Only show some status values in pkcon after a small delay (Richard Hughes)
+ - Resolve internally in pkcon to provide a better output (Richard Hughes)
+ - Update CVE regexp for new CVE format (Thijs Kinkhorst)
+ - Use syslog() correctly (Richard Hughes)
+ - Use the filter when removing and installing software using pkcon (Richard Hughes)
+ - Use the system database location when compiling with --enable-local (Richard Hughes)
+
 Version 0.8.14
 ~~~~~~~~~~~~~~
 Released: 2013-12-02
