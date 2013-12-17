@@ -16,6 +16,10 @@ Requires: shared-mime-info
 Requires: comps-extras
 Requires: systemd
 
+# This is for https://bugzilla.redhat.com/show_bug.cgi?id=1041577 and can be
+# removed when libsolv is available in updates
+Requires: libsolv >= 0.4.1
+
 BuildRequires: glib2-devel >= 2.32.0
 BuildRequires: dbus-devel  >= 1.1.1
 BuildRequires: dbus-glib-devel >= 0.74
