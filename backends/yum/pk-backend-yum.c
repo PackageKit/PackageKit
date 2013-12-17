@@ -197,11 +197,8 @@ out:
 void
 pk_backend_initialize (PkBackend *backend)
 {
-	gboolean ret;
 	GFile *file = NULL;
 	GError *error = NULL;
-	GKeyFile *key_file = NULL;
-	gchar *config_file = NULL;
 	GList *mounts;
 
 	/* use logging */
@@ -234,23 +231,7 @@ pk_backend_initialize (PkBackend *backend)
 		g_warning ("failed to setup monitor: %s", error->message);
 		g_error_free (error);
 	}
-
-	/* read the config file */
-	key_file = g_key_file_new ();
-	config_file = g_build_filename (SYSCONFDIR, "PackageKit", "Yum.conf", NULL);
-	g_debug ("loading configuration from %s", config_file);
-	ret = g_key_file_load_from_file (key_file, config_file, G_KEY_FILE_NONE, &error);
-	if (!ret) {
-		g_warning ("failed to load Yum.conf: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	g_free (config_file);
-	if (key_file != NULL)
-		g_key_file_free (key_file);
-	if (file != NULL)
-		g_object_unref (file);
+	g_object_unref (file);
 }
 
 /**

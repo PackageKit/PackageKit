@@ -236,27 +236,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except PkError, e:
             self.error(e.code, e.details)
 
-        # load the config file
-        config = ConfigParser.ConfigParser()
-        try:
-            config.read('/etc/PackageKit/Yum.conf')
-        except Exception, e:
-            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
-
-        # if this key does not exist, it's not fatal
-        try:
-            self.system_packages = config.get('Backend', 'SystemPackages').split(';')
-        except ConfigParser.NoOptionError, e:
-            self.system_packages = []
-        except Exception, e:
-            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
-        try:
-            self.infra_packages = config.get('Backend', 'InfrastructurePackages').split(';')
-        except ConfigParser.NoOptionError, e:
-            self.infra_packages = []
-        except Exception, e:
-            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
-
         # get the lock early
         if lock:
             self.doLock()
@@ -2482,7 +2461,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 for txmbr in self.yumbase.tsInfo:
                     pkg = txmbr.po
-                    if pkg.name in self.system_packages:
+                    if pkg.name in ['yum','rpm','glibc','PackageKit']:
                         self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
                         return
             try:
@@ -3398,16 +3377,12 @@ class PackageKitYumBase(yum.YumBase):
         if hasattr(self, 'run_with_package_names'):
             self.run_with_package_names.add('PackageKit-yum')
 
-        # load the config file
-        config = ConfigParser.ConfigParser()
-        try:
-            config.read('/etc/PackageKit/Yum.conf')
-            disabled_plugins = config.get('Backend', 'DisabledPlugins').split(';')
-        except ConfigParser.NoOptionError, e:
-            disabled_plugins = []
-        except Exception, e:
-            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
+
+        disabled_plugins = []
         disabled_plugins.append('refresh-packagekit')
+        disabled_plugins.append('rpm-warm-cache')
+        disabled_plugins.append('remove-with-leaves')
+        disabled_plugins.append('auto-update-debuginfo')
 
         # disable the PackageKit plugin when running under PackageKit
         try:
