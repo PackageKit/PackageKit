@@ -1459,7 +1459,7 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job,
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_WHAT_PROVIDES);
-	pk_backend_job_set_parameters (job, g_variant_new ("(tu^as)",
+	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)",
 							   filters,
 							   values));
 	backend->priv->desc->what_provides (backend, job, filters, values);
