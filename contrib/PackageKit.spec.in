@@ -81,7 +81,6 @@ cross-architecture API.
 
 %package yum
 Summary: PackageKit YUM backend
-Group: System Environment/Libraries
 Requires: yum >= 3.4.3-45
 # python(gio)
 Requires: pygobject2
@@ -94,7 +93,6 @@ A backend for PackageKit to enable yum functionality.
 %if 0%{?rhel} == 0
 %package hawkey
 Summary: PackageKit Hawkey backend
-Group: System Environment/Libraries
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Provides: PackageKit-backend
 Provides: PackageKit-zif = %{version}-%{release}
@@ -106,8 +104,6 @@ A backend for PackageKit to enable Hawkey functionality.
 
 %package docs
 Summary: Documentation for PackageKit
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
 BuildArch: noarch
 
 %description docs
@@ -115,7 +111,6 @@ API docs for PackageKit.
 
 %package yum-plugin
 Summary: Tell PackageKit to check for updates when yum exits
-Group: System Environment/Base
 Requires: yum >= 3.0
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: dbus-python
@@ -128,7 +123,6 @@ will almost instantly update itself to reflect this.
 
 %package glib
 Summary: GLib libraries for accessing PackageKit
-Group: Development/Libraries
 Requires: dbus >= 1.1.1
 Requires: gobject-introspection
 Obsoletes: PackageKit-libs < %{version}-%{release}
@@ -139,7 +133,6 @@ GLib libraries for accessing PackageKit.
 
 %package cron
 Summary: Cron job and related utilities for PackageKit
-Group: System Environment/Base
 Requires: crontabs
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
@@ -148,7 +141,6 @@ Crontab and utilities for running PackageKit as a cron job.
 
 %package debug-install
 Summary: Facility to install debugging packages using PackageKit
-Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Obsoletes: PackageKit-debuginfo-install <= 0.5.2-0.1.20090902git.fc12
 
@@ -157,10 +149,9 @@ Provides facility to install debugging packages using PackageKit.
 
 %package glib-devel
 Summary: GLib Libraries and headers for PackageKit
-Group: Development/Libraries
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: dbus-devel >= 1.1.1
-Requires: sqlite-devel
+Requires: dbus-devel%{?_isa} >= 1.1.1
+Requires: sqlite-devel%{?_isa}
 Obsoletes: PackageKit-devel < %{version}-%{release}
 Provides: PackageKit-devel = %{version}-%{release}
 
@@ -169,15 +160,15 @@ GLib headers and libraries for PackageKit.
 
 %package backend-devel
 Summary: Headers to compile out of tree PackageKit backends
-Group: Development/Libraries
-Requires: %{name}%{?_isa} = %{version}-%{release}
+# explicit dep: packagekit-plugin.pc links with -lpackagekit-glib2
+# but doesn't refer to packagekit-glib2.pc
+Requires: %{name}-glib-devel%{?_isa} = %{version}-%{release}
 
 %description backend-devel
 Headers to compile out of tree PackageKit backends.
 
 %package browser-plugin
 Summary: Browser Plugin for PackageKit
-Group: Development/Libraries
 Requires: gtk2
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: mozilla-filesystem
@@ -189,7 +180,6 @@ using PackageKit.
 
 %package gstreamer-plugin
 Summary: Install GStreamer codecs using PackageKit
-Group: Development/Libraries
 Requires: gstreamer
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Obsoletes: codeina < 0.10.1-10
@@ -201,7 +191,6 @@ codecs from configured repositories using PackageKit.
 
 %package gtk3-module
 Summary: Install fonts automatically using PackageKit
-Group: Development/Libraries
 Requires: pango
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
@@ -211,7 +200,6 @@ fonts from configured repositories using PackageKit.
 
 %package command-not-found
 Summary: Ask the user to install command line programs automatically
-Group: Development/Libraries
 Requires: bash
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
@@ -229,6 +217,9 @@ using PackageKit.
 %if 0%{?rhel} == 0
         --enable-hawkey \
         --enable-introspection \
+        --enable-bash-completion \
+%else
+        --disable-bash-completion \
 %endif
         --with-default-backend=auto \
         --disable-local \
@@ -306,7 +297,6 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_libexecdir}/packagekitd
-%{_libexecdir}/pk-trigger-offline-update
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %{_bindir}/packagekit-bugreport.sh
@@ -329,7 +319,6 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 
 %files yum
 %defattr(-,root,root,-)
-%config(noreplace) %{_sysconfdir}/PackageKit/Yum.conf
 %{_libdir}/packagekit-backend/libpk_backend_yum.so
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
