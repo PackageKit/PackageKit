@@ -38,18 +38,18 @@ pk_plugin_get_description (void)
 /**
  * pk_plugin_get_existing_prepared_updates:
  **/
-static GPtrArray *
+static PkPackageSack *
 pk_plugin_get_existing_prepared_updates (const gchar *filename)
 {
 	gboolean ret;
 	gchar **package_ids = NULL;
 	gchar *packages_data = NULL;
 	GError *error = NULL;
-	GPtrArray *packages;
+	PkPackageSack *sack;
 	guint i;
 
-	/* always return a valid array, even for failure */
-	packages = g_ptr_array_new_with_free_func (g_free);
+	/* always return a valid sack, even for failure */
+	sack = pk_package_sack_new ();
 
 	/* does the file exist ? */
 	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -69,27 +69,11 @@ pk_plugin_get_existing_prepared_updates (const gchar *filename)
 	/* add them to the new array */
 	package_ids = g_strsplit (packages_data, "\n", -1);
 	for (i = 0; package_ids[i] != NULL; i++)
-		g_ptr_array_add (packages, g_strdup (package_ids[i]));
+		pk_package_sack_add_package_by_id (sack, package_ids[i], NULL);
 out:
 	g_free (packages_data);
 	g_strfreev (package_ids);
-	return packages;
-}
-
-/**
- * pk_plugin_array_str_exists:
- **/
-static gboolean
-pk_plugin_array_str_exists (GPtrArray *array, const gchar *str)
-{
-	guint i;
-	const gchar *tmp;
-	for (i = 0; i < array->len; i++) {
-		tmp = g_ptr_array_index (array, i);
-		if (g_strcmp0 (tmp, str) == 0)
-			return TRUE;
-	}
-	return FALSE;
+	return sack;
 }
 
 /**
@@ -121,34 +105,42 @@ pk_plugin_state_changed (PkPlugin *plugin)
 static void
 pk_plugin_transaction_update_packages (PkTransaction *transaction)
 {
+	GError *error = NULL;
+	PkPackage *pkg;
+	PkPackageSack *sack;
 	gboolean ret;
 	gchar **package_ids;
 	gchar *packages_str = NULL;
-	GError *error = NULL;
-	GPtrArray *packages;
 	guint i;
 
-/* only do this if we have systemd */
-#ifndef PK_BUILD_SYSTEMD
-	g_debug ("No systemd, so no PreparedUpdates");
-	return;
-#endif
-
 	/* get the existing prepared updates */
-	packages = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 
 	/* add any new ones */
 	package_ids = pk_transaction_get_package_ids (transaction);
 	for (i = 0; package_ids[i] != NULL; i++) {
-		if (!pk_plugin_array_str_exists (packages, package_ids[i])) {
-			g_ptr_array_add (packages,
-					 g_strdup (package_ids[i]));
+		/* does this package match exactly */
+		pkg = pk_package_sack_find_by_id (sack, package_ids[i]);
+		if (pkg != NULL) {
+			g_object_unref (pkg);
+		} else {
+			/* does this package exist in another version */
+			pkg = pk_package_sack_find_by_id_name_arch (sack, package_ids[i]);
+			if (pkg != NULL) {
+				g_debug ("removing old update %s from prepared updates",
+					 pk_package_get_id (pkg));
+				pk_package_sack_remove_package (sack, pkg);
+				g_object_unref (pkg);
+			}
+			g_debug ("adding new update %s to prepared updates",
+				 package_ids[i]);
+			pk_package_sack_add_package_by_id (sack, package_ids[i], NULL);
 		}
 	}
-	g_ptr_array_add (packages, NULL);
 
 	/* write filename */
-	packages_str = g_strjoinv ("\n", (gchar **) packages->pdata);
+	package_ids = pk_package_sack_get_ids (sack);
+	packages_str = g_strjoinv ("\n", package_ids);
 	ret = g_file_set_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				   packages_str,
 				   -1,
@@ -161,9 +153,61 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 		goto out;
 	}
 out:
-	g_ptr_array_unref (packages);
 	g_free (packages_str);
-	return;
+	g_object_unref (sack);
+	g_strfreev (package_ids);
+}
+
+/**
+ * pk_plugin_transaction_action_method:
+ */
+static void
+pk_plugin_transaction_action_method (PkPlugin *plugin,
+				     PkTransaction *transaction,
+				     PkResults *results)
+{
+	GPtrArray *invalidated = NULL;
+	PkPackage *pkg;
+	PkPackageSack *sack;
+	const gchar *package_id;
+	gchar **package_ids;
+	guint i;
+
+	/* get the existing prepared updates */
+	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+	if (pk_package_sack_get_size (sack) == 0)
+		goto out;
+
+	/* are there any requested packages that match in prepared-updates */
+	package_ids = pk_transaction_get_package_ids (transaction);
+	for (i = 0; package_ids[i] != NULL; i++) {
+		pkg = pk_package_sack_find_by_id_name_arch (sack, package_ids[i]);
+		if (pkg != NULL) {
+			g_debug ("%s modified %s, invalidating prepared-updates",
+				 package_ids[i], pk_package_get_id (pkg));
+			pk_plugin_state_changed (plugin);
+			g_object_unref (pkg);
+			goto out;
+		}
+	}
+
+	/* are there any changed deps that match a package in prepared-updates */
+	invalidated = pk_results_get_package_array (results);
+	for (i = 0; i < invalidated->len; i++) {
+		package_id = pk_package_get_id (g_ptr_array_index (invalidated, i));
+		pkg = pk_package_sack_find_by_id_name_arch (sack, package_id);
+		if (pkg != NULL) {
+			g_debug ("%s modified %s, invalidating prepared-updates",
+				 package_id, pk_package_get_id (pkg));
+			pk_plugin_state_changed (plugin);
+			g_object_unref (pkg);
+			goto out;
+		}
+	}
+out:
+	if (invalidated != NULL)
+		g_ptr_array_unref (invalidated);
+	g_object_unref (sack);
 }
 
 /**
@@ -207,22 +251,26 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	PkResults *results;
 	PkRoleEnum role;
 
+/* only do this if we have systemd */
+#ifndef PK_BUILD_SYSTEMD
+	g_debug ("No systemd, so no PreparedUpdates");
+	return;
+#endif
+
 	/* skip simulate actions */
 	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		goto out;
 	}
 
-	/* check for success */
+	/* don't do anything if the method failed */
 	results = pk_transaction_get_results (transaction);
 	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_debug ("not writing %s as transaction failed",
-			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
 		goto out;
-	}
 
-	/* if we're doing only-download then update prepared-updates */
+	/* if we're doing UpdatePackages[only-download] then update the
+	 * prepared-updates file */
 	role = pk_transaction_get_role (transaction);
 	transaction_flags = pk_transaction_get_transaction_flags (transaction);
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
@@ -240,11 +288,19 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	}
 
 	/* delete the prepared updates file as it's no longer valid */
+	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
+	    role == PK_ROLE_ENUM_REPO_ENABLE) {
+		pk_plugin_state_changed (plugin);
+		goto out;
+	}
+
+	/* delete the file if the action affected any package already listed in
+	 * the prepared updates file */
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		pk_plugin_state_changed (plugin);
+	    role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		pk_plugin_transaction_action_method (plugin, transaction, results);
 	}
 out:
 	return;
