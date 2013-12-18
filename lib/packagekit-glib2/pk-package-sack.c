@@ -556,6 +556,48 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_find_by_id_name_arch:
+ * @sack: a valid #PkPackageSack instance
+ * @package_id: a package_id descriptor
+ *
+ * Finds a package in a sack by package name and architecture. As soon as one
+ * package is found the search is stopped.
+ *
+ * Return value: (transfer full): the #PkPackage object, or %NULL if not found.
+ *
+ * Since: 0.8.16
+ */
+PkPackage *
+pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_id)
+{
+	PkPackage *pkg = NULL;
+	PkPackage *pkg_tmp;
+	gchar **split;
+	guint i;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+	g_return_val_if_fail (package_id != NULL, NULL);
+
+	/* does the package name feature in the array */
+	split = pk_package_id_split (package_id);
+	if (split == NULL)
+		goto out;
+	for (i = 0; i < sack->priv->array->len; i++) {
+		pkg_tmp = g_ptr_array_index (sack->priv->array, i);
+		if (g_strcmp0 (pk_package_get_name (pkg_tmp),
+			       split[PK_PACKAGE_ID_NAME]) == 0 &&
+		    g_strcmp0 (pk_package_get_arch (pkg_tmp),
+			       split[PK_PACKAGE_ID_ARCH]) == 0) {
+			pkg = g_object_ref (pkg_tmp);
+			break;
+		}
+	}
+out:
+	g_strfreev (split);
+	return pkg;
+}
+
+/**
  * pk_package_sack_sort_compare_name_func:
  **/
 static gint
