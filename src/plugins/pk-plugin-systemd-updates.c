@@ -161,6 +161,7 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 		goto out;
 	}
 out:
+	g_ptr_array_unref (packages);
 	g_free (packages_str);
 	return;
 }
