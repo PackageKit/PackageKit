@@ -1748,6 +1748,48 @@ out:
 }
 
 /**
+ * pk_console_set_proxy:
+ **/
+static gboolean
+pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
+{
+	GError *error_local = NULL;
+	const gchar *ftp_proxy;
+	const gchar *http_proxy;
+	gboolean ret = TRUE;
+
+	/* is anything set */
+	http_proxy = g_getenv ("http_proxy");
+	ftp_proxy = g_getenv ("ftp_proxy");
+	if (http_proxy == NULL && ftp_proxy == NULL)
+		goto out;
+
+	/* set all parameters */
+	ret = pk_control_set_proxy2 (ctx->control,
+				     http_proxy,
+				     g_getenv ("https_proxy"),
+				     ftp_proxy,
+				     g_getenv ("socks_proxy"),
+				     g_getenv ("no_proxy"),
+				     g_getenv ("pac"),
+				     ctx->cancellable,
+				     &error_local);
+	if (!ret) {
+		g_set_error (error,
+			     PK_CONSOLE_ERROR,
+			     PK_ERROR_ENUM_INTERNAL_ERROR,
+			     "%s: %s",
+			     /* TRANSLATORS: The network settings could not be sent */
+			     _("The proxy could not be set"),
+			     error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+out:
+	return ret;
+}
+
+/**
  * main:
  **/
 int
@@ -1756,7 +1798,6 @@ main (int argc, char *argv[])
 	PkConsoleCtx *ctx = NULL;
 	gboolean ret;
 	GError *error = NULL;
-	GError *error_local = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean only_download = FALSE;
@@ -1770,8 +1811,6 @@ main (int argc, char *argv[])
 	gchar *filter = NULL;
 	gchar *summary = NULL;
 	const gchar *mode;
-	const gchar *http_proxy;
-	const gchar *ftp_proxy;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
@@ -1891,27 +1930,10 @@ main (int argc, char *argv[])
 		      NULL);
 
 	/* set the proxy */
-	http_proxy = g_getenv ("http_proxy");
-	ftp_proxy = g_getenv ("ftp_proxy");
-	if (http_proxy != NULL ||
-	    ftp_proxy != NULL) {
-		ret = pk_control_set_proxy (ctx->control,
-					    http_proxy,
-					    ftp_proxy,
-					    ctx->cancellable,
-					    &error_local);
-		if (!ret) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s: %s",
-					     /* TRANSLATORS: The user specified
-					      * an incorrect filter */
-					     _("The proxy could not be set"),
-					     error_local->message);
-			g_error_free (error_local);
-			ctx->retval = PK_EXIT_CODE_CANNOT_SETUP;
-			goto out;
-		}
+	ret = pk_console_set_proxy (ctx, &error);
+	if (!ret) {
+		ctx->retval = PK_EXIT_CODE_CANNOT_SETUP;
+		goto out;
 	}
 
 	/* check filter */
