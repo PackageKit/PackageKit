@@ -317,6 +317,7 @@
 
     <!--*********************************************************************-->
     <method name="GetPackageHistory">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariant"/>
       <doc:doc>
         <doc:description>
           <doc:para>
