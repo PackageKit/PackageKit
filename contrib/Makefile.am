@@ -37,12 +37,4 @@ bashcompletiondir = $(BASH_COMPLETIONS_DIR)
 dist_bashcompletion_DATA = pkcon
 endif
 
-script_SCRIPTS =					\
-	packagekit-bugreport.sh
-
-EXTRA_DIST=$(script_SCRIPTS)
-
-scriptdir = $(bindir)
-
-
 -include $(top_srcdir)/git.mk
