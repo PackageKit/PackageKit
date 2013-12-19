@@ -67,11 +67,18 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
 
-# No more smart in Fedora
+# No more zif, smart or yum in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
+Obsoletes: PackageKit-yum < 0.8.15-2
+Obsoletes: PackageKit-yum-plugin < 0.8.15-2
+Obsoletes: PackageKit-zif < 0.8.13-2
+
+# components now built-in
+Obsoletes: PackageKit-debug-install < 0.8.15-2
+Obsoletes: PackageKit-hawkey < 0.8.15-2
+Obsoletes: PackageKit-backend-devel < 0.8.15-2
 
 # Udev no longer provides this functionality
-Provides: PackageKit-device-rebind = %{version}-%{release}
 Obsoletes: PackageKit-device-rebind < 0.8.13-2
 
 %description
@@ -79,56 +86,8 @@ PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
 cross-architecture API.
 
-%package yum
-Summary: PackageKit YUM backend
-Group: System Environment/Libraries
-Requires: yum >= 3.4.3-45
-# python(gio)
-Requires: pygobject2
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Provides: PackageKit-backend
-
-%description yum
-A backend for PackageKit to enable yum functionality.
-
-%if 0%{?rhel} == 0
-%package hawkey
-Summary: PackageKit Hawkey backend
-Group: System Environment/Libraries
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Provides: PackageKit-backend
-Provides: PackageKit-zif = %{version}-%{release}
-Obsoletes: PackageKit-zif < 0.8.13-2
-
-%description hawkey
-A backend for PackageKit to enable Hawkey functionality.
-%endif
-
-%package docs
-Summary: Documentation for PackageKit
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
-BuildArch: noarch
-
-%description docs
-API docs for PackageKit.
-
-%package yum-plugin
-Summary: Tell PackageKit to check for updates when yum exits
-Group: System Environment/Base
-Requires: yum >= 3.0
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: dbus-python
-Obsoletes: yum-packagekit < %{version}-%{release}
-
-%description yum-plugin
-PackageKit-yum-plugin tells PackageKit to check for updates when yum exits.
-This way, if you run 'yum update' and install all available updates, puplet
-will almost instantly update itself to reflect this.
-
 %package glib
 Summary: GLib libraries for accessing PackageKit
-Group: Development/Libraries
 Requires: dbus >= 1.1.1
 Requires: gobject-introspection
 Obsoletes: PackageKit-libs < %{version}-%{release}
@@ -139,45 +98,27 @@ GLib libraries for accessing PackageKit.
 
 %package cron
 Summary: Cron job and related utilities for PackageKit
-Group: System Environment/Base
 Requires: crontabs
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
 
-%package debug-install
-Summary: Facility to install debugging packages using PackageKit
-Group: System Environment/Base
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Obsoletes: PackageKit-debuginfo-install <= 0.5.2-0.1.20090902git.fc12
-
-%description debug-install
-Provides facility to install debugging packages using PackageKit.
-
 %package glib-devel
 Summary: GLib Libraries and headers for PackageKit
-Group: Development/Libraries
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: dbus-devel >= 1.1.1
-Requires: sqlite-devel
+Requires: dbus-devel%{?_isa} >= 1.1.1
+Requires: sqlite-devel%{?_isa}
 Obsoletes: PackageKit-devel < %{version}-%{release}
 Provides: PackageKit-devel = %{version}-%{release}
+Obsoletes: PackageKit-docs < %{version}-%{release}
+Provides: PackageKit-docs = %{version}-%{release}
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
 
-%package backend-devel
-Summary: Headers to compile out of tree PackageKit backends
-Group: Development/Libraries
-Requires: %{name}%{?_isa} = %{version}-%{release}
-
-%description backend-devel
-Headers to compile out of tree PackageKit backends.
-
 %package browser-plugin
 Summary: Browser Plugin for PackageKit
-Group: Development/Libraries
 Requires: gtk2
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: mozilla-filesystem
@@ -189,7 +130,6 @@ using PackageKit.
 
 %package gstreamer-plugin
 Summary: Install GStreamer codecs using PackageKit
-Group: Development/Libraries
 Requires: gstreamer
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Obsoletes: codeina < 0.10.1-10
@@ -201,7 +141,6 @@ codecs from configured repositories using PackageKit.
 
 %package gtk3-module
 Summary: Install fonts automatically using PackageKit
-Group: Development/Libraries
 Requires: pango
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
@@ -211,7 +150,6 @@ fonts from configured repositories using PackageKit.
 
 %package command-not-found
 Summary: Ask the user to install command line programs automatically
-Group: Development/Libraries
 Requires: bash
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 
@@ -225,10 +163,12 @@ using PackageKit.
 %build
 %configure \
         --disable-static \
-        --enable-yum \
 %if 0%{?rhel} == 0
         --enable-hawkey \
         --enable-introspection \
+        --enable-bash-completion \
+%else
+        --disable-bash-completion \
 %endif
         --with-default-backend=auto \
         --disable-local \
@@ -248,6 +188,10 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
+
+# we don't support out of tree backends in Fedora
+rm -rf $RPM_BUILD_ROOT%{_includedir}/PackageKit/plugin
+rm -f $RPM_BUILD_ROOT%{_libdir}/pkgconfig/packagekit-plugin.pc
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
@@ -302,14 +246,15 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/pkcon.1.gz
 %{_datadir}/man/man1/pkmon.1.gz
+%{_datadir}/man/man1/pk-debuginfo-install.1.gz
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_libexecdir}/packagekitd
-%{_libexecdir}/pk-trigger-offline-update
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %{_bindir}/packagekit-bugreport.sh
+%{_bindir}/pk-debuginfo-install
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
@@ -322,28 +267,9 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 /usr/lib/systemd/system/packagekit-offline-update.service
 /usr/lib/systemd/system/packagekit.service
 %{_libexecdir}/pk-*offline-update
-
-%files docs
-%defattr(-,root,root,-)
-%{_datadir}/gtk-doc/html/PackageKit
-
-%files yum
-%defattr(-,root,root,-)
-%config(noreplace) %{_sysconfdir}/PackageKit/Yum.conf
-%{_libdir}/packagekit-backend/libpk_backend_yum.so
-%dir %{_datadir}/PackageKit/helpers/yum
-%{_datadir}/PackageKit/helpers/yum/*
-
 %if 0%{?rhel} == 0
-%files hawkey
-%defattr(-,root,root,-)
 %{_libdir}/packagekit-backend/libpk_backend_hawkey.so
 %endif
-
-%files yum-plugin
-%defattr(-, root, root)
-%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
-/usr/lib/yum-plugins/refresh-packagekit.*
 
 %files glib
 %defattr(-,root,root,-)
@@ -354,11 +280,6 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %defattr(-,root,root,-)
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
-
-%files debug-install
-%defattr(-,root,root,-)
-%{_bindir}/pk-debuginfo-install
-%{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin
 %defattr(-,root,root,-)
@@ -390,12 +311,7 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 %{_datadir}/gir-1.0/PackageKitPlugin-1.0.gir
-
-%files backend-devel
-%defattr(-,root,root,-)
-%dir %{_includedir}/PackageKit
-%{_includedir}/PackageKit/plugin
-%{_libdir}/pkgconfig/packagekit-plugin.pc
+%{_datadir}/gtk-doc/html/PackageKit
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
