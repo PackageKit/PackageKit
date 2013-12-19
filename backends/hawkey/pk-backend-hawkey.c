@@ -1419,6 +1419,13 @@ out:
 
 /**
  * hif_utils_find_package_ids:
+ *
+ * Returns a hash table of all the packages found in the sack.
+ * If a specific package-id is not found then the method does not fail, but
+ * no package will be inserted into the hash table.
+ *
+ * If multiple packages are found, an error is returned, as the package-id is
+ * supposed to uniquely identify the package across all repos.
  */
 static GHashTable *
 hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
@@ -1453,14 +1460,8 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 
 		/* no matches */
 		if (hy_packagelist_count (pkglist) == 0) {
-			ret = FALSE;
-			g_set_error (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-				     "Failed to find %s in %i packages",
-				     package_ids[i],
-				     hy_sack_count (sack));
-			goto out;
+			hy_packagelist_free (pkglist);
+			continue;
 		}
 
 		/* multiple matches */
@@ -1561,7 +1562,8 @@ pk_backend_get_details (PkBackend *backend,
 	/* emit details */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
-		g_assert (pkg != NULL);
+		if (pkg == NULL)
+			continue;
 		pk_backend_job_details (job,
 					package_ids[i],
 					hy_package_get_license (pkg),
@@ -1679,7 +1681,13 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	hif_state_set_number_steps (state_local, g_strv_length (package_ids));
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
-		g_assert (pkg != NULL);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			goto out;
+		}
+
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
@@ -3314,6 +3322,12 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	job_data->goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			goto out;
+		}
 		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_erase (job_data->goal, pkg);
 	}
@@ -3451,6 +3465,12 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	job_data->goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			goto out;
+		}
 		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_install (job_data->goal, pkg);
 	}
@@ -3708,6 +3728,12 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	job_data->goal = hy_goal_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			goto out;
+		}
 		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_upgrade_to (job_data->goal, pkg);
 	}
@@ -3855,7 +3881,12 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	/* emit details */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
-		g_assert (pkg != NULL);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			goto out;
+		}
 
 		/* sort and list according to name */
 		files_array = hy_package_get_files (pkg);
@@ -3969,7 +4000,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	/* emit details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
-		g_assert (pkg != NULL);
+		if (pkg == NULL)
+			continue;
 		pk_backend_job_update_detail (job,
 					      package_ids[i],
 					      NULL,
