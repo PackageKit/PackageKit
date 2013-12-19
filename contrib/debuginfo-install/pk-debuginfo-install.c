@@ -19,8 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* Test with ./pk-debuginfo-install bzip2-libs-1.0.5-5.fc11.i586 glib2-2.20.3-1.fc11.i586 */
-
 #include "config.h"
 
 #include <string.h>
@@ -60,8 +58,8 @@ typedef struct {
 static gchar *
 pk_get_package_name_from_nevra (const gchar *nevra)
 {
-	gchar *name = NULL;
 	gchar **split;
+	gchar *name = NULL;
 	guint len;
 
 	/* hal-info-data-version-arch */
@@ -95,12 +93,12 @@ out:
 static gboolean
 pk_debuginfo_install_in_array (GPtrArray *array, const gchar *text)
 {
-	guint i;
-	gboolean ret = FALSE;
 	const gchar *possible;
+	gboolean ret = FALSE;
+	guint i;
 
 	/* compare each */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		possible = g_ptr_array_index (array, i);
 		if (g_strcmp0 (text, possible) == 0) {
 			ret = TRUE;
@@ -114,24 +112,28 @@ pk_debuginfo_install_in_array (GPtrArray *array, const gchar *text)
  * pk_debuginfo_install_enable_repos:
  **/
 static gboolean
-pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *array, gboolean enable, GError **error)
+pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv,
+				   GPtrArray *array,
+				   gboolean enable,
+				   GError **error)
 {
-	guint i;
-	gboolean ret = TRUE;
+	PkError *error_code = NULL;
 	PkResults *results = NULL;
 	const gchar *repo_id;
-	GError *error_local = NULL;
-	PkError *error_code = NULL;
+	gboolean ret = TRUE;
+	guint i;
 
 	/* enable all debuginfo repos we found */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		repo_id = g_ptr_array_index (array, i);
 
 		/* enable this repo */
-		results = pk_client_repo_enable (priv->client, repo_id, enable, NULL, NULL, NULL, &error_local);
+		results = pk_client_repo_enable (priv->client,
+						 repo_id, enable,
+						 NULL, NULL, NULL,
+						 error);
 		if (results == NULL) {
-			*error = g_error_new (1, 0, "failed to enable %s: %s", repo_id, error_local->message);
-			g_error_free (error_local);
+			g_prefix_error (error, "failed to enable %s: ", repo_id);
 			ret = FALSE;
 			goto out;
 		}
@@ -139,7 +141,12 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		/* check error code */
 		error_code = pk_results_get_error_code (results);
 		if (error_code != NULL) {
-			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+			g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "failed to enable repo: %s, %s",
+			     pk_error_enum_to_string (pk_error_get_code (error_code)),
+			     pk_error_get_details (error_code));
 			ret = FALSE;
 			goto out;
 		}
@@ -157,10 +164,13 @@ out:
  * pk_debuginfo_install_progress_cb:
  **/
 static void
-pk_debuginfo_install_progress_cb (PkProgress *progress, PkProgressType type, PkDebuginfoInstallPrivate *priv)
+pk_debuginfo_install_progress_cb (PkProgress *progress,
+				  PkProgressType type,
+				  gpointer user_data)
 {
-	gint percentage;
+	PkDebuginfoInstallPrivate *priv = (PkDebuginfoInstallPrivate *) user_data;
 	gchar *package_id = NULL;
+	gint percentage;
 
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
 		g_object_get (progress, "percentage", &percentage, NULL);
@@ -180,13 +190,14 @@ out:
  * pk_debuginfo_install_packages_install:
  **/
 static gboolean
-pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArray *array, GError **error)
+pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv,
+				       GPtrArray *array,
+				       GError **error)
 {
-	gboolean ret = TRUE;
-	PkResults *results = NULL;
-	gchar **package_ids;
-	GError *error_local = NULL;
 	PkError *error_code = NULL;
+	PkResults *results = NULL;
+	gboolean ret = TRUE;
+	gchar **package_ids;
 
 	/* mush back into a char** */
 	package_ids = pk_ptr_array_to_strv (array);
@@ -195,11 +206,12 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	pk_progress_bar_start (priv->progress_bar, _("Starting install"));
 
 	/* enable this repo */
-	results = pk_task_install_packages_sync (PK_TASK(priv->client), package_ids, NULL,
-						 (PkProgressCallback) pk_debuginfo_install_progress_cb, priv, &error_local);
+	results = pk_task_install_packages_sync (PK_TASK(priv->client),
+						 package_ids, NULL,
+						 pk_debuginfo_install_progress_cb, priv,
+						 error);
 	if (results == NULL) {
-		*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
-		g_error_free (error_local);
+		g_prefix_error (error, "failed to install packages: ");
 		ret = FALSE;
 		goto out;
 	}
@@ -207,7 +219,12 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "failed to resolve: %s, %s",
+			     pk_error_enum_to_string (pk_error_get_code (error_code)),
+			     pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
@@ -227,42 +244,56 @@ out:
  * pk_debuginfo_install_resolve_name_to_id:
  **/
 static gchar *
-pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const gchar *package_name, GError **error)
+pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv,
+					 const gchar *package_name,
+					 GError **error)
 {
-	PkResults *results = NULL;
-	PkPackage *item;
-	gchar *package_id = NULL;
 	GPtrArray *list = NULL;
-	GError *error_local = NULL;
-	gchar **names;
 	PkError *error_code = NULL;
+	PkPackage *item;
+	PkResults *results = NULL;
+	gchar **names;
+	gchar *package_id = NULL;
 
 	/* resolve takes a char** */
 	names = g_strsplit (package_name, ";", -1);
 
 	/* resolve */
-	results = pk_client_resolve (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, NULL, NULL, NULL, &error_local);
+	results = pk_client_resolve (priv->client,
+				     pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1),
+				     names, NULL, NULL, NULL, error);
 	if (results == NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s", error_local->message);
-		g_error_free (error_local);
+		g_prefix_error (error, "failed to resolve: ");
 		goto out;
 	}
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "failed to resolve: %s, %s",
+			     pk_error_enum_to_string (pk_error_get_code (error_code)),
+			     pk_error_get_details (error_code));
 		goto out;
 	}
 
 	/* check we only got one match */
 	list = pk_results_get_package_array (results);
 	if (list->len == 0) {
-		*error = g_error_new (1, 0, "no package %s found", package_name);
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "no package %s found", package_name);
 		goto out;
 	}
 	if (list->len > 1) {
-		*error = g_error_new (1, 0, "more than one package found for %s", package_name);
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "more than one package found for %s",
+			     package_name);
 		goto out;
 	}
 
@@ -313,11 +344,11 @@ out:
 static void
 pk_debuginfo_install_print_array (GPtrArray *array)
 {
-	guint i;
 	const gchar *package_id;
 	gchar **split;
+	guint i;
 
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package_id = g_ptr_array_index (array, i);
 		split = pk_package_id_split (package_id);
 		g_print ("%i\t%s-%s(%s)\t%s\n", i+1,
@@ -358,19 +389,22 @@ out:
  * pk_debuginfo_install_add_deps:
  **/
 static gboolean
-pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packages_search, GPtrArray *packages_results, GError **error)
+pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv,
+			       GPtrArray *packages_search,
+			       GPtrArray *packages_results,
+			       GError **error)
 {
-	gboolean ret = TRUE;
-	PkResults *results = NULL;
-	PkPackage *item;
-	gchar *package_id = NULL;
-	GPtrArray *list = NULL;
 	GError *error_local = NULL;
-	gchar **package_ids = NULL;
-	gchar *name_debuginfo;
-	guint i;
-	gchar **split;
+	GPtrArray *list = NULL;
 	PkError *error_code = NULL;
+	PkPackage *item;
+	PkResults *results = NULL;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
+	gchar **split;
+	gchar *name_debuginfo;
+	gchar *package_id = NULL;
+	guint i;
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
@@ -388,8 +422,8 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 			g_error_free (error_local);
 			goto out;
 		}
-		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
-		g_error_free (error_local);
+		g_propagate_prefixed_error (error, error_local,
+					    "failed to get_depends: ");
 		ret = FALSE;
 		goto out;
 	}
@@ -397,14 +431,19 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "failed to get depends: %s, %s",
+			     pk_error_enum_to_string (pk_error_get_code (error_code)),
+			     pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
 
 	/* add dependent packages */
 	list = pk_results_get_package_array (results);
-	for (i=0; i<list->len; i++) {
+	for (i = 0; i < list->len; i++) {
 		item = g_ptr_array_index (list, i);
 		split = pk_package_id_split (pk_package_get_id (item));
 		/* add -debuginfo */
@@ -413,10 +452,13 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 
 		/* resolve name */
 		g_debug ("resolving: %s", name_debuginfo);
-		package_id = pk_debuginfo_install_resolve_name_to_id (priv, name_debuginfo, &error_local);
+		package_id = pk_debuginfo_install_resolve_name_to_id (priv,
+								      name_debuginfo,
+								      &error_local);
 		if (package_id == NULL) {
 			/* TRANSLATORS: we couldn't find the package name, non-fatal */
-			g_print (_("Failed to find the package %s, or already installed: %s"), name_debuginfo, error_local->message);
+			g_print (_("Failed to find the package %s, or already installed: %s"),
+				 name_debuginfo, error_local->message);
 			g_print ("\n");
 			g_error_free (error_local);
 			/* don't quit, this is non-fatal */
@@ -449,34 +491,39 @@ out:
 static gboolean
 pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **error)
 {
-	gboolean ret = FALSE;
-	PkResults *results = NULL;
-	guint i;
 	GPtrArray *array;
-	GError *error_local = NULL;
-	PkRepoDetail *item;
 	PkError *error_code = NULL;
+	PkRepoDetail *item;
+	PkResults *results = NULL;
 	gboolean enabled;
+	gboolean ret = FALSE;
 	gchar *repo_id;
+	guint i;
 
 	/* get all repo details */
-	results = pk_client_get_repo_list (priv->client, pk_bitfield_value (PK_FILTER_ENUM_NONE), NULL, NULL, NULL, &error_local);
+	results = pk_client_get_repo_list (priv->client,
+					   pk_bitfield_value (PK_FILTER_ENUM_NONE),
+					   NULL, NULL, NULL, error);
 	if (results == NULL) {
-		*error = g_error_new (1, 0, "failed to get repo list: %s", error_local->message);
-		g_error_free (error_local);
+		g_prefix_error (error, "failed to get repo list: ");
 		goto out;
 	}
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_set_error (error,
+			     PK_CLIENT_ERROR,
+			     pk_error_get_code (error_code),
+			     "failed to get repo list: %s, %s",
+			     pk_error_enum_to_string (pk_error_get_code (error_code)),
+			     pk_error_get_details (error_code));
 		goto out;
 	}
 
 	/* get results */
 	array = pk_results_get_repo_detail_array (results);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "enabled", &enabled,
@@ -502,24 +549,24 @@ out:
 int
 main (int argc, char *argv[])
 {
-	gboolean ret;
 	GError *error = NULL;
+	GOptionContext *context;
 	GPtrArray *added_repos = NULL;
 	GPtrArray *package_ids_recognised = NULL;
 	GPtrArray *package_ids_to_install = NULL;
-	guint i;
-	guint retval = 0;
-	gchar *package_id;
+	PkDebuginfoInstallPrivate *priv = NULL;
+	const gchar *repo_id;
+	gboolean no_depends = FALSE;
+	gboolean noninteractive = FALSE;
+	gboolean quiet = FALSE;
+	gboolean ret;
+	gboolean simulate = FALSE;
 	gchar *name;
 	gchar *name_debuginfo;
-	gboolean simulate = FALSE;
-	gboolean no_depends = FALSE;
-	gboolean quiet = FALSE;
-	gboolean noninteractive = FALSE;
-	GOptionContext *context;
-	const gchar *repo_id;
+	gchar *package_id;
 	gchar *repo_id_debuginfo;
-	PkDebuginfoInstallPrivate *priv = NULL;
+	guint i;
+	guint retval = 0;
 	guint step = 1;
 
 	const GOptionEntry options[] = {
@@ -566,7 +613,8 @@ main (int argc, char *argv[])
 	if (argv[1] == NULL) {
 		/* should be vocal? */
 		if (!quiet) {
-			/* TRANSLATORS: the use needs to specify a list of package names on the command line */
+			/* TRANSLATORS: the use needs to specify a list of
+			 * package names on the command line */
 			g_print (_("ERROR: Specify package names to install."));
 			g_print ("\n");
 		}
@@ -615,7 +663,8 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: operation was not successful */
 			g_print ("%s ", _("FAILED."));
 		}
-		/* TRANSLATORS: we're failed to enable the sources, detailed error follows */
+		/* TRANSLATORS: we're failed to enable the sources, detailed
+		 * error follows */
 		g_print ("Failed to enable sources list: %s", error->message);
 		g_print ("\n");
 		g_error_free (error);
@@ -631,19 +680,20 @@ main (int argc, char *argv[])
 		g_print ("%s ", _("OK."));
 
 		/* TRANSLATORS: tell the user what we found */
-		g_print (_("Found %i enabled and %i disabled sources."), priv->enabled->len, priv->disabled->len);
+		g_print (_("Found %i enabled and %i disabled sources."),
+			 priv->enabled->len, priv->disabled->len);
 		g_print ("\n");
 
 		/* starting this section */
 		g_print ("%i. ", step++);
 
-		/* TRANSLATORS: we're finding repositories that match out pattern */
+		/* TRANSLATORS: we're finding repositories that match our pattern */
 		g_print (_("Finding debugging sources"));
 		g_print ("...");
 	}
 
 	/* find all debuginfo repos for repos that are enabled */
-	for (i=0; i<priv->enabled->len; i++) {
+	for (i = 0; i < priv->enabled->len; i++) {
 
 		/* is already a -debuginfo */
 		repo_id = g_ptr_array_index (priv->enabled, i);
@@ -718,7 +768,7 @@ main (int argc, char *argv[])
 	}
 
 	/* parse arguments and resolve to packages */
-	for (i=1; argv[i] != NULL; i++) {
+	for (i = 1; argv[i] != NULL; i++) {
 		name = pk_get_package_name_from_nevra (argv[i]);
 
 		/* resolve name */
@@ -745,7 +795,9 @@ main (int argc, char *argv[])
 		g_debug ("install %s [%s]", argv[i], name_debuginfo);
 
 		/* resolve name */
-		package_id = pk_debuginfo_install_resolve_name_to_id (priv, name_debuginfo, &error);
+		package_id = pk_debuginfo_install_resolve_name_to_id (priv,
+								      name_debuginfo,
+								      &error);
 		if (package_id == NULL) {
 			/* TRANSLATORS: we couldn't find the debuginfo package name, non-fatal */
 			g_print (_("Failed to find the debuginfo package %s: %s"), name_debuginfo, error->message);
@@ -917,20 +969,26 @@ out:
 			/* starting this section */
 			g_print ("%i. ", step);
 
-			/* TRANSLATORS: we are now disabling all debuginfo repos we previously enabled */
+			/* TRANSLATORS: we are now disabling all debuginfo repos
+			 * we previously enabled */
 			g_print (_("Disabling sources previously enabled"));
 			g_print ("...");
 		}
 		/* disable all debuginfo repos we previously enabled */
-		ret = pk_debuginfo_install_enable_repos (priv, added_repos, FALSE, &error);
+		ret = pk_debuginfo_install_enable_repos (priv,
+							 added_repos,
+							 FALSE,
+							 &error);
 		if (!ret) {
 			/* should be vocal? */
 			if (!quiet) {
 				/* TRANSLATORS: operation was not successful */
 				g_print ("%s ", _("FAILED."));
 			}
-			/* TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows */
-			g_print (_("Could not disable the debugging sources: %s"), error->message);
+			/* TRANSLATORS: no debuginfo packages could be found to
+			 * be installed, detailed error follows */
+			g_print (_("Could not disable the debugging sources: %s"),
+				 error->message);
 			g_print ("\n");
 			g_error_free (error);
 
@@ -944,8 +1002,10 @@ out:
 				/* TRANSLATORS: all completed 100% */
 				g_print ("%s ", _("OK."));
 
-				/* TRANSLATORS: we disabled all the debugging repos that we enabled before */
-				g_print (_("Disabled %i debugging sources."), added_repos->len);
+				/* TRANSLATORS: we disabled all the debugging
+				 * repos that we enabled before */
+				g_print (_("Disabled %i debugging sources."),
+					 added_repos->len);
 				g_print ("\n");
 			}
 		}
