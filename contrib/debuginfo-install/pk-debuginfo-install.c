@@ -374,8 +374,20 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
-	results = pk_client_get_depends (priv->client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package_ids, TRUE, NULL, NULL, NULL, &error_local);
+	results = pk_client_get_depends (priv->client,
+					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
+					 package_ids, TRUE,
+					 NULL, NULL, NULL,
+					 &error_local);
 	if (results == NULL) {
+		if (g_error_matches (error_local,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_NOT_SUPPORTED)) {
+			/* backend does not support GetDepends */
+			ret = TRUE;
+			g_error_free (error_local);
+			goto out;
+		}
 		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
