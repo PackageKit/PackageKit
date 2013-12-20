@@ -1298,10 +1298,10 @@ out:
 }
 
 /**
- * pk_console_get_requires:
+ * pk_console_required_by:
  **/
 static gboolean
-pk_console_get_requires (PkConsoleCtx *ctx, gchar **packages, GError **error)
+pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
@@ -1323,7 +1323,7 @@ pk_console_get_requires (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_task_get_requires_async (PK_TASK (ctx->task),
+	pk_task_required_by_async (PK_TASK (ctx->task),
 				    ctx->filters,
 				    package_ids,
 				    TRUE,
@@ -1336,10 +1336,10 @@ out:
 }
 
 /**
- * pk_console_get_depends:
+ * pk_console_depends_on:
  **/
 static gboolean
-pk_console_get_depends (PkConsoleCtx *ctx, gchar **packages, GError **error)
+pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
@@ -1360,7 +1360,7 @@ pk_console_get_depends (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_task_get_depends_async (PK_TASK (ctx->task),
+	pk_task_depends_on_async (PK_TASK (ctx->task),
 				   ctx->filters,
 				   package_ids,
 				   FALSE,
@@ -1557,9 +1557,9 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 		g_string_append_printf (string, "  %s\n", "resolve [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_UPDATES))
 		g_string_append_printf (string, "  %s\n", "get-updates");
-	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DEPENDS))
+	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_DEPENDS_ON))
 		g_string_append_printf (string, "  %s\n", "get-depends [package]");
-	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_REQUIRES))
+	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REQUIRED_BY))
 		g_string_append_printf (string, "  %s\n", "get-requires [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DETAILS))
 		g_string_append_printf (string, "  %s\n", "get-details [package]");
@@ -2270,7 +2270,7 @@ main (int argc, char *argv[])
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_get_depends (ctx, argv + 2, &error);
+		run_mainloop = pk_console_depends_on (ctx, argv + 2, &error);
 
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
 		pk_client_get_distro_upgrades_async (PK_CLIENT (ctx->task),
@@ -2299,7 +2299,7 @@ main (int argc, char *argv[])
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_get_requires (ctx, argv + 2, &error);
+		run_mainloop = pk_console_required_by (ctx, argv + 2, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {

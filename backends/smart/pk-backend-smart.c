@@ -165,10 +165,10 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 }
 
 /**
- * pk_backend_get_depends:
+ * pk_backend_depends_on:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -204,10 +204,10 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 }
 
 /**
- * pk_backend_get_requires:
+ * pk_backend_required_by:
  */
 void
-pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
 	gchar *filters_text;

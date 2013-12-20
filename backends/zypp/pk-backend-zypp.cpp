@@ -1709,10 +1709,10 @@ zypp_is_no_solvable (const sat::Solvable &solv)
 }
 
 /**
-  * backend_get_requires_thread:
+  * backend_required_by_thread:
   */
 static void
-backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
 
@@ -1791,12 +1791,12 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 }
 
 /**
-  * pk_backend_get_requires:
+  * pk_backend_required_by:
   */
 void
-pk_backend_get_requires(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_job_thread_create (job, backend_get_requires_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_required_by_thread, NULL, NULL);
 }
 
 /**
@@ -1846,7 +1846,7 @@ pk_backend_get_filters (PkBackend *backend)
  * clearly often there is no simple answer.
  */
 static void
-backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield _filters;
 	gchar **package_ids;
@@ -1895,7 +1895,7 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		vector<string> pkg_names;
 
 		for (Capabilities::const_iterator cap = req.begin (); cap != req.end (); ++cap) {
-			g_debug ("get_depends - capability '%s'", cap->asString().c_str());
+			g_debug ("depends_on - capability '%s'", cap->asString().c_str());
 
 			if (caps.find (cap->asString ()) != caps.end()) {
 				g_debug ("Interesting ! already have capability '%s'", cap->asString().c_str());
@@ -1984,12 +1984,12 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 }
 
 /**
- * pk_backend_get_depends:
+ * pk_backend_depends_on:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_job_thread_create (job, backend_get_depends_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_depends_on_thread, NULL, NULL);
 }
 
 static void

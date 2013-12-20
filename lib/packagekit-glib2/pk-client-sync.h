@@ -105,7 +105,7 @@ PkResults	*pk_client_get_old_transactions		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_get_depends			(PkClient		*client,
+PkResults	*pk_client_depends_on			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
@@ -121,7 +121,7 @@ PkResults	*pk_client_get_packages			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_get_requires			(PkClient		*client,
+PkResults	*pk_client_required_by			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,

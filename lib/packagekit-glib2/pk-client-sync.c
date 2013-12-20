@@ -598,7 +598,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
 }
 
 /**
- * pk_client_get_depends:
+ * pk_client_depends_on:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -618,7 +618,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_client_depends_on (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper helper;
@@ -636,7 +636,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_get_depends_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
+	pk_client_depends_on_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
 	g_main_loop_run (helper.loop);
@@ -706,7 +706,7 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
 }
 
 /**
- * pk_client_get_requires:
+ * pk_client_required_by:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -726,7 +726,7 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_client_required_by (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper helper;
@@ -744,7 +744,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_get_requires_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
+	pk_client_required_by_async (client, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
 				      (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
 	g_main_loop_run (helper.loop);

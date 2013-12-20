@@ -2543,10 +2543,10 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 }
 
 /**
- * backend_get_depends_thread:
+ * backend_depends_on_thread:
  */
 static void
-backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield filters;
 	gboolean recursive;
@@ -2589,13 +2589,13 @@ backend_get_depends_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 }
 
 void
-pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_job_thread_create (job, backend_get_depends_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_depends_on_thread, NULL, NULL);
 }
 
 /**
@@ -2797,10 +2797,10 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 }
 
 /**
- * backend_get_requires_thread:
+ * backend_required_by_thread:
  */
 static void
-backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	struct pkg	*pkg;
 	tn_array	*reqpkgs, *available, *installed;
@@ -2841,13 +2841,13 @@ backend_get_requires_thread (PkBackendJob *job, GVariant *params, gpointer user_
 }
 
 void
-pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_job_thread_create (job, backend_get_requires_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_required_by_thread, NULL, NULL);
 }
 
 /**

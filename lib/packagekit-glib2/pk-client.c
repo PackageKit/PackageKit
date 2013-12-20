@@ -1666,8 +1666,23 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state->cancellable,
 				   pk_client_method_cb,
 				   state);
-	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		g_dbus_proxy_call (state->proxy, "GetDepends",
+	} else if (state->role == PK_ROLE_ENUM_DEPENDS_ON) {
+		g_dbus_proxy_call (state->proxy, "DependsOn",
+				   g_variant_new ("(t^a&sb)",
+						  state->filters,
+						  state->package_ids,
+						  state->recursive),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
+
+	} else if (state->role == PK_ROLE_ENUM_REQUIRED_BY) {
+		g_dbus_proxy_call (state->proxy, "RequiredBy",
 				   g_variant_new ("(t^a&sb)",
 						  state->filters,
 						  state->package_ids,
@@ -1689,20 +1704,6 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state->cancellable,
 				   pk_client_method_cb,
 				   state);
-	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		g_dbus_proxy_call (state->proxy, "GetRequires",
-				   g_variant_new ("(t^a&sb)",
-						  state->filters,
-						  state->package_ids,
-						  state->recursive),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   state);
-		g_object_set (state->results,
-			      "inputs", g_strv_length (state->package_ids),
-			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		g_dbus_proxy_call (state->proxy, "WhatProvides",
 				   g_variant_new ("(t^a&s)",
@@ -2852,7 +2853,7 @@ out:
 }
 
 /**
- * pk_client_get_depends_async:
+ * pk_client_depends_on_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -2868,7 +2869,7 @@ out:
  * Since: 0.5.2
  **/
 void
-pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -2881,11 +2882,11 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_depends_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_depends_on_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_DEPENDS;
+	state->role = PK_ROLE_ENUM_DEPENDS_ON;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
 	state->cancellable = g_cancellable_new ();
@@ -2991,7 +2992,7 @@ out:
 }
 
 /**
- * pk_client_get_requires_async:
+ * pk_client_required_by_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3007,7 +3008,7 @@ out:
  * Since: 0.5.2
  **/
 void
-pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -3020,11 +3021,11 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_requires_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_required_by_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_REQUIRES;
+	state->role = PK_ROLE_ENUM_REQUIRED_BY;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
 	state->cancellable = g_cancellable_new ();

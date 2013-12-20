@@ -1255,7 +1255,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # return first entry
         return pkgs[0], False
 
-    def get_requires(self, filters, package_ids, recursive):
+    def required_by(self, filters, package_ids, recursive):
         '''
         Print a list of requires for a given package
         '''
@@ -1535,9 +1535,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
-    def _get_depends_not_installed(self, filters, package_ids, recursive):
+    def _depends_on_not_installed(self, filters, package_ids, recursive):
         '''
-        Gets the deps that are not installed, optimisation of get_depends
+        Gets the deps that are not installed, optimisation of depends_on
         using a yum transaction
         Returns a list of pkgs.
         '''
@@ -1623,7 +1623,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return deps_list
 
-    def get_depends(self, filters, package_ids, recursive):
+    def depends_on(self, filters, package_ids, recursive):
         '''
         Print a list of depends for a given package
         '''
@@ -1642,7 +1642,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # which we can emulate quicker by doing a transaction, but not
         # executing it
         if FILTER_NOT_INSTALLED in filters and recursive:
-            pkgs = self._get_depends_not_installed (filters, package_ids, recursive)
+            pkgs = self._depends_on_not_installed (filters, package_ids, recursive)
             pkgfilter.add_available(pkgs)
             package_list = pkgfilter.get_package_list()
             self._show_package_list(package_list)

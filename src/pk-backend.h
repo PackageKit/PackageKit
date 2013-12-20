@@ -121,7 +121,7 @@ void		 pk_backend_download_packages		(PkBackend	*backend,
 							 const gchar	*directory);
 void		 pk_backend_get_categories		(PkBackend	*backend,
 							 PkBackendJob	*job);
-void		 pk_backend_get_depends			(PkBackend	*backend,
+void		 pk_backend_depends_on			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**package_ids,
@@ -134,7 +134,7 @@ void		 pk_backend_get_distro_upgrades		(PkBackend	*backend,
 void		 pk_backend_get_files			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 gchar		**package_ids);
-void		 pk_backend_get_requires		(PkBackend	*backend,
+void		 pk_backend_required_by		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**package_ids,

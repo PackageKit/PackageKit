@@ -330,7 +330,7 @@ GROUPS = {
     end
   end
 
-  def get_depends(filters, package_ids, recursive)
+  def depends_on(filters, package_ids, recursive)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -431,7 +431,7 @@ GROUPS = {
     end
   end
 
-  def get_requires(filters, package_ids, recursive)
+  def required_by(filters, package_ids, recursive)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)

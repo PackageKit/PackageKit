@@ -353,10 +353,10 @@ pk_backend_get_roles (PkBackend *backend)
 	PkBitfield roles;
 	roles = pk_bitfield_from_enums (
 		PK_ROLE_ENUM_CANCEL,
-		PK_ROLE_ENUM_GET_DEPENDS,
+		PK_ROLE_ENUM_DEPENDS_ON,
 		PK_ROLE_ENUM_GET_DETAILS,
 		PK_ROLE_ENUM_GET_FILES,
-		PK_ROLE_ENUM_GET_REQUIRES,
+		PK_ROLE_ENUM_REQUIRED_BY,
 		PK_ROLE_ENUM_GET_PACKAGES,
 		PK_ROLE_ENUM_WHAT_PROVIDES,
 		PK_ROLE_ENUM_GET_UPDATES,
@@ -423,10 +423,10 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 }
 
 /**
- * pk_backend_get_depends:
+ * pk_backend_depends_on:
  */
 void
-pk_backend_get_depends (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
@@ -471,10 +471,10 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 }
 
 /**
- * pk_backend_get_requires:
+ * pk_backend_required_by:
  */
 void
-pk_backend_get_requires (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
 	gchar *filters_text;

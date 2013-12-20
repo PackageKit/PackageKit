@@ -132,7 +132,7 @@ PkResults	*pk_task_get_updates_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_task_get_depends_sync		(PkTask			*task,
+PkResults	*pk_task_depends_on_sync		(PkTask			*task,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
@@ -148,7 +148,7 @@ PkResults	*pk_task_get_packages_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_task_get_requires_sync		(PkTask			*task,
+PkResults	*pk_task_required_by_sync		(PkTask			*task,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,

@@ -194,7 +194,7 @@ void		 pk_client_get_old_transactions_async	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_depends_async		(PkClient		*client,
+void		 pk_client_depends_on_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
@@ -212,7 +212,7 @@ void		 pk_client_get_packages_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_requires_async		(PkClient		*client,
+void		 pk_client_required_by_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
