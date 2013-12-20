@@ -573,10 +573,16 @@ if test x$enable_katja = xyes; then
 	    CURL_CFLAGS="`curl-config --cflags`"
 	    CURL_LIBS="`curl-config --libs`"
 	    ], [AC_MSG_ERROR([Can't find curl])])
-	KATJA_ARCH="`uname -m`"
+	case "`uname -m`" in
+		x86-64|x86_64|X86-64|X86_64)
+			KATJA_PKGMAIN="slackware64"
+			;;
+		*)
+			KATJA_PKGMAIN="slackware"
+	esac
 	KATJA_CFLAGS="$CURL_CFLAGS"
 	KATJA_LIBS="$CURL_LIBS"
-	AC_SUBST(KATJA_ARCH)
+	AC_SUBST(KATJA_PKGMAIN)
 	AC_SUBST(KATJA_CFLAGS)
 	AC_SUBST(KATJA_LIBS)
 fi
