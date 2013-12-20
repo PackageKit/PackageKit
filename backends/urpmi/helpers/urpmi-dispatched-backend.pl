@@ -55,7 +55,7 @@ sub dispatch_command {
 
   my $command = shift(@$args);
   if ($command eq "get-depends") {
-    get_depends($urpm, $args);
+    depends_on($urpm, $args);
   } elsif ($command eq "get-details") {
     get_details($urpm, $args);
   } elsif ($command eq "get-distro-upgrades") {
@@ -67,7 +67,7 @@ sub dispatch_command {
   } elsif ($command eq "get-repo-list") {
     get_repo_list($urpm);
   } elsif ($command eq "get-requires") {
-    get_requires($urpm, $args);
+    required_by($urpm, $args);
   } elsif ($command eq "get-update-detail") {
     get_update_detail($urpm, $args);
   } elsif ($command eq "get-updates") {
@@ -106,7 +106,7 @@ sub dispatch_command {
   } else {}
 }
 
-sub get_depends {
+sub depends_on {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, $args->[0]);
@@ -265,7 +265,7 @@ sub get_repo_list {
 }
 
 
-sub get_requires {
+sub required_by {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, $args->[0]);

@@ -865,7 +865,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             cat_id = name # same thing
             self.category("", cat_id, name, summary, icon)
 
-    def get_depends(self, filters, pkgs, recursive):
+    def depends_on(self, filters, pkgs, recursive):
         # TODO: use only myparams ?
         # TODO: improve error management / info
 
@@ -1075,7 +1075,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     self.repo_detail(o, o,
                             self._is_repo_enabled(installed_layman_db, o))
 
-    def get_requires(self, filters, pkgs, recursive):
+    def required_by(self, filters, pkgs, recursive):
         # TODO: manage non-installed package
 
         # FILTERS:

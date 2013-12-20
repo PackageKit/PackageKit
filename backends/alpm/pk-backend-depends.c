@@ -137,7 +137,7 @@ pk_backend_find_requirer (PkBackend *self, alpm_list_t *pkgs, const gchar *name,
 }
 
 static gboolean
-pk_backend_get_depends_thread (PkBackend *self)
+pk_backend_depends_on_thread (PkBackend *self)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
@@ -173,7 +173,7 @@ pk_backend_get_depends_thread (PkBackend *self)
 			break;
 		}
 
-		depends = alpm_pkg_get_depends (i->data);
+		depends = alpm_pkg_depends_on (i->data);
 		for (; depends != NULL; depends = depends->next) {
 			gchar *depend;
 
@@ -193,7 +193,7 @@ pk_backend_get_depends_thread (PkBackend *self)
 }
 
 static gboolean
-pk_backend_get_requires_thread (PkBackend *self)
+pk_backend_required_by_thread (PkBackend *self)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
@@ -248,23 +248,23 @@ pk_backend_get_requires_thread (PkBackend *self)
 }
 
 void
-pk_backend_get_depends (PkBackend *self, PkBitfield filters,
+pk_backend_depends_on (PkBackend *self, PkBitfield filters,
 			gchar **package_ids, gboolean recursive)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (package_ids != NULL);
 
 	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_depends_thread);
+			pk_backend_depends_on_thread);
 }
 
 void
-pk_backend_get_requires (PkBackend *self, PkBitfield filters,
+pk_backend_required_by (PkBackend *self, PkBitfield filters,
 			 gchar **package_ids, gboolean recursive)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (package_ids != NULL);
 
 	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_requires_thread);
+			pk_backend_required_by_thread);
 }

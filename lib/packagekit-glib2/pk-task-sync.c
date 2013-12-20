@@ -671,7 +671,7 @@ pk_task_get_updates_sync (PkTask *task, PkBitfield filters, GCancellable *cancel
 }
 
 /**
- * pk_task_get_depends_sync:
+ * pk_task_depends_on_sync:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -688,7 +688,7 @@ pk_task_get_updates_sync (PkTask *task, PkBitfield filters, GCancellable *cancel
  * Since: 0.6.5
  **/
 PkResults *
-pk_task_get_depends_sync (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_task_depends_on_sync (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data,
 			  GError **error)
 {
@@ -704,7 +704,7 @@ pk_task_get_depends_sync (PkTask *task, PkBitfield filters, gchar **package_ids,
 	helper->error = error;
 
 	/* run async method */
-	pk_task_get_depends_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
+	pk_task_depends_on_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_task_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -765,7 +765,7 @@ pk_task_get_packages_sync (PkTask *task, PkBitfield filters, GCancellable *cance
 }
 
 /**
- * pk_task_get_requires_sync:
+ * pk_task_required_by_sync:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -782,7 +782,7 @@ pk_task_get_packages_sync (PkTask *task, PkBitfield filters, GCancellable *cance
  * Since: 0.6.5
  **/
 PkResults *
-pk_task_get_requires_sync (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_task_required_by_sync (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GError **error)
 {
@@ -798,7 +798,7 @@ pk_task_get_requires_sync (PkTask *task, PkBitfield filters, gchar **package_ids
 	helper->error = error;
 
 	/* run async method */
-	pk_task_get_requires_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
+	pk_task_required_by_async (task, filters, package_ids, recursive, cancellable, progress_callback, progress_user_data,
 				    (GAsyncReadyCallback) pk_task_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);

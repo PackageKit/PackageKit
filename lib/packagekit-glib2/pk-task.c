@@ -250,16 +250,16 @@ pk_task_do_async_action (PkTaskState *state)
 		pk_client_get_updates_async (PK_CLIENT(state->task), state->filters,
 					     state->cancellable, state->progress_callback, state->progress_user_data,
 					     (GAsyncReadyCallback) pk_task_ready_cb, state);
-	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		pk_client_get_depends_async (PK_CLIENT(state->task), state->filters, state->package_ids, state->recursive,
+	} else if (state->role == PK_ROLE_ENUM_DEPENDS_ON) {
+		pk_client_depends_on_async (PK_CLIENT(state->task), state->filters, state->package_ids, state->recursive,
 					     state->cancellable, state->progress_callback, state->progress_user_data,
 					     (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
 		pk_client_get_packages_async (PK_CLIENT(state->task), state->filters,
 					      state->cancellable, state->progress_callback, state->progress_user_data,
 					      (GAsyncReadyCallback) pk_task_ready_cb, state);
-	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		pk_client_get_requires_async (PK_CLIENT(state->task), state->filters, state->package_ids, state->recursive,
+	} else if (state->role == PK_ROLE_ENUM_REQUIRED_BY) {
+		pk_client_required_by_async (PK_CLIENT(state->task), state->filters, state->package_ids, state->recursive,
 					      state->cancellable, state->progress_callback, state->progress_user_data,
 					      (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
@@ -1740,7 +1740,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 }
 
 /**
- * pk_task_get_depends_async:
+ * pk_task_depends_on_async:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1756,7 +1756,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
  * Since: 0.6.5
  **/
 void
-pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1771,7 +1771,7 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
 
 	/* save state */
 	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_GET_DEPENDS;
+	state->role = PK_ROLE_ENUM_DEPENDS_ON;
 	state->res = g_object_ref (res);
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
@@ -1846,7 +1846,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 }
 
 /**
- * pk_task_get_requires_async:
+ * pk_task_required_by_async:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1862,7 +1862,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
  * Since: 0.6.5
  **/
 void
-pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1877,7 +1877,7 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
 
 	/* save state */
 	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_GET_REQUIRES;
+	state->role = PK_ROLE_ENUM_REQUIRED_BY;
 	state->res = g_object_ref (res);
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)

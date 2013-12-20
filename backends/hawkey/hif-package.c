@@ -282,7 +282,7 @@ hif_package_is_gui (HyPackage pkg)
 	int size;
 
 	/* find if the package depends on GTK or KDE */
-	reldeplist = hy_package_get_requires (pkg);
+	reldeplist = hy_package_required_by (pkg);
 	size = hy_reldeplist_count (reldeplist);
 	for (idx = 0; idx < size && !ret; idx++) {
 		reldep = hy_reldeplist_get_clone (reldeplist, idx);

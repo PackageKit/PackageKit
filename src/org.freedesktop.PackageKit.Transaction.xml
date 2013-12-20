@@ -316,7 +316,7 @@
     </method>
 
     <!--*********************************************************************-->
-    <method name="GetDepends">
+    <method name="DependsOn">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
@@ -361,7 +361,7 @@
               Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>. If yes then the requirements should be
               returned for all packages returned.
               This means if gnome-power-manager depends on NetworkManager
-              and NetworkManager depends on HAL, then GetDepends on
+              and NetworkManager depends on HAL, then DependsOn on
               gnome-power-manager should return both HAL and NetworkManager.
             </doc:para>
           </doc:summary>
@@ -502,7 +502,7 @@
     </method>
 
     <!--*********************************************************************-->
-    <method name="GetRequires">
+    <method name="RequiredBy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
@@ -722,7 +722,7 @@
           </doc:para>
           <doc:para>
             The installer should always install extra packages automatically
-            as the use could call GetDepends prior to the install if a confirmation
+            as the use could call DependsOn prior to the install if a confirmation
             is required in the UI.
           </doc:para>
           <doc:para>

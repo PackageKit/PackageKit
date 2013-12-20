@@ -1663,7 +1663,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                               "Package name %s could not be resolved" % name)
 
     @catch_pkerror
-    def get_depends(self, filters, ids, recursive):
+    def depends_on(self, filters, ids, recursive):
         """Emit all dependencies of the given package ids.
 
         Doesn't support recursive dependency resolution.
@@ -1751,7 +1751,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         emit_blocked_dependency(base_dep, filters=filters)
 
     @catch_pkerror
-    def get_requires(self, filters, ids, recursive):
+    def required_by(self, filters, ids, recursive):
         """Emit all packages which depend on the given ids.
 
         Recursive searching is not supported.

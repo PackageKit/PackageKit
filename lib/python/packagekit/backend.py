@@ -374,7 +374,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def get_depends(self, filters, package_ids, recursive):
+    def depends_on(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
@@ -388,7 +388,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def get_requires(self, filters, package_ids, recursive):
+    def required_by(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class
@@ -567,7 +567,7 @@ class PackageKitBaseBackend:
             filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])
-            self.get_depends(filters, package_ids, recursive)
+            self.depends_on(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-details':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)
@@ -589,7 +589,7 @@ class PackageKitBaseBackend:
             filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])
-            self.get_requires(filters, package_ids, recursive)
+            self.required_by(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)

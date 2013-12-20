@@ -2073,8 +2073,8 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* do the correct action with the cached parameters */
 	switch (priv->role) {
-	case PK_ROLE_ENUM_GET_DEPENDS:
-		pk_backend_get_depends (priv->backend,
+	case PK_ROLE_ENUM_DEPENDS_ON:
+		pk_backend_depends_on (priv->backend,
 					priv->job,
 					priv->cached_filters,
 					priv->cached_package_ids,
@@ -2111,8 +2111,8 @@ pk_transaction_run (PkTransaction *transaction)
 				      priv->job,
 				      priv->cached_package_ids);
 		break;
-	case PK_ROLE_ENUM_GET_REQUIRES:
-		pk_backend_get_requires (priv->backend,
+	case PK_ROLE_ENUM_REQUIRED_BY:
+		pk_backend_required_by (priv->backend,
 					 priv->job,
 					 priv->cached_filters,
 					 priv->cached_package_ids,
@@ -3280,10 +3280,10 @@ out:
 }
 
 /**
- * pk_transaction_get_depends:
+ * pk_transaction_depends_on:
  **/
 static void
-pk_transaction_get_depends (PkTransaction *transaction,
+pk_transaction_depends_on (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
 {
@@ -3305,13 +3305,13 @@ pk_transaction_get_depends (PkTransaction *transaction,
 		       &recursive);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("DependsOn method called: %s (recursive %i)", package_ids_temp, recursive);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_GET_DEPENDS)) {
+					PK_ROLE_ENUM_DEPENDS_ON)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDepends not supported by backend");
+				     "DependsOn not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3339,7 +3339,7 @@ pk_transaction_get_depends (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DEPENDS_ON);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -3702,10 +3702,10 @@ out:
 }
 
 /**
- * pk_transaction_get_requires:
+ * pk_transaction_required_by:
  **/
 static void
-pk_transaction_get_requires (PkTransaction *transaction,
+pk_transaction_required_by (PkTransaction *transaction,
 			     GVariant *params,
 			     GDBusMethodInvocation *context)
 {
@@ -3727,13 +3727,13 @@ pk_transaction_get_requires (PkTransaction *transaction,
 		       &recursive);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("RequiredBy method called: %s (recursive %i)", package_ids_temp, recursive);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
-					PK_ROLE_ENUM_GET_REQUIRES)) {
+					PK_ROLE_ENUM_REQUIRED_BY)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetRequires not supported by backend");
+				     "RequiredBy not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3761,7 +3761,7 @@ pk_transaction_get_requires (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REQUIRED_BY);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -5253,8 +5253,8 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 
-	if (g_strcmp0 (method_name, "GetDepends") == 0) {
-		pk_transaction_get_depends (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "DependsOn") == 0) {
+		pk_transaction_depends_on (transaction, parameters, invocation);
 		goto out;
 	}
 
@@ -5283,8 +5283,8 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		goto out;
 	}
 
-	if (g_strcmp0 (method_name, "GetRequires") == 0) {
-		pk_transaction_get_requires (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "RequiredBy") == 0) {
+		pk_transaction_required_by (transaction, parameters, invocation);
 		goto out;
 	}
 

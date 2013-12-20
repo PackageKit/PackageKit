@@ -836,7 +836,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         return None
 
     @needs_cache
-    def get_depends(self, filters, packageids, recursive):
+    def depends_on(self, filters, packageids, recursive):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for packageid in packageids:
@@ -870,7 +870,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self._show_package_list()
 
     @needs_cache
-    def get_requires(self, filters, packageids, recursive):
+    def required_by(self, filters, packageids, recursive):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for packageid in packageids:
