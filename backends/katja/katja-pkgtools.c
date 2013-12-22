@@ -113,7 +113,9 @@ CURLcode katja_pkgtools_get_file(CURL **curl, gchar *source_url, gchar *dest) {
 
 	if ((*curl == NULL) && (!(*curl = curl_easy_init()))) return CURLE_BAD_FUNCTION_ARGUMENT;
 
+	curl_easy_setopt(*curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(*curl, CURLOPT_URL, source_url);
+
 	if (dest == NULL) {
 		curl_easy_setopt(*curl, CURLOPT_NOBODY, 1L);
 		curl_easy_setopt(*curl, CURLOPT_HEADER, 1L);
