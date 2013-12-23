@@ -1,0 +1,15 @@
+# It is a sample configuration.
+
+[slackware]
+Mirror=http://mirrors.slackware.com/slackware/@pkgmain@-14.1/
+Priority=patches;@pkgmain@;extra;pasture;testing
+#Blacklist=
+
+
+#[dropline]
+#Mirror=http://dl.flevum.de/slackware/3.10/
+#IndexFile=http://dl.flevum.de/slackware/3.10/DroplineFiles3.10
+
+#[dropline]
+#Mirror=http://dl.flevum.de/slackware64/3.10/
+#IndexFile=http://dl.flevum.de/slackware64/3.10/Dropline64Files3.10
