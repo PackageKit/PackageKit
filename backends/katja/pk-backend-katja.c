@@ -553,7 +553,8 @@ void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filter
 
 static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar *metadata_db_filename = NULL, *dest_dir_name, **pkg_tokens, **pkg_ids;
-	guint i, percent_step;
+	guint i;
+	gdouble percent_step;
 	GSList *repo, *install_list = NULL, *l;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *pkglist_statement = NULL, *collections_statement = NULL;
@@ -642,7 +643,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 	if (install_list && !pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		/* / 2 means total percentage for installing and for downloading */
-		percent_step = 100 / g_slist_length(install_list) / 2;
+		percent_step = 100.0 / g_slist_length(install_list) / 2;
 
 		/* Download the packages */
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
@@ -689,7 +690,8 @@ void pk_backend_install_packages(PkBackend *backend, PkBackendJob *job,
 
 static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar **pkg_tokens, **pkg_ids, *cmd_line;
-	guint i, percent_step;
+	guint i;
+	gdouble percent_step;
     gboolean allow_deps, autoremove;
 	GError *err = NULL;
     PkBitfield transaction_flags = 0;
@@ -706,7 +708,7 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
    		pk_backend_job_set_allow_cancel(job, FALSE);
 
 		/* Add percent_step percents per removed package */
-		percent_step = 100 / g_strv_length(pkg_ids);
+		percent_step = 100.0 / g_strv_length(pkg_ids);
 		for (i = 0; pkg_ids[i]; i++) {
 			pk_backend_job_set_percentage(job, percent_step * i);
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
