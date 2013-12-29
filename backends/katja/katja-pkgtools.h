@@ -47,6 +47,7 @@ typedef struct {
 GType katja_pkgtools_get_type(void);
 
 /* Public static members */
+extern sqlite3 *katja_pkgtools_db;
 /*extern KatjaPkgtoolsJobProgress katja_pkgtools_job_progress;*/
 
 /* Virtual public methods */

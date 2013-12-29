@@ -134,10 +134,8 @@ out:
  * katja_slackpkg_real_generate_cache:
  **/
 void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
-	sqlite3 *db;
 	sqlite3_stmt *insert_statement, *update_statement, *insert_default_statement, *statement;
-	gchar **pkg_tokens = NULL, *pkg_filename = NULL, *location = NULL, *line, *metadata_db_filename = NULL, *cat;
-	gchar *summary = NULL;
+	gchar **pkg_tokens = NULL, *pkg_filename = NULL, *location = NULL, *cat, *summary = NULL, *line;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
 	gushort pkg_name_len;
 	GString *desc;
@@ -152,21 +150,19 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	if (!(fin = g_file_read(index_file, NULL, NULL)))
 		goto out;
 
-	metadata_db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-	if (sqlite3_open(metadata_db_filename, &db)) {
-		sqlite3_close(db);
-		goto out;
-	}
-
 	/* Remove the old entries from this repository */
-	sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
-	if (sqlite3_prepare_v2(db, "DELETE FROM repos WHERE repo LIKE @repo", -1, &statement, NULL) == SQLITE_OK) {
+	sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+	if (sqlite3_prepare_v2(katja_pkgtools_db,
+						   "DELETE FROM repos WHERE repo LIKE @repo",
+						   -1,
+						   &statement,
+						   NULL) == SQLITE_OK) {
 		sqlite3_bind_text(statement, 1, pkgtools->name->str, -1, SQLITE_TRANSIENT);
 		sqlite3_step(statement);
 		sqlite3_finalize(statement);
 	}
 
-	if (sqlite3_prepare_v2(db,
+	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "INSERT INTO repos (repo_order, repo) VALUES (@repo_order, @repo)",
 						   -1,
 						   &statement,
@@ -178,7 +174,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	sqlite3_finalize(statement);
 
 	/* Insert new records */
-	if ((sqlite3_prepare_v2(db,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 						"INSERT OR REPLACE INTO pkglist (full_name, ver, arch, ext, location, "
 						"summary, desc, compressed, uncompressed, name, repo_order, cat) "
 						"VALUES (@full_name, @ver, @arch, @ext, @location, @summary, "
@@ -186,7 +182,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						-1,
 						&insert_statement,
 						NULL) != SQLITE_OK) ||
-	(sqlite3_prepare_v2(db,
+	(sqlite3_prepare_v2(katja_pkgtools_db,
 						"INSERT OR REPLACE INTO pkglist (full_name, ver, arch, ext, location, "
 						"summary, desc, compressed, uncompressed, name, repo_order) "
 						"VALUES (@full_name, @ver, @arch, @ext, @location, @summary, "
@@ -194,7 +190,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						-1,
 						&insert_default_statement,
 						NULL) != SQLITE_OK) ||
-	(sqlite3_prepare_v2(db,
+	(sqlite3_prepare_v2(katja_pkgtools_db,
 						"UPDATE pkglist SET full_name = @full_name, ver = @ver, arch = @arch, "
 						"ext = @ext, location = @location, summary = @summary, "
 						"desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
@@ -202,14 +198,14 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						-1,
 						&update_statement,
 						NULL) != SQLITE_OK)) {
-							sqlite3_close(db);
+							sqlite3_close(katja_pkgtools_db);
 							goto out;
 						}
 
 	data_in = g_data_input_stream_new(G_INPUT_STREAM(fin));
 	desc = g_string_new("");
 
-	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(katja_pkgtools_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		if (!strncmp(line, "PACKAGE NAME:  ", 15)) {
@@ -283,19 +279,17 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 		g_free(line);
 	}
 
-	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
 	sqlite3_finalize(update_statement);
 	sqlite3_finalize(insert_statement);
 	sqlite3_finalize(insert_default_statement);
 
 	g_string_free(desc, TRUE);
 
-	sqlite3_close(db);
 	g_object_unref(data_in);
 	g_object_unref(fin);
 
 out:
-	g_free(metadata_db_filename);
 	g_object_unref(index_file);
 
 	katja_pkgtools_clean_dir(repo_tmp_dir, TRUE);
