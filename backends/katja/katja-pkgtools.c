@@ -3,6 +3,7 @@
 G_DEFINE_TYPE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT);
 
 /* Static public members */
+sqlite3 *katja_pkgtools_db = NULL;
 /*KatjaPkgtoolsJobProgress katja_pkgtools_job_progress = {NULL, 0, 0, 0};*/
 
 

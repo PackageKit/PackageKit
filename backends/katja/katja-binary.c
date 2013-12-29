@@ -6,23 +6,18 @@ G_DEFINE_TYPE(KatjaBinary, katja_binary, KATJA_TYPE_PKGTOOLS);
  * katja_binary_real_download:
  **/
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name) {
-	gchar *metadata_db_filename = NULL, *dest_filename, *source_url;
+	gchar *dest_filename, *source_url;
 	gboolean ret = FALSE;
-	sqlite3 *db = NULL;
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
 
-	metadata_db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-	if (sqlite3_open(metadata_db_filename, &db) != SQLITE_OK)
-		goto out;
-
-	if ((sqlite3_prepare_v2(db,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 							"SELECT location, (full_name || '.' || ext) FROM pkglist "
 							"WHERE name LIKE @name AND repo_order = @repo_order",
 							-1,
 							&statement,
 							NULL) != SQLITE_OK))
-		goto out;
+		return FALSE;
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
 	sqlite3_bind_int(statement, 2, pkgtools->order);
@@ -51,10 +46,6 @@ gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_nam
 	}
 	sqlite3_finalize(statement);
 
-out:
-	sqlite3_close(db);
-	g_free(metadata_db_filename);
-
 	return ret;
 }
 
@@ -62,21 +53,16 @@ out:
  * katja_binary_real_install:
  **/
 void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
-	gchar *metadata_db_filename = NULL, *pkg_filename, *cmd_line;
-	sqlite3 *db = NULL;
+	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
 
-	metadata_db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-	if (sqlite3_open(metadata_db_filename, &db) != SQLITE_OK)
-		goto out;
-
-	if ((sqlite3_prepare_v2(db,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 							"SELECT (full_name || '.' || ext) FROM pkglist "
 							"WHERE name LIKE @name AND repo_order = @repo_order",
 							-1,
 							&statement,
 							NULL) != SQLITE_OK))
-		goto out;
+		return;
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
 	sqlite3_bind_int(statement, 2, pkgtools->order);
@@ -95,10 +81,6 @@ void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
 		g_free(pkg_filename);
 	}
 	sqlite3_finalize(statement);
-
-out:
-	sqlite3_close(db);
-	g_free(metadata_db_filename);
 }
 
 /**
