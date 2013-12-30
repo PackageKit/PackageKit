@@ -2318,7 +2318,7 @@ pk_backend_get_author (PkBackend *backend)
  * pk_backend_initialize:
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	struct passwd *uid_ent = NULL;
 

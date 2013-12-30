@@ -51,7 +51,7 @@ typedef struct
 
 /* general */
 GType		 pk_backend_spawn_get_type		(void);
-PkBackendSpawn	*pk_backend_spawn_new			(void);
+PkBackendSpawn	*pk_backend_spawn_new			(GKeyFile		*conf);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
 							 PkBackendJob	*job,
 							 const gchar	*first_element, ...)

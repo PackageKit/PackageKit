@@ -68,7 +68,7 @@ typedef enum
 GQuark		 pk_engine_error_quark			(void);
 GType		 pk_engine_error_get_type		(void);
 GType		 pk_engine_get_type		  	(void);
-PkEngine	*pk_engine_new				(void);
+PkEngine	*pk_engine_new				(GKeyFile		*conf);
 
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 gboolean	 pk_engine_load_backend			(PkEngine	*engine,

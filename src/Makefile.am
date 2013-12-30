@@ -72,7 +72,6 @@ plugininclude_HEADERS =					\
 	pk-backend.h					\
 	pk-backend-spawn.h				\
 	pk-backend-job.h				\
-	pk-conf.h					\
 	pk-plugin.h					\
 	pk-transaction.h
 
@@ -84,8 +83,6 @@ plugininclude_GIRSOURCES =				\
 	pk-backend-job.h				\
 	pk-transaction.c				\
 	pk-transaction.h				\
-	pk-conf.c					\
-	pk-conf.h					\
 	pk-resources.c					\
 	pk-resources.h					\
 	pk-shared.c					\
@@ -113,8 +110,6 @@ shared_SOURCES =					\
 	pk-network-stack-unix.h				\
 	pk-network-stack-nm.h				\
 	pk-network-stack-connman.h			\
-	pk-conf.c					\
-	pk-conf.h					\
 	pk-notify.c					\
 	pk-notify.h					\
 	pk-resources.c					\

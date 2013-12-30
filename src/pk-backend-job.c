@@ -30,7 +30,6 @@
 
 #include "pk-backend.h"
 #include "pk-backend-job.h"
-#include "pk-conf.h"
 #include "pk-shared.h"
 #include "pk-time.h"
 
@@ -99,7 +98,7 @@ struct PkBackendJobPrivate
 	PkBackend		*backend;
 	PkBackendJobVFuncItem	 vfunc_items[PK_BACKEND_SIGNAL_LAST];
 	PkBitfield		 transaction_flags;
-	PkConf			*conf;
+	GKeyFile		*conf;
 	PkExitEnum		 exit;
 	PkHintEnum		 allow_cancel;
 	PkHintEnum		 background;
@@ -1924,7 +1923,7 @@ pk_backend_job_finalize (GObject *object)
 	if (job->priv->params != NULL)
 		g_variant_unref (job->priv->params);
 	g_object_unref (job->priv->time);
-	g_object_unref (job->priv->conf);
+	g_key_file_unref (job->priv->conf);
 
 	G_OBJECT_CLASS (pk_backend_job_parent_class)->finalize (object);
 }
@@ -1948,7 +1947,6 @@ pk_backend_job_init (PkBackendJob *job)
 {
 	job->priv = PK_BACKEND_JOB_GET_PRIVATE (job);
 	job->priv->time = pk_time_new ();
-	job->priv->conf = pk_conf_new ();
 	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
 	pk_backend_job_reset (job);
 }
@@ -1959,10 +1957,11 @@ pk_backend_job_init (PkBackendJob *job)
  * Return value: A new job class instance.
  **/
 PkBackendJob *
-pk_backend_job_new (void)
+pk_backend_job_new (GKeyFile *conf)
 {
 	PkBackendJob *job;
 	job = g_object_new (PK_TYPE_BACKEND_JOB, NULL);
+	job->priv->conf = g_key_file_ref (conf);
 	return PK_BACKEND_JOB (job);
 }
 

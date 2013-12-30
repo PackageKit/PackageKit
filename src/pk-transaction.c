@@ -48,7 +48,6 @@
 #include <polkit/polkit.h>
 
 #include "pk-backend.h"
-#include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-notify.h"
 #include "pk-plugin.h"
@@ -94,7 +93,7 @@ struct PkTransactionPrivate
 	guint			 watch_id;
 	PkBackend		*backend;
 	PkBackendJob		*job;
-	PkConf			*conf;
+	GKeyFile		*conf;
 	PkNotify		*notify;
 	PkDbus			*dbus;
 	PolkitAuthority		*authority;
@@ -940,7 +939,7 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
-		job = pk_backend_job_new ();
+		job = pk_backend_job_new (transaction->priv->conf);
 		pk_backend_start_job (transaction->priv->backend, job);
 		pk_transaction_signals_reset (transaction, job);
 		plugin->job = job;
@@ -979,9 +978,9 @@ out:
 /**
  * pk_transaction_get_conf:
  *
- * Returns: (transfer none): PkConf of this transaction
+ * Returns: (transfer none): GKeyFile of this transaction
  **/
-PkConf *
+GKeyFile *
 pk_transaction_get_conf (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
@@ -1968,7 +1967,7 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* create main job for transaction, which is *not* used
 	 * for plugins */
-	priv->job = pk_backend_job_new ();
+	priv->job = pk_backend_job_new (transaction->priv->conf);
 	pk_backend_job_set_background (priv->job, priv->background);
 	pk_backend_job_set_interactive (priv->job, priv->interactive);
 
@@ -2709,7 +2708,7 @@ pk_transaction_plugin_get_action (PkTransaction *transaction,
 		g_debug ("run %s on %s",
 			 function,
 			 g_module_name (plugin->module));
-		job = pk_backend_job_new ();
+		job = pk_backend_job_new (transaction->priv->conf);
 		pk_backend_start_job (transaction->priv->backend, job);
 		pk_transaction_signals_reset (transaction, job);
 		plugin->job = job;
@@ -3191,7 +3190,12 @@ pk_transaction_download_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
@@ -3318,7 +3322,12 @@ pk_transaction_depends_on (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -3388,7 +3397,12 @@ pk_transaction_get_details (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -3499,7 +3513,12 @@ pk_transaction_get_files (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -3740,7 +3759,12 @@ pk_transaction_required_by (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -3811,7 +3835,12 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -4089,7 +4118,12 @@ pk_transaction_install_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -4288,7 +4322,12 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -4491,7 +4530,12 @@ pk_transaction_resolve (PkTransaction *transaction,
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumItemsToResolve");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumItemsToResolve",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Too many items to process (%i/%i)", length, max_length);
@@ -4976,7 +5020,12 @@ pk_transaction_update_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
 	if (length > max_length) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "Too many packages to process (%i/%i)", length, max_length);
@@ -5490,9 +5539,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
-	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
-	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
@@ -5590,7 +5637,7 @@ pk_transaction_finalize (GObject *object)
 	if (transaction->priv->introspection != NULL)
 		g_dbus_node_info_unref (transaction->priv->introspection);
 
-	g_object_unref (transaction->priv->conf);
+	g_key_file_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
@@ -5612,10 +5659,12 @@ pk_transaction_finalize (GObject *object)
  * Return value: a new PkTransaction object.
  **/
 PkTransaction *
-pk_transaction_new (GDBusNodeInfo *introspection)
+pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 {
 	PkTransaction *transaction;
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
+	transaction->priv->conf = g_key_file_ref (conf);
+	transaction->priv->transaction_list = pk_transaction_list_new (transaction->priv->conf);
 	transaction->priv->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }

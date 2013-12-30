@@ -41,30 +41,6 @@ BackendSpawnNiceValueBackground=10
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@
 
-# Scan installed desktop files when we update or install packages
-#
-# NOTE: Don't enable this for backends that are slow doing SearchFile()
-#
-# default=true
-ScanDesktopFiles=true
-
-# Update the package cache on PackageKit transactions
-# The cache is used by client applications to fetch
-# package-information very fast.
-#
-# NOTE: Don't enable this for backends that are slow doing GetPackages()
-#       or GetDetails()
-#
-# default=false
-UpdatePackageCache=false
-
-# Update the package list on PackageKit transactions
-#
-# NOTE: Don't enable this for backends that are slow doing GetPackages()
-#
-# default=true
-UpdatePackageList=false
-
 # The time in seconds to wait when we get the StateHasChanged method
 #
 # This should be used when a native tool has been used, and the update UIs
@@ -116,3 +92,29 @@ MaximumPackagesToProcess=5000
 #
 # default=300
 TransactionCreateCommitTimeout=300
+
+[Plugins]
+
+# Scan installed desktop files when we update or install packages
+#
+# NOTE: Don't enable this for backends that are slow doing SearchFile()
+#
+# default=true
+ScanDesktopFiles=true
+
+# Update the package cache on PackageKit transactions
+# The cache is used by client applications to fetch
+# package-information very fast.
+#
+# NOTE: Don't enable this for backends that are slow doing GetPackages()
+#       or GetDetails()
+#
+# default=false
+UpdatePackageCache=false
+
+# Update the package list on PackageKit transactions
+#
+# NOTE: Don't enable this for backends that are slow doing GetPackages()
+#
+# default=true
+UpdatePackageList=false

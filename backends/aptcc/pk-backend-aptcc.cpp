@@ -66,7 +66,7 @@ pk_backend_supports_parallelization (PkBackend *backend)
 /**
  * pk_backend_initialize:
  */
-void pk_backend_initialize(PkBackend *backend)
+void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
     g_debug("APTcc Initializing");
 

@@ -64,7 +64,7 @@ static PkBackendDummyPrivate *priv;
  * pk_backend_initialize:
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	/* create private area */
 	priv = g_new0 (PkBackendDummyPrivate, 1);

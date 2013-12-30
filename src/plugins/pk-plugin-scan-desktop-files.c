@@ -423,11 +423,11 @@ pk_transaction_plugin_load_db (PkPlugin *plugin,
 	gboolean ret;
 	gchar *error_msg = NULL;
 	gint rc;
-	PkConf *conf;
+	GKeyFile *conf;
 
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
-	ret = pk_conf_get_bool (conf, "ScanDesktopFiles");
+	ret = g_key_file_get_boolean (conf, "Plugins", "ScanDesktopFiles", NULL);
 	if (!ret)
 		goto out;
 

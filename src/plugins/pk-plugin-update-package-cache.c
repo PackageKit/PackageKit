@@ -211,7 +211,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 {
 	gboolean ret;
 	GError *error = NULL;
-	PkConf *conf;
+	GKeyFile *conf;
 	PkRoleEnum role;
 	PkPackageCache *cache = NULL;
 	GPtrArray *pkg_array = NULL;
@@ -237,8 +237,8 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 
 	/* check the config file */
 	conf = pk_transaction_get_conf (transaction);
-	update_cache = pk_conf_get_bool (conf, "UpdatePackageCache");
-	update_list = pk_conf_get_bool (conf, "UpdatePackageList");
+	update_cache = g_key_file_get_boolean (conf, "Plugins", "UpdatePackageCache", NULL);
+	update_list = g_key_file_get_boolean (conf, "Plugins", "UpdatePackageList", NULL);
 
 	/* check the role */
 	role = pk_transaction_get_role (transaction);

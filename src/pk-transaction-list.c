@@ -62,7 +62,6 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "pk-conf.h"
 #include "pk-shared.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -86,7 +85,7 @@ struct PkTransactionListPrivate
 	GPtrArray		*array;
 	guint			 unwedge1_id;
 	guint			 unwedge2_id;
-	PkConf			*conf;
+	GKeyFile		*conf;
 	GPtrArray		*plugins;
 	PkBackend		*backend;
 	GDBusNodeInfo		*introspection;
@@ -639,7 +638,8 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	item = g_new0 (PkTransactionItem, 1);
 	item->list = g_object_ref (tlist);
 	item->tid = g_strdup (tid);
-	item->transaction = pk_transaction_new (tlist->priv->introspection);
+	item->transaction = pk_transaction_new (tlist->priv->conf,
+						tlist->priv->introspection);
 	item->finished_id =
 		g_signal_connect_after (item->transaction, "finished",
 					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
@@ -686,7 +686,14 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	count = pk_transaction_list_get_number_transactions_for_uid (tlist, item->uid);
 
 	/* would this take us over the maximum number of requests allowed */
-	max_count = pk_conf_get_int (tlist->priv->conf, "SimultaneousTransactionsForUid");
+	max_count = g_key_file_get_integer (tlist->priv->conf,
+					    "Daemon",
+					    "SimultaneousTransactionsForUid",
+					    error);
+	if (max_count == 0) {
+		ret = FALSE;
+		goto out;
+	}
 	if (count > max_count) {
 		g_set_error (error, 1, 0, "failed to allocate %s as uid %i already has %i transactions in progress", tid, item->uid, count);
 
@@ -699,7 +706,14 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	}
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
-	timeout = pk_conf_get_int (tlist->priv->conf, "TransactionCreateCommitTimeout");
+	timeout = g_key_file_get_integer (tlist->priv->conf,
+					  "Daemon",
+					  "TransactionCreateCommitTimeout",
+					  error);
+	if (timeout == 0) {
+		ret = FALSE;
+		goto out;
+	}
 	item->commit_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_no_commit_cb, item);
 	g_source_set_name_by_id (item->commit_id, "[PkTransactionList] commit");
 
@@ -1156,7 +1170,6 @@ static void
 pk_transaction_list_init (PkTransactionList *tlist)
 {
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
-	tlist->priv->conf = pk_conf_new ();
 	tlist->priv->array = g_ptr_array_new ();
 	tlist->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
 							    NULL);
@@ -1189,7 +1202,7 @@ pk_transaction_list_finalize (GObject *object)
 	g_ptr_array_foreach (tlist->priv->array, (GFunc) pk_transaction_list_item_free, NULL);
 	g_ptr_array_free (tlist->priv->array, TRUE);
 	g_dbus_node_info_unref (tlist->priv->introspection);
-	g_object_unref (tlist->priv->conf);
+	g_key_file_unref (tlist->priv->conf);
 	if (tlist->priv->plugins != NULL)
 		g_ptr_array_unref (tlist->priv->plugins);
 	if (tlist->priv->backend != NULL)
@@ -1204,12 +1217,13 @@ pk_transaction_list_finalize (GObject *object)
  * Return value: a new PkTransactionList object.
  **/
 PkTransactionList *
-pk_transaction_list_new (void)
+pk_transaction_list_new (GKeyFile *conf)
 {
 	if (pk_transaction_list_object != NULL) {
 		g_object_ref (pk_transaction_list_object);
 	} else {
 		pk_transaction_list_object = g_object_new (PK_TYPE_TRANSACTION_LIST, NULL);
+		PK_TRANSACTION_LIST(pk_transaction_list_object)->priv->conf = g_key_file_ref (conf);
 		g_object_add_weak_pointer (pk_transaction_list_object, &pk_transaction_list_object);
 	}
 	return PK_TRANSACTION_LIST (pk_transaction_list_object);

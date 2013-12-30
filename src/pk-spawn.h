@@ -69,8 +69,8 @@ typedef enum {
 	PK_SPAWN_ARGV_FLAGS_LAST
 } PkSpawnArgvFlags;
 
-GType		 pk_spawn_get_type		  	(void);
-PkSpawn		*pk_spawn_new				(void);
+GType		 pk_spawn_get_type			(void);
+PkSpawn		*pk_spawn_new				(GKeyFile		*conf);
 
 gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 							 gchar		**argv,

@@ -316,7 +316,7 @@ pk_backend_destroy_alpm (PkBackend *self)
 }
 
 void
-pk_backend_initialize (PkBackend *self)
+pk_backend_initialize (GKeyFile *conf, PkBackend *self)
 {
 	GError *error = NULL;
 

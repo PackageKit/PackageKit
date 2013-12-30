@@ -30,7 +30,7 @@
 
 #define HIF_ERROR				(hif_error_quark ())
 
-#define HIF_CONFIG_GROUP_NAME			"HawkeyConfig"
+#define HIF_CONFIG_GROUP_NAME			"PluginHawkey"
 
 gboolean	 hif_rc_to_gerror		(gint			 rc,
 						 GError			**error);

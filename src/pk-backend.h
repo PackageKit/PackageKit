@@ -67,7 +67,7 @@ typedef struct
 #define PK_BACKEND_PERCENTAGE_INVALID		101
 
 GType		 pk_backend_get_type			(void);
-PkBackend	*pk_backend_new				(void);
+PkBackend	*pk_backend_new				(GKeyFile		*conf);
 
 /* utililties */
 gboolean	 pk_backend_load			(PkBackend	*backend,
@@ -105,7 +105,8 @@ PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 gchar		**pk_backend_get_mime_types		(PkBackend	*backend);
 gboolean	 pk_backend_supports_parallelization	(PkBackend	*backend);
-void		 pk_backend_initialize			(PkBackend	*backend);
+void		 pk_backend_initialize			(GKeyFile		*conf,
+							 PkBackend	*backend);
 void		 pk_backend_destroy			(PkBackend	*backend);
 void		 pk_backend_start_job			(PkBackend	*backend,
 							 PkBackendJob	*job);

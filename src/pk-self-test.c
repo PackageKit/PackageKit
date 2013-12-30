@@ -27,7 +27,6 @@
 
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
-#include "pk-conf.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
 #include "pk-notify.h"
@@ -166,14 +165,15 @@ pk_test_backend_func (void)
 {
 	PkBackend *backend;
 	PkBackendJob *job;
-	PkConf *conf;
+	GKeyFile *conf;
 	const gchar *text;
 	gboolean ret;
 	const gchar *filename;
 	GError *error = NULL;
 
 	/* get an backend */
-	backend = pk_backend_new ();
+	conf = g_key_file_new ();
+	backend = pk_backend_new (conf);
 	g_assert (backend != NULL);
 
 	/* create a config file */
@@ -197,7 +197,7 @@ pk_test_backend_func (void)
 	g_assert (!ret);
 
 	/* connect */
-	job = pk_backend_job_new ();
+	job = pk_backend_job_new (conf);
 	pk_backend_job_set_backend (job, backend);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
@@ -223,15 +223,14 @@ pk_test_backend_func (void)
 	pk_backend_accept_eula (backend, "license_foo");
 
 	/* load an invalid backend */
-	conf = pk_conf_new ();
-	pk_conf_set_string (conf, "DefaultBackend", "invalid");
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "invalid");
 	ret = pk_backend_load (backend, &error);
 	g_assert_error (error, 1, 0);
 	g_assert (!ret);
 	g_clear_error (&error);
 
 	/* try to load a valid backend */
-	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	ret = pk_backend_load (backend, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
@@ -283,7 +282,7 @@ pk_test_backend_func (void)
 	pk_backend_reset_job (backend, job);
 	pk_backend_stop_job (backend, job);
 	g_object_unref (job);
-	job = pk_backend_job_new ();
+	job = pk_backend_job_new (conf);
 	pk_backend_job_set_backend (job, backend);
 
 	/* wait for a thread to return false (straight away) */
@@ -324,7 +323,7 @@ pk_test_backend_func (void)
 	/* stop the job again */
 	pk_backend_stop_job (backend, job);
 
-	g_object_unref (conf);
+	g_key_file_unref (conf);
 	g_object_unref (job);
 	g_object_unref (backend);
 }
@@ -359,18 +358,21 @@ pk_test_backend_spawn_func (void)
 	PkBackendSpawn *backend_spawn;
 	PkBackend *backend;
 	PkBackendJob *job;
-	PkConf *conf;
+	GKeyFile *conf;
 	const gchar *text;
 	gboolean ret;
 	gchar *uri;
+	GError *error = NULL;
 
 	/* get an backend_spawn */
-	backend_spawn = pk_backend_spawn_new ();
+	conf = g_key_file_new ();
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_spawn");
+	backend_spawn = pk_backend_spawn_new (conf);
 	g_assert (backend_spawn != NULL);
 
 	/* private copy for unref testing */
-	backend = pk_backend_new ();
-	job = pk_backend_job_new ();
+	backend = pk_backend_new (conf);
+	job = pk_backend_job_new (conf);
 	pk_backend_job_set_backend (job, backend);
 
 	/* get backend name */
@@ -386,9 +388,8 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpstr (text, ==, "test_spawn");
 
 	/* needed to avoid an error */
-	conf = pk_conf_new ();
-	pk_conf_set_string (conf, "DefaultBackend", "test_spawn");
-	ret = pk_backend_load (backend, NULL);
+	ret = pk_backend_load (backend, &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage1 */
@@ -471,7 +472,7 @@ pk_test_backend_spawn_func (void)
 	g_object_unref (backend_spawn);
 
 	/* new */
-	backend_spawn = pk_backend_spawn_new ();
+	backend_spawn = pk_backend_spawn_new (conf);
 
 	/* set backend name */
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
@@ -512,44 +513,7 @@ pk_test_backend_spawn_func (void)
 	/* we ref'd it manually for checking, so we need to unref it */
 	g_object_unref (job);
 	g_object_unref (backend);
-	g_object_unref (conf);
-}
-
-static void
-pk_test_conf_func (void)
-{
-	PkConf *conf;
-	gchar *text;
-	gint value;
-
-	conf = pk_conf_new ();
-	g_assert (conf != NULL);
-
-	/* get the default backend */
-	text = pk_conf_get_string (conf, "DefaultBackend");
-	g_assert (text != NULL);
-	g_free (text);
-
-	/* get a string that doesn't exist */
-	text = pk_conf_get_string (conf, "FooBarBaz");
-	g_assert (text == NULL);
-	g_free (text);
-
-	/* get the shutdown timeout */
-	value = pk_conf_get_int (conf, "ShutdownTimeout");
-	g_assert (value != PK_CONF_VALUE_INT_MISSING);
-
-	/* get an int that doesn't exist */
-	value = pk_conf_get_int (conf, "FooBarBaz");
-	g_assert_cmpint (value, ==, PK_CONF_VALUE_INT_MISSING);
-
-	/* override a value */
-	pk_conf_set_string (conf, "FooBarBaz", "zif");
-	text = pk_conf_get_string (conf, "FooBarBaz");
-	g_assert_cmpstr (text, ==, "zif");
-	g_free (text);
-
-	g_object_unref (conf);
+	g_key_file_unref (conf);
 }
 
 static void
@@ -600,9 +564,12 @@ cancel_cb (gpointer data)
 static void
 new_spawn_object (PkSpawn **pspawn)
 {
+	GKeyFile *conf;
 	if (*pspawn != NULL)
 		g_object_unref (*pspawn);
-	*pspawn = pk_spawn_new ();
+	conf = g_key_file_new ();
+	*pspawn = pk_spawn_new (conf);
+	g_key_file_unref (conf);
 	g_signal_connect (*pspawn, "exit",
 			  G_CALLBACK (pk_test_exit_cb), NULL);
 	g_signal_connect (*pspawn, "stdout",
@@ -872,12 +839,14 @@ pk_test_transaction_func (void)
 	gboolean ret;
 	GError *error = NULL;
 	GDBusNodeInfo *introspection;
+	GKeyFile *conf;
 
 	introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml", NULL);
 	g_assert (introspection != NULL);
 
 	/* get PkTransaction object */
-	transaction = pk_transaction_new (introspection);
+	conf = g_key_file_new ();
+	transaction = pk_transaction_new (conf, introspection);
 	g_assert (transaction != NULL);
 
 	/* validate incorrect text */
@@ -893,6 +862,7 @@ pk_test_transaction_func (void)
 	g_clear_error (&error);
 
 	g_object_unref (transaction);
+	g_key_file_unref (conf);
 	g_dbus_node_info_unref (introspection);
 }
 
@@ -1046,12 +1016,16 @@ static gchar *
 pk_test_transaction_list_create_transaction (PkTransactionList *tlist)
 {
 	gchar *tid;
+	gboolean ret;
+	GError *error = NULL;
 
 	/* get tid */
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create PkTransaction instance */
-	pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
+	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	return tid;
 }
@@ -1069,7 +1043,7 @@ pk_test_transaction_list_func (void)
 	gchar *tid_item2;
 	gchar *tid_item3;
 	PkBackend *backend;
-	PkConf *conf;
+	GKeyFile *conf;
 	GError *error = NULL;
 
 	/* remove the self check file */
@@ -1089,14 +1063,18 @@ pk_test_transaction_list_func (void)
 	g_assert (ret);
 
 	/* try to load a valid backend */
-	backend = pk_backend_new ();
-	conf = pk_conf_new ();
-	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	conf = g_key_file_new ();
+	backend = pk_backend_new (conf);
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
+	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
+	g_key_file_set_string (conf, "Daemon", "SimultaneousTransactionsForUid", "1000");
+	g_key_file_set_string (conf, "Daemon", "TransactionCreateCommitTimeout", "1000");
 	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
 	/* get a transaction list object */
-	tlist = pk_transaction_list_new ();
+	tlist = pk_transaction_list_new (conf);
 	g_assert (tlist != NULL);
 
 	/* make sure we get a valid tid */
@@ -1105,7 +1083,8 @@ pk_test_transaction_list_func (void)
 	g_assert (tid != NULL);
 
 	/* create a transaction object */
-	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
+	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* make sure we get the right object back */
@@ -1124,8 +1103,10 @@ pk_test_transaction_list_func (void)
 	g_strfreev (array);
 
 	/* add again the same tid (should fail) */
-	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
+	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_clear_error (&error);
 
 	/* remove without ever committing */
 	ret = pk_transaction_list_remove (tlist, tid);
@@ -1140,7 +1121,8 @@ pk_test_transaction_list_func (void)
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create another transaction */
-	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
+	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* get from db */
@@ -1176,8 +1158,6 @@ pk_test_transaction_list_func (void)
 	size = g_strv_length (array);
 	g_assert_cmpint (size, ==, 1);
 	g_strfreev (array);
-
-//g_error ("Moo");
 
 	/* wait for Finished */
 	_g_test_loop_run_with_timeout (2000);
@@ -1365,7 +1345,7 @@ pk_test_transaction_list_func (void)
 	g_object_unref (tlist);
 	g_object_unref (backend);
 	g_object_unref (db);
-	g_object_unref (conf);
+	g_key_file_unref (conf);
 }
 
 static void
@@ -1385,7 +1365,7 @@ pk_test_transaction_list_parallel_func (void)
 	gchar *tid_item4;
 	gchar *tid_item5;
 	PkBackend *backend;
-	PkConf *conf;
+	GKeyFile *conf;
 	GError *error = NULL;
 
 	db = pk_transaction_db_new ();
@@ -1394,14 +1374,18 @@ pk_test_transaction_list_parallel_func (void)
 	g_assert (ret);
 
 	/* try to load a valid backend */
-	backend = pk_backend_new ();
-	conf = pk_conf_new ();
-	pk_conf_set_string (conf, "DefaultBackend", "dummy");
+	conf = g_key_file_new ();
+	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
+	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
+	g_key_file_set_string (conf, "Daemon", "SimultaneousTransactionsForUid", "1000");
+	g_key_file_set_string (conf, "Daemon", "TransactionCreateCommitTimeout", "1000");
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
 	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
 	/* get a transaction list object */
-	tlist = pk_transaction_list_new ();
+	tlist = pk_transaction_list_new (conf);
 	g_assert (tlist != NULL);
 
 	pk_transaction_list_set_backend (tlist, backend);
@@ -1582,7 +1566,7 @@ pk_test_transaction_list_parallel_func (void)
 	g_object_unref (tlist);
 	g_object_unref (backend);
 	g_object_unref (db);
-	g_object_unref (conf);
+	g_key_file_unref (conf);
 }
 
 int
@@ -1604,7 +1588,6 @@ main (int argc, char **argv)
 	/* components */
 	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
-	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);

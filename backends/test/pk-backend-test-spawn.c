@@ -72,10 +72,10 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
  * This should only be run once per backend load, i.e. not every transaction
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	g_debug ("backend: initialize");
-	spawn = pk_backend_spawn_new ();
+	spawn = pk_backend_spawn_new (conf);
 	pk_backend_spawn_set_name (spawn, "test");
 }
 

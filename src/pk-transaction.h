@@ -26,7 +26,6 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
-#include "pk-conf.h"
 #include "pk-backend.h"
 
 G_BEGIN_DECLS
@@ -62,7 +61,8 @@ typedef enum {
 
 GQuark		 pk_transaction_error_quark			(void);
 GType		 pk_transaction_get_type			(void);
-PkTransaction	*pk_transaction_new				(GDBusNodeInfo	*introspection);
+PkTransaction	*pk_transaction_new				(GKeyFile		*conf,
+								 GDBusNodeInfo	*introspection);
 
 /* go go go! */
 gboolean	 pk_transaction_run				(PkTransaction	*transaction)
@@ -71,7 +71,7 @@ gboolean	 pk_transaction_run				(PkTransaction	*transaction)
 void		 pk_transaction_cancel_bg			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_get_role			(PkTransaction	*transaction);
 guint		 pk_transaction_get_uid				(PkTransaction	*transaction);
-PkConf		*pk_transaction_get_conf			(PkTransaction	*transaction);
+GKeyFile		*pk_transaction_get_conf			(PkTransaction	*transaction);
 void		 pk_transaction_set_backend			(PkTransaction	*transaction,
 								 PkBackend	*backend);
 PkBackendJob	*pk_transaction_get_backend_job 		(PkTransaction	*transaction);

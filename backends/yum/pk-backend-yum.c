@@ -195,7 +195,7 @@ out:
  * This should only be run once per backend load, i.e. not every transaction
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	gboolean ret;
 	GFile *file = NULL;
@@ -212,7 +212,7 @@ pk_backend_initialize (PkBackend *backend)
 	priv = g_new0 (PkBackendYumPrivate, 1);
 
 	g_debug ("backend: initialize");
-	priv->spawn = pk_backend_spawn_new ();
+	priv->spawn = pk_backend_spawn_new (conf);
 	pk_backend_spawn_set_filter_stderr (priv->spawn, pk_backend_stderr_cb);
 	pk_backend_spawn_set_filter_stdout (priv->spawn, pk_backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");

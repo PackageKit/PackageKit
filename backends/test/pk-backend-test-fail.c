@@ -37,7 +37,7 @@ pk_backend_get_description (PkBackend *backend)
  * pk_backend_initialize:
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 //	pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 //			       "Failed to initialize package manager");

@@ -42,7 +42,6 @@
 
 #include "pk-spawn.h"
 #include "pk-shared.h"
-#include "pk-conf.h"
 
 #include "pk-sysdep.h"
 
@@ -70,7 +69,7 @@ struct PkSpawnPrivate
 	GString			*stderr_buf;
 	gchar			*last_argv0;
 	gchar			**last_envp;
-	PkConf			*conf;
+	GKeyFile		*conf;
 };
 
 enum {
@@ -617,7 +616,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	key = "BackendSpawnNiceValue";
 	if (spawn->priv->background)
 		key = "BackendSpawnNiceValueBackground";
-	nice_value = pk_conf_get_int (spawn->priv->conf, key);
+	nice_value = g_key_file_get_integer (spawn->priv->conf, "Daemon", key, NULL);
 	nice_value = CLAMP(nice_value, -20, 19);
 
 #if HAVE_SETPRIORITY
@@ -791,7 +790,6 @@ pk_spawn_init (PkSpawn *spawn)
 
 	spawn->priv->stdout_buf = g_string_new ("");
 	spawn->priv->stderr_buf = g_string_new ("");
-	spawn->priv->conf = pk_conf_new ();
 }
 
 /**
@@ -836,7 +834,7 @@ pk_spawn_finalize (GObject *object)
 	g_string_free (spawn->priv->stderr_buf, TRUE);
 	g_free (spawn->priv->last_argv0);
 	g_strfreev (spawn->priv->last_envp);
-	g_object_unref (spawn->priv->conf);
+	g_key_file_unref (spawn->priv->conf);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
@@ -847,10 +845,11 @@ pk_spawn_finalize (GObject *object)
  * Return value: a new PkSpawn object.
  **/
 PkSpawn *
-pk_spawn_new (void)
+pk_spawn_new (GKeyFile *conf)
 {
 	PkSpawn *spawn;
 	spawn = g_object_new (PK_TYPE_SPAWN, NULL);
+	spawn->priv->conf = g_key_file_ref (conf);
 	return PK_SPAWN (spawn);
 }
 

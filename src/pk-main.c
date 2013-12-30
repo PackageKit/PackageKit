@@ -33,7 +33,6 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-debug.h>
 
-#include "pk-conf.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
 
@@ -108,7 +107,7 @@ pk_main_sort_backends_cb (const gchar **store1,
  * pk_main_set_auto_backend:
  **/
 static gboolean
-pk_main_set_auto_backend (PkConf *conf, GError **error)
+pk_main_set_auto_backend (GKeyFile *conf, GError **error)
 {
 	const gchar *tmp;
 	gboolean ret = TRUE;
@@ -151,9 +150,10 @@ pk_main_set_auto_backend (PkConf *conf, GError **error)
 		goto out;
 	}
 	tmp = g_ptr_array_index (array, 0);
-	pk_conf_set_string (conf,
-			    "DefaultBackend",
-			    tmp);
+	g_key_file_set_string (conf,
+			       "Daemon",
+			       "DefaultBackend",
+			       tmp);
 
 out:
 	if (array != NULL)
@@ -161,6 +161,35 @@ out:
 	if (dir != NULL)
 		g_dir_close (dir);
 	return ret;
+}
+
+/**
+ * pk_main_get_config_filename:
+ **/
+static gchar *
+pk_main_get_config_filename (void)
+{
+	gchar *path;
+
+#if PK_BUILD_LOCAL
+	/* try a local path first */
+	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		goto out;
+	g_debug ("local config file not found '%s'", path);
+	g_free (path);
+#endif
+	/* check the prefix path */
+	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		goto out;
+
+	/* none found! */
+	g_warning ("config file not found '%s'", path);
+	g_free (path);
+	path = NULL;
+out:
+	return path;
 }
 
 /**
@@ -176,8 +205,9 @@ main (int argc, char *argv[])
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
 	gchar *backend_name = NULL;
+	gchar *conf_filename = NULL;
 	PkEngine *engine = NULL;
-	PkConf *conf = NULL;
+	GKeyFile *conf = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 	guint timer_id = 0;
@@ -237,25 +267,34 @@ main (int argc, char *argv[])
 #endif
 
 	/* get values from the config file */
-	conf = pk_conf_new ();
-	pk_conf_set_bool (conf, "KeepEnvironment", keep_environment);
+	conf = g_key_file_new ();
+	conf_filename = pk_main_get_config_filename ();
+	ret = g_key_file_load_from_file (conf, conf_filename,
+					 G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		g_print ("Failed to load config file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_key_file_set_boolean (conf, "Daemon", "KeepEnvironment", keep_environment);
 
 	/* log the startup */
 	syslog (LOG_DAEMON | LOG_DEBUG, "daemon start");
 
 	/* after how long do we timeout? */
-	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
+	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", NULL);
 	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	/* override the backend name */
 	if (backend_name != NULL) {
-		pk_conf_set_string (conf,
-				    "DefaultBackend",
-				    backend_name);
+		g_key_file_set_string (conf,
+				       "Daemon",
+				       "DefaultBackend",
+				       backend_name);
 	}
 
 	/* resolve 'auto' to an actual name */
-	backend_name = pk_conf_get_string (conf, "DefaultBackend");
+	backend_name = g_key_file_get_string (conf, "Daemon", "DefaultBackend", NULL);
 	if (g_strcmp0 (backend_name, "auto") == 0) {
 		ret  = pk_main_set_auto_backend (conf, &error);
 		if (!ret) {
@@ -269,7 +308,7 @@ main (int argc, char *argv[])
 	loop = g_main_loop_new (NULL, FALSE);
 
 	/* create a new engine object */
-	engine = pk_engine_new ();
+	engine = pk_engine_new (conf);
 	g_signal_connect (engine, "quit",
 			  G_CALLBACK (pk_main_quit_cb), loop);
 
@@ -317,10 +356,11 @@ out:
 
 	if (loop != NULL)
 		g_main_loop_unref (loop);
-	g_object_unref (conf);
+	g_key_file_unref (conf);
 	if (engine != NULL)
 		g_object_unref (engine);
 	g_free (backend_name);
+	g_free (conf_filename);
 
 exit_program:
 	return 0;

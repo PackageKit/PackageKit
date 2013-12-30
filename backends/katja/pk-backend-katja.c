@@ -11,7 +11,7 @@
 static GSList *repos = NULL;
 
 
-void pk_backend_initialize(PkBackend *backend) {
+void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 	gchar *conf_filename, *val, *mirror, **groups;
 	guint i;
 	gsize groups_len;

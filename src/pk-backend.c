@@ -34,10 +34,8 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "pk-conf.h"
 #include "pk-network.h"
 #include "pk-backend.h"
-#include "pk-conf.h"
 #include "pk-shared.h"
 #include "pk-notify.h"
 
@@ -57,7 +55,8 @@
 typedef struct {
 	const gchar	*description;
 	const gchar	*author;
-	void		(*initialize)			(PkBackend	*backend);
+	void		(*initialize)			(GKeyFile		*conf,
+							 PkBackend	*backend);
 	void		(*destroy)			(PkBackend	*backend);
 	PkBitfield	(*get_groups)			(PkBackend	*backend);
 	PkBitfield	(*get_filters)			(PkBackend	*backend);
@@ -184,7 +183,7 @@ struct PkBackendPrivate
 	PkBackendDesc		*desc;
 	PkBackendFileChanged	 file_changed_func;
 	PkBitfield		 roles;
-	PkConf			*conf;
+	GKeyFile		*conf;
 	GFileMonitor		*monitor;
 	PkNetwork		*network;
 	gboolean		 backend_roles_set;
@@ -471,7 +470,12 @@ pk_backend_load (PkBackend *backend, GError **error)
 	}
 
 	/* can we load it? */
-	backend_name = pk_conf_get_string (backend->priv->conf, "DefaultBackend");
+	backend_name = g_key_file_get_string (backend->priv->conf,
+					      "Daemon",
+					      "DefaultBackend",
+					      error);
+	if (backend_name == NULL)
+		goto out;
 	g_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
@@ -552,7 +556,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 	/* initialize if we can */
 	if (backend->priv->desc->initialize != NULL) {
 		backend->priv->during_initialize = TRUE;
-		backend->priv->desc->initialize (backend);
+		backend->priv->desc->initialize (backend->priv->conf, backend);
 		backend->priv->during_initialize = FALSE;
 	}
 	backend->priv->loaded = TRUE;
@@ -922,7 +926,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 
 	g_object_unref (backend->priv->network);
-	g_object_unref (backend->priv->conf);
+	g_key_file_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
 	g_mutex_clear (&backend->priv->thread_hash_mutex);
@@ -1509,7 +1513,6 @@ static void
 pk_backend_init (PkBackend *backend)
 {
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
-	backend->priv->conf = pk_conf_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->thread_hash = g_hash_table_new_full (g_direct_hash,
@@ -1525,10 +1528,11 @@ pk_backend_init (PkBackend *backend)
  * Return value: A new backend class backend.
  **/
 PkBackend *
-pk_backend_new (void)
+pk_backend_new (GKeyFile *conf)
 {
 	PkBackend *backend;
 	backend = g_object_new (PK_TYPE_BACKEND, NULL);
+	backend->priv->conf = g_key_file_ref (conf);
 	return PK_BACKEND (backend);
 }
 

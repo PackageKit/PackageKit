@@ -1676,7 +1676,7 @@ pk_backend_get_author (PkBackend *backend)
  * This should only be run once per backend load, i.e. not every transaction
  */
 void
-pk_backend_initialize (PkBackend *backend)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	/* create private area */
 	priv = new PkBackendZYppPrivate;

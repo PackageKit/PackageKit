@@ -52,7 +52,7 @@ typedef struct
 } PkTransactionListClass;
 
 GType		 pk_transaction_list_get_type	  	(void);
-PkTransactionList *pk_transaction_list_new		(void);
+PkTransactionList *pk_transaction_list_new		(GKeyFile		*conf);
 
 gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
 							 const gchar		*tid,

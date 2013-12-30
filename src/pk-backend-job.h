@@ -76,7 +76,7 @@ typedef struct
 } PkBackendJobClass;
 
 GType		 pk_backend_job_get_type		(void);
-PkBackendJob	*pk_backend_job_new			(void);
+PkBackendJob	*pk_backend_job_new			(GKeyFile		*conf);
 
 void		 pk_backend_job_reset			(PkBackendJob	*job);
 gpointer	 pk_backend_job_get_backend		(PkBackendJob	*job);
