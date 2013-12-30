@@ -829,7 +829,7 @@ void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *tmp_dir_name, *metadata_dir_name, *db_err;
+	gchar *tmp_dir_name, *metadata_dir_name, *db_filename, *db_err;
 	gboolean force;
 	GFile *metadata_dir;
 	GSList *file_list = NULL, *l;
@@ -850,11 +850,27 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	g_variant_get(params, "(b)", &force);
 
 	if (force) { /* Clear cache */
+	 	/* Close the database connection */
+		db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
+		sqlite3_close(katja_pkgtools_db);
+
+		/* Remove existing database */
 		metadata_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", NULL);
 		metadata_dir = g_file_new_for_path(metadata_dir_name);
 		katja_pkgtools_clean_dir(metadata_dir, FALSE);
 		g_object_unref(metadata_dir);
 		g_free(metadata_dir_name);
+
+		/* Open a connection again */
+		if (sqlite3_open(db_filename, &katja_pkgtools_db) != SQLITE_OK)
+		pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE,
+								  "%s: %s",
+								  db_filename,
+								  sqlite3_errmsg(katja_pkgtools_db));
+		g_free(db_filename);
+
+		if (pk_backend_job_has_set_error_code(job))
+			goto out;
 	}
 
  	/* Create the metadata database if one doesn't exist */
