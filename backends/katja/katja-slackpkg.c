@@ -27,12 +27,23 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 		source_dest[1] = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
 		source_dest[2] = NULL;
 
-		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL)) {
+		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL) == CURLE_OK) {
+			file_list = g_slist_prepend(file_list, source_dest);
+		} else {
 			g_strfreev(source_dest);
 			g_slist_free_full(file_list, (GDestroyNotify)g_strfreev);
 			goto out;
-		} else
+		}
+
+		/* Download file lists if available
+		source_dest = g_malloc_n(3, sizeof(gchar *));
+		source_dest[0] = g_strconcat(pkgtools->mirror->str, *cur_priority, "/MANIFEST.bz2", NULL);
+		source_dest[1] = g_strconcat(tmpl, "/", pkgtools->name->str, "/", *cur_priority, "-MANIFEST.bz2", NULL);
+		source_dest[2] = NULL;
+		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 			file_list = g_slist_prepend(file_list, source_dest);
+		else
+			g_strfreev(source_dest); */
 	}
 
 out:
@@ -103,21 +114,6 @@ out:
 			} else changed = TRUE;
 		}
 		g_free (source_dest[0]);
-
-		// Get the size of the files we're going to download
-		sum_size = size = 0;
-		if (changed) {
-
-			source_dest = g_malloc_n (3, sizeof (gchar *));
-			source_dest[0] = g_build_filename (conf_key, "MANIFEST.bz2", NULL);
-			source_dest[1] = g_build_filename (spawn_tmpdir, "MANIFEST.bz2", NULL);
-			source_dest[2] = NULL;
-			if (!pkgtools_spawn_get_file (curl, source_dest[0], NULL, &size) && (size != -1)) {
-				file_list = g_slist_append (file_list, source_dest);
-				sum_size += size;
-			} else g_strfreev (source_dest);
-
-		}
 
 		g_free (changelog);
 		g_free (conf_key);
@@ -238,7 +234,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 			if (g_strcmp0(location, "patches/packages")) { /* Insert a new package */
 				/* Get the package group based on its location */
 				cat = g_strrstr(location, "/");
-				if (cat) /* Else cat= NULL */
+				if (cat) /* Else cat = NULL */
 					cat = g_hash_table_lookup(katja_slackpkg_cat_map, cat + 1);
 
 				if (cat) {
