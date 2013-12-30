@@ -12,10 +12,10 @@ static GSList *repos = NULL;
 
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
-	gchar *conf_filename, *val, *mirror, **groups;
+	gchar *katja_conf_filename, *val, *mirror, **groups;
 	guint i;
 	gsize groups_len;
-	GKeyFile *conf;
+	GKeyFile *katja_conf;
 	GError *err = NULL;
 	gpointer repo = NULL;
 
@@ -23,21 +23,21 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
 	/* Read the configuration file */
-	conf = g_key_file_new();
-	conf_filename = g_build_filename(SYSCONFDIR, "PackageKit", "Katja.conf", NULL);
-	g_key_file_load_from_file(conf, conf_filename, G_KEY_FILE_NONE, &err);
-	g_free(conf_filename);
+	katja_conf = g_key_file_new();
+	katja_conf_filename = g_build_filename(SYSCONFDIR, "PackageKit", "Katja.conf", NULL);
+	g_key_file_load_from_file(katja_conf, katja_conf_filename, G_KEY_FILE_NONE, &err);
+	g_free(katja_conf_filename);
 	if (err) {
-		g_error("%s: %s", conf_filename, err->message);
+		g_error("%s: %s", katja_conf_filename, err->message);
 		g_error_free(err);
 	}
 
 	/* Initialize an object for each well-formed repository */
-	groups = g_key_file_get_groups(conf, &groups_len);
+	groups = g_key_file_get_groups(katja_conf, &groups_len);
 	for (i = 0; i < groups_len; i++) {
-		if (g_key_file_has_key(conf, groups[i], "Priority", NULL)) {
-			mirror = g_key_file_get_string(conf, groups[i], "Mirror", NULL);
-			repo = katja_slackpkg_new(groups[i], mirror, i + 1, g_key_file_get_string_list(conf,
+		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
+			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+			repo = katja_slackpkg_new(groups[i], mirror, i + 1, g_key_file_get_string_list(katja_conf,
 																						   groups[i],
 																						   "Priority",
 																						   NULL,
@@ -45,9 +45,9 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 			if (repo)
 				repos = g_slist_append(repos, repo);
 			g_free(mirror);
-		} else if (g_key_file_has_key(conf, groups[i], "IndexFile", NULL)) {
-			mirror = g_key_file_get_string(conf, groups[i], "Mirror", NULL);
-			val = g_key_file_get_string(conf, groups[i], "IndexFile", NULL);
+		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
+			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+			val = g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL);
 			repo = katja_dl_new(groups[i], mirror, i + 1, val);
 			g_free(val);
 			g_free(mirror);
@@ -57,14 +57,14 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 		}
 
 		/* Blacklist if set */
-		val = g_key_file_get_string(conf, groups[i], "Blacklist", NULL);
+		val = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
 		if (repo && val)
 			KATJA_PKGTOOLS(repo)->blacklist = g_regex_new(val, G_REGEX_OPTIMIZE, 0, NULL);
 		g_free(val);
 	}
 	g_strfreev(groups);
 
-	g_key_file_free(conf);
+	g_key_file_free(katja_conf);
 }
 
 void pk_backend_destroy(PkBackend *backend) {
