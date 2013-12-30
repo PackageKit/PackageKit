@@ -494,7 +494,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 							"FROM pkglist NATURAL JOIN repos WHERE name LIKE @search",
 							-1,
 							&statement,
-							NULL) != SQLITE_OK)) {
+							NULL) == SQLITE_OK)) {
 		/* Output packages matching each pattern */
 		for (cur_val = vals; *cur_val; cur_val++) {
 			sqlite3_bind_text(statement, 1, *cur_val, -1, SQLITE_TRANSIENT);
