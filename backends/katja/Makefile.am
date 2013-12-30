@@ -22,7 +22,7 @@ $(conf_DATA): $(conf_in_files) Makefile
 	@sed -e "s|\@pkgmain\@|$(KATJA_PKGMAIN)|" $< > $@
 
 EXTRA_DIST = \
-	$(conf_DATA)
+	$(conf_in_files)
 
 clean-local :
 	rm -f *~
