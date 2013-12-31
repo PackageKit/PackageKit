@@ -9,6 +9,8 @@ shared_SOURCES =							\
 	hif-lock.h							\
 	hif-package.c							\
 	hif-package.h							\
+	hif-repos.c							\
+	hif-repos.h							\
 	hif-rpmts.c							\
 	hif-rpmts.h							\
 	hif-sack.c							\
