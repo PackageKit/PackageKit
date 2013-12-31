@@ -43,11 +43,11 @@ typedef enum {
 	HIF_SOURCE_UPDATE_FLAG_LAST
 } HifSourceUpdateFlags;
 
-GPtrArray	*hif_source_find_all		(GKeyFile		*config,
+void		 hif_source_free		(HifSource		*src);
+gboolean	 hif_source_parse		(GKeyFile		*config,
+						 GPtrArray		*sources,
+						 const gchar		*filename,
 						 HifSourceScanFlags	 flags,
-						 GError			**error);
-HifSource	*hif_source_filter_by_id	(GPtrArray		*sources,
-						 const gchar		*id,
 						 GError			**error);
 const gchar	*hif_source_get_id		(HifSource		*src);
 const gchar	*hif_source_get_location	(HifSource		*src);

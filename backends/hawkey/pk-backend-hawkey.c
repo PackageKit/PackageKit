@@ -50,6 +50,7 @@
 #include "hif-goal.h"
 #include "hif-keyring.h"
 #include "hif-package.h"
+#include "hif-repos.h"
 #include "hif-rpmts.h"
 #include "hif-sack.h"
 #include "hif-source.h"
@@ -566,9 +567,9 @@ pk_backend_ensure_enabled_sources (PkBackendHifJobData *job_data, GError **error
 		goto out;
 
 	/* set the list of repos */
-	job_data->enabled_sources = hif_source_find_all (priv->config,
-							 HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
-							 error);
+	job_data->enabled_sources = hif_repos_get_sources (priv->config,
+							   HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED,
+							   error);
 	if (job_data->enabled_sources == NULL) {
 		ret = FALSE;
 		goto out;
@@ -834,9 +835,9 @@ hif_package_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
 	/* get repo */
 	if (hy_package_installed (pkg))
 		goto out;
-	src = hif_source_filter_by_id (sources,
-				       hy_package_get_reponame (pkg),
-				       error);
+	src = hif_repos_get_source_by_id (sources,
+					  hy_package_get_reponame (pkg),
+					  error);
 	if (src == NULL) {
 		g_prefix_error (error, "Failed to ensure %s: ",
 				hy_package_get_name (pkg));
@@ -1140,9 +1141,9 @@ pk_backend_get_repo_list (PkBackend *backend,
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = hif_source_find_all (priv->config,
-				       HIF_SOURCE_SCAN_FLAG_NONE,
-				       &error);
+	sources = hif_repos_get_sources (priv->config,
+				         HIF_SOURCE_SCAN_FLAG_NONE,
+				         &error);
 	if (sources == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1216,9 +1217,9 @@ pk_backend_repo_set_data (PkBackend *backend,
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	sources = hif_source_find_all (priv->config,
-				       HIF_SOURCE_SCAN_FLAG_NONE,
-				       &error);
+	sources = hif_repos_get_sources (priv->config,
+				         HIF_SOURCE_SCAN_FLAG_NONE,
+				         &error);
 	if (sources == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1229,7 +1230,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 	}
 
 	/* find the correct repo */
-	src = hif_source_filter_by_id (sources, repo_id, &error);
+	src = hif_repos_get_source_by_id (sources, repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1691,9 +1692,9 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
-		src = hif_source_filter_by_id (job_data->enabled_sources,
-					       hy_package_get_reponame (pkg),
-					       &error);
+		src = hif_repos_get_source_by_id (job_data->enabled_sources,
+						  hy_package_get_reponame (pkg),
+						  &error);
 		if (src == NULL) {
 			g_prefix_error (&error, "Not sure where to download %s: ",
 					hy_package_get_name (pkg));
@@ -1850,9 +1851,9 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 		}
 
 		/* find repo */
-		src = hif_source_filter_by_id (sources,
-					       hy_package_get_reponame (pkg),
-					       error);
+		src = hif_repos_get_source_by_id (sources,
+						  hy_package_get_reponame (pkg),
+						  error);
 		if (src == NULL) {
 			g_prefix_error (error, "Can't GPG check %s: ",
 					hy_package_get_name (pkg));
