@@ -119,14 +119,24 @@ hif_sack_add_sources (HySack sack,
 		      GError **error)
 {
 	gboolean ret = TRUE;
+	guint cnt = 0;
 	guint i;
 	HifSource *src;
 	HifState *state_local;
 
-	/* add each repo */
-	hif_state_set_number_steps (state, sources->len);
+	/* count the enabled sources */
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
+		if (hif_source_get_enabled (src))
+			cnt++;
+	}
+
+	/* add each repo */
+	hif_state_set_number_steps (state, cnt);
+	for (i = 0; i < sources->len; i++) {
+		src = g_ptr_array_index (sources, i);
+		if (!hif_source_get_enabled (src))
+			continue;
 
 		state_local = hif_state_get_child (state);
 		ret = hif_sack_add_source (sack, src, flags, state_local, error);

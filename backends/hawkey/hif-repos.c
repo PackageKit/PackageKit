@@ -36,9 +36,7 @@
  * hif_repos_get_sources:
  */
 GPtrArray *
-hif_repos_get_sources (GKeyFile *config,
-		       HifSourceScanFlags flags,
-		       GError **error)
+hif_repos_get_sources (GKeyFile *config, GError **error)
 {
 	const gchar *file;
 	gboolean ret;
@@ -66,7 +64,7 @@ hif_repos_get_sources (GKeyFile *config,
 		if (!g_str_has_suffix (file, ".repo"))
 			continue;
 		path_tmp = g_build_filename (repo_path, file, NULL);
-		ret = hif_source_parse (config, array, path_tmp, flags, error);
+		ret = hif_source_parse (config, array, path_tmp, error);
 		g_free (path_tmp);
 		if (!ret)
 			goto out;

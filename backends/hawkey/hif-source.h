@@ -32,12 +32,6 @@
 typedef struct HifSource HifSource;
 
 typedef enum {
-	HIF_SOURCE_SCAN_FLAG_NONE		= 0,
-	HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED	= 1,
-	HIF_SOURCE_SCAN_FLAG_LAST
-} HifSourceScanFlags;
-
-typedef enum {
 	HIF_SOURCE_UPDATE_FLAG_NONE		= 0,
 	HIF_SOURCE_UPDATE_FLAG_FORCE		= 1,
 	HIF_SOURCE_UPDATE_FLAG_LAST
@@ -47,7 +41,6 @@ void		 hif_source_free		(HifSource		*src);
 gboolean	 hif_source_parse		(GKeyFile		*config,
 						 GPtrArray		*sources,
 						 const gchar		*filename,
-						 HifSourceScanFlags	 flags,
 						 GError			**error);
 const gchar	*hif_source_get_id		(HifSource		*src);
 const gchar	*hif_source_get_location	(HifSource		*src);

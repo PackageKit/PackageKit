@@ -140,7 +140,6 @@ gboolean
 hif_source_parse (GKeyFile *config,
 		  GPtrArray *sources,
 		  const gchar *filename,
-		  HifSourceScanFlags flags,
 		  GError **error)
 {
 	gboolean has_enabled;
@@ -190,10 +189,6 @@ hif_source_parse (GKeyFile *config,
 		} else {
 			is_enabled = TRUE;
 		}
-
-		/* do not create object if we're not interested */
-		if (is_enabled == FALSE && (flags & HIF_SOURCE_SCAN_FLAG_ONLY_ENABLED) > 0)
-			continue;
 
 		src = g_slice_new0 (HifSource);
 		src->enabled = is_enabled;

@@ -31,7 +31,6 @@
 #include "hif-source.h"
 
 GPtrArray	*hif_repos_get_sources		(GKeyFile		*config,
-						 HifSourceScanFlags	 flags,
 						 GError			**error);
 HifSource	*hif_repos_get_source_by_id	(GPtrArray		*sources,
 						 const gchar		*id,
