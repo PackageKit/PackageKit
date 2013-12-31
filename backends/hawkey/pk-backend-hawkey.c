@@ -1394,20 +1394,23 @@ out:
 }
 
 /**
- * pk_backend_refresh_cache:
+ * pk_backend_refresh_cache_thread:
  */
-void
-pk_backend_refresh_cache (PkBackend *backend,
-			  PkBackendJob *job,
-			  gboolean force)
+static void
+pk_backend_refresh_cache_thread (PkBackendJob *job,
+				 GVariant *params,
+				 gpointer user_data)
 {
-	gboolean ret;
 	GError *error = NULL;
-	guint cnt = 0;
-	guint i;
 	HifSource *src;
 	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	gboolean force;
+	gboolean ret;
+	guint cnt = 0;
+	guint i;
+
+	g_variant_get (params, "(b)", &force);
 
 	/* set the list of repos */
 	ret = pk_backend_ensure_sources (job_data, &error);
@@ -1462,6 +1465,17 @@ pk_backend_refresh_cache (PkBackend *backend,
 	}
 out:
 	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_refresh_cache:
+ */
+void
+pk_backend_refresh_cache (PkBackend *backend,
+			  PkBackendJob *job,
+			  gboolean force)
+{
+	pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
 /**
