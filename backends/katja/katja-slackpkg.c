@@ -193,10 +193,8 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						"WHERE name LIKE @name",
 						-1,
 						&update_statement,
-						NULL) != SQLITE_OK)) {
-							sqlite3_close(katja_pkgtools_db);
+						NULL) != SQLITE_OK))
 							goto out;
-						}
 
 	data_in = g_data_input_stream_new(G_INPUT_STREAM(fin));
 	desc = g_string_new("");
