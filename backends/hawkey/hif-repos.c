@@ -97,6 +97,21 @@ out:
 }
 
 /**
+ * hi_repos_source_cost_fn:
+ */
+static gint
+hi_repos_source_cost_fn (gconstpointer a, gconstpointer b)
+{
+	HifSource *src_a = *((HifSource **) a);
+	HifSource *src_b = *((HifSource **) b);
+	if (hif_source_get_cost (src_a) < hif_source_get_cost (src_b))
+		return -1;
+	if (hif_source_get_cost (src_a) > hif_source_get_cost (src_b))
+		return 1;
+	return 0;
+}
+
+/**
  * hif_repos_get_sources:
  */
 GPtrArray *
@@ -141,6 +156,9 @@ hif_repos_get_sources (GKeyFile *config, GError **error)
 
 	/* all okay */
 	sources = g_ptr_array_ref (array);
+
+	/* sort these in order of cost */
+	g_ptr_array_sort (sources, hi_repos_source_cost_fn);
 out:
 	g_free (repo_path);
 	if (array != NULL)

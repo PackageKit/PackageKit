@@ -39,6 +39,7 @@
 struct HifSource {
 	gboolean	 enabled;
 	gboolean	 gpgcheck;
+	guint		 cost;
 	gchar		*filename;
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
@@ -170,6 +171,7 @@ hif_source_add_media (GPtrArray *sources,
 	/* create read-only location */
 	src = g_slice_new0 (HifSource);
 	src->enabled = TRUE;
+	src->cost = 100;
 	if (idx == 0)
 		src->id = g_strdup ("media");
 	else
@@ -256,6 +258,9 @@ hif_source_parse (GKeyFile *config,
 
 		src = g_slice_new0 (HifSource);
 		src->enabled = is_enabled;
+		src->cost = g_key_file_get_integer (keyfile, repos[i], "cost", NULL);
+		if (src->cost == 0)
+			src->cost = 1000;
 		src->keyfile = g_key_file_ref (keyfile);
 		src->filename = g_strdup (filename);
 		src->id = g_strdup (repos[i]);
@@ -752,6 +757,15 @@ gboolean
 hif_source_get_enabled (HifSource *src)
 {
 	return src->enabled;
+}
+
+/**
+ * hif_source_get_cost:
+ */
+guint
+hif_source_get_cost (HifSource *src)
+{
+	return src->cost;
 }
 
 /**

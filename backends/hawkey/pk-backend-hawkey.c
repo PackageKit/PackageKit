@@ -989,16 +989,12 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 
-	/* set the cache filename on each package */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) ||
-	    pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED)) {
-		ret = hif_package_ensure_source_list (job_data->sources,
-						      pkglist, &error);
-		if (!ret) {
-			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			g_error_free (error);
-			goto out;
-		}
+	/* set the src on each package */
+	ret = hif_package_ensure_source_list (job_data->sources, pkglist, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* done */

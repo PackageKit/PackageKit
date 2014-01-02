@@ -161,6 +161,21 @@ hif_package_get_nevra (HyPackage pkg)
 }
 
 /**
+ * hif_package_get_cost:
+ **/
+guint
+hif_package_get_cost (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv->src == NULL) {
+		g_warning ("no src for %s", hif_package_get_id (pkg));
+		return G_MAXUINT;
+	}
+	return hif_source_get_cost (priv->src);
+}
+
+/**
  * hif_package_set_filename:
  **/
 void

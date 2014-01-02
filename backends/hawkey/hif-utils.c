@@ -255,21 +255,56 @@ hif_emit_package_list_filter (PkBackendJob *job,
 			      PkBitfield filters,
 			      HyPackageList pkglist)
 {
-	guint i;
+	GHashTable *hash_cost;
+	GHashTable *hash_installed;
+	HyPackage found;
 	HyPackage pkg;
-	GHashTable *hash;
+	guint i;
+
+	/* if a package exists in multiple repos, show the one with the lowest
+	 * cost of downloading */
+	hash_cost = g_hash_table_new (g_str_hash, g_str_equal);
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		if (hy_package_installed (pkg))
+			continue;
+
+		/* if the NEVRA does not already exist in the array, just add */
+		found = g_hash_table_lookup (hash_cost,
+					     hif_package_get_nevra (pkg));
+		if (found == NULL) {
+			g_hash_table_insert (hash_cost,
+					     (gpointer) hif_package_get_nevra (pkg),
+					     (gpointer) pkg);
+			continue;
+		}
+
+		/* a lower cost package */
+		if (hif_package_get_cost (pkg) < hif_package_get_cost (found)) {
+			hif_package_set_info (found, PK_INFO_ENUM_BLOCKED);
+			g_hash_table_replace (hash_cost,
+					      (gpointer) hif_package_get_nevra (pkg),
+					      (gpointer) pkg);
+		} else {
+			hif_package_set_info (pkg, PK_INFO_ENUM_BLOCKED);
+		}
+	}
 
 	/* add all the installed packages to a hash */
-	hash = g_hash_table_new (g_str_hash, g_str_equal);
+	hash_installed = g_hash_table_new (g_str_hash, g_str_equal);
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		if (!hy_package_installed (pkg))
 			continue;
-		g_hash_table_insert (hash,
+		g_hash_table_insert (hash_installed,
 				     (gpointer) hif_package_get_nevra (pkg),
 				     (gpointer) pkg);
 	}
 
 	FOR_PACKAGELIST(pkg, pkglist, i) {
+
+		/* blocked */
+		if (hif_package_get_info (pkg) == PK_INFO_ENUM_BLOCKED)
+			continue;
+
 		/* GUI */
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI) && !hif_package_is_gui (pkg))
 			continue;
@@ -290,13 +325,17 @@ hif_emit_package_list_filter (PkBackendJob *job,
 
 		/* if this package is available and the very same NEVRA is
 		 * installed, skip this package */
-		if (!hy_package_installed (pkg) &&
-		    g_hash_table_lookup (hash, hif_package_get_nevra (pkg)) != NULL)
-			continue;
+		if (!hy_package_installed (pkg)) {
+			found = g_hash_table_lookup (hash_installed,
+						     hif_package_get_nevra (pkg));
+			if (found != NULL)
+				continue;
+		}
 
 		hif_emit_package (job, PK_INFO_ENUM_UNKNOWN, pkg);
 	}
-	g_hash_table_unref (hash);
+	g_hash_table_unref (hash_cost);
+	g_hash_table_unref (hash_installed);
 }
 
 /**

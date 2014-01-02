@@ -49,6 +49,7 @@ gboolean	 hif_source_add_media		(GPtrArray		*sources,
 const gchar	*hif_source_get_id		(HifSource		*src);
 const gchar	*hif_source_get_location	(HifSource		*src);
 gboolean	 hif_source_get_enabled		(HifSource		*src);
+guint		 hif_source_get_cost		(HifSource		*src);
 gboolean	 hif_source_get_gpgcheck	(HifSource		*src);
 gchar		*hif_source_get_description	(HifSource		*src);
 HyRepo		 hif_source_get_repo		(HifSource		*src);
