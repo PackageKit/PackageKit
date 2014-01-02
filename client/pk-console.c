@@ -124,7 +124,11 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 	info_pad = pk_strpad (pk_info_enum_to_localised_past (info), 12);
 
 	/* create printable */
-	printable = pk_package_id_to_printable (package_id);
+	printable = g_strdup_printf ("%s-%s.%s (%s)",
+				     split[PK_PACKAGE_ID_NAME],
+				     split[PK_PACKAGE_ID_VERSION],
+				     split[PK_PACKAGE_ID_ARCH],
+				     split[PK_PACKAGE_ID_DATA]);
 
 	/* don't pretty print */
 	if (!ctx->is_console) {
@@ -133,7 +137,7 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 	}
 
 	/* pad the name-version */
-	printable_pad = pk_strpad (printable, 40);
+	printable_pad = pk_strpad (printable, 60);
 	g_print ("%s\t%s\t%s\n", info_pad, printable_pad, summary);
 out:
 	/* free all the data */
