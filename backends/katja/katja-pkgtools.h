@@ -58,8 +58,6 @@ gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, 
 void katja_pkgtools_install(KatjaPkgtools *pkgtools, gchar *pkg_name);
 
 /* Public static methods */
-void katja_pkgtools_clean_dir(GFile *dir, gboolean delete_parent);
-/*void katja_pkgtools_job_progress_init(PkBackendJob *job);*/
 CURLcode katja_pkgtools_get_file(CURL **curl, gchar *source_url, gchar *dest);
 gchar **katja_pkgtools_cut_pkg(const gchar *pkg_filename);
 gint katja_pkgtools_cmp_repo(gconstpointer a, gconstpointer b);

@@ -831,7 +831,6 @@ void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar *tmp_dir_name, *metadata_dir_name, *db_filename, *db_err;
 	gboolean force;
-	GFile *metadata_dir;
 	GSList *file_list = NULL, *l;
 	GError *err;
 	CURL *curl = NULL;
@@ -856,9 +855,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 		/* Remove existing database */
 		metadata_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", NULL);
-		metadata_dir = g_file_new_for_path(metadata_dir_name);
-		katja_pkgtools_clean_dir(metadata_dir, FALSE);
-		g_object_unref(metadata_dir);
+		pk_directory_remove_contents(metadata_dir_name);
 		g_free(metadata_dir_name);
 
 		/* Open a connection again */
@@ -929,6 +926,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 		katja_pkgtools_generate_cache(l->data, tmp_dir_name);
 
 out:
+	pk_directory_remove_contents(tmp_dir_name);
 	g_rmdir(tmp_dir_name);
 	g_free(tmp_dir_name);
 

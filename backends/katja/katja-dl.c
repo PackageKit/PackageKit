@@ -40,17 +40,19 @@ GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *t
  * katja_dl_real_generate_cache:
  **/
 void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
-	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL;
-	GFile *tmp_dir, *repo_tmp_dir, *index_file;
+	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
+	GFile *list_file;
 	GFileInputStream *fin;
 	GDataInputStream *data_in;
 	sqlite3_stmt *statement = NULL, *pkglist_collection_statement = NULL, *pkglist_statement = NULL;
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
-	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, pkgtools->name->str);
-	index_file = g_file_get_child(repo_tmp_dir, "IndexFile");
-	if (!(fin = g_file_read(index_file, NULL, NULL)))
+	list_filename = g_build_filename(tmpl, pkgtools->name->str, "IndexFile", NULL);
+	list_file = g_file_new_for_path(list_filename);
+	fin = g_file_read(list_file, NULL, NULL);
+	g_object_unref(list_file);
+	g_free(list_filename);
+	if (!fin)
 		goto out;
 
 	/* Remove the old entries from this repository */
@@ -180,11 +182,6 @@ out:
 
 	if (fin)
 		g_object_unref(fin);
-
-	g_object_unref(index_file);
-	katja_pkgtools_clean_dir(repo_tmp_dir, TRUE);
-	g_object_unref(repo_tmp_dir);
-	g_object_unref(tmp_dir);
 }
 
 /**

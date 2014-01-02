@@ -130,21 +130,21 @@ out:
  * katja_slackpkg_real_generate_cache:
  **/
 void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
-	gchar **pkg_tokens = NULL, *pkg_filename = NULL, *location = NULL, *cat, *summary = NULL, *line;
+	gchar **pkg_tokens = NULL, *pkg_filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *list_filename;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
 	gushort pkg_name_len;
 	GString *desc;
-	GFile *tmp_dir, *repo_tmp_dir, *packages_txt;
+	GFile *list_file;
 	GFileInputStream *fin = NULL;
 	GDataInputStream *data_in;
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
-	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, pkgtools->name->str);
-	packages_txt = g_file_get_child(repo_tmp_dir, "PACKAGES.TXT");
-	fin = g_file_read(packages_txt, NULL, NULL);
-	g_object_unref(packages_txt);
+	list_filename = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
+	list_file = g_file_new_for_path(list_filename);
+	fin = g_file_read(list_file, NULL, NULL);
+	g_object_unref(list_file);
+	g_free(list_filename);
 	if (!fin)
 		goto out;
 
@@ -289,10 +289,6 @@ out:
 
 	if (fin)
 		g_object_unref(fin);
-
-	katja_pkgtools_clean_dir(repo_tmp_dir, TRUE);
-	g_object_unref(repo_tmp_dir);
-	g_object_unref(tmp_dir);
 }
 
 /**
