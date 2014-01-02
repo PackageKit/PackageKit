@@ -68,9 +68,39 @@ const gchar *
 hif_package_get_filename (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
+	gchar *found;
+
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
 		return NULL;
+	if (hy_package_installed (pkg))
+		return NULL;
+
+	/* default cache filename location */
+	if (priv->filename == NULL && priv->src != NULL) {
+		/*
+		 * The fedora metadata seems to have a odd optimisation
+		 * in that online repos do not have a 'packages' prefix, e.g.
+		 *
+		 * <location href="python3-1.8.0-3.fc20.x86_64.rpm"/>
+		 *
+		 * but the DVD repos do have a prefix, e.g.
+		 *
+		 * <location href="Packages/p/python3-1.8.0-3.fc20.x86_64.rpm"/>
+		 */
+		found = g_strstr_len (hy_package_get_location (pkg), -1, "/");
+		if (found == NULL) {
+			priv->filename = g_build_filename (hif_source_get_location (priv->src),
+							   "packages",
+							   hy_package_get_location (pkg),
+							   NULL);
+		} else {
+			priv->filename = g_build_filename (hif_source_get_location (priv->src),
+							   hy_package_get_location (pkg),
+							   NULL);
+		}
+	}
+
 	return priv->filename;
 }
 
@@ -161,6 +191,21 @@ hif_package_get_nevra (HyPackage pkg)
 }
 
 /**
+ * hif_package_get_cost:
+ **/
+guint
+hif_package_get_cost (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv->src == NULL) {
+		g_warning ("no src for %s", hif_package_get_id (pkg));
+		return G_MAXUINT;
+	}
+	return hif_source_get_cost (priv->src);
+}
+
+/**
  * hif_package_set_filename:
  **/
 void
@@ -183,24 +228,10 @@ void
 hif_package_set_source (HyPackage pkg, HifSource *src)
 {
 	HifPackagePrivate *priv;
-	gchar *basename = NULL;
-
-	/* replace contents */
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
 		return;
 	priv->src = src;
-
-	/* default cache filename location */
-	if (!hy_package_installed (pkg)) {
-		basename = g_path_get_basename (hy_package_get_location (pkg));
-		g_free (priv->filename);
-		priv->filename = g_build_filename (hif_source_get_location (src),
-						   "packages",
-						   basename,
-						   NULL);
-		g_free (basename);
-	}
 }
 
 /**

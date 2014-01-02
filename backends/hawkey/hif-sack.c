@@ -23,6 +23,8 @@
 #  include <config.h>
 #endif
 
+#include <hawkey/errno.h>
+
 #include "hif-sack.h"
 #include "hif-utils.h"
 
@@ -93,6 +95,8 @@ hif_sack_add_source (HySack sack,
 	g_debug ("Loading repo %s", hif_source_get_id (src));
 	hif_state_action_start (state, PK_STATUS_ENUM_LOADING_CACHE, NULL);
 	rc = hy_sack_load_yum_repo (sack, hif_source_get_repo (src), flags_hy);
+	if (rc == HY_E_FAILED)
+		rc = hy_get_errno ();
 	ret = hif_rc_to_gerror (rc, error);
 	if (!ret) {
 		g_prefix_error (error, "Failed to load repo %s: ",

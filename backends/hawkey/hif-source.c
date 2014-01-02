@@ -39,6 +39,7 @@
 struct HifSource {
 	gboolean	 enabled;
 	gboolean	 gpgcheck;
+	guint		 cost;
 	gchar		*filename;
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
@@ -67,7 +68,8 @@ hif_source_free (HifSource *src)
 		lr_handle_free (src->repo_handle);
 	if (src->repo != NULL)
 		hy_repo_free (src->repo);
-	g_key_file_unref (src->keyfile);
+	if (src->keyfile != NULL)
+		g_key_file_unref (src->keyfile);
 	g_slice_free (HifSource, src);
 }
 
@@ -134,6 +136,70 @@ out:
 }
 
 /**
+ * hif_source_add_media:
+ */
+gboolean
+hif_source_add_media (GPtrArray *sources,
+		      const gchar *mount_point,
+		      guint idx,
+		      GError **error)
+{
+	GKeyFile *treeinfo;
+	HifSource *src;
+	gboolean ret = TRUE;
+	gchar *basearch = NULL;
+	gchar *release = NULL;
+	gchar *treeinfo_fn;
+
+	/* get common things */
+	treeinfo_fn = g_build_filename (mount_point, ".treeinfo", NULL);
+	treeinfo = g_key_file_new ();
+	ret = g_key_file_load_from_file (treeinfo, treeinfo_fn, 0, error);
+	if (!ret)
+		goto out;
+	basearch = g_key_file_get_string (treeinfo, "general", "arch", error);
+	if (basearch == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	release = g_key_file_get_string (treeinfo, "general", "version", error);
+	if (release == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* create read-only location */
+	src = g_slice_new0 (HifSource);
+	src->enabled = TRUE;
+	src->cost = 100;
+	if (idx == 0)
+		src->id = g_strdup ("media");
+	else
+		src->id = g_strdup_printf ("media-%i", idx);
+	src->location = g_strdup (mount_point);
+	src->repo_handle = lr_handle_init ();
+	ret = lr_handle_setopt (src->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
+	if (!ret)
+		goto out;
+	src->repo_result = lr_result_init ();
+	src->gpgcheck = TRUE;
+	src->urlvars = lr_urlvars_set (src->urlvars, "releasever", release);
+	src->urlvars = lr_urlvars_set (src->urlvars, "basearch", basearch);
+	ret = lr_handle_setopt (src->repo_handle, error, LRO_VARSUB, src->urlvars);
+	if (!ret)
+		goto out;
+
+	g_debug ("added source %s", src->id);
+	g_ptr_array_add (sources, src);
+out:
+	g_free (basearch);
+	g_free (release);
+	g_free (treeinfo_fn);
+	g_key_file_free (treeinfo);
+	return ret;
+}
+
+/**
  * hif_source_parse:
  */
 gboolean
@@ -192,6 +258,9 @@ hif_source_parse (GKeyFile *config,
 
 		src = g_slice_new0 (HifSource);
 		src->enabled = is_enabled;
+		src->cost = g_key_file_get_integer (keyfile, repos[i], "cost", NULL);
+		if (src->cost == 0)
+			src->cost = 1000;
 		src->keyfile = g_key_file_ref (keyfile);
 		src->filename = g_strdup (filename);
 		src->id = g_strdup (repos[i]);
@@ -683,6 +752,15 @@ hif_source_get_enabled (HifSource *src)
 }
 
 /**
+ * hif_source_get_cost:
+ */
+guint
+hif_source_get_cost (HifSource *src)
+{
+	return src->cost;
+}
+
+/**
  * hif_source_get_gpgcheck:
  */
 gboolean
@@ -763,6 +841,49 @@ hif_source_checksum_hy_to_lr (int checksum_hy)
 }
 
 /**
+ * hif_source_copy_progress_cb:
+ **/
+static void
+hif_source_copy_progress_cb (goffset current, goffset total, gpointer user_data)
+{
+	HifState *state = HIF_STATE (user_data);
+	hif_state_set_percentage (state, 100.0f * current / total);
+}
+
+/**
+ * hif_source_copy_package:
+ **/
+static gboolean
+hif_source_copy_package (HyPackage pkg,
+			 const gchar *directory,
+			 HifState *state,
+			 GError **error)
+{
+	GFile *file_dest;
+	GFile *file_source;
+	gboolean ret;
+	gchar *basename = NULL;
+	gchar *dest = NULL;
+
+	/* copy the file with progress */
+	file_source = g_file_new_for_path (hif_package_get_filename (pkg));
+	basename = g_path_get_basename (hy_package_get_location (pkg));
+	dest = g_build_filename (directory, basename, NULL);
+	file_dest = g_file_new_for_path (dest);
+	ret = g_file_copy (file_source, file_dest, G_FILE_COPY_NONE,
+			   hif_state_get_cancellable (state),
+			   hif_source_copy_progress_cb, state, error);
+	if (!ret)
+		goto out;
+out:
+	g_object_unref (file_source);
+	g_object_unref (file_dest);
+	g_free (basename);
+	g_free (dest);
+	return ret;
+}
+
+/**
  * hif_source_download_package:
  **/
 gchar *
@@ -801,6 +922,15 @@ hif_source_download_package (HifSource *src,
 		 * output directory is fully specified as a filename, but
 		 * basename needs a trailing '/' to detect it's not a filename */
 		directory_slash = g_build_filename (directory, "/", NULL);
+	}
+
+	/* is a local repo, i.e. we just need to copy */
+	if (src->keyfile == NULL) {
+		hif_package_set_source (pkg, src);
+		ret = hif_source_copy_package (pkg, directory, state, error);
+		if (!ret)
+			goto out;
+		goto done;
 	}
 
 	/* setup the repo remote */
@@ -852,12 +982,10 @@ hif_source_download_package (HifSource *src,
 			goto out;
 		}
 	}
-
+done:
 	/* build return value */
 	basename = g_path_get_basename (hy_package_get_location (pkg));
-	loc = g_build_filename (directory_slash,
-				basename,
-				NULL);
+	loc = g_build_filename (directory_slash, basename, NULL);
 out:
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
