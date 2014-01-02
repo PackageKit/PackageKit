@@ -849,6 +849,49 @@ hif_source_checksum_hy_to_lr (int checksum_hy)
 }
 
 /**
+ * hif_source_copy_progress_cb:
+ **/
+static void
+hif_source_copy_progress_cb (goffset current, goffset total, gpointer user_data)
+{
+	HifState *state = HIF_STATE (user_data);
+	hif_state_set_percentage (state, 100.0f * current / total);
+}
+
+/**
+ * hif_source_copy_package:
+ **/
+static gboolean
+hif_source_copy_package (HyPackage pkg,
+			 const gchar *directory,
+			 HifState *state,
+			 GError **error)
+{
+	GFile *file_dest;
+	GFile *file_source;
+	gboolean ret;
+	gchar *basename = NULL;
+	gchar *dest = NULL;
+
+	/* copy the file with progress */
+	file_source = g_file_new_for_path (hif_package_get_filename (pkg));
+	basename = g_path_get_basename (hy_package_get_location (pkg));
+	dest = g_build_filename (directory, basename, NULL);
+	file_dest = g_file_new_for_path (dest);
+	ret = g_file_copy (file_source, file_dest, G_FILE_COPY_NONE,
+			   hif_state_get_cancellable (state),
+			   hif_source_copy_progress_cb, state, error);
+	if (!ret)
+		goto out;
+out:
+	g_object_unref (file_source);
+	g_object_unref (file_dest);
+	g_free (basename);
+	g_free (dest);
+	return ret;
+}
+
+/**
  * hif_source_download_package:
  **/
 gchar *
@@ -887,6 +930,15 @@ hif_source_download_package (HifSource *src,
 		 * output directory is fully specified as a filename, but
 		 * basename needs a trailing '/' to detect it's not a filename */
 		directory_slash = g_build_filename (directory, "/", NULL);
+	}
+
+	/* is a local repo, i.e. we just need to copy */
+	if (src->keyfile == NULL) {
+		hif_package_set_source (pkg, src);
+		ret = hif_source_copy_package (pkg, directory, state, error);
+		if (!ret)
+			goto out;
+		goto done;
 	}
 
 	/* setup the repo remote */
@@ -938,12 +990,10 @@ hif_source_download_package (HifSource *src,
 			goto out;
 		}
 	}
-
+done:
 	/* build return value */
 	basename = g_path_get_basename (hy_package_get_location (pkg));
-	loc = g_build_filename (directory_slash,
-				basename,
-				NULL);
+	loc = g_build_filename (directory_slash, basename, NULL);
 out:
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
