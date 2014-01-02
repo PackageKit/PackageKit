@@ -6,11 +6,12 @@ AM_CPPFLAGS = \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_katja.la
 libpk_backend_katja_la_SOURCES = pk-backend-katja.c \
-									katja-pkgtools.c \
-									katja-binary.c \
-									katja-slackpkg.c \
-									katja-dl.c
-libpk_backend_katja_la_LIBADD = $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
+								 katja-pkgtools.c \
+								 katja-binary.c \
+								 katja-slackpkg.c \
+								 katja-dl.c \
+								 katja-db.c
+libpk_backend_katja_la_LIBADD = -ldb -lbz2 $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
 libpk_backend_katja_la_LDFLAGS = -module -avoid-version
 libpk_backend_katja_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C) $(KATJA_CFLAGS)
 

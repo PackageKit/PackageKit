@@ -7,6 +7,7 @@
 #include <glib/gstdio.h>
 #include <pk-backend.h>
 #include <pk-backend-job.h>
+#include "katja-db.h"
 
 G_BEGIN_DECLS
 
@@ -47,8 +48,8 @@ typedef struct {
 GType katja_pkgtools_get_type(void);
 
 /* Public static members */
-extern sqlite3 *katja_pkgtools_db;
-/*extern KatjaPkgtoolsJobProgress katja_pkgtools_job_progress;*/
+extern sqlite3 *katja_pkgtools_sql;
+extern KatjaDb *katja_pkgtools_db;
 
 /* Virtual public methods */
 GSList *katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
