@@ -256,9 +256,6 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-	/* don't let GIO start it's own session bus: http://bugzilla.gnome.org/show_bug.cgi?id=526454 */
-	setenv ("GIO_USE_VFS", "local", 1);
-
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
 #ifdef HAVE_CLEARENV
