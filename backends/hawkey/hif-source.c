@@ -67,7 +67,8 @@ hif_source_free (HifSource *src)
 		lr_handle_free (src->repo_handle);
 	if (src->repo != NULL)
 		hy_repo_free (src->repo);
-	g_key_file_unref (src->keyfile);
+	if (src->keyfile != NULL)
+		g_key_file_unref (src->keyfile);
 	g_slice_free (HifSource, src);
 }
 
@@ -131,6 +132,69 @@ out:
 	g_free (data);
 	g_strfreev (lines);
 	return file;
+}
+
+/**
+ * hif_source_add_media:
+ */
+gboolean
+hif_source_add_media (GPtrArray *sources,
+		      const gchar *mount_point,
+		      guint idx,
+		      GError **error)
+{
+	GKeyFile *treeinfo;
+	HifSource *src;
+	gboolean ret = TRUE;
+	gchar *basearch = NULL;
+	gchar *release = NULL;
+	gchar *treeinfo_fn;
+
+	/* get common things */
+	treeinfo_fn = g_build_filename (mount_point, ".treeinfo", NULL);
+	treeinfo = g_key_file_new ();
+	ret = g_key_file_load_from_file (treeinfo, treeinfo_fn, 0, error);
+	if (!ret)
+		goto out;
+	basearch = g_key_file_get_string (treeinfo, "general", "arch", error);
+	if (basearch == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	release = g_key_file_get_string (treeinfo, "general", "version", error);
+	if (release == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+
+	/* create read-only location */
+	src = g_slice_new0 (HifSource);
+	src->enabled = TRUE;
+	if (idx == 0)
+		src->id = g_strdup ("media");
+	else
+		src->id = g_strdup_printf ("media-%i", idx);
+	src->location = g_strdup (mount_point);
+	src->repo_handle = lr_handle_init ();
+	ret = lr_handle_setopt (src->repo_handle, error, LRO_REPOTYPE, LR_YUMREPO);
+	if (!ret)
+		goto out;
+	src->repo_result = lr_result_init ();
+	src->gpgcheck = TRUE;
+	src->urlvars = lr_urlvars_set (src->urlvars, "releasever", release);
+	src->urlvars = lr_urlvars_set (src->urlvars, "basearch", basearch);
+	ret = lr_handle_setopt (src->repo_handle, error, LRO_VARSUB, src->urlvars);
+	if (!ret)
+		goto out;
+
+	g_debug ("added source %s", src->id);
+	g_ptr_array_add (sources, src);
+out:
+	g_free (basearch);
+	g_free (release);
+	g_free (treeinfo_fn);
+	g_key_file_free (treeinfo);
+	return ret;
 }
 
 /**

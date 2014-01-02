@@ -26,11 +26,75 @@
 #endif
 
 #include <glib.h>
+#include <gio/gunixmounts.h>
 #include <pk-backend.h>
 
 #include "hif-package.h"
 #include "hif-repos.h"
 #include "hif-utils.h"
+
+/**
+ * hif_repos_add_sack_from_mount_point:
+ */
+static gboolean
+hif_repos_add_sack_from_mount_point (GPtrArray *sources,
+				     const gchar *root,
+				     guint *idx,
+				     GError **error)
+{
+	const gchar *id = ".treeinfo";
+	gboolean exists;
+	gboolean ret = TRUE;
+	gchar *treeinfo_fn;
+
+	/* check if any installed media is an install disk */
+	treeinfo_fn = g_build_filename (root, id, NULL);
+	exists = g_file_test (treeinfo_fn, G_FILE_TEST_EXISTS);
+	g_debug ("checking %s for %s: %s", root, id, exists ? "yes" : "no");
+	if (!exists)
+		goto out;
+
+	/* add the repodata/repomd.xml as a source */
+	ret = hif_source_add_media (sources, root, *idx, error);
+	if (!ret)
+		goto out;
+	(*idx)++;
+out:
+	g_free (treeinfo_fn);
+	return ret;
+}
+
+/**
+ * hif_repos_get_sources_removable:
+ */
+static gboolean
+hif_repos_get_sources_removable (GPtrArray *sources, GError **error)
+{
+	GList *mounts;
+	GList *l;
+	gboolean ret;
+	guint idx = 0;
+
+	/* coldplug the mounts */
+	mounts = g_unix_mounts_get (NULL);
+	for (l = mounts; l != NULL; l = l->next) {
+		GUnixMountEntry *e = (GUnixMountEntry *) l->data;
+		if (!g_unix_mount_is_readonly (e))
+			continue;
+		if (g_strcmp0 (g_unix_mount_get_fs_type (e), "iso9660") != 0)
+			continue;
+		ret = hif_repos_add_sack_from_mount_point (sources,
+							   g_unix_mount_get_mount_path (e),
+							   &idx,
+							   error);
+		if (!ret)
+			goto out;
+	}
+out:
+	g_list_foreach (mounts, (GFunc) g_unix_mount_free, NULL);
+	g_list_free (mounts);
+	return ret;
+}
 
 /**
  * hif_repos_get_sources:
@@ -69,6 +133,11 @@ hif_repos_get_sources (GKeyFile *config, GError **error)
 		if (!ret)
 			goto out;
 	}
+
+	/* add any DVD sources */
+	ret = hif_repos_get_sources_removable (array, error);
+	if (!ret)
+		goto out;
 
 	/* all okay */
 	sources = g_ptr_array_ref (array);
