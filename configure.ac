@@ -572,7 +572,7 @@ if test x$enable_katja = xyes; then
 	AC_CHECK_LIB(curl, curl_version, [
 	    CURL_CFLAGS="`curl-config --cflags`"
 	    CURL_LIBS="`curl-config --libs`"
-	    ], [AC_MSG_ERROR([Can't find curl])])
+	    ], [AC_MSG_ERROR([Cant find curl])])
 	case "`uname -m`" in
 		x86-64|x86_64|X86-64|X86_64)
 			KATJA_PKGMAIN="slackware64"
