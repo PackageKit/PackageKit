@@ -68,7 +68,7 @@ const gchar *
 hif_package_get_filename (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
-	gchar *found;
+	gchar *basename;
 
 	priv = hy_package_get_userdata (pkg);
 	if (priv == NULL)
@@ -78,26 +78,19 @@ hif_package_get_filename (HyPackage pkg)
 
 	/* default cache filename location */
 	if (priv->filename == NULL && priv->src != NULL) {
-		/*
-		 * The fedora metadata seems to have a odd optimisation
-		 * in that online repos do not have a 'packages' prefix, e.g.
-		 *
-		 * <location href="python3-1.8.0-3.fc20.x86_64.rpm"/>
-		 *
-		 * but the DVD repos do have a prefix, e.g.
-		 *
-		 * <location href="Packages/p/python3-1.8.0-3.fc20.x86_64.rpm"/>
-		 */
-		found = g_strstr_len (hy_package_get_location (pkg), -1, "/");
-		if (found == NULL) {
+		/* do not strip the path for media sources as we're using this
+		 * directly rather than copying into the cachedir */
+		if (hif_source_get_kind (priv->src) == HIF_SOURCE_KIND_MEDIA) {
 			priv->filename = g_build_filename (hif_source_get_location (priv->src),
-							   "packages",
 							   hy_package_get_location (pkg),
 							   NULL);
 		} else {
+			basename = g_path_get_basename (hy_package_get_location (pkg));
 			priv->filename = g_build_filename (hif_source_get_location (priv->src),
-							   hy_package_get_location (pkg),
+							   "packages",
+							   basename,
 							   NULL);
+			g_free (basename);
 		}
 	}
 
