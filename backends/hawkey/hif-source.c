@@ -46,6 +46,7 @@ struct HifSource {
 	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
 	gint64		 timestamp;
 	GKeyFile	*keyfile;
+	HifSourceKind	 kind;
 	HyRepo		 repo;
 	LrHandle	*repo_handle;
 	LrResult	*repo_result;
@@ -171,6 +172,7 @@ hif_source_add_media (GPtrArray *sources,
 	/* create read-only location */
 	src = g_slice_new0 (HifSource);
 	src->enabled = TRUE;
+	src->kind = HIF_SOURCE_KIND_MEDIA;
 	src->cost = 100;
 	if (idx == 0)
 		src->id = g_strdup ("media");
@@ -258,6 +260,7 @@ hif_source_parse (GKeyFile *config,
 
 		src = g_slice_new0 (HifSource);
 		src->enabled = is_enabled;
+		src->kind = HIF_SOURCE_KIND_REMOTE;
 		src->cost = g_key_file_get_integer (keyfile, repos[i], "cost", NULL);
 		if (src->cost == 0)
 			src->cost = 1000;
@@ -758,6 +761,15 @@ guint
 hif_source_get_cost (HifSource *src)
 {
 	return src->cost;
+}
+
+/**
+ * hif_source_get_kind:
+ */
+HifSourceKind
+hif_source_get_kind (HifSource *src)
+{
+	return src->kind;
 }
 
 /**

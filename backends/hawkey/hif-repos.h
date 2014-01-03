@@ -23,6 +23,7 @@
 #define __HIF_REPOS_H
 
 #include <glib.h>
+#include <glib-object.h>
 
 #include <hawkey/repo.h>
 #include <hawkey/package.h>
@@ -30,9 +31,30 @@
 #include "hif-state.h"
 #include "hif-source.h"
 
-GPtrArray	*hif_repos_get_sources		(GKeyFile		*config,
+typedef struct _HifRepos	HifRepos;
+typedef struct _HifReposClass	HifReposClass;
+
+struct _HifRepos {
+	GObject		 parent_instance;
+};
+
+struct _HifReposClass {
+	GObjectClass	 parent_class;
+	/* signals */
+	void		(* changed)		(HifRepos		*self);
+};
+
+#define HIF_TYPE_REPOS		(hif_repos_get_type ())
+#define HIF_REPOS(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), HIF_TYPE_REPOS, HifRepos))
+#define HIF_IS_REPOS(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), HIF_TYPE_REPOS))
+
+GType		 hif_repos_get_type		(void);
+HifRepos	*hif_repos_new			(GKeyFile		*config);
+
+gboolean	 hif_repos_has_removable	(HifRepos		*self);
+GPtrArray	*hif_repos_get_sources		(HifRepos		*self,
 						 GError			**error);
-HifSource	*hif_repos_get_source_by_id	(GPtrArray		*sources,
+HifSource	*hif_repos_get_source_by_id	(HifRepos		*self,
 						 const gchar		*id,
 						 GError			**error);
 
