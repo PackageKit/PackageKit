@@ -33,7 +33,7 @@
 /* tiny helper to help us do the async operation */
 typedef struct {
 	GError		**error;
-	GMainContext    *context;
+	GMainContext	*context;
 	GMainLoop	*loop;
 	PkResults	*results;
 	PkProgress	*progress;

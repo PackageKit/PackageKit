@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <gio/gio.h>
 #include <glib.h>
 #include <packagekit-glib2/pk-results.h>
@@ -32,6 +33,7 @@
 /* tiny helper to help us do the async operation */
 typedef struct {
 	GError		**error;
+	GMainContext	*context;
 	GMainLoop	*loop;
 	gboolean	 ret;
 	guint		 seconds;
@@ -67,25 +69,30 @@ gboolean
 pk_control_get_properties (PkControl *control, GCancellable *cancellable, GError **error)
 {
 	gboolean ret;
-	PkControlHelper *helper;
+	PkControlHelper helper;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkControlHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkControlHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_get_properties_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_properties_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_control_get_properties_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_properties_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }
@@ -119,25 +126,30 @@ gchar **
 pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, GError **error)
 {
 	gchar **transaction_list;
-	PkControlHelper *helper;
+	PkControlHelper helper;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
-	helper = g_new0 (PkControlHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkControlHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_get_transaction_list_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_transaction_list_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_control_get_transaction_list_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_transaction_list_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	transaction_list = helper->transaction_list;
+	transaction_list = helper.transaction_list;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return transaction_list;
 }
@@ -171,25 +183,30 @@ gboolean
 pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, GError **error)
 {
 	gboolean ret;
-	PkControlHelper *helper;
+	PkControlHelper helper;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkControlHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkControlHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_suggest_daemon_quit_async (control, cancellable, (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_control_suggest_daemon_quit_async (control, cancellable, (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }
@@ -233,15 +250,18 @@ pk_control_set_proxy2 (PkControl *control,
 		       GError **error)
 {
 	gboolean ret;
-	PkControlHelper *helper;
+	PkControlHelper helper;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkControlHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkControlHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
 	pk_control_set_proxy2_async (control,
@@ -253,14 +273,16 @@ pk_control_set_proxy2 (PkControl *control,
 				     pac,
 				     cancellable,
 				     (GAsyncReadyCallback) pk_control_set_proxy_cb,
-				     helper);
-	g_main_loop_run (helper->loop);
+				     &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }

@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <gio/gio.h>
 #include <glib.h>
 #include <packagekit-glib2/pk-results.h>
@@ -32,6 +33,7 @@
 /* tiny helper to help us do the async operation */
 typedef struct {
 	GError		**error;
+	GMainContext	*context;
 	GMainLoop	*loop;
 	gboolean	 ret;
 } PkPackageSackHelper;
@@ -65,25 +67,30 @@ gboolean
 pk_package_sack_resolve (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
 {
 	gboolean ret;
-	PkPackageSackHelper *helper;
+	PkPackageSackHelper helper;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkPackageSackHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkPackageSackHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_resolve_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_package_sack_resolve_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }
@@ -106,25 +113,30 @@ gboolean
 pk_package_sack_get_details (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
 {
 	gboolean ret;
-	PkPackageSackHelper *helper;
+	PkPackageSackHelper helper;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkPackageSackHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkPackageSackHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_get_details_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_package_sack_get_details_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }
@@ -147,25 +159,30 @@ gboolean
 pk_package_sack_get_update_detail (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
 {
 	gboolean ret;
-	PkPackageSackHelper *helper;
+	PkPackageSackHelper helper;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* create temp object */
-	helper = g_new0 (PkPackageSackHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
+	memset (&helper, 0, sizeof (PkPackageSackHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_get_update_detail_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, helper);
-	g_main_loop_run (helper->loop);
+	pk_package_sack_get_update_detail_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	g_main_loop_run (helper.loop);
 
-	ret = helper->ret;
+	ret = helper.ret;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	return ret;
 }
