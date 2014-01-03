@@ -358,6 +358,13 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 	LrYumRepo *yum_repo;
 	const gchar *urls[] = { "", NULL };
 
+	/* has the media repo vanished? */
+	if (src->kind == HIF_SOURCE_KIND_MEDIA &&
+	    !g_file_test (src->location, G_FILE_TEST_EXISTS)) {
+		src->enabled = FALSE;
+		goto out;
+	}
+
 	/* Yum metadata */
 	hif_state_action_start (state, PK_STATUS_ENUM_LOADING_CACHE, NULL);
 	urls[0] = src->location;
@@ -550,6 +557,16 @@ hif_source_update (HifSource *src,
 	gint rc;
 	gint64 timestamp_new = 0;
 
+	/* cannot change DVD contents */
+	if (src->kind == HIF_SOURCE_KIND_MEDIA) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+				     "Cannot update read-only source");
+		goto out;
+	}
+
 	/* set state */
 	ret = hif_state_set_steps (state, error,
 				   50, /* download */
@@ -729,7 +746,6 @@ hif_source_get_description (HifSource *src)
 
 	/* is DVD */
 	if (src->kind == HIF_SOURCE_KIND_MEDIA) {
-		g_warning ("%p", src->keyfile);
 		tmp = g_key_file_get_string (src->keyfile, "general", "name", NULL);
 		if (tmp == NULL)
 			goto out;

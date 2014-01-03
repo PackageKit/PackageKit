@@ -37,6 +37,7 @@ typedef struct {
 	GFileMonitor	*monitor_repos;
 	GKeyFile	*config;
 	GPtrArray	*sources;
+	GVolumeMonitor	*volume_monitor;
 	gboolean	 loaded;
 } HifReposPrivate;
 
@@ -286,6 +287,18 @@ out:
 }
 
 /**
+ * hif_repos_mount_changed_cb:
+ */
+static void
+hif_repos_mount_changed_cb (GVolumeMonitor *vm, GMount *mount, HifRepos *self)
+{
+	/* invalidate all repos if a CD is inserted / removed */
+	g_debug ("emit changed (mounts changed)");
+	g_signal_emit (self, signals[SIGNAL_CHANGED], 0);
+	hif_repos_invalidate (self);
+}
+
+/**
  * hif_repos_directory_changed_cb:
  **/
 static void
@@ -294,7 +307,7 @@ hif_repos_directory_changed_cb (GFileMonitor *monitor_,
 				GFileMonitorEvent event_type,
 				HifRepos *self)
 {
-	g_debug ("emit changed");
+	g_debug ("emit changed (ReposDir changed)");
 	g_signal_emit (self, signals[SIGNAL_CHANGED], 0);
 	hif_repos_invalidate (self);
 }
@@ -343,6 +356,7 @@ hif_repos_finalize (GObject *object)
 	if (priv->monitor_repos != NULL)
 		g_object_unref (priv->monitor_repos);
 	g_key_file_unref (priv->config);
+	g_object_unref (priv->volume_monitor);
 	g_ptr_array_unref (priv->sources);
 
 	G_OBJECT_CLASS (hif_repos_parent_class)->finalize (object);
@@ -377,6 +391,11 @@ hif_repos_init (HifRepos *self)
 {
 	HifReposPrivate *priv = hif_repos_get_instance_private (self);
 	priv->sources = g_ptr_array_new_with_free_func ((GDestroyNotify) hif_source_free);
+	priv->volume_monitor = g_volume_monitor_get ();
+	g_signal_connect (priv->volume_monitor, "mount-added",
+			  G_CALLBACK (hif_repos_mount_changed_cb), self);
+	g_signal_connect (priv->volume_monitor, "mount-removed",
+			  G_CALLBACK (hif_repos_mount_changed_cb), self);
 }
 
 /**
