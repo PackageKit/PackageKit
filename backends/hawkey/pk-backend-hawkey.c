@@ -1394,6 +1394,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		src = g_ptr_array_index (job_data->sources, i);
 		if (!hif_source_get_enabled (src))
 			continue;
+		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
+			continue;
 		cnt++;
 	}
 
@@ -1402,6 +1404,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	for (i = 0; i < job_data->sources->len; i++) {
 		src = g_ptr_array_index (job_data->sources, i);
 		if (!hif_source_get_enabled (src))
+			continue;
+		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
 			continue;
 
 		/* delete content even if up to date */
