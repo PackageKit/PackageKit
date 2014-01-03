@@ -65,11 +65,11 @@ typedef struct {
 
 typedef struct {
 	GKeyFile	*config;
-	GFileMonitor	*monitor_repos;
 	GFileMonitor	*monitor_rpmdb;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
 	gchar		**native_arches;
+	HifRepos	*repos;
 } PkBackendHifPrivate;
 
 typedef struct {
@@ -140,10 +140,7 @@ pk_backend_sack_cache_invalidate (const gchar *why)
  * pk_backend_yum_repos_changed_cb:
  **/
 static void
-pk_backend_yum_repos_changed_cb (GFileMonitor *monitor_,
-				 GFile *file, GFile *other_file,
-				 GFileMonitorEvent event_type,
-				 PkBackend *backend)
+pk_backend_yum_repos_changed_cb (HifRepos *self, PkBackend *backend)
 {
 	pk_backend_sack_cache_invalidate ("yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
@@ -225,10 +222,8 @@ void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	GError *error = NULL;
-	GFile *file_repos = NULL;
 	GFile *file_rpmdb = NULL;
 	const gchar *value;
-	gchar *repos_dir;
 	gint retval;
 
 	/* use logging */
@@ -286,6 +281,11 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 			       "RpmVerbosity",
 			       "info");
 
+	/* used a cached list of sources */
+	priv->repos = hif_repos_new (conf);
+	g_signal_connect (priv->repos, "changed",
+			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
+
 	/* get info from RPM */
 	rpmGetOsInfo (&value, NULL);
 	g_key_file_set_string (priv->config,
@@ -319,25 +319,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	/* get info from OS release file */
 	pk_backend_set_os_release (priv->config, NULL);
 
-	/* setup a file monitor on the repos directory */
-	repos_dir = g_key_file_get_string (priv->config,
-					   HIF_CONFIG_GROUP_NAME,
-					   "ReposDir", NULL);
-	file_repos = g_file_new_for_path (repos_dir);
-	priv->monitor_repos = g_file_monitor_directory (file_repos,
-							G_FILE_MONITOR_NONE,
-							NULL,
-							&error);
-	if (priv->monitor_repos != NULL) {
-		g_signal_connect (priv->monitor_repos, "changed",
-				  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
-	} else {
-		g_warning ("failed to setup monitor: %s",
-			   error->message);
-		g_error_free (error);
-	}
-	g_free (repos_dir);
-
 	/* setup a file monitor on the rpmdb */
 	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
 	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
@@ -355,8 +336,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	lr_global_init ();
 
-	if (file_repos != NULL)
-		g_object_unref (file_repos);
 	if (file_rpmdb != NULL)
 		g_object_unref (file_rpmdb);
 }
@@ -369,10 +348,9 @@ pk_backend_destroy (PkBackend *backend)
 {
 	if (priv->config != NULL)
 		g_key_file_unref (priv->config);
-	if (priv->monitor_repos != NULL)
-		g_object_unref (priv->monitor_repos);
 	if (priv->monitor_rpmdb != NULL)
 		g_object_unref (priv->monitor_rpmdb);
+	g_object_unref (priv->repos);
 	g_strfreev (priv->native_arches);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
@@ -567,7 +545,7 @@ pk_backend_ensure_sources (PkBackendHifJobData *job_data, GError **error)
 		goto out;
 
 	/* set the list of repos */
-	job_data->sources = hif_repos_get_sources (priv->config, error);
+	job_data->sources = hif_repos_get_sources (priv->repos, error);
 	if (job_data->sources == NULL) {
 		ret = FALSE;
 		goto out;
@@ -655,6 +633,13 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* only load updateinfo when required */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
 		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
+
+	/* media repos could disappear at any time */
+	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0 &&
+	    hif_repos_has_removable (priv->repos)) {
+		g_debug ("not re-using sack as media repos could disappear");
+		create_flags &= ~HIF_CREATE_SACK_FLAG_USE_CACHE;
+	}
 
 	/* do we have anything in the cache */
 	cache_key = g_strdup_printf ("HySack::%i", flags);
@@ -833,7 +818,7 @@ hif_package_ensure_source (GPtrArray *sources, HyPackage pkg, GError **error)
 	/* get repo */
 	if (hy_package_installed (pkg))
 		goto out;
-	src = hif_repos_get_source_by_id (sources,
+	src = hif_repos_get_source_by_id (priv->repos,
 					  hy_package_get_reponame (pkg),
 					  error);
 	if (src == NULL) {
@@ -1134,7 +1119,7 @@ pk_backend_get_repo_list (PkBackend *backend,
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = hif_repos_get_sources (priv->config, &error);
+	sources = hif_repos_get_sources (priv->repos, &error);
 	if (sources == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1187,7 +1172,6 @@ pk_backend_repo_set_data (PkBackend *backend,
 {
 	gboolean ret = FALSE;
 	GError *error = NULL;
-	GPtrArray *sources = NULL;
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
@@ -1208,18 +1192,9 @@ pk_backend_repo_set_data (PkBackend *backend,
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	sources = hif_repos_get_sources (priv->config, &error);
-	if (sources == NULL) {
-		pk_backend_job_error_code (job,
-					   error->code,
-					   "failed to scan yum.repos.d: %s",
-					   error->message);
-		g_error_free (error);
-		goto out;
-	}
 
 	/* find the correct repo */
-	src = hif_repos_get_source_by_id (sources, repo_id, &error);
+	src = hif_repos_get_source_by_id (priv->repos, repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1240,8 +1215,6 @@ pk_backend_repo_set_data (PkBackend *backend,
 	/* nothing found */
 	pk_backend_job_set_percentage (job, 100);
 out:
-	if (sources != NULL)
-		g_ptr_array_unref (sources);
 	pk_backend_job_finished (job);
 }
 
@@ -1706,7 +1679,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
-		src = hif_repos_get_source_by_id (job_data->sources,
+		src = hif_repos_get_source_by_id (priv->repos,
 						  hy_package_get_reponame (pkg),
 						  &error);
 		if (src == NULL) {
@@ -1865,7 +1838,7 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 		}
 
 		/* find repo */
-		src = hif_repos_get_source_by_id (sources,
+		src = hif_repos_get_source_by_id (priv->repos,
 						  hy_package_get_reponame (pkg),
 						  error);
 		if (src == NULL) {
