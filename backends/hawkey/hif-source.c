@@ -229,13 +229,13 @@ hif_source_parse (GKeyFile *config,
 	/* get common things */
 	basearch = g_key_file_get_string (config,
 					  HIF_CONFIG_GROUP_NAME,
-					  "Hawkey::BaseArch", NULL);
+					  "BaseArch", NULL);
 	fedora_release = g_key_file_get_string (config,
 						HIF_CONFIG_GROUP_NAME,
-						"Hawkey::ReleaseVersion", NULL);
+						"ReleaseVersion", NULL);
 	cache_dir = g_key_file_get_string (config,
 					   HIF_CONFIG_GROUP_NAME,
-					   "Hawkey::CacheDir", NULL);
+					   "CacheDir", NULL);
 
 	/* save all the repos listed in the file */
 	repos = g_key_file_get_groups (keyfile, NULL);

@@ -128,7 +128,7 @@ hif_repos_get_sources (GKeyFile *config, GError **error)
 	/* get the repo dir */
 	repo_path = g_key_file_get_string (config,
 					   HIF_CONFIG_GROUP_NAME,
-					   "Hawkey::ReposDir", error);
+					   "ReposDir", error);
 	if (repo_path == NULL)
 		goto out;
 
