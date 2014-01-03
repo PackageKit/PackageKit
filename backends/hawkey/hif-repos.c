@@ -220,25 +220,6 @@ hif_repos_has_removable (HifRepos *self)
 }
 
 /**
- * hif_repos_cache_valid:
- */
-static gboolean
-hif_repos_cache_valid (HifRepos *self)
-{
-	HifReposPrivate *priv = hif_repos_get_instance_private (self);
-
-	/* nothing set yet */
-	if (!priv->loaded)
-		return FALSE;
-
-	/* media repos could disappear at any time */
-	if (hif_repos_has_removable (self))
-		return FALSE;
-
-	return TRUE;
-}
-
-/**
  * hif_repos_get_sources:
  */
 GPtrArray *
@@ -252,7 +233,7 @@ hif_repos_get_sources (HifRepos *self, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* nothing set yet */
-	if (!hif_repos_cache_valid (self)) {
+	if (!priv->loaded) {
 		ret = hif_repos_refresh (self, error);
 		if (!ret)
 			goto out;
@@ -281,7 +262,7 @@ hif_repos_get_source_by_id (HifRepos *self, const gchar *id, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* nothing set yet */
-	if (!hif_repos_cache_valid (self)) {
+	if (!priv->loaded) {
 		ret = hif_repos_refresh (self, error);
 		if (!ret)
 			goto out;

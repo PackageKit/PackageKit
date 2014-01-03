@@ -174,6 +174,7 @@ hif_source_add_media (GPtrArray *sources,
 	src->enabled = TRUE;
 	src->kind = HIF_SOURCE_KIND_MEDIA;
 	src->cost = 100;
+	src->keyfile = g_key_file_ref (treeinfo);
 	if (idx == 0)
 		src->id = g_strdup ("media");
 	else
@@ -197,7 +198,7 @@ out:
 	g_free (basearch);
 	g_free (release);
 	g_free (treeinfo_fn);
-	g_key_file_free (treeinfo);
+	g_key_file_unref (treeinfo);
 	return ret;
 }
 
@@ -740,13 +741,22 @@ hif_source_get_description (HifSource *src)
 	gchar *substituted = NULL;
 	gchar *tmp;
 
+	/* is DVD */
+	if (src->kind == HIF_SOURCE_KIND_MEDIA) {
+		g_warning ("%p", src->keyfile);
+		tmp = g_key_file_get_string (src->keyfile, "general", "name", NULL);
+		if (tmp == NULL)
+			goto out;
+	} else {
+		tmp = g_key_file_get_string (src->keyfile,
+					     hif_source_get_id (src),
+					     "name",
+					     NULL);
+		if (tmp == NULL)
+			goto out;
+	}
+
 	/* have to substitute things like $releasever and $basearch */
-	tmp = g_key_file_get_string (src->keyfile,
-				     hif_source_get_id (src),
-				     "name",
-				     NULL);
-	if (tmp == NULL)
-		goto out;
 	substituted = hif_source_substitute (src, tmp);
 out:
 	g_free (tmp);
@@ -809,6 +819,17 @@ hif_source_set_data (HifSource *src,
 {
 	gboolean ret;
 	gchar *data = NULL;
+
+	/* cannot change DVD contents */
+	if (src->kind == HIF_SOURCE_KIND_MEDIA) {
+		ret = FALSE;
+		g_set_error (error,
+			     HIF_ERROR,
+			     PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,
+			     "Cannot set repo parameter %s=%s on read-only media",
+			     parameter, value);
+		goto out;
+	}
 
 	/* save change to keyfile and dump updated file to disk */
 	g_key_file_set_string (src->keyfile,
