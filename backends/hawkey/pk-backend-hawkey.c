@@ -70,6 +70,7 @@ typedef struct {
 	GMutex		 sack_mutex;
 	gchar		**native_arches;
 	HifRepos	*repos;
+	GTimer		*repos_timer;
 } PkBackendHifPrivate;
 
 typedef struct {
@@ -283,6 +284,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	/* used a cached list of sources */
 	priv->repos = hif_repos_new (conf);
+	priv->repos_timer = g_timer_new ();
 	g_signal_connect (priv->repos, "changed",
 			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 
@@ -350,6 +352,7 @@ pk_backend_destroy (PkBackend *backend)
 		g_key_file_unref (priv->config);
 	if (priv->monitor_rpmdb != NULL)
 		g_object_unref (priv->monitor_rpmdb);
+	g_timer_destroy (priv->repos_timer);
 	g_object_unref (priv->repos);
 	g_strfreev (priv->native_arches);
 	g_mutex_clear (&priv->sack_mutex);
@@ -636,10 +639,12 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* media repos could disappear at any time */
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0 &&
-	    hif_repos_has_removable (priv->repos)) {
-		g_debug ("not re-using sack as media repos could disappear");
+	    hif_repos_has_removable (priv->repos) &&
+	    g_timer_elapsed (priv->repos_timer, NULL) > 1.0f) {
+		g_debug ("not reusing sack as media may have disappeared");
 		create_flags &= ~HIF_CREATE_SACK_FLAG_USE_CACHE;
 	}
+	g_timer_reset (priv->repos_timer);
 
 	/* do we have anything in the cache */
 	cache_key = g_strdup_printf ("HySack::%i", flags);
