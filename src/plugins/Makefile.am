@@ -27,7 +27,7 @@ clean-local:
 	rm -f *~
 
 # plugins
-plugindir = $(LIBDIR)/packagekit-plugins
+plugindir = $(LIBDIR)/packagekit-plugins-2
 plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
 	libpk_plugin-update-package-cache.la		\

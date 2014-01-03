@@ -904,7 +904,7 @@ pk_engine_load_plugins (PkEngine *engine)
 	GError *error = NULL;
 
 	/* search in the plugin directory for plugins */
-	path = g_build_filename (LIBDIR, "packagekit-plugins", NULL);
+	path = g_build_filename (LIBDIR, "packagekit-plugins-2", NULL);
 	dir = g_dir_open (path, 0, &error);
 	if (dir == NULL) {
 		g_warning ("failed to open plugin directory: %s",

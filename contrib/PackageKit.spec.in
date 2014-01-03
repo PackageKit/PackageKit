@@ -183,7 +183,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-plugins/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-plugins-2/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
@@ -260,8 +260,8 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
-%dir %{_libdir}/packagekit-plugins
-%{_libdir}/packagekit-plugins/*.so
+%dir %{_libdir}/packagekit-plugins-2
+%{_libdir}/packagekit-plugins-2/*.so
 %{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
 /usr/lib/systemd/system/packagekit-offline-update.service
