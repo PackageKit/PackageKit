@@ -1092,7 +1092,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         if FILTER_NOT_INSTALLED in filters:
             self.error(ERROR_CANNOT_GET_REQUIRES,
-                    "get-requires returns only installed packages at the moment")
+                    "required-by returns only installed packages at the moment")
             return
 
         for pkg in pkgs:
@@ -1104,7 +1104,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 continue
             if not self._is_installed(cpv):
                 self.error(ERROR_CANNOT_GET_REQUIRES,
-                        "get-requires is only available for installed packages at the moment")
+                        "required-by is only available for installed packages at the moment")
                 continue
 
             cpv_input.append(cpv)

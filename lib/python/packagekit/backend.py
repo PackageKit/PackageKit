@@ -376,7 +376,7 @@ class PackageKitBaseBackend:
 
     def depends_on(self, filters, package_ids, recursive):
         '''
-        Implement the {backend}-get-depends functionality
+        Implement the {backend}-depends-on functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
@@ -390,7 +390,7 @@ class PackageKitBaseBackend:
 
     def required_by(self, filters, package_ids, recursive):
         '''
-        Implement the {backend}-get-requires functionality
+        Implement the {backend}-required-by functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
@@ -563,7 +563,7 @@ class PackageKitBaseBackend:
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             self.download_packages(directory, package_ids)
             self.finished()
-        elif cmd == 'get-depends':
+        elif cmd == 'depends-on':
             filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])
@@ -585,7 +585,7 @@ class PackageKitBaseBackend:
             filters = args[0].split(';')
             self.get_repo_list(filters)
             self.finished()
-        elif cmd == 'get-requires':
+        elif cmd == 'required-by':
             filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])

@@ -1749,7 +1749,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		PoolItem package = PoolItem(solvable);
 
-		// get-requires only works for installed packages. It's meaningless for stuff in the repo
+		// required-by only works for installed packages. It's meaningless for stuff in the repo
 		// same with yum backend
 		if (!solvable.isSystem ())
 			continue;

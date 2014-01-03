@@ -901,8 +901,8 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* check roles */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
-		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
+	g_assert_cmpstr (text, ==, "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
+		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");
@@ -1044,8 +1044,8 @@ pk_test_control_func (void)
 
 	/* check data */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text, ==, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
-		     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
+	g_assert_cmpstr (text, ==, "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
+		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;upgrade-system;repair-system");

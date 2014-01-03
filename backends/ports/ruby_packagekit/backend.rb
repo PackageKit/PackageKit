@@ -93,7 +93,7 @@ class PackageKitBaseBackend
         searchterms = args[1].split(PACKAGE_IDS_DELIM)
         search_name(options, searchterms)
         finished()
-    when cmd == 'get-depends'
+    when cmd == 'depends-on'
         filters = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
         recursive = to_b(args[2])
@@ -107,7 +107,7 @@ class PackageKitBaseBackend
         package_ids = args[0].split(PACKAGE_IDS_DELIM)
         get_files(package_ids)
         finished()
-    when cmd == 'get-requires'
+    when cmd == 'required-by'
         filters = args[0].split(FLAGS_DELIM)
         package_ids = args[1].split(PACKAGE_IDS_DELIM)
         recursive = to_b(args[2])

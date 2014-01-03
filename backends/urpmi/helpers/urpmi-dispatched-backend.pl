@@ -54,7 +54,7 @@ sub dispatch_command {
   my ($urpm, $args) = @_;
 
   my $command = shift(@$args);
-  if ($command eq "get-depends") {
+  if ($command eq "depends-on") {
     depends_on($urpm, $args);
   } elsif ($command eq "get-details") {
     get_details($urpm, $args);
@@ -66,7 +66,7 @@ sub dispatch_command {
     get_packages($urpm, $args);
   } elsif ($command eq "get-repo-list") {
     get_repo_list($urpm);
-  } elsif ($command eq "get-requires") {
+  } elsif ($command eq "required-by") {
     required_by($urpm, $args);
   } elsif ($command eq "get-update-detail") {
     get_update_detail($urpm, $args);

@@ -145,7 +145,7 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "depends-on", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -184,7 +184,7 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "required-by", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }

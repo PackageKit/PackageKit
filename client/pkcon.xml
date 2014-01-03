@@ -146,11 +146,11 @@ manpage.1: manpage.xml
         <listitem><para>List available distribution upgrades.</para></listitem>
       </varlistentry>
       <varlistentry>
-        <term>get-depends <replaceable>PACKAGE</replaceable></term>
+        <term>depends-on <replaceable>PACKAGE</replaceable></term>
         <listitem><para>List dependencies fo the given package.</para></listitem>
       </varlistentry>
       <varlistentry>
-        <term>get-requires <replaceable>PACKAGE</replaceable></term>
+        <term>required-by <replaceable>PACKAGE</replaceable></term>
         <listitem><para>List packages that require the given package.</para></listitem>
       </varlistentry>
       <varlistentry>

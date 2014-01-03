@@ -1562,9 +1562,9 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_UPDATES))
 		g_string_append_printf (string, "  %s\n", "get-updates");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_DEPENDS_ON))
-		g_string_append_printf (string, "  %s\n", "get-depends [package]");
+		g_string_append_printf (string, "  %s\n", "depends-on [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REQUIRED_BY))
-		g_string_append_printf (string, "  %s\n", "get-requires [package]");
+		g_string_append_printf (string, "  %s\n", "required-by [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DETAILS))
 		g_string_append_printf (string, "  %s\n", "get-details [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES))
@@ -2265,7 +2265,7 @@ main (int argc, char *argv[])
 							ctx->cancellable,
 							pk_console_get_time_since_action_cb, ctx);
 
-	} else if (strcmp (mode, "get-depends") == 0) {
+	} else if (strcmp (mode, "depends-on") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
@@ -2293,7 +2293,7 @@ main (int argc, char *argv[])
 		}
 		run_mainloop = pk_console_get_update_detail (ctx, argv + 2, &error);
 
-	} else if (strcmp (mode, "get-requires") == 0) {
+	} else if (strcmp (mode, "required-by") == 0) {
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,

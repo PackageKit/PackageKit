@@ -94,12 +94,12 @@ static const PkEnumMatch enum_status[] = {
 static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,				"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,				"cancel"},
-	{PK_ROLE_ENUM_DEPENDS_ON,			"get-depends"},
+	{PK_ROLE_ENUM_DEPENDS_ON,			"depends-on"},
 	{PK_ROLE_ENUM_GET_DETAILS,			"get-details"},
 	{PK_ROLE_ENUM_GET_FILES,			"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,			"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,			"get-repo-list"},
-	{PK_ROLE_ENUM_REQUIRED_BY,			"get-requires"},
+	{PK_ROLE_ENUM_REQUIRED_BY,			"required-by"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,		"get-update-detail"},
 	{PK_ROLE_ENUM_GET_UPDATES,			"get-updates"},
 	{PK_ROLE_ENUM_INSTALL_FILES,			"install-files"},

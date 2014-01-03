@@ -21,7 +21,7 @@ __pkcon_commandlist="
     accept-eula
     backend-details
     get-roles
-    get-depends
+    depends-on
     get-details
     get-distro-upgrades
     get-files
@@ -29,7 +29,7 @@ __pkcon_commandlist="
     get-groups
     get-packages
     download
-    get-requires
+    required-by
     get-time
     get-transactions
     get-update-detail

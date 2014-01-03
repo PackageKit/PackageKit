@@ -256,7 +256,7 @@ pk_backend_depends_on(PkBackend *backend,
 	package_ids_temp = pk_package_ids_to_string(package_ids);
 	filters_text = pk_filter_bitfield_to_string(filters);
 	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
-				"get-depends", filters_text,
+				"depends-on", filters_text,
 				package_ids_temp,
 				pk_backend_bool_to_string(recursive), NULL);
 	g_free(package_ids_temp);
@@ -621,7 +621,7 @@ pk_backend_required_by(PkBackend *backend,
 	package_ids_temp = pk_package_ids_to_string(package_ids);
 	filters_text = pk_filter_bitfield_to_string(filters);
 	pk_backend_spawn_helper(spawn, job, BACKEND_FILE,
-				"get-requires", filters_text,
+				"required-by", filters_text,
 				package_ids_temp,
 				pk_backend_bool_to_string(recursive),
 				NULL);
