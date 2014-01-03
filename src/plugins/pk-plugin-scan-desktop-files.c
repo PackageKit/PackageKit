@@ -614,6 +614,11 @@ pk_plugin_files_cb (PkBackendJob *job,
 		if (!ret)
 			continue;
 
+		/* in the datadir */
+		ret = g_str_has_prefix (filenames[i], "/usr/share/applications");
+		if (!ret)
+			continue;
+
 		g_debug ("adding filename %s", filenames[i]);
 		md5 = pk_plugin_get_filename_md5 (filenames[i]);
 		pk_plugin_sqlite_add_filename_details (plugin,
