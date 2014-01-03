@@ -56,7 +56,7 @@ BuildRequires: bash-completion
 %if !0%{?rhel}
 BuildRequires: hawkey-devel >= 0.3.13
 BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: librepo-devel >= 1.0.0
+BuildRequires: librepo-devel >= 1.5.0
 BuildRequires: libsolv-devel
 %endif
 

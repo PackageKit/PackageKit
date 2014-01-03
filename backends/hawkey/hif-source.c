@@ -398,7 +398,6 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 	}
 
 	/* get timestamp */
-#if LR_VERSION_CHECK(1,4,1)
 	ret = lr_result_getinfo (src->repo_result, &error_local,
 				 LRR_YUM_TIMESTAMP, &src->timestamp);
 	if (!ret) {
@@ -410,7 +409,6 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 		g_error_free (error_local);
 		goto out;
 	}
-#endif
 
 	/* create a HyRepo */
 	src->repo = hy_repo_create (src->id);
@@ -550,9 +548,7 @@ hif_source_update (HifSource *src,
 	HifState *state_local;
 	gboolean ret;
 	gint rc;
-#if LR_VERSION_CHECK(1,4,1)
 	gint64 timestamp_new = 0;
-#endif
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -628,7 +624,6 @@ hif_source_update (HifSource *src,
 	}
 
 	/* check the newer metadata is newer */
-#if LR_VERSION_CHECK(1,4,1)
 	ret = lr_result_getinfo (src->repo_result, &error_local,
 				 LRR_YUM_TIMESTAMP, &timestamp_new);
 	if (!ret) {
@@ -645,7 +640,6 @@ hif_source_update (HifSource *src,
 		g_debug ("fresh metadata was older than what we have, ignoring");
 		goto out;
 	}
-#endif
 
 	/* delete old /var/cache/PackageKit/metadata/$REPO/ */
 	ret = hif_source_clean (src, error);
