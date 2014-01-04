@@ -56,8 +56,8 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		goto out;
 
 	/* Remove the old entries from this repository */
-	sqlite3_exec(katja_pkgtools_sql, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
-	if (sqlite3_prepare_v2(katja_pkgtools_sql,
+	sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "DELETE FROM repos WHERE repo LIKE @repo",
 						   -1,
 						   &statement,
@@ -67,7 +67,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		sqlite3_finalize(statement);
 	}
 
-	if (sqlite3_prepare_v2(katja_pkgtools_sql,
+	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "INSERT INTO repos (repo_order, repo) VALUES (@repo_order, @repo)",
 						   -1,
 						   &statement,
@@ -79,7 +79,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	sqlite3_finalize(statement);
 
 	/* Insert new records */
-	if ((sqlite3_prepare_v2(katja_pkgtools_sql,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 							"INSERT INTO pkglist (full_name, name, ver, arch, "
 							"summary, desc, compressed, uncompressed, cat, repo_order, ext) "
 							"VALUES (@full_name, @name, @ver, @arch, @summary, "
@@ -87,7 +87,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 							-1,
 							&pkglist_statement,
 							NULL) != SQLITE_OK) ||
-		(sqlite3_prepare_v2(katja_pkgtools_sql,
+		(sqlite3_prepare_v2(katja_pkgtools_db,
 							"INSERT INTO pkglist (full_name, name, ver, arch, "
 							"summary, desc, compressed, uncompressed, cat, repo_order) "
 							"VALUES (@full_name, @name, @ver, @arch, @summary, "
@@ -98,7 +98,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		goto out;
 
 	data_in = g_data_input_stream_new(G_INPUT_STREAM(fin));
-	sqlite3_exec(katja_pkgtools_sql, "BEGIN TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(katja_pkgtools_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		line_tokens = g_strsplit(line, ":", 0);
@@ -140,7 +140,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 
 	/* Create a collection entry */
 	if (collection_name && g_seekable_seek(G_SEEKABLE(data_in), 0, G_SEEK_SET, NULL, NULL) &&
-		(sqlite3_prepare_v2(katja_pkgtools_sql,
+		(sqlite3_prepare_v2(katja_pkgtools_db,
 							"INSERT INTO collections (name, repo_order, collection_pkg) "
 							"VALUES (@name, @repo_order, @collection_pkg)",
 							-1,
@@ -173,7 +173,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	}
 	g_free(collection_name);
 
-	sqlite3_exec(katja_pkgtools_sql, "END TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
 	g_object_unref(data_in);
 
 out:

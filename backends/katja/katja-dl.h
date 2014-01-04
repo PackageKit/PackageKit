@@ -1,7 +1,7 @@
 #ifndef __KATJA_DL_H
 #define __KATJA_DL_H
 
-#include "katja-binary.h"
+#include <katja-binary.h>
 
 G_BEGIN_DECLS
 

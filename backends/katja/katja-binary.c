@@ -11,7 +11,7 @@ gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_nam
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
 
-	if ((sqlite3_prepare_v2(katja_pkgtools_sql,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 							"SELECT location, (full_name || '.' || ext) FROM pkglist "
 							"WHERE name LIKE @name AND repo_order = @repo_order",
 							-1,
@@ -56,7 +56,7 @@ void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
 
-	if ((sqlite3_prepare_v2(katja_pkgtools_sql,
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
 							"SELECT (full_name || '.' || ext) FROM pkglist "
 							"WHERE name LIKE @name AND repo_order = @repo_order",
 							-1,

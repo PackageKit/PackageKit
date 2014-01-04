@@ -3,8 +3,8 @@
 G_DEFINE_TYPE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT);
 
 /* Static public members */
-sqlite3 *katja_pkgtools_sql = NULL;
-KatjaDb *katja_pkgtools_db = NULL;
+sqlite3 *katja_pkgtools_db = NULL;
+/*KatjaPkgtoolsJobProgress katja_pkgtools_job_progress = {NULL, 0, 0, 0};*/
 
 
 /**
@@ -160,8 +160,24 @@ gint katja_pkgtools_cmp_repo(gconstpointer a, gconstpointer b) {
 }
 
 /**
- * katja_pkgtools_is_installed:
+ * katja_pkgtools_finalize:
  **/
+static void katja_pkgtools_finalize(GObject *object) {
+	KatjaPkgtools *pkgtools;
+
+	g_return_if_fail(KATJA_IS_PKGTOOLS(object));
+
+	pkgtools = KATJA_PKGTOOLS(object);
+	if (pkgtools->name)
+		g_string_free(pkgtools->name, TRUE);
+	if (pkgtools->mirror)
+		g_string_free(pkgtools->mirror, TRUE);
+	if (pkgtools->blacklist)
+		g_object_unref(pkgtools->blacklist);
+
+	G_OBJECT_CLASS(katja_pkgtools_parent_class)->finalize(object);
+}
+
 PkInfoEnum katja_pkgtools_is_installed(gchar *pkg_full_name) {
 	PkInfoEnum ret = PK_INFO_ENUM_INSTALLING;
 	gchar **pkg_tokens, **metadata_pkg_tokens;
@@ -205,25 +221,6 @@ PkInfoEnum katja_pkgtools_is_installed(gchar *pkg_full_name) {
 	g_object_unref(pkg_metadata_dir);
 
 	return ret;
-}
-
-/**
- * katja_pkgtools_finalize:
- **/
-static void katja_pkgtools_finalize(GObject *object) {
-	KatjaPkgtools *pkgtools;
-
-	g_return_if_fail(KATJA_IS_PKGTOOLS(object));
-
-	pkgtools = KATJA_PKGTOOLS(object);
-	if (pkgtools->name)
-		g_string_free(pkgtools->name, TRUE);
-	if (pkgtools->mirror)
-		g_string_free(pkgtools->mirror, TRUE);
-	if (pkgtools->blacklist)
-		g_object_unref(pkgtools->blacklist);
-
-	G_OBJECT_CLASS(katja_pkgtools_parent_class)->finalize(object);
 }
 
 /**
