@@ -830,7 +830,7 @@ void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *tmp_dir_name, *metadata_dir_name, *db_filename, *db_err;
+	gchar *tmp_dir_name, *db_err;
 	gboolean force;
 	GSList *file_list = NULL, *l;
 	GError *err;
@@ -841,7 +841,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	/* Create temporary directory */
 	tmp_dir_name = g_dir_make_tmp("PackageKit.XXXXXX", &err);
 	if (!tmp_dir_name) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", err->message);
+		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", err->message);
 		g_error_free(err);
 		pk_backend_job_finished(job);
 		return;
@@ -849,71 +849,15 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	g_variant_get(params, "(b)", &force);
 
-	if (force) { /* Clear cache */
-		/* Close the database connection */
-		db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-		sqlite3_close(katja_pkgtools_db);
-
-		/* Remove existing database */
-		metadata_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", NULL);
-		pk_directory_remove_contents(metadata_dir_name);
-		g_free(metadata_dir_name);
-
-		/* Open a connection again */
-		if (sqlite3_open(db_filename, &katja_pkgtools_db) != SQLITE_OK)
-			pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE,
-									  "%s: %s",
-									  db_filename,
-									  sqlite3_errmsg(katja_pkgtools_db));
-		g_free(db_filename);
-
-		if (pk_backend_job_has_set_error_code(job))
+	if (force) { /* It should empty all tables */
+		if (sqlite3_exec(katja_pkgtools_db, "DELETE FROM repos", NULL, 0, &db_err) != SQLITE_OK) {
+			pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", db_err);
+			sqlite3_free(db_err);
 			goto out;
+		}
 	}
 
- 	/* Create the metadata database if one doesn't exist */
-	if (sqlite3_exec(katja_pkgtools_db,
-					 "CREATE TABLE IF NOT EXISTS repos (" /* Repositories ordered by priority */
-					 "repo_order INTEGER PRIMARY KEY AUTOINCREMENT,"
-					 "repo VARCHAR NOT NULL);"
-					 "CREATE TABLE IF NOT EXISTS pkglist (" /* Package cache */
-					 "full_name VARCHAR NOT NULL,"
-					 "name VARCHAR NOT NULL,"
-					 "ver VARCHAR NOT NULL,"
-					 "arch VARCHAR DEFAULT NULL,"
-					 "ext VARCHAR DEFAULT NULL,"
-					 "location VARCHAR DEFAULT '.',"
-					 "summary VARCHAR DEFAULT '',"
-					 "desc TEXT DEFAULT '',"
-					 "compressed INT DEFAULT 0,"
-					 "uncompressed INT DEFAULT 0,"
-					 "cat VARCHAR DEFAULT 'unknown',"
-					 "repo_order INTEGER REFERENCES repos(repo_order) ON DELETE CASCADE,"
-					 "PRIMARY KEY (name, repo_order));"
-					 "CREATE TABLE IF NOT EXISTS collections (" /* Collection content */
-					 "name VARCHAR NOT NULL,"
-					 "repo_order INTEGER NOT NULL,"
-					 "collection_pkg VARCHAR NOT NULL,"
-					 "PRIMARY KEY (name, repo_order, collection_pkg)"
-					 "FOREIGN KEY (name, repo_order) REFERENCES pkglist(name, repo_order) ON DELETE CASCADE);"
-					 "CREATE TABLE IF NOT EXISTS filelist (" /* File list */
-					 "name VARCHAR NOT NULL,"
-					 "repo_order INTEGER NOT NULL,"
-					 "filename VARCHAR NOT NULL,"
-					 "PRIMARY KEY (name, repo_order, filename)"
-					 "FOREIGN KEY (name, repo_order) REFERENCES pkglist(name, repo_order) ON DELETE CASCADE);",
-					 NULL,
-					 0,
-					 &db_err) != SQLITE_OK) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", db_err);
-		sqlite3_free(db_err);
-	}
-
-	if (pk_backend_job_has_set_error_code(job))
-		goto out;
-
-	/* Get list of files that should be downloaded */
-	for (l = repos; l; l = g_slist_next(l))
+	for (l = repos; l; l = g_slist_next(l))	/* Get list of files that should be downloaded */
 		file_list = g_slist_concat(file_list, katja_pkgtools_collect_cache_info(l->data, tmp_dir_name));
 
 	/* Download repository */
