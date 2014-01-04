@@ -56,7 +56,6 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		goto out;
 
 	/* Remove the old entries from this repository */
-	sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "DELETE FROM repos WHERE repo LIKE @repo",
 						   -1,

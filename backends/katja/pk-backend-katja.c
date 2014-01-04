@@ -124,12 +124,13 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job) {
 	pk_backend_job_set_allow_cancel(job, FALSE);
 
 	db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-	if (sqlite3_open(db_filename, &katja_pkgtools_db) != SQLITE_OK) {
+	if (sqlite3_open(db_filename, &katja_pkgtools_db) == SQLITE_OK) /* Some SQLite settings */
+		sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+	else
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE,
 								  "%s: %s",
 								  db_filename,
 								  sqlite3_errmsg(katja_pkgtools_db));
-	}
 	g_free(db_filename);
 }
 

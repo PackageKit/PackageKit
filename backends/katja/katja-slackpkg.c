@@ -149,7 +149,6 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 		goto out;
 
 	/* Remove the old entries from this repository */
-	sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "DELETE FROM repos WHERE repo LIKE @repo",
 						   -1,
@@ -276,9 +275,6 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	}
 
 	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
-	sqlite3_finalize(update_statement);
-	sqlite3_finalize(insert_statement);
-	sqlite3_finalize(insert_default_statement);
 
 	g_string_free(desc, TRUE);
 
