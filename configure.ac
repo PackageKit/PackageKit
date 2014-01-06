@@ -484,7 +484,7 @@ AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend pr
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_hawkey = xyes; then
-	PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.5 librepo >= 0.1.5 rpm >= 4.11.0)
+	PKG_CHECK_MODULES(HAWKEY, hawkey >= 0.4.6 librepo >= 0.1.5 rpm >= 4.11.0)
 fi
 
 if test x$enable_apt = xyes; then
