@@ -1528,7 +1528,7 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 
 	/* always */
 	g_string_append_printf (string, "  %s\n", "backend-details");
-	g_string_append_printf (string, "  %s\n", "get-ctx->roles");
+	g_string_append_printf (string, "  %s\n", "get-roles");
 	g_string_append_printf (string, "  %s\n", "get-groups");
 	g_string_append_printf (string, "  %s\n", "get-filters");
 	g_string_append_printf (string, "  %s\n", "get-transactions");
@@ -2392,7 +2392,7 @@ main (int argc, char *argv[])
 						pk_console_progress_cb, ctx,
 						pk_console_finished_cb, ctx);
 
-	} else if (strcmp (mode, "get-ctx->roles") == 0) {
+	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_string (ctx->roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
