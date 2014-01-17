@@ -115,9 +115,9 @@ PkGroupEnum get_enum_group(string group)
  * appended (for the packages.debian.org/changelogs site) or a
  * ".changelog" (for third party sites that store the changelog in the
  * pool/ next to the deb itself)
- * Example return: "pool/main/a/apt/apt_0.8.8ubuntu3" 
+ * Example return: "pool/main/a/apt/apt_0.8.8ubuntu3"
  */
-string GetChangelogPath(AptCacheFile &Cache, 
+string GetChangelogPath(AptCacheFile &Cache,
                         pkgCache::PkgIterator Pkg,
                         pkgCache::VerIterator Ver)
 {
@@ -145,7 +145,7 @@ string GetChangelogPath(AptCacheFile &Cache,
  * apt-get changelog mplayer-doc:
  *  http://packages.medibuntu.org/pool/non-free/m/mplayer/mplayer_1.0~rc4~try1.dsfg1-1ubuntu1+medibuntu1.changelog
  */
-bool GuessThirdPartyChangelogUri(AptCacheFile &Cache, 
+bool GuessThirdPartyChangelogUri(AptCacheFile &Cache,
                                  pkgCache::PkgIterator Pkg,
                                  pkgCache::VerIterator Ver,
                                  string &out_uri)
@@ -168,12 +168,12 @@ bool GuessThirdPartyChangelogUri(AptCacheFile &Cache,
    return true;
 }
 
-bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher, 
+bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
                        pkgCache::VerIterator Ver, string targetfile)
 /* Download a changelog file for the given package version to
  * targetfile. This will first try the server from Apt::Changelogs::Server
  * (http://packages.debian.org/changelogs by default) and if that gives
- * a 404 tries to get it from the archive directly (see 
+ * a 404 tries to get it from the archive directly (see
  * GuessThirdPartyChangelogUri for details how)
  */
 {
@@ -309,7 +309,7 @@ GPtrArray* getBugzillaUrls(const string &changelog)
 
         bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug);
         g_ptr_array_add(bugzilla_urls, (gpointer) bugLink);
-        
+
         g_free(bug);
         g_match_info_next(match_info, NULL);
     }
