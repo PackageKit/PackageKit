@@ -189,7 +189,7 @@ bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
    server = _config->Find("Apt::Changelogs::Server",
                           "http://packages.debian.org/changelogs");
    path = GetChangelogPath(CacheFile, Pkg, Ver);
-   strprintf(changelog_uri, "%s/%s/changelog", server.c_str(), path.c_str());
+   strprintf(changelog_uri, "%s/%s_changelog", server.c_str(), path.c_str());
 
    g_debug("Trying to fetch '%s'", changelog_uri.c_str());
    strprintf(descr, "Changelog for %s", Pkg.Name());
