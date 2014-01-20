@@ -2,12 +2,12 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_8_15.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_8_16.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.8.16
+Version 0.8.17
 ~~~~~~~~~~~~~~
-Released: 2013-xx-xx
+Released: 2014-xx-xx
 
 Notes:
 
@@ -32,8 +32,8 @@ git add po/*.po
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.8.16"
-git tag -s -f -m "Release 0.8.16" PACKAGEKIT_0_8_16
+git commit -a -m "Release version 0.8.17"
+git tag -s -f -m "Release 0.8.17" PACKAGEKIT_0_8_17
 <gpg password>
 git push --tags
 git push

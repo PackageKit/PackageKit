@@ -1,6 +1,6 @@
 Version 0.8.16
 ~~~~~~~~~~~~~~
-Released: 2013-01-20
+Released: 2014-01-20
 
 Libraries:
  - Add pk_package_sack_find_by_id_name_arch() (Richard Hughes)
