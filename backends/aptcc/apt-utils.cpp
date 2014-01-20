@@ -168,8 +168,10 @@ bool GuessThirdPartyChangelogUri(AptCacheFile &Cache,
    return true;
 }
 
-bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
-                       pkgCache::VerIterator Ver, string targetfile)
+bool downloadChangelog(AptCacheFile &CacheFile,
+                       pkgAcquire &Fetcher,
+                       pkgCache::VerIterator Ver,
+                       string targetfile)
 /* Download a changelog file for the given package version to
  * targetfile. This will first try the server from Apt::Changelogs::Server
  * (http://packages.debian.org/changelogs by default) and if that gives
@@ -181,6 +183,12 @@ bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
    string descr;
    string server;
    string changelog_uri;
+   string origin;
+
+   if (!Ver.end()) {
+        pkgCache::VerFileIterator vf = Ver.FileList();
+        origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+    }
 
    // data structures we need
    pkgCache::PkgIterator Pkg = Ver.ParentPkg();
@@ -189,7 +197,11 @@ bool downloadChangelog(AptCacheFile &CacheFile, pkgAcquire &Fetcher,
    server = _config->Find("Apt::Changelogs::Server",
                           "http://packages.debian.org/changelogs");
    path = GetChangelogPath(CacheFile, Pkg, Ver);
-   strprintf(changelog_uri, "%s/%s_changelog", server.c_str(), path.c_str());
+
+   if (origin.compare("Ubuntu") == 0)
+       strprintf(changelog_uri, "%s/%s/changelog", server.c_str(), path.c_str());
+   else
+       strprintf(changelog_uri, "%s/%s_changelog", server.c_str(), path.c_str());
 
    g_debug("Trying to fetch '%s'", changelog_uri.c_str());
    strprintf(descr, "Changelog for %s", Pkg.Name());
