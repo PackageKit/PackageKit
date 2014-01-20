@@ -1,3 +1,39 @@
+Version 0.8.16
+~~~~~~~~~~~~~~
+Released: 2013-01-20
+
+Libraries:
+ - Add pk_package_sack_find_by_id_name_arch() (Richard Hughes)
+
+Backends:
+ - aptcc: Fix Debian and Ubuntu changelog loading (Matthias Klumpp)
+ - entropy: add Entropy Resources Lock support (Fabio Erculiani)
+ - entropy: add support for parallel Entropy (Fabio Erculiani)
+ - entropy: allow lazy load of all the heavy object instances (Fabio Erculiani)
+ - entropy: drop compatibility with old entropy releases (Fabio Erculiani)
+ - entropy: drop support for PackageFileUpdates interface, removed upstream (Fabio Erculiani)
+ - entropy: enable backend parallelization support (Fabio Erculiani)
+ - hawkey: Bump the required version of hawkey and librepo (Richard Hughes)
+ - hawkey: Do not fail when update details are no longer available (Richard Hughes)
+ - hawkey: Do the refresh-cache transaction in a thread (Richard Hughes)
+ - hawkey: Support .treeinfo DVD repos (Richard Hughes)
+ - katja: Don't close the database on error (Eugene Wissner)
+ - katja: Fix 'make distcheck' (Eugene Wissner)
+ - katja: Implement pk_backend_job_start (Eugene Wissner)
+ - katja: Rename local 'conf' variables (Eugene Wissner)
+ - katja: delete existing database on refresh force (Eugene Wissner)
+
+New Features:
+ - Set all the proxy settings when using pkcon (Richard Hughes)
+
+Bugfixes:
+ - Annotate DBUS Interface for GetPackageHistory (Dominique Leuenberger)
+ - Clear the prepared-updates file only when the update is invalidated (Richard Hughes)
+ - Do not show an error if GetDepends is not supported (Richard Hughes)
+ - Do not use the '…' character when talking to plymouth (Richard Hughes)
+ - Don't use the default main context in sync PkClient methods (Richard Hughes)
+ - Only scan .desktop files in the datadir (Richard Hughes
+
 Version 0.8.15
 ~~~~~~~~~~~~~~
 Released: 2013-12-17
