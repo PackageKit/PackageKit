@@ -11,14 +11,9 @@ URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.xz
 
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: PackageKit-backend
 Requires: shared-mime-info
 Requires: comps-extras
 Requires: systemd
-
-# This is for https://bugzilla.redhat.com/show_bug.cgi?id=1041577 and can be
-# removed when libsolv is available in updates
-Requires: libsolv >= 0.4.1
 
 BuildRequires: glib2-devel >= 2.32.0
 BuildRequires: dbus-devel  >= 1.1.1
@@ -54,9 +49,9 @@ BuildRequires: bash-completion
 %endif
 
 %if !0%{?rhel}
-BuildRequires: hawkey-devel >= 0.3.13
+BuildRequires: hawkey-devel >= 0.4.6
 BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: librepo-devel >= 1.5.0
+BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
 %endif
 
@@ -211,9 +206,15 @@ popd > /dev/null
 %find_lang %name
 
 %post
-systemctl enable packagekit-offline-update.service &> /dev/null || :
+%systemd_post packagekit-offline-update.service packagekit.service
 
 %post glib -p /sbin/ldconfig
+
+%preun
+%systemd_preun packagekit-offline-update.service packagekit.service
+
+%postun
+%systemd_postun_with_restart packagekit-offline-update.service packagekit.service
 
 %postun glib -p /sbin/ldconfig
 
@@ -264,8 +265,8 @@ systemctl enable packagekit-offline-update.service &> /dev/null || :
 %{_libdir}/packagekit-plugins-2/*.so
 %{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
-/usr/lib/systemd/system/packagekit-offline-update.service
-/usr/lib/systemd/system/packagekit.service
+%{_unitdir}/packagekit-offline-update.service
+%{_unitdir}/packagekit.service
 %{_libexecdir}/pk-*offline-update
 %if 0%{?rhel} == 0
 %{_libdir}/packagekit-backend/libpk_backend_hawkey.so
