@@ -30,17 +30,21 @@
 #include <unistd.h>
 
 #define PK_OFFLINE_UPDATE_GENERATOR_FLAG	"/system-update"
+#define PK_OFFLINE_UPDATE_ACTION_FILENAME	"/var/lib/PackageKit/offline-update-action"
 
 int
 main (int argc, char *argv[])
 {
+	FILE *fp = NULL;
 	int rc;
+	int retval = EXIT_SUCCESS;
 	struct passwd *pw;
 
 	/* ensure root user */
 	if (getuid () != 0 || geteuid () != 0) {
 		fprintf (stderr, "This program can only be used using pkexec\n");
-		return EXIT_FAILURE;
+		retval = EXIT_FAILURE;
+		goto out;
 	}
 
 	if (argc > 1 && strcmp (argv[1], "--cancel") == 0) {
@@ -48,10 +52,25 @@ main (int argc, char *argv[])
 		if (rc < 0) {
 			fprintf (stderr, "Failed to remove file " PK_OFFLINE_UPDATE_GENERATOR_FLAG ": %s\n",
 				 strerror (errno));
-			return EXIT_FAILURE;
+			retval = EXIT_FAILURE;
+			goto out;
 		}
 
 		return EXIT_SUCCESS;
+	}
+
+	/* open success action */
+	fp = fopen (PK_OFFLINE_UPDATE_ACTION_FILENAME, "w+");
+	if (fp == NULL) {
+		fprintf (stderr, "Failed to open %s for writing\n",
+			 PK_OFFLINE_UPDATE_ACTION_FILENAME);
+		retval = EXIT_FAILURE;
+		goto out;
+	}
+	if (argc > 1 && strcmp (argv[1], "power-off") == 0) {
+		fputs ("power-off", fp);
+	} else {
+		fputs ("reboot", fp);
 	}
 
 	/* create symlink for the systemd-system-update-generator */
@@ -59,7 +78,8 @@ main (int argc, char *argv[])
 	if (rc < 0) {
 		fprintf (stderr, "Failed to create symlink: %s\n",
 			 strerror (errno));
-		return EXIT_FAILURE;
+		retval = EXIT_FAILURE;
+		goto out;
 	}
 
 	/* get UID for username */
@@ -67,7 +87,8 @@ main (int argc, char *argv[])
 	if (pw == NULL) {
 		fprintf (stderr, "Failed to get PackageKit uid: %s\n",
 			 strerror (errno));
-		return EXIT_FAILURE;
+		retval = EXIT_FAILURE;
+		goto out;
 	}
 
 	/* change it to the PackageKit user so the daemon can delete
@@ -76,8 +97,11 @@ main (int argc, char *argv[])
 	if (rc < 0) {
 		fprintf (stderr, "Failed to change owner of symlink: %s\n",
 			 strerror (errno));
-		return EXIT_FAILURE;
+		retval = EXIT_FAILURE;
+		goto out;
 	}
-
-	return EXIT_SUCCESS;
+out:
+	if (fp != NULL)
+		fclose (fp);
+	return retval;
 }
