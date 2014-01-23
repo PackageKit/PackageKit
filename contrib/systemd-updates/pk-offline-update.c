@@ -33,6 +33,7 @@
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
 #define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
 #define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
+#define PK_OFFLINE_UPDATE_ACTION_FILENAME	"/var/lib/PackageKit/offline-update-action"
 #define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
 
 /**
@@ -200,12 +201,6 @@ pk_offline_update_reboot (void)
 	GError *error = NULL;
 	GVariant *val = NULL;
 
-	/* allow testing without rebooting */
-	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL) {
-		g_print ("TESTING, so not rebooting\n");
-		return;
-	}
-
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "rebooting");
 	pk_offline_update_set_plymouth_mode ("shutdown");
@@ -233,6 +228,54 @@ pk_offline_update_reboot (void)
 	if (val == NULL) {
 		sd_journal_print (LOG_WARNING,
 				  "Failed to reboot: %s",
+				  error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	if (connection != NULL)
+		g_object_unref (connection);
+	if (val != NULL)
+		g_variant_unref (val);
+}
+
+/**
+ * pk_offline_update_power_off:
+ **/
+static void
+pk_offline_update_power_off (void)
+{
+	GDBusConnection *connection;
+	GError *error = NULL;
+	GVariant *val = NULL;
+
+	/* reboot using systemd */
+	sd_journal_print (LOG_INFO, "shutting down");
+	pk_offline_update_set_plymouth_mode ("shutdown");
+	/* TRANSLATORS: we've finished doing offline updates */
+	pk_offline_update_set_plymouth_msg (_("Shutting down after installing updates…"));
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	if (connection == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to get system bus connection: %s",
+				  error->message);
+		g_error_free (error);
+		goto out;
+	}
+	val = g_dbus_connection_call_sync (connection,
+					   "org.freedesktop.systemd1",
+					   "/org/freedesktop/systemd1",
+					   "org.freedesktop.systemd1.Manager",
+					   "PowerOff",
+					   NULL,
+					   NULL,
+					   G_DBUS_CALL_FLAGS_NONE,
+					   -1,
+					   NULL,
+					   &error);
+	if (val == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to power off: %s",
 				  error->message);
 		g_error_free (error);
 		goto out;
@@ -487,6 +530,50 @@ pk_offline_update_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
+typedef enum {
+	PK_OFFLINE_UPDATE_ACTION_NOTHING,
+	PK_OFFLINE_UPDATE_ACTION_REBOOT,
+	PK_OFFLINE_UPDATE_ACTION_POWER_OFF
+} PkOfflineUpdateAction;
+
+static PkOfflineUpdateAction
+pk_offline_update_get_action (void)
+{
+	gboolean ret;
+	gchar *action_data = NULL;
+	PkOfflineUpdateAction action;
+
+	/* allow testing without rebooting */
+	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL) {
+		g_print ("TESTING, so not doing action\n");
+		action = PK_OFFLINE_UPDATE_ACTION_NOTHING;
+		goto out;
+	}
+
+	ret = g_file_get_contents (PK_OFFLINE_UPDATE_ACTION_FILENAME,
+				   &action_data,
+				   NULL,
+				   NULL);
+	if (!ret) {
+		g_warning ("Failed to get post-update action, using reboot");
+		action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
+		goto out;
+	}
+	if (g_strcmp0 (action_data, "reboot") == 0) {
+		action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
+		goto out;
+	}
+	if (g_strcmp0 (action_data, "power-off") == 0) {
+		action = PK_OFFLINE_UPDATE_ACTION_POWER_OFF;
+		goto out;
+	}
+	g_warning ("failed to parse action '%s', using reboot", action_data);
+	action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
+out:
+	g_free (action_data);
+	return action;
+}
+
 /**
  * main:
  **/
@@ -502,6 +589,7 @@ main (int argc, char *argv[])
 	GMainLoop *loop = NULL;
 	PkResults *results = NULL;
 	PkTask *task = NULL;
+	PkOfflineUpdateAction action;
 	PkProgressBar *progressbar = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
@@ -598,7 +686,12 @@ out:
 		g_timeout_add_seconds (10, pk_offline_update_loop_quit_cb, loop);
 		g_main_loop_run (loop);
 	}
-	pk_offline_update_reboot ();
+	/* we have to manually either restart or shutdown */
+	action = pk_offline_update_get_action ();
+	if (action == PK_OFFLINE_UPDATE_ACTION_REBOOT)
+		pk_offline_update_reboot ();
+	else if (action == PK_OFFLINE_UPDATE_ACTION_POWER_OFF)
+		pk_offline_update_power_off ();
 	g_free (packages_data);
 	g_strfreev (package_ids);
 	if (progressbar != NULL)

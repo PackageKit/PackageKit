@@ -68,6 +68,7 @@ ________________________________________________________________________
  *  Run pkexec /usr/libexec/pk-trigger-offline-update and confirm that
     the system-update symlink exists on '/'.
     [You can also use 'pkcon offline-trigger' to do the same thing]
+ *  Check that /var/lib/PackageKit/offline-update-action is "reboot"
  *  Observe that pkexec ran without showing a PolicyKit dialog
  *  Run sudo PK_OFFLINE_UPDATE_TEST=1 /usr/libexec/pk-offline-update and
     observe that the two updates are applied
