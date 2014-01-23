@@ -131,6 +131,7 @@ gboolean	 hif_state_take_lock			(HifState		*state,
 							 HifLockType		 lock_type,
 							 HifLockMode		 lock_mode,
 							 GError			**error);
+gboolean	 hif_state_release_locks		(HifState		*state);
 
 G_END_DECLS
 

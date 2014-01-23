@@ -91,6 +91,19 @@ hif_lock_type_to_string (HifLockType lock_type)
 }
 
 /**
+ * hif_lock_mode_to_string:
+ **/
+static const gchar *
+hif_lock_mode_to_string (HifLockMode lock_mode)
+{
+	if (lock_mode == HIF_LOCK_MODE_THREAD)
+		return "thread";
+	if (lock_mode == HIF_LOCK_MODE_PROCESS)
+		return "process";
+	return "unknown";
+}
+
+/**
  * hif_lock_get_item_by_type_mode:
  **/
 static HifLockItem *
@@ -337,7 +350,9 @@ hif_lock_take (HifLock *lock,
 				g_set_error (error,
 					     HIF_ERROR,
 					     PK_ERROR_ENUM_CANNOT_GET_LOCK,
-					     "already locked by %s",
+					     "%s[%s] already locked by %s",
+					     hif_lock_type_to_string (type),
+					     hif_lock_mode_to_string (mode),
 					     cmdline);
 				goto out;
 			}
@@ -520,7 +535,7 @@ hif_lock_finalize (GObject *object)
 		if (item->refcount > 0) {
 			g_warning ("held lock %s at shutdown",
 				   hif_lock_type_to_string (item->type));
-			hif_lock_release (lock, item->type, NULL);
+			hif_lock_release (lock, item->id, NULL);
 		}
 	}
 
