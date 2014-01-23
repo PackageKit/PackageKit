@@ -3154,10 +3154,12 @@ out:
 }
 
 /**
- * hif_is_installed_package_name:
+ * hif_is_installed_package_name_arch:
  */
 static gboolean
-hif_is_installed_package_name (HySack sack, const gchar *name)
+hif_is_installed_package_name_arch (HySack sack,
+				    const gchar *name,
+				    const gchar *arch)
 {
 	gboolean ret;
 	HyPackageList pkglist = NULL;
@@ -3166,6 +3168,7 @@ hif_is_installed_package_name (HySack sack, const gchar *name)
 	/* run query */
 	query = hy_query_create (sack);
 	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
+	hy_query_filter (query, HY_PKG_ARCH, HY_EQ, arch);
 	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 	pkglist = hy_query_run (query);
 
@@ -3186,7 +3189,9 @@ hif_is_installed_package_id (HySack sack, const gchar *package_id)
 	gboolean ret;
 	gchar **split;
 	split = pk_package_id_split (package_id);
-	ret = hif_is_installed_package_name (sack, split[PK_PACKAGE_ID_NAME]);
+	ret = hif_is_installed_package_name_arch (sack,
+						  split[PK_PACKAGE_ID_NAME],
+						  split[PK_PACKAGE_ID_ARCH]);
 	g_strfreev (split);
 	return ret;
 }
