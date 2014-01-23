@@ -273,12 +273,16 @@ hif_state_set_speed (HifState *state, guint64 speed)
 /**
  * hif_state_release_locks:
  **/
-static gboolean
+gboolean
 hif_state_release_locks (HifState *state)
 {
 	gboolean ret = TRUE;
 	guint i;
 	guint lock_id;
+
+	/* release children first */
+	if (state->priv->child != NULL)
+		hif_state_release_locks (state->priv->child);
 
 	/* release each one */
 	for (i = 0; i < state->priv->lock_ids->len; i++) {

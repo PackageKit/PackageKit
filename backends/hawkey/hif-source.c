@@ -703,6 +703,7 @@ hif_source_update (HifSource *src,
 	if (!ret)
 		goto out;
 out:
+	hif_state_release_locks (state);
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSCB, NULL);
 	lr_handle_setopt (src->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
 	return ret;

@@ -521,8 +521,10 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
 	g_object_unref (job_data->cancellable);
-	if (job_data->state != NULL)
+	if (job_data->state != NULL) {
+		hif_state_release_locks (job_data->state);
 		g_object_unref (job_data->state);
+	}
 	if (job_data->sources != NULL)
 		g_ptr_array_unref (job_data->sources);
 	g_ptr_array_unref (job_data->packages_to_download);
@@ -1216,6 +1218,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 	/* nothing found */
 	pk_backend_job_set_percentage (job, 100);
 out:
+	hif_state_release_locks (job_data->state);
 	pk_backend_job_finished (job);
 }
 
@@ -2912,6 +2915,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	if (!ret)
 		goto out;
 out:
+	hif_state_release_locks (state);
 	g_free (verbosity_string);
 	if (commit != NULL) {
 		g_timer_destroy (commit->timer);
