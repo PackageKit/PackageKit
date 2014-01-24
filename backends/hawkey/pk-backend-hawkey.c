@@ -3199,21 +3199,20 @@ out:
 }
 
 /**
- * hif_is_installed_package_name_arch:
+ * hif_is_installed_package_id_name:
  */
 static gboolean
-hif_is_installed_package_name_arch (HySack sack,
-				    const gchar *name,
-				    const gchar *arch)
+hif_is_installed_package_id_name (HySack sack, const gchar *package_id)
 {
 	gboolean ret;
+	gchar **split;
 	HyPackageList pkglist = NULL;
 	HyQuery query = NULL;
 
 	/* run query */
 	query = hy_query_create (sack);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, name);
-	hy_query_filter (query, HY_PKG_ARCH, HY_EQ, arch);
+	split = pk_package_id_split (package_id);
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
 	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 	pkglist = hy_query_run (query);
 
@@ -3222,21 +3221,34 @@ hif_is_installed_package_name_arch (HySack sack,
 
 	hy_packagelist_free (pkglist);
 	hy_query_free (query);
+	g_strfreev (split);
 	return ret;
 }
 
 /**
- * hif_is_installed_package_id:
+ * hif_is_installed_package_id_name_arch:
  */
 static gboolean
-hif_is_installed_package_id (HySack sack, const gchar *package_id)
+hif_is_installed_package_id_name_arch (HySack sack, const gchar *package_id)
 {
 	gboolean ret;
 	gchar **split;
+	HyPackageList pkglist = NULL;
+	HyQuery query = NULL;
+
+	/* run query */
+	query = hy_query_create (sack);
 	split = pk_package_id_split (package_id);
-	ret = hif_is_installed_package_name_arch (sack,
-						  split[PK_PACKAGE_ID_NAME],
-						  split[PK_PACKAGE_ID_ARCH]);
+	hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
+	hy_query_filter (query, HY_PKG_ARCH, HY_EQ, split[PK_PACKAGE_ID_ARCH]);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	pkglist = hy_query_run (query);
+
+	/* any matches? */
+	ret = hy_packagelist_count (pkglist) > 0;
+
+	hy_packagelist_free (pkglist);
+	hy_query_free (query);
 	g_strfreev (split);
 	return ret;
 }
@@ -3322,7 +3334,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* ensure packages are already installed */
 	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id (sack, package_ids[i]);
+		ret = hif_is_installed_package_id_name_arch (sack, package_ids[i]);
 		if (!ret) {
 			gchar *printable_tmp;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
@@ -3465,7 +3477,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 
 	/* ensure packages are not already installed */
 	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id (sack, package_ids[i]);
+		ret = hif_is_installed_package_id_name_arch (sack, package_ids[i]);
 		if (ret) {
 			gchar *printable_tmp;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
@@ -3729,13 +3741,13 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* ensure packages are not already installed */
 	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id (sack, package_ids[i]);
+		ret = hif_is_installed_package_id_name (sack, package_ids[i]);
 		if (!ret) {
 			gchar *printable_tmp;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
-						   "%s is not already installed",
+						   "cannot update: %s is not already installed",
 						   printable_tmp);
 			g_free (printable_tmp);
 			goto out;
