@@ -161,6 +161,14 @@ void		 pk_client_get_details_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_get_details_local_async	(PkClient		*client,
+							 gchar			**files,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 void		 pk_client_get_update_detail_async	(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,

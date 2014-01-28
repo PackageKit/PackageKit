@@ -60,6 +60,9 @@
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
 
+static gchar *pk_transaction_get_content_type_for_file (const gchar *filename, GError **error);
+static gboolean pk_transaction_is_supported_content_type (PkTransaction *transaction, const gchar *content_type);
+
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
 
@@ -2101,6 +2104,11 @@ pk_transaction_run (PkTransaction *transaction)
 					priv->job,
 					priv->cached_package_ids);
 		break;
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+		pk_backend_get_details_local (priv->backend,
+					      priv->job,
+					      priv->cached_full_paths);
+		break;
 	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
 		pk_backend_get_distro_upgrades (priv->backend,
 						priv->job);
@@ -3439,6 +3447,115 @@ out:
 }
 
 /**
+ * pk_transaction_get_details_local:
+ **/
+static void
+pk_transaction_get_details_local (PkTransaction *transaction,
+				  GVariant *params,
+				  GDBusMethodInvocation *context)
+{
+	gboolean ret;
+	gchar *content_type = NULL;
+	gchar *files_temp;
+	gchar **full_paths;
+	GError *error_local = NULL;
+	GError *error = NULL;
+	guint i;
+	guint length;
+	guint max_length;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(^a&s)", &full_paths);
+
+	files_temp = pk_package_ids_to_string (full_paths);
+	g_debug ("GetDetails method called: %s", files_temp);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_GET_DETAILS_LOCAL)) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "GetDetailsLocal not supported by backend");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (full_paths);
+	max_length = g_key_file_get_integer (transaction->priv->conf,
+					     "Daemon",
+					     "MaximumPackagesToProcess",
+					     &error);
+	if (max_length == 0)
+		goto out;
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many files to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* check all files exists and are valid */
+	length = g_strv_length (full_paths);
+	for (i = 0; i < length; i++) {
+
+		/* exists */
+		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
+		if (!ret) {
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "No such file %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			goto out;
+		}
+
+		/* get content type */
+		content_type = pk_transaction_get_content_type_for_file (full_paths[i],
+								         &error_local);
+		if (content_type == NULL) {
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+				     "Failed to get content type for file %s",
+				     full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			goto out;
+		}
+
+		/* supported content type? */
+		ret = pk_transaction_is_supported_content_type (transaction, content_type);
+		if (!ret) {
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+				     "MIME type '%s' not supported %s",
+				     content_type, full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			goto out;
+		}
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_full_paths = g_strdupv (full_paths);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+out:
+	g_free (files_temp);
+	g_free (content_type);
+	pk_transaction_dbus_return (context, error);
+}
+
+/**
  * pk_transaction_get_distro_upgrades:
  **/
 static void
@@ -4017,7 +4134,6 @@ pk_transaction_install_files (PkTransaction *transaction,
 
 	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
-
 	for (i = 0; i < length; i++) {
 		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
@@ -5309,6 +5425,11 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "GetDetails") == 0) {
 		pk_transaction_get_details (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "GetDetailsLocal") == 0) {
+		pk_transaction_get_details_local (transaction, parameters, invocation);
 		goto out;
 	}
 

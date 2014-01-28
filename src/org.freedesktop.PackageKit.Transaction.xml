@@ -399,6 +399,64 @@
     </method>
 
     <!--*********************************************************************-->
+    <method name="GetDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method should return all the details about a specific
+            <doc:tt>package_id</doc:tt>.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Details</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
+    <method name="GetDetailsLocal">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method should return all the details about a specific
+            local file.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Details</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="files" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of filenames.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
     <method name="GetFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

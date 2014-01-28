@@ -130,6 +130,9 @@ void		 pk_backend_depends_on			(PkBackend	*backend,
 void		 pk_backend_get_details			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 gchar		**package_ids);
+void		 pk_backend_get_details_local		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 gchar		**files);
 void		 pk_backend_get_distro_upgrades		(PkBackend	*backend,
 							 PkBackendJob	*job);
 void		 pk_backend_get_files			(PkBackend	*backend,

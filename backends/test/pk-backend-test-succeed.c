@@ -132,6 +132,15 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 }
 
 /**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+{
+	pk_backend_job_finished (job);
+}
+
+/**
  * pk_backend_get_distro_upgrades:
  */
 void

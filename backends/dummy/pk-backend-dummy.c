@@ -179,6 +179,21 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 }
 
 /**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+{
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+	pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+				"PowerTOP is a tool that finds the software component(s) that make your "
+				"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
+	pk_backend_job_set_percentage (job, 100);
+	pk_backend_job_finished (job);
+}
+
+/**
  * pk_backend_get_details:
  */
 void

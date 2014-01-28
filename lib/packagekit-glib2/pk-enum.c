@@ -96,6 +96,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_CANCEL,				"cancel"},
 	{PK_ROLE_ENUM_DEPENDS_ON,			"depends-on"},
 	{PK_ROLE_ENUM_GET_DETAILS,			"get-details"},
+	{PK_ROLE_ENUM_GET_DETAILS_LOCAL,		"get-details-local"},
 	{PK_ROLE_ENUM_GET_FILES,			"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,			"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,			"get-repo-list"},
@@ -1123,6 +1124,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		text = dgettext("PackageKit", "Getting update details");
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS:
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Getting details");
 		break;

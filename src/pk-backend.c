@@ -86,6 +86,9 @@ typedef struct {
 	void		(*get_details)			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 gchar		**package_ids);
+	void		(*get_details_local)		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 gchar		**files);
 	void		(*get_distro_upgrades)		(PkBackend	*backend,
 							 PkBackendJob	*job);
 	void		(*get_files)			(PkBackend	*backend,
@@ -323,6 +326,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_DEPENDS_ON);
 	if (desc->get_details != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS);
+	if (desc->get_details_local != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
 	if (desc->get_files != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_FILES);
 	if (desc->required_by != NULL)
@@ -499,6 +504,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_get_categories", (gpointer *)&desc->get_categories);
 		g_module_symbol (handle, "pk_backend_depends_on", (gpointer *)&desc->depends_on);
 		g_module_symbol (handle, "pk_backend_get_details", (gpointer *)&desc->get_details);
+		g_module_symbol (handle, "pk_backend_get_details_local", (gpointer *)&desc->get_details_local);
 		g_module_symbol (handle, "pk_backend_get_distro_upgrades", (gpointer *)&desc->get_distro_upgrades);
 		g_module_symbol (handle, "pk_backend_get_files", (gpointer *)&desc->get_files);
 		g_module_symbol (handle, "pk_backend_get_filters", (gpointer *)&desc->get_filters);
@@ -1042,6 +1048,26 @@ pk_backend_get_details (PkBackend *backend,
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
 							   package_ids));
 	backend->priv->desc->get_details (backend, job, package_ids);
+}
+
+/**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend,
+			      PkBackendJob *job,
+			      gchar **files)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_details != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
+	pk_backend_job_set_parameters (job, g_variant_new ("(^as)",
+							   files));
+	backend->priv->desc->get_details_local (backend, job, files);
 }
 
 /**

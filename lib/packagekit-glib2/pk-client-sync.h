@@ -76,6 +76,13 @@ PkResults	*pk_client_get_details			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults	*pk_client_get_details_local		(PkClient		*client,
+							 gchar			**files,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
 PkResults	*pk_client_get_update_detail		(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,

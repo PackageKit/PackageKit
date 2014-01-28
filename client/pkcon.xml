@@ -159,6 +159,10 @@ manpage.1: manpage.xml
         package with the given name.</para></listitem>
       </varlistentry>
       <varlistentry>
+        <term>get-details-local <replaceable>FILE</replaceable></term>
+        <listitem><para>Print details about the local package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
         <term>get-files <replaceable>PACKAGE</replaceable></term>
         <listitem><para>List the files contained in the given package.</para></listitem>
       </varlistentry>
