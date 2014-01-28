@@ -1801,7 +1801,7 @@ main (int argc, char *argv[])
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean only_download = FALSE;
-	guint cache_age = 0;
+	guint cache_age = G_MAXUINT;
 	gint retval_copy = 0;
 	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
