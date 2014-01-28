@@ -44,7 +44,8 @@ struct HifSource {
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
 	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
-	gint64		 timestamp;
+	gint64		 timestamp_generated;	/* µs */
+	gint64		 timestamp_modified;	/* µs */
 	GKeyFile	*keyfile;
 	HifSourceKind	 kind;
 	HyRepo		 repo;
@@ -342,10 +343,48 @@ hif_source_update_state_cb (void *user_data,
 }
 
 /**
+ * hif_source_set_timestamp_modified:
+ */
+static gboolean
+hif_source_set_timestamp_modified (HifSource *src, GError **error)
+{
+	gboolean ret = TRUE;
+	gchar *filename;
+	GFile *file;
+	GFileInfo *info;
+
+	filename = g_build_filename (src->location, "repodata", "repomd.xml", NULL);
+	file = g_file_new_for_path (filename);
+	info = g_file_query_info (file,
+				  G_FILE_ATTRIBUTE_TIME_MODIFIED ","
+				  G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC,
+				  G_FILE_QUERY_INFO_NONE,
+				  NULL,
+				  error);
+	if (info == NULL) {
+		ret = FALSE;
+		goto out;
+	}
+	src->timestamp_modified = g_file_info_get_attribute_uint64 (info,
+					G_FILE_ATTRIBUTE_TIME_MODIFIED) * G_USEC_PER_SEC;
+	src->timestamp_modified += g_file_info_get_attribute_uint32 (info,
+					G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC);
+out:
+	g_free (filename);
+	g_object_unref (file);
+	if (info != NULL)
+		g_object_unref (info);
+	return ret;
+}
+
+/**
  * hif_source_check:
  */
 gboolean
-hif_source_check (HifSource *src, HifState *state, GError **error)
+hif_source_check (HifSource *src,
+		  guint permissible_cache_age,
+		  HifState *state,
+		  GError **error)
 {
 	const gchar *download_list[] = { "primary",
 					 "filelists",
@@ -357,6 +396,7 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 	GError *error_local = NULL;
 	LrYumRepo *yum_repo;
 	const gchar *urls[] = { "", NULL };
+	gint64 age_of_data; /* in seconds */
 
 	/* has the media repo vanished? */
 	if (src->kind == HIF_SOURCE_KIND_MEDIA &&
@@ -406,7 +446,7 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 
 	/* get timestamp */
 	ret = lr_result_getinfo (src->repo_result, &error_local,
-				 LRR_YUM_TIMESTAMP, &src->timestamp);
+				 LRR_YUM_TIMESTAMP, &src->timestamp_generated);
 	if (!ret) {
 		g_set_error (error,
 			     HIF_ERROR,
@@ -415,6 +455,23 @@ hif_source_check (HifSource *src, HifState *state, GError **error)
 			     error_local->message);
 		g_error_free (error_local);
 		goto out;
+	}
+
+	/* check metadata age */
+	if (permissible_cache_age != G_MAXUINT) {
+		ret = hif_source_set_timestamp_modified (src, error);
+		if (!ret)
+			goto out;
+		age_of_data = (g_get_real_time () - src->timestamp_modified) / G_USEC_PER_SEC;
+		if (age_of_data > permissible_cache_age) {
+			ret = FALSE;
+			g_set_error (error,
+				     HIF_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     "cache too old: %"G_GINT64_FORMAT" > %i",
+				     age_of_data, permissible_cache_age);
+			goto out;
+		}
 	}
 
 	/* create a HyRepo */
@@ -661,7 +718,7 @@ hif_source_update (HifSource *src,
 		goto out;
 	}
 	if ((flags & HIF_SOURCE_UPDATE_FLAG_FORCE) == 0 ||
-	    timestamp_new < src->timestamp) {
+	    timestamp_new < src->timestamp_generated) {
 		g_debug ("fresh metadata was older than what we have, ignoring");
 		goto out;
 	}
@@ -694,7 +751,7 @@ hif_source_update (HifSource *src,
 
 	/* now setup internal hawkey stuff */
 	state_local = hif_state_get_child (state);
-	ret = hif_source_check (src, state_local, error);
+	ret = hif_source_check (src, G_MAXUINT, state_local, error);
 	if (!ret)
 		goto out;
 
