@@ -648,6 +648,13 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 	g_timer_reset (priv->repos_timer);
 
+	/* if we've specified a specific cache-age then do not use the cache */
+	if ((flags & HIF_SACK_ADD_FLAG_REMOTE) > 0 &&
+	    pk_backend_job_get_cache_age (job) != G_MAXUINT) {
+		g_debug ("not reusing sack specific cache age requested");
+		create_flags &= ~HIF_CREATE_SACK_FLAG_USE_CACHE;
+	}
+
 	/* do we have anything in the cache */
 	cache_key = g_strdup_printf ("HySack::%i", flags);
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0)
