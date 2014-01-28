@@ -1509,14 +1509,13 @@ out:
 }
 
 /**
- * pk_backend_get_details:
+ * backend_get_details_thread:
  */
-void
-pk_backend_get_details (PkBackend *backend,
-			PkBackendJob *job,
-			gchar **package_ids)
+static void
+backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
+	gchar **package_ids;
 	GError *error = NULL;
 	GHashTable *hash = NULL;
 	guint i;
@@ -1525,6 +1524,8 @@ pk_backend_get_details (PkBackend *backend,
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+
+	g_variant_get (params, "(^a&s)", &package_ids);
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -1597,6 +1598,15 @@ out:
 	if (hash != NULL)
 		g_hash_table_unref (hash);
 	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_get_details:
+ */
+void
+pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+{
+	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
 /**
