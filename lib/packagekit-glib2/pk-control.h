@@ -132,13 +132,6 @@ void		 pk_control_set_proxy2_async		(PkControl		*control,
 gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
-void		 pk_control_get_network_state_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-PkNetworkEnum	 pk_control_get_network_state_finish	(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
 void		 pk_control_get_time_since_action_async	(PkControl		*control,
 							 PkRoleEnum		 role,
 							 GCancellable		*cancellable,
