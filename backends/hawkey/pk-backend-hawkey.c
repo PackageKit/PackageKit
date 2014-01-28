@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1582,7 +1582,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 					package_ids[i],
 					hy_package_get_license (pkg),
 					PK_GROUP_ENUM_UNKNOWN,
-					hy_package_get_description (pkg),
+					hif_package_get_description (pkg),
 					hy_package_get_url (pkg),
 					(gulong) hy_package_get_size (pkg));
 	}
@@ -1607,6 +1607,95 @@ void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
+}
+
+/**
+ * backend_get_details_local_thread:
+ */
+static void
+backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	gboolean ret;
+	gchar **full_paths;
+	GError *error = NULL;
+	guint i;
+	HifState *state_local;
+	HyPackage pkg;
+	HySack sack = NULL;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters;
+
+	g_variant_get (params, "(^a&s)", &full_paths);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+
+	/* set state */
+	ret = hif_state_set_steps (job_data->state, NULL,
+				   50, /* create sack */
+				   50, /* get details */
+				   -1);
+	g_assert (ret);
+
+	/* get sack */
+	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_NONE,
+						  state_local,
+						  &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* ensure packages are not already installed */
+	for (i = 0; full_paths[i] != NULL; i++) {
+		pkg = hy_sack_add_cmdline_package (sack, full_paths[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_FILE_NOT_FOUND,
+						   "Failed to open %s",
+						   full_paths[i]);
+			goto out;
+		}
+		pk_backend_job_details (job,
+					hif_package_get_id (pkg),
+					hy_package_get_license (pkg),
+					PK_GROUP_ENUM_UNKNOWN,
+					hif_package_get_description (pkg),
+					hy_package_get_url (pkg),
+					(gulong) hy_package_get_size (pkg));
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+{
+	pk_backend_job_thread_create (job, backend_get_details_local_thread, NULL, NULL);
 }
 
 /**

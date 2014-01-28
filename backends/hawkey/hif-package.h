@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -47,6 +47,7 @@ gboolean	 hif_package_is_devel			(HyPackage	 pkg);
 gboolean	 hif_package_is_downloaded		(HyPackage	 pkg);
 const gchar	*hif_package_get_pkgid			(HyPackage	 pkg);
 const gchar	*hif_package_get_nevra			(HyPackage	 pkg);
+const gchar	*hif_package_get_description		(HyPackage	 pkg);
 guint		 hif_package_get_cost			(HyPackage	 pkg);
 gchar		*hif_package_download			(HyPackage	 pkg,
 							 const gchar	*directory,

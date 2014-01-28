@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -42,6 +42,7 @@ typedef struct {
 	char		*nevra;
 	gboolean	 user_action;
 	gchar		*filename;
+	gchar		*description;
 	gchar		*package_id;
 	PkInfoEnum	 info;
 	HifSource	*src;
@@ -56,6 +57,7 @@ hif_package_destroy_func (void *userdata)
 	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
 	g_free (priv->filename);
 	g_free (priv->package_id);
+	g_free (priv->description);
 	hy_free (priv->checksum_str);
 	hy_free (priv->nevra);
 	g_slice_free (HifPackagePrivate, priv);
@@ -181,6 +183,21 @@ hif_package_get_nevra (HyPackage pkg)
 	if (priv->nevra == NULL)
 		priv->nevra = hy_package_get_nevra (pkg);
 	return priv->nevra;
+}
+
+/**
+ * hif_package_get_description:
+ **/
+const gchar *
+hif_package_get_description (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv->description == NULL) {
+		priv->description = g_strdup (hy_package_get_description (pkg));
+		g_strdelimit (priv->description, "\n\t", ' ');
+	}
+	return priv->description;
 }
 
 /**
