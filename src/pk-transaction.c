@@ -5515,6 +5515,13 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		pk_transaction_repair_system (transaction, parameters, invocation);
 		goto out;
 	}
+
+	/* nothing matched */
+	g_dbus_method_invocation_return_error (invocation,
+					       PK_TRANSACTION_ERROR,
+					       PK_TRANSACTION_ERROR_INVALID_STATE,
+					       "method from %s not recognised",
+					       sender);
 out:
 	return;
 }
