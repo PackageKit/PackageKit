@@ -593,8 +593,12 @@ hif_utils_add_remote (PkBackendJob *job,
 
 	/* add each repo */
 	state_local = hif_state_get_child (state);
-	ret = hif_sack_add_sources (sack, job_data->sources,
-				    flags, state_local, error);
+	ret = hif_sack_add_sources (sack,
+				    job_data->sources,
+				    pk_backend_job_get_cache_age (job),
+				    flags,
+				    state_local,
+				    error);
 	if (!ret)
 		goto out;
 
@@ -1313,7 +1317,10 @@ pk_backend_get_mime_types (PkBackend *backend)
  * pk_backend_refresh_source:
  */
 static gboolean
-pk_backend_refresh_source (HifSource *src, HifState *state, GError **error)
+pk_backend_refresh_source (PkBackendJob *job,
+			   HifSource *src,
+			   HifState *state,
+			   GError **error)
 {
 	gboolean ret;
 	gboolean src_okay;
@@ -1330,7 +1337,10 @@ pk_backend_refresh_source (HifSource *src, HifState *state, GError **error)
 
 	/* is the source up to date? */
 	state_local = hif_state_get_child (state);
-	src_okay = hif_source_check (src, state_local, &error_local);
+	src_okay = hif_source_check (src,
+				     pk_backend_job_get_cache_age (job),
+				     state_local,
+				     &error_local);
 	if (!src_okay) {
 		g_debug ("repo %s not okay [%s], refreshing",
 			 hif_source_get_id (src), error_local->message);
@@ -1431,7 +1441,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 
 		/* check and download */
 		state_local = hif_state_get_child (job_data->state);
-		ret = pk_backend_refresh_source (src, state_local, &error);
+		ret = pk_backend_refresh_source (job, src, state_local, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			g_error_free (error);

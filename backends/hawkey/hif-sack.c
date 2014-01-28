@@ -34,6 +34,7 @@
 gboolean
 hif_sack_add_source (HySack sack,
 		     HifSource *src,
+		     guint permissible_cache_age,
 		     HifSackAddFlags flags,
 		     HifState *state,
 		     GError **error)
@@ -54,7 +55,10 @@ hif_sack_add_source (HySack sack,
 
 	/* check repo */
 	state_local = hif_state_get_child (state);
-	ret = hif_source_check (src, state_local, &error_local);
+	ret = hif_source_check (src,
+				permissible_cache_age,
+				state_local,
+				&error_local);
 	if (!ret) {
 		g_debug ("failed to check, attempting update: %s",
 			 error_local->message);
@@ -118,6 +122,7 @@ out:
 gboolean
 hif_sack_add_sources (HySack sack,
 		      GPtrArray *sources,
+		      guint permissible_cache_age,
 		      HifSackAddFlags flags,
 		      HifState *state,
 		      GError **error)
@@ -143,7 +148,12 @@ hif_sack_add_sources (HySack sack,
 			continue;
 
 		state_local = hif_state_get_child (state);
-		ret = hif_sack_add_source (sack, src, flags, state_local, error);
+		ret = hif_sack_add_source (sack,
+					   src,
+					   permissible_cache_age,
+					   flags,
+					   state_local,
+					   error);
 		if (!ret)
 			goto out;
 

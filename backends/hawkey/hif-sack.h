@@ -39,11 +39,13 @@ typedef enum {
 
 gboolean	 hif_sack_add_source	(HySack		 sack,
 					 HifSource	*src,
+					 guint		 permissible_cache_age,
 					 HifSackAddFlags flags,
 					 HifState	*state,
 					 GError		**error);
 gboolean	 hif_sack_add_sources	(HySack		 sack,
 					 GPtrArray	*sources,
+					 guint		 permissible_cache_age,
 					 HifSackAddFlags flags,
 					 HifState	*state,
 					 GError		**error);
