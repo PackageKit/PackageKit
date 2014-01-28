@@ -3470,7 +3470,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	g_variant_get (params, "(^a&s)", &full_paths);
 
 	files_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("GetDetails method called: %s", files_temp);
+	g_debug ("GetDetailsLocal method called: %s", files_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,

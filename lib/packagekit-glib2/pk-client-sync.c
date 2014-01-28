@@ -422,9 +422,9 @@ pk_client_get_details_local (PkClient *client, gchar **files, GCancellable *canc
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_get_details_async (client, files, cancellable,
-				     progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
+	pk_client_get_details_local_async (client, files, cancellable,
+					   progress_callback, progress_user_data,
+					   (GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 
 	g_main_loop_run (helper.loop);
 
