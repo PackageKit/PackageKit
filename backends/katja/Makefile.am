@@ -21,6 +21,10 @@ conf_DATA = $(conf_in_files:.conf.in=.conf)
 $(conf_DATA): $(conf_in_files) Makefile
 	@sed -e "s|\@pkgmain\@|$(KATJA_PKGMAIN)|" $< > $@
 
+
+databasedir = $(localstatedir)/cache/PackageKit/metadata
+database_DATA =	metadata.db
+
 EXTRA_DIST = \
 	$(conf_in_files)
 
