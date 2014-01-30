@@ -3483,6 +3483,14 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (full_paths);
+	if (length == 0) {
+		g_set_error_literal (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "No filenames listed");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
 	max_length = g_key_file_get_integer (transaction->priv->conf,
 					     "Daemon",
 					     "MaximumPackagesToProcess",
