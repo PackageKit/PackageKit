@@ -205,7 +205,7 @@ sub get_distro_upgrades() {
 
   my $newer_version = _get_newer_distrib($distrib->{version}, \@distribs);
   $newer_version or goto finished;
-  pk_print_distro_upgrade(PK_DISTRO_UPGRADE_ENUM_STABLE, join(" ", "Mandriva", $product_id{product}, $newer_version->{version}), "");
+  pk_print_distro_upgrade(PK_DISTRO_UPGRADE_ENUM_STABLE, join(" ", "Mageia", $product_id{product}, $newer_version->{version}), "");
 
   unlink($distribfile_path);
   finished:
