@@ -267,7 +267,7 @@ pk_transaction_set_plugins (PkTransaction *transaction,
 /**
  * pk_transaction_get_runtime:
  *
- * Returns time running in ms
+ * Return value: time running in ms
  */
 static guint
 pk_transaction_get_runtime (PkTransaction *transaction)
