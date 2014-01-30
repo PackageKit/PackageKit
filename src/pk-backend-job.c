@@ -544,7 +544,7 @@ pk_backend_job_get_role (PkBackendJob *job)
 /**
  * pk_backend_job_get_runtime:
  *
- * Returns time running in ms
+ * Return value: time running in ms
  */
 guint
 pk_backend_job_get_runtime (PkBackendJob *job)

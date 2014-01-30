@@ -119,7 +119,7 @@ pk_transaction_db_add_transaction_cb (void *data,
 			ret = pk_strtouint (value, &temp);
 			if (!ret) {
 				g_warning ("failed to parse duration: %s", value);
-			} else if (temp > 60*60*12) {
+			} else if (temp > 60 * 60 * 12 * 1000) {
 				g_warning ("insane duration: %i", temp);
 			} else {
 				g_object_set (item, "duration", temp, NULL);
@@ -415,6 +415,8 @@ pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar 
 
 /**
  * pk_transaction_db_set_finished:
+ * @runtime: time in ms
+ *
  **/
 gboolean
 pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean success, guint runtime)

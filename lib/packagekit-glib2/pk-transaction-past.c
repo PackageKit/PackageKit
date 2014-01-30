@@ -51,7 +51,7 @@ struct _PkTransactionPastPrivate
 	gchar				*timespec;
 	gboolean			 succeeded;
 	PkRoleEnum			 role;
-	guint				 duration;
+	guint				 duration; /* ms */
 	gchar				*data;
 	guint				 uid;
 	gchar				*cmdline;
@@ -191,7 +191,7 @@ pk_transaction_past_get_role (PkTransactionPast *past)
  *
  * Gets the past transaction duration;
  *
- * Return value: The transaction data
+ * Return value: The transaction duration in ms
  *
  * Since: 0.8.11
  **/

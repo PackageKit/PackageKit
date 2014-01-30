@@ -105,7 +105,7 @@ pk_time_set_value_limits (PkTime *pktime, guint value_min, guint value_max)
 /**
  * pk_time_get_elapsed:
  *
- * Returns time running in ms
+ * Return value: time running in ms
  **/
 guint
 pk_time_get_elapsed (PkTime *pktime)
