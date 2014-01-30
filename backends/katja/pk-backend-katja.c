@@ -481,7 +481,7 @@ void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **packa
 }
 
 static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar **vals, **cur_val;
+	gchar **vals, **val;
 	sqlite3_stmt *statement;
 	PkInfoEnum ret;
 
@@ -497,8 +497,8 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 							&statement,
 							NULL) == SQLITE_OK)) {
 		/* Output packages matching each pattern */
-		for (cur_val = vals; *cur_val; cur_val++) {
-			sqlite3_bind_text(statement, 1, *cur_val, -1, SQLITE_TRANSIENT);
+		for (val = vals; *val; val++) {
+			sqlite3_bind_text(statement, 1, *val, -1, SQLITE_TRANSIENT);
 
 			while (sqlite3_step(statement) == SQLITE_ROW) {
 				ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(statement, 2));
@@ -704,7 +704,7 @@ void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *pkg_id, *pkg_full_name, *desc, **pkg_tokens;
+	gchar *pkg_id, *full_name, *desc, **pkg_tokens;
 	const gchar *pkg_metadata_filename;
 	GFile *pkg_metadata_dir;
 	GFileEnumerator *pkg_metadata_enumerator;
@@ -748,9 +748,9 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 		if ((sqlite3_step(statement) == SQLITE_ROW) ||
 			g_slist_find_custom(repos, ((gchar *) sqlite3_column_text(statement, 4)), katja_pkgtools_cmp_repo)) {
 
-			pkg_full_name = g_strdup((gchar *) sqlite3_column_text(statement, 0));
+			full_name = g_strdup((gchar *) sqlite3_column_text(statement, 0));
 
-			if (g_strcmp0(pkg_metadata_filename, pkg_full_name)) {
+			if (g_strcmp0(pkg_metadata_filename, full_name)) {
 				pkg_id = pk_package_id_build((gchar *) sqlite3_column_text(statement, 1),
 											 (gchar *) sqlite3_column_text(statement, 2),
 											 (gchar *) sqlite3_column_text(statement, 3),
@@ -762,7 +762,7 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 				g_free(desc);
 				g_free(pkg_id);
 			}
-			g_free(pkg_full_name);
+			g_free(full_name);
 		}
 
 		sqlite3_clear_bindings(statement);
@@ -898,18 +898,18 @@ static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *par
 
 	for (i = 0; pkg_ids[i] != NULL; i++) {
 		pk_backend_job_update_detail (job,
-				pkg_ids[i],
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				PK_RESTART_ENUM_NONE,
-				NULL,
-				NULL,
-				PK_UPDATE_STATE_ENUM_STABLE,
-				NULL,
-				NULL);
+									  pkg_ids[i],
+									  NULL,
+									  NULL,
+									  NULL,
+									  NULL,
+									  NULL,
+									  PK_RESTART_ENUM_NONE,
+									  NULL,
+									  NULL,
+									  PK_UPDATE_STATE_ENUM_STABLE,
+									  NULL,
+									  NULL);
 	}
 
 	pk_backend_job_finished (job);

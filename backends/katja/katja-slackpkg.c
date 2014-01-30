@@ -35,7 +35,7 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 			goto out;
 		}
 
-		/* Download file lists if available
+		/* Download file lists if available */
 		source_dest = g_malloc_n(3, sizeof(gchar *));
 		source_dest[0] = g_strconcat(pkgtools->mirror->str, *cur_priority, "/MANIFEST.bz2", NULL);
 		source_dest[1] = g_strconcat(tmpl, "/", pkgtools->name->str, "/", *cur_priority, "-MANIFEST.bz2", NULL);
@@ -43,7 +43,7 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 			file_list = g_slist_prepend(file_list, source_dest);
 		else
-			g_strfreev(source_dest); */
+			g_strfreev(source_dest);
 	}
 
 out:
@@ -130,24 +130,26 @@ out:
  * katja_slackpkg_real_generate_cache:
  **/
 void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
-	sqlite3_stmt *insert_statement, *update_statement, *insert_default_statement, *statement;
-	gchar **pkg_tokens = NULL, *pkg_filename = NULL, *location = NULL, *cat, *summary = NULL, *line;
+	gchar **pkg_tokens = NULL, **cur_priority;
+	gchar *filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *packages_txt;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
 	gushort pkg_name_len;
 	GString *desc;
-	GFile *tmp_dir, *repo_tmp_dir, *index_file;
+	GFile *list_file;
 	GFileInputStream *fin;
 	GDataInputStream *data_in;
+	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
 
-	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
-	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, pkgtools->name->str);
-	index_file = g_file_get_child(repo_tmp_dir, "PACKAGES.TXT");
-	if (!(fin = g_file_read(index_file, NULL, NULL)))
+	/* Check if the temporary directory for this repository exists, then the file metadata have to be generated */
+	packages_txt = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
+	list_file = g_file_new_for_path(packages_txt);
+	fin = g_file_read(list_file, NULL, NULL);
+	g_object_unref(list_file);
+	g_free(packages_txt);
+	if (!fin)
 		goto out;
 
 	/* Remove the old entries from this repository */
-	sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 	if (sqlite3_prepare_v2(katja_pkgtools_db,
 						   "DELETE FROM repos WHERE repo LIKE @repo",
 						   -1,
@@ -203,20 +205,20 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		if (!strncmp(line, "PACKAGE NAME:  ", 15)) {
-			pkg_filename = g_strdup(line + 15);
-			if (pkgtools->blacklist && g_regex_match(pkgtools->blacklist, pkg_filename, 0, NULL)) {
-				g_free(pkg_filename);
-				pkg_filename = NULL;
+			filename = g_strdup(line + 15);
+			if (pkgtools->blacklist && g_regex_match(pkgtools->blacklist, filename, 0, NULL)) {
+				g_free(filename);
+				filename = NULL;
 			}
-		} else if (pkg_filename && !strncmp(line, "PACKAGE LOCATION:  ", 19)) {
+		} else if (filename && !strncmp(line, "PACKAGE LOCATION:  ", 19)) {
 			location = g_strdup(line + 21); /* Exclude ./ at the path beginning */
-		} else if (pkg_filename && !strncmp(line, "PACKAGE SIZE (compressed):  ", 28)) {
+		} else if (filename && !strncmp(line, "PACKAGE SIZE (compressed):  ", 28)) {
 			/* Remove the unit (kilobytes) */
 			pkg_compressed = atoi(g_strndup(line + 28, strlen(line + 28) - 2)) * 1024;
-		} else if (pkg_filename && !strncmp(line, "PACKAGE SIZE (uncompressed):  ", 30)) {
+		} else if (filename && !strncmp(line, "PACKAGE SIZE (uncompressed):  ", 30)) {
 			/* Remove the unit (kilobytes) */
 			pkg_uncompressed = atoi(g_strndup(line + 30, strlen(line + 30) - 2)) * 1024;
-		} else if (pkg_filename && !g_strcmp0(line, "PACKAGE DESCRIPTION:")) {
+		} else if (filename && !g_strcmp0(line, "PACKAGE DESCRIPTION:")) {
 			g_free(line);
 			line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL); /* Short description */
 
@@ -224,11 +226,11 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 			if (summary) /* Else summary = NULL */
 				summary = g_strndup(summary + 1, strlen(summary) - 2); /* Without ( ) */
 
-			pkg_tokens = katja_pkgtools_cut_pkg(pkg_filename);
+			pkg_tokens = katja_pkgtools_cut_pkg(filename);
 			pkg_name_len = strlen(pkg_tokens[0]); /* Description begins with pkg_name: */
-		} else if (pkg_filename && !strncmp(line, pkg_tokens[0], pkg_name_len)) {
+		} else if (filename && !strncmp(line, pkg_tokens[0], pkg_name_len)) {
 			g_string_append(desc, line + pkg_name_len + 1);
-		} else if (pkg_filename && !g_strcmp0(line, "")) {
+		} else if (filename && !g_strcmp0(line, "")) {
 			if (g_strcmp0(location, "patches/packages")) { /* Insert a new package */
 				/* Get the package group based on its location */
 				cat = g_strrstr(location, "/");
@@ -263,10 +265,10 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 
 			/* Reset for the next package */
 			g_strfreev(pkg_tokens);
-			g_free(pkg_filename);
+			g_free(filename);
 			g_free(location);
 			g_free(summary);
-			pkg_filename = location = summary = NULL;
+			filename = location = summary = NULL;
 			g_string_assign(desc, "");
 			pkg_compressed = pkg_uncompressed = 0;
 		}
@@ -274,21 +276,26 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	}
 
 	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
-	sqlite3_finalize(update_statement);
-	sqlite3_finalize(insert_statement);
-	sqlite3_finalize(insert_default_statement);
 
 	g_string_free(desc, TRUE);
 
 	g_object_unref(data_in);
 	g_object_unref(fin);
 
-out:
-	g_object_unref(index_file);
+	/* Parse MANIFEST.bz2 */
+	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++) {
+		filename = g_strconcat(*cur_priority, "-MANIFEST.bz2", NULL);
+		katja_binary_manifest(KATJA_BINARY(pkgtools), tmpl, filename);
+		g_free(filename);
+	}
 
-	katja_pkgtools_clean_dir(repo_tmp_dir, TRUE);
-	g_object_unref(repo_tmp_dir);
-	g_object_unref(tmp_dir);
+out:
+	sqlite3_finalize(update_statement);
+	sqlite3_finalize(insert_statement);
+	sqlite3_finalize(insert_default_statement);
+
+	if (fin)
+		g_object_unref(fin);
 }
 
 /**

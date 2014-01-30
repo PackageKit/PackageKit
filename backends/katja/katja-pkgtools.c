@@ -66,43 +66,6 @@ static int katja_pkgtools_progress(void *p, double dltotal, double dlnow, double
 }*/
 
 /**
- * katja_pkgtools_clean_dir:
- **/
-void katja_pkgtools_clean_dir(GFile *dir, gboolean delete_parent) {
-	GFile *dir_child;
-	GFileEnumerator *enumerator;
-	GFileInfo *file_info;
-
-	g_return_val_if_fail(dir != NULL, NULL);
-
-	/* Clean the directory if it exists */
-	if (g_file_query_exists(dir, NULL)) {
-		enumerator = g_file_enumerate_children(dir, "", G_FILE_QUERY_INFO_NONE, NULL, NULL);
-
-		while ((file_info = g_file_enumerator_next_file(enumerator, NULL, NULL))) {
-			dir_child = g_file_enumerator_get_child(enumerator, file_info);
-			g_file_delete(dir_child, NULL, NULL);
-
-			g_object_unref(dir_child);
-			g_object_unref(file_info);
-		}
-		g_object_unref(enumerator);
-
-		if (delete_parent)
-			g_file_delete(dir, NULL, NULL);
-	}
-}
-
-/**
- * katja_pkgtools_job_progress_init:
- **
-void katja_pkgtools_job_progress_init(PkBackendJob *job) {
-	katja_pkgtools_job_progress.job = job;
-	katja_pkgtools_job_progress.last_percentage = 0;
-	katja_pkgtools_job_progress.all = katja_pkgtools_job_progress.downloaded = 0;
-}*/
-
-/**
  * katja_pkgtools_get_file:
  **/
 CURLcode katja_pkgtools_get_file(CURL **curl, gchar *source_url, gchar *dest) {
