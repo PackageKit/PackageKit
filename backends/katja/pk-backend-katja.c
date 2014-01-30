@@ -191,214 +191,50 @@ void pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "p.cat", NULL);
 }
 
-/*static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar ***packages_tokens = NULL, **values, **line_tokens, *cur_pkg_data[3] = {NULL, NULL, NULL};
-	gchar *cur_pkg = NULL, *gz_name, *file_list, *values_line, *package_id, *cache_path, buf[PKGTOOLS_SPAWN_MAX_LINE_LEN];
-	gint was_read;
-	guint n_allocated = PKGTOOLS_SPAWN_MAX_LINE_LEN, i = 0, j, packages_count = 0;
-	gushort ext;
-	gzFile zhl;
-	GRegex *expr;
-	GError *err = NULL;
-	gboolean found = FALSE;
-	FILE *pkglist;
-	DIR *dirp;
-	struct dirent *package_entry;
-	GSList *cur_priority;
+static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+	gchar **vals, *search;
+	GString *query;
+	sqlite3_stmt *statement;
+	PkInfoEnum ret;
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    g_variant_get(params, "(t^a&s)", NULL, &values);
+	pk_backend_job_set_percentage(job, 0);
 
-	// Open the slackpkg package cache file
-	cache_path = g_strjoin ("/", g_environ_getenv (slackpkg->env, "WORKDIR"), "pkglist", NULL);
-	pkglist = fopen (cache_path, "r");
-	g_free (cache_path);
-	if (pkglist == NULL) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_CACHE, "the package list is missing: %s", strerror (errno));
+	g_variant_get(params, "(t^a&s)", NULL, &vals);
+	search = g_strjoinv("%", vals);
 
-		return;
-	}
+	query = g_string_new("SELECT (p.name || ';' || p.ver || ';' || p.arch || ';' || r.repo), p.summary, p.full_name "
+						 "FROM filelist AS f NATURAL JOIN pkglist AS p NATURAL JOIN repos AS r ");
+	g_string_append_printf(query, "WHERE f.filename LIKE '%%%s%%' GROUP BY f.full_name", search);
+	g_free(search);
 
-	// Create a regular expression searching for for one of the given words
-	values_line = g_strjoinv ("|", values);
-	expr = g_regex_new (values_line,
-			G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-			0,
-			&err);
-	if (err != NULL) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_UNKNOWN, "%s", err->message);
-		g_error_free (err);
-		goto out;
-	}
-
-	file_list = g_malloc_n (sizeof (gchar), n_allocated);
-
-	for (cur_priority = slackpkg->priority; cur_priority; cur_priority = g_slist_next (cur_priority)) {
-		gz_name = g_strconcat (g_environ_getenv (slackpkg->env, "WORKDIR"), "/", cur_priority->data, "-filelist.gz", NULL);
-		if ((zhl = gzopen (gz_name, "rb")) == NULL) {
-			g_free (gz_name);
-			continue;
-		}
-
-		// The file list can be quite long, read character for character 
-		while ((was_read = gzgetc (zhl)) != -1) {
-			if (i > n_allocated) {
-				n_allocated += PKGTOOLS_SPAWN_MAX_LINE_LEN;
-				file_list = g_realloc_n (file_list, sizeof (gchar), n_allocated);
-			}
-			if (was_read == 10) { // Newline
-				// Free memory from the last package name
-				if ((cur_pkg != NULL) && !found) {
-					g_free (cur_pkg);
-					cur_pkg = NULL;
-				}
-				found = FALSE;
-			} else if ((was_read == 32) && !found) { // Space
-				file_list[i] = '\0';
-				i = 0;
-				// Some files aren't interesting for us
-				if (((file_list[0] == '.') && (file_list[1] == '/') && (file_list[2] == '\0'))
-						|| g_strstr_len (file_list, 8, "install/")) continue;
-				// Check if it is a package or a file name
-				if (file_list[0] == '.') {
-					// Remember the package
-					cur_pkg = g_strdup (file_list);
-
-					// Get the package name, version and architecture
-					ext = 0;
-					for (j = strlen (cur_pkg) - 1; j > 0; j--) {
-						if (cur_pkg[j] == '-') {
-							if (ext == 0) cur_pkg[j] = '\0';
-							else if (ext == 1) {
-								cur_pkg_data[0] = &cur_pkg[j + 1];
-								cur_pkg[j] = '\0';
-							} else if (ext == 2) {
-								cur_pkg_data[1] = &cur_pkg[j + 1];
-								cur_pkg[j] = '\0';
-							}
-							ext++;
-						} else if (cur_pkg[j] == '/') {
-								cur_pkg_data[2] = &cur_pkg[j + 1];
-								break;
-						}
-					}
-				} else {
-					if (g_regex_match (expr, file_list, 0, NULL)) {
-
-						// Already found one with a higher priority?
-						for (j = 0; j < packages_count; j++)
-							if (!g_strcmp0 (cur_pkg_data[2], packages_tokens[j][1])) {
-								found = TRUE;
-								break;
-							}
-
-						if (!found) {
-							found = TRUE;
-							packages_count++;
-							packages_tokens = g_realloc_n (packages_tokens, sizeof (gchar **), packages_count);
-							packages_tokens[packages_count - 1] = g_malloc_n (sizeof (gchar *), 7);
-							// Save package's name and priority
-							packages_tokens[packages_count - 1][0] = cur_priority->data;
-							packages_tokens[packages_count - 1][1] = cur_pkg_data[2];
-							packages_tokens[packages_count - 1][2] = cur_pkg_data[1];
-							packages_tokens[packages_count - 1][3] = cur_pkg_data[0];
-							packages_tokens[packages_count - 1][4] = cur_pkg;
-							packages_tokens[packages_count - 1][5] = packages_tokens[packages_count - 1][6] = NULL;
-							// Find the package description
-							while (!feof (pkglist)) {
-								fscanf (pkglist, "%*s %s", buf);
-								if (g_strcmp0 (buf, cur_pkg_data[2])) {
-									fgets (buf, PKGTOOLS_SPAWN_MAX_LINE_LEN, pkglist);
-								} else {
-									fgetc (pkglist);
-									fgets (buf, PKGTOOLS_SPAWN_MAX_LINE_LEN, pkglist);
-									line_tokens = g_strsplit (buf, " ", 7);
-									if (line_tokens[6] != NULL) line_tokens[6][strlen (line_tokens[6]) - 1] = '\0';
-									packages_tokens[packages_count - 1][5] = g_strdup (line_tokens[3]);
-									packages_tokens[packages_count - 1][6] = g_strdup (line_tokens[6]);
-									g_strfreev (line_tokens);
-									break;
-								}
-							}
-							rewind (pkglist);
-
-							// The package from *-filelist.gz wasn't found in pkglist
-							if (packages_tokens[packages_count - 1][5] == NULL) {
-								g_free (packages_tokens[packages_count - 1][4]);
-								g_free (packages_tokens[packages_count - 1]);
-								packages_count--;
-								continue;
-							}
-						}
-					}
-				}
-			} else if (!found) {
-				file_list[i] = was_read;
-				i++;
+	if ((sqlite3_prepare_v2(katja_pkgtools_db, query->str, -1, &statement, NULL) == SQLITE_OK)) {
+		/* Now we're ready to output all packages */
+		while (sqlite3_step(statement) == SQLITE_ROW) {
+			ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(statement, 2));
+			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
+				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
+										(gchar *) sqlite3_column_text(statement, 0),
+										(gchar *) sqlite3_column_text(statement, 1));
+			} else if (ret == PK_INFO_ENUM_INSTALLING) {
+				pk_backend_job_package(job, PK_INFO_ENUM_AVAILABLE,
+										(gchar *) sqlite3_column_text(statement, 0),
+										(gchar *) sqlite3_column_text(statement, 1));
 			}
 		}
-
-		gzclose_r (zhl);
-		g_free (gz_name);
+		sqlite3_finalize(statement);
+	} else {
+		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(katja_pkgtools_db));
 	}
+	g_string_free(query, TRUE);
 
-	g_regex_unref (expr);
-	g_free (file_list);
-
-	// Now we're ready to output all packages...
-	// ... but before, let us find out whether it is installed or not
-	if ((dirp = opendir ("/var/log/packages")) == NULL) {
-		pk_backend_job_error_code (job,
-				PK_ERROR_ENUM_NO_CACHE,
-				"/var/log/packages: %s", strerror (errno));
-
-		for (i = 0; i < packages_count; i++) {
-			g_free (packages_tokens[i][4]);
-			g_free (packages_tokens[i][5]);
-			g_free (packages_tokens[i][6]);
-			g_free (packages_tokens[i]);
-		}
-		g_free (packages_tokens);
-		goto out;
-	}
-
-	// Output
-	for (i = 0; i < packages_count; i++) {
-		package_id = NULL;
-		while ((package_entry = readdir (dirp))) {
-			if (!g_strcmp0 (package_entry->d_name, packages_tokens[i][5])) {
-				package_id = g_strconcat (packages_tokens[i][1], ";", packages_tokens[i][2], ";", packages_tokens[i][3], ";installed", NULL);
-				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED, package_id, packages_tokens[i][6]);
-				break;
-			}
-		}
-		if (package_id == NULL) {
-			package_id = g_strconcat (packages_tokens[i][1], ";", packages_tokens[i][2], ";", packages_tokens[i][3], ";available", NULL);
-			pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE, package_id, packages_tokens[i][6]);
-		}
-		g_free (package_id);
-
-		g_free (packages_tokens[i][4]);
-		g_free (packages_tokens[i][5]);
-		g_free (packages_tokens[i][6]);
-		g_free (packages_tokens[i]);
-
-		rewinddir (dirp);
-	}
-	closedir (dirp);
-	g_free (packages_tokens);
-
-out:
-	// Close files, free the allocated memory
-	g_free (values_line);
-	fclose (pkglist);
-
+	pk_backend_job_set_percentage(job, 100);
 	pk_backend_job_finished (job);
 }
 
 void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
 	pk_backend_job_thread_create(job, pk_backend_search_files_thread, NULL, NULL);
-}*/
+}
 
 static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar **pkg_ids, **pkg_tokens, *homepage = NULL;
