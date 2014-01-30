@@ -3,6 +3,108 @@
 G_DEFINE_TYPE(KatjaBinary, katja_binary, KATJA_TYPE_PKGTOOLS);
 
 /**
+ * katja_binary_manifest:
+ **/
+void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filename) {
+	FILE *manifest;
+	gint err, read_len;
+	guint pos;
+	gchar buf[KATJA_PKGTOOLS_MAX_BUF_SIZE], *path, *full_name = NULL, *pkg_filename, *rest = NULL, *start;
+	gchar **line, **lines;
+	BZFILE *manifest_bz2;
+	GRegex *pkg_expr = NULL, *file_expr = NULL;
+	GMatchInfo *match_info;
+	sqlite3_stmt *statement = NULL;
+
+	path = g_build_filename(tmpl, KATJA_PKGTOOLS(binary)->name->str, filename, NULL);
+	manifest = fopen(path, "rb");
+	g_free(path);
+
+	if (!manifest)
+		return;
+	if (!(manifest_bz2 = BZ2_bzReadOpen(&err, manifest, 0, 0, NULL, 0)))
+		goto out;
+
+	/* Prepare regular expressions */
+	if (!(pkg_expr = g_regex_new("^\\|\\|[[:blank:]]+Package:[[:blank:]]+.+\\/(.+)\\.(t[blxg]z$)?",
+								 G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
+								 0,
+								 NULL)) ||
+		!(file_expr = g_regex_new("^[-bcdlps][-r][-w][-xsS][-r][-w][-xsS][-r][-w][-xtT][[:space:]][^[:space:]]+"
+								  "[[:space:]]+[[:digit:]]+[[:space:]][[:digit:]-]+[[:space:]][[:digit:]:]+[[:space:]]"
+								  "(?!install\\/|\\.)(.*)",
+								 G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
+								 0,
+								 NULL)))
+		goto out;
+
+	/* Prepare SQL statements */
+	if (sqlite3_prepare_v2(katja_pkgtools_db,
+						   "INSERT INTO filelist (full_name, filename) VALUES (@full_name, @filename)",
+						   -1,
+						   &statement,
+						   NULL) != SQLITE_OK)
+		goto out;
+
+	sqlite3_exec(katja_pkgtools_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
+	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, KATJA_PKGTOOLS_MAX_BUF_SIZE))) {
+		if ((err != BZ_OK) && (err != BZ_STREAM_END))
+			break;
+
+		/* Split the read text into lines */
+		lines = g_strsplit(buf, "\n", 0);
+		if (rest) { /* Add to the first line rest characters from the previous read operation */
+			start = lines[0];
+			lines[0] = g_strconcat(rest, lines[0], NULL);
+			g_free(start);
+			g_free(rest);
+		}
+		if (err != BZ_STREAM_END) { /* The last line can be incomplete */
+			pos = g_strv_length(lines) - 1;
+			rest = lines[pos];
+			lines[pos] = NULL;
+		}
+		for (line = lines; *line; line++) {
+			if (g_regex_match(pkg_expr, *line, 0, &match_info)) {
+				if (g_match_info_get_match_count(match_info) > 2) { /* If the extension matches */
+					g_free(full_name);
+					full_name = g_match_info_fetch(match_info, 1);
+				} else {
+					full_name = NULL;
+				}
+			}
+			g_match_info_free(match_info);
+
+			match_info = NULL;
+			if (full_name && g_regex_match(file_expr, *line, 0, &match_info)) {
+				pkg_filename = g_match_info_fetch(match_info, 1);
+				sqlite3_bind_text(statement, 1, full_name, -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(statement, 2, pkg_filename, -1, SQLITE_TRANSIENT);
+				sqlite3_step(statement);
+				sqlite3_clear_bindings(statement);
+				sqlite3_reset(statement);
+				g_free(pkg_filename);
+			}
+			g_match_info_free(match_info);
+		}
+		g_strfreev(lines);
+	}
+
+	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
+	g_free(full_name);
+	BZ2_bzReadClose(&err, manifest_bz2);
+
+out:
+	sqlite3_finalize(statement);
+	if (file_expr)
+		g_regex_unref(file_expr);
+	if (pkg_expr)
+		g_regex_unref(pkg_expr);
+
+	fclose(manifest);
+}
+
+/**
  * katja_binary_real_download:
  **/
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name) {

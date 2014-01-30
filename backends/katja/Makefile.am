@@ -15,7 +15,7 @@ libpk_backend_katja_la_SOURCES = \
 	katja-slackpkg.h \
 	katja-dl.c \
 	katja-dl.h
-libpk_backend_katja_la_LIBADD = $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
+libpk_backend_katja_la_LIBADD = -lbz2 $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
 libpk_backend_katja_la_LDFLAGS = -module -avoid-version
 libpk_backend_katja_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C) $(KATJA_CFLAGS)
 

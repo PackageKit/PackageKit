@@ -2,6 +2,7 @@
 #define __KATJA_BINARY_H
 
 #include <stdlib.h>
+#include <bzlib.h>
 #include <katja-pkgtools.h>
 
 G_BEGIN_DECLS
@@ -24,6 +25,9 @@ typedef struct {
 GType katja_binary_get_type(void);
 
 G_END_DECLS
+
+/* Public methods */
+void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filename);
 
 /* Implementations */
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name);

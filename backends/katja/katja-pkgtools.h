@@ -2,6 +2,7 @@
 #define __KATJA_PKGTOOLS_H
 
 #include <string.h>
+#include <errno.h>
 #include <curl/curl.h>
 #include <sqlite3.h>
 #include <glib/gstdio.h>
@@ -16,6 +17,8 @@ G_BEGIN_DECLS
 #define KATJA_IS_PKGTOOLS(o) (G_TYPE_CHECK_INSTANCE_TYPE((o), KATJA_TYPE_PKGTOOLS))
 #define KATJA_IS_PKGTOOLS_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE((k), KATJA_TYPE_PKGTOOLS))
 #define KATJA_PKGTOOLS_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), KATJA_TYPE_PKGTOOLS, KatjaPkgtoolsClass))
+
+#define KATJA_PKGTOOLS_MAX_BUF_SIZE 8192
 
 /*typedef struct {
 	PkBackendJob *job;
