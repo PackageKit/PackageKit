@@ -86,8 +86,7 @@ hif_package_get_filename (HyPackage pkg)
 							   NULL);
 		} else {
 			basename = g_path_get_basename (hy_package_get_location (pkg));
-			priv->filename = g_build_filename (hif_source_get_location (priv->src),
-							   "packages",
+			priv->filename = g_build_filename (hif_source_get_packages (priv->src),
 							   basename,
 							   NULL);
 			g_free (basename);
