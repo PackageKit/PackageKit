@@ -54,6 +54,7 @@ gboolean	 hif_source_add_media		(GPtrArray		*sources,
 						 GError			**error);
 const gchar	*hif_source_get_id		(HifSource		*src);
 const gchar	*hif_source_get_location	(HifSource		*src);
+const gchar	*hif_source_get_packages	(HifSource		*src);
 gboolean	 hif_source_get_enabled		(HifSource		*src);
 guint		 hif_source_get_cost		(HifSource		*src);
 HifSourceKind	 hif_source_get_kind		(HifSource		*src);
