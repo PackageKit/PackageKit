@@ -822,10 +822,9 @@ sub _download_distrib_file {
   
   -x "/usr/bin/wget" or die "wget is missing\n";
   
-  my $api_url = sprintf("http://api.mandriva.com/distributions/%s.%s.list?product=%s",
-                  lc($product_id->{type}),
-                  lc($product_id->{arch}),
-                  lc($product_id->{product}));
+  my $api_url = sprintf("http://mirrors.mageia.org/api/mageia.%s.%s.list",
+                  lc($product_id->{release}),
+                  lc($product_id->{arch}));
   
   my $wget_command = join(" ", 
                           "/usr/bin/wget",
