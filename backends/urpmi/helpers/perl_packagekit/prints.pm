@@ -12,6 +12,7 @@
 package perl_packagekit::prints;
 
 use Exporter;
+use MDK::Common;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
