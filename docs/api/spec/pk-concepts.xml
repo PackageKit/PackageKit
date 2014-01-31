@@ -957,7 +957,7 @@
         This directory can only be written by the <literal>packagekitd</literal>
         user (usually root) but can be read by all users.
         The files are not downloaded into any specific directory, instead a
-        random one is created in <literal>/var/cache/PackageKit</literal>.
+		random one is created in <literal>/var/cache/PackageKit/downloads</literal>.
         The reason for this intermediate step is that the
         <literal>DownloadPackages()</literal> method does not take a destination
         directory as the dameon is running as a different user to the user,
