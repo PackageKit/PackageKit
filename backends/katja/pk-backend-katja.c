@@ -15,14 +15,13 @@ void pk_backend_initialize(PkBackend *backend) {
 	gchar *path, *val, *mirror, **groups;
 	gint ret;
 	guint i;
-	guint32 modified;
 	gsize groups_len;
-	GFile *katja_conf;
+	GFile *katja_conf_file;
 	GFileInfo *file_info;
-	GKeyFile *katja_conf_key_file;
+	GKeyFile *katja_conf;
 	GError *err = NULL;
 	gpointer repo = NULL;
-	sqlite3_stmt *statement;
+	sqlite3_stmt *stmt;
 
 	g_debug("backend: initialize");
 	curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -34,46 +33,50 @@ void pk_backend_initialize(PkBackend *backend) {
 	g_free(path);
 
 	/* Read the configuration file */
-	katja_conf_key_file = g_key_file_new();
+	katja_conf = g_key_file_new();
 	path = g_build_filename(SYSCONFDIR, "PackageKit", "Katja.conf", NULL);
-	g_key_file_load_from_file(katja_conf_key_file, path, G_KEY_FILE_NONE, &err);
+	g_key_file_load_from_file(katja_conf, path, G_KEY_FILE_NONE, &err);
 	if (err) {
 		g_error("%s: %s", path, err->message);
 		g_error_free(err);
 	}
 
-	katja_conf = g_file_new_for_path(path);
-	file_info = g_file_query_info(katja_conf, "time::modified-usec", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &err);
-	g_object_unref(katja_conf);
-	if (err) {
+	katja_conf_file = g_file_new_for_path(path);
+	if (!(file_info = g_file_query_info(katja_conf_file,
+										"time::modified-usec",
+										G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+										NULL,
+										&err))) {
 		g_error("%s", err->message);
 		g_error_free(err);
 	}
 
-	modified = g_file_info_get_attribute_uint32(file_info, "time::modified-usec");
-	g_object_unref(file_info);
 	if ((ret = sqlite3_prepare_v2(katja_pkgtools_db,
 							"UPDATE cache_info SET value = ? WHERE key LIKE 'last_modification'",
 							-1,
-							&statement,
+							&stmt,
 							NULL)) == SQLITE_OK) {
-		if ((ret = sqlite3_bind_int(statement, 1, modified)) == SQLITE_OK)
-			ret = sqlite3_step(statement);
-		sqlite3_finalize(statement);
+		ret = sqlite3_bind_int(stmt, 1, g_file_info_get_attribute_uint32(file_info, "time::modified-usec"));
+		if (ret == SQLITE_OK)
+			ret = sqlite3_step(stmt);
+		sqlite3_finalize(stmt);
 	}
 	if ((ret != SQLITE_OK) && (ret != SQLITE_DONE))
 		g_error("%s: %s", path, sqlite3_errstr(ret));
 	else if (!sqlite3_changes(katja_pkgtools_db))
 		g_error("Failed to update database: %s", path);
+
+	g_object_unref(file_info);
+	g_object_unref(katja_conf_file);
 	sqlite3_close_v2(katja_pkgtools_db);
 	g_free(path);
 
 	/* Initialize an object for each well-formed repository */
-	groups = g_key_file_get_groups(katja_conf_key_file, &groups_len);
+	groups = g_key_file_get_groups(katja_conf, &groups_len);
 	for (i = 0; i < groups_len; i++) {
-		if (g_key_file_has_key(katja_conf_key_file, groups[i], "Priority", NULL)) {
-			mirror = g_key_file_get_string(katja_conf_key_file, groups[i], "Mirror", NULL);
-			repo = katja_slackpkg_new(groups[i], mirror, i + 1, g_key_file_get_string_list(katja_conf_key_file,
+		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
+			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+			repo = katja_slackpkg_new(groups[i], mirror, i + 1, g_key_file_get_string_list(katja_conf,
 																						   groups[i],
 																						   "Priority",
 																						   NULL,
@@ -81,9 +84,9 @@ void pk_backend_initialize(PkBackend *backend) {
 			if (repo)
 				repos = g_slist_append(repos, repo);
 			g_free(mirror);
-		} else if (g_key_file_has_key(katja_conf_key_file, groups[i], "IndexFile", NULL)) {
-			mirror = g_key_file_get_string(katja_conf_key_file, groups[i], "Mirror", NULL);
-			val = g_key_file_get_string(katja_conf_key_file, groups[i], "IndexFile", NULL);
+		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
+			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+			val = g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL);
 			repo = katja_dl_new(groups[i], mirror, i + 1, val);
 			g_free(val);
 			g_free(mirror);
@@ -93,14 +96,14 @@ void pk_backend_initialize(PkBackend *backend) {
 		}
 
 		/* Blacklist if set */
-		val = g_key_file_get_string(katja_conf_key_file, groups[i], "Blacklist", NULL);
+		val = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
 		if (repo && val)
 			KATJA_PKGTOOLS(repo)->blacklist = g_regex_new(val, G_REGEX_OPTIMIZE, 0, NULL);
 		g_free(val);
 	}
 	g_strfreev(groups);
 
-	g_key_file_free(katja_conf_key_file);
+	g_key_file_free(katja_conf);
 }
 
 void pk_backend_destroy(PkBackend *backend) {
@@ -753,11 +756,15 @@ void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *tmp_dir_name, *db_err;
+	gchar *tmp_dir_name, *db_err, *path = NULL;
+	gint ret;
 	gboolean force;
 	GSList *file_list = NULL, *l;
-	GError *err;
+	GFile *db_file = NULL;
+	GFileInfo *file_info = NULL;
+	GError *err = NULL;
 	CURL *curl = NULL;
+	sqlite3_stmt *stmt = NULL;
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
 
@@ -771,6 +778,29 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	}
 
 	g_variant_get(params, "(b)", &force);
+
+	/* Force the complete cache refresh if the read configuration file is newer than the metadata cache */
+	if (!force) {
+		path = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
+		db_file = g_file_new_for_path(path);
+		file_info = g_file_query_info(db_file, "time::modified-usec", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &err);
+		if (err) {
+			pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE, "%s: %s", path, err->message);
+			g_error_free(err);
+			goto out;
+		}
+		ret = sqlite3_prepare_v2(katja_pkgtools_db,
+								 "SELECT value FROM cache_info WHERE key LIKE 'last_modification'",
+								 -1,
+								 &stmt,
+								 NULL);
+		if ((ret != SQLITE_OK) || ((ret = sqlite3_step(stmt)) != SQLITE_ROW)) {
+			pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE, "%s: %s", path, sqlite3_errstr(ret));
+			goto out;
+		}
+		if ((guint32) sqlite3_column_int(stmt, 0) > g_file_info_get_attribute_uint32(file_info, "time::modified-usec"))
+			force = TRUE;
+	}
 
 	if (force) { /* It should empty all tables */
 		if (sqlite3_exec(katja_pkgtools_db, "DELETE FROM repos", NULL, 0, &db_err) != SQLITE_OK) {
@@ -800,10 +830,16 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 		katja_pkgtools_generate_cache(l->data, tmp_dir_name);
 
 out:
+	sqlite3_finalize(stmt);
+	if (file_info)
+		g_object_unref(file_info);
+	if (db_file)
+		g_object_unref(db_file);
+	g_free(path);
+
 	pk_directory_remove_contents(tmp_dir_name);
 	g_rmdir(tmp_dir_name);
 	g_free(tmp_dir_name);
-
 	pk_backend_job_finished(job);
 }
 
