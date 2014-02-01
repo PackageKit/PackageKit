@@ -365,6 +365,58 @@ void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	pk_backend_job_thread_create(job, pk_backend_resolve_thread, NULL, NULL);
 }
 
+static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+	gchar *dir_path, *path, **pkg_ids, **pkg_tokens, *to_strv[] = {NULL, NULL};
+	guint i;
+	GSList *repo;
+	sqlite3_stmt *pkglist_statement = NULL;
+
+	g_variant_get(params, "(^a&ss)", &pkg_ids, &dir_path);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+
+	if ((sqlite3_prepare_v2(katja_pkgtools_db,
+							"SELECT summary, (full_name || '.' || ext) FROM pkglist NATURAL JOIN repos "
+							"WHERE name LIKE @name AND ver LIKE @ver AND arch LIKE @arch AND repo LIKE @repo",
+							-1,
+							&pkglist_statement,
+							NULL) != SQLITE_OK)) {
+		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(katja_pkgtools_db));
+		goto out;
+	}
+
+	for (i = 0; pkg_ids[i]; i++) {
+		pkg_tokens = pk_package_id_split(pkg_ids[i]);
+		sqlite3_bind_text(pkglist_statement, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_statement, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_statement, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_statement, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+		if (sqlite3_step(pkglist_statement) == SQLITE_ROW) {
+			if ((repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo))) {
+				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
+									   pkg_ids[i],
+									   (gchar *) sqlite3_column_text(pkglist_statement, 0));
+				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(pkglist_statement, 1), NULL);
+				to_strv[0] = path;
+				pk_backend_job_files(job, NULL, to_strv);
+				g_free(path);
+			}
+		}
+		sqlite3_clear_bindings(pkglist_statement);
+		sqlite3_reset(pkglist_statement);
+		g_strfreev(pkg_tokens);
+	}
+
+out:
+	sqlite3_finalize(pkglist_statement);
+
+	pk_backend_job_finished (job);
+}
+
+void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory) {
+	pk_backend_job_thread_create(job, pk_backend_download_packages_thread, NULL, NULL);
+}
+
 static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar *dest_dir_name, **pkg_tokens, **pkg_ids;
 	guint i;
@@ -405,7 +457,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 		if (sqlite3_step(pkglist_statement) == SQLITE_ROW) {
 
-			/* If it is a collection */
+			/* If it isn't a collection */
 			if (g_strcmp0((gchar *) sqlite3_column_text(pkglist_statement, 1), "collections")) {
 				if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLING,
