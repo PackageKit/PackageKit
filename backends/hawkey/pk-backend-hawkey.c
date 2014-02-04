@@ -2506,6 +2506,7 @@ hif_transaction_delete_packages (GPtrArray *install,
 		if (g_str_has_prefix (filename, cachedir)) {
 			file = g_file_new_for_path (filename);
 			ret = g_file_delete (file, NULL, error);
+			g_object_unref (file);
 			if (!ret)
 				goto out;
 		}
