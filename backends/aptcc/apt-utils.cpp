@@ -107,6 +107,16 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
+bool strIsPrefix(string const& s1, string const&s2)
+{
+    const char*p = s1.c_str();
+    const char*q = s2.c_str();
+    while (*p&&*q)
+        if (*p++!=*q++)
+            return false;
+    return true;
+}
+
 /*}}}*/
 // GetChangelogPath - return a path pointing to a changelog file or dir /*{{{*/
 // ---------------------------------------------------------------------
@@ -115,7 +125,7 @@ PkGroupEnum get_enum_group(string group)
  * appended (for the packages.debian.org/changelogs site) or a
  * ".changelog" (for third party sites that store the changelog in the
  * pool/ next to the deb itself)
- * Example return: "pool/main/a/apt/apt_0.8.8ubuntu3"
+ * Example return: "main/a/apt/apt_0.8.8ubuntu3"
  */
 string GetChangelogPath(AptCacheFile &Cache,
                         pkgCache::PkgIterator Pkg,
@@ -131,6 +141,12 @@ string GetChangelogPath(AptCacheFile &Cache,
    if (rec.SourceVer() != "")
       ver = rec.SourceVer();
    path = flNotFile(rec.FileName());
+
+   if (strIsPrefix(path, "pool/")) {
+       // the returned string starts with pool/, remove it
+       path.erase (0, 5);
+   }
+
    path += srcpkg + "_" + StripEpoch(ver);
    return path;
 }
@@ -161,7 +177,8 @@ bool GuessThirdPartyChangelogUri(AptCacheFile &Cache,
       return false;
 
    // get archive uri for the binary deb
-   string path_without_dot_changelog = GetChangelogPath(Cache, Pkg, Ver);
+   string path_without_dot_changelog;
+   strprintf(path_without_dot_changelog, "%s/%s", "pool", GetChangelogPath(Cache, Pkg, Ver).c_str());
    out_uri = index->ArchiveURI(path_without_dot_changelog + ".changelog");
 
    // now strip away the filename and add srcpkg_srcver.changelog
@@ -199,7 +216,7 @@ bool downloadChangelog(AptCacheFile &CacheFile,
    path = GetChangelogPath(CacheFile, Pkg, Ver);
 
    if (origin.compare("Ubuntu") == 0)
-       strprintf(changelog_uri, "%s/%s/changelog", server.c_str(), path.c_str());
+       strprintf(changelog_uri, "%s/%s/%s/changelog", server.c_str(), "pool", path.c_str());
    else
        strprintf(changelog_uri, "%s/%s_changelog", server.c_str(), path.c_str());
 
