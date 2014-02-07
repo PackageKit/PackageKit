@@ -560,6 +560,39 @@ out:
 }
 
 /**
+ * pk_backend_ensure_origin_pkg:
+ */
+static void
+pk_backend_ensure_origin_pkg (HifDb *db, HyPackage pkg)
+{
+	gchar *tmp;
+
+	/* already set */
+	if (hif_package_get_origin (pkg) != NULL)
+		return;
+
+	/* set from the database if available */
+	tmp = hif_db_get_string (db, pkg, "from_repo", NULL);
+	if (tmp != NULL)
+		hif_package_set_origin (pkg, tmp);
+	g_free (tmp);
+}
+
+
+/**
+ * pk_backend_ensure_origin_pkglist:
+ */
+static void
+pk_backend_ensure_origin_pkglist (HifDb *db, HyPackageList pkglist)
+{
+	HyPackage pkg;
+	gint i;
+
+	FOR_PACKAGELIST(pkg, pkglist, i)
+		pk_backend_ensure_origin_pkg (db, pkg);
+}
+
+/**
  * hif_utils_add_remote:
  */
 static gboolean
@@ -893,7 +926,8 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 				   39, /* add repos */
 				   50, /* query */
 				   1, /* ensure source list */
-				   10, /* emit */
+				   1, /* ensure origin */
+				   9, /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -995,6 +1029,17 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		g_error_free (error);
 		goto out;
 	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set the origin on each package */
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
@@ -1460,7 +1505,8 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 		hy_query_clear (query);
 		split = pk_package_id_split (package_ids[i]);
 		reponame = split[PK_PACKAGE_ID_DATA];
-		if (g_strcmp0 (reponame, "installed") == 0)
+		if (g_strcmp0 (reponame, "installed") == 0 ||
+		    g_str_has_prefix (reponame, "installed:"))
 			reponame = HY_SYSTEM_REPO_NAME;
 		else if (g_strcmp0 (reponame, "local") == 0)
 			reponame = HY_CMDLINE_REPO_NAME;

@@ -42,6 +42,7 @@ typedef struct {
 	char		*nevra;
 	gboolean	 user_action;
 	gchar		*filename;
+	gchar		*origin;
 	gchar		*description;
 	gchar		*package_id;
 	PkInfoEnum	 info;
@@ -56,6 +57,7 @@ hif_package_destroy_func (void *userdata)
 {
 	HifPackagePrivate *priv = (HifPackagePrivate *) userdata;
 	g_free (priv->filename);
+	g_free (priv->origin);
 	g_free (priv->package_id);
 	g_free (priv->description);
 	hy_free (priv->checksum_str);
@@ -96,6 +98,21 @@ hif_package_get_filename (HyPackage pkg)
 	}
 
 	return priv->filename;
+}
+
+/**
+ * hif_package_get_origin:
+ **/
+const gchar *
+hif_package_get_origin (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return NULL;
+	if (!hy_package_installed (pkg))
+		return NULL;
+	return priv->origin;
 }
 
 /**
@@ -150,6 +167,7 @@ hif_package_get_id (HyPackage pkg)
 {
 	HifPackagePrivate *priv;
 	const gchar *reponame;
+	gchar *reponame_tmp = NULL;
 
 	priv = hif_package_get_priv (pkg);
 	if (priv == NULL)
@@ -159,15 +177,23 @@ hif_package_get_id (HyPackage pkg)
 
 	/* calculate and cache */
 	reponame = hy_package_get_reponame (pkg);
-	if (g_strcmp0 (reponame, HY_SYSTEM_REPO_NAME) == 0)
-		reponame = "installed";
-	else if (g_strcmp0 (reponame, HY_CMDLINE_REPO_NAME) == 0)
+	if (g_strcmp0 (reponame, HY_SYSTEM_REPO_NAME) == 0) {
+		/* origin data to munge into the package_id data field */
+		if (priv->origin != NULL) {
+			reponame_tmp = g_strdup_printf ("installed:%s", priv->origin);
+			reponame = reponame_tmp;
+		} else {
+			reponame = "installed";
+		}
+	} else if (g_strcmp0 (reponame, HY_CMDLINE_REPO_NAME) == 0) {
 		reponame = "local";
+	}
 	priv->package_id = pk_package_id_build (hy_package_get_name (pkg),
 						hy_package_get_evr (pkg),
 						hy_package_get_arch (pkg),
 						reponame);
 out:
+	g_free (reponame_tmp);
 	return priv->package_id;
 }
 
@@ -228,6 +254,20 @@ hif_package_set_filename (HyPackage pkg, const gchar *filename)
 		return;
 	g_free (priv->filename);
 	priv->filename = g_strdup (filename);
+}
+
+/**
+ * hif_package_set_origin:
+ **/
+void
+hif_package_set_origin (HyPackage pkg, const gchar *origin)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	g_free (priv->origin);
+	priv->origin = g_strdup (origin);
 }
 
 /**
