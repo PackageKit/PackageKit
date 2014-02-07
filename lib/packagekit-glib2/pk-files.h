@@ -62,6 +62,8 @@ struct _PkFilesClass
 
 GType		 pk_files_get_type			(void);
 PkFiles		*pk_files_new				(void);
+const gchar	*pk_files_get_package_id		(PkFiles	*files);
+gchar **	 pk_files_get_files			(PkFiles	*files);
 
 G_END_DECLS
 

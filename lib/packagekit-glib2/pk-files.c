@@ -59,6 +59,40 @@ enum {
 G_DEFINE_TYPE (PkFiles, pk_files, PK_TYPE_SOURCE)
 
 /**
+ * pk_files_get_package_id:
+ * @files: a valid #PkFiles instance
+ *
+ * Gets the package-id
+ *
+ * Return value: Gets the package_id for the files object
+ *
+ * Since: 0.9.1
+ **/
+const gchar *
+pk_files_get_package_id (PkFiles *files)
+{
+	g_return_val_if_fail (PK_IS_FILES (files), NULL);
+	return files->priv->package_id;
+}
+
+/**
+ * pk_files_get_files:
+ * @files: a valid #PkFiles instance
+ *
+ * Gets the file list
+ *
+ * Return value: (transfer none): Gets the file list for the files object
+ *
+ * Since: 0.9.1
+ **/
+gchar **
+pk_files_get_files (PkFiles *files)
+{
+	g_return_val_if_fail (PK_IS_FILES (files), NULL);
+	return files->priv->files;
+}
+
+/**
  * pk_files_get_property:
  **/
 static void
