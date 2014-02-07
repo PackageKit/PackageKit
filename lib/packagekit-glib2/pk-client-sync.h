@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2009-2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -77,6 +77,13 @@ PkResults	*pk_client_get_details			(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_get_details_local		(PkClient		*client,
+							 gchar			**files,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
+PkResults	*pk_client_get_files_local		(PkClient		*client,
 							 gchar			**files,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,

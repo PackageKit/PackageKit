@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -80,6 +80,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
 	PK_ROLE_ENUM_REPAIR_SYSTEM,			/* Since: 0.7.2 */
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL,			/* Since: 0.8.17 */
+	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 

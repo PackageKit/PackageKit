@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -111,6 +111,15 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
  */
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+{
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_get_files_local:
+ */
+void
+pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
 	pk_backend_job_finished (job);
 }

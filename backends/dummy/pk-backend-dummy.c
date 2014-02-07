@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -189,6 +189,23 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 	pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 				"PowerTOP is a tool that finds the software component(s) that make your "
 				"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
+	pk_backend_job_set_percentage (job, 100);
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_get_files_local:
+ */
+void
+pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
+{
+	const gchar *files[] = { "/usr/share/man/man1",
+				 "/usr/share/applications/dave.desktop",
+				 "/etc/yum.repos.d/dave.repo",
+				 NULL };
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+	pk_backend_job_files (job, "test;0.01;i386;local", (gchar **) files);
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
 }

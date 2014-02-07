@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -97,6 +97,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_DEPENDS_ON,			"depends-on"},
 	{PK_ROLE_ENUM_GET_DETAILS,			"get-details"},
 	{PK_ROLE_ENUM_GET_DETAILS_LOCAL,		"get-details-local"},
+	{PK_ROLE_ENUM_GET_FILES_LOCAL,			"get-files-local"},
 	{PK_ROLE_ENUM_GET_FILES,			"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,			"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,			"get-repo-list"},
@@ -1193,6 +1194,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		text = dgettext("PackageKit", "Resolving");
 		break;
 	case PK_ROLE_ENUM_GET_FILES:
+	case PK_ROLE_ENUM_GET_FILES_LOCAL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Getting file list");
 		break;

@@ -399,13 +399,13 @@
     </method>
 
     <!--*********************************************************************-->
-    <method name="GetDetails">
+    <method name="GetDetailsLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
           <doc:para>
             This method should return all the details about a specific
-            <doc:tt>package_id</doc:tt>.
+            local file.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -416,11 +416,11 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
+      <arg type="as" name="files" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An array of package IDs.
+              An array of filenames.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -428,12 +428,12 @@
     </method>
 
     <!--*********************************************************************-->
-    <method name="GetDetailsLocal">
+    <method name="GetFilesLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
           <doc:para>
-            This method should return all the details about a specific
+            This method should return all the file lists for a specific
             local file.
           </doc:para>
           <doc:para>

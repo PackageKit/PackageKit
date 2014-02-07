@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1426,6 +1426,20 @@ pk_console_get_details_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 }
 
 /**
+ * pk_console_get_files_local:
+ **/
+static gboolean
+pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
+{
+	pk_client_get_files_local_async (PK_CLIENT (ctx->task),
+					 files,
+					 ctx->cancellable,
+					 pk_console_progress_cb, ctx,
+					 pk_console_finished_cb, ctx);
+	return TRUE;
+}
+
+/**
  * pk_console_get_files:
  **/
 static gboolean
@@ -2359,6 +2373,17 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		run_mainloop = pk_console_get_details_local (ctx, argv + 2, &error);
+
+	} else if (strcmp (mode, "get-files-local") == 0) {
+		if (value == NULL) {
+			/* TRANSLATORS: The user did not provide a package name */
+			error = g_error_new (PK_CONSOLE_ERROR,
+					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s", _("A filename is required"));
+			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
+			goto out;
+		}
+		run_mainloop = pk_console_get_files_local (ctx, argv + 2, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {

@@ -167,6 +167,10 @@ manpage.1: manpage.xml
         <listitem><para>List the files contained in the given package.</para></listitem>
       </varlistentry>
       <varlistentry>
+        <term>get-files-local <replaceable>FILE</replaceable></term>
+        <listitem><para>List the files contained in the local package.</para></listitem>
+      </varlistentry>
+      <varlistentry>
         <term>get-update-detail <replaceable>PACKAGE</replaceable></term>
         <listitem><para>Print the package changelog for the given package.</para></listitem>
       </varlistentry>

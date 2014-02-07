@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2009-2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -162,6 +162,14 @@ void		 pk_client_get_details_async		(PkClient		*client,
 							 gpointer		 user_data);
 
 void		 pk_client_get_details_local_async	(PkClient		*client,
+							 gchar			**files,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_files_local_async	(PkClient		*client,
 							 gchar			**files,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
