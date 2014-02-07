@@ -1822,6 +1822,96 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **pac
 }
 
 /**
+ * backend_get_files_local_thread:
+ */
+static void
+backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	gboolean ret;
+	gchar **full_paths;
+	GError *error = NULL;
+	guint i;
+	HifState *state_local;
+	HyPackage pkg;
+	HySack sack = NULL;
+	HyStringArray files_array;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters;
+
+	g_variant_get (params, "(^a&s)", &full_paths);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+
+	/* set state */
+	ret = hif_state_set_steps (job_data->state, NULL,
+				   50, /* create sack */
+				   50, /* get details */
+				   -1);
+	g_assert (ret);
+
+	/* get sack */
+	filters = pk_bitfield_value (PK_FILTER_ENUM_INSTALLED);
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_NONE,
+						  state_local,
+						  &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* ensure packages are not already installed */
+	for (i = 0; full_paths[i] != NULL; i++) {
+		pkg = hy_sack_add_cmdline_package (sack, full_paths[i]);
+		g_warning ("full_paths[i]=%s", full_paths[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_FILE_NOT_FOUND,
+						   "Failed to open %s",
+						   full_paths[i]);
+			goto out;
+		}
+		/* sort and list according to name */
+		files_array = hy_package_get_files (pkg);
+		pk_backend_job_files (job,
+				      hif_package_get_id (pkg),
+				      (gchar **) files_array);
+		hy_stringarray_free (files_array);
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_get_files_local:
+ */
+void
+pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+{
+	pk_backend_job_thread_create (job, backend_get_files_local_thread, NULL, NULL);
+}
+
+/**
  * pk_backend_download_packages_thread:
  */
 static void
