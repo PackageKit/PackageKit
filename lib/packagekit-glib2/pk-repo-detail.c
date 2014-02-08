@@ -61,6 +61,57 @@ enum {
 G_DEFINE_TYPE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
 
 /**
+ * pk_repo_detail_get_id:
+ * @repo_detail: a valid #PkRepoDetail instance
+ *
+ * Gets the repository ID.
+ *
+ * Return value: string ID, e.g. "fedora"
+ *
+ * Since: 0.9.1
+ **/
+const gchar *
+pk_repo_detail_get_id (PkRepoDetail *repo_detail)
+{
+	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
+	return repo_detail->priv->repo_id;
+}
+
+/**
+ * pk_repo_detail_get_description:
+ * @repo_detail: a valid #PkRepoDetail instance
+ *
+ * Gets the repository description.
+ *
+ * Return value: string ID, e.g. "Fedora 20 - i386"
+ *
+ * Since: 0.9.1
+ **/
+const gchar *
+pk_repo_detail_get_description (PkRepoDetail *repo_detail)
+{
+	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
+	return repo_detail->priv->description;
+}
+
+/**
+ * pk_repo_detail_get_enabled:
+ * @repo_detail: a valid #PkRepoDetail instance
+ *
+ * Gets the repository enabled status.
+ *
+ * Return value: %TRUE for enabled
+ *
+ * Since: 0.9.1
+ **/
+gboolean
+pk_repo_detail_get_enabled (PkRepoDetail *repo_detail)
+{
+	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), FALSE);
+	return repo_detail->priv->enabled;
+}
+
+/**
  * pk_repo_detail_get_property:
  **/
 static void

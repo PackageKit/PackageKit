@@ -63,6 +63,10 @@ struct _PkRepoDetailClass
 GType		 pk_repo_detail_get_type		(void);
 PkRepoDetail	*pk_repo_detail_new			(void);
 
+const gchar	*pk_repo_detail_get_id			(PkRepoDetail	*repo_detail);
+const gchar	*pk_repo_detail_get_description		(PkRepoDetail	*repo_detail);
+gboolean	 pk_repo_detail_get_enabled		(PkRepoDetail	*repo_detail);
+
 G_END_DECLS
 
 #endif /* __PK_REPO_DETAIL_H */
