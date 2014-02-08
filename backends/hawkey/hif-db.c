@@ -69,11 +69,12 @@ hif_db_get_dir_for_package (HyPackage package)
 	pkgid = hif_package_get_pkgid (package);
 	if (pkgid == NULL)
 		goto out;
-	dir = g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s",
+	dir = g_strdup_printf ("/var/lib/yum/yumdb/%c/%s-%s-%s-%s-%s",
 			       hy_package_get_name (package)[0],
 			       pkgid,
 			       hy_package_get_name (package),
 			       hy_package_get_version (package),
+			       hy_package_get_release (package),
 			       hy_package_get_arch (package));
 out:
 	return dir;
