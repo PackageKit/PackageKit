@@ -1115,6 +1115,11 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 		}
 	}
 
+	/* assume arch filter unless specified otherwise */
+	if (!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_ARCH) &&
+	    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_ARCH))
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_ARCH);
+
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
