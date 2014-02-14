@@ -1172,6 +1172,48 @@ pk_backend_get_updates (PkBackend *backend,
 }
 
 /**
+ * pk_backend_source_filter:
+ */
+static gboolean
+pk_backend_source_filter (HifSource *src, PkBitfield filters)
+{
+	/* devel and ~devel */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) &&
+	    !hif_source_is_devel (src))
+		return FALSE;
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
+	    hif_source_is_devel (src))
+		return FALSE;
+
+	/* source and ~source */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) &&
+	    !hif_source_is_source (src))
+		return FALSE;
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) &&
+	    hif_source_is_source (src))
+		return FALSE;
+
+	/* installed and ~installed == enabled */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+	    !hif_source_get_enabled (src))
+		return FALSE;
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+	    hif_source_get_enabled (src))
+		return FALSE;
+
+	/* supported and ~supported == core */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED) &&
+	    !hif_source_is_supported (src))
+		return FALSE;
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED) &&
+	    hif_source_is_supported (src))
+		return FALSE;
+
+	/* not filtered */
+	return TRUE;
+}
+
+/**
  * pk_backend_get_repo_list:
  */
 void
@@ -1208,13 +1250,8 @@ pk_backend_get_repo_list (PkBackend *backend,
 	/* emit each repo */
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
-
-		/* allow filtering on devel and ~devel */
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) && !hif_source_is_devel (src))
+		if (!pk_backend_source_filter (src, filters))
 			continue;
-		else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && hif_source_is_devel (src))
-			continue;
-
 		description = hif_source_get_description (src);
 		pk_backend_job_repo_detail (job,
 					    hif_source_get_id (src),

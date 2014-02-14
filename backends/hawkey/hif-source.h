@@ -62,6 +62,8 @@ gboolean	 hif_source_get_gpgcheck	(HifSource		*src);
 gchar		*hif_source_get_description	(HifSource		*src);
 HyRepo		 hif_source_get_repo		(HifSource		*src);
 gboolean	 hif_source_is_devel		(HifSource		*src);
+gboolean	 hif_source_is_source		(HifSource		*src);
+gboolean	 hif_source_is_supported	(HifSource		*src);
 gboolean	 hif_source_check		(HifSource		*src,
 						 guint			 permissible_cache_age,
 						 HifState		*state,
