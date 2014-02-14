@@ -951,8 +951,44 @@ hif_source_is_devel (HifSource *src)
 		return TRUE;
 	if (g_str_has_suffix (src->id, "-development"))
 		return TRUE;
+	return FALSE;
+}
+
+/**
+ * hif_source_is_source:
+ **/
+gboolean
+hif_source_is_source (HifSource *src)
+{
 	if (g_str_has_suffix (src->id, "-source"))
 		return TRUE;
+	return FALSE;
+}
+
+/**
+ * hif_source_is_supported:
+ **/
+gboolean
+hif_source_is_supported (HifSource *src)
+{
+	guint i;
+	const gchar *valid[] = { "fedora",
+				 "fedora-debuginfo",
+				 "fedora-source",
+				 "rawhide",
+				 "rawhide-debuginfo",
+				 "rawhide-source",
+				 "updates",
+				 "updates-debuginfo",
+				 "updates-source",
+				 "updates-testing",
+				 "updates-testing-debuginfo",
+				 "updates-testing-source",
+				 NULL };
+	for (i = 0; valid[i] != NULL; i++) {
+		if (g_strcmp0 (src->id, valid[i]) == 0)
+			return TRUE;
+	}
 	return FALSE;
 }
 
