@@ -766,6 +766,10 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                                     0);
 
             while (getline(in, line)) {
+                // we don't want the additional whitespace, because it can confuse
+                // some markdown parsers used by client tools
+                if (starts_with(line, "  "))
+                    line.erase(0,1);
                 // no need to free str later, it is allocated in a static buffer
                 const char *str = utf8(line.c_str());
                 if (strcmp(str, "") == 0) {
@@ -802,7 +806,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                         }
                     }
                     g_match_info_free (match_info);
-                } else if (starts_with(str, "  ")) {
+                } else if (starts_with(str, " ")) {
                     // update descritption
                     update_text.append("\n");
                     update_text.append(str);
@@ -1362,7 +1366,7 @@ void AptIntf::emitPackageFiles(const gchar *pi)
         if (!in != 0) {
             return;
         }
-        
+
         files = g_ptr_array_new_with_free_func(g_free);
         while (in.eof() == false) {
             getline(in, line);
@@ -1370,7 +1374,7 @@ void AptIntf::emitPackageFiles(const gchar *pi)
                 g_ptr_array_add(files, g_strdup(line.c_str()));
             }
         }
-        
+
         if (files->len) {
             g_ptr_array_add(files, NULL);
             pk_backend_job_files(m_job, pi, (gchar **) files->pdata);
