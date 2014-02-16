@@ -3211,16 +3211,21 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	/* emit what we're going to do */
 	hif_emit_package_array (job, PK_INFO_ENUM_UNTRUSTED, untrusted);
 	pkglist = hy_goal_list_erasures (job_data->goal);
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_REMOVING, pkglist);
 	pkglist = hy_goal_list_installs (job_data->goal);
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_INSTALLING, pkglist);
 	pkglist = hy_goal_list_obsoleted (job_data->goal);
 	hif_emit_package_list (job, PK_INFO_ENUM_OBSOLETING, pkglist);
 	pkglist = hy_goal_list_reinstalls (job_data->goal);
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_REINSTALLING, pkglist);
 	pkglist = hy_goal_list_upgrades (job_data->goal);
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_UPDATING, pkglist);
 	pkglist = hy_goal_list_downgrades (job_data->goal);
+	pk_backend_ensure_origin_pkglist (job_data->db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_DOWNGRADING, pkglist);
 
 	/* done */
