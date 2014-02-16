@@ -1051,6 +1051,47 @@
     </method>
 
     <!--*********************************************************************-->
+    <method name="RepoRemove">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method removes the repo and optionally removes all the packages
+            installed from the repo.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need org.freedesktop.packagekit.repo-change</doc:permission>
+      </doc:doc>
+      <arg type="t" name="transaction_flags" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the transaction should be simulated.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="repo_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A repository identifier, e.g. <doc:tt>updates-testing</doc:tt>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="autoremove" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Packages installed from the repo are automatically removed.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
     <method name="Resolve">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

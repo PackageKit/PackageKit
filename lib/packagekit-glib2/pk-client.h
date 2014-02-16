@@ -360,6 +360,16 @@ void		 pk_client_repo_set_data_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_repo_remove_async		(PkClient		*client,
+							 PkBitfield		 transaction_flags,
+							 const gchar		*repo_id,
+							 gboolean		 autoremove,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 void		 pk_client_repair_system_async		(PkClient		*client,
 							 PkBitfield		 transaction_flags,
 							 GCancellable		*cancellable,

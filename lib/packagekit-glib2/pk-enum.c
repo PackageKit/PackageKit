@@ -111,6 +111,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REMOVE_PACKAGES,			"remove-packages"},
 	{PK_ROLE_ENUM_REPO_ENABLE,			"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,			"repo-set-data"},
+	{PK_ROLE_ENUM_REPO_REMOVE,			"repo-remove"},
 	{PK_ROLE_ENUM_RESOLVE,				"resolve"},
 	{PK_ROLE_ENUM_SEARCH_DETAILS,			"search-details"},
 	{PK_ROLE_ENUM_SEARCH_FILE,			"search-file"},
@@ -1188,6 +1189,10 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_REPO_SET_DATA:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Setting data");
+		break;
+	case PK_ROLE_ENUM_REPO_REMOVE:
+		/* TRANSLATORS: The role of the transaction, in present tense */
+		text = dgettext("PackageKit", "Removing repository");
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		/* TRANSLATORS: The role of the transaction, in present tense */

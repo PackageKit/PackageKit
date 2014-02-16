@@ -210,6 +210,11 @@ void		 pk_backend_repo_set_data		(PkBackend	*backend,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value);
+void		 pk_backend_repo_remove			(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 PkBitfield	 transaction_flags,
+							 const gchar	*repo_id,
+							 gboolean	 autoremove);
 void		 pk_backend_what_provides		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,

@@ -1616,6 +1616,8 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	}
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_SET_DATA))
 		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
+	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_REMOVE))
+		g_string_append_printf (string, "  %s\n", "repo-remove [repo_id] [autoremove];");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_WHAT_PROVIDES))
 		g_string_append_printf (string, "  %s\n", "what-provides [search]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_ACCEPT_EULA))
@@ -2264,6 +2266,24 @@ main (int argc, char *argv[])
 					       ctx->cancellable,
 					       pk_console_progress_cb, ctx,
 					       pk_console_finished_cb, ctx);
+
+	} else if (strcmp (mode, "repo-remove") == 0) {
+		if (value == NULL || details == NULL) {
+			/* TRANSLATORS: The user didn't provide any data */
+			error = g_error_new (PK_CONSOLE_ERROR,
+					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s", _("A repo id and autoremove required"));
+			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
+			goto out;
+		}
+		pk_client_repo_remove_async (PK_CLIENT (ctx->task),
+					     pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE,
+								     -1),
+					     value,
+					     atoi (details),
+					     ctx->cancellable,
+					     pk_console_progress_cb, ctx,
+					     pk_console_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
 		pk_task_get_repo_list_async (PK_TASK (ctx->task),

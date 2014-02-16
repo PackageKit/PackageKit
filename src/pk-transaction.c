@@ -298,6 +298,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
+	    priv->role == PK_ROLE_ENUM_REPO_REMOVE ||
 	    priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* this needs to be done after a small delay */
@@ -1244,6 +1245,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 
 	/* the repo list will have changed */
 	if (transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    transaction->priv->role == PK_ROLE_ENUM_REPO_REMOVE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		pk_notify_repo_list_changed (transaction->priv->notify);
 	}
@@ -2230,6 +2232,13 @@ pk_transaction_run (PkTransaction *transaction)
 					  priv->cached_parameter,
 					  priv->cached_value);
 		break;
+	case PK_ROLE_ENUM_REPO_REMOVE:
+		pk_backend_repo_remove (priv->backend,
+					priv->job,
+					priv->cached_transaction_flags,
+					priv->cached_repo_id,
+					priv->cached_autoremove);
+		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		pk_backend_repair_system (priv->backend,
 					  priv->job,
@@ -2639,6 +2648,7 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 			break;
 		case PK_ROLE_ENUM_REPO_ENABLE:
 		case PK_ROLE_ENUM_REPO_SET_DATA:
+		case PK_ROLE_ENUM_REPO_REMOVE:
 			policy = "org.freedesktop.packagekit.system-sources-configure";
 			break;
 		case PK_ROLE_ENUM_REFRESH_CACHE:
@@ -4731,6 +4741,70 @@ out:
 }
 
 /**
+ * pk_transaction_repo_remove:
+ **/
+static void
+pk_transaction_repo_remove (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
+{
+	GError *error = NULL;
+	PkBitfield transaction_flags;
+	const gchar *repo_id;
+	gboolean autoremove;
+	gboolean ret;
+	gchar *tmp;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(t&sb)",
+		       &transaction_flags,
+		       &repo_id,
+		       &autoremove);
+
+	tmp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("RepoRemove method called: %s, %s, %i",
+		 tmp, repo_id, autoremove);
+	g_free (tmp);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_REPO_REMOVE)) {
+		g_set_error_literal (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "RepoSetData not supported by backend");
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* check for sanity */
+	ret = pk_transaction_strvalidate (repo_id, &error);
+	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_repo_id = g_strdup (repo_id);
+	transaction->priv->cached_transaction_flags = transaction_flags;
+	transaction->priv->cached_autoremove = autoremove;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REPO_REMOVE);
+
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_REPO_REMOVE,
+						   &error);
+	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+/**
  * pk_transaction_resolve:
  **/
 static void
@@ -5640,6 +5714,11 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "RepoSetData") == 0) {
 		pk_transaction_repo_set_data (transaction, parameters, invocation);
+		goto out;
+	}
+
+	if (g_strcmp0 (method_name, "RepoRemove") == 0) {
+		pk_transaction_repo_remove (transaction, parameters, invocation);
 		goto out;
 	}
 

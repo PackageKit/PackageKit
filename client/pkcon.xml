@@ -195,6 +195,10 @@ manpage.1: manpage.xml
         <listitem><para>Set the given parameter to the given value for the repository.</para></listitem>
       </varlistentry>
       <varlistentry>
+        <term>repo-remove <replaceable>REPOSITORY</replaceable> <replaceable>PARAMETER</replaceable> </term>
+        <listitem><para>Removes the repository and optionally any packages installed from it.</para></listitem>
+      </varlistentry>
+      <varlistentry>
         <term>what-provides <replaceable>STRING</replaceable></term>
         <listitem><para>List packages that provide the given string.</para></listitem>
       </varlistentry>

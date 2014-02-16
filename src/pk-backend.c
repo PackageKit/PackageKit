@@ -145,6 +145,11 @@ typedef struct {
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value);
+	void		(*repo_remove)			(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 PkBitfield	 transaction_flags,
+							 const gchar	*repo_id,
+							 gboolean	 autoremove);
 	void		(*resolve)			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
@@ -375,6 +380,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
 	if (desc->repo_set_data != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
+	if (desc->repo_remove != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_REMOVE);
 	if (desc->get_distro_upgrades != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	if (desc->get_categories != NULL)
@@ -532,6 +539,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
 		g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
 		g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
+		g_module_symbol (handle, "pk_backend_repo_remove", (gpointer *)&desc->repo_remove);
 		g_module_symbol (handle, "pk_backend_resolve", (gpointer *)&desc->resolve);
 		g_module_symbol (handle, "pk_backend_search_details", (gpointer *)&desc->search_details);
 		g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
@@ -1499,6 +1507,34 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
 							   parameter,
 							   value));
 	backend->priv->desc->repo_set_data (backend, job, repo_id, parameter, value);
+}
+
+/**
+ * pk_backend_repo_remove:
+ */
+void
+pk_backend_repo_remove (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield transaction_flags,
+			const gchar *repo_id,
+			gboolean autoremove)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->repo_remove != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_REMOVE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(tsb)",
+							   transaction_flags,
+							   repo_id,
+							   autoremove));
+	backend->priv->desc->repo_remove (backend,
+					  job,
+					  transaction_flags,
+					  repo_id,
+					  autoremove);
 }
 
 /**

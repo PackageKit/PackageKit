@@ -81,6 +81,7 @@ typedef enum {
 	PK_ROLE_ENUM_REPAIR_SYSTEM,			/* Since: 0.7.2 */
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL,			/* Since: 0.8.17 */
 	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
+	PK_ROLE_ENUM_REPO_REMOVE,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
