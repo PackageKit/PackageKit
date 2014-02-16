@@ -1214,18 +1214,22 @@ pk_backend_source_filter (HifSource *src, PkBitfield filters)
 }
 
 /**
- * pk_backend_get_repo_list:
+ * pk_backend_get_repo_list_thread:
  */
-void
-pk_backend_get_repo_list (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield filters)
+static void
+pk_backend_get_repo_list_thread (PkBackendJob *job,
+				 GVariant *params,
+				 gpointer user_data)
 {
+
 	gchar *description;
 	GError *error = NULL;
 	GPtrArray *sources;
 	guint i;
 	HifSource *src;
+	PkBitfield filters;
+
+	g_variant_get (params, "(t)", &filters);
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -1266,19 +1270,33 @@ out:
 }
 
 /**
- * pk_backend_repo_set_data:
+ * pk_backend_get_repo_list:
  */
 void
-pk_backend_repo_set_data (PkBackend *backend,
+pk_backend_get_repo_list (PkBackend *backend,
 			  PkBackendJob *job,
-			  const gchar *repo_id,
-			  const gchar *parameter,
-			  const gchar *value)
+			  PkBitfield filters)
 {
+	pk_backend_job_thread_create (job, pk_backend_get_repo_list_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_repo_set_data_thread:
+ */
+static void
+pk_backend_repo_set_data_thread (PkBackendJob *job,
+				 GVariant *params,
+				 gpointer user_data)
+{
+	const gchar *repo_id;
+	const gchar *parameter;
+	const gchar *value;
 	gboolean ret = FALSE;
 	GError *error = NULL;
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+
+	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
 
 	/* take lock */
 	ret = hif_state_take_lock (job_data->state,
@@ -1322,6 +1340,19 @@ pk_backend_repo_set_data (PkBackend *backend,
 out:
 	hif_state_release_locks (job_data->state);
 	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_repo_set_data:
+ */
+void
+pk_backend_repo_set_data (PkBackend *backend,
+			  PkBackendJob *job,
+			  const gchar *repo_id,
+			  const gchar *parameter,
+			  const gchar *value)
+{
+	pk_backend_job_thread_create (job, pk_backend_repo_set_data_thread, NULL, NULL);
 }
 
 /**
