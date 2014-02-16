@@ -3403,6 +3403,212 @@ out:
 }
 
 /**
+ * pk_backend_repo_remove_thread:
+ */
+static void
+pk_backend_repo_remove_thread (PkBackendJob *job,
+			       GVariant *params,
+			       gpointer user_data)
+{
+	GError *error = NULL;
+	GPtrArray *removed_id = NULL;
+	GPtrArray *sources = NULL;
+	HifSource *src;
+	HifState *state_local;
+	HyPackage pkg;
+	HyPackageList pkglist;
+	HyQuery query = NULL;
+	HyQuery query_release = NULL;
+	HySack sack = NULL;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
+	const gchar *from_repo;
+	const gchar *repo_filename;
+	const gchar *repo_id;
+	const gchar *tmp;
+	gboolean autoremove;
+	gboolean ret;
+	gboolean found;
+	gchar **search = NULL;
+	guint cnt = 0;
+	guint i;
+	guint j;
+
+	g_variant_get (params, "(t&sb)",
+		       &job_data->transaction_flags,
+		       &repo_id,
+		       &autoremove);
+
+	/* set state */
+	ret = hif_state_set_steps (job_data->state, NULL,
+				   1, /* get the .repo filename for @repo_id */
+				   1, /* find any other repos in the same file */
+				   10, /* remove any packages from repos */
+				   3, /* remove repo-releases */
+				   85, /* run transaction */
+				   -1);
+	g_assert (ret);
+
+	/* find the repo-release package name for @repo_id */
+	src = hif_repos_get_source_by_id (priv->repos, repo_id, &error);
+	if (src == NULL) {
+		pk_backend_job_error_code (job,
+					   error->code,
+					   "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* find all the .repo files the repo-release package installed */
+	sources = hif_repos_get_sources (priv->repos, &error);
+	search = g_new0 (gchar *, sources->len + 0);
+	removed_id = g_ptr_array_new_with_free_func (g_free);
+	repo_filename = hif_source_get_filename (src);
+	for (i = 0; i < sources->len; i++) {
+		src = g_ptr_array_index (sources, i);
+		if (g_strcmp0 (hif_source_get_filename (src), repo_filename) != 0)
+			continue;
+
+		/* this repo_id will get purged */
+		tmp = hif_source_get_id (src);
+		g_debug ("adding id %s to check", tmp);
+		g_ptr_array_add (removed_id, g_strdup (tmp));
+
+		/* the package that installed the .repo file will be removed */
+		tmp = hif_source_get_filename (src);
+		for (j = 0, found = FALSE; search[j] != NULL; j++) {
+			if (g_strcmp0 (tmp, search[j]) == 0)
+				found = TRUE;
+		}
+		if (!found) {
+			g_debug ("adding filename %s to search", tmp);
+			search[cnt++] = g_strdup (tmp);
+		}
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* remove all the packages installed from all these repos */
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	job_data->goal = hy_goal_create (sack);
+	query = hy_query_create (sack);
+	pkglist = hy_query_run (query);
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		pk_backend_ensure_origin_pkg (job_data->db, pkg);
+		from_repo = hif_package_get_origin (pkg);
+		if (from_repo == NULL)
+			continue;
+		for (j = 0; j < removed_id->len; j++) {
+			tmp = g_ptr_array_index (removed_id, j);
+			if (g_strcmp0 (tmp, from_repo) == 0) {
+				g_debug ("%s %s as installed from %s",
+					 autoremove ? "removing" : "ignoring",
+					 hy_package_get_name (pkg),
+					 from_repo);
+				if (autoremove) {
+					hif_package_set_user_action (pkg, TRUE);
+					hy_goal_erase (job_data->goal, pkg);
+				}
+				break;
+			}
+		}
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* remove the repo-releases */
+	query_release = hy_query_create (sack);
+	hy_query_filter_in (query_release, HY_PKG_FILE, HY_EQ, (const gchar **) search);
+	pkglist = hy_query_run (query_release);
+	FOR_PACKAGELIST(pkg, pkglist, i) {
+		pk_backend_ensure_origin_pkg (job_data->db, pkg);
+		g_debug ("removing %s as installed for repo",
+			 hy_package_get_name (pkg));
+		hif_package_set_user_action (pkg, TRUE);
+		hy_goal_erase (job_data->goal, pkg);
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* run transaction */
+	state_local = hif_state_get_child (job_data->state);
+	ret = pk_backend_transaction_run (job, state_local, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_strfreev (search);
+	if (query != NULL)
+		hy_query_free (query);
+	if (query_release != NULL)
+		hy_query_free (query_release);
+	if (sources != NULL)
+		g_ptr_array_unref (sources);
+	if (removed_id != NULL)
+		g_ptr_array_unref (removed_id);
+	pk_backend_job_finished (job);
+}
+
+/**
+ * pk_backend_repo_remove:
+ */
+void
+pk_backend_repo_remove (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield transaction_flags,
+			const gchar *repo_id,
+			gboolean autoremove)
+{
+	pk_backend_job_thread_create (job, pk_backend_repo_remove_thread, NULL, NULL);
+}
+
+/**
  * hif_is_installed_package_id_name:
  */
 static gboolean
