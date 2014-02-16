@@ -40,7 +40,7 @@ struct HifSource {
 	gboolean	 enabled;
 	gboolean	 gpgcheck;
 	guint		 cost;
-	gchar		*filename;
+	gchar		*filename;	/* /etc/yum.repos.d/updates.repo */
 	gchar		*id;
 	gchar		*location;	/* /var/cache/PackageKit/metadata/fedora */
 	gchar		*location_tmp;	/* /var/cache/PackageKit/metadata/fedora.tmp */
@@ -803,6 +803,15 @@ const gchar *
 hif_source_get_location (HifSource *src)
 {
 	return src->location;
+}
+
+/**
+ * hif_source_get_filename:
+ */
+const gchar *
+hif_source_get_filename (HifSource *src)
+{
+	return src->filename;
 }
 
 /**
