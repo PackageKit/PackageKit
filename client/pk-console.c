@@ -520,6 +520,7 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	gchar *license;
 	gchar *description;
 	gchar *url;
+	gchar *summary;
 	PkGroupEnum group;
 	guint64 size;
 
@@ -529,6 +530,7 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 		      "license", &license,
 		      "description", &description,
 		      "url", &url,
+		      "summary", &summary,
 		      "group", &group,
 		      "size", &size,
 		      NULL);
@@ -539,6 +541,7 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     %s\n", package);
+	g_print ("  summary:     %s\n", summary);
 	g_print ("  license:     %s\n", license);
 	g_print ("  group:       %s\n", pk_group_enum_to_string (group));
 	g_print ("  description: %s\n", description);
@@ -546,6 +549,7 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	g_print ("  url:	 %s\n", url);
 
 	g_free (package_id);
+	g_free (summary);
 	g_free (license);
 	g_free (description);
 	g_free (url);
