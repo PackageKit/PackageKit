@@ -188,9 +188,12 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 	g_variant_get(params, "(t^a&s)", NULL, &vals);
 	search = g_strjoinv("%", vals);
 
-	query = sqlite3_mprintf("SELECT (p.name || ';' || p.ver || ';' || p.arch || ';' || r.repo), p.summary, "
-							"p.full_name FROM pkglist AS p NATURAL JOIN repos AS r "
-							"WHERE %s LIKE '%%%q%%' AND ext NOT LIKE 'obsolete'", (gchar *) user_data, search);
+	query = sqlite3_mprintf("SELECT (p1.name || ';' || p1.ver || ';' || p1.arch || ';' || r.repo), p1.summary, "
+							"p1.full_name FROM pkglist AS p1 NATURAL JOIN repos AS r "
+							"WHERE p1.%s LIKE '%%%q%%' AND p1.ext NOT LIKE 'obsolete' AND p1.repo_order = "
+							"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)",
+							(gchar *) user_data,
+							search);
 
 	if ((sqlite3_prepare_v2(katja_pkgtools_db, query, -1, &stmt, NULL) == SQLITE_OK)) {
 		/* Now we're ready to output all packages */
@@ -219,15 +222,15 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 }
 
 void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
-	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "p.name", NULL);
+	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "name", NULL);
 }
 
 void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
-	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "p.desc", NULL);
+	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "desc", NULL);
 }
 
 void pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
-	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "p.cat", NULL);
+	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "cat", NULL);
 }
 
 static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
@@ -364,8 +367,10 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 	g_variant_get(params, "(t^a&s)", NULL, &vals);
 
 	if ((sqlite3_prepare_v2(katja_pkgtools_db,
-							"SELECT (name || ';' || ver || ';' || arch || ';' || repo), summary, full_name "
-							"FROM pkglist NATURAL JOIN repos WHERE name LIKE @search",
+							"SELECT (p1.name || ';' || p1.ver || ';' || p1.arch || ';' || r.repo), p1.summary, "
+						   	"p1.full_name FROM pkglist AS p1 NATURAL JOIN repos AS r "
+							"WHERE p1.name LIKE @search AND p1.repo_order = "
+							"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)",
 							-1,
 							&statement,
 							NULL) == SQLITE_OK)) {
