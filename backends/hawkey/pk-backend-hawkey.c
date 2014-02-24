@@ -994,32 +994,43 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	hif_utils_add_query_filters (query, filters);
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_GET_PACKAGES:
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const gchar **) search);
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE:
 		hy_query_filter_in (query, HY_PKG_FILE, HY_EQ, (const gchar **) search);
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		hy_query_filter_provides_in (query, search);
+		pkglist = hy_query_run (query);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
-		//* FIXME: We should really use hy_goal_upgrade_all */
-		hy_query_filter_upgrades (query, TRUE);
-		hy_query_filter_latest_per_arch (query, TRUE);
+		job_data->goal = hy_goal_create (sack);
+		hy_goal_upgrade_all (job_data->goal);
+		ret = hif_goal_depsolve (job_data->goal, &error);
+		if (!ret) {
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+		pkglist = hy_goal_list_upgrades (job_data->goal);
 		break;
 	default:
 		g_assert_not_reached ();
 		break;
 	}
-	pkglist = hy_query_run (query);
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
