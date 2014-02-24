@@ -644,8 +644,10 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
 	if ((sqlite3_prepare_v2(katja_pkgtools_db,
-							"SELECT full_name, name, ver, arch, repo, summary, MIN(repo_order) "
-							"FROM pkglist NATURAL JOIN repos WHERE name LIKE @name GROUP BY name",
+							"SELECT p1.full_name, p1.name, p1.ver, p1.arch, r.repo, p1.summary, p1.ext "
+							"FROM pkglist AS p1 NATURAL JOIN repos AS r "
+							"WHERE p1.name LIKE @name AND p1.repo_order = "
+							"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)",
 							-1,
 							&statement,
 							NULL) != SQLITE_OK)) {
@@ -679,7 +681,22 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 
 			full_name = g_strdup((gchar *) sqlite3_column_text(statement, 0));
 
-			if (g_strcmp0(pkg_metadata_filename, full_name)) {
+			if (!g_strcmp0((gchar *) sqlite3_column_text(statement, 6), "obsolete")) { /* Remove if obsolete */
+				pkg_id = pk_package_id_build(pkg_tokens[PK_PACKAGE_ID_NAME],
+											 pkg_tokens[PK_PACKAGE_ID_VERSION],
+											 pkg_tokens[PK_PACKAGE_ID_ARCH],
+											 "obsolete");
+				/* TODO:
+				 * 1: Use the repository name instead of "obsolete" above and check in pk_backend_update_packages()
+				      if the package is obsolete or not
+				 * 2: Get description from /var/log/packages, not from the database */
+				desc = g_strdup((gchar *) sqlite3_column_text(statement, 5));
+
+				pk_backend_job_package(job, PK_INFO_ENUM_REMOVING, pkg_id, desc);
+
+				g_free(desc);
+				g_free(pkg_id);
+			} else if (g_strcmp0(pkg_metadata_filename, full_name)) { /* Update available */
 				pkg_id = pk_package_id_build((gchar *) sqlite3_column_text(statement, 1),
 											 (gchar *) sqlite3_column_text(statement, 2),
 											 (gchar *) sqlite3_column_text(statement, 3),
@@ -713,7 +730,7 @@ void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield fi
 }
 
 static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *dest_dir_name, **pkg_tokens, **pkg_ids;
+	gchar *dest_dir_name, *cmd_line, **pkg_tokens, **pkg_ids;
 	guint i;
 	GSList *repo;
     PkBitfield transaction_flags = 0;
@@ -727,10 +744,13 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
 		for (i = 0; pkg_ids[i]; i++) {
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
 
-			if (repo)
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
+			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
+				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+
+				if (repo)
+					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
+			}
 
 			g_strfreev(pkg_tokens);
 		}
@@ -740,10 +760,19 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
 		for (i = 0; pkg_ids[i]; i++) {
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
 
-			if (repo)
-				katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
+			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
+				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+
+				if (repo)
+					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
+			} else {
+				/* Remove obsolete package
+				 * TODO: Removing should be an independent operation (not during installing updates) */
+				cmd_line = g_strconcat("/sbin/removepkg ", pkg_tokens[PK_PACKAGE_ID_NAME], NULL);
+				g_spawn_command_line_sync(cmd_line, NULL, NULL, NULL, NULL);
+				g_free(cmd_line);
+			}
 
 			g_strfreev(pkg_tokens);
 		}
