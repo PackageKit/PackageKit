@@ -1121,7 +1121,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	guint tmp_uint;
 	guint tmp_uint2;
 	guint tmp_uint3;
-	guint64 tmp_uint64;
 
 	if (g_strcmp0 (signal_name, "Finished") == 0) {
 		g_variant_get (parameters,
@@ -1146,27 +1145,23 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Details") == 0) {
+		gchar *key;
+		GVariantIter *dictionary;
+		GVariant *value;
 		PkDetails *item;
-		g_variant_get (parameters,
-			       "(&s&su&s&st)",
-			       &tmp_str[0],
-			       &tmp_str[1],
-			       &tmp_uint,
-			       &tmp_str[3],
-			       &tmp_str[4],
-			       &tmp_uint64);
 		item = pk_details_new ();
-		g_object_set (item,
-			      "package-id", tmp_str[0],
-			      "license", tmp_str[1],
-			      "group", tmp_uint,
-			      "description", tmp_str[3],
-			      "url", tmp_str[4],
-			      "size", tmp_uint64,
-			      "role", state->role,
-			      "transaction-id", state->transaction_id,
-			      NULL);
+
+		g_variant_get_child (parameters, 0, "a{sv}", &dictionary);
+		while (g_variant_iter_loop (dictionary, "{sv}", &key, &value)) {
+			if (g_strcmp0 (key, "group") == 0)
+				g_object_set (item, "group", g_variant_get_uint32 (value), NULL);
+			else if (g_strcmp0 (key, "size") == 0)
+				g_object_set (item, "size", g_variant_get_uint64 (value), NULL);
+			else
+				g_object_set (item, key, g_variant_get_string (value, NULL), NULL);
+		}
 		pk_results_add_details (state->results, item);
+		g_variant_iter_free (dictionary);
 		g_object_unref (item);
 		return;
 	}

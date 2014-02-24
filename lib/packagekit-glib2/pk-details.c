@@ -50,6 +50,7 @@ struct _PkDetailsPrivate
 	PkGroupEnum			 group;
 	gchar				*description;
 	gchar				*url;
+	gchar                           *summary;
 	guint64				 size;
 };
 
@@ -61,6 +62,7 @@ enum {
 	PROP_DESCRIPTION,
 	PROP_URL,
 	PROP_SIZE,
+	PROP_SUMMARY,
 	PROP_LAST
 };
 
@@ -152,6 +154,23 @@ pk_details_get_url (PkDetails *details)
 }
 
 /**
+ * pk_details_get_summary:
+ * @details: a #PkDetails instance
+ *
+ * Gets the summary for the details object.
+ *
+ * Return value: string value
+ *
+ * Since: 0.9.1
+ **/
+const gchar *
+pk_details_get_summary (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, NULL);
+	return details->priv->summary;
+}
+
+/**
  * pk_details_get_size:
  * @details: a #PkDetails instance
  *
@@ -196,6 +215,9 @@ pk_details_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_SIZE:
 		g_value_set_uint64 (value, priv->size);
 		break;
+	case PROP_SUMMARY:
+		g_value_set_string (value, priv->summary);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -230,6 +252,10 @@ pk_details_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_URL:
 		g_free (priv->url);
 		priv->url = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_SUMMARY:
+		g_free (priv->summary);
+		priv->summary = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_SIZE:
 		priv->size = g_value_get_uint64 (value);
@@ -312,6 +338,16 @@ pk_details_class_init (PkDetailsClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SIZE, pspec);
 
+	/**
+	 * PkDetails:summary:
+	 *
+	 * Since: 0.9.1
+	 */
+	pspec = g_param_spec_string ("summary", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkDetailsPrivate));
 }
 
@@ -337,6 +373,7 @@ pk_details_finalize (GObject *object)
 	g_free (priv->license);
 	g_free (priv->description);
 	g_free (priv->url);
+	g_free (priv->summary);
 
 	G_OBJECT_CLASS (pk_details_parent_class)->finalize (object);
 }

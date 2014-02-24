@@ -1612,68 +1612,42 @@
           </doc:para>
         </doc:description>
       </doc:doc>
-      <arg type="s" name="package_id" direction="out">
+      <arg type="a{sv}" name="data" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The package ID
+              The details about a specific package. The available keys are here:
             </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="license" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The license string, e.g. <doc:tt>GPLv2+</doc:tt> or <doc:tt>BSD and (MPLv1.1 or GPLv2+)</doc:tt>.
-            </doc:para>
-            <doc:para>
-              More details about the correct way to format licensing strings can be found on the
-              <doc:ulink url="http://fedoraproject.org/wiki/Packaging/LicensingGuidelines">Fedora packaging wiki</doc:ulink>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="group" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The enumerated package group description
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="detail" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The multi-line package description.
-            </doc:para>
-            <doc:para>
-              If formatting is required, then markdown syntax should be used,
-              e.g. <doc:tt>This is **critically** important</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="url" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The upstream project homepage
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="t" name="size" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The size of the package in bytes. This should be the size of the entire package file,
-              not the size of the files installed on the system.
-              If the package is not installed, and already downloaded and
-              present in the package manager cache, then this value should be set to zero.
-            </doc:para>
+            <doc:list>
+              <doc:item>
+                <doc:term>package_id</doc:term>
+                <doc:definition>The package ID [<doc:tt>s</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>license</doc:term>
+                <doc:definition>The license string, e.g. <doc:tt>GPLv2+</doc:tt> [<doc:tt>s</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>group</doc:term>
+                <doc:definition>The enumerated package group description [<doc:tt>u</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>detail</doc:term>
+                <doc:definition>The multi-line package description in markdown syntax.[<doc:tt>s</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>url</doc:term>
+                <doc:definition>The upstream project homepage [<doc:tt>s</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>size</doc:term>
+                <doc:definition>The size of the package in bytes [<doc:tt>t</doc:tt>]</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>summary</doc:term>
+                <doc:definition>The one line package summary, e.g. Clipart for OpenOffice [<doc:tt>s</doc:tt>]</doc:definition>
+              </doc:item>
+            </doc:list>
           </doc:summary>
         </doc:doc>
       </arg>

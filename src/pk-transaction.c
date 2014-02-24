@@ -502,8 +502,10 @@ pk_transaction_details_cb (PkBackendJob *job,
 	gchar *description;
 	gchar *license;
 	gchar *url;
+	gchar *summary;
 	guint64 size;
 	PkGroupEnum group;
+	GVariantBuilder builder;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -519,28 +521,38 @@ pk_transaction_details_cb (PkBackendJob *job,
 		      "license", &license,
 		      "url", &url,
 		      "size", &size,
+		      "summary", &summary,
 		      NULL);
 
 	/* emit */
 	g_debug ("emitting details");
+	g_variant_builder_init (&builder, G_VARIANT_TYPE("a{sv}"));
+	g_variant_builder_add (&builder, "{sv}", "package-id",
+			       g_variant_new_take_string (package_id));
+	g_variant_builder_add (&builder, "{sv}", "group",
+			       g_variant_new_uint32 (group));
+	if (summary != NULL)
+		g_variant_builder_add (&builder, "{sv}", "summary",
+				       g_variant_new_take_string (summary));
+	if (description != NULL)
+		g_variant_builder_add (&builder, "{sv}", "description",
+				       g_variant_new_take_string (description));
+	if (url != NULL)
+		g_variant_builder_add (&builder, "{sv}", "url",
+				       g_variant_new_take_string (url));
+	if (license != NULL)
+		g_variant_builder_add (&builder, "{sv}", "license",
+				       g_variant_new_take_string (license));
+	g_variant_builder_add (&builder, "{sv}", "size",
+			       g_variant_new_uint64 (size));
+
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Details",
-				       g_variant_new ("(ssusst)",
-						      package_id,
-						      license != NULL ? license : "",
-						      group,
-						      description != NULL ? description : "",
-						      url != NULL ? url : "",
-						      size),
+				       g_variant_new ("(a{sv})", &builder),
 				       NULL);
-
-	g_free (package_id);
-	g_free (description);
-	g_free (license);
-	g_free (url);
 }
 
 /**
