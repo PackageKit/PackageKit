@@ -981,7 +981,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     in_dict=True)
             license = self._get_real_license_str(cpv, metadata)
 
-            self.details(self._cpv_to_id(cpv), license,
+            self.details(self._cpv_to_id(cpv), '', license,
                 self._get_pk_group(cpv),
                 metadata["DESCRIPTION"], metadata["HOMEPAGE"],
                 self._get_size(cpv))

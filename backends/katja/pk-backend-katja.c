@@ -334,7 +334,7 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
 	g_regex_unref(expr);
 
 	/* Ready */
-	pk_backend_job_details(job, pkg_ids[0],
+	pk_backend_job_details(job, pkg_ids[0], NULL,
 						   NULL,
 						   pk_group_enum_from_string((gchar *) sqlite3_column_text(statement, 1)),
 						   desc->str,

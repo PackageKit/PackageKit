@@ -422,7 +422,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 categories = self.xmlcache.getGroup(pkgDict.get("category",""))
                 licenses = _get_license(pkgDict.get("licenses",""))
                 size = pkgDict.get("size", 0)
-                self.details(package_id, licenses, categories, longDesc, url, size)
+                self.details(package_id, '', licenses, categories, longDesc, url, size)
 
     def _get_restart(self, name):
         if name in self.rebootpkgs:

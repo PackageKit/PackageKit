@@ -170,7 +170,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             homepage = pkg.source.homepage if pkg.source.homepage is not None\
                 else ''
 
-            self.details(pkg_id, ",".join(pkg.license), group, pkg.description,
+            self.details(pkg_id, '', ",".join(pkg.license), group, pkg.description,
                          homepage, pkg.packageSize)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")

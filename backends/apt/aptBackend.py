@@ -1028,7 +1028,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 license = "unknown"
             group = self._get_package_group(pkg)
-            self.details(pkg_id, license, group,
+            self.details(pkg_id, '', license, group,
                          format_string(version.description),
                          version.homepage, version.size)
 

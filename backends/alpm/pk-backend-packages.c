@@ -293,7 +293,7 @@ pk_backend_get_details_thread (PkBackend *self)
 			size = alpm_pkg_download_size (pkg);
 		}
 
-		pk_backend_job_details (self, *packages, licenses->str, group,
+		pk_backend_job_details (self, *packages, NULL, licenses->str, group,
 					desc, url, size);
 		g_string_free (licenses, TRUE);
 	}

@@ -291,7 +291,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except PkError, e:
             self.error(e.code, e.details)
 
-    def details(self, package_id, package_license, group, desc, url, bytes):
+    def details(self, package_id, summary, package_license, group, desc, url, bytes):
         '''
         Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -303,7 +303,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         convert the description to UTF before sending
         '''
         desc = _to_unicode(desc)
-        PackageKitBaseBackend.details(self, package_id, package_license, group, desc, url, bytes)
+        PackageKitBaseBackend.details(self, package_id, summary, package_license, group, desc, url, bytes)
 
     def package(self, package_id, status, summary):
         '''
@@ -2550,6 +2550,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         pkgver = _get_package_ver(pkg)
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        summary = _to_unicode(pkg.summary)
         desc = _to_unicode(pkg.description)
         url = _to_unicode(pkg.url)
         license = _to_unicode(pkg.license)
@@ -2567,7 +2568,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             size = 0
 
         group = self.comps.get_group(pkg.name)
-        self.details(package_id, license, group, desc, url, size)
+        self.details(package_id, summary, license, group, desc, url, size)
 
     def get_files(self, package_ids):
         try:

@@ -1714,6 +1714,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			continue;
 		pk_backend_job_details (job,
 					package_ids[i],
+					hy_package_get_summary (pkg),
 					hy_package_get_license (pkg),
 					PK_GROUP_ENUM_UNKNOWN,
 					hif_package_get_description (pkg),
@@ -1805,6 +1806,7 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 		}
 		pk_backend_job_details (job,
 					hif_package_get_id (pkg),
+					hy_package_get_summary (pkg),
 					hy_package_get_license (pkg),
 					PK_GROUP_ENUM_UNKNOWN,
 					hif_package_get_description (pkg),

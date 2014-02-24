@@ -2624,6 +2624,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			if ((pkgu = pkg_uinf_i18n (job, pkg)) != NULL) {
 				pk_backend_job_details (job,
 							package_ids[n],
+							NULL,
 							pkguinf_get (pkgu, PKGUINF_LICENSE),
 							group,
 							pkguinf_get (pkgu, PKGUINF_DESCRIPTION),
@@ -2633,6 +2634,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			} else {
 				pk_backend_job_details (job,
 							package_ids[n],
+							"",
 							"",
 							group,
 							"",

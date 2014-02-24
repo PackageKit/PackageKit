@@ -700,7 +700,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		}
 	}
 
-	pk_backend_job_details (job, newid, NULL, group, pkg->description, NULL, pkg->size);
+	pk_backend_job_details (job, newid, NULL, NULL, group, pkg->description, NULL, pkg->size);
 	g_free (newid);
 	pk_backend_job_finished (job);
 }

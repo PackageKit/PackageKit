@@ -191,6 +191,7 @@ void		 pk_backend_job_require_restart		(PkBackendJob	*job,
 							 const gchar	*package_id);
 void		 pk_backend_job_details			(PkBackendJob	*job,
 							 const gchar	*package_id,
+							 const gchar    *summary,
 							 const gchar	*license,
 							 PkGroupEnum	 group,
 							 const gchar	*description,

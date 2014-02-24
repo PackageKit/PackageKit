@@ -1257,6 +1257,7 @@ out:
 void
 pk_backend_job_details (PkBackendJob *job,
 			const gchar *package_id,
+			const gchar *summary,
 			const gchar *license,
 			PkGroupEnum group,
 			const gchar *description,
@@ -1278,6 +1279,7 @@ pk_backend_job_details (PkBackendJob *job,
 	item = pk_details_new ();
 	g_object_set (item,
 		      "package-id", package_id,
+		      "summary", summary,
 		      "license", license,
 		      "group", group,
 		      "description", description,

@@ -223,7 +223,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
-		if (size != 7) {
+		if (size != 7 && size != 8) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
@@ -249,7 +249,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_details (job, sections[1], sections[2],
+		pk_backend_job_details (job, sections[1], size == 8 ? sections[7] : NULL, sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {

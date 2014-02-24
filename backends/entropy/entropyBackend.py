@@ -1131,7 +1131,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     "Package %s was not found in repository" % (pk_pkg,))
                 continue
 
-            self.details(pk_pkg, lic, self._get_pk_group(category),
+            self.details(pk_pkg, '', lic, self._get_pk_group(category),
                 description, homepage, self._get_pkg_size(pkg))
 
         self.percentage(100)
