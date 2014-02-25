@@ -32,6 +32,7 @@
 #include "pk-backend-job.h"
 #include "pk-conf.h"
 #include "pk-shared.h"
+#include "pk-sysdep.h"
 #include "pk-time.h"
 
 #define PK_BACKEND_JOB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_JOB, PkBackendJobPrivate))
@@ -789,6 +790,12 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 	/* run original function */
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
+
+	/* set idle IO priority */
+	if (helper->job->priv->background == PK_HINT_ENUM_TRUE) {
+		g_debug ("setting ioprio class to idle");
+		pk_ioprio_set_idle (0);
+	}
 
 	/* unref the thread here as it holds a reference itself and we do
 	 * not need to join() this at any stage */
