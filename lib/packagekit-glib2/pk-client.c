@@ -4944,7 +4944,7 @@ pk_client_get_idle (PkClient *client)
 /**
  * pk_client_set_cache_age:
  * @client: a valid #PkClient instance
- * @cache_age: the cache age to set
+ * @cache_age: the cache age to set, where %G_MAXUINT means "never"
  *
  * Sets the maximum cache age value for the client.
  *
@@ -5051,7 +5051,7 @@ pk_client_init (PkClient *client)
 	client->priv->background = FALSE;
 	client->priv->interactive = TRUE;
 	client->priv->idle = TRUE;
-	client->priv->cache_age = 0;
+	client->priv->cache_age = G_MAXUINT;
 
 	/* use a control object */
 	client->priv->control = pk_control_new ();
