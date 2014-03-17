@@ -91,8 +91,14 @@ if test x$enable_python3 = xyes; then
 else
 	AM_PATH_PYTHON([2.7])
 fi
-
-PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+AC_ARG_WITH([python_package_dir],
+	    AS_HELP_STRING([--with-python-package-dir=<location>],
+			   [Location for python modules]))
+if test -z "$with_python_package_dir" ; then
+	PYTHON_PACKAGE_DIR=${pythondir}/packagekit
+else
+	PYTHON_PACKAGE_DIR=${with_python_package_dir}/packagekit
+fi
 AC_SUBST(PYTHON_PACKAGE_DIR)
 
 if test "$GCC" = "yes"; then
@@ -683,6 +689,7 @@ echo "
         systemd-updates:           ${build_systemd_updates}
         python3:                   ${enable_python3}
         systemd system unit dir:   ${with_systemdsystemunitdir}
+        python package dir:        ${with_python_package_dir}
 
         Backends:
         ALPM backend:              ${enable_alpm}
