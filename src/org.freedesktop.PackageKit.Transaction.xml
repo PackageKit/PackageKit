@@ -1613,6 +1613,7 @@
         </doc:description>
       </doc:doc>
       <arg type="a{sv}" name="data" direction="out">
+        <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap"/>
         <doc:doc>
           <doc:summary>
             <doc:para>
