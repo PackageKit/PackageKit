@@ -81,7 +81,7 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
     // call which needs to know about multi-arch
     pkgInitConfig(*_config);
 
-    spawn = pk_backend_spawn_new();
+    spawn = pk_backend_spawn_new(conf);
 //     pk_backend_spawn_set_job(spawn, backend);
     pk_backend_spawn_set_name(spawn, "aptcc");
 }
