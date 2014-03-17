@@ -217,6 +217,7 @@ using PackageKit.
         --disable-bash-completion \
 %endif
         --with-default-backend=auto \
+        --with-python-package-dir=%{python3_sitearch} \
         --disable-local \
         --disable-strict \
         --disable-silent-rules \
@@ -276,12 +277,12 @@ popd > /dev/null
 %dir %{_sysconfdir}/PackageKit/events/pre-transaction.d
 %{_sysconfdir}/PackageKit/events/*.d/README
 %dir %{_localstatedir}/lib/PackageKit
-%dir %{python_sitelib}/packagekit
+%dir %{python3_sitearch}/packagekit
 %dir %{_localstatedir}/cache/PackageKit
 %ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %dir %{_localstatedir}/cache/PackageKit/metadata
-%{python_sitelib}/packagekit/*py*
+%{python3_sitearch}/packagekit/*py*
 %if !0%{?rhel}
 %{_datadir}/bash-completion/completions/pkcon
 %endif
