@@ -2085,11 +2085,19 @@ bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &r
                        &gerror);
     int exit_code = WEXITSTATUS(status);
     //     cout << "DebStatus " << exit_code << " WEXITSTATUS " << WEXITSTATUS(status) << " ret: "<< ret << endl;
-    cout << "std_out " << strlen(std_out) << std_out << endl;
-    cout << "std_err " << strlen(std_err) << std_err << endl;
+    if (ret) {
+        cout << "std_out " << strlen(std_out) << std_out << endl;
+        cout << "std_err " << strlen(std_err) << std_err << endl;
+    }
 
     PkgList pkgs;
-    if (exit_code == 1) {
+    if (!ret) {
+        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                  "Spawn of helper '%s' failed: %s",
+                                  argv[0], gerror->message);
+        g_error_free(gerror);
+        return false;
+    } else if (exit_code == 1) {
         if (strlen(std_out) == 0) {
             pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Error: %s", std_err);
         } else {
