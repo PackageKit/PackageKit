@@ -673,12 +673,13 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
     gchar *package_id;
     package_id = utilBuildPackageId(ver);
     pk_backend_job_details(m_job,
-                       package_id,
-                       "unknown",
-                       get_enum_group(section),
-                       m_cache->getLongDescriptionParsed(ver).c_str(),
-                       rec.Homepage().c_str(),
-                       size);
+                           package_id,
+                           "unknown",
+                           m_cache->getShortDescription(ver).c_str(),
+                           get_enum_group(section),
+                           m_cache->getLongDescriptionParsed(ver).c_str(),
+                           rec.Homepage().c_str(),
+                           size);
 
     g_free(package_id);
 }
