@@ -2084,11 +2084,13 @@ main (int argc, char *argv[])
 						    pk_console_progress_cb, ctx,
 						    pk_console_finished_cb, ctx);
 		} else {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     /* TRANSLATORS: the search type was
-					      * provided, but invalid */
-					     "%s", _("Invalid search type"));
+			/* fallback to a generic search */
+			pk_task_search_details_async (PK_TASK (ctx->task),
+						      ctx->filters,
+						      argv + 2,
+						      ctx->cancellable,
+						      pk_console_progress_cb, ctx,
+						      pk_console_finished_cb, ctx);
 		}
 
 	} else if (strcmp (mode, "install") == 0) {
