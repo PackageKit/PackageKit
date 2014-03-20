@@ -1124,6 +1124,11 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_ARCH))
 		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_ARCH);
 
+	/* assume non-source packages unless specified */
+	if (!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_SOURCE) &&
+	    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE))
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
+
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1236,6 +1241,7 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	GError *error_local = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
