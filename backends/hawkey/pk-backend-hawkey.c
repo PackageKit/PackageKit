@@ -819,6 +819,12 @@ hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
 	else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))
 		hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
 
+	/* source */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE))
+		hy_query_filter (query, HY_PKG_ARCH, HY_EQ, "src");
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE))
+		hy_query_filter (query, HY_PKG_ARCH, HY_NEQ, "src");
+
 	/* application */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_APPLICATION))
 		hy_query_filter (query, HY_PKG_FILE, HY_GLOB, application_glob);
@@ -1391,6 +1397,7 @@ pk_backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_SOURCE,
 		PK_FILTER_ENUM_DOWNLOADED,
 		-1);
 }
