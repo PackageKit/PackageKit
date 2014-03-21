@@ -1,3 +1,48 @@
+Version 0.8.17
+~~~~~~~~~~~~~~
+Released: 2014-03-21
+
+Backends:
+ - Katja: Add cache_info table (Eugene Wissner)
+ - Katja: Add header files to the Makefile (Eugene Wissner)
+ - Katja: Add metadata.db (Eugene Wissner)
+ - Katja: Exclude duplicates from search results (Eugene Wissner)
+ - Katja: Exclude obsolete from the search results (Eugene Wissner)
+ - Katja: Force refresh if the cache is too old (Eugene Wissner)
+ - Katja: Parse MANIFEST.bz2 (Eugene Wissner)
+ - Katja: Recognize obsolete packages (Eugene Wissner)
+ - Katja: Remember configuration modifications (Eugene Wissner)
+ - Katja: Download single packages (Eugene Wissner)
+ - Katja: Fix wrong of patch metadata (Eugene Wissner)
+ - Katja: Remove obsolete packages on update-packages (Eugene Wissner)
+ - Katja: Search file (Eugene Wissner)
+ - aptcc: Change some changelog formatting which can confuse markdown parsers (Matthias Klumpp)
+ - aptcc: Make changelog-loading future-proof on Debian/Tanglu (Matthias Klumpp)
+ - hawkey: Allow packages to change architecture when updating (Richard Hughes)
+ - hawkey: Do not replace all kernel packages with a new update (Richard Hughes)
+ - hawkey: Fix installing i386 packages on a 64bit computer (Richard Hughes)
+ - hawkey: Free memory after g_file_new_for_path (Eugene Wissner)
+ - hawkey: Get and set the correct keys in the yumdb (Richard Hughes)
+ - hawkey: Release locks early if the state fails (Richard Hughes)
+ - hawkey: Return a depsolved list when doing GetUpdates (Richard Hughes)
+ - hawkey: Run GetDetails() in a thread to avoid blocking the daemon (Richard Hughes)
+ - hawkey: Save the previously downloaded packages when refreshing the cache (Richard Hughes)
+ - hawkey: Support more filter modes when getting the list of repos (Richard Hughes)
+ - hawkey: Use the cache age in deciding when to download new metadata (Richard Hughes)
+ - hawkey: if a specified a specific cache-age then do not use the sack cache (Richard Hughes)
+
+New Features:
+ - Allow optionally shutting down after applying updates (Richard Hughes)
+ - Set an idle IO priority for background threaded transactions (Richard Hughes)
+
+Bugfixes:
+ - Do not disregard any transaction that takes more than 43 seconds (Richard Hughes)
+ - Do not install into python_sitelib (Richard Hughes)
+ - Fix directory path in the docs (Eugene Wissner)
+ - Return an error if a client tries to execute an unknown method (Richard Hughes)
+ - Set the default cache-age to 'never' (Richard Hughes)
+ - When using 'pkcon install' assume arch filter (Richard Hughes)
+
 Version 0.8.16
 ~~~~~~~~~~~~~~
 Released: 2014-01-20
