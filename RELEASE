@@ -7,7 +7,7 @@ git shortlog PACKAGEKIT_0_8_14.. | grep -i -v trivial | grep -v Merge > NEWS.new
 --------------------------------------------------------------------------------
 Version 0.9.1
 ~~~~~~~~~~~~~
-Released: 2013-xx-xx
+Released: 2014-xx-xx
 
 Notes:
 
@@ -24,9 +24,12 @@ Bugfixes:
 
 2.5. Update translations and commit them with sign-off:
 
+cd po
+make PackageKit.pot
+INTLTOOL_EXTRACT="/usr/bin/intltool-extract" XGETTEXT="/usr/bin/xgettext --no-location" srcdir=. /usr/bin/intltool-update --gettext-package colord --pot
 tx push --source
 tx pull --all --minimum-perc=5
-git add po/*.po
+git add *.po
 
 3. Update library version if new ABI or API in configure.ac
 

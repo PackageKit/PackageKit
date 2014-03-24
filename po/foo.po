@@ -1,0 +1,209 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: gtk+\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-02-04 15:05-0500\n"
+"PO-Revision-Date: 2011-02-04 15:05-0500\n"
+"Last-Translator: Matthias Clasen <mclasen@redhat.com>\n"
+"Language-Team: \n"
+"Language: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "keyboard label"
+msgid "AudioLowerVolume"
+msgstr "Audio lower volume"
+
+msgctxt "keyboard label"
+msgid "AudioMedia"
+msgstr "Audio media"
+
+msgctxt "keyboard label"
+msgid "AudioMute"
+msgstr "Audio mute"
+
+msgctxt "keyboard label"
+msgid "AudioNext"
+msgstr "Audio next"
+
+msgctxt "keyboard label"
+msgid "AudioPause"
+msgstr "Audio pause"
+
+msgctxt "keyboard label"
+msgid "AudioPlay"
+msgstr "Audio play"
+
+msgctxt "keyboard label"
+msgid "AudioPrev"
+msgstr "Audio previous"
+
+msgctxt "keyboard label"
+msgid "AudioRaiseVolume"
+msgstr "Audio raise volume"
+
+msgctxt "keyboard label"
+msgid "AudioRecord"
+msgstr "Audio record"
+
+msgctxt "keyboard label"
+msgid "AudioRewind"
+msgstr "Audio rewind"
+
+msgctxt "keyboard label"
+msgid "AudioStop"
+msgstr "Audio stop"
+
+msgctxt "keyboard label"
+msgid "Back"
+msgstr "Back"
+
+msgctxt "keyboard label"
+msgid "BackSpace"
+msgstr "Backspace"
+
+msgctxt "keyboard label"
+msgid "Battery"
+msgstr "Battery"
+
+msgctxt "keyboard label"
+msgid "Display"
+msgstr "Display"
+
+msgctxt "keyboard label"
+msgid "Forward"
+msgstr "Forward"
+
+msgctxt "keyboard label"
+msgid "Hibernate"
+msgstr "Hibernate"
+
+msgctxt "keyboard label"
+msgid "KP_Begin"
+msgstr "Begin (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Delete"
+msgstr "Delete (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Down"
+msgstr "Down (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_End"
+msgstr "End (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Enter"
+msgstr "Enter (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Home"
+msgstr "Home (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Insert"
+msgstr "Insert (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Left"
+msgstr "Left (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Next"
+msgstr "Next (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Page_Down"
+msgstr "Page Down (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Page_Up"
+msgstr "Page Up (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Prior"
+msgstr "Prior (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Right"
+msgstr "Right (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Space"
+msgstr "Space (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Tab"
+msgstr "Tab (keypad)"
+
+msgctxt "keyboard label"
+msgid "KP_Up"
+msgstr "Up (keypad)"
+
+msgctxt "keyboard label"
+msgid "Launch1"
+msgstr "Launch1"
+
+msgctxt "keyboard label"
+msgid "MonBrightnessDown"
+msgstr "Monitor brightness down"
+
+msgctxt "keyboard label"
+msgid "MonBrightnessUp"
+msgstr "Monitor brightness up"
+
+msgctxt "keyboard label"
+msgid "Multi_key"
+msgstr "Multikey"
+
+msgctxt "keyboard label"
+msgid "Num_Lock"
+msgstr "Num Lock"
+
+msgctxt "keyboard label"
+msgid "Page_Down"
+msgstr "Page Down"
+
+msgctxt "keyboard label"
+msgid "Page_Up"
+msgstr "Page Up"
+
+msgctxt "keyboard label"
+msgid "ScreenSaver"
+msgstr "Screensaver"
+
+msgctxt "keyboard label"
+msgid "Scroll_Lock"
+msgstr "Scroll Lock"
+
+msgctxt "keyboard label"
+msgid "Sleep"
+msgstr "Sleep"
+
+msgctxt "keyboard label"
+msgid "Suspend"
+msgstr "Suspend"
+
+msgctxt "keyboard label"
+msgid "Sys_Req"
+msgstr "Sys Req"
+
+msgctxt "keyboard label"
+msgid "TouchpadToggle"
+msgstr "Touchpad toggle"
+
+msgctxt "keyboard label"
+msgid "WLAN"
+msgstr "WLAN"
+
+msgctxt "keyboard label"
+msgid "WakeUp"
+msgstr "Wake up"
+
+msgctxt "keyboard label"
+msgid "WebCam"
+msgstr "Web Cam"
