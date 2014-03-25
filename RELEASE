@@ -47,8 +47,7 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
 6. Upload tarball to:
 
-scp *.tar.* hughsient@people.freedesktop.org:~/public_html/releases
-//scp *.tar.* packagekit.org:/srv/www/html/releases/
+scp *.tar.* hughsient@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
 
 7. Do post release version bump in configure.ac
 

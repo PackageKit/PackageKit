@@ -7,9 +7,11 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-USER="hughsiec"
-SERVER="packagekit.org"
-PORT="3784"
-LOCATION="~/public_html/packagekit"
+USER="hughsient"
+SERVER="annarchy.freedesktop.org"
+LOCATION="/srv/www.freedesktop.org/www/software/PackageKit/"
 
-scp -r -P $PORT html/* $USER@$SERVER:$LOCATION/
+scp -r html/* $USER@$SERVER:$LOCATION
+scp api/html/*.html $USER@$SERVER:/$LOCATION/gtk-doc/
+scp api/html/*.png $USER@$SERVER:/$LOCATION/gtk-doc/
+scp api/html/*.css $USER@$SERVER:/$LOCATION/gtk-doc/

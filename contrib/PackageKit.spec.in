@@ -7,8 +7,8 @@ Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   GPLv2+ and LGPLv2+
-URL:       http://www.packagekit.org
-Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.xz
+URL:       http://www.freedesktop.org/software/PackageKit/
+Source0:   http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
 
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: shared-mime-info
