@@ -1061,6 +1061,11 @@ pk_engine_load_backend (PkEngine *engine, GError **error)
 		goto out;
 
 	/* load anything that can fail */
+	engine->priv->authority = polkit_authority_get_sync (NULL, error);
+	if (engine->priv->authority == NULL) {
+		ret = FALSE;
+		goto out;
+	}
 	ret = pk_transaction_db_load (engine->priv->transaction_db, error);
 	if (!ret)
 		goto out;
@@ -1712,13 +1717,6 @@ pk_engine_init (PkEngine *engine)
 	/* setup file watches */
 	pk_engine_setup_file_monitors (engine);
 
-	/* protect the session SetProxy with a PolicyKit action */
-	engine->priv->authority = polkit_authority_get_sync (NULL, &error);
-	if (engine->priv->authority == NULL) {
-		g_error ("failed to get pokit authority: %s", error->message);
-		g_error_free (error);
-	}
-
 	/* get plugins */
 	engine->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_engine_plugin_free);
 	pk_engine_load_plugins (engine);
@@ -1802,7 +1800,8 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
-	g_object_unref (engine->priv->authority);
+	if (engine->priv->authority != NULL)
+		g_object_unref (engine->priv->authority);
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_key_file_unref (engine->priv->conf);
