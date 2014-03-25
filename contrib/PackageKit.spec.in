@@ -31,7 +31,7 @@ BuildRequires: gtk2-devel
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
-BuildRequires: python-devel
+BuildRequires: python3-devel
 BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
@@ -71,7 +71,6 @@ Obsoletes: PackageKit-zif < 0.8.13-2
 # components now built-in
 Obsoletes: PackageKit-debug-install < 0.8.15-2
 Obsoletes: PackageKit-hawkey < 0.8.15-2
-Obsoletes: PackageKit-backend-devel < 0.8.15-2
 
 # Udev no longer provides this functionality
 Obsoletes: PackageKit-device-rebind < 0.8.13-2
@@ -111,6 +110,15 @@ Provides: PackageKit-docs = %{version}-%{release}
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
+
+%package backend-devel
+Summary: Headers to compile out of tree PackageKit backends
+# explicit dep: packagekit-plugin.pc links with -lpackagekit-glib2
+# but doesn't refer to packagekit-glib2.pc
+Requires: %{name}-glib-devel%{?_isa} = %{version}-%{release}
+
+%description backend-devel
+Headers to compile out of tree PackageKit backends.
 
 %package browser-plugin
 Summary: Browser Plugin for PackageKit
@@ -158,6 +166,7 @@ using PackageKit.
 %build
 %configure \
         --disable-static \
+        --enable-python3 \
 %if 0%{?rhel} == 0
         --enable-hawkey \
         --enable-introspection \
@@ -184,10 +193,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
-
-# we don't support out of tree backends in Fedora
-rm -rf $RPM_BUILD_ROOT%{_includedir}/PackageKit/plugin
-rm -f $RPM_BUILD_ROOT%{_libdir}/pkgconfig/packagekit-plugin.pc
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
 
@@ -313,6 +318,13 @@ popd > /dev/null
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 %{_datadir}/gir-1.0/PackageKitPlugin-1.0.gir
 %{_datadir}/gtk-doc/html/PackageKit
+
+%files backend-devel
+%defattr(-,root,root,-)
+%dir %{_includedir}/PackageKit
+%{_includedir}/PackageKit/plugin
+%{_libdir}/pkgconfig/packagekit-plugin.pc
+
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
