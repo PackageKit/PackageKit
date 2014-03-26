@@ -302,6 +302,10 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
         }
 
         // TODO test this one..
+#if 0
+        // I couldn'tfind any packages with the metapackages component, and I
+        // think the check is the wrong way around; PK_FILTER_ENUM_COLLECTIONS
+        // is for virtual group packages -- hughsie
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_COLLECTIONS)) {
             if (!component.compare("metapackages")) {
                 return false;
@@ -311,6 +315,7 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
                 return false;
             }
         }
+#endif
     }
     return true;
 }
