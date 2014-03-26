@@ -679,8 +679,8 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
     package_id = utilBuildPackageId(ver);
     pk_backend_job_details(m_job,
                            package_id,
-                           "unknown",
                            m_cache->getShortDescription(ver).c_str(),
+                           "unknown",
                            get_enum_group(section),
                            m_cache->getLongDescriptionParsed(ver).c_str(),
                            rec.Homepage().c_str(),
