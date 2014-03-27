@@ -412,10 +412,22 @@ gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
 {
     gchar *package_id;
     pkgCache::VerFileIterator vf = ver.FileList();
+ 
+    string data;
+    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
+    if (pkg->CurrentState == pkgCache::State::Installed &&
+            pkg.CurrentVer() == ver) {
+        data = "installed:";
+    }
+    
+    if (vf.File().Archive() != NULL) {
+        data += vf.File().Archive();
+    }
+    
     package_id = pk_package_id_build(ver.ParentPkg().Name(),
                                      ver.VerStr(),
                                      ver.Arch(),
-                                     vf.File().Archive() == NULL ? "" : vf.File().Archive());
+                                     data.c_str());
     return package_id;
 }
 
