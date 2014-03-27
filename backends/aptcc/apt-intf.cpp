@@ -301,6 +301,21 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             }
         }
 
+        // Check for applications, if they have files with .desktop
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION)) {
+            // We do not support checking if it is an Application
+            // if NOT installed
+            if (!installed || !isApplication(ver)) {
+                return false;
+            }
+        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION)) {
+            // We do not support checking if it is an Application
+            // if NOT installed
+            if (!installed || isApplication(ver)) {
+                return false;
+            }
+        }
+
         // TODO test this one..
 #if 0
         // I couldn'tfind any packages with the metapackages component, and I
@@ -1336,6 +1351,47 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
                                   "this kind of file");
         }
     }
+}
+
+bool AptIntf::isApplication(const pkgCache::VerIterator &ver)
+{
+    bool ret = false;
+    gchar *fileName;
+    string line;
+
+    if (m_isMultiArch) {
+        fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list",
+                                   ver.ParentPkg().Name(),
+                                   ver.Arch());
+        if (!FileExists(fileName)) {
+            g_free(fileName);
+            // if the file was not found try without the arch field
+            fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list",
+                                       ver.ParentPkg().Name());
+        }
+    } else {
+        fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list",
+                                   ver.ParentPkg().Name());
+    }
+
+    if (FileExists(fileName)) {
+        ifstream in(fileName);
+        if (!in != 0) {
+            g_free(fileName);
+            return false;
+        }
+
+        while (in.eof() == false) {
+            getline(in, line);
+            if (ends_with(line, ".desktop")) {
+                ret = true;
+                break;
+            }
+        }
+    }
+
+    g_free(fileName);
+    return ret;
 }
 
 // used to emit files it reads the info directly from the files
