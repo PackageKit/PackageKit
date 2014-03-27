@@ -1015,6 +1015,62 @@ PkgList AptIntf::getPackages()
     return output;
 }
 
+PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
+{
+    PkgList output;
+    output.reserve(m_cache->GetPkgCache()->HeaderP->PackageCount);
+    for (pkgCache::PkgIterator pkg = m_cache->GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+        if (m_cancel) {
+            break;
+        }
+
+        // Ignore packages that exist only due to dependencies.
+        if(pkg.VersionList().end() && pkg.ProvidesList().end()) {
+            continue;
+        }
+
+        // Don't insert virtual packages as they don't have all kinds of info
+        const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
+        if (ver.end()) {
+            continue;
+        }
+
+        // only installed packages matters
+        if (!(pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver)) {
+            continue;
+        }
+
+        // Distro name
+        pkgCache::VerFileIterator vf = ver.FileList();
+        if (vf.File().Archive() == NULL || rec->Dist.compare(vf.File().Archive()) != 0){
+            continue;
+        }
+
+        // Section part
+        if (vf.File().Component() == NULL || !rec->hasSection(vf.File().Component())) {
+            continue;
+        }
+
+        // Check if the site the package comes from is include in the Repo uri
+        if (vf.File().Site() == NULL || rec->URI.find(vf.File().Site()) == std::string::npos) {
+            continue;
+        }
+
+        cout << endl;
+        cout << ver.ParentPkg().Name() << endl;
+        cout << ver.VerStr() << endl;
+        cout << vf.File().FileName() << endl;
+        cout << vf.File().Origin() << endl;
+        cout << vf.File().Component() << endl;
+        cout << vf.File().Label() << endl;
+        cout << vf.File().Codename() << endl;
+        cout << vf.File().Site() << endl;
+        cout << vf.File().Archive() << endl;
+        cout << vf.File().IndexType() << endl;
+    }
+    return output;
+}
+
 PkgList AptIntf::getPackagesFromGroup(gchar **values)
 {
     PkgList output;

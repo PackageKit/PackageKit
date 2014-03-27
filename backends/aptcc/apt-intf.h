@@ -32,6 +32,7 @@
 #include <pk-backend.h>
 
 #include "PkgList.h"
+#include "apt-sourceslist.h"
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define GDEBI_BINARY         "/usr/bin/gdebi"
@@ -116,6 +117,11 @@ public:
       * Returns a list of all packages in the cache
       */
     PkgList getPackages();
+
+    /**
+      * Returns a list of all packages in the cache
+      */
+    PkgList getPackagesFromRepo(SourcesList::SourceRecord *&);
 
     /**
       * Returns a list of all packages in the given groups

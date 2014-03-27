@@ -36,6 +36,8 @@
 #include <algorithm>
 #include <fstream>
 
+#include "apt-utils.h"
+
 #include "config.h"
 
 SourcesList::~SourcesList()
@@ -431,6 +433,56 @@ bool SourcesList::SourceRecord::SetURI(string S)
     }
 
     return true;
+}
+
+string SourcesList::SourceRecord::joinedSections()
+{
+    string ret;
+    for (unsigned int i = 0; i < NumSections; ++i) {
+        ret += Sections[i];
+        if (i + 1 < NumSections) {
+            ret += " ";
+        }
+    }
+    return ret;
+}
+
+string SourcesList::SourceRecord::niceName()
+{
+    string ret;
+    if (starts_with(URI, "cdrom")) {
+        ret = "Disc ";
+    }
+
+    // Make distribution camel case
+    std::locale loc;
+    string dist = Dist;
+    dist[0] = std::toupper(dist[0], loc);
+
+    // Replace - or / by by a space
+    std::size_t found = dist.find_first_of("-/");
+    while (found != std::string::npos) {
+        dist[found] = ' ';
+        found = dist.find_first_of("-/", found + 1);
+    }
+    ret += dist;
+
+    // Append sections: main contrib non-free
+    if (NumSections) {
+        ret += " (" + joinedSections() + ")";
+    }
+
+    return ret;
+}
+
+bool SourcesList::SourceRecord::hasSection(const char *component)
+{
+    for (unsigned int i = 0; i < NumSections; ++i) {
+        if (Sections[i].compare(component) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceRecord &rhs)

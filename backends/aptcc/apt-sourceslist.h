@@ -53,6 +53,9 @@ public:
         string Dist;
         string *Sections;
         unsigned short NumSections;
+        string joinedSections();
+        string niceName();
+        bool hasSection(const char *component);
         string Comment;
         string SourceFile;
 

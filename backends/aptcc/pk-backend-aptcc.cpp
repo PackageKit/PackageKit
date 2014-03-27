@@ -21,7 +21,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <locale>
 
 #include <config.h>
 #include <pk-backend.h>
@@ -34,7 +33,6 @@
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "apt-sourceslist.h"
-#include "apt-utils.h"
 
 /* static bodges */
 static PkBackendSpawn *spawn;
@@ -1017,9 +1015,11 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 {
     // list
     PkBitfield filters;
+    PkBitfield transaction_flags = 0;
     // enable
     const gchar *repo_id;
     gboolean enabled;
+    gboolean autoremove;
     bool found = false;
     // generic
     PkRoleEnum role;
@@ -1030,6 +1030,11 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
         pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
         g_variant_get(params, "(t)",
                       &filters);
+    } else if (role == PK_ROLE_ENUM_REPO_REMOVE) {
+        g_variant_get(params, "(t&sb)",
+                      &transaction_flags,
+                      &repo_id,
+                      &autoremove);
     } else {
         pk_backend_job_set_status(job, PK_STATUS_ENUM_REQUEST);
         g_variant_get (params, "(&sb)",
@@ -1057,47 +1062,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
             continue;
         }
 
-        string sections;
-        for (unsigned int j = 0; j < (*it)->NumSections; ++j) {
-            sections += (*it)->Sections[j];
-            if (j + 1 < (*it)->NumSections) {
-                sections += " ";
-            }
-        }
-        
-        bool repoIsSrc = ((*it)->Type & SourcesList::DebSrc ||
-                 (*it)->Type & SourcesList::RpmSrc ||
-                 (*it)->Type & SourcesList::RpmSrcDir ||
-                 (*it)->Type & SourcesList::RepomdSrc);
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-                repoIsSrc) {
-            continue;
-        }
-
-        string repo;
-        if (starts_with((*it)->URI, "cdrom")) {
-            repo = "Disc ";
-        }
-        
-        // Make distribution camel case
-        std::locale loc;
-        string dist = (*it)->Dist;
-        dist[0] = std::toupper(dist[0], loc);
-        
-        // Replace - or / by by a space
-        std::size_t found = dist.find_first_of("-/");
-        while (found != std::string::npos) {
-            dist[found] = ' ';
-            found = dist.find_first_of("-/", found + 1);
-        }
-  
-        repo += dist;
-        
-        // Append sections: main contrib non-free
-        if ((*it)->NumSections) {
-            repo += " (" + sections + ")";
-        }
+        string sections = (*it)->joinedSections();
         
         string repoId;
         repoId = (*it)->SourceFile;
@@ -1110,20 +1075,52 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 //         cout << (*it)->SourceFile << endl;
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
+            if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
+                ((*it)->Type & SourcesList::DebSrc ||
+                 (*it)->Type & SourcesList::RpmSrc ||
+                 (*it)->Type & SourcesList::RpmSrcDir ||
+                 (*it)->Type & SourcesList::RepomdSrc)) {
+                continue;
+            }
+
             pk_backend_job_repo_detail(job,
                                        repoId.c_str(),
-                                       repo.c_str(),
+                                       (*it)->niceName().c_str(),
                                        !((*it)->Type & SourcesList::Disabled));
-        } else {
-            if (repoId.compare(repo_id) == 0) {
-                if (enabled) {
-                    (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
-                } else {
-                    (*it)->Type |= SourcesList::Disabled;
-                }
-                found = true;
-                break;
-            }
+        } else if (repoId.compare(repo_id) == 0) {
+            found = true;
+            cout << endl << repo_id;
+            cout << endl << repoId << endl;
+//             if (role == PK_ROLE_ENUM_REPO_REMOVE) {
+//                 if (enabled) {
+//                     (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
+//                 } else {
+//                     (*it)->Type |= SourcesList::Disabled;
+//                 }
+//                 found = true;
+//                 break;
+//             } else if (role == PK_ROLE_ENUM_REPO_ENABLE) {
+                g_debug("all fine");
+//                 bool simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
+//                 if (true || autoremove) {
+                    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+                    if (!apt->init()) {
+                        g_debug("Failed to create apt cache");
+                        apt->emitFinished();
+                        return;
+                    }
+//
+//                     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+                    PkgList output;
+                    output = apt->getPackagesFromRepo(*it);
+                        g_debug("Finish");
+//
+//                 }
+// 
+//                 if (!simulate) {
+//                     _lst.RemoveSource(*it);
+//                 }
+//             }
         }
     }
 
@@ -1152,6 +1149,19 @@ void pk_backend_get_repo_list(PkBackend *backend, PkBackendJob *job, PkBitfield 
  * pk_backend_repo_enable:
  */
 void pk_backend_repo_enable(PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
+{
+    pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_repo_remove:
+ */
+void
+pk_backend_repo_remove (PkBackend *backend,
+                        PkBackendJob *job,
+                        PkBitfield transaction_flags,
+                        const gchar *repo_id,
+                        gboolean autoremove)
 {
     pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
 }
