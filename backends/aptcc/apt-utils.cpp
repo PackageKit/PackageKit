@@ -417,11 +417,13 @@ gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
     if (pkg->CurrentState == pkgCache::State::Installed &&
             pkg.CurrentVer() == ver) {
-        data = "installed:";
-    }
-    
-    if (vf.File().Archive() != NULL) {
-        data += vf.File().Archive();
+        if (vf.File().Archive() == NULL) {
+            data = "installed";
+        } else {
+            data += vf.File().Archive();
+        }
+    } else if (vf.File().Archive() != NULL) {
+        data = vf.File().Archive();
     }
     
     package_id = pk_package_id_build(ver.ParentPkg().Name(),
