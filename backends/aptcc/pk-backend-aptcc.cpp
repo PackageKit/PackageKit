@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale>
 
 #include <config.h>
 #include <pk-backend.h>
@@ -33,6 +34,7 @@
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "apt-sourceslist.h"
+#include "apt-utils.h"
 
 /* static bodges */
 static PkBackendSpawn *spawn;
@@ -1020,7 +1022,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     bool found = false;
     // generic
     PkRoleEnum role;
-    const char *const salt = "$1$/iSaq7rB$EoUw5jJPPvAPECNaaWzMK/";
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
     role = pk_backend_job_get_role(job);
@@ -1055,32 +1056,57 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
             continue;
         }
 
-        string Sections;
+        string sections;
         for (unsigned int j = 0; j < (*it)->NumSections; ++j) {
-            Sections += (*it)->Sections[j];
-            Sections += " ";
+            sections += (*it)->Sections[j];
+            if (j + 1 < (*it)->NumSections) {
+                sections += " ";
+            }
         }
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-                ((*it)->Type & SourcesList::DebSrc ||
+        
+        bool repoIsSrc = ((*it)->Type & SourcesList::DebSrc ||
                  (*it)->Type & SourcesList::RpmSrc ||
                  (*it)->Type & SourcesList::RpmSrcDir ||
-                 (*it)->Type & SourcesList::RepomdSrc)) {
+                 (*it)->Type & SourcesList::RepomdSrc);
+
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
+                repoIsSrc) {
             continue;
         }
 
         string repo;
-        repo = (*it)->GetType();
-        repo += " " + (*it)->VendorID;
-        repo += " " + (*it)->URI;
-        repo += " " + (*it)->Dist;
-        repo += " " + Sections;
-        gchar *hash;
-        const gchar allowedChars[] =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        hash = crypt(repo.c_str(), salt);
-        g_strcanon(hash, allowedChars, 'D');
-        string repoId(hash);
+        if (starts_with((*it)->URI, "cdrom")) {
+            repo = "Disc ";
+        }
+        
+        // Make distribution camel case
+        std::locale loc;
+        string dist = (*it)->Dist;
+        dist[0] = std::toupper(dist[0], loc);
+        
+        // Replace - or / by by a space
+        std::size_t found = dist.find_first_of("-/");
+        while (found != std::string::npos) {
+            dist[found] = ' ';
+            found = dist.find_first_of("-/", found + 1);
+        }
+  
+        repo += dist;
+        
+        // Append sections: main contrib non-free
+        if ((*it)->NumSections) {
+            repo += " (" + sections + ")";
+        }
+        
+        string repoId;
+        repoId = (*it)->SourceFile;
+        repoId += ":" + (*it)->GetType();
+        repoId += (*it)->VendorID + " ";
+        repoId += (*it)->URI + " ";
+        repoId += (*it)->Dist + " ";
+        repoId += sections;
+//         cout << endl << repoId << endl;
+//         cout << (*it)->SourceFile << endl;
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             pk_backend_job_repo_detail(job,
