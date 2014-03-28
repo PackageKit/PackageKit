@@ -1575,7 +1575,7 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 
 	/* always */
 	g_string_append_printf (string, "  %s\n", "backend-details");
-	g_string_append_printf (string, "  %s\n", "get-ctx->roles");
+	g_string_append_printf (string, "  %s\n", "get-roles");
 	g_string_append_printf (string, "  %s\n", "get-groups");
 	g_string_append_printf (string, "  %s\n", "get-filters");
 	g_string_append_printf (string, "  %s\n", "get-transactions");
@@ -1625,9 +1625,9 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
 	}
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_SET_DATA))
-		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
+		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_REMOVE))
-		g_string_append_printf (string, "  %s\n", "repo-remove [repo_id] [autoremove];");
+		g_string_append_printf (string, "  %s\n", "repo-remove [repo_id] [autoremove]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_WHAT_PROVIDES))
 		g_string_append_printf (string, "  %s\n", "what-provides [search]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_ACCEPT_EULA))
@@ -2453,7 +2453,7 @@ main (int argc, char *argv[])
 					    pk_console_progress_cb, ctx,
 					    pk_console_finished_cb, ctx);
 
-	} else if (strcmp (mode, "get-ctx->roles") == 0) {
+	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_string (ctx->roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
