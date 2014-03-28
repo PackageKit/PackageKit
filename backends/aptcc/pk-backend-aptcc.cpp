@@ -1091,15 +1091,15 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
             found = true;
             cout << endl << repo_id;
             cout << endl << repoId << endl;
-//             if (role == PK_ROLE_ENUM_REPO_REMOVE) {
-//                 if (enabled) {
-//                     (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
-//                 } else {
-//                     (*it)->Type |= SourcesList::Disabled;
-//                 }
-//                 found = true;
-//                 break;
-//             } else if (role == PK_ROLE_ENUM_REPO_ENABLE) {
+            if (role == PK_ROLE_ENUM_REPO_ENABLE) {
+                if (enabled) {
+                    (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
+                } else {
+                    (*it)->Type |= SourcesList::Disabled;
+                }
+                found = true;
+                break;
+            } else if (role == PK_ROLE_ENUM_REPO_REMOVE) {
                 g_debug("all fine");
 //                 bool simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
 //                 if (true || autoremove) {
@@ -1120,7 +1120,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 //                 if (!simulate) {
 //                     _lst.RemoveSource(*it);
 //                 }
-//             }
+            }
         }
     }
 
@@ -1240,6 +1240,7 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_GET_REPO_LIST,
                 PK_ROLE_ENUM_REPO_ENABLE,
                 PK_ROLE_ENUM_REPAIR_SYSTEM,
+                PK_ROLE_ENUM_REPO_REMOVE,
                 -1);
 
     // only add GetDistroUpgrades if the binary is present
