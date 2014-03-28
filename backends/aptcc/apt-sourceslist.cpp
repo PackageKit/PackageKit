@@ -475,6 +475,18 @@ string SourcesList::SourceRecord::niceName()
     return ret;
 }
 
+string SourcesList::SourceRecord::repoId()
+{
+    string ret;
+    ret = SourceFile;
+    ret += ":" + GetType();
+    ret += VendorID + " ";
+    ret += URI + " ";
+    ret += Dist + " ";
+    ret += joinedSections();
+    return ret;
+}
+
 bool SourcesList::SourceRecord::hasSection(const char *component)
 {
     for (unsigned int i = 0; i < NumSections; ++i) {

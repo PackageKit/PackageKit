@@ -55,6 +55,7 @@ public:
         unsigned short NumSections;
         string joinedSections();
         string niceName();
+        string repoId();
         bool hasSection(const char *component);
         string Comment;
         string SourceFile;

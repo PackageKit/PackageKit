@@ -737,8 +737,6 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
         return;
     }
 
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-
     // It's faster to emmit the packages here rather than in the matching part
     PkgList output;
     output = apt->getPackagesFromGroup(search);
@@ -923,7 +921,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     bool ret;
     ret = apt->runTransaction(installPkgs,
                               removePkgs,
-                              simulate,
                               fileInstall, // Mark newly installed packages as auto-installed
                                            // (they're dependencies of the new local package)
                               fixBroken,
@@ -1064,15 +1061,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
         string sections = (*it)->joinedSections();
         
-        string repoId;
-        repoId = (*it)->SourceFile;
-        repoId += ":" + (*it)->GetType();
-        repoId += (*it)->VendorID + " ";
-        repoId += (*it)->URI + " ";
-        repoId += (*it)->Dist + " ";
-        repoId += sections;
-//         cout << endl << repoId << endl;
-//         cout << (*it)->SourceFile << endl;
+        string repoId = (*it)->repoId();
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
@@ -1088,50 +1077,70 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                                        (*it)->niceName().c_str(),
                                        !((*it)->Type & SourcesList::Disabled));
         } else if (repoId.compare(repo_id) == 0) {
+            // Found the repo to enable/disable
             found = true;
-            cout << endl << repo_id;
-            cout << endl << repoId << endl;
+
             if (role == PK_ROLE_ENUM_REPO_ENABLE) {
                 if (enabled) {
                     (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
                 } else {
                     (*it)->Type |= SourcesList::Disabled;
                 }
-                found = true;
-                break;
+
+                // Commit changes
+                if (!_lst.UpdateSources()) {
+                    _error->Error("Could not update sources file");
+                    show_errors(job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
+                }
             } else if (role == PK_ROLE_ENUM_REPO_REMOVE) {
-                g_debug("all fine");
-//                 bool simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
-//                 if (true || autoremove) {
+                if (autoremove) {
                     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
                     if (!apt->init()) {
                         g_debug("Failed to create apt cache");
                         apt->emitFinished();
                         return;
                     }
-//
-//                     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-                    PkgList output;
-                    output = apt->getPackagesFromRepo(*it);
-                        g_debug("Finish");
-//
-//                 }
-// 
-//                 if (!simulate) {
-//                     _lst.RemoveSource(*it);
-//                 }
+
+                    PkgList removePkgs = apt->getPackagesFromRepo(*it);
+                    if (removePkgs.size() > 0) {
+                        // Install/Update/Remove packages, or just simulate
+                        bool ret;
+                        ret = apt->runTransaction(PkgList(),
+                                                removePkgs,
+                                                false,
+                                                false,
+                                                transaction_flags,
+                                                false);
+                        if (!ret) {
+                            // Print transaction errors
+                            g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
+                            apt->emitFinished();
+                            return;
+                        }
+                    }
+                }
+
+                // Now if we are not simulating remove the repository
+                if (!pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+                    _lst.RemoveSource(*it);
+
+                    // Commit changes
+                    if (!_lst.UpdateSources()) {
+                        _error->Error("Could not update sources file");
+                        show_errors(job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
+                    }
+                }
             }
+
+            // Leave the search loop
+            break;
         }
     }
 
-    if (role == PK_ROLE_ENUM_REPO_ENABLE) {
-        if (!found) {
-            _error->Error("Could not found the repositorie");
-            show_errors(job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
-        } else if (!_lst.UpdateSources()) {
-            _error->Error("Could not update sources file");
-            show_errors(job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
-        }
+    if ((role == PK_ROLE_ENUM_REPO_ENABLE || role == PK_ROLE_ENUM_REPO_REMOVE) &&
+        !found) {
+        _error->Error("Could not found the repository");
+        show_errors(job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
     }
 
     apt->emitFinished();
@@ -1180,7 +1189,6 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
         return;
     }
 
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
     PkgList output;
     output = apt->getPackages();
 

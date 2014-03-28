@@ -93,7 +93,6 @@ public:
      */
     bool runTransaction(const PkgList &install,
                         const PkgList &remove,
-                        bool simulate,
                         bool markAuto,
                         bool fixBroken,
                         PkBitfield flags,

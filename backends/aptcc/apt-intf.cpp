@@ -994,6 +994,8 @@ void AptIntf::getRequires(PkgList &output,
 
 PkgList AptIntf::getPackages()
 {
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_QUERY);
+
     PkgList output;
     output.reserve(m_cache->GetPkgCache()->HeaderP->PackageCount);
     for (pkgCache::PkgIterator pkg = m_cache->GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
@@ -1017,6 +1019,8 @@ PkgList AptIntf::getPackages()
 
 PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
 {
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_QUERY);
+
     PkgList output;
     output.reserve(m_cache->GetPkgCache()->HeaderP->PackageCount);
     for (pkgCache::PkgIterator pkg = m_cache->GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
@@ -1056,23 +1060,27 @@ PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
             continue;
         }
 
-        cout << endl;
-        cout << ver.ParentPkg().Name() << endl;
-        cout << ver.VerStr() << endl;
-        cout << vf.File().FileName() << endl;
-        cout << vf.File().Origin() << endl;
-        cout << vf.File().Component() << endl;
-        cout << vf.File().Label() << endl;
-        cout << vf.File().Codename() << endl;
-        cout << vf.File().Site() << endl;
-        cout << vf.File().Archive() << endl;
-        cout << vf.File().IndexType() << endl;
+//         cout << endl;
+//         cout << ver.ParentPkg().Name() << endl;
+//         cout << ver.VerStr() << endl;
+//         cout << vf.File().FileName() << endl;
+//         cout << vf.File().Origin() << endl;
+//         cout << vf.File().Component() << endl;
+//         cout << vf.File().Label() << endl;
+//         cout << vf.File().Codename() << endl;
+//         cout << vf.File().Site() << endl;
+//         cout << vf.File().Archive() << endl;
+//         cout << vf.File().IndexType() << endl;
+
+        output.push_back(ver);
     }
     return output;
 }
 
 PkgList AptIntf::getPackagesFromGroup(gchar **values)
 {
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_QUERY);
+
     PkgList output;
     vector<PkGroupEnum> groups;
 
@@ -2370,11 +2378,13 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     return true;
 }
 
-bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool simulate, bool markAuto, bool fixBroken, PkBitfield flags, bool autoremove)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool markAuto, bool fixBroken, PkBitfield flags, bool autoremove)
 {
     //cout << "runTransaction" << simulate << remove << endl;
 
     pk_backend_job_set_status (m_job, PK_STATUS_ENUM_RUNNING);
+
+    bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
 
     // Enter the special broken fixing mode if the user specified arguments
     // THIS mode will run if fixBroken is false and the cache has broken packages
