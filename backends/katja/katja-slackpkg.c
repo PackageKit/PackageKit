@@ -131,7 +131,7 @@ out:
  **/
 void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	gchar **pkg_tokens = NULL, **cur_priority;
-	gchar *filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *packages_txt;
+	gchar *query = NULL, *filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *packages_txt;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
 	gushort pkg_name_len;
 	GString *desc;
@@ -187,16 +187,15 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						"@desc, @compressed, @uncompressed, @name, @repo_order)",
 						-1,
 						&insert_default_statement,
-						NULL) != SQLITE_OK) ||
-	(sqlite3_prepare_v2(katja_pkgtools_db,
-						"UPDATE pkglist SET full_name = @full_name, ver = @ver, arch = @arch, "
-						"ext = @ext, location = @location, summary = @summary, "
-						"desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
-						"WHERE name LIKE @name",
-						-1,
-						&update_statement,
-						NULL) != SQLITE_OK))
-							goto out;
+						NULL) != SQLITE_OK)) 
+		goto out;
+
+	query = sqlite3_mprintf("UPDATE pkglist SET full_name = @full_name, ver = @ver, arch = @arch, "
+							"ext = @ext, location = @location, summary = @summary, "
+							"desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
+							"WHERE name LIKE @name AND repo_order = %u", pkgtools->order);
+	if (sqlite3_prepare_v2(katja_pkgtools_db, query, -1, &update_statement, NULL) != SQLITE_OK)
+		goto out;
 
 	data_in = g_data_input_stream_new(G_INPUT_STREAM(fin));
 	desc = g_string_new("");
@@ -291,8 +290,9 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 
 out:
 	sqlite3_finalize(update_statement);
-	sqlite3_finalize(insert_statement);
+	sqlite3_free(query);
 	sqlite3_finalize(insert_default_statement);
+	sqlite3_finalize(insert_statement);
 
 	if (fin)
 		g_object_unref(fin);

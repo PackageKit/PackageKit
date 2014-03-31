@@ -178,8 +178,7 @@ void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job) {
 }
 
 static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar **vals, *search;
-	gchar *query;
+	gchar **vals, *search, *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
 
