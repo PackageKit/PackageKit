@@ -448,6 +448,55 @@ std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &
     return debParser(getLongDescription(ver));
 }
 
+bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
+                                const pkgCache::VerIterator &ver,
+                                bool BrokenFix)
+{
+    pkgCache::PkgIterator Pkg = ver.ParentPkg();
+
+    // Check if there is something at all to install
+    GetDepCache()->SetCandidateVersion(ver);
+    pkgDepCache::StateCache &State = (*this)[Pkg];
+
+    if (State.CandidateVer == 0) {
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+                                  "Package %s is virtual and has no installation candidate",
+                                  Pkg.Name());
+        return false;
+    }
+
+    Fix.Clear(Pkg);
+    Fix.Protect(Pkg);
+
+    // Install it
+    GetDepCache()->MarkInstall(Pkg, false);
+
+    return true;
+}
+
+void AptCacheFile::tryToRemove(pkgProblemResolver &Fix,
+                               const pkgCache::VerIterator &ver)
+{
+    pkgCache::PkgIterator Pkg = ver.ParentPkg();
+
+    // The package is not installed
+    if (Pkg->CurrentVer == 0) {
+        Fix.Clear(Pkg);
+        Fix.Protect(Pkg);
+        Fix.Remove(Pkg);
+
+        return;
+    }
+
+    Fix.Clear(Pkg);
+    Fix.Protect(Pkg);
+    Fix.Remove(Pkg);
+    // TODO this is false since PackageKit can't
+    // tell it want's o purge
+    GetDepCache()->MarkDelete(Pkg, false);
+}
+
 std::string AptCacheFile::debParser(std::string descr)
 {
     // Policy page on package descriptions

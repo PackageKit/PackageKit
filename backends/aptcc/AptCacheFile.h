@@ -23,6 +23,7 @@
 #include <apt-pkg/cachefile.h>
 #include <pk-backend.h>
 
+class pkgProblemResolver;
 class AptCacheFile : public pkgCacheFile
 {
 public:
@@ -124,6 +125,13 @@ public:
      *  version.
      */
     std::string getLongDescriptionParsed(const pkgCache::VerIterator &ver);
+
+    bool tryToInstall(pkgProblemResolver &Fix,
+                      const pkgCache::VerIterator &ver,
+                      bool BrokenFix);
+
+    void tryToRemove(pkgProblemResolver &Fix,
+                     const pkgCache::VerIterator &ver);
 
 private:
     void buildPkgRecords();

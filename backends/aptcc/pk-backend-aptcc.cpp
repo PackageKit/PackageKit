@@ -137,6 +137,7 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
                 PK_FILTER_ENUM_SUPPORTED,
                 PK_FILTER_ENUM_FREE,
                 PK_FILTER_ENUM_APPLICATION,
+                PK_FILTER_ENUM_DOWNLOADED,
                 -1);
 
     // if we have multiArch support we add the native filter

@@ -339,11 +339,64 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
 {
     if (filters != 0) {
         PkgList ret;
+        ret.reserve(packages.size());
+
         for (PkgList::const_iterator i = packages.begin(); i != packages.end(); ++i) {
             if (matchPackage(*i, filters)) {
                 ret.push_back(*i);
             }
         }
+
+        // This filter is more complex so we filter it after the list has shrink
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && ret.size() > 0) {
+            PkgList downloaded;
+
+            pkgProblemResolver Fix(*m_cache);
+            {
+                pkgDepCache::ActionGroup group(*m_cache);
+                for (PkgList::const_iterator it = ret.begin(); it != ret.end(); ++it) {
+                    if (m_cancel) {
+                        break;
+                    }
+
+                    m_cache->tryToInstall(Fix, *it, false);
+                }
+            }
+
+            // get a fetcher
+            pkgAcquire fetcher;
+
+            // Read the source list
+            if (m_cache->BuildSourceList() == false) {
+                return downloaded;
+            }
+
+            // Create the package manager and prepare to download
+            SPtr<pkgPackageManager> PM = _system->CreatePM(*m_cache);
+            if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
+                    _error->PendingError() == true) {
+                return downloaded;
+            }
+
+            for (PkgList::const_iterator verIt = ret.begin(); verIt != ret.end(); ++verIt) {
+                bool found = false;
+                for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
+                    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(*it);
+                    const pkgCache::VerIterator ver = archive->version();
+                    if ((*it)->Local && *verIt == ver) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    downloaded.push_back(*verIt);
+                }
+            }
+
+            return downloaded;
+        }
+
         return ret;
     } else {
         return packages;
@@ -390,14 +443,13 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
     // Remove the duplicated entries
     output.removeDuplicates();
 
+    output = filterPackages(output, filters);
     for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
         if (m_cancel) {
             break;
         }
 
-        if (matchPackage(*it, filters)) {
-            emitPackage(*it, state);
-        }
+        emitPackage(*it, state);
     }
 }
 
@@ -426,13 +478,10 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
     // Remove the duplicated entries
     output.removeDuplicates();
 
+    output = filterPackages(output, filters);
     for (PkgList::const_iterator i = output.begin(); i != output.end(); ++i) {
         if (m_cancel) {
             break;
-        }
-
-        if (!matchPackage(*i, filters)) {
-            continue;
         }
 
         // the default update info
@@ -1585,56 +1634,6 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
     }
 }
 
-void AptIntf::tryToRemove(pkgProblemResolver &Fix,
-                          const pkgCache::VerIterator &ver)
-{
-    pkgCache::PkgIterator Pkg = ver.ParentPkg();
-
-    // The package is not installed
-    if (Pkg->CurrentVer == 0) {
-        Fix.Clear(Pkg);
-        Fix.Protect(Pkg);
-        Fix.Remove(Pkg);
-
-        return;
-    }
-
-    Fix.Clear(Pkg);
-    Fix.Protect(Pkg);
-    Fix.Remove(Pkg);
-    // TODO this is false since PackageKit can't
-    // tell it want's o purge
-    m_cache->GetDepCache()->MarkDelete(Pkg, false);
-}
-
-
-bool AptIntf::tryToInstall(pkgProblemResolver &Fix,
-                           const pkgCache::VerIterator &ver,
-                           bool BrokenFix)
-{
-    pkgCache::PkgIterator Pkg = ver.ParentPkg();
-
-    // Check if there is something at all to install
-    m_cache->GetDepCache()->SetCandidateVersion(ver);
-    pkgDepCache::StateCache &State = (*m_cache)[Pkg];
-
-    if (State.CandidateVer == 0) {
-        pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-                                  "Package %s is virtual and has no installation candidate",
-                                  Pkg.Name());
-        return false;
-    }
-
-    Fix.Clear(Pkg);
-    Fix.Protect(Pkg);
-
-    // Install it
-    m_cache->GetDepCache()->MarkInstall(Pkg, false);
-
-    return true;
-}
-
 /**
  * checkChangedPackages - Check whas is goind to happen to the packages
  */
@@ -2403,9 +2402,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
                 break;
             }
 
-            if (tryToInstall(Fix,
-                             *it,
-                             BrokenFix) == false) {
+            if (!m_cache->tryToInstall(Fix, *it, BrokenFix)) {
                 return false;
             }
         }
@@ -2415,7 +2412,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
                 break;
             }
 
-            tryToRemove(Fix, *it);
+            m_cache->tryToRemove(Fix, *it);
         }
 
         // Mark package dependencies of a local file as auto-installed
@@ -2479,12 +2476,6 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         return true;
     }
 
-    // Create the text record parser
-    pkgRecords Recs(*m_cache);
-    if (_error->PendingError() == true) {
-        return false;
-    }
-
     // Create the download object
     AcqPackageKitStatus Stat(this, m_job);
 
@@ -2501,11 +2492,10 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     if (m_cache->BuildSourceList() == false) {
         return false;
     }
-    pkgSourceList *List = m_cache->GetSourceList();
 
     // Create the package manager and prepare to download
     SPtr<pkgPackageManager> PM = _system->CreatePM(*m_cache);
-    if (PM->GetArchives(&fetcher, List, &Recs) == false ||
+    if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
             _error->PendingError() == true) {
         return false;
     }
