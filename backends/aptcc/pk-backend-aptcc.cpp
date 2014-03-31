@@ -77,9 +77,17 @@ void pk_backend_initialize(PkBackend *backend)
     // (without using the debconf frontend, PK will freeze)
     setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
 
-    // Make sure the config is ready for the get-filters
-    // call which needs to know about multi-arch
-    pkgInitConfig(*_config);
+    // pkgInitConfig makes sure the config is ready for the
+    // get-filters call which needs to know about multi-arch
+    if (!pkgInitConfig(*_config)) {
+        g_debug("ERROR initializing backend configuration");
+    }
+
+    // pkgInitSystem is needed to compare the changelog verstion to
+    // current package using DoCmpVersion()
+    if (!pkgInitSystem(*_config, _system)) {
+        g_debug("ERROR initializing backend system");
+    }
 
     spawn = pk_backend_spawn_new(conf);
 //     pk_backend_spawn_set_job(spawn, backend);
