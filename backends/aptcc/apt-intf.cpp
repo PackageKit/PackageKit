@@ -69,13 +69,6 @@ bool AptIntf::init()
     gchar *http_proxy;
     gchar *ftp_proxy;
 
-    // pkgInitSystem is needed to compare the changelog verstion to
-    // current package using DoCmpVersion()
-    if (pkgInitConfig(*_config) == false ||
-            pkgInitSystem(*_config, _system) == false) {
-        g_debug("ERROR initializing backend");
-    }
-
     m_isMultiArch = APT::Configuration::getArchitectures(false).size() > 1;
 
     // set locale
