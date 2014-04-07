@@ -464,7 +464,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 	guint i;
 	gdouble percent_step;
 	GSList *repo, *install_list = NULL, *l;
-	sqlite3_stmt *pkglist_statement = NULL, *collections_statement = NULL;
+	sqlite3_stmt *pkglist_stmt = NULL, *collection_stmt = NULL;
     PkBitfield transaction_flags = 0;
 	PkInfoEnum ret;
 
@@ -475,16 +475,16 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 							"SELECT summary, cat FROM pkglist NATURAL JOIN repos "
 							"WHERE name LIKE @name AND ver LIKE @ver AND arch LIKE @arch AND repo LIKE @repo",
 							-1,
-							&pkglist_statement,
+							&pkglist_stmt,
 							NULL) != SQLITE_OK) ||
 		(sqlite3_prepare_v2(katja_pkgtools_db,
 						   "SELECT (c.collection_pkg || ';' || p.ver || ';' || p.arch || ';' || r.repo), p.summary, "
-						   "p.full_name FROM collections AS c "
+						   "p.full_name, p.ext FROM collections AS c "
 						   "JOIN pkglist AS p ON c.collection_pkg = p.name "
 						   "JOIN repos AS r ON p.repo_order = r.repo_order "
 						   "WHERE c.name LIKE @name AND r.repo LIKE @repo",
 						   -1,
-						   &collections_statement,
+						   &collection_stmt,
 						   NULL) != SQLITE_OK)) {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(katja_pkgtools_db));
 		goto out;
@@ -492,48 +492,50 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 	for (i = 0; pkg_ids[i]; i++) {
 		pkg_tokens = pk_package_id_split(pkg_ids[i]);
-		sqlite3_bind_text(pkglist_statement, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_statement, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_statement, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_statement, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
-		if (sqlite3_step(pkglist_statement) == SQLITE_ROW) {
+		if (sqlite3_step(pkglist_stmt) == SQLITE_ROW) {
 
 			/* If it isn't a collection */
-			if (g_strcmp0((gchar *) sqlite3_column_text(pkglist_statement, 1), "collections")) {
+			if (g_strcmp0((gchar *) sqlite3_column_text(pkglist_stmt, 1), "collections")) {
 				if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLING,
 										   pkg_ids[i],
-										   (gchar *) sqlite3_column_text(pkglist_statement, 0));
+										   (gchar *) sqlite3_column_text(pkglist_stmt, 0));
 				} else {
 					install_list = g_slist_append(install_list, g_strdup(pkg_ids[i]));
 				}
 			} else {
-				sqlite3_bind_text(collections_statement, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
-				sqlite3_bind_text(collections_statement, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(collection_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(collection_stmt, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
-				while (sqlite3_step(collections_statement) == SQLITE_ROW) {
-					ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(collections_statement, 2));
+				while (sqlite3_step(collection_stmt) == SQLITE_ROW) {
+					ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(collection_stmt, 2));
 					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING)) {
-						if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+						if ((pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) &&
+							!g_strcmp0((gchar *) sqlite3_column_text(collection_stmt, 3), "obsolete")) {
+							/* TODO: Don't just skip obsolete packages but remove them */
+						} else if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 							pk_backend_job_package(job, ret,
-												   (gchar *) sqlite3_column_text(collections_statement, 0),
-												   (gchar *) sqlite3_column_text(collections_statement, 1));
+												   (gchar *) sqlite3_column_text(collection_stmt, 0),
+												   (gchar *) sqlite3_column_text(collection_stmt, 1));
 						} else {
 							install_list = g_slist_append(install_list,
-														  g_strdup((gchar *) sqlite3_column_text(collections_statement,
-																								 0)));
+														  g_strdup((gchar *) sqlite3_column_text(collection_stmt, 0)));
 						}
 					}
 				}
 
-				sqlite3_clear_bindings(collections_statement);
-				sqlite3_reset(collections_statement);
+				sqlite3_clear_bindings(collection_stmt);
+				sqlite3_reset(collection_stmt);
 			}
 		}
 
-		sqlite3_clear_bindings(pkglist_statement);
-		sqlite3_reset(pkglist_statement);
+		sqlite3_clear_bindings(pkglist_stmt);
+		sqlite3_reset(pkglist_stmt);
 		g_strfreev(pkg_tokens);
 	}
 
@@ -570,8 +572,8 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 	g_slist_free_full(install_list, g_free);
 
 out:
-	sqlite3_finalize(pkglist_statement);
-	sqlite3_finalize(collections_statement);
+	sqlite3_finalize(pkglist_stmt);
+	sqlite3_finalize(collection_stmt);
 
 	pk_backend_job_finished (job);
 }
