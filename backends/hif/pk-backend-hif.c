@@ -32,6 +32,8 @@
 #include <pk-backend.h>
 #include <packagekit-glib2/pk-debug.h>
 
+#include <hawkey/advisory.h>
+#include <hawkey/advisoryref.h>
 #include <hawkey/packagelist.h>
 #include <hawkey/packageset.h>
 #include <hawkey/query.h>
@@ -733,6 +735,24 @@ pk_backend_what_provides_decompose (gchar **values, GError **error)
 }
 
 /**
+ * hif_package_get_advisory:
+ */
+static HyAdvisory
+hif_package_get_advisory (HyPackage package)
+{
+	HyAdvisoryList advisorylist;
+	HyAdvisory advisory = NULL;
+
+	advisorylist = hy_package_get_advisories (package, HY_EQ);
+
+	if (hy_advisorylist_count (advisorylist) > 0)
+		advisory = hy_advisorylist_get_clone (advisorylist, 0);
+	hy_advisorylist_free (advisorylist);
+
+	return advisory;
+}
+
+/**
  * pk_backend_search_thread:
  */
 static void
@@ -895,12 +915,17 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		guint i;
 		HyPackage pkg;
-		HyUpdateSeverity severity;
+		HyAdvisory advisory;
+		HyAdvisoryType type;
 		PkInfoEnum info_enum;
 		FOR_PACKAGELIST(pkg, pkglist, i) {
-			severity = hy_package_get_update_severity (pkg);
-			info_enum = hif_update_severity_to_info_enum (severity);
-			hif_package_set_info (pkg, info_enum);
+			advisory = hif_package_get_advisory (pkg);
+			if (advisory != NULL) {
+				type = hy_advisory_get_type (advisory);
+				hy_advisory_free (advisory);
+				info_enum = hif_advisory_type_to_info_enum (type);
+				hif_package_set_info (pkg, info_enum);
+			}
 		}
 	}
 
@@ -3227,8 +3252,14 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	GError *error = NULL;
 	GHashTable *hash = NULL;
 	guint i;
+	gint j;
 	HifState *state_local;
 	HyPackage pkg;
+	HyAdvisory advisory;
+	HyAdvisoryRefList references;
+	GPtrArray *vendor_urls;
+	GPtrArray *bugzilla_urls;
+	GPtrArray *cve_urls;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
@@ -3285,19 +3316,63 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
+		advisory = hif_package_get_advisory (pkg);
+		if (advisory == NULL)
+			continue;
+
+		references = hy_advisory_get_references (advisory);
+		vendor_urls = g_ptr_array_new_with_free_func (g_free);
+		bugzilla_urls = g_ptr_array_new_with_free_func (g_free);
+		cve_urls = g_ptr_array_new_with_free_func (g_free);
+		for (j = 0; j < hy_advisoryreflist_count (references); j++) {
+			HyAdvisoryRef reference;
+			HyAdvisoryRefType type;
+			const gchar *url;
+
+			reference = hy_advisoryreflist_get_clone (references, j);
+			type = hy_advisoryref_get_type (reference);
+			url = hy_advisoryref_get_url (reference);
+			hy_advisoryref_free (reference);
+			if (url == NULL)
+				continue;
+			switch (type) {
+			case HY_REFERENCE_VENDOR:
+				g_ptr_array_add (vendor_urls, g_strdup (url));
+				break;
+			case HY_REFERENCE_BUGZILLA:
+				g_ptr_array_add (bugzilla_urls, g_strdup (url));
+				break;
+			case HY_REFERENCE_CVE:
+				g_ptr_array_add (cve_urls, g_strdup (url));
+				break;
+			default:
+				break;
+			}
+
+		}
+		g_ptr_array_add (vendor_urls, NULL);
+		g_ptr_array_add (bugzilla_urls, NULL);
+		g_ptr_array_add (cve_urls, NULL);
+
 		pk_backend_job_update_detail (job,
 					      package_ids[i],
 					      NULL,
 					      NULL,
-					      hy_package_get_update_urls_vendor (pkg),
-					      hy_package_get_update_urls_bugzilla (pkg),
-					      hy_package_get_update_urls_cve (pkg),
+					      (gchar **) vendor_urls->pdata,
+					      (gchar **) bugzilla_urls->pdata,
+					      (gchar **) cve_urls->pdata,
 					      PK_RESTART_ENUM_NONE, /* FIXME */
-					      hy_package_get_update_description (pkg),
+					      hy_advisory_get_description (advisory),
 					      NULL,
 					      PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
 					      NULL, /* issued */
 					      NULL /* updated */);
+
+		hy_advisoryreflist_free (references);
+		hy_advisory_free (advisory);
+		g_ptr_array_unref (vendor_urls);
+		g_ptr_array_unref (bugzilla_urls);
+		g_ptr_array_unref (cve_urls);
 	}
 
 	/* done */

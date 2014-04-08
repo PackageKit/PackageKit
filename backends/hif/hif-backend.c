@@ -245,34 +245,27 @@ hif_emit_package_list_filter (PkBackendJob *job,
 }
 
 /**
- * hif_update_severity_to_info_enum:
+ * hif_advisory_type_to_info_enum:
  */
 PkInfoEnum
-hif_update_severity_to_info_enum (HyUpdateSeverity severity)
+hif_advisory_type_to_info_enum (HyAdvisoryType type)
 {
-	PkInfoEnum info_enum = HY_UPDATE_SEVERITY_UNKNOWN;
-	switch (severity) {
-	case HY_UPDATE_SEVERITY_SECURITY:
+	PkInfoEnum info_enum = PK_INFO_ENUM_UNKNOWN;
+	switch (type) {
+	case HY_ADVISORY_SECURITY:
 		info_enum = PK_INFO_ENUM_SECURITY;
 		break;
-	case HY_UPDATE_SEVERITY_IMPORTANT:
-		info_enum = PK_INFO_ENUM_IMPORTANT;
-		break;
-	case HY_UPDATE_SEVERITY_BUGFIX:
+	case HY_ADVISORY_BUGFIX:
 		info_enum = PK_INFO_ENUM_BUGFIX;
 		break;
-	case HY_UPDATE_SEVERITY_NORMAL:
-	case HY_UPDATE_SEVERITY_UNKNOWN:
+	case HY_ADVISORY_UNKNOWN:
 		info_enum = PK_INFO_ENUM_NORMAL;
 		break;
-	case HY_UPDATE_SEVERITY_ENHANCEMENT:
+	case HY_ADVISORY_ENHANCEMENT:
 		info_enum = PK_INFO_ENUM_ENHANCEMENT;
 		break;
-	case HY_UPDATE_SEVERITY_LOW:
-		info_enum = PK_INFO_ENUM_LOW;
-		break;
 	default:
-		g_warning ("Failed to find HyUpdateSeverity enum %i", severity);
+		g_warning ("Failed to find HyAdvisoryType enum %i", type);
 		break;
 	}
 	return info_enum;
