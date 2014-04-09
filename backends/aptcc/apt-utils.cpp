@@ -191,7 +191,7 @@ bool downloadChangelog(AptCacheFile &CacheFile,
                        string targetfile)
 /* Download a changelog file for the given package version to
  * targetfile. This will first try the server from Apt::Changelogs::Server
- * (http://packages.debian.org/changelogs by default) and if that gives
+ * (http://metadata.ftp-master.debian.org/changelogs by default) and if that gives
  * a 404 tries to get it from the archive directly (see
  * GuessThirdPartyChangelogUri for details how)
  */
@@ -212,7 +212,7 @@ bool downloadChangelog(AptCacheFile &CacheFile,
 
    // make the server root configurable
    server = _config->Find("Apt::Changelogs::Server",
-                          "http://packages.debian.org/changelogs");
+                          "http://metadata.ftp-master.debian.org/changelogs");
    path = GetChangelogPath(CacheFile, Pkg, Ver);
 
    if (origin.compare("Ubuntu") == 0)
