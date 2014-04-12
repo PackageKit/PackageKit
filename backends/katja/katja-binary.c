@@ -133,7 +133,7 @@ gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_nam
 								 NULL);
 
 		if (!g_file_test(dest_filename, G_FILE_TEST_EXISTS)) {
-			if (katja_pkgtools_get_file(&curl, source_url, dest_filename) == CURLE_OK) {
+			if (katja_get_file(&curl, source_url, dest_filename) == CURLE_OK) {
 				ret = TRUE;
 			}
 		} else {

@@ -27,7 +27,7 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 		source_dest[1] = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
 		source_dest[2] = NULL;
 
-		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL) == CURLE_OK) {
+		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK) {
 			file_list = g_slist_prepend(file_list, source_dest);
 		} else {
 			g_strfreev(source_dest);
@@ -40,7 +40,7 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 		source_dest[0] = g_strconcat(pkgtools->mirror->str, *cur_priority, "/MANIFEST.bz2", NULL);
 		source_dest[1] = g_strconcat(tmpl, "/", pkgtools->name->str, "/", *cur_priority, "-MANIFEST.bz2", NULL);
 		source_dest[2] = NULL;
-		if (katja_pkgtools_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
+		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 			file_list = g_slist_prepend(file_list, source_dest);
 		else
 			g_strfreev(source_dest);
@@ -225,7 +225,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 			if (summary) /* Else summary = NULL */
 				summary = g_strndup(summary + 1, strlen(summary) - 2); /* Without ( ) */
 
-			pkg_tokens = katja_pkgtools_cut_pkg(filename);
+			pkg_tokens = katja_cut_pkg(filename);
 			pkg_name_len = strlen(pkg_tokens[0]); /* Description begins with pkg_name: */
 		} else if (filename && !strncmp(line, pkg_tokens[0], pkg_name_len)) {
 			g_string_append(desc, line + pkg_name_len + 1);

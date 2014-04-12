@@ -198,7 +198,7 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 	if ((sqlite3_prepare_v2(katja_pkgtools_db, query, -1, &stmt, NULL) == SQLITE_OK)) {
 		/* Now we're ready to output all packages */
 		while (sqlite3_step(stmt) == SQLITE_ROW) {
-			ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(stmt, 2));
+			ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(stmt, 2));
 			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
 										(gchar *) sqlite3_column_text(stmt, 0),
@@ -252,7 +252,7 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 	if ((sqlite3_prepare_v2(katja_pkgtools_db, query, -1, &stmt, NULL) == SQLITE_OK)) {
 		/* Now we're ready to output all packages */
 		while (sqlite3_step(stmt) == SQLITE_ROW) {
-			ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(stmt, 2));
+			ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(stmt, 2));
 			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
 										(gchar *) sqlite3_column_text(stmt, 0),
@@ -380,7 +380,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 			sqlite3_bind_text(statement, 1, *val, -1, SQLITE_TRANSIENT);
 
 			while (sqlite3_step(statement) == SQLITE_ROW) {
-				ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(statement, 2));
+				ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(statement, 2));
 				if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
 											(gchar *) sqlite3_column_text(statement, 0),
@@ -434,7 +434,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 		sqlite3_bind_text(pkglist_statement, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_statement, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 		if (sqlite3_step(pkglist_statement) == SQLITE_ROW) {
-			if ((repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo))) {
+			if ((repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo))) {
 				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
 									   pkg_ids[i],
 									   (gchar *) sqlite3_column_text(pkglist_statement, 0));
@@ -514,7 +514,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 				sqlite3_bind_text(collection_stmt, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
 				while (sqlite3_step(collection_stmt) == SQLITE_ROW) {
-					ret = katja_pkgtools_is_installed((gchar *) sqlite3_column_text(collection_stmt, 2));
+					ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(collection_stmt, 2));
 					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING)) {
 						if ((pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) &&
 							!g_strcmp0((gchar *) sqlite3_column_text(collection_stmt, 3), "obsolete")) {
@@ -550,7 +550,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		for (l = install_list, i = 0; l; l = g_slist_next(l), i++) {
 			pk_backend_job_set_percentage(job, percent_step * i);
 			pkg_tokens = pk_package_id_split(l->data);
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
 				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
@@ -563,7 +563,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		for (l = install_list; l; l = g_slist_next(l), i++) {
 			pk_backend_job_set_percentage(job, percent_step * i);
 			pkg_tokens = pk_package_id_split(l->data);
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
 				katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
@@ -673,14 +673,14 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 
 	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL))) {
 		pkg_metadata_filename = g_file_info_get_name(pkg_metadata_file_info);
-		pkg_tokens = katja_pkgtools_cut_pkg(pkg_metadata_filename);
+		pkg_tokens = katja_cut_pkg(pkg_metadata_filename);
 
 		/* Select the package from the database */
 		sqlite3_bind_text(statement, 1, pkg_tokens[0], -1, SQLITE_TRANSIENT);
 
 		/* If there are more packages with the same name, remember the one from the repository with the lowest order */
 		if ((sqlite3_step(statement) == SQLITE_ROW) ||
-			g_slist_find_custom(repos, ((gchar *) sqlite3_column_text(statement, 4)), katja_pkgtools_cmp_repo)) {
+			g_slist_find_custom(repos, ((gchar *) sqlite3_column_text(statement, 4)), katja_cmp_repo)) {
 
 			full_name = g_strdup((gchar *) sqlite3_column_text(statement, 0));
 
@@ -749,7 +749,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
 
 			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
-				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
 					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
@@ -765,7 +765,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
 
 			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
-				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_pkgtools_cmp_repo);
+				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
 					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
@@ -852,7 +852,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY);
 
 	for (l = file_list; l; l = g_slist_next(l))
-		katja_pkgtools_get_file(&curl, ((gchar **)l->data)[0], ((gchar **)l->data)[1]);
+		katja_get_file(&curl, ((gchar **)l->data)[0], ((gchar **)l->data)[1]);
 	g_slist_free_full(file_list, (GDestroyNotify)g_strfreev);
 
 	if (curl)

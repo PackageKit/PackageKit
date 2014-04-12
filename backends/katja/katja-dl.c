@@ -22,7 +22,7 @@ GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *t
 	source_dest[1] = g_build_filename(tmpl, pkgtools->name->str, "IndexFile", NULL);
 	source_dest[2] = NULL;
 	/* Check if the remote file can be found */
-	if (katja_pkgtools_get_file(&curl, source_dest[0], NULL))
+	if (katja_get_file(&curl, source_dest[0], NULL))
 		g_strfreev(source_dest);
 	else
 		file_list = g_slist_append(file_list, source_dest);
@@ -95,9 +95,9 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		if ((g_strv_length(line_tokens) > 6) &&
 			(!pkgtools->blacklist || !g_regex_match(pkgtools->blacklist, line_tokens[0], 0, NULL))) {
 
-			pkg_tokens = katja_pkgtools_cut_pkg(line_tokens[0]);
+			pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
-			/* If the katja_pkgtools_cut_pkg doesn't return a full name and an extension, it is a collection.
+			/* If the katja_cut_pkg doesn't return a full name and an extension, it is a collection.
 			 * We save its name in this case */
 			if (pkg_tokens[3]) {
 				sqlite3_bind_text(stmt, 1, pkg_tokens[3], -1, SQLITE_TRANSIENT);
@@ -152,7 +152,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 			if ((g_strv_length(line_tokens) > 6) &&
 				(!pkgtools->blacklist || !g_regex_match(pkgtools->blacklist, line_tokens[0], 0, NULL))) {
 
-				pkg_tokens = katja_pkgtools_cut_pkg(line_tokens[0]);
+				pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
 				/* If not a collection itself */
 				if (pkg_tokens[3]) { /* Save this package as a part of the collection */

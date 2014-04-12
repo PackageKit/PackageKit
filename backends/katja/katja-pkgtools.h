@@ -1,13 +1,9 @@
 #ifndef __KATJA_PKGTOOLS_H
 #define __KATJA_PKGTOOLS_H
 
-#include <string.h>
 #include <errno.h>
-#include <curl/curl.h>
 #include <sqlite3.h>
-#include <glib/gstdio.h>
-#include <pk-backend.h>
-#include <pk-backend-job.h>
+#include "katja-utils.h"
 
 G_BEGIN_DECLS
 
@@ -19,14 +15,6 @@ G_BEGIN_DECLS
 #define KATJA_PKGTOOLS_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), KATJA_TYPE_PKGTOOLS, KatjaPkgtoolsClass))
 
 #define KATJA_PKGTOOLS_MAX_BUF_SIZE 8192
-
-/*typedef struct {
-	PkBackendJob *job;
-	guint last_percentage;
-	gdouble all;
-	gdouble downloaded;
-	gushort obj_counter;
-} KatjaPkgtoolsJobProgress;*/
 
 typedef struct {
 	GObject parent;
@@ -51,19 +39,12 @@ GType katja_pkgtools_get_type(void);
 
 /* Public static members */
 extern sqlite3 *katja_pkgtools_db;
-/*extern KatjaPkgtoolsJobProgress katja_pkgtools_job_progress;*/
 
 /* Virtual public methods */
 GSList *katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
 void katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl);
 gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name);
 void katja_pkgtools_install(KatjaPkgtools *pkgtools, gchar *pkg_name);
-
-/* Public static methods */
-CURLcode katja_pkgtools_get_file(CURL **curl, gchar *source_url, gchar *dest);
-gchar **katja_pkgtools_cut_pkg(const gchar *pkg_filename);
-gint katja_pkgtools_cmp_repo(gconstpointer a, gconstpointer b);
-PkInfoEnum katja_pkgtools_is_installed(gchar *pkg_full_name);
 
 G_END_DECLS
 
