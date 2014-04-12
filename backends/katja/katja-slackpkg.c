@@ -17,14 +17,14 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 
 	/* Create the temporary directory for the repository */
 	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, pkgtools->name->str);
+	repo_tmp_dir = g_file_get_child(tmp_dir, katja_pkgtools_get_name(pkgtools));
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* Download PACKAGES.TXT. These files are most important, break if some of them couldn't be found */
 	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++) {
 		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(pkgtools->mirror->str, *cur_priority, "/PACKAGES.TXT", NULL);
-		source_dest[1] = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
+		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(pkgtools), *cur_priority, "/PACKAGES.TXT", NULL);
+		source_dest[1] = g_build_filename(tmpl, katja_pkgtools_get_name(pkgtools), "PACKAGES.TXT", NULL);
 		source_dest[2] = NULL;
 
 		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK) {
@@ -37,8 +37,11 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gc
 
 		/* Download file lists if available */
 		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(pkgtools->mirror->str, *cur_priority, "/MANIFEST.bz2", NULL);
-		source_dest[1] = g_strconcat(tmpl, "/", pkgtools->name->str, "/", *cur_priority, "-MANIFEST.bz2", NULL);
+		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(pkgtools), *cur_priority, "/MANIFEST.bz2", NULL);
+		source_dest[1] = g_strconcat(tmpl,
+									 "/", katja_pkgtools_get_name(pkgtools),
+									 "/", *cur_priority, "-MANIFEST.bz2",
+									 NULL);
 		source_dest[2] = NULL;
 		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 			file_list = g_slist_prepend(file_list, source_dest);
@@ -141,7 +144,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
 
 	/* Check if the temporary directory for this repository exists, then the file metadata have to be generated */
-	packages_txt = g_build_filename(tmpl, pkgtools->name->str, "PACKAGES.TXT", NULL);
+	packages_txt = g_build_filename(tmpl, katja_pkgtools_get_name(pkgtools), "PACKAGES.TXT", NULL);
 	list_file = g_file_new_for_path(packages_txt);
 	fin = g_file_read(list_file, NULL, NULL);
 	g_object_unref(list_file);
@@ -155,7 +158,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						   -1,
 						   &statement,
 						   NULL) == SQLITE_OK) {
-		sqlite3_bind_text(statement, 1, pkgtools->name->str, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(statement, 1, katja_pkgtools_get_name(pkgtools), -1, SQLITE_TRANSIENT);
 		sqlite3_step(statement);
 		sqlite3_finalize(statement);
 	}
@@ -166,8 +169,8 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 						   &statement,
 						   NULL) != SQLITE_OK)
 		goto out;
-	sqlite3_bind_int(statement, 1, pkgtools->order);
-	sqlite3_bind_text(statement, 2, pkgtools->name->str, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(statement, 1, katja_pkgtools_get_order(pkgtools));
+	sqlite3_bind_text(statement, 2, katja_pkgtools_get_name(pkgtools), -1, SQLITE_TRANSIENT);
 	sqlite3_step(statement);
 	sqlite3_finalize(statement);
 
@@ -193,7 +196,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	query = sqlite3_mprintf("UPDATE pkglist SET full_name = @full_name, ver = @ver, arch = @arch, "
 							"ext = @ext, location = @location, summary = @summary, "
 							"desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
-							"WHERE name LIKE @name AND repo_order = %u", pkgtools->order);
+							"WHERE name LIKE @name AND repo_order = %u", katja_pkgtools_get_order(pkgtools));
 	if (sqlite3_prepare_v2(katja_pkgtools_db, query, -1, &update_statement, NULL) != SQLITE_OK)
 		goto out;
 
@@ -205,7 +208,9 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		if (!strncmp(line, "PACKAGE NAME:  ", 15)) {
 			filename = g_strdup(line + 15);
-			if (pkgtools->blacklist && g_regex_match(pkgtools->blacklist, filename, 0, NULL)) {
+			if (katja_pkgtools_get_blacklist(pkgtools) &&
+				g_regex_match(katja_pkgtools_get_blacklist(pkgtools), filename, 0, NULL)) {
+
 				g_free(filename);
 				filename = NULL;
 			}
@@ -243,7 +248,7 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tm
 					statement = insert_default_statement;
 				}
 
-				sqlite3_bind_int(statement, 11, pkgtools->order);
+				sqlite3_bind_int(statement, 11, katja_pkgtools_get_order(pkgtools));
 			} else { /* Update package information if it is a patch */
 				statement = update_statement;
 			}
@@ -354,7 +359,7 @@ static void katja_slackpkg_init(KatjaSlackpkg *slackpkg) {
 /**
  * katja_slackpkg_new:
  **/
-KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, guint order, gchar *blacklist, gchar **priority) {
+KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar **priority) {
 	KatjaSlackpkg *slackpkg;
 
 	g_return_val_if_fail(name != NULL, NULL);
@@ -362,12 +367,12 @@ KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, guint order, gchar
 	g_return_val_if_fail(priority != NULL, NULL);
 
 	slackpkg = g_object_new(KATJA_TYPE_SLACKPKG, NULL);
-	KATJA_PKGTOOLS(slackpkg)->name = g_string_new(name);
-	KATJA_PKGTOOLS(slackpkg)->mirror = g_string_new(mirror);
-	KATJA_PKGTOOLS(slackpkg)->order = order;
+	KATJA_BINARY(slackpkg)->name = name;
+	KATJA_BINARY(slackpkg)->mirror = mirror;
+	KATJA_BINARY(slackpkg)->order = order;
 
 	if (blacklist) /* Blacklist if set */
-		KATJA_PKGTOOLS(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+		KATJA_BINARY(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
 
 	slackpkg->priority = priority;
 

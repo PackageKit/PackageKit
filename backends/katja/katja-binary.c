@@ -16,7 +16,7 @@ void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filena
 	GMatchInfo *match_info;
 	sqlite3_stmt *statement = NULL;
 
-	path = g_build_filename(tmpl, KATJA_PKGTOOLS(binary)->name->str, filename, NULL);
+	path = g_build_filename(tmpl, binary->name, filename, NULL);
 	manifest = fopen(path, "rb");
 	g_free(path);
 
@@ -105,6 +105,34 @@ out:
 }
 
 /**
+ * katja_binary_real_get_name:
+ **/
+gchar *katja_binary_real_get_name(KatjaPkgtools *pkgtools) {
+	return KATJA_BINARY(pkgtools)->name;
+}
+
+/**
+ * katja_binary_real_get_mirror:
+ **/
+gchar *katja_binary_real_get_mirror(KatjaPkgtools *pkgtools) {
+	return KATJA_BINARY(pkgtools)->mirror;
+}
+
+/**
+ * katja_binary_real_get_order:
+ **/
+gushort katja_binary_real_get_order(KatjaPkgtools *pkgtools) {
+	return KATJA_BINARY(pkgtools)->order;
+}
+
+/**
+ * katja_binary_real_get_blacklist:
+ **/
+GRegex *katja_binary_real_get_blacklist(KatjaPkgtools *pkgtools) {
+	return KATJA_BINARY(pkgtools)->blacklist;
+}
+
+/**
  * katja_binary_real_download:
  **/
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name) {
@@ -122,11 +150,11 @@ gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_nam
 		return FALSE;
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(statement, 2, pkgtools->order);
+	sqlite3_bind_int(statement, 2, katja_pkgtools_get_order(pkgtools));
 
 	if (sqlite3_step(statement) == SQLITE_ROW) {
 		dest_filename = g_build_filename(dest_dir_name, sqlite3_column_text(statement, 1), NULL);
-		source_url = g_strconcat(pkgtools->mirror->str,
+		source_url = g_strconcat(katja_pkgtools_get_mirror(pkgtools),
 								 sqlite3_column_text(statement, 0),
 								 "/",
 								 sqlite3_column_text(statement, 1),
@@ -167,7 +195,7 @@ void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
 		return;
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(statement, 2, pkgtools->order);
+	sqlite3_bind_int(statement, 2, katja_pkgtools_get_order(pkgtools));
 
 	if (sqlite3_step(statement) == SQLITE_ROW) {
 		pkg_filename = g_build_filename(LOCALSTATEDIR,
@@ -189,6 +217,15 @@ void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
  * katja_binary_finalize:
  **/
 static void katja_binary_finalize(GObject *object) {
+	KatjaBinary *binary;
+
+	binary = KATJA_BINARY(object);
+
+	g_free(binary->name);
+	g_free(binary->mirror);
+	if (binary->blacklist)
+		g_object_unref(binary->blacklist);
+
 	G_OBJECT_CLASS(katja_binary_parent_class)->finalize(object);
 }
 
@@ -203,10 +240,18 @@ static void katja_binary_class_init(KatjaBinaryClass *klass) {
 
 	pkgtools_class->download = katja_binary_real_download;
 	pkgtools_class->install = katja_binary_real_install;
+	pkgtools_class->get_name = katja_binary_real_get_name;
+	pkgtools_class->get_mirror = katja_binary_real_get_mirror;
+	pkgtools_class->get_order = katja_binary_real_get_order;
+	pkgtools_class->get_blacklist = katja_binary_real_get_blacklist;
 }
 
 /**
  * katja_binary_init:
  **/
 static void katja_binary_init(KatjaBinary *binary) {
+	binary->name = NULL;
+	binary->mirror = NULL;
+	binary->blacklist = NULL;
+	binary->order = 0;
 }

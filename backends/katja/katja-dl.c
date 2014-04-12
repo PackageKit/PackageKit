@@ -13,13 +13,13 @@ GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *t
 
 	/* Create the temporary directory for the repository */
 	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, pkgtools->name->str);
+	repo_tmp_dir = g_file_get_child(tmp_dir, katja_pkgtools_get_name(pkgtools));
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* There is no ChangeLog yet to check if there are updates or not. Just mark the index file for download */
 	source_dest = g_malloc_n(3, sizeof(gchar *));
 	source_dest[0] = g_strdup(KATJA_DL(pkgtools)->index_file->str);
-	source_dest[1] = g_build_filename(tmpl, pkgtools->name->str, "IndexFile", NULL);
+	source_dest[1] = g_build_filename(tmpl, katja_pkgtools_get_name(pkgtools), "IndexFile", NULL);
 	source_dest[2] = NULL;
 	/* Check if the remote file can be found */
 	if (katja_get_file(&curl, source_dest[0], NULL))
@@ -48,7 +48,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	sqlite3_stmt *stmt = NULL;
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
-	list_filename = g_build_filename(tmpl, pkgtools->name->str, "IndexFile", NULL);
+	list_filename = g_build_filename(tmpl, katja_pkgtools_get_name(pkgtools), "IndexFile", NULL);
 	list_file = g_file_new_for_path(list_filename);
 	if (!(fin = g_file_read(list_file, NULL, NULL)))
 		goto out;
@@ -60,7 +60,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 						   -1,
 						   &stmt,
 						   NULL) == SQLITE_OK) {
-		sqlite3_bind_text(stmt, 1, pkgtools->name->str, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 1, katja_pkgtools_get_name(pkgtools), -1, SQLITE_TRANSIENT);
 		sqlite3_step(stmt);
 		sqlite3_finalize(stmt);
 	}
@@ -71,8 +71,8 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 						   &stmt,
 						   NULL) != SQLITE_OK)
 		goto out;
-	sqlite3_bind_int(stmt, 1, pkgtools->order);
-	sqlite3_bind_text(stmt, 2, pkgtools->name->str, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 1, katja_pkgtools_get_order(pkgtools));
+	sqlite3_bind_text(stmt, 2, katja_pkgtools_get_name(pkgtools), -1, SQLITE_TRANSIENT);
 	sqlite3_step(stmt);
 	if (sqlite3_finalize(stmt) != SQLITE_OK)
 		goto out;
@@ -93,7 +93,8 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		line_tokens = g_strsplit(line, ":", 0);
 		if ((g_strv_length(line_tokens) > 6) &&
-			(!pkgtools->blacklist || !g_regex_match(pkgtools->blacklist, line_tokens[0], 0, NULL))) {
+			(!katja_pkgtools_get_blacklist(pkgtools) ||
+			 !g_regex_match(katja_pkgtools_get_blacklist(pkgtools), line_tokens[0], 0, NULL))) {
 
 			pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
@@ -125,7 +126,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 				sqlite3_bind_text(stmt, 6, line_tokens[2], -1, SQLITE_TRANSIENT);
 				sqlite3_bind_int(stmt, 7, atoi(line_tokens[5]));
 				sqlite3_bind_int(stmt, 8, atoi(line_tokens[5]));
-				sqlite3_bind_int(stmt, 10, pkgtools->order);
+				sqlite3_bind_int(stmt, 10, katja_pkgtools_get_order(pkgtools));
 
 				sqlite3_step(stmt);
 				sqlite3_clear_bindings(stmt);
@@ -150,14 +151,14 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 			line_tokens = g_strsplit(line, ":", 0);
 			if ((g_strv_length(line_tokens) > 6) &&
-				(!pkgtools->blacklist || !g_regex_match(pkgtools->blacklist, line_tokens[0], 0, NULL))) {
+				(!katja_pkgtools_get_blacklist(pkgtools) || !g_regex_match(katja_pkgtools_get_blacklist(pkgtools), line_tokens[0], 0, NULL))) {
 
 				pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
 				/* If not a collection itself */
 				if (pkg_tokens[3]) { /* Save this package as a part of the collection */
 					sqlite3_bind_text(stmt, 1, collection_name, -1, SQLITE_TRANSIENT);
-					sqlite3_bind_int(stmt, 2, pkgtools->order);
+					sqlite3_bind_int(stmt, 2, katja_pkgtools_get_order(pkgtools));
 					sqlite3_bind_text(stmt, 3, pkg_tokens[0], -1, SQLITE_TRANSIENT);
 					sqlite3_step(stmt);
 					sqlite3_clear_bindings(stmt);
@@ -222,7 +223,7 @@ static void katja_dl_init(KatjaDl *dl) {
 /**
  * katja_dl_new:
  **/
-KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *blacklist, gchar *index_file) {
+KatjaDl *katja_dl_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar *index_file) {
 	KatjaDl *dl;
 
 	g_return_val_if_fail(name != NULL, NULL);
@@ -230,12 +231,12 @@ KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *blacklist,
 	g_return_val_if_fail(index_file != NULL, NULL);
 
 	dl = g_object_new(KATJA_TYPE_DL, NULL);
-	KATJA_PKGTOOLS(dl)->name = g_string_new(name);
-	KATJA_PKGTOOLS(dl)->mirror = g_string_new(mirror);
-	KATJA_PKGTOOLS(dl)->order = order;
+	KATJA_BINARY(dl)->name = name;
+	KATJA_BINARY(dl)->mirror = mirror;
+	KATJA_BINARY(dl)->order = order;
 
 	if (blacklist) /* Blacklist if set */
-		KATJA_PKGTOOLS(dl)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+		KATJA_BINARY(dl)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
 
 	dl->index_file = g_string_new(index_file);
 

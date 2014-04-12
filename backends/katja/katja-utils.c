@@ -93,7 +93,7 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
  * katja_cmp_repo:
  **/
 gint katja_cmp_repo(gconstpointer a, gconstpointer b) {
-	return g_strcmp0(KATJA_PKGTOOLS(a)->name->str, (gchar *) b);
+	return g_strcmp0(katja_pkgtools_get_name(KATJA_PKGTOOLS(a)), (gchar *) b);
 }
 
 /**

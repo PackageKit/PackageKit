@@ -26,7 +26,7 @@ typedef struct {
 GType katja_dl_get_type(void);
 
 /* Constructors */
-KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *blacklist, gchar *index_file);
+KatjaDl *katja_dl_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar *index_file);
 
 /* Implementations */
 GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);

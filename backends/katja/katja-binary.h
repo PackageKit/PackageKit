@@ -16,6 +16,12 @@ G_BEGIN_DECLS
 
 typedef struct {
 	KatjaPkgtools parent;
+
+	/* protected */
+	gchar *name;
+	gchar *mirror;
+	gushort order;
+	GRegex *blacklist;
 } KatjaBinary;
 
 typedef struct {
@@ -30,6 +36,10 @@ G_END_DECLS
 void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filename);
 
 /* Implementations */
+gchar *katja_binary_real_get_name(KatjaPkgtools *pkgtools);
+gchar *katja_binary_real_get_mirror(KatjaPkgtools *pkgtools);
+gushort katja_binary_real_get_order(KatjaPkgtools *pkgtools);
+GRegex *katja_binary_real_get_blacklist(KatjaPkgtools *pkgtools);
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name);
 void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name);
 

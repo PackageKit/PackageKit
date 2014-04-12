@@ -5,6 +5,41 @@ G_DEFINE_TYPE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT);
 /* Static public members */
 sqlite3 *katja_pkgtools_db = NULL;
 
+/**
+ * katja_pkgtools_get_name:
+ **/
+gchar *katja_pkgtools_get_name(KatjaPkgtools *pkgtools) {
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+
+	return KATJA_PKGTOOLS_GET_CLASS(pkgtools)->get_name(pkgtools);
+}
+
+/**
+ * katja_pkgtools_get_mirror:
+ **/
+gchar *katja_pkgtools_get_mirror(KatjaPkgtools *pkgtools) {
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+
+	return KATJA_PKGTOOLS_GET_CLASS(pkgtools)->get_mirror(pkgtools);
+}
+
+/**
+ * katja_pkgtools_get_order:
+ **/
+gushort katja_pkgtools_get_order(KatjaPkgtools *pkgtools) {
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+
+	return KATJA_PKGTOOLS_GET_CLASS(pkgtools)->get_order(pkgtools);
+}
+
+/**
+ * katja_pkgtools_get_blacklist:
+ **/
+GRegex *katja_pkgtools_get_blacklist(KatjaPkgtools *pkgtools) {
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+
+	return KATJA_PKGTOOLS_GET_CLASS(pkgtools)->get_blacklist(pkgtools);
+}
 
 /**
  * katja_pkgtools_collect_cache_info:
@@ -50,18 +85,7 @@ void katja_pkgtools_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
  * katja_pkgtools_finalize:
  **/
 static void katja_pkgtools_finalize(GObject *object) {
-	KatjaPkgtools *pkgtools;
-
 	g_return_if_fail(KATJA_IS_PKGTOOLS(object));
-
-	pkgtools = KATJA_PKGTOOLS(object);
-	if (pkgtools->name)
-		g_string_free(pkgtools->name, TRUE);
-	if (pkgtools->mirror)
-		g_string_free(pkgtools->mirror, TRUE);
-	if (pkgtools->blacklist)
-		g_object_unref(pkgtools->blacklist);
-
 	G_OBJECT_CLASS(katja_pkgtools_parent_class)->finalize(object);
 }
 
@@ -83,8 +107,4 @@ static void katja_pkgtools_class_init(KatjaPkgtoolsClass *klass) {
  * katja_pkgtools_init:
  **/
 static void katja_pkgtools_init(KatjaPkgtools *pkgtools) {
-	pkgtools->name = NULL;
-	pkgtools->mirror = NULL;
-	pkgtools->blacklist = NULL;
-	pkgtools->order = 0;
 }
