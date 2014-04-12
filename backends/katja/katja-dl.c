@@ -222,7 +222,7 @@ static void katja_dl_init(KatjaDl *dl) {
 /**
  * katja_dl_new:
  **/
-KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *index_file) {
+KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *blacklist, gchar *index_file) {
 	KatjaDl *dl;
 
 	g_return_val_if_fail(name != NULL, NULL);
@@ -233,6 +233,10 @@ KatjaDl *katja_dl_new(gchar *name, gchar *mirror, guint order, gchar *index_file
 	KATJA_PKGTOOLS(dl)->name = g_string_new(name);
 	KATJA_PKGTOOLS(dl)->mirror = g_string_new(mirror);
 	KATJA_PKGTOOLS(dl)->order = order;
+
+	if (blacklist) /* Blacklist if set */
+		KATJA_PKGTOOLS(dl)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+
 	dl->index_file = g_string_new(index_file);
 
 	return KATJA_DL(dl);

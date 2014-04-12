@@ -17,7 +17,7 @@ static GSList *repos = NULL;
 
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
-	gchar *path, *val, *mirror, **groups;
+	gchar *path, *val, *mirror, *blacklist, **groups;
 	gint ret;
 	guint i;
 	gsize groups_len;
@@ -80,32 +80,26 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 	/* Initialize an object for each well-formed repository */
 	groups = g_key_file_get_groups(katja_conf, &groups_len);
 	for (i = 0; i < groups_len; i++) {
+		mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+		blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
 		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
-			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
-			repo = katja_slackpkg_new(groups[i], mirror, i + 1, g_key_file_get_string_list(katja_conf,
-																						   groups[i],
-																						   "Priority",
-																						   NULL,
-																						   NULL));
+			repo = katja_slackpkg_new(groups[i],
+									  mirror,
+									  i + 1,
+									  blacklist,
+									  g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
 			if (repo)
 				repos = g_slist_append(repos, repo);
-			g_free(mirror);
 		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
-			mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
 			val = g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL);
-			repo = katja_dl_new(groups[i], mirror, i + 1, val);
+			repo = katja_dl_new(groups[i], mirror, i + 1, blacklist, val);
 			g_free(val);
-			g_free(mirror);
 
 			if (repo)
 				repos = g_slist_append(repos, repo);
 		}
-
-		/* Blacklist if set */
-		val = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
-		if (repo && val)
-			KATJA_PKGTOOLS(repo)->blacklist = g_regex_new(val, G_REGEX_OPTIMIZE, 0, NULL);
-		g_free(val);
+		g_free(blacklist);
+		g_free(mirror);
 	}
 	g_strfreev(groups);
 

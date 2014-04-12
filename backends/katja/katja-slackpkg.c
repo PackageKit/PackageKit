@@ -354,7 +354,7 @@ static void katja_slackpkg_init(KatjaSlackpkg *slackpkg) {
 /**
  * katja_slackpkg_new:
  **/
-KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, guint order, gchar **priority) {
+KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, guint order, gchar *blacklist, gchar **priority) {
 	KatjaSlackpkg *slackpkg;
 
 	g_return_val_if_fail(name != NULL, NULL);
@@ -365,6 +365,10 @@ KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, guint order, gchar
 	KATJA_PKGTOOLS(slackpkg)->name = g_string_new(name);
 	KATJA_PKGTOOLS(slackpkg)->mirror = g_string_new(mirror);
 	KATJA_PKGTOOLS(slackpkg)->order = order;
+
+	if (blacklist) /* Blacklist if set */
+		KATJA_PKGTOOLS(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+
 	slackpkg->priority = priority;
 
 	return KATJA_SLACKPKG(slackpkg);

@@ -9,7 +9,7 @@ void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filena
 	FILE *manifest;
 	gint err, read_len;
 	guint pos;
-	gchar buf[KATJA_PKGTOOLS_MAX_BUF_SIZE], *path, *full_name = NULL, *pkg_filename, *rest = NULL, *start;
+	gchar buf[KATJA_MAX_BUF_SIZE], *path, *full_name = NULL, *pkg_filename, *rest = NULL, *start;
 	gchar **line, **lines;
 	BZFILE *manifest_bz2;
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
@@ -47,7 +47,7 @@ void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filena
 		goto out;
 
 	sqlite3_exec(katja_pkgtools_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
-	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, KATJA_PKGTOOLS_MAX_BUF_SIZE))) {
+	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, KATJA_MAX_BUF_SIZE))) {
 		if ((err != BZ_OK) && (err != BZ_STREAM_END))
 			break;
 
