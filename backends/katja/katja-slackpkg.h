@@ -32,8 +32,8 @@ extern GHashTable *katja_slackpkg_cat_map;
 KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar **priority);
 
 /* Implementations */
-GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
-void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
+GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl);
+void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 

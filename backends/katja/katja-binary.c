@@ -1,6 +1,41 @@
 #include "katja-binary.h"
 
-G_DEFINE_TYPE(KatjaBinary, katja_binary, KATJA_TYPE_PKGTOOLS);
+/**
+ * katja_pkgtools_iface_init:
+ **/
+static void katja_pkgtools_iface_init(KatjaPkgtoolsInterface *iface) {
+	iface->get_name = katja_binary_real_get_name;
+	iface->get_mirror = katja_binary_real_get_mirror;
+	iface->get_order = katja_binary_real_get_order;
+	iface->get_blacklist = katja_binary_real_get_blacklist;
+	iface->collect_cache_info = (GSList *(*)(KatjaPkgtools *, const gchar *)) katja_binary_collect_cache_info;
+	iface->generate_cache = (void (*)(KatjaPkgtools *, PkBackendJob *, const gchar *)) katja_binary_generate_cache;
+	iface->download = katja_binary_real_download;
+	iface->install = katja_binary_real_install;
+}
+
+G_DEFINE_TYPE_WITH_CODE(KatjaBinary, katja_binary, G_TYPE_OBJECT,
+						G_IMPLEMENT_INTERFACE (KATJA_TYPE_PKGTOOLS, katja_pkgtools_iface_init));
+
+/**
+ * katja_binary_collect_cache_info:
+ **/
+GSList *katja_binary_collect_cache_info(KatjaBinary *binary, const gchar *tmpl) {
+	g_return_val_if_fail(KATJA_IS_BINARY(binary), NULL);
+	g_return_val_if_fail(KATJA_BINARY_GET_CLASS(binary)->collect_cache_info != NULL, NULL);
+
+	return KATJA_BINARY_GET_CLASS(binary)->collect_cache_info(binary, tmpl);
+}
+
+/**
+ * katja_binary_generate_cache:
+ **/
+void katja_binary_generate_cache(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl) {
+	g_return_if_fail(KATJA_IS_BINARY(binary));
+	g_return_if_fail(KATJA_BINARY_GET_CLASS(binary)->generate_cache != NULL);
+
+	KATJA_BINARY_GET_CLASS(binary)->generate_cache(binary, job, tmpl);
+}
 
 /**
  * katja_binary_manifest:
@@ -239,16 +274,8 @@ static void katja_binary_finalize(GObject *object) {
  **/
 static void katja_binary_class_init(KatjaBinaryClass *klass) {
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-	KatjaPkgtoolsClass *pkgtools_class = KATJA_PKGTOOLS_CLASS(klass);
 
 	object_class->finalize = katja_binary_finalize;
-
-	pkgtools_class->get_name = katja_binary_real_get_name;
-	pkgtools_class->get_mirror = katja_binary_real_get_mirror;
-	pkgtools_class->get_order = katja_binary_real_get_order;
-	pkgtools_class->get_blacklist = katja_binary_real_get_blacklist;
-	pkgtools_class->download = katja_binary_real_download;
-	pkgtools_class->install = katja_binary_real_install;
 }
 
 /**

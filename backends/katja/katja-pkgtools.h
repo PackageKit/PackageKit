@@ -9,12 +9,12 @@ G_BEGIN_DECLS
 
 #define KATJA_TYPE_PKGTOOLS (katja_pkgtools_get_type())
 #define KATJA_PKGTOOLS(o) (G_TYPE_CHECK_INSTANCE_CAST((o), KATJA_TYPE_PKGTOOLS, KatjaPkgtools))
-#define KATJA_PKGTOOLS_CLASS(k) (G_TYPE_CHECK_CLASS_CAST((k), KATJA_TYPE_PKGTOOLS, KatjaPkgtoolsClass))
 #define KATJA_IS_PKGTOOLS(o) (G_TYPE_CHECK_INSTANCE_TYPE((o), KATJA_TYPE_PKGTOOLS))
-#define KATJA_IS_PKGTOOLS_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE((k), KATJA_TYPE_PKGTOOLS))
-#define KATJA_PKGTOOLS_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), KATJA_TYPE_PKGTOOLS, KatjaPkgtoolsClass))
+#define KATJA_PKGTOOLS_GET_IFACE(o) (G_TYPE_INSTANCE_GET_INTERFACE((o), KATJA_TYPE_PKGTOOLS, KatjaPkgtoolsInterface))
 
 #define KATJA_PKGTOOLS_MAX_BUF_SIZE 8192
+
+typedef struct _KatjaPkgtools KatjaPkgtools; /* dummy */
 
 typedef struct {
 	sqlite3 *db;
@@ -22,11 +22,7 @@ typedef struct {
 } PkBackendKatjaJobData;
 
 typedef struct {
-	GObject parent;
-} KatjaPkgtools;
-
-typedef struct {
-	GObjectClass parent_class;
+	GTypeInterface parent_iface;
 
 	gchar *(*get_name) (KatjaPkgtools *pkgtools);
 	gchar *(*get_mirror) (KatjaPkgtools *pkgtools);
@@ -36,7 +32,7 @@ typedef struct {
 	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 	gboolean (*download) (KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
 	void (*install) (KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *pkg_name);
-} KatjaPkgtoolsClass;
+} KatjaPkgtoolsInterface;
 
 GType katja_pkgtools_get_type(void);
 
