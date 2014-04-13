@@ -8,11 +8,6 @@
 #include "katja-slackpkg.h"
 #include "katja-dl.h"
 
-typedef struct {
-	sqlite3 *db;
-	CURL *curl;
-} PkBackendKatjaJobData;
-
 static GSList *repos = NULL;
 
 
@@ -168,8 +163,8 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job) {
 	pk_backend_job_set_allow_cancel(job, FALSE);
 
 	db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
-	if (sqlite3_open(db_filename, &katja_pkgtools_db) == SQLITE_OK) { /* Some SQLite settings */
-		sqlite3_exec(katja_pkgtools_db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+	if (sqlite3_open(db_filename, &job_data->db) == SQLITE_OK) { /* Some SQLite settings */
+		sqlite3_exec(job_data->db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 	} else {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE,
 								  "%s: %s",
@@ -177,7 +172,6 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job) {
 								  sqlite3_errmsg(job_data->db));
 		goto out;
 	}
-	job_data->db = katja_pkgtools_db;
 
 	pk_backend_job_set_user_data(job, job_data);
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_RUNNING);
@@ -463,7 +457,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
 									   pkg_ids[i],
 									   (gchar *) sqlite3_column_text(stmt, 0));
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job, dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -579,7 +573,9 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+										dest_dir_name,
+										pkg_tokens[PK_PACKAGE_ID_NAME]);
 			g_strfreev(pkg_tokens);
 		}
 		g_free(dest_dir_name);
@@ -592,7 +588,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
 			g_strfreev(pkg_tokens);
 		}
 	}
@@ -779,7 +775,9 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
-					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), dest_dir_name, pkg_tokens[PK_PACKAGE_ID_NAME]);
+					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+											dest_dir_name,
+											pkg_tokens[PK_PACKAGE_ID_NAME]);
 			}
 
 			g_strfreev(pkg_tokens);
@@ -795,7 +793,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
-					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), pkg_tokens[PK_PACKAGE_ID_NAME]);
+					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
 			} else {
 				/* Remove obsolete package
 				 * TODO: Removing should be an independent operation (not during installing updates) */
@@ -825,7 +823,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	GFile *db_file = NULL;
 	GFileInfo *file_info = NULL;
 	GError *err = NULL;
-	sqlite3_stmt *stmt;
+	sqlite3_stmt *stmt = NULL;
 	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
@@ -886,7 +884,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	for (l = repos; l; l = g_slist_next(l))
-		katja_pkgtools_generate_cache(l->data, tmp_dir_name);
+		katja_pkgtools_generate_cache(l->data, job, tmp_dir_name);
 
 out:
 	sqlite3_finalize(stmt);

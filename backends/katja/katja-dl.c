@@ -39,13 +39,14 @@ GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *t
 /**
  * katja_dl_real_generate_cache:
  **/
-void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
+void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl) {
 	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
 	gboolean skip = FALSE;
 	GFile *list_file;
 	GFileInputStream *fin;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *stmt = NULL;
+	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
 	list_filename = g_build_filename(tmpl, katja_pkgtools_get_name(pkgtools), "IndexFile", NULL);
@@ -55,7 +56,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	data_in = g_data_input_stream_new(G_INPUT_STREAM(fin));
 
 	/* Remove the old entries from this repository */
-	if (sqlite3_prepare_v2(katja_pkgtools_db,
+	if (sqlite3_prepare_v2(job_data->db,
 						   "DELETE FROM repos WHERE repo LIKE @repo",
 						   -1,
 						   &stmt,
@@ -65,7 +66,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		sqlite3_finalize(stmt);
 	}
 
-	if (sqlite3_prepare_v2(katja_pkgtools_db,
+	if (sqlite3_prepare_v2(job_data->db,
 						   "INSERT INTO repos (repo_order, repo) VALUES (@repo_order, @repo)",
 						   -1,
 						   &stmt,
@@ -78,7 +79,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 		goto out;
 
 	/* Insert new records */
-	if ((sqlite3_prepare_v2(katja_pkgtools_db,
+	if ((sqlite3_prepare_v2(job_data->db,
 							"INSERT INTO pkglist (full_name, name, ver, arch, "
 							"summary, desc, compressed, uncompressed, cat, repo_order, ext) "
 							"VALUES (@full_name, @name, @ver, @arch, @summary, "
@@ -88,7 +89,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 							NULL) != SQLITE_OK))
 		goto out;
 
-	sqlite3_exec(katja_pkgtools_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(job_data->db, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		line_tokens = g_strsplit(line, ":", 0);
@@ -141,7 +142,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 
 	/* Create a collection entry */
 	if (collection_name && g_seekable_seek(G_SEEKABLE(data_in), 0, G_SEEK_SET, NULL, NULL) &&
-		(sqlite3_prepare_v2(katja_pkgtools_db,
+		(sqlite3_prepare_v2(job_data->db,
 							"INSERT INTO collections (name, repo_order, collection_pkg) "
 							"VALUES (@name, @repo_order, @collection_pkg)",
 							-1,
@@ -174,7 +175,7 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	}
 	g_free(collection_name);
 
-	sqlite3_exec(katja_pkgtools_db, "END TRANSACTION", NULL, NULL, NULL);
+	sqlite3_exec(job_data->db, "END TRANSACTION", NULL, NULL, NULL);
 
 out:
 	if (data_in)

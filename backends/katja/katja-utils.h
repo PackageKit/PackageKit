@@ -8,8 +8,6 @@
 #include <pk-backend-job.h>
 #include "katja-pkgtools.h"
 
-#define KATJA_MAX_BUF_SIZE 8192
-
 CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest);
 gchar **katja_cut_pkg(const gchar *pkg_filename);
 gint katja_cmp_repo(gconstpointer a, gconstpointer b);

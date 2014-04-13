@@ -2,9 +2,6 @@
 
 G_DEFINE_TYPE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT);
 
-/* Static public members */
-sqlite3 *katja_pkgtools_db = NULL;
-
 /**
  * katja_pkgtools_get_name:
  **/
@@ -54,31 +51,31 @@ GSList *katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *
 /**
  * katja_pkgtools_generate_cache:
  **/
-void katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl) {
+void katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl) {
 	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
 	g_return_if_fail(KATJA_PKGTOOLS_GET_CLASS(pkgtools)->generate_cache != NULL);
 
-	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->generate_cache(pkgtools, tmpl);
+	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->generate_cache(pkgtools, job, tmpl);
 }
 
 /**
  * katja_pkgtools_download:
  **/
-gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name) {
+gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name) {
 	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
 	g_return_if_fail(KATJA_PKGTOOLS_GET_CLASS(pkgtools)->download != NULL);
 
-	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->download(pkgtools, dest_dir_name, pkg_name);
+	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->download(pkgtools, job, dest_dir_name, pkg_name);
 }
 
 /**
  * katja_pkgtools_install:
  **/
-void katja_pkgtools_install(KatjaPkgtools *pkgtools, gchar *pkg_name) {
+void katja_pkgtools_install(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *pkg_name) {
 	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
 	g_return_if_fail(KATJA_PKGTOOLS_GET_CLASS(pkgtools)->install != NULL);
 
-	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->install(pkgtools, pkg_name);
+	KATJA_PKGTOOLS_GET_CLASS(pkgtools)->install(pkgtools, job, pkg_name);
 }
 
 /**

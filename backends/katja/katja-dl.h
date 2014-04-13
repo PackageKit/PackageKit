@@ -30,7 +30,7 @@ KatjaDl *katja_dl_new(gchar *name, gchar *mirror, gushort order, gchar *blacklis
 
 /* Implementations */
 GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
-void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, const gchar *tmpl);
+void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 

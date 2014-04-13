@@ -33,14 +33,14 @@ GType katja_binary_get_type(void);
 G_END_DECLS
 
 /* Public methods */
-void katja_binary_manifest(KatjaBinary *binary, const gchar *tmpl, gchar *filename);
+void katja_binary_manifest(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl, gchar *filename);
 
 /* Implementations */
 gchar *katja_binary_real_get_name(KatjaPkgtools *pkgtools);
 gchar *katja_binary_real_get_mirror(KatjaPkgtools *pkgtools);
 gushort katja_binary_real_get_order(KatjaPkgtools *pkgtools);
 GRegex *katja_binary_real_get_blacklist(KatjaPkgtools *pkgtools);
-gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, gchar *dest_dir_name, gchar *pkg_name);
-void katja_binary_real_install(KatjaPkgtools *pkgtools, gchar *pkg_name);
+gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
+void katja_binary_real_install(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *pkg_name);
 
 #endif /* __KATJA_BINARY_H */
