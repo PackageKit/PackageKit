@@ -151,9 +151,12 @@ pk_offline_update_progress_cb (PkProgress *progress,
 			pk_progress_bar_start (progressbar, msg);
 		}
 		sd_journal_print (LOG_INFO,
-				  "package %s\t%s",
+				  "package %s\t%s-%s.%s (%s)",
 				  pk_info_enum_to_string (info),
-				  pk_package_get_name (pkg));
+				  pk_package_get_name (pkg),
+				  pk_package_get_version (pkg),
+				  pk_package_get_arch (pkg),
+				  pk_package_get_data (pkg));
 		break;
 	case PK_PROGRESS_TYPE_PERCENTAGE:
 		g_object_get (progress, "percentage", &percentage, NULL);
