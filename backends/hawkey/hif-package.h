@@ -42,6 +42,9 @@ const gchar	*hif_package_get_id			(HyPackage	 pkg);
 PkInfoEnum	 hif_package_get_info			(HyPackage	 pkg);
 void		 hif_package_set_info			(HyPackage	 pkg,
 							 PkInfoEnum	 info);
+PkStatusEnum	 hif_package_get_status			(HyPackage	 pkg);
+void		 hif_package_set_status			(HyPackage	 pkg,
+							 PkStatusEnum	 status);
 gboolean	 hif_package_get_user_action		(HyPackage	 pkg);
 void		 hif_package_set_user_action		(HyPackage	 pkg,
 							 gboolean	 user_action);

@@ -2511,9 +2511,9 @@ hif_commit_ts_progress_cb (const void *arg,
 			g_assert_not_reached ();
 
 		/* map to correct action code */
-		action = PK_STATUS_ENUM_INSTALL;
-//		if (pkg->reason == HIF_TRANSACTION_REASON_INSTALL_FOR_UPDATE)
-//			action = PK_STATUS_ENUM_UPDATING;
+		action = hif_package_get_status (pkg);
+		if (action == PK_STATUS_ENUM_UNKNOWN)
+			action = PK_STATUS_ENUM_INSTALL;
 
 		/* install start */
 		commit->step = HIF_TRANSACTION_STEP_WRITING;
@@ -2542,11 +2542,16 @@ hif_commit_ts_progress_cb (const void *arg,
 			break;
 		}
 
+		/* map to correct action code */
+		action = hif_package_get_status (pkg);
+		if (action == PK_STATUS_ENUM_UNKNOWN)
+			action = PK_STATUS_ENUM_REMOVE;
+
 		/* remove start */
 		commit->step = HIF_TRANSACTION_STEP_WRITING;
 		commit->child = hif_state_get_child (commit->state);
 		hif_state_action_start (commit->child,
-					PK_STATUS_ENUM_REMOVE,
+					action,
 					hif_package_get_id (pkg));
 		g_debug ("remove start: %s size=%i", filename, (gint32) total);
 		break;
@@ -3013,6 +3018,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 {
 	const gchar *filename;
 	gboolean allow_untrusted;
+	gboolean is_update;
 	gboolean keep_cache;
 	gboolean ret = FALSE;
 	gchar *verbosity_string = NULL;
@@ -3112,10 +3118,11 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		filename = hif_package_get_filename (pkg);
 		allow_untrusted = !pk_bitfield_contain (job_data->transaction_flags,
 							PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+		is_update = hif_package_get_status (pkg) == PK_STATUS_ENUM_UPDATE;
 		ret = hif_rpmts_add_install_filename (job_data->ts,
 						      filename,
 						      allow_untrusted,
-						      hif_goal_is_upgrade_package (job_data->goal, pkg),
+						      is_update,
 						      error);
 		if (!ret)
 			goto out;

@@ -46,6 +46,7 @@ typedef struct {
 	gchar		*description;
 	gchar		*package_id;
 	PkInfoEnum	 info;
+	PkStatusEnum	 status;
 	HifSource	*src;
 } HifPackagePrivate;
 
@@ -310,6 +311,19 @@ hif_package_get_info (HyPackage pkg)
 }
 
 /**
+ * hif_package_get_status:
+ */
+PkStatusEnum
+hif_package_get_status (HyPackage pkg)
+{
+	HifPackagePrivate *priv;
+	priv = hy_package_get_userdata (pkg);
+	if (priv == NULL)
+		return PK_STATUS_ENUM_UNKNOWN;
+	return priv->status;
+}
+
+/**
  * hif_package_set_info:
  */
 void
@@ -320,6 +334,19 @@ hif_package_set_info (HyPackage pkg, PkInfoEnum info)
 	if (priv == NULL)
 		return;
 	priv->info = info;
+}
+
+/**
+ * hif_package_set_status:
+ */
+void
+hif_package_set_status (HyPackage pkg, PkStatusEnum status)
+{
+	HifPackagePrivate *priv;
+	priv = hif_package_get_priv (pkg);
+	if (priv == NULL)
+		return;
+	priv->status = status;
 }
 
 /**

@@ -34,24 +34,6 @@
 #include "hif-utils.h"
 
 /**
- * hif_goal_is_upgrade_package:
- */
-gboolean
-hif_goal_is_upgrade_package (HyGoal goal, HyPackage package)
-{
-	guint i;
-	HyPackageList pkglist;
-	HyPackage pkg;
-
-	pkglist = hy_goal_list_upgrades (goal);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		if (hy_package_cmp (pkg, package) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * hif_goal_get_packages:
  */
 GPtrArray *
@@ -65,33 +47,45 @@ hif_goal_get_packages (HyGoal goal, PkBitfield types)
 	array = g_ptr_array_new ();
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_REMOVING)) {
 		pkglist = hy_goal_list_erasures (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_REMOVE);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_INSTALLING)) {
 		pkglist = hy_goal_list_installs (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_OBSOLETING)) {
 		pkglist = hy_goal_list_obsoleted (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_OBSOLETE);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_REINSTALLING)) {
 		pkglist = hy_goal_list_reinstalls (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_UPDATING)) {
 		pkglist = hy_goal_list_upgrades (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_UPDATE);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	if (pk_bitfield_contain (types, PK_INFO_ENUM_DOWNGRADING)) {
 		pkglist = hy_goal_list_downgrades (goal);
-		FOR_PACKAGELIST(pkg, pkglist, i)
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
 			g_ptr_array_add (array, pkg);
+		}
 	}
 	return array;
 }

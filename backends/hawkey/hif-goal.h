@@ -28,8 +28,6 @@
 #include <hawkey/goal.h>
 #include <hawkey/package.h>
 
-gboolean	 hif_goal_is_upgrade_package		(HyGoal		 goal,
-							 HyPackage	 package);
 gboolean	 hif_goal_depsolve			(HyGoal		 goal,
 							 GError		**error);
 GPtrArray	*hif_goal_get_packages			(HyGoal		 goal,
