@@ -2443,7 +2443,7 @@ hif_find_pkg_from_name (GPtrArray *array, const gchar *pkgname)
 	/* find in array */
 	for (i = 0; i < array->len; i++) {
 		pkg = g_ptr_array_index (array, i);
-		if (g_strcmp0 (hy_package_get_name (pkg), pkgname))
+		if (g_strcmp0 (hy_package_get_name (pkg), pkgname) == 0)
 			return pkg;
 	}
 	return NULL;
