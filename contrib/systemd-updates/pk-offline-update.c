@@ -110,10 +110,6 @@ pk_offline_update_set_plymouth_percentage (guint percentage)
 				  "failed to set percentage for splash: %s",
 				  error->message);
 		g_error_free (error);
-	} else {
-		sd_journal_print (LOG_INFO,
-				  "sent progress to plymouth '%i'",
-				  percentage);
 	}
 	g_free (cmdline);
 }
