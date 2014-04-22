@@ -2294,6 +2294,7 @@ typedef struct {
 	GTimer			*timer;
 	guint			 last_progress;
 	GPtrArray		*remove;
+	GPtrArray		*remove_helper;
 	GPtrArray		*install;
 } HifTransactionCommit;
 
@@ -2535,8 +2536,13 @@ hif_commit_ts_progress_cb (const void *arg,
 		}
 
 		/* find pkg */
-		pkg = hif_find_pkg_from_filename_suffix (commit->remove,
-							 filename);
+		pkg = hif_find_pkg_from_name (commit->remove, name);
+		if (pkg != NULL)
+			pkg = hif_find_pkg_from_name (commit->remove_helper, name);
+		if (pkg == NULL) {
+			pkg = hif_find_pkg_from_filename_suffix (commit->remove,
+								 filename);
+		}
 		if (pkg == NULL) {
 			g_debug ("cannot find %s", filename);
 			break;
@@ -2619,6 +2625,8 @@ hif_commit_ts_progress_cb (const void *arg,
 		}
 		if (pkg == NULL && name != NULL)
 			pkg = hif_find_pkg_from_name (commit->remove, name);
+		if (pkg == NULL && name != NULL)
+			pkg = hif_find_pkg_from_name (commit->remove_helper, name);
 		if (pkg == NULL) {
 			g_warning ("cannot find %s", name);
 			break;
@@ -3026,9 +3034,12 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	gint verbosity;
 	gint vs_flags;
 	guint i;
+	guint j;
 	HifState *state_local;
 	HifTransactionCommit *commit = NULL;
+	HyPackageList pkglist;
 	HyPackage pkg;
+	HyPackage pkg_tmp;
 	PkBitfield selector;
 	rpmprobFilterFlags problems_filter = 0;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
@@ -3158,6 +3169,28 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 				     hif_package_get_id (pkg));
 			goto out;
 		}
+
+		/* are the things being removed actually being upgraded */
+		pkg_tmp = hif_find_pkg_from_name (commit->install,
+						  hy_package_get_name (pkg));
+		if (pkg_tmp != NULL)
+			hif_package_set_status (pkg, PK_STATUS_ENUM_CLEANUP);
+	}
+
+	/* add anything that gets obsoleted to a helper array which is used to
+	 * map removed packages auto-added by rpm to actual HyPackage's */
+	commit->remove_helper = g_ptr_array_new ();
+	for (i = 0; i < commit->install->len; i++) {
+		pkg = g_ptr_array_index (commit->install, i);
+		is_update = hif_package_get_status (pkg) == PK_STATUS_ENUM_UPDATE;
+		if (!is_update)
+			continue;
+		pkglist = hy_goal_list_obsoleted_by_package (job_data->goal, pkg);
+		FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
+			g_ptr_array_add (commit->remove_helper, pkg);
+			hif_package_set_status (pkg, PK_STATUS_ENUM_CLEANUP);
+		}
+		hy_packagelist_free (pkglist);
 	}
 
 	/* this section done */
@@ -3280,6 +3313,8 @@ out:
 			g_ptr_array_unref (commit->install);
 		if (commit->remove != NULL)
 			g_ptr_array_unref (commit->remove);
+		if (commit->remove_helper != NULL)
+			g_ptr_array_unref (commit->remove_helper);
 		g_free (commit);
 	}
 	return ret;
