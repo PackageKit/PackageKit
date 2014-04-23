@@ -2423,7 +2423,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
             // if the problem resolver could not fix all broken things
             // suggest to run RepairSystem by saing that the last transaction
             // did not finish well
-            m_cache->ShowBroken(false, PK_ERROR_ENUM_UNFINISHED_TRANSACTION);
+            m_cache->ShowBroken(false, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED);
             return false;
         }
     }
