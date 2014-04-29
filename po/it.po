@@ -16,10 +16,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/freedesktop/language/it/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-03-24 20:55+0000\n"
+"Last-Translator: milo <milo@ubuntu.com>\n"
+"Language-Team: Italian (http://www.transifex.com/projects/p/packagekit/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -353,12 +353,12 @@ msgstr "Scegliere il pacchetto corretto: "
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "Pacchetto non trovato"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "Non è stato trovato alcun pacchetto"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -436,13 +436,13 @@ msgstr "Determinazione dell'ora dell'ultima azione completata non riuscita"
 #. TRANSLATORS: this is the time since this role was used
 #: ../client/pk-console.c:1667
 msgid "Time since"
-msgstr ""
+msgstr "Tempo trascorso"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: ../client/pk-console.c:1697
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Aggiornamenti pronti:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: ../client/pk-console.c:1830
@@ -579,7 +579,7 @@ msgstr "È richiesto specificare un nome di repository, un parametro e un valore
 
 #: ../client/pk-console.c:2287
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "È richiesto specificare un ID e un autoremove"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -611,17 +611,17 @@ msgstr "È richiesto specificare la stringa dei pacchetti forniti"
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "È richiesto un nome di file"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "Descrizione"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "Autore"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1018,24 +1018,24 @@ msgstr "Disabilitate %i sorgenti di debug."
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
 msgstr "Installazione aggiornamenti"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "Riavvio dopo l'installazione degli aggiornamenti…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Spegnimento del sistema dopo l'installazione degli aggiornamenti…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Installazione degli aggiornamenti, potrebbe richiedere del tempo…"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1440,7 +1440,7 @@ msgstr "Impostazione dei dati"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "Rimozione repository"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1660,7 +1660,7 @@ msgstr "Installa pacchetto firmato"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "È richiesto autenticarsi per installare software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1673,7 +1673,7 @@ msgstr "Installa file locale non affidabile"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "È richiesto autenticarsi per installare software non fidato"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1682,13 +1682,13 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Fidarsi di una chiave usato per firmare il software"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "È richiesto autenticarsi per considerare come fidata una chiave usata per firmare il software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1717,7 +1717,7 @@ msgstr "Rimuovi pacchetto"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "È richiesto autenticarsi per rimuovere software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1727,11 +1727,11 @@ msgstr ""
 #. updates.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
-msgstr ""
+msgstr "Aggiorna software"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "È richiesto autenticarsi per aggiornare il software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1767,7 +1767,7 @@ msgstr "Imposta proxy di rete"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "È richiesto autenticarsi per impostare il proxy di rete usato per scaricare software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver

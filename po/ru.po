@@ -10,16 +10,16 @@
 # Richard Hughes <richard@hughsie.com>, 2011
 # Yulia <ypoyarko@redhat.com>, 2009
 # Yuri Khabarov <madb00blik@gmail.com>, 2011
-# Yuri Kozlov <yuray@komyakino.ru>, 2011,2013
+# Yuri Kozlov <yuray@komyakino.ru>, 2011,2013-2014
 # Игорь Горбунов <igor.gorbounov@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Russian (http://www.transifex.com/projects/p/freedesktop/language/ru/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-03-29 13:56+0000\n"
+"Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
+"Language-Team: Russian (http://www.transifex.com/projects/p/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -353,12 +353,12 @@ msgstr "Пожалуйста, выберите корректный пакет:"
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "Пакет не найден"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "Пакеты не найдены"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -611,17 +611,17 @@ msgstr "Необходима строка, указывающая на паке�
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "Требуется имя файла"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "Автор"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1018,24 +1018,24 @@ msgstr "Отключено %i отладочных источников."
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
-msgstr ""
+msgstr "Устанавливаются обновления"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "Выполняется перезагрузка после установки обновлений…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Выполняется выключение после установки обновлений…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Выполняется установка обновлений, это может занять какое-то время…"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1440,7 +1440,7 @@ msgstr "Настройка данных"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "Удаляется репозиторий"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1660,7 +1660,7 @@ msgstr "Установить подписанный пакет"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Для установки ПО требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1717,7 +1717,7 @@ msgstr "Удалить пакет"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Для удаления ПО требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1727,11 +1727,11 @@ msgstr ""
 #. updates.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
-msgstr ""
+msgstr "Обновление ПО"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Для обновления ПО требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1767,7 +1767,7 @@ msgstr "Задать прокси-сервер"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Настройка сетевого прокси для загрузки ПО требует аутентификации"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver

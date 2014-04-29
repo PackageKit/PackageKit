@@ -5,17 +5,17 @@
 # Translators:
 # Amanpreet Singh Alam <aalam@users.sf.net>, 2008, 2009
 # A S Alam <aalam@users.sf.net>, 2009
-# A S Alam <apreet.alam@gmail.com>, 2011-2013
+# A S Alam <apreet.alam@gmail.com>, 2011-2014
 # Jaswinder Singh <jsingh@redhat.com>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Panjabi (Punjabi) (http://www.transifex.com/projects/p/freedesktop/language/pa/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-04-04 03:20+0000\n"
+"Last-Translator: A S Alam <apreet.alam@gmail.com>\n"
+"Language-Team: Panjabi (Punjabi) (http://www.transifex.com/projects/p/packagekit/language/pa/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -349,12 +349,12 @@ msgstr "ਠੀਕ ਪੈਕੇਜ ਚੁਣੋ ਜੀ:"
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -432,13 +432,13 @@ msgstr "ਇਸ ਕਾਰਵਾਈ ਦੇ ਆਖਰੀ ਵਾਰ ਪੂਰੀ ਹ
 #. TRANSLATORS: this is the time since this role was used
 #: ../client/pk-console.c:1667
 msgid "Time since"
-msgstr ""
+msgstr "ਸਮਾਂ"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: ../client/pk-console.c:1697
 msgid "Prepared updates:"
-msgstr ""
+msgstr "ਤਿਆਰ ਕੀਤੇ ਅੱਪਡੇਟ:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: ../client/pk-console.c:1830
@@ -575,7 +575,7 @@ msgstr "ਰੈਪੋ ਨਾਂ, ਪੈਰਾਮੀਟਰ ਅਤੇ ਮੁੱਲ 
 
 #: ../client/pk-console.c:2287
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "ਰੈਪੋ ਆਈਡੀ ਅਤੇ autoremove ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -607,17 +607,17 @@ msgstr "ਪੈਕੇਜ ਦੇਣ ਵਾਲੀ ਸਤਰ ਲੋੜੀਦੀ ਹ�
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "ਫਾਇਲ-ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "ਵੇਰਵਾ"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "ਲੇਖਕ"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1014,24 +1014,24 @@ msgstr "%i ਡੀਬੱਗ ਸਰੋਤ ਅਯੋਗ ਕੀਤੇ ਗਏ।"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
-msgstr ""
+msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "...ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕਰਨ ਦੇ ਬਾਅਦ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "...ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕਰਨ ਦੇ ਬਾਅਦ ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ, ਇਸ ਨੂੰ ਕੁਝ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ..."
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1436,7 +1436,7 @@ msgstr "ਡਾਟਾ ਸੈੱਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "ਰਿਪੋਰਜ਼ਟਰੀ ਹਟਾਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1656,7 +1656,7 @@ msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1669,7 +1669,7 @@ msgstr "ਅਣ-ਟਰੱਸਟ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "ਨਾ-ਭਰੋਸੇਯੋਗ ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1678,13 +1678,13 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਸਾਈਨ ਕਰਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱਤੇ ਭਰੋਸੇ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਦਸਤਖਤ ਕਰਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਨੂੰ ਭਰੋਸੇਯੋਗ ਮੰਨਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1713,7 +1713,7 @@ msgstr "ਪੈਕੇਜ ਹਟਾਓ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1723,11 +1723,11 @@ msgstr ""
 #. updates.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1763,7 +1763,7 @@ msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "ਸਾਫਟਵੇਅਰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver

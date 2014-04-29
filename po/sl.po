@@ -4,15 +4,15 @@
 # 
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2013
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2014
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Slovenian (http://www.transifex.com/projects/p/freedesktop/language/sl/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-03-26 21:56+0000\n"
+"Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
+"Language-Team: Slovenian (http://www.transifex.com/projects/p/packagekit/language/sl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -346,12 +346,12 @@ msgstr "Izberite pravi paket: "
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "Paketa ni mogoče najti"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "Ni najdenih paketov"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -429,13 +429,13 @@ msgstr "Ni bilo mogoče dobiti časa odkar je bilo dejanje zadnjič končano"
 #. TRANSLATORS: this is the time since this role was used
 #: ../client/pk-console.c:1667
 msgid "Time since"
-msgstr ""
+msgstr "Čas odtlej"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: ../client/pk-console.c:1697
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Pripravljene posodobitve:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: ../client/pk-console.c:1830
@@ -572,7 +572,7 @@ msgstr "Zahtevani so ime, parameter in vrednst skladišča."
 
 #: ../client/pk-console.c:2287
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Obvezna sta id skladišča in samoodstranitev"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -604,17 +604,17 @@ msgstr "Zahtevan je niz, ki ga zagotovi paket"
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "Ime datoteke je obvezno"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "Opis"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "Avtor"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1011,24 +1011,24 @@ msgstr "Onemogočenih je bilo %i virov razhroščevanja."
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
 msgstr "Nameščanje posodobitev"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "Ponoven zagon po namestitvi posodobitev ..."
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Izklop sistema po namestitvi posodobitev ..."
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Nameščanje posodobitev zahteva svoj čas ..."
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1433,7 +1433,7 @@ msgstr "Nastavljanje podatkov"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "Odstranjevanje skladišča"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1653,7 +1653,7 @@ msgstr "Namesti podpisan paket"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Za namestitev programja je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1666,7 +1666,7 @@ msgstr "Namesti krajevno datoteko, ki ni zaupanja vredna"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Za namestitev programja, ki ni zaupanja vredno, je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1675,13 +1675,13 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Zaupaj ključu za podpisovanje programja"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Za upoštevanje ključa za podpisovanje programja kot zaupanja vrednega je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1710,7 +1710,7 @@ msgstr "Odstrani paket"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Za odstranitev programja je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1720,11 +1720,11 @@ msgstr ""
 #. updates.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
-msgstr ""
+msgstr "Posodobi program"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Za posodobitev programja je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1760,7 +1760,7 @@ msgstr "Nastavi posredniški strežnik omrežja"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Za nastavitev omrežnega posredniškega strežnika, uporabljenega za prejem programja, je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver

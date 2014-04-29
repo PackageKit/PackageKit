@@ -5,15 +5,16 @@
 # Translators:
 # Andika Triwidada <andika@gmail.com>, 2011-2013
 # Dichi Al Faridi <dichi@alfaridi.info>, 2010
+# dirgita <dirgitadevina@yahoo.co.id>, 2014
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Indonesian (http://www.transifex.com/projects/p/freedesktop/language/id/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-04-12 23:31+0000\n"
+"Last-Translator: dirgita <dirgitadevina@yahoo.co.id>\n"
+"Language-Team: Indonesian (http://www.transifex.com/projects/p/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -347,12 +348,12 @@ msgstr "Silakan pilih paket yang benar:"
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "Paket tak ditemukan"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "Tak ada paket yang ditemukan"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -436,7 +437,7 @@ msgstr ""
 #. * to be updated
 #: ../client/pk-console.c:1697
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Pemutakhiran yang disiapkan:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: ../client/pk-console.c:1830
@@ -605,17 +606,17 @@ msgstr "Sebuah paket memberikan string itu dibutuhkan"
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "Memerlukan nama berkas"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "Deskripsi"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "Penulis"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1012,24 +1013,24 @@ msgstr "Mematikan %i sumber pengawakutuan."
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
 msgstr "Sedang Memasang Pemutakhiran"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "Sedang boot ulang setelah memasang pemutakhiran..."
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Mematikan sistem usai pemutakhiran..."
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Memasang pemutakhiran, akan agak lama..."
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1434,7 +1435,7 @@ msgstr "Sedang menata data"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "Menghapus repositori"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1654,7 +1655,7 @@ msgstr "Pasang paket bertanda tangan"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Otentikas diperlukan untuk memasang perangkat lunak"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1667,7 +1668,7 @@ msgstr "Pasang berkas lokal yang tak terpercaya"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.

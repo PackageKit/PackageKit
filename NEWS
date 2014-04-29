@@ -1,3 +1,50 @@
+Version 0.9.2
+~~~~~~~~~~~~~
+Released: 2014-04-29
+
+Backends:
+ - aptcc: Added support to remove repository and it's packages (Daniel Nicoletti)
+ - aptcc: Add installed prefix on package id data field (Daniel Nicoletti)
+ - aptcc: Add support for APPLICATIONS filter (Daniel Nicoletti)
+ - aptcc: Add support for PK_FILTER_ENUM_DOWNLOADED (Daniel Nicoletti)
+ - aptcc: Disable the PK_FILTER_ENUM_COLLECTIONS support (Richard Hughes)
+ - aptcc: Fix package name dependecy (Daniel Nicoletti)
+ - aptcc: If repo name is null and package is installed don't leave an ending : at the end (Daniel Nicoletti)
+ - aptcc: Improve repo id and description (Daniel Nicoletti)
+ - aptcc: Initial commit to support RepoRemove totally broken (Daniel Nicoletti)
+ - aptcc: Make sure get_roles returns REPO_REMOVE (Daniel Nicoletti)
+ - aptcc: Properly send the package summary and license when getting details (Daniel Nicoletti)
+ - aptcc: Remove _config and _system repeated initialization to the backend init            this was causing an incremental sloweness to each new transaction (Daniel Nicoletti)
+ - aptcc: Update default changelog URL (Matthias Klumpp)
+ - aptcc: use a more appropriate enum from broken deps (Daniel Nicoletti)
+ - katja: Add getters for Pkgtools members (Eugene Wissner)
+ - katja: add katja-utils with help functions (Eugene Wissner)
+ - katja: Add PkBackendKatjaJobData structure (Eugene Wissner)
+ - katja: Don't try to install obsolete packages (Eugene Wissner)
+ - katja: Exclude duplicates from search results (Eugene Wissner)
+ - katja: Exclude obsolete from the search results (Eugene Wissner)
+ - katja: fix wrong save of patch metadata (Eugene Wissner)
+ - katja: Make Pkgtools to Interface (Eugene Wissner)
+ - katja: Pass blacklist to the constructor (Eugene Wissner)
+ - katja: Pass job pointer to class methods (Eugene Wissner)
+ - katja: Recognize obsolete packages (Eugene Wissner)
+ - katja: remove obsolete packages on update-packages (Eugene Wissner)
+ - hawkey: Fix hif_find_pkg_from_name() to return the correct package (Richard Hughes)
+ - hawkey: Store a helper array of packages rpm wants to obsolete (Richard Hughes)
+ - hawkey: Store the status in the package private area (Richard Hughes)
+
+New Features:
+ - Show the full package name and version in the systemd-updates logs (Richard Hughes)
+
+Bugfixes:
+ - Don't crash when polkit_authority_get_sync() fails (Richard Hughes)
+ - Link gstreamer plugin against 1.0 as well (Dimitri John Ledkov)
+ - Only search for packages when shell is interactive (Dan Nicholson)
+ - Quote the arguments passed to pk-command-not-found (Dan Nicholson)
+ - Use local variables in the shell cnf handler (Dan Nicholson)
+ - Fix get-roles and remove trailing semicolon on repo-set-data (Daniel Nicoletti)
+ - Reduce logging verbosity in systemd-updates (Richard Hughes)
+
 Version 0.9.1
 ~~~~~~~~~~~~~
 Released: 2014-03-24

@@ -3,18 +3,19 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Balázs Úr <urbalazs@gmail.com>, 2014
 # Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012
-# kelemeng <kelemeng@gnome.hu>, 2013-2014
-# kelemeng <kelemeng@gnome.hu>, 2012
+# kelemeng <kelemeng@ubuntu.com>, 2013-2014
+# kelemeng <kelemeng@ubuntu.com>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-24 10:42+0000\n"
-"PO-Revision-Date: 2014-03-24 10:42+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Hungarian (http://www.transifex.com/projects/p/freedesktop/language/hu/)\n"
+"POT-Creation-Date: 2014-04-29 13:07+0100\n"
+"PO-Revision-Date: 2014-04-05 18:21+0000\n"
+"Last-Translator: Balázs Úr <urbalazs@gmail.com>\n"
+"Language-Team: Hungarian (http://www.transifex.com/projects/p/packagekit/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -348,12 +349,12 @@ msgstr "Válassza ki a megfelelő csomagot: "
 #. * that could not be found in any repo
 #: ../client/pk-console.c:1064
 msgid "Package not found"
-msgstr ""
+msgstr "Csomag nem található"
 
 #. TRANSLATORS: we couldn't find anything
 #: ../client/pk-console.c:1082
 msgid "No packages were found"
-msgstr ""
+msgstr "Nem találhatók csomagok"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -431,13 +432,13 @@ msgstr "A művelet utolsó végrehajtása óta eltelt idő lekérése meghiúsul
 #. TRANSLATORS: this is the time since this role was used
 #: ../client/pk-console.c:1667
 msgid "Time since"
-msgstr ""
+msgstr "Eltelt idő"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: ../client/pk-console.c:1697
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Előkészített frissítések:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: ../client/pk-console.c:1830
@@ -574,7 +575,7 @@ msgstr "Tárolónév, paraméter és érték szükséges"
 
 #: ../client/pk-console.c:2287
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Egy tárolóazonosító és automatikus eltávolítás szükséges"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -606,17 +607,17 @@ msgstr "A csomag által biztosított elemeket jelző karakterlánc szükséges"
 
 #: ../client/pk-console.c:2408 ../client/pk-console.c:2419
 msgid "A filename is required"
-msgstr ""
+msgstr "Egy fájlnév szükséges"
 
 #. TRANSLATORS: this is the description of the backend
 #: ../client/pk-console.c:2488
 msgid "Description"
-msgstr ""
+msgstr "Leírás"
 
 #. TRANSLATORS: this is the author of the backend
 #: ../client/pk-console.c:2492
 msgid "Author"
-msgstr ""
+msgstr "Szerző"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:2555
@@ -1013,24 +1014,24 @@ msgstr "Hibakeresési %i források kikapcsolva."
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:170
+#: ../contrib/systemd-updates/pk-offline-update.c:169
 msgid "Installing Updates"
 msgstr "Frissítések telepítése"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:208
+#: ../contrib/systemd-updates/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "Újraindítás frissítések telepítése után…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:256
+#: ../contrib/systemd-updates/pk-offline-update.c:255
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Leállítás a frissítések telepítése után…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:642
+#: ../contrib/systemd-updates/pk-offline-update.c:641
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Frissítések telepítése, ez eltarthat egy ideig…"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1435,7 +1436,7 @@ msgstr "Adatok beállítása"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
-msgstr ""
+msgstr "Tároló eltávolítása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-enum.c:1199
@@ -1655,7 +1656,7 @@ msgstr "Aláírt csomag telepítése"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftver telepítéséhez"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1668,7 +1669,7 @@ msgstr "Nem megbízható helyi fájl telepítése"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Hitelesítés szükséges a nem megbízható szoftver telepítéséhez"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1677,13 +1678,13 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Szoftver aláírására használt kulcs megbízhatóvá nyilvánítása"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftver aláírásához használt kulcs megbízhatóvá nyilvánításához"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1712,7 +1713,7 @@ msgstr "Csomag eltávolítása"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftver eltávolításához"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1722,11 +1723,11 @@ msgstr ""
 #. updates.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
-msgstr ""
+msgstr "Szoftver frissítése"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftver frissítéséhez"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1762,7 +1763,7 @@ msgstr "Hálózati proxy beállítása"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftver letöltéséhez használt hálózati proxy beállításához"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
