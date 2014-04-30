@@ -38,8 +38,8 @@ BuildRequires: gettext
 BuildRequires: libgudev1-devel
 BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
-BuildRequires: gstreamer-devel
-BuildRequires: gstreamer-plugins-base-devel
+BuildRequires: gstreamer1-devel
+BuildRequires: gstreamer1-plugins-base-devel
 BuildRequires: pango-devel
 BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
@@ -133,7 +133,6 @@ using PackageKit.
 
 %package gstreamer-plugin
 Summary: Install GStreamer codecs using PackageKit
-Requires: gstreamer
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Obsoletes: codeina < 0.10.1-10
 Provides: codeina = 0.10.1-10
