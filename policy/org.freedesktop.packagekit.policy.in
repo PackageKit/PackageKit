@@ -23,8 +23,8 @@
     <_message>Authentication is required to cancel a task that was not started by yourself</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
@@ -40,8 +40,8 @@
     <_message>Authentication is required to install software</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
@@ -57,8 +57,8 @@
     <_message>Authentication is required to install untrusted software</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.imply">org.freedesktop.packagekit.package-install</annotate>
@@ -75,8 +75,8 @@
     <_message>Authentication is required to consider a key used for signing software as trusted</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
@@ -92,8 +92,8 @@
     <_message>Authentication is required to accept a EULA</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
   </action>
@@ -112,8 +112,8 @@
     <_message>Authentication is required to remove software</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.imply">org.freedesktop.packagekit.package-install</annotate>
@@ -131,8 +131,8 @@
     <_message>Authentication is required to update software</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
   </action>
@@ -147,8 +147,8 @@
     <_message>Authentication is required to change software source parameters</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
@@ -162,8 +162,8 @@
     <_message>Authentication is required to refresh the system sources</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
   </action>
@@ -177,8 +177,8 @@
     <_message>Authentication is required to set the network proxy used for downloading software</_message>
     <icon_name>preferences-system-network-proxy</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
   </action>
@@ -195,8 +195,8 @@
     <_message>Authentication is required to reload the device with a new driver</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/sbin/pk-device-rebind</annotate>
@@ -212,8 +212,8 @@
     <_message>Authentication is required to repair the installed software</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
@@ -227,8 +227,8 @@
     <_message>Authentication is required to trigger offline updates</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/pk-trigger-offline-update</annotate>
@@ -243,8 +243,8 @@
     <_message>Authentication is required to clear the offline updates message</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/pk-clear-offline-update</annotate>
