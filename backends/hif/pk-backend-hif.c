@@ -2899,7 +2899,7 @@ static gboolean
 pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **error)
 {
 	const gchar *filename;
-	const gchar *verbosity_string;
+	const gchar *tmp;
 	gboolean allow_untrusted;
 	gboolean is_update;
 	gboolean ret = FALSE;
@@ -2957,14 +2957,15 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	hif_state_action_start (state, PK_STATUS_ENUM_REQUEST, NULL);
 
 	/* get verbosity from the config file */
-	verbosity_string = hif_context_get_rpm_verbosity (priv->context);
-	verbosity = hif_rpm_verbosity_string_to_value (verbosity_string);
+	tmp = hif_context_get_rpm_verbosity (priv->context);
+	verbosity = hif_rpm_verbosity_string_to_value (tmp);
 	rpmSetVerbosity (verbosity);
 
 	/* setup the transaction */
 	commit = g_new0 (HifTransactionCommit, 1);
 	commit->timer = g_timer_new ();
-	rc = rpmtsSetRootDir (job_data->ts, "/");
+	tmp = hif_context_get_install_root (priv->context);
+	rc = rpmtsSetRootDir (job_data->ts, tmp);
 	if (rc < 0) {
 		ret = FALSE;
 		g_set_error_literal (error,
