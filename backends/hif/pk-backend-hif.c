@@ -27,35 +27,20 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <string.h>
+#include <libhif-private.h>
 
 #include <pk-backend.h>
 #include <packagekit-glib2/pk-debug.h>
 
-#include <hawkey/packagelist.h>
 #include <hawkey/query.h>
-#include <hawkey/sack.h>
 #include <hawkey/stringarray.h>
-#include <hawkey/goal.h>
 #include <hawkey/version.h>
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
 #include <rpm/rpmlib.h>
-#include <rpm/rpmdb.h>
 #include <rpm/rpmlog.h>
-#include <rpm/rpmps.h>
-#include <rpm/rpmts.h>
-#include <rpm/rpmkeyring.h>
 
-#include "hif-db.h"
-#include "hif-goal.h"
-#include "hif-keyring.h"
-#include "hif-package.h"
-#include "hif-repos.h"
-#include "hif-rpmts.h"
-#include "hif-sack.h"
-#include "hif-source.h"
-#include "hif-state.h"
-#include "hif-utils.h"
+#include "hif-backend.h"
 
 typedef struct {
 	HySack		 sack;
@@ -64,7 +49,7 @@ typedef struct {
 } HifSackCacheItem;
 
 typedef struct {
-	GKeyFile	*config;
+	HifContext	*context;
 	GFileMonitor	*monitor_rpmdb;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
@@ -93,7 +78,7 @@ static PkBackendHifPrivate *priv;
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("Hawkey");
+	return g_strdup ("Hif");
 }
 
 /**
@@ -160,52 +145,6 @@ pk_backend_rpmdb_changed_cb (GFileMonitor *monitor_,
 }
 
 /**
- * pk_backend_set_os_release:
- **/
-static gboolean
-pk_backend_set_os_release (GKeyFile *config, GError **error)
-{
-	gboolean ret;
-	gchar *contents = NULL;
-	gchar *version = NULL;
-	GKeyFile *key_file = NULL;
-	GString *str = NULL;
-
-	/* make a valid GKeyFile from the .ini data by prepending a header */
-	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
-	if (!ret)
-		goto out;
-	str = g_string_new (contents);
-	g_string_prepend (str, "[os-release]\n");
-	key_file = g_key_file_new ();
-	ret = g_key_file_load_from_data (key_file,
-					 str->str, -1,
-					 G_KEY_FILE_NONE,
-					 error);
-	if (!ret)
-		goto out;
-
-	/* get keys */
-	version = g_key_file_get_string (key_file,
-					 "os-release",
-					 "VERSION_ID",
-					 error);
-	if (version == NULL)
-		goto out;
-	g_key_file_set_string (config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "ReleaseVersion", version);
-out:
-	if (key_file != NULL)
-		g_key_file_free (key_file);
-	if (str != NULL)
-		g_string_free (str, TRUE);
-	g_free (version);
-	g_free (contents);
-	return ret;
-}
-
-/**
  * hif_sack_cache_item_free:
  */
 static void
@@ -224,15 +163,19 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	GError *error = NULL;
 	GFile *file_rpmdb = NULL;
-	const gchar *value;
-	gint retval;
+	gboolean ret;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
+	pk_debug_add_log_domain ("Hif");
 
 	/* create private area */
 	priv = g_new0 (PkBackendHifPrivate, 1);
 
+	g_debug ("Using Hif %i.%i.%i",
+		 HIF_MAJOR_VERSION,
+		 HIF_MINOR_VERSION,
+		 HIF_MICRO_VERSION);
 	g_debug ("Using Hawkey %i.%i.%i",
 		 HY_VERSION_MAJOR,
 		 HY_VERSION_MINOR,
@@ -255,71 +198,28 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  g_free,
 						  (GDestroyNotify) hif_sack_cache_item_free);
 
-	retval = rpmReadConfigFiles (NULL, NULL);
-	if (retval != 0)
-		g_error ("failed to read rpm config files");
-
 	/* set defaults */
-	priv->config = g_key_file_ref (conf);
-	g_key_file_set_boolean (priv->config,
-				HIF_CONFIG_GROUP_NAME,
-				"DiskSpaceCheck",
-				TRUE);
-	g_key_file_set_boolean (priv->config,
-				HIF_CONFIG_GROUP_NAME,
-				"RpmCheckDebug",
-				TRUE);
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "CacheDir",
-			       "/var/cache/PackageKit/metadata");
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "ReposDir",
-			       "/etc/yum.repos.d");
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "RpmVerbosity",
-			       "info");
+	priv->context = hif_context_new ();
+	ret = hif_context_setup (priv->context, NULL, &error);
+	if (!ret) {
+		g_error ("failed to setup context: %s",
+			 error->message);
+		g_error_free (error);
+	}
+	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata");
+	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
+	hif_context_set_rpm_verbosity (priv->context, "info");
 
 	/* used a cached list of sources */
-	priv->repos = hif_repos_new (conf);
+	priv->repos = hif_repos_new (priv->context);
 	priv->repos_timer = g_timer_new ();
 	g_signal_connect (priv->repos, "changed",
 			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 
-	/* get info from RPM */
-	rpmGetOsInfo (&value, NULL);
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "OsInfo", value);
-	rpmGetArchInfo (&value, NULL);
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "ArchInfo", value);
-	rpmGetArchInfo (&value, NULL);
+	/* setup native arches */
 	priv->native_arches = g_new0 (gchar *, 3);
-	priv->native_arches[0] = g_strdup (value);
+	priv->native_arches[0] = g_strdup (hif_context_get_arch_info (priv->context));
 	priv->native_arches[1] = g_strdup ("noarch");
-	if (g_strcmp0 (value, "i486") == 0 ||
-	    g_strcmp0 (value, "i586") == 0 ||
-	    g_strcmp0 (value, "i686") == 0) {
-		value = "i386";
-	} else if (g_strcmp0 (value, "armv7l") == 0 ||
-		   g_strcmp0 (value, "armv6l") == 0 ||
-		   g_strcmp0 (value, "armv5tejl") == 0 ||
-		   g_strcmp0 (value, "armv5tel") == 0) {
-		value = "arm";
-	} else if (g_strcmp0 (value, "armv7hnl") == 0 ||
-		 g_strcmp0 (value, "armv7hl") == 0) {
-		value = "armhfp";
-	}
-	g_key_file_set_string (priv->config,
-			       HIF_CONFIG_GROUP_NAME,
-			       "BaseArch", value);
-
-	/* get info from OS release file */
-	pk_backend_set_os_release (priv->config, NULL);
 
 	/* setup a file monitor on the rpmdb */
 	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
@@ -348,8 +248,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 void
 pk_backend_destroy (PkBackend *backend)
 {
-	if (priv->config != NULL)
-		g_key_file_unref (priv->config);
+	if (priv->context != NULL)
+		g_object_unref (priv->context);
 	if (priv->monitor_rpmdb != NULL)
 		g_object_unref (priv->monitor_rpmdb);
 	g_timer_destroy (priv->repos_timer);
@@ -488,7 +388,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	 *
 	 * Using the filesystem as a database probably wasn't a great design
 	 * decision. */
-	job_data->db = hif_db_new ();
+	job_data->db = hif_db_new (priv->context);
 
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
@@ -587,7 +487,6 @@ pk_backend_ensure_origin_pkg (HifDb *db, HyPackage pkg)
 	g_free (tmp);
 }
 
-
 /**
  * pk_backend_ensure_origin_pkglist:
  */
@@ -659,6 +558,28 @@ typedef enum {
 } HifCreateSackFlags;
 
 /**
+ * hif_utils_create_cache_key:
+ */
+static gchar *
+hif_utils_create_cache_key (HifSackAddFlags flags)
+{
+	GString *key;
+	key = g_string_new ("HySack::");
+	if (flags == HIF_SACK_ADD_FLAG_NONE) {
+		g_string_append (key, "none");
+	} else {
+		if (flags & HIF_SACK_ADD_FLAG_FILELISTS)
+			g_string_append (key, "filelists|");
+		if (flags & HIF_SACK_ADD_FLAG_UPDATEINFO)
+			g_string_append (key, "updateinfo|");
+		if (flags & HIF_SACK_ADD_FLAG_REMOTE)
+			g_string_append (key, "remote|");
+		g_string_truncate (key, key->len - 1);
+	}
+	return g_string_free (key, FALSE);
+}
+
+/**
  * hif_utils_create_sack_for_filters:
  */
 static HySack
@@ -668,7 +589,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 				   HifState *state,
 				   GError **error)
 {
-	const gchar *cachedir = "/var/cache/PackageKit/hawkey";
+	const gchar *cachedir = "/var/cache/PackageKit/hif";
 	gboolean ret;
 	gchar *cache_key = NULL;
 	gint rc;
@@ -702,7 +623,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* do we have anything in the cache */
-	cache_key = g_strdup_printf ("HySack::%i", flags);
+	cache_key = hif_utils_create_cache_key (flags);
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0)
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
 	if (cache_item != NULL && cache_item->sack != NULL) {
@@ -2124,40 +2045,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * hif_package_array_download:
- */
-static gboolean
-hif_package_array_download (GPtrArray *packages, HifState *state, GError **error)
-{
-	HifState *state_local;
-	HyPackage pkg;
-	gboolean ret = TRUE;
-	gchar *tmp;
-	guint i;
-
-	/* download any package that is not currently installed */
-	hif_state_set_number_steps (state, packages->len);
-	for (i = 0; i < packages->len; i++) {
-		pkg = g_ptr_array_index (packages, i);
-
-		state_local = hif_state_get_child (state);
-		tmp = hif_package_download (pkg, NULL, state_local, error);
-		if (tmp == NULL) {
-			ret = FALSE;
-			goto out;
-		}
-		g_free (tmp);
-
-		/* done */
-		ret = hif_state_done (state, error);
-		if (!ret)
-			goto out;
-	}
-out:
-	return ret;
-}
-
-/**
  * pk_backend_transaction_check_untrusted_repos:
  */
 static GPtrArray *
@@ -2716,7 +2603,7 @@ hif_transaction_delete_packages (GPtrArray *install,
 				 GError **error)
 {
 	const gchar *filename;
-	gchar *cachedir = NULL;
+	const gchar *cachedir;
 	GFile *file;
 	guint i;
 	guint ret = TRUE;
@@ -2729,9 +2616,7 @@ hif_transaction_delete_packages (GPtrArray *install,
 
 	/* get the cachedir so we only delete packages in the actual
 	 * cache, not local-install packages */
-	cachedir = g_key_file_get_string (priv->config,
-					  HIF_CONFIG_GROUP_NAME,
-					  "CacheDir", NULL);
+	cachedir = hif_context_get_cache_dir (priv->context);
 	if (cachedir == NULL) {
 		ret = FALSE;
 		g_set_error_literal (error,
@@ -2763,7 +2648,6 @@ hif_transaction_delete_packages (GPtrArray *install,
 			goto out;
 	}
 out:
-	g_free (cachedir);
 	return ret;
 }
 
@@ -2826,7 +2710,6 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 {
 	const gchar *reason;
 	gboolean ret;
-	gchar *releasever = NULL;
 	gchar *tmp;
 	HifState *state_local;
 	HyPackage pkg_installed = NULL;
@@ -2899,18 +2782,10 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 		goto out;
 
 	/* set the correct release */
-	releasever = g_key_file_get_string (priv->config,
-					    HIF_CONFIG_GROUP_NAME,
-					    "ReleaseVersion",
-					     error);
-	if (releasever == NULL) {
-		ret = FALSE;
-		goto out;
-	}
 	ret = hif_db_set_string (job_data->db,
 				 pkg_installed,
 				 "releasever",
-				 releasever,
+				 hif_context_get_release_ver (priv->context),
 				 error);
 	if (!ret)
 		goto out;
@@ -2922,7 +2797,6 @@ hif_transaction_write_yumdb_install_item (PkBackendJob *job,
 out:
 	if (pkg_installed != NULL)
 		hy_package_free (pkg_installed);
-	g_free (releasever);
 	return ret;
 }
 
@@ -3025,11 +2899,10 @@ static gboolean
 pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **error)
 {
 	const gchar *filename;
+	const gchar *verbosity_string;
 	gboolean allow_untrusted;
 	gboolean is_update;
-	gboolean keep_cache;
 	gboolean ret = FALSE;
-	gchar *verbosity_string = NULL;
 	gint rc;
 	gint verbosity;
 	gint vs_flags;
@@ -3084,9 +2957,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	hif_state_action_start (state, PK_STATUS_ENUM_REQUEST, NULL);
 
 	/* get verbosity from the config file */
-	verbosity_string = g_key_file_get_string (priv->config,
-						  HIF_CONFIG_GROUP_NAME,
-						  "RpmVerbosity", NULL);
+	verbosity_string = hif_context_get_rpm_verbosity (priv->context);
 	verbosity = hif_rpm_verbosity_string_to_value (verbosity_string);
 	rpmSetVerbosity (verbosity);
 
@@ -3202,9 +3073,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	rpmtsOrder (job_data->ts);
 
 	/* run the test transaction */
-	if (g_key_file_get_boolean (priv->config,
-				    HIF_CONFIG_GROUP_NAME,
-				    "RpmCheckDebug", NULL)) {
+	if (hif_context_get_check_transaction (priv->context)) {
 		g_debug ("running test transaction");
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_TEST_COMMIT);
 		commit->state = hif_state_get_child (state);
@@ -3227,9 +3096,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	rpmtsSetVSFlags (job_data->ts, vs_flags);
 
 	/* filter diskspace */
-	if (!g_key_file_get_boolean (priv->config,
-				     HIF_CONFIG_GROUP_NAME,
-				     "DiskSpaceCheck", NULL))
+	if (!hif_context_get_check_disk_space (priv->context))
 		problems_filter += RPMPROB_FILTER_DISKSPACE;
 
 	/* run the transaction */
@@ -3287,11 +3154,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		goto out;
 
 	/* remove the files we downloaded */
-	keep_cache = g_key_file_get_boolean (priv->config,
-					     HIF_CONFIG_GROUP_NAME,
-					     "KeepCache",
-					     NULL);
-	if (!keep_cache) {
+	if (!hif_context_get_keep_cache (priv->context)) {
 		state_local = hif_state_get_child (state);
 		ret = hif_transaction_delete_packages (commit->install,
 						       state_local,
@@ -3306,7 +3169,6 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		goto out;
 out:
 	hif_state_release_locks (state);
-	g_free (verbosity_string);
 	if (commit != NULL) {
 		g_timer_destroy (commit->timer);
 		if (commit->install != NULL)
@@ -3417,6 +3279,7 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	/* download */
 	state_local = hif_state_get_child (state);
 	ret = hif_package_array_download (job_data->packages_to_download,
+					  NULL,
 					  state_local,
 					  error);
 	if (!ret)
@@ -3531,6 +3394,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		state_local = hif_state_get_child (state);
 		ret = hif_package_array_download (job_data->packages_to_download,
+						  NULL,
 						  state_local,
 						  error);
 		if (!ret)

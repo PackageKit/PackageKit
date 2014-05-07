@@ -24,8 +24,8 @@ if BACKEND_TYPE_ENTROPY
 SUBDIRS += entropy
 endif
 
-if BACKEND_TYPE_HAWKEY
-SUBDIRS += hawkey
+if BACKEND_TYPE_HIF
+SUBDIRS += hif
 endif
 
 if BACKEND_TYPE_OPKG

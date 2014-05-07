@@ -53,6 +53,7 @@ BuildRequires: hawkey-devel >= 0.4.6
 BuildRequires: rpm-devel >= 4.11.0
 BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
+BuildRequires: libhif-devel
 %endif
 
 # functionality moved to udev itself
@@ -167,7 +168,7 @@ using PackageKit.
         --disable-static \
         --enable-python3 \
 %if 0%{?rhel} == 0
-        --enable-hawkey \
+        --enable-hif \
         --enable-introspection \
         --enable-bash-completion \
 %else
@@ -273,7 +274,7 @@ popd > /dev/null
 %{_unitdir}/packagekit.service
 %{_libexecdir}/pk-*offline-update
 %if 0%{?rhel} == 0
-%{_libdir}/packagekit-backend/libpk_backend_hawkey.so
+%{_libdir}/packagekit-backend/libpk_backend_hif.so
 %endif
 
 %files glib

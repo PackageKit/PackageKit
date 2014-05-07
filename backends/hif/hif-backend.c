@@ -1,128 +1,34 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
+ * Licensed under the GNU Lesser General Public License Version 2.1
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "config.h"
 
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <libhif-private.h>
 
 #include <hawkey/errno.h>
-#include <hawkey/packagelist.h>
 
-#include "hif-utils.h"
-#include "hif-package.h"
-
-/**
- * hif_error_quark:
- **/
-GQuark
-hif_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("HifError");
-	return quark;
-}
-
-/**
- * hif_rc_to_gerror:
- */
-gboolean
-hif_rc_to_gerror (gint rc, GError **error)
-{
-	if (rc == 0)
-		return TRUE;
-	switch (rc) {
-	case HY_E_FAILED:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "general runtime error");
-		break;
-	case HY_E_OP:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "client programming error");
-		break;
-	case HY_E_LIBSOLV:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "error propagated from libsolv");
-		break;
-	case HY_E_IO:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "I/O error");
-		break;
-	case HY_E_CACHE_WRITE:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "cache write error");
-		break;
-	case HY_E_QUERY:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "ill-formed query");
-		break;
-	case HY_E_ARCH:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "unknown arch");
-		break;
-	case HY_E_VALIDATION:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "validation check failed");
-		break;
-	case HY_E_SELECTOR:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "ill-specified selector");
-		break;
-	case HY_E_NO_SOLUTION:
-		g_set_error_literal (error,
-				     HIF_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     "goal found no solutions");
-		break;
-	default:
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "no matching error enum %i", rc);
-		break;
-	}
-	return FALSE;
-}
+#include "hif-backend.h"
 
 /**
  * hif_rc_to_error_enum:
@@ -145,7 +51,7 @@ hif_rc_to_error_enum (gint rc)
 	case HY_E_NO_SOLUTION:	/* goal found no solutions */
 	case HY_E_FAILED:	/* general runtime error */
 	default:
-		error_enum = PK_ERROR_ENUM_INTERNAL_ERROR;
+		error_enum = HIF_ERROR_INTERNAL_ERROR;
 		break;
 	}
 	return error_enum;
@@ -339,6 +245,40 @@ hif_emit_package_list_filter (PkBackendJob *job,
 }
 
 /**
+ * hif_update_severity_to_info_enum:
+ */
+PkInfoEnum
+hif_update_severity_to_info_enum (HyUpdateSeverity severity)
+{
+	PkInfoEnum info_enum = HY_UPDATE_SEVERITY_UNKNOWN;
+	switch (severity) {
+	case HY_UPDATE_SEVERITY_SECURITY:
+		info_enum = PK_INFO_ENUM_SECURITY;
+		break;
+	case HY_UPDATE_SEVERITY_IMPORTANT:
+		info_enum = PK_INFO_ENUM_IMPORTANT;
+		break;
+	case HY_UPDATE_SEVERITY_BUGFIX:
+		info_enum = PK_INFO_ENUM_BUGFIX;
+		break;
+	case HY_UPDATE_SEVERITY_NORMAL:
+	case HY_UPDATE_SEVERITY_UNKNOWN:
+		info_enum = PK_INFO_ENUM_NORMAL;
+		break;
+	case HY_UPDATE_SEVERITY_ENHANCEMENT:
+		info_enum = PK_INFO_ENUM_ENHANCEMENT;
+		break;
+	case HY_UPDATE_SEVERITY_LOW:
+		info_enum = PK_INFO_ENUM_LOW;
+		break;
+	default:
+		g_warning ("Failed to find HyUpdateSeverity enum %i", severity);
+		break;
+	}
+	return info_enum;
+}
+
+/**
  * hif_get_filter_for_ids:
  */
 PkBitfield
@@ -375,35 +315,58 @@ out:
 }
 
 /**
- * hif_update_severity_to_info_enum:
+ * hif_goal_get_packages:
  */
-PkInfoEnum
-hif_update_severity_to_info_enum (HyUpdateSeverity severity)
+GPtrArray *
+hif_goal_get_packages (HyGoal goal, PkBitfield types)
 {
-	PkInfoEnum info_enum = HY_UPDATE_SEVERITY_UNKNOWN;
-	switch (severity) {
-	case HY_UPDATE_SEVERITY_SECURITY:
-		info_enum = PK_INFO_ENUM_SECURITY;
-		break;
-	case HY_UPDATE_SEVERITY_IMPORTANT:
-		info_enum = PK_INFO_ENUM_IMPORTANT;
-		break;
-	case HY_UPDATE_SEVERITY_BUGFIX:
-		info_enum = PK_INFO_ENUM_BUGFIX;
-		break;
-	case HY_UPDATE_SEVERITY_NORMAL:
-	case HY_UPDATE_SEVERITY_UNKNOWN:
-		info_enum = PK_INFO_ENUM_NORMAL;
-		break;
-	case HY_UPDATE_SEVERITY_ENHANCEMENT:
-		info_enum = PK_INFO_ENUM_ENHANCEMENT;
-		break;
-	case HY_UPDATE_SEVERITY_LOW:
-		info_enum = PK_INFO_ENUM_LOW;
-		break;
-	default:
-		g_warning ("Failed to find HyUpdateSeverity enum %i", severity);
-		break;
+	GPtrArray *array;
+	guint i;
+	HyPackageList pkglist;
+	HyPackage pkg;
+
+	array = g_ptr_array_new ();
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_REMOVING)) {
+		pkglist = hy_goal_list_erasures (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_REMOVE);
+			g_ptr_array_add (array, pkg);
+		}
 	}
-	return info_enum;
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_INSTALLING)) {
+		pkglist = hy_goal_list_installs (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
+			g_ptr_array_add (array, pkg);
+		}
+	}
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_OBSOLETING)) {
+		pkglist = hy_goal_list_obsoleted (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_OBSOLETE);
+			g_ptr_array_add (array, pkg);
+		}
+	}
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_REINSTALLING)) {
+		pkglist = hy_goal_list_reinstalls (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
+			g_ptr_array_add (array, pkg);
+		}
+	}
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_UPDATING)) {
+		pkglist = hy_goal_list_upgrades (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_UPDATE);
+			g_ptr_array_add (array, pkg);
+		}
+	}
+	if (pk_bitfield_contain (types, PK_INFO_ENUM_DOWNGRADING)) {
+		pkglist = hy_goal_list_downgrades (goal);
+		FOR_PACKAGELIST(pkg, pkglist, i) {
+			hif_package_set_status (pkg, PK_STATUS_ENUM_INSTALL);
+			g_ptr_array_add (array, pkg);
+		}
+	}
+	return array;
 }
