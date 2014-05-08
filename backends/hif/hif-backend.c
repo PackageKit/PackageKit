@@ -208,7 +208,7 @@ hif_emit_package_list_filter (PkBackendJob *job,
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 
 		/* blocked */
-		if (hif_package_get_info (pkg) == PK_INFO_ENUM_BLOCKED)
+		if ((PkInfoEnum) hif_package_get_info (pkg) == PK_INFO_ENUM_BLOCKED)
 			continue;
 
 		/* GUI */
