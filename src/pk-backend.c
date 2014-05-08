@@ -323,6 +323,7 @@ pk_backend_get_roles (PkBackend *backend)
 	/* not compulsory, but use it if we've got it */
 	if (backend->priv->desc->get_roles != NULL) {
 		backend->priv->roles = backend->priv->desc->get_roles (backend);
+		pk_bitfield_add (backend->priv->roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 		goto out;
 	}
 
@@ -388,6 +389,7 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
 	if (desc->repair_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
+	pk_bitfield_add (roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	backend->priv->roles = roles;
 
 	backend->priv->backend_roles_set = TRUE;
