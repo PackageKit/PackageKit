@@ -45,8 +45,6 @@ void		 hif_emit_package_list_filter	(PkBackendJob		*job,
 						 PkBitfield		 filters,
 						 HyPackageList		 pkglist);
 PkBitfield	 hif_get_filter_for_ids		(gchar			**package_ids);
-GPtrArray	*hif_goal_get_packages		(HyGoal			 goal,
-						 PkBitfield		 types);
 
 G_END_DECLS
 

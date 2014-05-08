@@ -2059,17 +2059,14 @@ pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
 	guint i;
 	HifSource *src;
 	HyPackage pkg;
-	PkBitfield types;
-
-	/* find a list of all the packages we might have to download */
-	types = pk_bitfield_from_enums (PK_INFO_ENUM_INSTALLING,
-					PK_INFO_ENUM_REINSTALLING,
-					PK_INFO_ENUM_DOWNGRADING,
-					PK_INFO_ENUM_UPDATING,
-					-1);
 
 	/* find any packages in untrusted repos */
-	install = hif_goal_get_packages (goal, types);
+	install = hif_goal_get_packages (goal,
+					 HIF_PACKAGE_INFO_INSTALL,
+					 HIF_PACKAGE_INFO_REINSTALL,
+					 HIF_PACKAGE_INFO_DOWNGRADE,
+					 HIF_PACKAGE_INFO_UPDATE,
+					 -1);
 	array = g_ptr_array_new ();
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
@@ -2120,15 +2117,14 @@ pk_backend_transaction_check_untrusted (rpmKeyring keyring,
 	GPtrArray *install;
 	guint i;
 	HyPackage pkg;
-	PkBitfield types;
 
 	/* find a list of all the packages we might have to download */
-	types = pk_bitfield_from_enums (PK_INFO_ENUM_INSTALLING,
-					PK_INFO_ENUM_REINSTALLING,
-					PK_INFO_ENUM_DOWNGRADING,
-					PK_INFO_ENUM_UPDATING,
-					-1);
-	install = hif_goal_get_packages (goal, types);
+	install = hif_goal_get_packages (goal,
+					 HIF_PACKAGE_INFO_INSTALL,
+					 HIF_PACKAGE_INFO_REINSTALL,
+					 HIF_PACKAGE_INFO_DOWNGRADE,
+					 HIF_PACKAGE_INFO_UPDATE,
+					 -1);
 	if (install->len == 0)
 		goto out;
 
@@ -2914,7 +2910,6 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 	HyPackageList pkglist;
 	HyPackage pkg;
 	HyPackage pkg_tmp;
-	PkBitfield selector;
 	rpmprobFilterFlags problems_filter = 0;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
@@ -2981,12 +2976,12 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 
 	/* add things to install */
 	state_local = hif_state_get_child (state);
-	selector = pk_bitfield_from_enums (PK_INFO_ENUM_INSTALLING,
-					   PK_INFO_ENUM_REINSTALLING,
-					   PK_INFO_ENUM_DOWNGRADING,
-					   PK_INFO_ENUM_UPDATING,
-					   -1);
-	commit->install = hif_goal_get_packages (job_data->goal, selector);
+	commit->install = hif_goal_get_packages (job_data->goal,
+						 HIF_PACKAGE_INFO_INSTALL,
+						 HIF_PACKAGE_INFO_REINSTALL,
+						 HIF_PACKAGE_INFO_DOWNGRADE,
+						 HIF_PACKAGE_INFO_UPDATE,
+						 -1);
 	if (commit->install->len > 0)
 		hif_state_set_number_steps (state_local,
 					    commit->install->len);
@@ -3023,8 +3018,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 		goto out;
 
 	/* add things to remove */
-	selector = pk_bitfield_from_enums (PK_INFO_ENUM_REMOVING, -1);
-	commit->remove = hif_goal_get_packages (job_data->goal, selector);
+	commit->remove = hif_goal_get_packages (job_data->goal,
+						HIF_PACKAGE_INFO_REMOVE,
+						-1);
 	for (i = 0; i < commit->remove->len; i++) {
 		pkg = g_ptr_array_index (commit->remove, i);
 		ret = hif_rpmts_add_remove_pkg (job_data->ts, pkg, error);
@@ -3318,7 +3314,6 @@ pk_backend_transaction_run (PkBackendJob *job,
 	HifState *state_local;
 	HyPackage pkg;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBitfield types;
 	gboolean ret = TRUE;
 	gboolean valid;
 	guint i;
@@ -3359,12 +3354,12 @@ pk_backend_transaction_run (PkBackendJob *job,
 		goto out;
 
 	/* find a list of all the packages we have to download */
-	types = pk_bitfield_from_enums (PK_INFO_ENUM_INSTALLING,
-					PK_INFO_ENUM_REINSTALLING,
-					PK_INFO_ENUM_DOWNGRADING,
-					PK_INFO_ENUM_UPDATING,
-					-1);
-	packages = hif_goal_get_packages (job_data->goal, types);
+	packages = hif_goal_get_packages (job_data->goal,
+					  HIF_PACKAGE_INFO_INSTALL,
+					  HIF_PACKAGE_INFO_REINSTALL,
+					  HIF_PACKAGE_INFO_DOWNGRADE,
+					  HIF_PACKAGE_INFO_UPDATE,
+					  -1);
 	for (i = 0; i < packages->len; i++) {
 		pkg = g_ptr_array_index (packages, i);
 
