@@ -200,15 +200,16 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	/* set defaults */
 	priv->context = hif_context_new ();
+	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata");
+	hif_context_set_solv_dir (priv->context, "/var/cache/PackageKit/hawkey/");
+	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
+	hif_context_set_rpm_verbosity (priv->context, "info");
 	ret = hif_context_setup (priv->context, NULL, &error);
 	if (!ret) {
 		g_error ("failed to setup context: %s",
 			 error->message);
 		g_error_free (error);
 	}
-	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata");
-	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
-	hif_context_set_rpm_verbosity (priv->context, "info");
 
 	/* used a cached list of sources */
 	priv->repos = hif_repos_new (priv->context);
