@@ -552,6 +552,50 @@ out:
 	return ret;
 }
 
+/**
+ * hif_utils_get_installonly_pkgs:
+ */
+static const gchar **
+hif_utils_get_installonly_pkgs (void)
+{
+	static const gchar *installonly_pkgs[] = { "kernel",
+	                                           "installonlypkg(kernel)",
+	                                           "installonlypkg(kernel-module)",
+	                                           "installonlypkg(vm)",
+	                                            NULL };
+	return installonly_pkgs;
+}
+
+/**
+ * hif_utils_get_installonly_limit:
+ */
+static int
+hif_utils_get_installonly_limit (void)
+{
+	return 3;
+}
+
+/**
+ * hif_package_is_installonly:
+ */
+static gboolean
+hif_package_is_installonly (HyPackage pkg)
+{
+	const gchar **installonly_pkgs;
+	const gchar *pkg_name;
+	guint i;
+
+	installonly_pkgs = hif_utils_get_installonly_pkgs ();
+	pkg_name = hy_package_get_name (pkg);
+
+	for (i = 0; installonly_pkgs[i] != NULL; i++) {
+		if (g_strcmp0 (pkg_name, installonly_pkgs[i]) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 typedef enum {
 	HIF_CREATE_SACK_FLAG_NONE,
 	HIF_CREATE_SACK_FLAG_USE_CACHE,
@@ -4108,65 +4152,6 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
 }
 
 /**
- * hy_package_evr_sort_newest_cb:
- */
-static gint
-hy_package_evr_sort_newest_cb (gconstpointer a, gconstpointer b)
-{
-	HyPackage *pa = (HyPackage *) a;
-	HyPackage *pb = (HyPackage *) b;
-	return -hy_package_evr_cmp (*pa, *pb);
-}
-
-/**
- * hif_goal_erase_only_n:
- */
-static void
-hif_goal_erase_only_n (HyGoal goal,
-		       HySack sack_installed,
-		       const gchar *package_name,
-		       guint only_n)
-{
-	GPtrArray *array = NULL;
-	HyPackageList pkglist = NULL;
-	HyPackage pkg;
-	HyQuery query = NULL;
-	guint i;
-
-	/* run query */
-	query = hy_query_create (sack_installed);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, package_name);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	pkglist = hy_query_run (query);
-
-	/* any matches? */
-	if ((guint) hy_packagelist_count (pkglist) < only_n) {
-		g_debug ("only %i %s packages, not removing any",
-			 hy_packagelist_count (pkglist), package_name);
-		goto out;
-	}
-
-	/* remove the oldest */
-	array = g_ptr_array_new ();
-	FOR_PACKAGELIST (pkg, pkglist, i)
-		g_ptr_array_add (array, pkg);
-	g_ptr_array_sort (array, hy_package_evr_sort_newest_cb);
-	for (i = 0; i < array->len; i++) {
-		pkg = g_ptr_array_index (array, i);
-		if (i >= only_n - 1) {
-			g_debug ("removing %s", hif_package_get_nevra (pkg));
-			hy_goal_erase (goal, pkg);
-		}
-	}
-
-out:
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-}
-
-/**
  * pk_backend_update_packages_thread:
  */
 static void
@@ -4182,11 +4167,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	gboolean ret;
 	gchar **package_ids;
 	guint i;
-	guint j;
-	const gchar *only_n_pkgnames[] = { "kernel",
-					   "kernel-source",
-					   "kernel-devel",
-					   NULL };
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -4217,6 +4197,10 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 		g_error_free (error);
 		goto out;
 	}
+
+	/* set up the sack for packages that should only ever be installed, never updated */
+	hy_sack_set_installonly (sack, hif_utils_get_installonly_pkgs ());
+	hy_sack_set_installonly_limit (sack, hif_utils_get_installonly_limit ());
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
@@ -4276,19 +4260,11 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 		}
 		hif_package_set_user_action (pkg, TRUE);
 
-		/* allow some packages to have multiple versions installed,
-		 * but remove any older than the only_n limit */
-		for (j = 0; only_n_pkgnames[j] != NULL; j++) {
-			if (g_strcmp0 (hy_package_get_name (pkg),
-				       only_n_pkgnames[j]) == 0) {
-				hy_goal_install (job_data->goal, pkg);
-				hif_goal_erase_only_n (job_data->goal, sack,
-						       only_n_pkgnames[j],
-						       5);
-			} else {
-				hy_goal_upgrade_to (job_data->goal, pkg);
-			}
-		}
+		/* allow some packages to have multiple versions installed */
+		if (hif_package_is_installonly (pkg))
+			hy_goal_install (job_data->goal, pkg);
+		else
+			hy_goal_upgrade_to (job_data->goal, pkg);
 	}
 
 	/* run transaction */
