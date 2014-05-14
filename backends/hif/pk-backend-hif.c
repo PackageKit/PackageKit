@@ -50,7 +50,6 @@ typedef struct {
 
 typedef struct {
 	HifContext	*context;
-	GFileMonitor	*monitor_rpmdb;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
 	gchar		**native_arches;
@@ -133,18 +132,6 @@ pk_backend_yum_repos_changed_cb (HifRepos *self, PkBackend *backend)
 }
 
 /**
- * pk_backend_rpmdb_changed_cb:
- **/
-static void
-pk_backend_rpmdb_changed_cb (GFileMonitor *monitor_,
-			     GFile *file, GFile *other_file,
-			     GFileMonitorEvent event_type,
-			     PkBackend *backend)
-{
-	pk_backend_sack_cache_invalidate ("rpmdb changed");
-}
-
-/**
  * hif_sack_cache_item_free:
  */
 static void
@@ -156,13 +143,23 @@ hif_sack_cache_item_free (HifSackCacheItem *cache_item)
 }
 
 /**
+ * pk_backend_context_invaliate_cb:
+ */
+static void
+pk_backend_context_invaliate_cb (HifContext *context,
+				 const gchar *message,
+				 PkBackend *backend)
+{
+	pk_backend_sack_cache_invalidate (message);
+}
+
+/**
  * pk_backend_initialize:
  */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	GError *error = NULL;
-	GFile *file_rpmdb = NULL;
 	gboolean ret;
 
 	/* use logging */
@@ -200,6 +197,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	/* set defaults */
 	priv->context = hif_context_new ();
+	g_signal_connect (priv->context, "invalidate",
+			  G_CALLBACK (pk_backend_context_invaliate_cb), backend);
 	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata");
 	hif_context_set_solv_dir (priv->context, "/var/cache/PackageKit/hawkey/");
 	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
@@ -222,25 +221,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->native_arches[0] = g_strdup (hif_context_get_arch_info (priv->context));
 	priv->native_arches[1] = g_strdup ("noarch");
 
-	/* setup a file monitor on the rpmdb */
-	file_rpmdb = g_file_new_for_path ("/var/lib/rpm/Packages");
-	priv->monitor_rpmdb = g_file_monitor_file (file_rpmdb,
-						   G_FILE_MONITOR_NONE,
-						   NULL,
-						   &error);
-	if (priv->monitor_rpmdb != NULL) {
-		g_signal_connect (priv->monitor_rpmdb, "changed",
-				  G_CALLBACK (pk_backend_rpmdb_changed_cb), backend);
-	} else {
-		g_warning ("failed to setup monitor: %s",
-			   error->message);
-		g_error_free (error);
-	}
-
 	lr_global_init ();
-
-	if (file_rpmdb != NULL)
-		g_object_unref (file_rpmdb);
 }
 
 /**
@@ -251,8 +232,6 @@ pk_backend_destroy (PkBackend *backend)
 {
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
-	if (priv->monitor_rpmdb != NULL)
-		g_object_unref (priv->monitor_rpmdb);
 	g_timer_destroy (priv->repos_timer);
 	g_object_unref (priv->repos);
 	g_strfreev (priv->native_arches);
