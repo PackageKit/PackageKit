@@ -669,8 +669,36 @@
             <entry>Accessories</entry>
           </row>
           <row>
+            <entry><literal>admin-tools</literal></entry>
+            <entry>Admin tools</entry>
+          </row>
+          <row>
+            <entry><literal>communication</literal></entry>
+            <entry>Communication</entry>
+          </row>
+          <row>
+            <entry><literal>desktop-gnome</literal></entry>
+            <entry>Gnome</entry>
+          </row>
+          <row>
+            <entry><literal>desktop-kde</literal></entry>
+            <entry>KDE</entry>
+          </row>
+          <row>
+            <entry><literal>desktop-other</literal></entry>
+            <entry>Other desktops</entry>
+          </row>
+          <row>
+            <entry><literal>desktop-xfce</literal></entry>
+            <entry>Xfce</entry>
+          </row>
+          <row>
             <entry><literal>education</literal></entry>
             <entry>Education</entry>
+          </row>
+          <row>
+            <entry><literal>fonts</literal></entry>
+            <entry>Fonts</entry>
           </row>
           <row>
             <entry><literal>games</literal></entry>
@@ -685,6 +713,22 @@
             <entry>Internet</entry>
           </row>
           <row>
+            <entry><literal>legacy</literal></entry>
+            <entry>Legacy</entry>
+          </row>
+          <row>
+            <entry><literal>localization</literal></entry>
+            <entry>Localization</entry>
+          </row>
+          <row>
+            <entry><literal>maps</literal></entry>
+            <entry>Maps</entry>
+          </row>
+          <row>
+            <entry><literal>network</literal></entry>
+            <entry>Network</entry>
+          </row>
+          <row>
             <entry><literal>office</literal></entry>
             <entry>Office</entry>
           </row>
@@ -693,16 +737,52 @@
             <entry>Other</entry>
           </row>
           <row>
+            <entry><literal>power-management</literal></entry>
+            <entry>Power management</entry>
+          </row>
+          <row>
             <entry><literal>programming</literal></entry>
             <entry>Programming</entry>
+          </row>
+          <row>
+            <entry><literal>publishing</literal></entry>
+            <entry>Publishing</entry>
           </row>
           <row>
             <entry><literal>multimedia</literal></entry>
             <entry>Multimedia</entry>
           </row>
           <row>
+            <entry><literal>security</literal></entry>
+            <entry>Security</entry>
+          </row>
+          <row>
+            <entry><literal>servers</literal></entry>
+            <entry>Servers</entry>
+          </row>
+          <row>
             <entry><literal>system</literal></entry>
             <entry>System</entry>
+          </row>
+          <row>
+            <entry><literal>virtualization</literal></entry>
+            <entry>Virtualization</entry>
+          </row>
+          <row>
+            <entry><literal>science</literal></entry>
+            <entry>Science</entry>
+          </row>
+          <row>
+            <entry><literal>documentation</literal></entry>
+            <entry>Documentation</entry>
+          </row>
+          <row>
+            <entry><literal>electronics</literal></entry>
+            <entry>Electronics</entry>
+          </row>
+          <row>
+            <entry><literal>vendor</literal></entry>
+            <entry>Vendor</entry>
           </row>
         </tbody>
       </tgroup>
