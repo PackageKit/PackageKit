@@ -52,7 +52,6 @@ typedef struct {
 	HifContext	*context;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
-	gchar		**native_arches;
 	HifRepos	*repos;
 	GTimer		*repos_timer;
 } PkBackendHifPrivate;
@@ -216,11 +215,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	g_signal_connect (priv->repos, "changed",
 			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 
-	/* setup native arches */
-	priv->native_arches = g_new0 (gchar *, 3);
-	priv->native_arches[0] = g_strdup (hif_context_get_arch_info (priv->context));
-	priv->native_arches[1] = g_strdup ("noarch");
-
 	lr_global_init ();
 }
 
@@ -234,7 +228,6 @@ pk_backend_destroy (PkBackend *backend)
 		g_object_unref (priv->context);
 	g_timer_destroy (priv->repos_timer);
 	g_object_unref (priv->repos);
-	g_strfreev (priv->native_arches);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
 	g_free (priv);
@@ -752,10 +745,10 @@ hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
 	/* arch */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
 		hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
-				    (const gchar **) priv->native_arches);
+				    hif_context_get_native_arches (priv->context));
 	} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH)) {
 		hy_query_filter_in (query, HY_PKG_ARCH, HY_NEQ,
-				    (const gchar **) priv->native_arches);
+				    hif_context_get_native_arches (priv->context));
 	}
 
 	/* installed */
