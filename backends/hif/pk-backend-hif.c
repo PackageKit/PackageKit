@@ -524,50 +524,6 @@ out:
 	return ret;
 }
 
-/**
- * hif_utils_get_installonly_pkgs:
- */
-static const gchar **
-hif_utils_get_installonly_pkgs (void)
-{
-	static const gchar *installonly_pkgs[] = { "kernel",
-	                                           "installonlypkg(kernel)",
-	                                           "installonlypkg(kernel-module)",
-	                                           "installonlypkg(vm)",
-	                                            NULL };
-	return installonly_pkgs;
-}
-
-/**
- * hif_utils_get_installonly_limit:
- */
-static int
-hif_utils_get_installonly_limit (void)
-{
-	return 3;
-}
-
-/**
- * hif_package_is_installonly:
- */
-static gboolean
-hif_package_is_installonly (HyPackage pkg)
-{
-	const gchar **installonly_pkgs;
-	const gchar *pkg_name;
-	guint i;
-
-	installonly_pkgs = hif_utils_get_installonly_pkgs ();
-	pkg_name = hy_package_get_name (pkg);
-
-	for (i = 0; installonly_pkgs[i] != NULL; i++) {
-		if (g_strcmp0 (pkg_name, installonly_pkgs[i]) == 0)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 typedef enum {
 	HIF_CREATE_SACK_FLAG_NONE,
 	HIF_CREATE_SACK_FLAG_USE_CACHE,
@@ -4171,8 +4127,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	}
 
 	/* set up the sack for packages that should only ever be installed, never updated */
-	hy_sack_set_installonly (sack, hif_utils_get_installonly_pkgs ());
-	hy_sack_set_installonly_limit (sack, hif_utils_get_installonly_limit ());
+	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
+	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
