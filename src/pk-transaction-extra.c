@@ -138,7 +138,9 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 	g_strfreev (filenames);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	/* check that we only matched one package */
 	if (extra->priv->list->len != 1) {
@@ -511,7 +513,9 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 	pk_backend_get_packages (extra->priv->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	/* update UI */
 	pk_transaction_extra_set_progress_changed (extra, 90);
@@ -623,7 +627,9 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	g_signal_handler_disconnect (extra->priv->backend, signal_files);
 	pk_transaction_extra_set_progress_changed (extra, 100);
@@ -701,7 +707,9 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	g_signal_handler_disconnect (extra->priv->backend, signal_files);
 	pk_transaction_extra_set_progress_changed (extra, 100);
@@ -1047,7 +1055,9 @@ pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar 
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	/* there is a file we can't COW */
 	if (extra->priv->files_list->len != 0) {
@@ -1123,7 +1133,9 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
+	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (extra->priv->loop);
+	g_main_loop_unref (extra->priv->loop);
 
 	/* nothing to do */
 	if (extra->priv->files_list->len == 0) {
@@ -1173,9 +1185,6 @@ pk_transaction_extra_finalize (GObject *object)
 
 	if (extra->priv->pids != NULL)
 		g_ptr_array_free (extra->priv->pids, TRUE);
-	if (g_main_loop_is_running (extra->priv->loop))
-		g_main_loop_quit (extra->priv->loop);
-	g_main_loop_unref (extra->priv->loop);
 	sqlite3_close (extra->priv->db);
 	g_hash_table_unref (extra->priv->hash);
 	g_ptr_array_unref (extra->priv->files_list);
@@ -1227,7 +1236,6 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	gint rc;
 
 	extra->priv = PK_POST_TRANS_GET_PRIVATE (extra);
-	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
