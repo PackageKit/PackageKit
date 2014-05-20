@@ -138,8 +138,8 @@ UpdatePackageList=false
 # NOTE: Don't enable this for backends that are slow doing GetFiles() on
 # installed files.
 #
-# default=true
-UpdateCheckProcesses=true
+# default=false
+UpdateCheckProcesses=false
 
 # Check for shared libraries that are in use, that are replaced by packages
 # that are marked as security updates.
