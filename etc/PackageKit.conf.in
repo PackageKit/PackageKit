@@ -123,8 +123,8 @@ UseSyslog=false
 #
 # NOTE: Don't enable this for backends that are slow doing SearchFile()
 #
-# default=true
-ScanDesktopFiles=true
+# default=false
+ScanDesktopFiles=false
 
 # Update the package list when we refresh the cache
 #
