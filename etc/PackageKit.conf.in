@@ -130,8 +130,8 @@ ScanDesktopFiles=false
 #
 # NOTE: Don't enable this for backends that are slow doing GetPackages()
 #
-# default=true
-UpdatePackageList=true
+# default=false
+UpdatePackageList=false
 
 # Check for running processes when we update packages
 #
