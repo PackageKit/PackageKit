@@ -106,40 +106,12 @@ static void
 pk_plugin_transaction_update_packages (PkTransaction *transaction)
 {
 	GError *error = NULL;
-	PkPackage *pkg;
-	PkPackageSack *sack;
 	gboolean ret;
 	gchar **package_ids;
 	gchar *packages_str = NULL;
-	guint i;
 
-	/* get the existing prepared updates */
-	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-
-	/* add any new ones */
+	/* write the package ids to the prepared update file */
 	package_ids = pk_transaction_get_package_ids (transaction);
-	for (i = 0; package_ids[i] != NULL; i++) {
-		/* does this package match exactly */
-		pkg = pk_package_sack_find_by_id (sack, package_ids[i]);
-		if (pkg != NULL) {
-			g_object_unref (pkg);
-		} else {
-			/* does this package exist in another version */
-			pkg = pk_package_sack_find_by_id_name_arch (sack, package_ids[i]);
-			if (pkg != NULL) {
-				g_debug ("removing old update %s from prepared updates",
-					 pk_package_get_id (pkg));
-				pk_package_sack_remove_package (sack, pkg);
-				g_object_unref (pkg);
-			}
-			g_debug ("adding new update %s to prepared updates",
-				 package_ids[i]);
-			pk_package_sack_add_package_by_id (sack, package_ids[i], NULL);
-		}
-	}
-
-	/* write filename */
-	package_ids = pk_package_sack_get_ids (sack);
 	packages_str = g_strjoinv ("\n", package_ids);
 	ret = g_file_set_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				   packages_str,
@@ -154,8 +126,6 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 	}
 out:
 	g_free (packages_str);
-	g_object_unref (sack);
-	g_strfreev (package_ids);
 }
 
 /**
