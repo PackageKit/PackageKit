@@ -226,6 +226,7 @@ pk_gst_codec_free (PkGstCodecInfo *codec)
 	g_free (codec->codec_name);
 	g_free (codec->app_name);
 	g_free (codec->gstreamer_version);
+	g_free (codec);
 }
 
 /**
