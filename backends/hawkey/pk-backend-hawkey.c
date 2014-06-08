@@ -3223,7 +3223,7 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 
 	/* add anything that gets obsoleted to a helper array which is used to
 	 * map removed packages auto-added by rpm to actual HyPackage's */
-	commit->remove_helper = g_ptr_array_new ();
+	commit->remove_helper = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 	for (i = 0; i < commit->install->len; i++) {
 		pkg = g_ptr_array_index (commit->install, i);
 		is_update = hif_package_get_status (pkg) == PK_STATUS_ENUM_UPDATE;
@@ -3231,8 +3231,9 @@ pk_backend_transaction_commit (PkBackendJob *job, HifState *state, GError **erro
 			continue;
 		pkglist = hy_goal_list_obsoleted_by_package (job_data->goal, pkg);
 		FOR_PACKAGELIST(pkg_tmp, pkglist, j) {
-			g_ptr_array_add (commit->remove_helper, pkg);
-			hif_package_set_status (pkg, PK_STATUS_ENUM_CLEANUP);
+			g_ptr_array_add (commit->remove_helper,
+			                 hy_package_link (pkg_tmp));
+			hif_package_set_status (pkg_tmp, PK_STATUS_ENUM_CLEANUP);
 		}
 		hy_packagelist_free (pkglist);
 	}
