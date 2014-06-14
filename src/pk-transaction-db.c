@@ -34,6 +34,7 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
 #include <sqlite3.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
@@ -978,6 +979,9 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 		if (!ret)
 			goto out;
 	}
+
+	/* try to set correct permissions */
+	g_chmod (PK_DB_DIR "/transactions.db", 0644);
 
 	/* success */
 	tdb->priv->loaded = TRUE;
