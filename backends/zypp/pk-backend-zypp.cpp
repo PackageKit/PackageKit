@@ -3466,6 +3466,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 		gchar **search = pk_backend_what_provides_decompose (job,
 								     provides,
 								     values);
+		GHashTable *installed_hash = g_hash_table_new (g_str_hash, g_str_equal);
 		
 		guint len = g_strv_length (search);
 		for (guint i=0; i<len; i++) {
@@ -3474,13 +3475,28 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 			sat::WhatProvides prov (cap);
 			
 			for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
+				if (it->isSystem ())
+					g_hash_table_insert (installed_hash,
+							     (const gpointer) make<ResObject>(*it)->summary().c_str (),
+							     GUINT_TO_POINTER (1));
+			}
+
+			for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
 				if (zypp_filter_solvable (_filters, *it))
 					continue;
-				
+
+				/* If caller asked for uninstalled packages, filter out uninstalled instances from
+				 * remote repos corresponding to locally installed packages */
+				if ((_filters & pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED)) &&
+				    g_hash_table_contains (installed_hash, make<ResObject>(*it)->summary().c_str ()))
+					continue;
+
 				PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 				zypp_backend_package (job, info, *it,  make<ResObject>(*it)->summary().c_str ());
 			}
 		}
+
+		g_hash_table_unref (installed_hash);
 	}
 	pk_backend_job_finished (job);
 }
