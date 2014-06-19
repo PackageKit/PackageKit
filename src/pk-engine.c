@@ -1048,7 +1048,7 @@ out:
 }
 
 /**
- * pk_engine_init:
+ * pk_engine_load_backend:
  **/
 gboolean
 pk_engine_load_backend (PkEngine *engine, GError **error)
@@ -1734,7 +1734,18 @@ pk_engine_init (PkEngine *engine)
 				pk_engine_on_name_acquired_cb,
 				pk_engine_on_name_lost_cb,
 				engine, NULL);
+}
 
+/**
+ * pk_engine_plugins_init:
+ *
+ * Initialize all engine plugins. This has to be called after
+ * the backend instance has been created, since some plugins
+ * might use the backend while initializing.
+ **/
+void
+pk_engine_plugins_init (PkEngine *engine)
+{
 	/* initialize plugins */
 	pk_engine_plugin_phase (engine,
 				PK_PLUGIN_PHASE_INIT);
