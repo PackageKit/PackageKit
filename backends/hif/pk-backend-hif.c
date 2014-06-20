@@ -2109,6 +2109,9 @@ pk_backend_transaction_run (PkBackendJob *job,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 		hif_transaction_set_flags (transaction,
 					   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
+	} else {
+		hif_transaction_set_flags (transaction,
+					   HIF_TRANSACTION_FLAG_NONE);
 	}
 	state_local = hif_state_get_child (state);
 	ret = hif_transaction_depsolve (transaction,
