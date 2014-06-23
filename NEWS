@@ -1,3 +1,30 @@
+Version 0.9.3
+~~~~~~~~~~~~~
+Released: 2014-06-23
+
+Backends:
+ - aptcc: Use Python3 for g-d-upgrade helper (Matthias Klumpp)
+ - hawkey: Port to libhif and rename the backend to "Hif" (Richard Hughes)
+ - hif: Adapt to hif_package_set_action() API change (Richard Hughes)
+ - hif: Allow untrused packages to be installed again (Richard Hughes)
+ - hif: Fix compile warning for new libhif versions (Richard Hughes)
+ - hif: Reimplement multiple kernel package installation (Kalev Lember)
+ - hif: Rely on libhif doing the rpmdb watching (Richard Hughes)
+ - hif: Set the context parameters before setting it up (Richard Hughes)
+ - hif: Use hif_context_get_install_root() (Richard Hughes)
+ - hif: Use hif_context_get_native_arches() (Richard Hughes)
+ - hif: Use hif_transaction_download() (Richard Hughes)
+ - hif: Use the new hif_goal_get_packages() API from libhif (Richard Hughes)
+ - zypp: Don't prompt to install already installed packages (Scott Reeves)
+
+Bugfixes:
+ - Add PK_ROLE_ENUM_GET_OLD_TRANSACTIONS to get-roles response (Daniel Nicoletti)
+ - Automatically fix permissions of transactions.db (Matthias Klumpp)
+ - Fix crash when a plugin is using the backend in it's initialization stage (Matthias Klumpp)
+ - Make the polkit policy not be desktop-centric (Stef Walter)
+ - Simplify prepared updates file creation (Kalev Lember)
+ - Update group list in the documenation (Eugene Wissner)
+
 Version 0.9.2
 ~~~~~~~~~~~~~
 Released: 2014-04-29
