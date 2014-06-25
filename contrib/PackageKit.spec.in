@@ -220,7 +220,9 @@ popd > /dev/null
 %systemd_preun packagekit-offline-update.service packagekit.service
 
 %postun
-%systemd_postun_with_restart packagekit-offline-update.service packagekit.service
+# Reload the systemd configuration but do _not_ restart the daemon. Killing the
+# update process while it's updating packages causes the transaction to fail.
+%systemd_postun packagekit-offline-update.service packagekit.service
 
 %postun glib -p /sbin/ldconfig
 
