@@ -243,11 +243,11 @@ pk_backend_state_percentage_changed_cb (HifState *state,
  **/
 static void
 pk_backend_state_action_changed_cb (HifState *state,
-				    PkStatusEnum action,
+				    HifStateAction action,
 				    const gchar *action_hint,
 				    PkBackendJob *job)
 {
-	if (action != PK_STATUS_ENUM_UNKNOWN) {
+	if (action != HIF_STATE_ACTION_UNKNOWN) {
 		g_debug ("got state %s with hint %s",
 			 pk_status_enum_to_string (action),
 			 action_hint);
@@ -255,7 +255,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 	}
 
 	switch (action) {
-	case PK_STATUS_ENUM_DOWNLOAD:
+	case HIF_STATE_ACTION_DOWNLOAD_PACKAGES:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
 						PK_INFO_ENUM_DOWNLOADING,
@@ -263,7 +263,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
-	case PK_STATUS_ENUM_INSTALL:
+	case HIF_STATE_ACTION_INSTALL:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
 						PK_INFO_ENUM_INSTALLING,
@@ -271,7 +271,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
-	case PK_STATUS_ENUM_REMOVE:
+	case HIF_STATE_ACTION_REMOVE:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
 						PK_INFO_ENUM_REMOVING,
@@ -279,7 +279,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
-	case PK_STATUS_ENUM_UPDATE:
+	case HIF_STATE_ACTION_UPDATE:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
 						PK_INFO_ENUM_UPDATING,
@@ -287,7 +287,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
-	case PK_STATUS_ENUM_CLEANUP:
+	case HIF_STATE_ACTION_CLEANUP:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
 						PK_INFO_ENUM_CLEANUP,
@@ -541,7 +541,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* update status */
-	hif_state_action_start (state, PK_STATUS_ENUM_QUERY, NULL);
+	hif_state_action_start (state, HIF_STATE_ACTION_QUERY, NULL);
 
 	/* set state */
 	if ((flags & HIF_SACK_ADD_FLAG_REMOTE) > 0) {
