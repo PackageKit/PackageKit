@@ -32,6 +32,8 @@
 #include <pk-backend.h>
 #include <packagekit-glib2/pk-debug.h>
 
+#include <hawkey/packagelist.h>
+#include <hawkey/packageset.h>
 #include <hawkey/query.h>
 #include <hawkey/stringarray.h>
 #include <hawkey/version.h>
@@ -615,16 +617,54 @@ out:
 }
 
 /**
- * hif_utils_add_query_filters:
+ * hif_utils_run_query_with_newest_filter:
  */
-static void
-hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
+static HyPackageList
+hif_utils_run_query_with_newest_filter (HySack sack, HyQuery query)
 {
-	const gchar *application_glob = "/usr/share/applications/*.desktop";
+	HyPackageList results;
+	HyPackageList results_tmp;
+	HyPackageSet pkgset;
+	HyPackage pkg;
+	guint i;
 
-	/* newest */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
-		hy_query_filter_latest_per_arch (query, TRUE);
+	/* Run the prepared query */
+	pkgset = hy_query_run_set (query);
+
+	/* Filter latest system packages */
+	query = hy_query_create (sack);
+	hy_query_filter_package_in (query, HY_PKG, HY_EQ, pkgset);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_latest_per_arch (query, TRUE);
+	results = hy_query_run (query);
+	hy_query_free (query);
+
+	/* Filter latest available packages */
+	query = hy_query_create (sack);
+	hy_query_filter_package_in (query, HY_PKG, HY_EQ, pkgset);
+	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_latest_per_arch (query, TRUE);
+	results_tmp = hy_query_run (query);
+	/* ... and add to the previous results */
+	FOR_PACKAGELIST(pkg, results_tmp, i) {
+		hy_packagelist_push (results, hy_package_link (pkg));
+	}
+	hy_query_free (query);
+	hy_packagelist_free (results_tmp);
+
+	hy_packageset_free (pkgset);
+
+	return results;
+}
+
+/**
+ * hif_utils_run_query_with_filters:
+ */
+static HyPackageList
+hif_utils_run_query_with_filters (HySack sack, HyQuery query, PkBitfield filters)
+{
+	HyPackageList results;
+	const gchar *application_glob = "/usr/share/applications/*.desktop";
 
 	/* arch */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
@@ -652,6 +692,14 @@ hif_utils_add_query_filters (HyQuery query, PkBitfield filters)
 		hy_query_filter (query, HY_PKG_FILE, HY_GLOB, application_glob);
 	else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_APPLICATION))
 		hy_query_filter (query, HY_PKG_FILE, HY_NOT | HY_GLOB, application_glob);
+
+	/* newest */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
+		results = hif_utils_run_query_with_newest_filter (sack, query);
+	else
+		results = hy_query_run (query);
+
+	return results;
 }
 
 /**
@@ -766,30 +814,29 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 	/* run query */
 	query = hy_query_create (sack);
-	hif_utils_add_query_filters (query, filters);
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_GET_PACKAGES:
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const gchar **) search);
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE:
 		hy_query_filter_in (query, HY_PKG_FILE, HY_EQ, (const gchar **) search);
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		hy_query_filter_provides_in (query, search);
-		pkglist = hy_query_run (query);
+		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		job_data->goal = hy_goal_create (sack);
