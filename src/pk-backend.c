@@ -495,6 +495,13 @@ pk_backend_load (PkBackend *backend, GError **error)
 					      error);
 	if (backend_name == NULL)
 		goto out;
+
+	/* the "hawkey" backend was renamed to "hif" */
+	if (g_strcmp0 (backend_name, "hawkey") == 0) {
+		g_free (backend_name);
+		backend_name = g_strdup ("hif");
+	}
+
 	g_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
