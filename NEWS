@@ -1,3 +1,16 @@
+Version 0.9.4
+~~~~~~~~~~~~~
+Released: 2014-07-17
+
+Backends:
+ - hif: Fix up a signature mismatch with a libhif signal handler (Kalev Lember)
+ - hif: Include both available and installed packages in NEWEST filter (Kalev Lember)
+ - hif: Use new hawkey API for getting advisory details (Radek Holy)
+
+Bugfixes:
+ - Automatically switch to hif backend when the config file says hawkey (Kalev Lember)
+ - Plug a small leak in the gstreamer-plugin (Kalev Lember)
+
 Version 0.9.3
 ~~~~~~~~~~~~~
 Released: 2014-06-23
