@@ -325,9 +325,9 @@ if test x$enable_browser_plugin = xyes; then
 			  gtk+-2.0 >= 2.14.0,
 			  build_browser_plugin=yes, build_browser_plugin=no)
 	if pkg-config --exists npapi-sdk; then
-		PK_BROWSER_PLUGIN_CFLAGS="`pkg-config --cflags npapi-sdk`"
+		PK_BROWSER_PLUGIN_CFLAGS += "`pkg-config --cflags npapi-sdk`"
 	elif pkg-config --exists 'mozilla-plugin >= 8'; then
-		PK_BROWSER_PLUGIN_CFLAGS="`pkg-config --cflags mozilla-plugin`"
+		PK_BROWSER_PLUGIN_CFLAGS += "`pkg-config --cflags mozilla-plugin`"
 	else
 		build_browser_plugin=no
 	fi
