@@ -318,19 +318,13 @@ AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build br
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
+			  mozilla-plugin	\
 			  gio-unix-2.0		\
 			  nspr >= 4.8		\
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0,
 			  build_browser_plugin=yes, build_browser_plugin=no)
-	if pkg-config --exists npapi-sdk; then
-		PK_BROWSER_PLUGIN_CFLAGS += "`pkg-config --cflags npapi-sdk`"
-	elif pkg-config --exists 'mozilla-plugin >= 8'; then
-		PK_BROWSER_PLUGIN_CFLAGS += "`pkg-config --cflags mozilla-plugin`"
-	else
-		build_browser_plugin=no
-	fi
 	if test $build_browser_plugin = "yes"; then
 
 		# check we have xulrunner headers
