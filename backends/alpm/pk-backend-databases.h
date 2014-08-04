@@ -24,17 +24,14 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-void		 pk_backend_add_database		(const gchar *name,
+void		 pkalpm_backend_add_database		(const gchar *name,
 							 alpm_list_t *servers,
 							 alpm_siglevel_t level);
 
-gboolean	 pk_backend_disable_signatures		(PkBackend *self,
-							 GError **error);
+gboolean	 pkalpm_backend_disable_signatures		(GError **error);
 
-gboolean	 pk_backend_enable_signatures		(PkBackend *self,
-							 GError **error);
+gboolean	 pkalpm_backend_enable_signatures		(GError **error);
 
-gboolean	 pk_backend_initialize_databases	(PkBackend *self,
-							 GError **error);
+gboolean	 pkalpm_backend_initialize_databases	(GError **error);
 
-void		 pk_backend_destroy_databases		(PkBackend *self);
+void		 pkalpm_backend_destroy_databases		();

@@ -105,7 +105,7 @@ group_map_new (GError **error)
 }
 
 gboolean
-pk_backend_initialize_groups (PkBackend *self, GError **error)
+pkalpm_backend_initialize_groups (PkBackend *self, GError **error)
 {
 	g_return_val_if_fail (self != NULL, FALSE);
 
@@ -115,7 +115,7 @@ pk_backend_initialize_groups (PkBackend *self, GError **error)
 }
 
 void
-pk_backend_destroy_groups (PkBackend *self)
+pkalpm_backend_destroy_groups (PkBackend *self)
 {
 	g_return_if_fail (self != NULL);
 

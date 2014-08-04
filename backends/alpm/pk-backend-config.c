@@ -861,7 +861,7 @@ pk_backend_config_configure_repos (PkBackendConfig *config,
 		if (level == ALPM_SIG_USE_DEFAULT) {
 			return FALSE;
 		}
-		pk_backend_add_database (repo->name, repo->servers, level);
+		pkalpm_backend_add_database (repo->name, repo->servers, level);
 	}
 
 	return TRUE;

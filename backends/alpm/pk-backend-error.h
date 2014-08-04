@@ -30,6 +30,6 @@ enum {
 	ALPM_ERR_PKG_HELD
 };
 
-void	 pk_backend_error	(PkBackend *self, GError *error);
+void	 pk_backend_error	(PkBackendJob* job, GError* error);
 
 GQuark	 alpm_error_quark	(void);

@@ -24,23 +24,16 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gboolean	 pk_backend_transaction_initialize	(PkBackend *self,
-							 alpm_transflag_t flags,
-							 GError **error);
+gboolean	 pk_backend_transaction_initialize	(PkBackendJob *job, alpm_transflag_t flags, const gchar* dirname, GError **error);
 
-gboolean	 pk_backend_transaction_simulate	(PkBackend *self,
-							 GError **error);
+gboolean	 pk_backend_transaction_simulate	(GError **error);
 
-void		 pk_backend_transaction_packages	(PkBackend *self);
+void		 pk_backend_transaction_packages	(PkBackendJob *job);
 
-gboolean	 pk_backend_transaction_commit		(PkBackend *self,
-							 GError **error);
+gboolean	 pk_backend_transaction_commit		(PkBackendJob *job, GError **error);
 
-gboolean	 pk_backend_transaction_end		(PkBackend *self,
-							 GError **error);
+gboolean	 pk_backend_transaction_end		(PkBackendJob *job, GError **error);
 
-gboolean	 pk_backend_transaction_finish		(PkBackend *self,
-							 GError *error);
+gboolean	 pk_backend_transaction_finish		(PkBackendJob *job, GError *error);
 
-void		 pk_backend_output			(PkBackend *self,
-							 const gchar *output);
+void		 pkalpm_backend_output	(const gchar* output);

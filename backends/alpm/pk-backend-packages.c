@@ -52,27 +52,27 @@ alpm_pkg_build_id (alpm_pkg_t *pkg)
 }
 
 void
-pk_backend_pkg (PkBackend *self, alpm_pkg_t *pkg, PkInfoEnum info)
+pkalpm_backend_pkg (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
 {
 	gchar *package;
 
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 	g_return_if_fail (pkg != NULL);
 
 	package = alpm_pkg_build_id (pkg);
-	pk_backend_job_package (self, info, package, alpm_pkg_get_desc (pkg));
+	pk_backend_job_package (job, info, package, alpm_pkg_get_desc (pkg));
 	g_free (package);
 }
 
 alpm_pkg_t *
-pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
+pkalpm_backend_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 {
 	gchar **package;
 	const gchar *repo_id;
 	alpm_db_t *db = NULL;
 	alpm_pkg_t *pkg;
 
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (job != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
 	g_return_val_if_fail (alpm != NULL, NULL);
 	g_return_val_if_fail (localdb != NULL, NULL);
@@ -118,35 +118,31 @@ pk_backend_find_pkg (PkBackend *self, const gchar *package_id, GError **error)
 }
 
 static gboolean
-pk_backend_resolve_package (PkBackend *self, const gchar *package,
-			    GError **error)
+pk_backend_resolve_package (PkBackendJob *job, const gchar *package, PkBitfield filters, GError **error)
 {
 	alpm_pkg_t *pkg;
 	
-	PkBitfield filters;
 	gboolean skip_local, skip_remote;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
-	pkg = pk_backend_find_pkg (self, package, error);
+	pkg = pkalpm_backend_find_pkg (job, package, error);
 	if (pkg == NULL) {
 		return FALSE;
 	}
 
-	filters = pk_backend_get_uint (self, "filters");
-	skip_local = pk_bitfield_contain (filters,
-					  PK_FILTER_ENUM_NOT_INSTALLED);
+	skip_local = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
 	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_LOCALDB) {
 		if (!skip_local) {
-			pk_backend_pkg (self, pkg, PK_INFO_ENUM_INSTALLED);
+			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_INSTALLED);
 		}
 	} else {
 		if (!skip_remote) {
-			pk_backend_pkg (self, pkg, PK_INFO_ENUM_AVAILABLE);
+			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_AVAILABLE);
 		}
 	}
 
@@ -154,28 +150,25 @@ pk_backend_resolve_package (PkBackend *self, const gchar *package,
 }
 
 static gboolean
-pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
+pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filters, GError **error)
 {
 	alpm_pkg_t *pkg;
 	int code;
 	
-	PkBitfield filters;
 	gboolean skip_local, skip_remote;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
-	filters = pk_backend_get_uint (self, "filters");
-	skip_local = pk_bitfield_contain (filters,
-					  PK_FILTER_ENUM_NOT_INSTALLED);
+	skip_local = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
 	pkg = alpm_db_get_pkg (localdb, name);
 	if (pkg != NULL) {
 		if (!skip_local) {
-			pk_backend_pkg (self, pkg, PK_INFO_ENUM_INSTALLED);
+			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_INSTALLED);
 			return TRUE;
 		}
 	} else if (!skip_remote) {
@@ -183,7 +176,7 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
 			if (pkg != NULL) {
-				pk_backend_pkg (self, pkg,
+				pkalpm_backend_pkg (job, pkg,
 						PK_INFO_ENUM_AVAILABLE);
 				return TRUE;
 			}
@@ -196,59 +189,63 @@ pk_backend_resolve_name (PkBackend *self, const gchar *name, GError **error)
 	return FALSE;
 }
 
-static gboolean
-pk_backend_resolve_thread (PkBackend *self)
+static void
+pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
-	gchar **packages;
+	const gchar **search;
 	GError *error = NULL;
+	PkBitfield filters;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 
-	packages = pk_backend_get_strv (self, "package_ids");
+	g_variant_get(params, "(t^a&s)",
+				  &filters,
+				  &search);
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
 
-	for (; *packages != NULL; ++packages) {
-		if (pk_backend_cancelled (self)) {
+	for (; *search != NULL; ++search) {
+		if (pk_backend_cancelled (job)) {
 			break;
 		}
 
 		/* find a package with the given id or name */
-		if (pk_package_id_check (*packages)) {
-			if (!pk_backend_resolve_package (self, *packages,
-							 &error)) {
+		if (pk_package_id_check (*search)) {
+			if (!pk_backend_resolve_package (job, *search, filters, &error)) {
 				break;
 			}
 		} else {
-			if (!pk_backend_resolve_name (self, *packages,
-						      &error)) {
+			if (!pk_backend_resolve_name (job, *search, filters, &error)) {
 				break;
 			}
 		}
 	}
 
-	return pk_backend_finish (self, error);
+	pk_backend_finish (job, error);
 }
 
 void
-pk_backend_resolve (PkBackend *self, PkBitfield filters, gchar **package_ids)
+pk_backend_resolve (PkBackend   *self,
+                    PkBackendJob   *job,
+                    PkBitfield  filters,
+					gchar      **search)
 {
 	g_return_if_fail (self != NULL);
-	g_return_if_fail (package_ids != NULL);
+	g_return_if_fail (search != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_QUERY, pk_backend_resolve_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_resolve_thread, NULL);
 }
 
-static gboolean
-pk_backend_get_details_thread (PkBackend *self)
+static void
+pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
-	packages = pk_backend_get_strv (self, "package_ids");
+	packages = (gchar**) p;
 
 	g_return_val_if_fail (packages != NULL, FALSE);
 
@@ -261,11 +258,11 @@ pk_backend_get_details_thread (PkBackend *self)
 		const gchar *desc, *url;
 		gulong size;
 
-		if (pk_backend_cancelled (self)) {
+		if (pk_backend_cancelled (job)) {
 			break;
 		}
 
-		pkg = pk_backend_find_pkg (self, *packages, &error);
+		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
 		if (pkg == NULL) {
 			break;
 		}
@@ -293,34 +290,36 @@ pk_backend_get_details_thread (PkBackend *self)
 			size = alpm_pkg_download_size (pkg);
 		}
 
-		pk_backend_job_details (self, *packages, NULL, licenses->str, group,
+		pk_backend_job_details (job, *packages, NULL, licenses->str, group,
 					desc, url, size);
 		g_string_free (licenses, TRUE);
 	}
 
-	return pk_backend_finish (self, error);
+	pk_backend_finish (job, error);
 }
 
 void
-pk_backend_get_details (PkBackend *self, gchar **package_ids)
+pk_backend_get_details (PkBackend   *self,
+                        PkBackendJob   *job,
+                        gchar      **package_ids)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (package_ids != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_details_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY,
+			pk_backend_get_details_thread, package_ids);
 }
 
-static gboolean
-pk_backend_get_files_thread (PkBackend *self)
+static void
+pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	packages = pk_backend_get_strv (self, "package_ids");
+	packages = (gchar**) p;
 
 	g_return_val_if_fail (packages != NULL, FALSE);
 
@@ -332,11 +331,11 @@ pk_backend_get_files_thread (PkBackend *self)
 		alpm_filelist_t *filelist;
 		gsize i;
 
-		if (pk_backend_cancelled (self)) {
+		if (pk_backend_cancelled (job)) {
 			break;
 		}
 
-		pkg = pk_backend_find_pkg (self, *packages, &error);
+		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
 		if (pkg == NULL) {
 			break;
 		}
@@ -351,19 +350,21 @@ pk_backend_get_files_thread (PkBackend *self)
 		}
 
 		g_string_truncate (files, MAX (files->len, 1) - 1);
-		pk_backend_job_files (self, *packages, files->str);
+		pk_backend_job_files (job, *packages, &files->str);
 		g_string_free (files, TRUE);
 	}
 
-	return pk_backend_finish (self, error);
+	pk_backend_finish (job, error);
 }
 
 void
-pk_backend_get_files (PkBackend *self, gchar **package_ids)
+pk_backend_get_files (PkBackend *self,
+                      PkBackendJob   *job,
+                      gchar      **package_ids)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (package_ids != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_files_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY,
+			pk_backend_get_files_thread, package_ids);
 }

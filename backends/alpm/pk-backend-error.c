@@ -26,15 +26,15 @@
 #include "pk-backend-error.h"
 
 void
-pk_backend_error (PkBackend *self, GError *error)
+pk_backend_error (PkBackendJob *job, GError *error)
 {
 	PkErrorEnum code = PK_ERROR_ENUM_UNKNOWN;
 
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 	g_return_if_fail (error != NULL);
 
 	if (error->domain != ALPM_ERROR) {
-		pk_backend_error_code (self, code, "%s", error->message);
+		pk_backend_job_error_code (job, code, "%s", error->message);
 		return;
 	}
 
@@ -188,7 +188,7 @@ pk_backend_error (PkBackend *self, GError *error)
 			break;
 	}
 
-	pk_backend_job_error_code (self, code, "%s", error->message);
+	pk_backend_job_error_code (job, code, "%s", error->message);
 }
 
 GQuark

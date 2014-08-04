@@ -38,11 +38,13 @@ extern alpm_list_t *syncfirsts;
 gint		 pk_backend_fetchcb	(const gchar *url, const gchar *path,
 					 gint force);
 
-void		 pk_backend_run		(PkBackend *self, PkStatusEnum status,
-					 PkBackendThreadFunc func);
+void		 pkalpm_backend_run		(PkBackendJob *job, PkStatusEnum status,
+									 PkBackendJobThreadFunc func, gpointer data);
 
-void		 pk_backend_cancel	(PkBackend *self);
+void		pk_backend_cancel (PkBackend *self, PkBackendJob *job);
 
-gboolean	 pk_backend_cancelled	(PkBackend *self);
+gboolean	pk_backend_cancelled	(PkBackendJob* job);
 
-gboolean	 pk_backend_finish	(PkBackend *self, GError *error);
+gboolean	pk_backend_finish	(PkBackendJob *job, GError *error);
+
+void		pk_backend_start_job(PkBackend *backend, PkBackendJob *job);

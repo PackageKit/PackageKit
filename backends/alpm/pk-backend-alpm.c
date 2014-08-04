@@ -24,7 +24,9 @@
 #include <config.h>
 #include <locale.h>
 #include <glib/gstdio.h>
+#include <glib/gthread.h>
 #include <sys/utsname.h>
+#include <pk-backend.h>
 #include <pk-backend-spawn.h>
 
 #include "pk-backend-alpm.h"
@@ -36,7 +38,8 @@
 
 PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;
-static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+static GMutex mutex;
+static gboolean envInitialized = FALSE;
 
 alpm_handle_t *alpm = NULL;
 alpm_db_t *localdb = NULL;
@@ -187,7 +190,7 @@ pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 
 		case ALPM_LOG_WARNING:
 			g_warning ("%s", output);
-			pk_backend_output (backend, output);
+			pkalpm_backend_output (output);
 			break;
 
 		default:
@@ -199,12 +202,12 @@ pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 }
 
 static void
-pk_backend_configure_environment (PkBackend *self)
+pk_backend_configure_environment (PkBackendJob *job)
 {
 	struct utsname un;
 	gchar *value;
 
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 
 	/* PATH might have been nuked by D-Bus */
 	g_setenv ("PATH", PK_BACKEND_DEFAULT_PATH, FALSE);
@@ -216,13 +219,13 @@ pk_backend_configure_environment (PkBackend *self)
 	g_setenv ("HTTP_USER_AGENT", value, FALSE);
 	g_free (value);
 
-	value = pk_backend_get_locale (self);
+    value = pk_backend_job_get_locale (job);
 	if (value != NULL) {
 		setlocale (LC_ALL, value);
 		g_free (value);
 	}
 
-	value = pk_backend_get_proxy_http (self);
+	value = pk_backend_job_get_proxy_http (job);
 	if (value != NULL) {
 		gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("http_proxy", uri, TRUE);
@@ -230,7 +233,7 @@ pk_backend_configure_environment (PkBackend *self)
 		g_free (value);
 	}
 
-	value = pk_backend_get_proxy_https (self);
+	value = pk_backend_job_get_proxy_https (job);
 	if (value != NULL) {
 		gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("https_proxy", uri, TRUE);
@@ -238,7 +241,7 @@ pk_backend_configure_environment (PkBackend *self)
 		g_free (value);
 	}
 
-	value = pk_backend_get_proxy_ftp (self);
+	value = pk_backend_job_get_proxy_ftp (job);
 	if (value != NULL) {
 		gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("ftp_proxy", uri, TRUE);
@@ -246,7 +249,7 @@ pk_backend_configure_environment (PkBackend *self)
 		g_free (value);
 	}
 
-	value = pk_backend_get_proxy_socks (self);
+	value = pk_backend_job_get_proxy_socks (job);
 	if (value != NULL) {
 		gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("socks_proxy", uri, TRUE);
@@ -254,13 +257,13 @@ pk_backend_configure_environment (PkBackend *self)
 		g_free (value);
 	}
 
-	value = pk_backend_get_no_proxy (self);
+	value = pk_backend_job_get_no_proxy (job);
 	if (value != NULL) {
 		g_setenv ("no_proxy", value, TRUE);
 		g_free (value);
 	}
 
-	value = pk_backend_get_pac (self);
+	value = pk_backend_job_get_pac (job);
 	if (value != NULL) {
 		gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("pac", uri, TRUE);
@@ -273,8 +276,6 @@ static gboolean
 pk_backend_initialize_alpm (PkBackend *self, GError **error)
 {
 	g_return_val_if_fail (self != NULL, FALSE);
-
-	pk_backend_configure_environment (self);
 
 	alpm = pk_backend_configure (PK_BACKEND_CONFIG_FILE, error);
 	if (alpm == NULL) {
@@ -295,10 +296,8 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 }
 
 static void
-pk_backend_destroy_alpm (PkBackend *self)
+pk_backend_destroy_alpm ()
 {
-	g_return_if_fail (self != NULL);
-
 	if (alpm != NULL) {
 		if (alpm_trans_get_flags (alpm) < 0) {
 			alpm_trans_release (alpm);
@@ -323,8 +322,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *self)
 	g_return_if_fail (self != NULL);
 
 	if (!pk_backend_initialize_alpm (self, &error) ||
-	    !pk_backend_initialize_databases (self, &error) ||
-	    !pk_backend_initialize_groups (self, &error)) {
+	    !pkalpm_backend_initialize_databases (&error) ||
+	    !pkalpm_backend_initialize_groups (self, &error)) {
 		g_error ("%s", error->message);
 		g_error_free (error);
 	}
@@ -335,9 +334,9 @@ pk_backend_destroy (PkBackend *self)
 {
 	g_return_if_fail (self != NULL);
 
-	pk_backend_destroy_groups (self);
-	pk_backend_destroy_databases (self);
-	pk_backend_destroy_alpm (self);
+	pkalpm_backend_destroy_groups (self);
+	pkalpm_backend_destroy_databases (self);
+	pk_backend_destroy_alpm ();
 }
 
 PkBitfield
@@ -360,12 +359,12 @@ pk_backend_get_mime_types (PkBackend *self)
 }
 
 void
-pk_backend_run (PkBackend *self, PkStatusEnum status, PkBackendThreadFunc func)
+pkalpm_backend_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func, gpointer data)
 {
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 	g_return_if_fail (func != NULL);
 
-	g_static_mutex_lock (&mutex);
+	g_mutex_lock (&mutex);
 
 	if (cancellable != NULL) {
 		g_warning ("cancellable was not NULL");
@@ -373,55 +372,55 @@ pk_backend_run (PkBackend *self, PkStatusEnum status, PkBackendThreadFunc func)
 	}
 	cancellable = g_cancellable_new ();
 
-	g_static_mutex_unlock (&mutex);
+	g_mutex_unlock (&mutex);
 
-	pk_backend_job_set_allow_cancel (self, TRUE);
+	pk_backend_job_set_allow_cancel (job, TRUE);
 
-	pk_backend_job_set_status (self, status);
-	pk_backend_job_thread_create (self, func);
+	pk_backend_job_set_status (job, status);
+	pk_backend_job_thread_create (job, func, data, NULL);
 }
 
 void
-pk_backend_cancel (PkBackend *self)
+pk_backend_cancel (PkBackend *self, PkBackendJob *job)
 {
 	g_return_if_fail (self != NULL);
 
-	g_static_mutex_lock (&mutex);
+    g_mutex_lock (&mutex);
 
 	if (cancellable != NULL) {
 		g_cancellable_cancel (cancellable);
 	}
 
-	g_static_mutex_unlock (&mutex);
+	g_mutex_unlock (&mutex);
 }
 
 gboolean
-pk_backend_cancelled (PkBackend *self)
+pk_backend_cancelled (PkBackendJob *job)
 {
 	gboolean cancelled;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (cancellable != NULL, FALSE);
 
-	g_static_mutex_lock (&mutex);
+    g_mutex_lock (&mutex);
 
 	cancelled = g_cancellable_is_cancelled (cancellable);
 
-	g_static_mutex_unlock (&mutex);
+    g_mutex_unlock (&mutex);
 
 	return cancelled;
 }
 
 gboolean
-pk_backend_finish (PkBackend *self, GError *error)
+pk_backend_finish (PkBackendJob *job, GError *error)
 {
 	gboolean cancelled = FALSE;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 
-	pk_backend_job_set_allow_cancel (self, FALSE);
+	pk_backend_job_set_allow_cancel (job, FALSE);
 
-	g_static_mutex_lock (&mutex);
+	g_mutex_lock (&mutex);
 
 	if (cancellable != NULL) {
 		cancelled = g_cancellable_is_cancelled (cancellable);
@@ -429,25 +428,25 @@ pk_backend_finish (PkBackend *self, GError *error)
 		cancellable = NULL;
 	}
 
-	g_static_mutex_unlock (&mutex);
+	g_mutex_unlock (&mutex);
 
 	if (error != NULL) {
-		pk_backend_error (self, error);
+		pk_backend_error (job, error);
 		g_error_free (error);
 	}
 
 	if (cancelled) {
-		pk_backend_job_set_status (self, PK_STATUS_ENUM_CANCEL);
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_CANCEL);
 	}
 
-	pk_backend_job_finished (self);
+	pk_backend_job_finished (job);
 	return (error == NULL);
 }
 
-void
-pk_backend_transaction_start (PkBackend *self)
+void pk_backend_start_job(PkBackend* self, PkBackendJob* job)
 {
-	g_return_if_fail (self != NULL);
-
-	pk_backend_configure_environment (self);
+	if (!envInitialized) {
+		pk_backend_configure_environment (job);
+		envInitialized = TRUE; //we only need to do it once
+	}
 }

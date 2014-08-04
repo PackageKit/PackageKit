@@ -54,13 +54,9 @@ alpm_add_file (const gchar *filename)
 }
 
 static gboolean
-pk_backend_transaction_add_targets (PkBackend *self, GError **error)
+pk_backend_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **error)
 {
-	gchar **paths;
-
-	g_return_val_if_fail (self != NULL, FALSE);
-
-	paths = pk_backend_get_strv (self, "full_paths");
+	g_return_val_if_fail (job != NULL, FALSE);
 
 	g_return_val_if_fail (paths != NULL, FALSE);
 
@@ -76,70 +72,51 @@ pk_backend_transaction_add_targets (PkBackend *self, GError **error)
 	return TRUE;
 }
 
-static gboolean
-pk_backend_simulate_install_files_thread (PkBackend *self)
-{
-	GError *error = NULL;
-
-	g_return_val_if_fail (self != NULL, FALSE);
-
-	if (pk_backend_transaction_initialize (self, 0, &error) &&
-	    pk_backend_transaction_add_targets (self, &error) &&
-	    pk_backend_transaction_simulate (self, &error)) {
-		pk_backend_transaction_packages (self);
-	}
-
-	return pk_backend_transaction_finish (self, error);
-}
-
-static gboolean
-pk_backend_install_files_thread (PkBackend *self)
+static void
+pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gboolean only_trusted;
 	GError *error = NULL;
+	gchar** full_paths;
+	PkBitfield flags;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 
-	only_trusted = pk_backend_get_bool (self, "only_trusted");
+	g_variant_get(params, "(t^a&s)",
+				  &flags,
+				  &full_paths);
+	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pk_backend_disable_signatures (self, &error)) {
+	if (!only_trusted && !pkalpm_backend_disable_signatures (&error)) {
 		goto out;
 	}
 
-	if (pk_backend_transaction_initialize (self, 0, &error) &&
-	    pk_backend_transaction_add_targets (self, &error) &&
-	    pk_backend_transaction_simulate (self, &error)) {
-		pk_backend_transaction_commit (self, &error);
+	if (pk_backend_transaction_initialize (job, 0, 0, &error) &&
+	    pk_backend_transaction_add_targets (job, full_paths, &error) &&
+	    pk_backend_transaction_simulate (&error)) {
+		pk_backend_transaction_commit (job, &error);
 	}
 
 out:
-	pk_backend_transaction_end (self, (error == NULL) ? &error : NULL);
+	pk_backend_transaction_end (job, (error == NULL) ? &error : NULL);
 
 	if (!only_trusted) {
 		GError **e = (error == NULL) ? &error : NULL;
-		pk_backend_enable_signatures (self, e);
+		pkalpm_backend_enable_signatures (e);
 	}
 
-	return pk_backend_finish (self, error);
+	pk_backend_finish (job, error);
 }
 
 void
-pk_backend_simulate_install_files (PkBackend *self, gchar **paths)
-{
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (paths != NULL);
-
-	pk_backend_run (self, PK_STATUS_ENUM_SETUP,
-			pk_backend_simulate_install_files_thread);
-}
-
-void
-pk_backend_install_files (PkBackend *self, gboolean only_trusted,
-			  gchar **full_paths)
+pk_backend_install_files (PkBackend *self,
+                          PkBackendJob   *job,
+                          PkBitfield  transaction_flags,
+                          gchar      **full_paths)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (full_paths != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_SETUP,
-			pk_backend_install_files_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP,
+			pk_backend_install_files_thread, NULL);
 }

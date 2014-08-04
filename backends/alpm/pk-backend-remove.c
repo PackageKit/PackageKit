@@ -30,16 +30,11 @@
 #include "pk-backend-transaction.h"
 
 static gboolean
-pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
+pk_backend_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError **error)
 {
-	gchar **packages;
-
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
-
-	packages = pk_backend_get_strv (self, "package_ids");
-
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
@@ -62,14 +57,13 @@ pk_backend_transaction_remove_targets (PkBackend *self, GError **error)
 }
 
 static gboolean
-pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
+pk_backend_transaction_remove_simulate (GError **error)
 {
 	const alpm_list_t *i;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	if (!pk_backend_transaction_simulate (self, error)) {
+	if (!pk_backend_transaction_simulate (error)) {
 		return FALSE;
 	}
 
@@ -86,72 +80,51 @@ pk_backend_transaction_remove_simulate (PkBackend *self, GError **error)
 	return TRUE;
 }
 
-static gboolean
-pk_backend_simulate_remove_packages_thread (PkBackend *self)
-{
-	alpm_transflag_t flags = ALPM_TRANS_FLAG_CASCADE;
-	GError *error = NULL;
-
-	g_return_val_if_fail (self != NULL, FALSE);
-
-	/* remove unneeded packages that were required by those to be removed */
-	if (pk_backend_get_bool (self, "autoremove")) {
-		flags |= ALPM_TRANS_FLAG_RECURSE;
-	}
-
-	if (pk_backend_transaction_initialize (self, flags, &error) &&
-	    pk_backend_transaction_remove_targets (self, &error) &&
-	    pk_backend_transaction_remove_simulate (self, &error)) {
-		pk_backend_transaction_packages (self);
-	}
-
-	return pk_backend_transaction_finish (self, error);
-}
-
-static gboolean
-pk_backend_remove_packages_thread (PkBackend *self)
+static void
+pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	alpm_transflag_t flags = 0;
 	GError *error = NULL;
+	gboolean allow_deps, autoremove;
+	gchar** package_ids;
+	PkBitfield  transaction_flags;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
+	g_variant_get(params, "(t^a&sbb)",
+					&transaction_flags,
+					&package_ids,
+					&allow_deps,
+					&autoremove);
 
 	/* remove packages that depend on those to be removed */
-	if (pk_backend_get_bool (self, "allow_deps")) {
+	if (allow_deps) {
 		flags |= ALPM_TRANS_FLAG_CASCADE;
 	}
 	/* remove unneeded packages that were required by those to be removed */
-	if (pk_backend_get_bool (self, "autoremove")) {
+	if (autoremove) {
 		flags |= ALPM_TRANS_FLAG_RECURSE;
 	}
 
-	if (pk_backend_transaction_initialize (self, flags, &error) &&
-	    pk_backend_transaction_remove_targets (self, &error) &&
-	    pk_backend_transaction_remove_simulate (self, &error)) {
-		pk_backend_transaction_commit (self, &error);
+	if (pk_backend_transaction_initialize (job, flags, NULL, &error) &&
+		pk_backend_transaction_remove_targets (job, package_ids, &error) &&
+		pk_backend_transaction_remove_simulate (&error)) {
+		pk_backend_transaction_commit (job, &error);
 	}
 
-	return pk_backend_transaction_finish (self, error);
+	pk_backend_transaction_finish (job, error);
 }
 
 void
-pk_backend_simulate_remove_packages (PkBackend *self, gchar **package_ids,
-				     gboolean autoremove)
+pk_backend_remove_packages (PkBackend   *self,
+                            PkBackendJob   *job,
+                            PkBitfield  transaction_flags,
+                            gchar      **package_ids,
+                            gboolean    allow_deps,
+                            gboolean    autoremove)
 {
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (package_ids != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_SETUP,
-			pk_backend_simulate_remove_packages_thread);
-}
-
-void
-pk_backend_remove_packages (PkBackend *self, gchar **package_ids,
-			    gboolean allow_deps, gboolean autoremove)
-{
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (package_ids != NULL);
-
-	pk_backend_run (self, PK_STATUS_ENUM_SETUP,
-			pk_backend_remove_packages_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP,
+			pk_backend_remove_packages_thread, NULL);
 }

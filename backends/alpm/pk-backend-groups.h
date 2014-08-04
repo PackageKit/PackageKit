@@ -24,9 +24,9 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gboolean	 pk_backend_initialize_groups	(PkBackend *self,
+gboolean	 pkalpm_backend_initialize_groups	(PkBackend *self,
 						 GError **error);
 
-void		 pk_backend_destroy_groups	(PkBackend *self);
+void		 pkalpm_backend_destroy_groups	(PkBackend *self);
 
 const gchar	*alpm_pkg_get_group		(alpm_pkg_t *pkg);

@@ -144,16 +144,16 @@ alpm_time_to_iso8601 (alpm_time_t time)
 	}
 }
 
-static gboolean
-pk_backend_get_update_detail_thread (PkBackend *self)
+static void
+pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
-	packages = pk_backend_get_strv (self, "package_ids");
+	packages = (gchar**) p;
 
 	g_return_val_if_fail (packages != NULL, FALSE);
 
@@ -171,11 +171,11 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 		alpm_time_t built, installed;
 		gchar *issued, *updated;
 
-		if (pk_backend_cancelled (self)) {
+		if (pk_backend_cancelled (job)) {
 			break;
 		}
 
-		pkg = pk_backend_find_pkg (self, *packages, &error);
+		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
 		if (pkg == NULL) {
 			break;
 		}
@@ -227,8 +227,8 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 			updated = NULL;
 		}
 
-		pk_backend_job_update_detail (self, *packages, upgrades,
-					      replaces, urls, NULL, NULL,
+		pk_backend_job_update_detail (job, *packages, &upgrades,
+					      &replaces, &urls, NULL, NULL,
 					      restart, reason, NULL, state,
 					      issued, updated);
 
@@ -240,34 +240,37 @@ pk_backend_get_update_detail_thread (PkBackend *self)
 		g_free (upgrades);
 	}
 
-	return pk_backend_finish (self, error);
+	pk_backend_finish (job, error);
 }
 
 void
-pk_backend_get_update_detail (PkBackend *self, gchar **package_ids)
+pk_backend_get_update_detail (PkBackend * self,
+                              PkBackendJob   *job,
+                              gchar      **package_ids)
 {
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 	g_return_if_fail (package_ids != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_update_detail_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY,
+			pk_backend_get_update_detail_thread, package_ids);
 }
 
 static gboolean
-pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
+pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
+{
 	alpm_cb_download dlcb;
 	alpm_cb_totaldl totaldlcb;
 	const alpm_list_t *i;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	if (!pk_backend_transaction_initialize (self, 0, error)) {
+	if (!pk_backend_transaction_initialize (job, 0, NULL, error)) {
 		return FALSE;
 	}
 
 	alpm_logaction (alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
-	pk_backend_set_status (self, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
 	dlcb = alpm_option_get_dlcb (alpm);
 	totaldlcb = alpm_option_get_totaldlcb (alpm);
@@ -279,7 +282,7 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 	for (; i != NULL; i = i->next) {
 		gint result;
 
-		if (pk_backend_cancelled (self)) {
+		if (pk_backend_cancelled (job)) {
 			/* pretend to be finished */
 			i = NULL;
 			break;
@@ -302,9 +305,9 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 	totaldlcb (0);
 
 	if (i == NULL) {
-		return pk_backend_transaction_end (self, error);
+		return pk_backend_transaction_end (job, error);
 	} else {
-		pk_backend_transaction_end (self, NULL);
+		pk_backend_transaction_end (job, NULL);
 		return FALSE;
 	}
 }
@@ -387,14 +390,14 @@ alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 	return NULL;
 }
 
-static gboolean
-pk_backend_get_updates_thread (PkBackend *self)
+static void
+pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	struct stat cache;
 	time_t one_hour_ago;
 	const alpm_list_t *i, *syncdbs;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (alpm != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
@@ -406,7 +409,7 @@ pk_backend_get_updates_thread (PkBackend *self)
 	    cache.st_mtime < one_hour_ago) {
 		GError *error = NULL;
 		/* show updates even if the databases could not be updated */
-		if (!pk_backend_update_databases (self, 0, &error)) {
+        if (!pk_backend_update_databases (job, 0, &error)) {
 			g_warning ("%s", error->message);
 		}
 	} else {
@@ -418,7 +421,7 @@ pk_backend_get_updates_thread (PkBackend *self)
 	for (i = alpm_db_get_pkgcache (localdb); i != NULL; i = i->next) {
 		alpm_pkg_t *upgrade = alpm_pkg_find_update (i->data, syncdbs);
 
-		if (pk_backend_cancelled (self)) {
+        if (pk_backend_cancelled (job)) {
 			break;
 		} else if (upgrade != NULL) {
 			PkInfoEnum info;
@@ -431,42 +434,44 @@ pk_backend_get_updates_thread (PkBackend *self)
 				info = PK_INFO_ENUM_NORMAL;
 			}
 
-			pk_backend_pkg (self, upgrade, info);
+			pkalpm_backend_pkg (job, upgrade, info);
 		}
 	}
 
-	return pk_backend_finish (self, NULL);
+	pk_backend_finish (job, NULL);
 }
 
 void
-pk_backend_get_updates (PkBackend *self, PkBitfield filters)
+pk_backend_get_updates (PkBackend   *self,
+                        PkBackendJob   *job,
+                        PkBitfield  filters)
 {
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_QUERY,
-			pk_backend_get_updates_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_updates_thread, NULL);
 }
 
-static gboolean
-pk_backend_refresh_cache_thread (PkBackend *self)
+static void
+pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gint force;
 	GError *error = NULL;
 
-	g_return_val_if_fail (self != NULL, FALSE);
+    g_return_val_if_fail (job != NULL, FALSE);
 
 	/* download databases even if they are older than current */
-	force = (gint) pk_backend_get_bool (self, "force");
+    g_variant_get (params, "(b)", &force);
 
-	pk_backend_update_databases (self, force, &error);
-	return pk_backend_finish (self, error);
+    pk_backend_update_databases (job, force, &error);
+    pk_backend_finish (job, error);
 }
 
 void
-pk_backend_refresh_cache (PkBackend *self, gboolean force)
+pk_backend_refresh_cache (PkBackend *self,
+                          PkBackendJob   *job,
+                          gboolean    force)
 {
-	g_return_if_fail (self != NULL);
+	g_return_if_fail (job != NULL);
 
-	pk_backend_run (self, PK_STATUS_ENUM_SETUP,
-			pk_backend_refresh_cache_thread);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP, pk_backend_refresh_cache_thread, NULL);
 }

@@ -26,9 +26,8 @@
 
 gchar		*alpm_pkg_build_id	(alpm_pkg_t *pkg);
 
-void		 pk_backend_pkg		(PkBackend *self, alpm_pkg_t *pkg,
-					 PkInfoEnum info);
+void		 pkalpm_backend_pkg (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info);
 
-alpm_pkg_t	*pk_backend_find_pkg	(PkBackend *self,
+alpm_pkg_t	*pkalpm_backend_find_pkg (PkBackendJob *job,
 					 const gchar *package_id,
 					 GError **error);
