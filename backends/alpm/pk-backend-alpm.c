@@ -411,6 +411,15 @@ pk_backend_cancelled (PkBackendJob *job)
 	return cancelled;
 }
 
+void
+pk_backend_finish_error(PkBackendJob* job, const gchar* errormsg)
+{
+	pk_backend_job_error_code(job,
+							  PK_ERROR_ENUM_NOT_SUPPORTED,
+							  "%s", errormsg);
+	pk_backend_finish(job, 0);
+}
+
 gboolean
 pk_backend_finish (PkBackendJob *job, GError *error)
 {

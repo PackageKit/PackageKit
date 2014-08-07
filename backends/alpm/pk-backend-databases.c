@@ -258,9 +258,9 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 	GHashTableIter iter;
 	gpointer key, value;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (disabled != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
+	pkalpm_end_job_if_fail (disabled != NULL, job);
 
 	/* emit enabled repos */
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
@@ -308,12 +308,12 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer dat
 
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (disabled != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (disabled != NULL, job);
 
 	g_variant_get (params, "(&sb)", &repo, &enabled);
 
-	g_return_val_if_fail (repo != NULL, FALSE);
+	pkalpm_end_job_if_fail (repo != NULL, job);
 
 	if (g_hash_table_remove (disabled, repo)) {
 		/* reload configuration to preserve ordering */

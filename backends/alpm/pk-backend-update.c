@@ -150,12 +150,12 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (localdb != NULL, job);
 
 	packages = (gchar**) p;
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	pkalpm_end_job_if_fail (packages != NULL, job);
 
 	/* collect details about updates */
 	for (; *packages != NULL; ++packages) {
@@ -397,9 +397,9 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	time_t one_hour_ago;
 	const alpm_list_t *i, *syncdbs;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
+	pkalpm_end_job_if_fail (localdb != NULL, job);
 
 	time (&one_hour_ago);
 	one_hour_ago -= 60 * 60;
@@ -457,7 +457,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p
 	gint force;
 	GError *error = NULL;
 
-    g_return_val_if_fail (job != NULL, FALSE);
+	g_assert (job != NULL);
 
 	/* download databases even if they are older than current */
     g_variant_get (params, "(b)", &force);

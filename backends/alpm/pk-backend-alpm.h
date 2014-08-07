@@ -35,6 +35,13 @@ extern gchar *xfercmd;
 extern alpm_list_t *holdpkgs;
 extern alpm_list_t *syncfirsts;
 
+#define pkalpm_end_job_if_fail(expr, job)		G_STMT_START{			\
+	if G_LIKELY(expr) { } else       					\
+	{								\
+		pk_backend_finish_error (job, "ASSERT: condition failed: " #expr);\
+		return;							\
+	};}G_STMT_END
+
 gint		 pk_backend_fetchcb	(const gchar *url, const gchar *path,
 					 gint force);
 
@@ -46,5 +53,7 @@ void		pk_backend_cancel (PkBackend *self, PkBackendJob *job);
 gboolean	pk_backend_cancelled	(PkBackendJob* job);
 
 gboolean	pk_backend_finish	(PkBackendJob *job, GError *error);
+
+void		pk_backend_finish_error	(PkBackendJob *job, const gchar* errormsg);
 
 void		pk_backend_start_job(PkBackend *backend, PkBackendJob *job);

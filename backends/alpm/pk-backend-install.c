@@ -80,7 +80,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	gchar** full_paths;
 	PkBitfield flags;
 
-	g_return_val_if_fail (job != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
 
 	g_variant_get(params, "(t^a&s)",
 				  &flags,

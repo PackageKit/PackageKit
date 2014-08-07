@@ -196,13 +196,13 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	GError *error = NULL;
 	PkBitfield filters;
 
-	g_return_val_if_fail (job != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
 
 	g_variant_get(params, "(t^a&s)",
 				  &filters,
 				  &search);
 
-	g_return_val_if_fail (search != NULL, FALSE);
+	pkalpm_end_job_if_fail (search != NULL, job);
 
 	for (; *search != NULL; ++search) {
 		if (pk_backend_cancelled (job)) {
@@ -242,12 +242,12 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (localdb != NULL, job);
 
 	packages = (gchar**) p;
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	pkalpm_end_job_if_fail (packages != NULL, job);
 
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;
@@ -316,12 +316,12 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	gchar **packages;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
 
 	packages = (gchar**) p;
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	pkalpm_end_job_if_fail (packages != NULL, job);
 
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;

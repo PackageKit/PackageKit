@@ -89,7 +89,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer
 	gchar** package_ids;
 	PkBitfield  transaction_flags;
 
-	g_return_val_if_fail (job != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
 	g_variant_get(params, "(t^a&sbb)",
 					&transaction_flags,
 					&package_ids,

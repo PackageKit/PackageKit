@@ -142,15 +142,15 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	PkBitfield filters;
 	gboolean recursive;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (p != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (p != NULL, job);
 
 	g_variant_get(params, "(t^a&sb)",
 					&filters,
 					&packages,
 					&recursive);
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	pkalpm_end_job_if_fail (packages != NULL, job);
 
 	/* construct an initial package list */
 	for (; *packages != NULL; ++packages) {
@@ -203,14 +203,14 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	gboolean recursive;
 	PkBitfield filters;
 
-	g_return_val_if_fail (job != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
 
 	g_variant_get(params, "(t^a&sb)",
 				  &filters,
 				  &packages,
 				  &recursive);
 
-	g_return_val_if_fail (packages != NULL, FALSE);
+	pkalpm_end_job_if_fail (packages != NULL, job);
 
 	/* construct an initial package list */
 	for (; *packages != NULL; ++packages) {

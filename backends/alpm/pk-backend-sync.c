@@ -84,8 +84,8 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 	alpm_transflag_t flags = 0;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
 
 	g_variant_get(params, "(^a&ss)",
 				  &package_ids,
@@ -141,7 +141,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant* params, gpointe
 	const gchar **package_ids;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
 
 	g_variant_get(params, "(t^a&s)",
 				  &transaction_flags,
@@ -186,9 +186,9 @@ pk_backend_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 {
 	const alpm_list_t *i, *replaces;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (pkg != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (pkg != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
 
 	replaces = alpm_pkg_get_replaces (pkg);
 	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
@@ -219,9 +219,9 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 	const gchar** package_ids;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
+	pkalpm_end_job_if_fail (localdb != NULL, job);
 
 	g_variant_get(params, "(t^a&s)",
 				  &flags,

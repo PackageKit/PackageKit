@@ -333,10 +333,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	alpm_list_t *patterns = NULL;
 	GError *error = NULL;
 
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
-	g_return_val_if_fail (p == NULL, FALSE);
+	pkalpm_end_job_if_fail (job != NULL, job);
+	pkalpm_end_job_if_fail (alpm != NULL, job);
+	pkalpm_end_job_if_fail (localdb != NULL, job);
+	pkalpm_end_job_if_fail (p == NULL, job);
 
 	role = pk_backend_job_get_role(job);
 	switch(role) {
@@ -376,15 +376,14 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 			break;
 	}
 
-	g_return_val_if_fail (needles != NULL, FALSE);
-	g_return_val_if_fail (type < SEARCH_TYPE_LAST, FALSE);
+	pkalpm_end_job_if_fail (type < SEARCH_TYPE_LAST, job);
 
 	pattern_func = pattern_funcs[type];
 	pattern_free = pattern_frees[type];
 	match_func = match_funcs[type];
 
-	g_return_val_if_fail (pattern_func != NULL, FALSE);
-	g_return_val_if_fail (match_func != NULL, FALSE);
+	pkalpm_end_job_if_fail (pattern_func != NULL, job);
+	pkalpm_end_job_if_fail (match_func != NULL, job);
 
 	skip_local = pk_bitfield_contain (filters,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
