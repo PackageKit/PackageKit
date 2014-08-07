@@ -126,7 +126,7 @@ pk_transaction_db_add_transaction_cb (void *data,
 				g_object_set (item, "duration", temp, NULL);
 			}
 		} else {
-			g_warning ("%s = %s\n", col, value);
+			g_warning ("%s = %s", col, value);
 		}
 	}
 
@@ -150,7 +150,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 
 	rc = sqlite3_exec (tdb->priv->db, sql, NULL, tdb, &error_msg);
 	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -175,7 +175,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		if (g_strcmp0 (col, "timespec") == 0)
 			*timespec = g_strdup (value);
 		else
-			g_warning ("%s = %s\n", col, value);
+			g_warning ("%s = %s", col, value);
 	}
 	return 0;
 }
@@ -232,7 +232,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	rc = sqlite3_exec (tdb->priv->db, statement, pk_time_action_sqlite_callback, &timespec, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
 		return G_MAXUINT;
 	}
@@ -279,7 +279,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 
 	/* did we fail? */
 	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
 		ret = FALSE;
 		goto out;
@@ -316,7 +316,7 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 			   &list,
 			   &error_msg);
 	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
@@ -529,7 +529,7 @@ pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 				     tdb->priv->job_count);
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
-		g_warning ("failed to set job id: %s\n", error_msg);
+		g_warning ("failed to set job id: %s", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
@@ -602,7 +602,7 @@ pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col
 			item->pac = g_strdup (argv[i]);
 			item->set = TRUE;
 		} else {
-			g_warning ("%s = %s\n", col_name[i], argv[i]);
+			g_warning ("%s = %s", col_name[i], argv[i]);
 		}
 	}
 	return 0;
@@ -664,7 +664,7 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 			   item,
 			   &error_msg);
 	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
@@ -864,7 +864,7 @@ pk_transaction_db_execute (PkTransactionDb *tdb,
 		ret = FALSE;
 		g_set_error (error,
 			     1, 0,
-			     "Failed to execute statement '%s': %s\n",
+			     "Failed to execute statement '%s': %s",
 			     statement,
 			     sqlite3_errmsg (tdb->priv->db));
 	}
@@ -897,7 +897,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 		ret = FALSE;
 		g_set_error (error,
 			     1, 0,
-			     "Can't open transaction database: %s\n",
+			     "Can't open transaction database: %s",
 			     sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
 		goto out;
@@ -963,7 +963,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 		if (rc != SQLITE_OK) {
 			ret = FALSE;
 			g_set_error (error, 1, 0,
-				     "failed to get job id: %s\n", error_msg);
+				     "failed to get job id: %s", error_msg);
 			sqlite3_free (error_msg);
 			goto out;
 		}
