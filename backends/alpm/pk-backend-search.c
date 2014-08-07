@@ -318,7 +318,7 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 static void
 pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
-	gchar **needles;
+	gchar **needles = NULL;
 	SearchType type;
 
 	PatternFunc pattern_func;
@@ -363,6 +363,12 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		case PK_ROLE_ENUM_WHAT_PROVIDES:
 			type = SEARCH_TYPE_PROVIDES;
 			g_variant_get(params, "(t^a&s)", &filters, &needles);
+			break;
+		case PK_ROLE_ENUM_SEARCH_DETAILS:
+			type = SEARCH_TYPE_DETAILS;
+			g_variant_get(params, "(t^a&s)",
+						  &filters,
+						  &needles);
 			break;
 		default:
 			type = 0;
