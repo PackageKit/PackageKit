@@ -628,30 +628,31 @@ hif_utils_run_query_with_newest_filter (HySack sack, HyQuery query)
 	HyPackageList results_tmp;
 	HyPackageSet pkgset;
 	HyPackage pkg;
+	HyQuery query_tmp;
 	guint i;
 
 	/* Run the prepared query */
 	pkgset = hy_query_run_set (query);
 
 	/* Filter latest system packages */
-	query = hy_query_create (sack);
-	hy_query_filter_package_in (query, HY_PKG, HY_EQ, pkgset);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter_latest_per_arch (query, TRUE);
-	results = hy_query_run (query);
-	hy_query_free (query);
+	query_tmp = hy_query_create (sack);
+	hy_query_filter_package_in (query_tmp, HY_PKG, HY_EQ, pkgset);
+	hy_query_filter (query_tmp, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_latest_per_arch (query_tmp, TRUE);
+	results = hy_query_run (query_tmp);
+	hy_query_free (query_tmp);
 
 	/* Filter latest available packages */
-	query = hy_query_create (sack);
-	hy_query_filter_package_in (query, HY_PKG, HY_EQ, pkgset);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter_latest_per_arch (query, TRUE);
-	results_tmp = hy_query_run (query);
+	query_tmp = hy_query_create (sack);
+	hy_query_filter_package_in (query_tmp, HY_PKG, HY_EQ, pkgset);
+	hy_query_filter (query_tmp, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_latest_per_arch (query_tmp, TRUE);
+	results_tmp = hy_query_run (query_tmp);
 	/* ... and add to the previous results */
 	FOR_PACKAGELIST(pkg, results_tmp, i) {
 		hy_packagelist_push (results, hy_package_link (pkg));
 	}
-	hy_query_free (query);
+	hy_query_free (query_tmp);
 	hy_packagelist_free (results_tmp);
 
 	hy_packageset_free (pkgset);
