@@ -346,7 +346,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 			break;
 		case PK_ROLE_ENUM_GET_DETAILS:
 			type = SEARCH_TYPE_DETAILS;
-// 			g_variant_get(params, "(^a&s)", &package_ids);
+			g_variant_get(params, "(^a&s)", &needles);
 			break;
 		case PK_ROLE_ENUM_SEARCH_FILE:
 			type = SEARCH_TYPE_FILES;
@@ -390,14 +390,16 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
 	/* convert search terms to the pattern requested */
-	for (; *needles != NULL; ++needles) {
-		gpointer pattern = pattern_func (*needles, &error);
+	if (needles) {
+		for (; *needles != NULL; ++needles) {
+			gpointer pattern = pattern_func (*needles, &error);
 
-		if (pattern == NULL) {
-			goto out;
+			if (pattern == NULL) {
+				goto out;
+			}
+
+			patterns = alpm_list_add (patterns, pattern);
 		}
-
-		patterns = alpm_list_add (patterns, pattern);
 	}
 
 	/* find installed packages first */
