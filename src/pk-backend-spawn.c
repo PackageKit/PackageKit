@@ -42,6 +42,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-package-id.h>
 
+#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-spawn.h"
@@ -110,13 +111,10 @@ pk_backend_spawn_set_filter_stderr (PkBackendSpawn *backend_spawn, PkBackendSpaw
 static gboolean
 pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 {
-	gboolean ret;
-
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* only try to close if running */
-	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
-	if (ret) {
+	if (pk_spawn_is_running (backend_spawn->priv->spawn)) {
 		g_debug ("closing dispatcher as running and is idle");
 		pk_spawn_exit (backend_spawn->priv->spawn);
 	}
@@ -161,11 +159,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			       const gchar *line,
 			       GError **error)
 {
-	gchar **sections;
 	guint size;
 	gchar *command;
 	gchar *text;
-	gboolean ret = TRUE;
 	guint64 speed;
 	guint64 download_size_remaining;
 	PkInfoEnum info;
@@ -181,6 +177,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
+	_cleanup_strv_free_ gchar **sections = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -198,35 +195,29 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	if (g_strcmp0 (command, "package") == 0) {
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_package_id_check (sections[2]) == FALSE) {
 			g_set_error_literal (error, 1, 0, "invalid package_id");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		info = pk_info_enum_from_string (sections[1]);
 		if (info == PK_INFO_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Info enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[3], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[3], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[3]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 7 && size != 8) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		group = pk_group_enum_from_string (sections[3]);
 
@@ -234,17 +225,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		package_size = atol (sections[6]);
 		if (package_size > 1073741824) {
 			g_set_error_literal (error, 1, 0, "package size cannot be larger than one Gb");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[4], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[4], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[4]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
@@ -255,8 +243,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_finished (job);
 		priv->is_busy = FALSE;
@@ -265,29 +252,24 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		pk_backend_spawn_start_kill_timer (backend_spawn);
 
 	} else if (g_strcmp0 (command, "files") == 0) {
-		gchar **tmp;
+		_cleanup_strv_free_ gchar **tmp = NULL;
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		tmp = g_strsplit (sections[2], ";", -1);
 		pk_backend_job_files (job, sections[1], tmp);
-		g_strfreev (tmp);
 	} else if (g_strcmp0 (command, "repo-detail") == 0) {
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[2], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[2], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[2], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[2]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (g_strcmp0 (sections[3], "true") == 0) {
 			pk_backend_job_repo_detail (job, sections[1], sections[2], TRUE);
@@ -295,34 +277,29 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			pk_backend_job_repo_detail (job, sections[1], sections[2], FALSE);
 		} else {
 			g_set_error (error, 1, 0, "invalid qualifier '%s'", sections[3]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
-		gchar **updates;
-		gchar **obsoletes;
-		gchar **vendor_urls;
-		gchar **bugzilla_urls;
-		gchar **cve_urls;
+		_cleanup_strv_free_ gchar **updates = NULL;
+		_cleanup_strv_free_ gchar **obsoletes = NULL;
+		_cleanup_strv_free_ gchar **vendor_urls = NULL;
+		_cleanup_strv_free_ gchar **bugzilla_urls = NULL;
+		_cleanup_strv_free_ gchar **cve_urls = NULL;
 		if (size != 13) {
 			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		restart = pk_restart_enum_from_string (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[12], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[12], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[12], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[12]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		update_state_enum = pk_update_state_enum_from_string (sections[10]);
 		/* convert ; to \n as we can't emit them on stdout */
@@ -346,54 +323,41 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 					  update_state_enum,
 					  sections[11],
 					  sections[12]);
-		g_strfreev (updates);
-		g_strfreev (obsoletes);
-		g_strfreev (vendor_urls);
-		g_strfreev (bugzilla_urls);
-		g_strfreev (cve_urls);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
-		ret = pk_strtoint (sections[1], &percentage);
-		if (!ret) {
+		if (!pk_strtoint (sections[1], &percentage)) {
 			g_set_error (error, 1, 0, "invalid percentage value %s", sections[1]);
-			ret = FALSE;
+			return FALSE;
 		} else if (percentage < 0 || percentage > 100) {
 			g_set_error (error, 1, 0, "invalid percentage value %i", percentage);
-			ret = FALSE;
+			return FALSE;
 		} else {
 			pk_backend_job_set_percentage (job, percentage);
 		}
 	} else if (g_strcmp0 (command, "item-progress") == 0) {
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (!pk_package_id_check (sections[1])) {
 			g_set_error (error, 1, 0, "invalid package_id");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		status_enum = pk_status_enum_from_string (sections[2]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Status enum not recognised, and hence ignored: '%s'", sections[2]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
-		ret = pk_strtoint (sections[3], &percentage);
-		if (!ret) {
+		if (!pk_strtoint (sections[3], &percentage)) {
 			g_set_error (error, 1, 0, "invalid item-progress value %s", sections[3]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (percentage < 0 || percentage > 100) {
 			g_set_error (error, 1, 0, "invalid item-progress value %i", percentage);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_set_item_progress (job,
 						  sections[1],
@@ -402,14 +366,12 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	} else if (g_strcmp0 (command, "error") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		error_enum = pk_error_enum_from_string (sections[1]);
 		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Error enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		/* convert back all the ;'s to newlines */
 		text = g_strdup (sections[2]);
@@ -425,69 +387,57 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		restart_enum = pk_restart_enum_from_string (sections[1]);
 		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (!pk_package_id_check (sections[2])) {
 			g_set_error (error, 1, 0, "invalid package_id");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_require_restart (job, restart_enum, sections[2]);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		status_enum = pk_status_enum_from_string (sections[1]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Status enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_set_status (job, status_enum);
 	} else if (g_strcmp0 (command, "speed") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
-		ret = pk_strtouint64 (sections[1], &speed);
-		if (!ret) {
+		if (!pk_strtouint64 (sections[1], &speed)) {
 			g_set_error (error, 1, 0,
 				     "failed to parse speed: '%s'",
 				     sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_set_speed (job, speed);
 	} else if (g_strcmp0 (command, "download-size-remaining") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
-		ret = pk_strtouint64 (sections[1], &download_size_remaining);
-		if (!ret) {
+		if (!pk_strtouint64 (sections[1], &download_size_remaining)) {
 			g_set_error (error, 1, 0,
 				     "failed to parse download_size_remaining: '%s'",
 				     sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_set_download_size_remaining (job, download_size_remaining);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (g_strcmp0 (sections[1], "true") == 0) {
 			pk_backend_job_set_allow_cancel (job, TRUE);
@@ -495,169 +445,136 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			pk_backend_job_set_allow_cancel (job, FALSE);
 		} else {
 			g_set_error (error, 1, 0, "invalid section '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 	} else if (g_strcmp0 (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
 	} else if (g_strcmp0 (command, "repo-signature-required") == 0) {
 
 		if (size != 9) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		sig_type = pk_sig_type_enum_from_string (sections[8]);
 		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_strzero (sections[1])) {
 			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_strzero (sections[2])) {
 			g_set_error (error, 1, 0, "repository name blank, and hence ignored: '%s'", sections[2]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		/* pass _all_ of the data */
 		pk_backend_job_repo_signature_required (job, sections[1],
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
-		goto out;
-
 	} else if (g_strcmp0 (command, "eula-required") == 0) {
 
 		if (size != 5) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		if (pk_strzero (sections[1])) {
 			g_set_error (error, 1, 0, "eula_id blank, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		if (pk_strzero (sections[2])) {
 			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[2]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		if (pk_strzero (sections[4])) {
 			g_set_error (error, 1, 0, "agreement name blank, and hence ignored: '%s'", sections[4]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		pk_backend_job_eula_required (job, sections[1], sections[2], sections[3], sections[4]);
-		goto out;
-
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
 
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		media_type_enum = pk_media_type_enum_from_string (sections[1]);
 		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "media type enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		pk_backend_job_media_change_required (job, media_type_enum, sections[2], sections[3]);
-		goto out;
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		distro_upgrade_enum = pk_distro_upgrade_enum_from_string (sections[1]);
 		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
 			g_set_error (error, 1, 0, "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[3], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[3], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[3]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		pk_backend_job_distro_upgrade (job, distro_upgrade_enum, sections[2], sections[3]);
-		goto out;
 	} else if (g_strcmp0 (command, "category") == 0) {
 
 		if (size != 6) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (g_strcmp0 (sections[1], sections[2]) == 0) {
 			g_set_error_literal (error, 1, 0, "cat_id cannot be the same as parent_id");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_strzero (sections[2])) {
 			g_set_error_literal (error, 1, 0, "cat_id cannot not blank");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_strzero (sections[3])) {
 			g_set_error_literal (error, 1, 0, "name cannot not blank");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
-		ret = g_utf8_validate (sections[4], -1, NULL);
-		if (!ret) {
+		if (!g_utf8_validate (sections[4], -1, NULL)) {
 			g_set_error (error, 1, 0,
 				     "text '%s' was not valid UTF8!",
 				     sections[4]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (pk_strzero (sections[5])) {
 			g_set_error_literal (error, 1, 0, "icon cannot not blank");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (g_str_has_prefix (sections[5], "/")) {
 			g_set_error (error, 1, 0, "icon '%s' should be a named icon, not a path", sections[5]);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		pk_backend_job_category (job, sections[1], sections[2], sections[3], sections[4], sections[5]);
-		goto out;
 	} else {
-		ret = FALSE;
 		g_set_error (error, 1, 0, "invalid command '%s'", command);
+		return FALSE;
 	}
-out:
-	g_strfreev (sections);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -708,13 +625,11 @@ pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
 			      const gchar *line,
 			      GError **error)
 {
-	gboolean ret;
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* do we ignore with a filter func ? */
 	if (backend_spawn->priv->stdout_func != NULL) {
-		ret = backend_spawn->priv->stdout_func (job, line);
-		if (!ret)
+		if (!backend_spawn->priv->stdout_func (job, line))
 			return TRUE;
 	}
 
@@ -728,15 +643,13 @@ static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	ret = pk_backend_spawn_inject_data (backend_spawn,
 					    backend_spawn->priv->job,
 					    line,
 					    &error);
-	if (!ret) {
+	if (!ret)
 		g_warning ("failed to parse: %s: %s", line, error->message);
-		g_error_free (error);
-	}
 }
 
 /**
@@ -793,29 +706,27 @@ static gchar **
 pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 {
 	gchar **envp;
-	gchar **environ;
 	gchar **env_item;
-	gchar **env_item_split;
-	gchar *proxy_http;
-	gchar *proxy_https;
-	gchar *proxy_ftp;
-	gchar *proxy_socks;
-	gchar *no_proxy;
-	gchar *pac;
-	gchar *locale;
 	gchar *uri;
-	gchar *eulas;
-	gchar *transaction_id = NULL;
 	const gchar *value;
 	guint i;
 	guint cache_age;
-	GHashTable *env_table;
 	GHashTableIter env_iter;
 	gchar *env_key;
 	gchar *env_value;
 	gboolean ret;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	gboolean keep_environment;
+	_cleanup_free_ gchar *eulas = NULL;
+	_cleanup_free_ gchar *locale = NULL;
+	_cleanup_free_ gchar *no_proxy = NULL;
+	_cleanup_free_ gchar *pac = NULL;
+	_cleanup_free_ gchar *proxy_ftp = NULL;
+	_cleanup_free_ gchar *proxy_http = NULL;
+	_cleanup_free_ gchar *proxy_https = NULL;
+	_cleanup_free_ gchar *proxy_socks = NULL;
+	_cleanup_free_ gchar *transaction_id = NULL;
+	_cleanup_hashtable_unref_ GHashTable *env_table = NULL;
 
 	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	keep_environment = g_key_file_get_boolean (backend_spawn->priv->conf,
@@ -824,19 +735,17 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 						   NULL);
 	g_debug ("keep_environment: %i", keep_environment);
 
+	/* copy environment if so specified (for debugging) */
 	if (keep_environment) {
-		/* copy environment if so specified (for debugging) */
-		environ = g_get_environ ();
+		_cleanup_strv_free_ gchar **environ = g_get_environ ();
 		for (env_item = environ; env_item && *env_item; env_item++) {
+			_cleanup_strv_free_ gchar **env_item_split = NULL;
 			env_item_split = g_strsplit (*env_item, "=", 2);
-
 			if (env_item_split && (g_strv_length (env_item_split) == 2))
 				g_hash_table_replace (env_table, g_strdup (env_item_split[0]),
 						g_strdup (env_item_split[1]));
 
-			g_strfreev (env_item_split);
 		}
-		g_strfreev (environ);
 	}
 
 	/* accepted eulas */
@@ -939,18 +848,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		g_free (env_value);
 		i++;
 	}
-
-	g_hash_table_destroy (env_table);
-
-	g_free (proxy_http);
-	g_free (proxy_https);
-	g_free (proxy_ftp);
-	g_free (proxy_socks);
-	g_free (no_proxy);
-	g_free (pac);
-	g_free (locale);
-	g_free (eulas);
-	g_free (transaction_id);
 	return envp;
 }
 
@@ -991,7 +888,7 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 	g_ptr_array_add (ptr_array, g_strdup (string_first));
 
 	/* process all the va_list entries */
-	for (i=0;; i++) {
+	for (i = 0;; i++) {
 		value_temp = va_arg (*args, gchar *);
 		if (value_temp == NULL)
 			break;
@@ -1011,17 +908,16 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 				 const gchar *executable,
 				 va_list *args)
 {
-	gboolean ret;
-	gchar *filename;
-	gchar **argv;
-	gchar **envp;
 	PkHintEnum background;
-	GError *error = NULL;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	PkSpawnArgvFlags flags = PK_SPAWN_ARGV_FLAGS_NONE;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *filename = NULL;
+	_cleanup_strv_free_ gchar **argv = NULL;
+	_cleanup_strv_free_ gchar **envp = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -1075,20 +971,16 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 
 	priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);
-	ret = pk_spawn_argv (priv->spawn, argv, envp, flags, &error);
-	if (!ret) {
+	if (!pk_spawn_argv (priv->spawn, argv, envp, flags, &error)) {
 		pk_backend_job_error_code (priv->job,
 					   PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "Spawn of helper '%s' failed: %s",
 					   argv[PK_BACKEND_SPAWN_ARGV0],
 					   error->message);
-		g_error_free (error);
 		pk_backend_job_finished (priv->job);
+		return FALSE;
 	}
-	g_free (filename);
-	g_strfreev (argv);
-	g_strfreev (envp);
-	return ret;
+	return TRUE;
 }
 
 /**

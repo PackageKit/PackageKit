@@ -102,7 +102,7 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 
 	/* get data */
 	array = pk_results_get_repo_signature_required_array (results);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "package-id", &package_id,
@@ -188,7 +188,7 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 
 	/* get data */
 	array = pk_results_get_eula_required_array (results);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "package-id", &package_id,
@@ -253,7 +253,7 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 
 	/* get data */
 	array = pk_results_get_media_change_required_array (results);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "media-id", &media_id,
@@ -357,7 +357,7 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	array = pk_results_get_package_array (results);
 
 	/* print data */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		g_object_get (package,
 			      "info", &info,

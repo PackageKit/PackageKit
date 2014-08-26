@@ -110,9 +110,9 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 
 	section = (guint) ((gfloat) self->priv->size / (gfloat) 100.0 * (gfloat) percentage);
 	g_string_append (str, "[");
-	for (i=0; i<section; i++)
+	for (i = 0; i < section; i++)
 		g_string_append (str, "=");
-	for (i=0; i<self->priv->size - section; i++)
+	for (i = 0; i < self->priv->size - section; i++)
 		g_string_append (str, " ");
 	g_string_append (str, "] ");
 	if (percentage >= 0 && percentage < 100)
@@ -150,10 +150,10 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	}
 
 	g_string_append (str, "[");
-	for (i=0; i<(gint)self->priv->pulse_state.position-1; i++)
+	for (i = 0; i < (gint)self->priv->pulse_state.position-1; i++)
 		g_string_append (str, " ");
 	g_string_append (str, "==");
-	for (i=0; i<(gint) (self->priv->size - self->priv->pulse_state.position - 1); i++)
+	for (i = 0; i < (gint) (self->priv->size - self->priv->pulse_state.position - 1); i++)
 		g_string_append (str, " ");
 	g_string_append (str, "] ");
 	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)

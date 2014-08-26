@@ -689,7 +689,7 @@ pk_results_get_require_restart_worst (PkResults *results)
 	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
 
 	array = results->priv->require_restart_array;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
 			      "restart", &restart,

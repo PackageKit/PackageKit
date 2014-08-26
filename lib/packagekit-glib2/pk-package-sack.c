@@ -33,6 +33,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-package-sack.h>
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-common.h>
@@ -261,8 +263,7 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack,
 				   const gchar *package_id,
 				   GError **error)
 {
-	PkPackage *package;
-	gboolean ret;
+	_cleanup_object_unref_ PkPackage *package = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -270,39 +271,32 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack,
 
 	/* create new object */
 	package = pk_package_new ();
-	ret = pk_package_set_id (package, package_id, error);
-	if (!ret)
-		goto out;
+	if (!pk_package_set_id (package, package_id, error))
+		return FALSE;
 
 	/* add to array, array will own object */
 	pk_package_sack_add_package (sack, package);
-out:
-	g_object_unref (package);
-	return ret;
+	return TRUE;
 }
 
 /**
  * pk_package_sack_add_packages_from_line:
  **/
-static void
+static gboolean
 pk_package_sack_add_packages_from_line (PkPackageSack *sack,
 					const gchar *package_str,
 					GError **error)
 {
-	GError *error_local = NULL;
-	gboolean ret;
-	PkPackage *package;
-	gchar **pdata;
 	PkInfoEnum info;
-
-	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_object_unref_ PkPackage *package = NULL;
+	_cleanup_strv_free_ gchar **pdata = NULL;
 
 	package = pk_package_new ();
-
 	pdata = g_strsplit (package_str, "\t", -1);
 	if (g_strv_length (pdata) != 3) {
 		g_set_error (error, 1, 0, "invalid package-info line: %s", package_str);
-		goto out;
+		return FALSE;
 	}
 
 	info = pk_info_enum_from_string (pdata[0]);
@@ -310,18 +304,13 @@ pk_package_sack_add_packages_from_line (PkPackageSack *sack,
 		      "info", info,
 		      "summary", pdata[2],
 		      NULL);
-	ret = pk_package_set_id (package, pdata[1], &error_local);
-	if (!ret) {
+	if (!pk_package_set_id (package, pdata[1], &error_local)) {
 		g_set_error (error, 1, 0, "invalid package-id in package-info line: %s", pdata[1]);
-		goto out;
+		return FALSE;
 	}
-	ret = pk_package_sack_add_package (sack, package);
-	if (!ret)
+	if (!pk_package_sack_add_package (sack, package))
 		g_set_error (error, 1, 0, "could not add package '%s' to package-sack!", pdata[1]);
-
-out:
-	g_strfreev (pdata);
-	g_object_unref (package);
+	return TRUE;
 }
 
 /**
@@ -341,14 +330,12 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 					GError **error)
 {
 	GError *error_local = NULL;
-	gboolean ret = TRUE;
-	GFileInputStream *is;
-	GDataInputStream *input;
+	_cleanup_object_unref_ GFileInputStream *is = NULL;
+	_cleanup_object_unref_ GDataInputStream *input = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 
 	is = g_file_read (file, NULL, &error_local);
-
 	if (is == NULL) {
 		g_propagate_error (error, error_local);
 		return FALSE;
@@ -359,25 +346,14 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 	/* read package info file line by line */
 	while (TRUE) {
 		gchar *line;
-
-		line = g_data_input_stream_read_line (input, NULL, NULL, &error_local);
-
+		line = g_data_input_stream_read_line (input, NULL, NULL, NULL);
 		if (line == NULL)
 			break;
 		g_strstrip (line);
-
-		pk_package_sack_add_packages_from_line (sack, line, &error_local);
-		if (error_local != NULL) {
-			g_propagate_error (error, error_local);
-			ret = FALSE;
-			break;
-		}
+		if (!pk_package_sack_add_packages_from_line (sack, line, error))
+			return FALSE;
 	}
-
-	g_object_unref (input);
-	g_object_unref (is);
-
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -396,9 +372,9 @@ gboolean
 pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
 {
 	gboolean ret;
-	GString *string;
 	guint i;
 	PkPackage *pkg;
+	_cleanup_string_free_ GString *string = NULL;
 
 	string = g_string_new ("");
 	for (i = 0; i < sack->priv->array->len; i++) {
@@ -419,10 +395,8 @@ pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
 				       NULL,
 				       error);
 	if (!ret)
-		goto out;
-out:
-	g_string_free (string, FALSE);
-	return ret;
+		return FALSE;
+	return TRUE;
 }
 
 /**
@@ -439,16 +413,12 @@ out:
 gboolean
 pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
 {
-	gboolean ret;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 
 	/* remove from array */
 	g_hash_table_remove (sack->priv->table, pk_package_get_id (package));
-	ret = g_ptr_array_remove (sack->priv->array, package);
-
-	return ret;
+	return g_ptr_array_remove (sack->priv->array, package);
 }
 
 /**
@@ -468,7 +438,6 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 				      const gchar *package_id)
 {
 	PkPackage *package;
-	gboolean ret = FALSE;
 	guint i;
 	GPtrArray *array;
 
@@ -480,12 +449,10 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 		package = g_ptr_array_index (array, i);
 		if (g_strcmp0 (package_id, pk_package_get_id (package)) == 0) {
 			pk_package_sack_remove_package (sack, package);
-			ret = TRUE;
-			break;
+			return TRUE;
 		}
 	}
-
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -570,10 +537,9 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 PkPackage *
 pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_id)
 {
-	PkPackage *pkg = NULL;
 	PkPackage *pkg_tmp;
-	gchar **split;
 	guint i;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
@@ -581,20 +547,17 @@ pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_
 	/* does the package name feature in the array */
 	split = pk_package_id_split (package_id);
 	if (split == NULL)
-		goto out;
+		return NULL;
 	for (i = 0; i < sack->priv->array->len; i++) {
 		pkg_tmp = g_ptr_array_index (sack->priv->array, i);
 		if (g_strcmp0 (pk_package_get_name (pkg_tmp),
 			       split[PK_PACKAGE_ID_NAME]) == 0 &&
 		    g_strcmp0 (pk_package_get_arch (pkg_tmp),
 			       split[PK_PACKAGE_ID_ARCH]) == 0) {
-			pkg = g_object_ref (pkg_tmp);
-			break;
+			return g_object_ref (pkg_tmp);
 		}
 	}
-out:
-	g_strfreev (split);
-	return pkg;
+	return NULL;
 }
 
 /**
@@ -605,18 +568,14 @@ pk_package_sack_sort_compare_name_func (PkPackage **a, PkPackage **b)
 {
 	const gchar *package_id1;
 	const gchar *package_id2;
-	gchar **split1;
-	gchar **split2;
-	gint retval;
+	_cleanup_strv_free_ gchar **split1 = NULL;
+	_cleanup_strv_free_ gchar **split2 = NULL;
 
 	package_id1 = pk_package_get_id (*a);
 	package_id2 = pk_package_get_id (*b);
 	split1 = pk_package_id_split (package_id1);
 	split2 = pk_package_id_split (package_id2);
-	retval = g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
-	g_strfreev (split1);
-	g_strfreev (split2);
-	return retval;
+	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
 }
 
 /**
@@ -782,23 +741,20 @@ static void
 pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *packages = NULL;
 	PkPackage *item;
 	guint i;
 	PkPackage *package;
-	PkInfoEnum info;
-	gchar *summary;
-	gchar *package_id;
+	const gchar *package_id;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to resolve: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get the packages */
@@ -807,35 +763,25 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 		g_warning ("%i", state->ret);
 		error = g_error_new (1, 0, "no packages found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* set data on each item */
 	for (i = 0; i < packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
-		g_object_get (item,
-			      "info", &info,
-			      "package-id", &package_id,
-			      "summary", &summary,
-			      NULL);
-
-		/* get package, and set data */
+		package_id = pk_package_get_id (item);
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
-			goto skip;
+			continue;
 		}
 
 		/* set data */
 		g_object_set (package,
-			      "info", info,
-			      "summary", summary,
+			      "info", pk_package_get_info (item),
+			      "summary", pk_package_get_summary (item),
 			      NULL);
 		g_object_unref (package);
-skip:
-		g_free (summary);
-		g_free (package_id);
 	}
 
 	/* all okay */
@@ -843,11 +789,6 @@ skip:
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (packages != NULL)
-		g_ptr_array_unref (packages);
 }
 
 /**
@@ -868,9 +809,9 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkPackageSackState *state;
-	gchar **package_ids;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
@@ -881,18 +822,16 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
 	state->sack = g_object_ref (sack);
-	if (cancellable != NULL) {
+	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	}
 	state->ret = FALSE;
 
 	/* start resolve async */
 	package_ids = pk_package_sack_get_package_ids (sack);
-	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
+	pk_client_resolve_async (sack->priv->client,
+				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
 				 cancellable, progress_callback, progress_user_data,
 				 (GAsyncReadyCallback) pk_package_sack_resolve_cb, state);
-	g_strfreev (package_ids);
-	g_object_unref (res);
 }
 
 /**
@@ -933,26 +872,19 @@ static void
 pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *details = NULL;
 	PkDetails *item;
 	guint i;
 	PkPackage *package;
-	PkGroupEnum group;
-	gchar *license;
-	gchar *url;
-	gchar *description;
-	gchar *package_id;
-	guint64 size;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *details = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to details: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get the details */
@@ -960,44 +892,33 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	if (details->len == 0) {
 		error = g_error_new (1, 0, "no details found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* set data on each item */
 	for (i = 0; i < details->len; i++) {
+		_cleanup_free_ gchar *package_id = NULL;
 		item = g_ptr_array_index (details, i);
-
 		g_object_get (item,
 			      "package-id", &package_id,
-			      "group", &group,
-			      "license", &license,
-			      "url", &url,
-			      "description", &description,
-			      "size", &size,
 			      NULL);
 
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
-			goto skip;
+			continue;
 		}
 
 		/* set data */
 		g_object_set (package,
-			      "license", license,
-			      "group", group,
-			      "description", description,
-			      "url", url,
-			      "size", size,
+			      "license", pk_details_get_license (item),
+			      "group", pk_details_get_group (item),
+			      "description", pk_details_get_description (item),
+			      "url", pk_details_get_url (item),
+			      "size", pk_details_get_size (item),
 			      NULL);
 		g_object_unref (package);
-skip:
-		g_free (package_id);
-		g_free (license);
-		g_free (url);
-		g_free (description);
 	}
 
 	/* all okay */
@@ -1005,11 +926,6 @@ skip:
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (details != NULL)
-		g_ptr_array_unref (details);
 }
 
 /**
@@ -1028,9 +944,9 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkPackageSackState *state;
-	gchar **package_ids;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
@@ -1041,9 +957,8 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
 	state->sack = g_object_ref (sack);
-	if (cancellable != NULL) {
+	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	}
 	state->ret = FALSE;
 
 	/* start details async */
@@ -1051,9 +966,6 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 	pk_client_get_details_async (sack->priv->client, package_ids,
 				     cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_package_sack_get_details_cb, state);
-
-	g_strfreev (package_ids);
-	g_object_unref (res);
 }
 
 /***************************************************************************************************/
@@ -1065,32 +977,19 @@ static void
 pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *update_details = NULL;
 	PkUpdateDetail *item;
 	guint i;
 	PkPackage *package;
-	gchar *package_id;
-	gchar *updates;
-	gchar *obsoletes;
-	gchar **vendor_urls;
-	gchar **bugzilla_urls;
-	gchar **cve_urls;
-	PkRestartEnum restart;
-	gchar *update_text;
-	gchar *changelog;
-	PkUpdateStateEnum state_enum;
-	gchar *issued;
-	gchar *updated;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *update_details = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to update_detail: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get the update_details */
@@ -1098,12 +997,24 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	if (update_details->len == 0) {
 		error = g_error_new (1, 0, "no update details found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* set data on each item */
 	for (i = 0; i < update_details->len; i++) {
+		PkRestartEnum restart;
+		PkUpdateStateEnum state_enum;
+		_cleanup_free_ gchar *changelog = NULL;
+		_cleanup_free_ gchar *issued = NULL;
+		_cleanup_free_ gchar *obsoletes = NULL;
+		_cleanup_free_ gchar *package_id = NULL;
+		_cleanup_free_ gchar *updated = NULL;
+		_cleanup_free_ gchar *updates = NULL;
+		_cleanup_free_ gchar *update_text = NULL;
+		_cleanup_strv_free_ gchar **bugzilla_urls = NULL;
+		_cleanup_strv_free_ gchar **cve_urls = NULL;
+		_cleanup_strv_free_ gchar **vendor_urls = NULL;
+
 		item = g_ptr_array_index (update_details, i);
 		g_object_get (item,
 			      "package-id", &package_id,
@@ -1124,7 +1035,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
-			goto skip;
+			continue;
 		}
 
 		/* set data */
@@ -1142,17 +1053,6 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      "update-updated", updated,
 			      NULL);
 		g_object_unref (package);
-skip:
-		g_free (package_id);
-		g_free (updates);
-		g_free (obsoletes);
-		g_strfreev (vendor_urls);
-		g_strfreev (bugzilla_urls);
-		g_strfreev (cve_urls);
-		g_free (update_text);
-		g_free (changelog);
-		g_free (issued);
-		g_free (updated);
 	}
 
 	/* all okay */
@@ -1160,11 +1060,6 @@ skip:
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (update_details != NULL)
-		g_ptr_array_unref (update_details);
 }
 
 /**
@@ -1185,9 +1080,9 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 					 PkProgressCallback progress_callback, gpointer progress_user_data,
 					 GAsyncReadyCallback callback, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkPackageSackState *state;
-	gchar **package_ids;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
@@ -1198,9 +1093,8 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
 	state->sack = g_object_ref (sack);
-	if (cancellable != NULL) {
+	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	}
 	state->ret = FALSE;
 
 	/* start update_detail async */
@@ -1208,9 +1102,6 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 	pk_client_get_update_detail_async (sack->priv->client, package_ids,
 					   cancellable, progress_callback, progress_user_data,
 					   (GAsyncReadyCallback) pk_package_sack_get_update_detail_cb, state);
-
-	g_strfreev (package_ids);
-	g_object_unref (res);
 }
 
 /***************************************************************************************************/

@@ -27,6 +27,7 @@
 #include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-cleanup.h"
 #include "pk-network-stack-connman.h"
 
 struct PkNetworkStackConnmanPrivate
@@ -308,8 +309,8 @@ pk_marshal_VOID__STRING_BOXED (GClosure *closure,
 static void
 pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 {
-	GError *error = NULL;
 	GDBusProxy *proxy;
+	_cleanup_error_free_ GError *error = NULL;
 
 	nstack_connman->priv = PK_NETWORK_STACK_CONNMAN_GET_PRIVATE (nstack_connman);
 
@@ -321,7 +322,6 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	nstack_connman->priv->bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (nstack_connman->priv->bus == NULL) {
 		g_warning ("Couldn't connect to system bus: %s", error->message);
-		g_error_free (error);
 		return;
 	}
 
@@ -345,7 +345,6 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 				       &error);
 	if (proxy == NULL) {
 		g_warning ("Cannot connect to connman: %s", error->message);
-		g_error_free (error);
 		return;
 	}
 	nstack_connman->priv->proxy = proxy;

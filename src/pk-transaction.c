@@ -47,6 +47,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <polkit/polkit.h>
 
+#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-dbus.h"
 #include "pk-notify.h"
@@ -333,9 +334,9 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 				       "org.freedesktop.DBus.Properties",
 				       "PropertiesChanged",
 				       g_variant_new ("(sa{sv}as)",
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       &builder,
-				       &invalidated_builder),
+						      PK_DBUS_INTERFACE_TRANSACTION,
+						      &builder,
+						      &invalidated_builder),
 				       NULL);
 }
 
@@ -498,14 +499,10 @@ pk_transaction_details_cb (PkBackendJob *job,
 			   PkDetails *item,
 			   PkTransaction *transaction)
 {
-	gchar *package_id;
-	gchar *description;
-	gchar *license;
-	gchar *url;
-	gchar *summary;
-	guint64 size;
-	PkGroupEnum group;
 	GVariantBuilder builder;
+	PkGroupEnum group;
+	const gchar *tmp;
+	guint64 size;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -513,38 +510,35 @@ pk_transaction_details_cb (PkBackendJob *job,
 	/* add to results */
 	pk_results_add_details (transaction->priv->results, item);
 
-	/* get data */
-	g_object_get (item,
-		      "package-id", &package_id,
-		      "group", &group,
-		      "description", &description,
-		      "license", &license,
-		      "url", &url,
-		      "size", &size,
-		      "summary", &summary,
-		      NULL);
-
 	/* emit */
 	g_debug ("emitting details");
 	g_variant_builder_init (&builder, G_VARIANT_TYPE("a{sv}"));
 	g_variant_builder_add (&builder, "{sv}", "package-id",
-			       g_variant_new_take_string (package_id));
-	g_variant_builder_add (&builder, "{sv}", "group",
-			       g_variant_new_uint32 (group));
-	if (summary != NULL)
+			       g_variant_new_string (pk_details_get_package_id (item)));
+	group = pk_details_get_group (item);
+	if (group != PK_GROUP_ENUM_UNKNOWN)
+		g_variant_builder_add (&builder, "{sv}", "group",
+				       g_variant_new_uint32 (group));
+	tmp = pk_details_get_summary (item);
+	if (tmp != NULL)
 		g_variant_builder_add (&builder, "{sv}", "summary",
-				       g_variant_new_take_string (summary));
-	if (description != NULL)
+				       g_variant_new_string (tmp));
+	tmp = pk_details_get_description (item);
+	if (tmp != NULL)
 		g_variant_builder_add (&builder, "{sv}", "description",
-				       g_variant_new_take_string (description));
-	if (url != NULL)
+				       g_variant_new_string (tmp));
+	tmp = pk_details_get_url (item);
+	if (tmp != NULL)
 		g_variant_builder_add (&builder, "{sv}", "url",
-				       g_variant_new_take_string (url));
-	if (license != NULL)
+				       g_variant_new_string (tmp));
+	tmp = pk_details_get_license (item);
+	if (tmp != NULL)
 		g_variant_builder_add (&builder, "{sv}", "license",
-				       g_variant_new_take_string (license));
-	g_variant_builder_add (&builder, "{sv}", "size",
-			       g_variant_new_uint64 (size));
+				       g_variant_new_string (tmp));
+	size = pk_details_get_size (item);
+	if (size != 0)
+		g_variant_builder_add (&builder, "{sv}", "size",
+				       g_variant_new_uint64 (size));
 
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
@@ -563,8 +557,8 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 			      PkError *item,
 			      PkTransaction *transaction)
 {
-	gchar *details;
 	PkErrorEnum code;
+	_cleanup_free_ gchar *details = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -591,8 +585,6 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 		/* emit, as it is not the internally-handled LOCK_REQUIRED code */
 		pk_transaction_error_code_emit (transaction, code, details);
 	}
-
-	g_free (details);
 }
 
 /**
@@ -604,8 +596,8 @@ pk_transaction_files_cb (PkBackendJob *job,
 			 PkTransaction *transaction)
 {
 	guint i;
-	gchar *package_id;
-	gchar **files;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_strv_free_ gchar **files = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -619,7 +611,7 @@ pk_transaction_files_cb (PkBackendJob *job,
 	/* ensure the files have the correct prefix */
 	if (transaction->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
 	    transaction->priv->cached_directory != NULL) {
-		for (i=0; files[i] != NULL; i++) {
+		for (i = 0; files[i] != NULL; i++) {
 			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
 				g_warning ("%s does not have the correct prefix (%s)",
 					   files[i],
@@ -642,8 +634,6 @@ pk_transaction_files_cb (PkBackendJob *job,
 						      package_id != NULL ? package_id : "",
 						      files),
 				       NULL);
-	g_free (package_id);
-	g_strfreev (files);
 }
 
 /**
@@ -654,11 +644,11 @@ pk_transaction_category_cb (PkBackendJob *job,
 			    PkCategory *item,
 			    PkTransaction *transaction)
 {
-	gchar *parent_id;
-	gchar *cat_id;
-	gchar *name;
-	gchar *summary;
-	gchar *icon;
+	_cleanup_free_ gchar *parent_id = NULL;
+	_cleanup_free_ gchar *cat_id = NULL;
+	_cleanup_free_ gchar *name = NULL;
+	_cleanup_free_ gchar *summary = NULL;
+	_cleanup_free_ gchar *icon = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -689,11 +679,6 @@ pk_transaction_category_cb (PkBackendJob *job,
 						      summary,
 						      icon != NULL ? icon : ""),
 				       NULL);
-	g_free (parent_id);
-	g_free (cat_id);
-	g_free (name);
-	g_free (summary);
-	g_free (icon);
 }
 
 /**
@@ -732,9 +717,9 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 				  PkDistroUpgrade *item,
 				  PkTransaction *transaction)
 {
-	gchar *name;
-	gchar *summary;
 	PkUpdateStateEnum state;
+	_cleanup_free_ gchar *name = NULL;
+	_cleanup_free_ gchar *summary = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -763,9 +748,6 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 						      name,
 						      summary != NULL ? summary : ""),
 				       NULL);
-
-	g_free (name);
-	g_free (summary);
 }
 
 /**
@@ -774,26 +756,17 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 static gchar *
 pk_transaction_package_list_to_string (GPtrArray *array)
 {
-	guint i;
-	PkPackage *item;
 	GString *string;
-	PkInfoEnum info;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
+	PkPackage *pkg;
+	guint i;
 
 	string = g_string_new ("");
 	for (i = 0; i < array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "info", &info,
-			      "package-id", &package_id,
-			      "summary", &summary,
-			      NULL);
+		pkg = g_ptr_array_index (array, i);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_string (info),
-					package_id, summary);
-		g_free (package_id);
-		g_free (summary);
+					pk_info_enum_to_string (pk_package_get_info (pkg)),
+					pk_package_get_id (pkg),
+					pk_package_get_summary (pkg));
 	}
 
 	/* remove trailing newline */
@@ -840,16 +813,13 @@ pk_transaction_state_to_string (PkTransactionState state)
 gboolean
 pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 {
-	gboolean ret = TRUE;
-
 	/* check we're not going backwards */
 	if (transaction->priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
 	    transaction->priv->state > state) {
 		g_warning ("cannot set %s, as already %s",
 			   pk_transaction_state_to_string (state),
 			   pk_transaction_state_to_string (transaction->priv->state));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
@@ -874,10 +844,9 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 	/* we have no actions to perform here, so go straight to running */
 	if (state == PK_TRANSACTION_STATE_COMMITTED) {
 		/* TODO: do some things before we change states */
-		ret = pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+		return pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1010,7 +979,7 @@ static void
 pk_transaction_setup_mime_types (PkTransaction *transaction)
 {
 	guint i;
-	gchar **mime_types;
+	_cleanup_strv_free_ gchar **mime_types = NULL;
 
 	/* get list of mime types supported by backends */
 	mime_types = pk_backend_get_mime_types (transaction->priv->backend);
@@ -1018,7 +987,6 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 		g_ptr_array_add (transaction->priv->supported_content_types,
 				 g_strdup (mime_types[i]));
 	}
-	g_strfreev (mime_types);
 }
 
 /**
@@ -1139,19 +1107,16 @@ pk_transaction_set_full_paths (PkTransaction *transaction,
 gboolean
 pk_transaction_is_finished_with_lock_required (PkTransaction *transaction)
 {
-	gboolean ret = FALSE;
-	PkError	*error_code;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
 	error_code = pk_results_get_error_code (transaction->priv->results);
-	if (error_code != NULL) {
-		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_LOCK_REQUIRED)
-			ret = TRUE;
-
-		g_object_unref (error_code);
+	if (error_code != NULL &&
+	    pk_error_get_code (error_code) == PK_ERROR_ENUM_LOCK_REQUIRED) {
+		return TRUE;
 	}
-
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -1161,11 +1126,8 @@ static void
 pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransaction *transaction)
 {
 	guint time_ms;
-	gchar *packages;
 	guint i;
-	GPtrArray *array;
 	PkPackage *item;
-	gchar *package_id;
 	PkInfoEnum info;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1222,8 +1184,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+		_cleanup_free_ gchar *packages = NULL;
 
-		/* get results */
 		array = pk_results_get_package_array (transaction->priv->results);
 
 		/* save to database */
@@ -1234,10 +1197,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		/* report to syslog */
 		for (i = 0; i < array->len; i++) {
 			item = g_ptr_array_index (array, i);
-			g_object_get (item,
-				      "info", &info,
-				      "package-id", &package_id,
-				      NULL);
+			info = pk_package_get_info (item);
 			if (info == PK_INFO_ENUM_REMOVING ||
 			    info == PK_INFO_ENUM_INSTALLING ||
 			    info == PK_INFO_ENUM_UPDATING) {
@@ -1245,14 +1205,11 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 					"in %s for %s package %s was %s for uid %i",
 					transaction->priv->tid,
 					pk_role_enum_to_string (transaction->priv->role),
-					package_id,
+					pk_package_get_id (item),
 					pk_info_enum_to_string (info),
 					transaction->priv->uid);
 			}
-			g_free (package_id);
 		}
-		g_free (packages);
-		g_ptr_array_unref (array);
 	}
 
 	/* the repo list will have changed */
@@ -1393,9 +1350,9 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 			       PkRepoDetail *item,
 			       PkTransaction *transaction)
 {
-	gchar *repo_id;
-	gchar *description;
 	gboolean enabled;
+	const gchar *repo_id;
+	const gchar *description;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1403,14 +1360,10 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 	/* add to results */
 	pk_results_add_repo_detail (transaction->priv->results, item);
 
-	/* get data */
-	g_object_get (item,
-		      "repo-id", &repo_id,
-		      "description", &description,
-		      "enabled", &enabled,
-		      NULL);
-
 	/* emit */
+	repo_id = pk_repo_detail_get_id (item);
+	description = pk_repo_detail_get_description (item);
+	enabled = pk_repo_detail_get_enabled (item);
 	g_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
@@ -1422,8 +1375,6 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 						      description != NULL ? description : "",
 						      enabled),
 				       NULL);
-	g_free (repo_id);
-	g_free (description);
 }
 
 /**
@@ -1434,14 +1385,14 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 					   PkRepoSignatureRequired *item,
 					   PkTransaction *transaction)
 {
-	gchar *package_id;
-	gchar *repository_name;
-	gchar *key_url;
-	gchar *key_userid;
-	gchar *key_id;
-	gchar *key_fingerprint;
-	gchar *key_timestamp;
 	PkSigTypeEnum type;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *repository_name = NULL;
+	_cleanup_free_ gchar *key_url = NULL;
+	_cleanup_free_ gchar *key_userid = NULL;
+	_cleanup_free_ gchar *key_id = NULL;
+	_cleanup_free_ gchar *key_fingerprint = NULL;
+	_cleanup_free_ gchar *key_timestamp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1484,14 +1435,6 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_signature_required = TRUE;
-
-	g_free (package_id);
-	g_free (repository_name);
-	g_free (key_url);
-	g_free (key_userid);
-	g_free (key_id);
-	g_free (key_fingerprint);
-	g_free (key_timestamp);
 }
 
 /**
@@ -1502,10 +1445,10 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 				 PkEulaRequired *item,
 				 PkTransaction *transaction)
 {
-	gchar *eula_id;
-	gchar *package_id;
-	gchar *vendor_name;
-	gchar *license_agreement;
+	_cleanup_free_ gchar *eula_id = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *vendor_name = NULL;
+	_cleanup_free_ gchar *license_agreement = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1538,11 +1481,6 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_eula_required = TRUE;
-
-	g_free (eula_id);
-	g_free (package_id);
-	g_free (vendor_name);
-	g_free (license_agreement);
 }
 
 /**
@@ -1553,9 +1491,9 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 					 PkMediaChangeRequired *item,
 					 PkTransaction *transaction)
 {
-	gchar *media_id;
-	gchar *media_text;
 	PkMediaTypeEnum media_type;
+	_cleanup_free_ gchar *media_id = NULL;
+	_cleanup_free_ gchar *media_text = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1588,9 +1526,6 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_media_change_required = TRUE;
-
-	g_free (media_id);
-	g_free (media_text);
 }
 
 /**
@@ -1602,12 +1537,11 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 				   PkTransaction *transaction)
 {
 	PkRequireRestart *item_tmp;
-	GPtrArray *array;
 	gboolean found = FALSE;
 	guint i;
-	gchar *package_id;
-	gchar *package_id_tmp;
 	PkRestartEnum restart;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1621,18 +1555,16 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 	/* filter out duplicates */
 	array = pk_results_get_require_restart_array (transaction->priv->results);
 	for (i = 0; i < array->len; i++) {
+		_cleanup_free_ gchar *package_id_tmp = NULL;
 		item_tmp = g_ptr_array_index (array, i);
 		g_object_get (item_tmp,
 			      "package-id", &package_id_tmp,
 			      NULL);
 		if (g_strcmp0 (package_id, package_id_tmp) == 0) {
-			g_free (package_id_tmp);
 			found = TRUE;
 			break;
 		}
-		g_free (package_id_tmp);
 	}
-	g_ptr_array_unref (array);
 
 	/* ignore */
 	if (found) {
@@ -1658,7 +1590,6 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 						      restart,
 						      package_id),
 				       NULL);
-	g_free (package_id);
 }
 
 /**
@@ -1752,23 +1683,22 @@ static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction,
 				  GError **error)
 {
-	gboolean ret = TRUE;
-	gchar *session = NULL;
-	gchar *proxy_http = NULL;
-	gchar *proxy_https = NULL;
-	gchar *proxy_ftp = NULL;
-	gchar *proxy_socks = NULL;
-	gchar *no_proxy = NULL;
-	gchar *pac = NULL;
-	gchar *cmdline = NULL;
+	gboolean ret;
+	_cleanup_free_ gchar *session = NULL;
+	_cleanup_free_ gchar *proxy_http = NULL;
+	_cleanup_free_ gchar *proxy_https = NULL;
+	_cleanup_free_ gchar *proxy_ftp = NULL;
+	_cleanup_free_ gchar *proxy_socks = NULL;
+	_cleanup_free_ gchar *no_proxy = NULL;
+	_cleanup_free_ gchar *pac = NULL;
+	_cleanup_free_ gchar *cmdline = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	/* get session */
 	session = pk_dbus_get_session (priv->dbus, priv->sender);
 	if (session == NULL) {
-		ret = FALSE;
 		g_set_error_literal (error, 1, 0, "failed to get the session");
-		goto out;
+		return FALSE;
 	}
 
 	/* get from database */
@@ -1784,7 +1714,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	if (!ret) {
 		g_set_error_literal (error, 1, 0,
 				     "failed to get the proxy from the database");
-		goto out;
+		return FALSE;
 	}
 
 	/* try to set the new proxy */
@@ -1801,16 +1731,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 				   pk_role_enum_to_string (priv->role));
 	pk_backend_job_set_uid (priv->job, priv->uid);
 	pk_backend_job_set_cmdline (priv->job, cmdline);
-out:
-	g_free (cmdline);
-	g_free (proxy_http);
-	g_free (proxy_https);
-	g_free (proxy_ftp);
-	g_free (proxy_socks);
-	g_free (no_proxy);
-	g_free (pac);
-	g_free (session);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1973,7 +1894,6 @@ pk_transaction_signals_reset (PkTransaction *transaction,
 gboolean
 pk_transaction_run (PkTransaction *transaction)
 {
-	gboolean ret;
 	GError *error = NULL;
 	PkExitEnum exit_status;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
@@ -2013,9 +1933,7 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
 
 	/* set proxy */
-	ret = pk_transaction_set_session_state (transaction, &error);
-	if (!ret) {
-		ret = TRUE;
+	if (!pk_transaction_set_session_state (transaction, &error)) {
 		g_debug ("failed to set the session state (non-fatal): %s",
 			 error->message);
 		g_clear_error (&error);
@@ -2025,8 +1943,7 @@ pk_transaction_run (PkTransaction *transaction)
 	if (pk_backend_job_get_exit_code (priv->job) == PK_EXIT_ENUM_CANCELLED) {
 		exit_status = pk_backend_job_get_exit_code (priv->job);
 		pk_transaction_finished_emit (transaction, exit_status, 0);
-		ret = TRUE;
-		goto out;
+		return TRUE;
 	}
 
 	/* run the plugins */
@@ -2038,19 +1955,13 @@ pk_transaction_run (PkTransaction *transaction)
 	if (pk_backend_job_get_is_error_set (priv->job)) {
 		exit_status = pk_backend_job_get_exit_code (priv->job);
 		pk_transaction_finished_emit (transaction, exit_status, 0);
-
 		/* do not fail the transaction */
-		ret = TRUE;
-		goto out;
 	}
 
 	/* check if we should skip this transaction */
 	if (pk_backend_job_get_exit_code (priv->job) == PK_EXIT_ENUM_SKIP_TRANSACTION) {
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
-
 		/* do not fail the transaction */
-		ret = TRUE;
-		goto out;
 	}
 
 	/* set the role */
@@ -2073,18 +1984,13 @@ pk_transaction_run (PkTransaction *transaction)
 	exit_status = pk_backend_job_get_exit_code (priv->job);
 	if (exit_status == PK_EXIT_ENUM_SKIP_TRANSACTION) {
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
-
-		/* do not fail the transaction */
-		ret = TRUE;
-		goto out;
+		return TRUE;
 	}
 
 	/* did the plugin finish or abort the transaction? */
 	if (exit_status != PK_EXIT_ENUM_UNKNOWN)  {
 		pk_transaction_finished_emit (transaction, exit_status, 0);
-
-		ret = TRUE;
-		goto out;
+		return TRUE;
 	}
 
 	/* do the correct action with the cached parameters */
@@ -2265,11 +2171,10 @@ pk_transaction_run (PkTransaction *transaction)
 		break;
 	default:
 		g_error ("failed to run as role not assigned");
-		ret = FALSE;
+		return FALSE;
 		break;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -2374,12 +2279,11 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 static gboolean
 pk_transaction_release_tid (PkTransaction *transaction)
 {
-	gboolean ret;
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+
 	/* release the ID as we are returning an error */
-	ret = pk_transaction_list_remove (transaction->priv->transaction_list,
-					  transaction->priv->tid);
-	return ret;
+	return pk_transaction_list_remove (transaction->priv->transaction_list,
+					   transaction->priv->tid);
 }
 
 /**
@@ -2388,7 +2292,6 @@ pk_transaction_release_tid (PkTransaction *transaction)
 G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
-	gboolean ret;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -2403,9 +2306,7 @@ pk_transaction_commit (PkTransaction *transaction)
 	}
 
 	/* commit, so it appears in the JobList */
-	ret = pk_transaction_list_commit (priv->transaction_list,
-					  priv->tid);
-	if (!ret) {
+	if (!pk_transaction_list_commit (priv->transaction_list, priv->tid)) {
 		pk_transaction_release_tid (transaction);
 		g_warning ("failed to commit (job not run?)");
 		return FALSE;
@@ -2433,8 +2334,7 @@ pk_transaction_commit (PkTransaction *transaction)
 		syslog (LOG_DAEMON | LOG_DEBUG,
 			"new %s transaction %s scheduled from uid %i",
 			pk_role_enum_to_string (priv->role),
-			priv->tid,
-			priv->uid);
+			priv->tid, priv->uid);
 	}
 	return TRUE;
 }
@@ -2502,7 +2402,9 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 
 	for (i = 0; i < length; i++) {
 		if (pk_transaction_strvalidate_char (text[i]) == FALSE) {
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon: char '%c' in text!", text[i]);
 			return FALSE;
 		}
@@ -2517,40 +2419,45 @@ static gboolean
 pk_transaction_search_check_item (const gchar *values, GError **error)
 {
 	guint size;
-	gboolean ret;
 
 	/* limit to a 1k chunk */
-	size = pk_strlen (values, 1024);
-
 	if (values == NULL) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Search is null. This isn't supposed to happen...");
 		return FALSE;
 	}
+	size = pk_strlen (values, 1024);
 	if (size == 0) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Search string zero length");
 		return FALSE;
 	}
 	if (strstr (values, "*") != NULL) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '*'");
 		return FALSE;
 	}
 	if (strstr (values, "?") != NULL) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '?'");
 		return FALSE;
 	}
 	if (size == 1024) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "The search string length is too large");
 		return FALSE;
 	}
-	ret = pk_transaction_strvalidate (values, error);
-	if (!ret)
-		return FALSE;
-	return TRUE;
+	return pk_transaction_strvalidate (values, error);
 }
 
 /**
@@ -2560,16 +2467,13 @@ static gboolean
 pk_transaction_search_check (gchar **values, GError **error)
 {
 	guint i;
-	gboolean ret = TRUE;
 
 	/* check each parameter */
-	for (i=0; values[i] != NULL; i++) {
-		ret = pk_transaction_search_check_item (values[i], error);
-		if (!ret)
-			goto out;
+	for (i = 0; values[i] != NULL; i++) {
+		if (!pk_transaction_search_check_item (values[i], error))
+			return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -2578,11 +2482,10 @@ out:
 static void
 pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkTransaction *transaction)
 {
-	PolkitAuthorizationResult *result;
 	gboolean ret;
-	gchar *message;
-	GError *error = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PolkitAuthorizationResult *result = NULL;
 
 	/* finish the call */
 	result = polkit_authority_check_authorization_finish (priv->authority, res, &error);
@@ -2595,11 +2498,12 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "The authentication was cancelled due to a timeout.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-		goto out;
+		return;
 	}
 
 	/* failed, maybe polkit is messed up? */
 	if (result == NULL) {
+		_cleanup_free_ gchar *message = NULL;
 		g_warning ("failed to check for auth: %s", error->message);
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
@@ -2607,9 +2511,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 		message = g_strdup_printf ("Failed to check for authentication: %s", error->message);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, message);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-		g_error_free (error);
-		g_free (message);
-		goto out;
+		return;
 	}
 
 	/* did not auth */
@@ -2624,7 +2526,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 		syslog (LOG_AUTH | LOG_NOTICE,
 			"uid %i failed to obtain auth",
 			priv->uid);
-		goto out;
+		return;
 	}
 
 	/* try to commit this */
@@ -2632,15 +2534,11 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	if (!ret) {
 		g_warning ("Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
-		goto out;
+		return;
 	}
 
 	/* log success too */
 	syslog (LOG_AUTH | LOG_INFO, "uid %i obtained auth", priv->uid);
-out:
-	if (result != NULL)
-		g_object_unref (result);
-	return;
 }
 
 /**
@@ -2652,40 +2550,40 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 	const gchar *policy = NULL;
 
 	switch (role) {
-		case PK_ROLE_ENUM_UPDATE_PACKAGES:
-			policy = "org.freedesktop.packagekit.system-update";
-			break;
-		case PK_ROLE_ENUM_INSTALL_SIGNATURE:
-			policy = "org.freedesktop.packagekit.system-trust-signing-key";
-			break;
-		case PK_ROLE_ENUM_REPO_ENABLE:
-		case PK_ROLE_ENUM_REPO_SET_DATA:
-		case PK_ROLE_ENUM_REPO_REMOVE:
-			policy = "org.freedesktop.packagekit.system-sources-configure";
-			break;
-		case PK_ROLE_ENUM_REFRESH_CACHE:
-			policy = "org.freedesktop.packagekit.system-sources-refresh";
-			break;
-		case PK_ROLE_ENUM_REMOVE_PACKAGES:
-			policy = "org.freedesktop.packagekit.package-remove";
-			break;
-		case PK_ROLE_ENUM_INSTALL_PACKAGES:
-			policy = "org.freedesktop.packagekit.package-install";
-			break;
-		case PK_ROLE_ENUM_INSTALL_FILES:
-			policy = "org.freedesktop.packagekit.package-install";
-			break;
-		case PK_ROLE_ENUM_ACCEPT_EULA:
-			policy = "org.freedesktop.packagekit.package-eula-accept";
-			break;
-		case PK_ROLE_ENUM_CANCEL:
-			policy = "org.freedesktop.packagekit.cancel-foreign";
-			break;
-		case PK_ROLE_ENUM_REPAIR_SYSTEM:
-			policy = "org.freedesktop.packagekit.repair-system";
-			break;
-		default:
-			break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		policy = "org.freedesktop.packagekit.system-update";
+		break;
+	case PK_ROLE_ENUM_INSTALL_SIGNATURE:
+		policy = "org.freedesktop.packagekit.system-trust-signing-key";
+		break;
+	case PK_ROLE_ENUM_REPO_ENABLE:
+	case PK_ROLE_ENUM_REPO_SET_DATA:
+	case PK_ROLE_ENUM_REPO_REMOVE:
+		policy = "org.freedesktop.packagekit.system-sources-configure";
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		policy = "org.freedesktop.packagekit.system-sources-refresh";
+		break;
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		policy = "org.freedesktop.packagekit.package-remove";
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		policy = "org.freedesktop.packagekit.package-install";
+		break;
+	case PK_ROLE_ENUM_INSTALL_FILES:
+		policy = "org.freedesktop.packagekit.package-install";
+		break;
+	case PK_ROLE_ENUM_ACCEPT_EULA:
+		policy = "org.freedesktop.packagekit.package-eula-accept";
+		break;
+	case PK_ROLE_ENUM_CANCEL:
+		policy = "org.freedesktop.packagekit.cancel-foreign";
+		break;
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+		policy = "org.freedesktop.packagekit.repair-system";
+		break;
+	default:
+		break;
 	}
 	return policy;
 }
@@ -2699,13 +2597,13 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 	const gchar *policy = NULL;
 
 	switch (role) {
-		case PK_ROLE_ENUM_INSTALL_PACKAGES:
-		case PK_ROLE_ENUM_INSTALL_FILES:
-		case PK_ROLE_ENUM_UPDATE_PACKAGES:
-			policy = "org.freedesktop.packagekit.package-install-untrusted";
-			break;
-		default:
-			policy = pk_transaction_role_to_action_only_trusted (role);
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+	case PK_ROLE_ENUM_INSTALL_FILES:
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		policy = "org.freedesktop.packagekit.package-install-untrusted";
+		break;
+	default:
+		policy = pk_transaction_role_to_action_only_trusted (role);
 	}
 	return policy;
 }
@@ -2780,13 +2678,12 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 				     PkRoleEnum role,
 				     GError **error)
 {
-	PolkitDetails *details;
 	const gchar *action_id;
 	const gchar *text;
-	gboolean ret = FALSE;
-	gchar *package_ids = NULL;
-	GString *string = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
+	_cleanup_free_ gchar *package_ids = NULL;
+	_cleanup_object_unref_ PolkitDetails *details = NULL;
+	_cleanup_string_free_ GString *string = NULL;
 
 	g_return_val_if_fail (priv->sender != NULL, FALSE);
 
@@ -2798,22 +2695,24 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
 	    priv->skip_auth_check == TRUE) {
 		g_debug ("No authentication required");
-		ret = pk_transaction_commit (transaction);
-		if (!ret) {
+		if (!pk_transaction_commit (transaction)) {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 					     "Could not commit to a transaction object");
 			pk_transaction_release_tid (transaction);
+			return FALSE;
 		}
-		goto out;
+		return TRUE;
 	}
 
 	/* we should always have subject */
 	if (priv->subject == NULL) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "subject %s not found", priv->sender);
-		goto out;
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+			     "subject %s not found", priv->sender);
+		return FALSE;
 	}
 
 	/* map the roles to policykit rules */
@@ -2828,8 +2727,12 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	action_id = pk_transaction_plugin_get_action (transaction, action_id);
 
 	if (action_id == NULL) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
-		goto out;
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+			     "policykit type required for '%s'",
+			     pk_role_enum_to_string (role));
+		return FALSE;
 	}
 
 	/* log */
@@ -2913,17 +2816,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 					      priv->cancellable,
 					      (GAsyncReadyCallback) pk_transaction_action_obtain_authorization_finished_cb,
 					      transaction);
-
-	/* check_authorization ref's this */
-	g_object_unref (details);
-
-	/* assume success, as this is async */
-	ret = TRUE;
-out:
-	if (string != NULL)
-		g_string_free (string, TRUE);
-	g_free (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -2977,14 +2870,12 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
  * pk_transaction_dbus_return:
  **/
 static void
-pk_transaction_dbus_return (GDBusMethodInvocation *context, GError *error)
+pk_transaction_dbus_return (GDBusMethodInvocation *context, const GError *error)
 {
 	/* not set inside the test suite */
 	if (context == NULL) {
-		if (error != NULL) {
+		if (error != NULL)
 			g_warning ("context null, and error: %s", error->message);
-			g_error_free (error);
-		}
 		return;
 	}
 	if (error != NULL)
@@ -3004,9 +2895,9 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	guint idle_id;
 	const gchar *eula_id = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3054,7 +2945,7 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_CANCEL)) {
 		g_warning ("Cancel not supported by backend");
-		goto out;
+		return;
 	}
 
 	/* if it's never been run, just remove this transaction from the list */
@@ -3064,7 +2955,7 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		pk_transaction_release_tid (transaction);
-		goto out;
+		return;
 	}
 
 	/* set the state, as cancelling might take a few seconds */
@@ -3078,8 +2969,6 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 
 	/* actually run the method */
 	pk_backend_cancel (transaction->priv->backend, transaction->priv->job);
-out:
-	return;
 }
 
 /**
@@ -3091,9 +2980,9 @@ pk_transaction_cancel (PkTransaction *transaction,
 		       GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *sender;
 	guint uid;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3103,8 +2992,10 @@ pk_transaction_cancel (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_CANCEL)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Cancel not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "Cancel not supported by backend");
 		goto out;
 	}
 
@@ -3119,7 +3010,9 @@ pk_transaction_cancel (PkTransaction *transaction,
 
 	/* check to see if we have an action */
 	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NO_ROLE, "No role");
 		goto out;
 	}
 
@@ -3133,15 +3026,20 @@ pk_transaction_cancel (PkTransaction *transaction,
 
 	/* check if we saved the uid */
 	if (transaction->priv->uid == PK_TRANSACTION_UID_INVALID) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-				     "No context from caller to get UID from");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+			     "No context from caller to get UID from");
 		goto out;
 	}
 
 	/* get the UID of the caller */
 	uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 	if (uid == PK_TRANSACTION_UID_INVALID) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INVALID_STATE,
+			     "unable to get uid of caller");
 		goto out;
 	}
 
@@ -3194,14 +3092,14 @@ pk_transaction_download_packages (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	gchar *directory = NULL;
 	gint retval;
 	guint length;
 	guint max_length;
 	gboolean store_in_cache;
 	gchar **package_ids = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *directory = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3216,9 +3114,10 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "DownloadPackages not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "DownloadPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3232,9 +3131,10 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3242,8 +3142,10 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		goto out;
 	}
 
@@ -3254,8 +3156,10 @@ pk_transaction_download_packages (PkTransaction *transaction,
 		/* rwxrwxr-x */
 		retval = g_mkdir (directory, 0775);
 		if (retval != 0) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
-					     "cannot create %s", directory);
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_DENIED,
+				     "cannot create %s", directory);
 			goto out;
 		}
 	}
@@ -3268,14 +3172,14 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
-	g_free (directory);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -3288,7 +3192,7 @@ pk_transaction_get_categories (PkTransaction *transaction,
 			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3298,8 +3202,10 @@ pk_transaction_get_categories (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_CATEGORIES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetCategories not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetCategories not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3309,8 +3215,10 @@ pk_transaction_get_categories (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3327,13 +3235,13 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
 	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3349,8 +3257,10 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_DEPENDS_ON)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "DependsOn not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "DependsOn not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3364,8 +3274,10 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3373,8 +3285,10 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3388,8 +3302,10 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3406,11 +3322,11 @@ pk_transaction_get_details (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
 	gchar **package_ids;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3424,8 +3340,10 @@ pk_transaction_get_details (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_DETAILS)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDetails not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetDetails not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3439,8 +3357,10 @@ pk_transaction_get_details (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3448,10 +3368,11 @@ pk_transaction_get_details (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_string (package_ids);
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
-		g_free (package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid",
+			     package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3463,13 +3384,14 @@ pk_transaction_get_details (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -3482,14 +3404,14 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	gchar *content_type = NULL;
-	gchar *files_temp;
 	gchar **full_paths;
 	GError *error_local = NULL;
 	GError *error = NULL;
 	guint i;
 	guint length;
 	guint max_length;
+	_cleanup_free_ gchar *content_type = NULL;
+	_cleanup_free_ gchar *files_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3502,8 +3424,10 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_DETAILS_LOCAL)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDetailsLocal not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetDetailsLocal not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3525,8 +3449,10 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many files to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many files to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3579,14 +3505,14 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (files_temp);
-	g_free (content_type);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -3599,14 +3525,14 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	gchar *content_type = NULL;
-	gchar *files_temp;
 	gchar **full_paths;
 	GError *error_local = NULL;
-	GError *error = NULL;
 	guint i;
 	guint length;
 	guint max_length;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *content_type = NULL;
+	_cleanup_free_ gchar *files_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3619,8 +3545,10 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_FILES_LOCAL)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDetailsLocal not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetDetailsLocal not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3642,8 +3570,10 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many files to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many files to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3696,14 +3626,14 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (files_temp);
-	g_free (content_type);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -3716,7 +3646,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 				    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3726,8 +3656,10 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetDistroUpgrades not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetDistroUpgrades not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3738,8 +3670,10 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3756,11 +3690,11 @@ pk_transaction_get_files (PkTransaction *transaction,
 			  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
 	gchar **package_ids;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3774,8 +3708,10 @@ pk_transaction_get_files (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_FILES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetFiles not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3789,8 +3725,10 @@ pk_transaction_get_files (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3798,8 +3736,10 @@ pk_transaction_get_files (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3811,13 +3751,14 @@ pk_transaction_get_files (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -3830,8 +3771,8 @@ pk_transaction_get_packages (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3844,8 +3785,10 @@ pk_transaction_get_packages (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetPackages not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3857,8 +3800,10 @@ pk_transaction_get_packages (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3952,8 +3897,8 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3966,8 +3911,10 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_REPO_LIST)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetRepoList not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetRepoList not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3979,9 +3926,10 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR,
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -3998,13 +3946,13 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
 	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4020,8 +3968,10 @@ pk_transaction_required_by (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REQUIRED_BY)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RequiredBy not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "RequiredBy not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4035,8 +3985,10 @@ pk_transaction_required_by (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4044,8 +3996,10 @@ pk_transaction_required_by (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4059,13 +4013,14 @@ pk_transaction_required_by (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4079,10 +4034,10 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
 	gchar **package_ids;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4096,8 +4051,10 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetUpdateDetail not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetUpdateDetail not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4111,8 +4068,10 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4120,8 +4079,11 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid",
+			     package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4133,13 +4095,14 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4152,8 +4115,8 @@ pk_transaction_get_updates (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4166,8 +4129,10 @@ pk_transaction_get_updates (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_GET_UPDATES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "GetUpdates not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "GetUpdates not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4179,8 +4144,10 @@ pk_transaction_get_updates (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4194,27 +4161,23 @@ out:
 static gchar *
 pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
 {
-	GError *error_local = NULL;
-	GFile *file;
-	GFileInfo *info;
-	gchar *content_type = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileInfo *info = NULL;
 
 	/* get file info synchronously */
 	file = g_file_new_for_path (filename);
-	info = g_file_query_info (file, "standard::content-type", G_FILE_QUERY_INFO_NONE, NULL, &error_local);
+	info = g_file_query_info (file, "standard::content-type",
+				  G_FILE_QUERY_INFO_NONE, NULL, &error_local);
 	if (info == NULL) {
-		g_set_error (error, 1, 0, "failed to get file attributes for %s: %s", filename, error_local->message);
-		g_error_free (error_local);
-		goto out;
+		g_set_error (error, 1, 0,
+			     "failed to get file attributes for %s: %s",
+			     filename, error_local->message);
+		return NULL;
 	}
 
 	/* get content type as string */
-	content_type = g_file_info_get_attribute_as_string (info, "standard::content-type");
-out:
-	if (info != NULL)
-		g_object_unref (info);
-	g_object_unref (file);
-	return content_type;
+	return g_file_info_get_attribute_as_string (info, "standard::content-type");
 }
 
 /**
@@ -4224,20 +4187,17 @@ static gboolean
 pk_transaction_is_supported_content_type (PkTransaction *transaction,
 					  const gchar *content_type)
 {
-	const gchar *mime_type_tmp;
-	gboolean ret = FALSE;
+	const gchar *tmp;
 	GPtrArray *array = transaction->priv->supported_content_types;
 	guint i;
 
 	/* can we support this one? */
 	for (i = 0; i < array->len; i++) {
-		mime_type_tmp = g_ptr_array_index (array, i);
-		if (g_strcmp0 (mime_type_tmp, content_type) == 0) {
-			ret = TRUE;
-			break;
-		}
+		tmp = g_ptr_array_index (array, i);
+		if (g_strcmp0 (tmp, content_type) == 0)
+			return TRUE;
 	}
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -4248,16 +4208,16 @@ pk_transaction_install_files (PkTransaction *transaction,
 			      GVariant *params,
 			      GDBusMethodInvocation *context)
 {
-	gchar *full_paths_temp;
-	gchar *transaction_flags_temp;
 	gboolean ret;
-	GError *error = NULL;
 	GError *error_local = NULL;
-	gchar *content_type = NULL;
 	guint length;
 	guint i;
 	PkBitfield transaction_flags;
 	gchar **full_paths;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *content_type = NULL;
+	_cleanup_free_ gchar *full_paths_temp = NULL;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4274,8 +4234,10 @@ pk_transaction_install_files (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_INSTALL_FILES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallFiles not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "InstallFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4290,8 +4252,10 @@ pk_transaction_install_files (PkTransaction *transaction,
 		/* exists */
 		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-					     "No such file %s", full_paths[i]);
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
 				goto out;
 		}
@@ -4299,8 +4263,11 @@ pk_transaction_install_files (PkTransaction *transaction,
 		/* get content type */
 		content_type = pk_transaction_get_content_type_for_file (full_paths[i], &error_local);
 		if (content_type == NULL) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					     "Failed to get content type for file %s", full_paths[i]);
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Failed to get content type for file %s",
+				     full_paths[i]);
 			pk_transaction_release_tid (transaction);
 				goto out;
 		}
@@ -4310,11 +4277,16 @@ pk_transaction_install_files (PkTransaction *transaction,
 		if (!ret) {
 			if (g_strcmp0 ("application/x-app-package", content_type) == 0 ||
 			    g_str_has_suffix (full_paths[i], ".ipk") == TRUE) {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-						"Listaller is required to install %s", full_paths[i]);
+				g_set_error (&error,
+					      PK_TRANSACTION_ERROR,
+					      PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+					      "Listaller is required to install %s", full_paths[i]);
 			} else {
-				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-						"MIME type '%s' not supported %s", content_type, full_paths[i]);
+				g_set_error (&error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+					     "MIME type '%s' not supported %s",
+					     content_type, full_paths[i]);
 			}
 			pk_transaction_release_tid (transaction);
 				goto out;
@@ -4340,9 +4312,6 @@ pk_transaction_install_files (PkTransaction *transaction,
 		goto out;
 	}
 out:
-	g_free (full_paths_temp);
-	g_free (transaction_flags_temp);
-	g_free (content_type);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4355,13 +4324,13 @@ pk_transaction_install_packages (PkTransaction *transaction,
 				 GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	PkBitfield transaction_flags;
 	gchar **package_ids;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4378,8 +4347,10 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_INSTALL_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallPackages not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "InstallPackages not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4393,8 +4364,10 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4402,8 +4375,10 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4427,8 +4402,6 @@ pk_transaction_install_packages (PkTransaction *transaction,
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
-	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4441,10 +4414,10 @@ pk_transaction_install_signature (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *key_id;
 	const gchar *package_id;
 	PkSigTypeEnum sig_type;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4462,8 +4435,10 @@ pk_transaction_install_signature (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "InstallSignature not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "InstallSignature not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4478,8 +4453,10 @@ pk_transaction_install_signature (PkTransaction *transaction,
 	/* check package_id (';;;repo-id' is used for the repo key) */
 	ret = pk_package_id_check (package_id);
 	if (!ret && !g_str_has_prefix (package_id, ";;;")) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id '%s' is not valid", package_id);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4510,8 +4487,8 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	gboolean force;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4524,7 +4501,9 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REFRESH_CACHE)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RefreshCache not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
@@ -4555,15 +4534,15 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
 	PkBitfield transaction_flags;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4582,8 +4561,10 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REMOVE_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RemovePackages not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "RemovePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4597,8 +4578,10 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4606,8 +4589,10 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid", package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4633,8 +4618,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 		goto out;
 	}
 out:
-	g_free (transaction_flags_temp);
-	g_free (package_ids_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4647,9 +4630,9 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *repo_id;
 	gboolean enabled;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4663,8 +4646,10 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REPO_ENABLE)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RepoEnable not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "RepoEnable not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4702,10 +4687,10 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	const gchar *repo_id;
 	const gchar *parameter;
 	const gchar *value;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4721,8 +4706,10 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REPO_SET_DATA)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RepoSetData not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "RepoSetData not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4760,12 +4747,12 @@ pk_transaction_repo_remove (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
 {
-	GError *error = NULL;
 	PkBitfield transaction_flags;
 	const gchar *repo_id;
 	gboolean autoremove;
 	gboolean ret;
-	gchar *tmp;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *tmp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4778,7 +4765,6 @@ pk_transaction_repo_remove (PkTransaction *transaction,
 	tmp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 	g_debug ("RepoRemove method called: %s, %s, %i",
 		 tmp, repo_id, autoremove);
-	g_free (tmp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -4825,13 +4811,13 @@ pk_transaction_resolve (PkTransaction *transaction,
 			GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *packages_temp;
 	guint i;
 	guint length;
 	guint max_length;
 	PkBitfield filter;
 	gchar **packages;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *packages_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4847,8 +4833,10 @@ pk_transaction_resolve (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_RESOLVE)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Resolve not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "Resolve not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4856,9 +4844,10 @@ pk_transaction_resolve (PkTransaction *transaction,
 	/* check for length sanity */
 	length = g_strv_length (packages);
 	if (length == 0) {
-		error = g_error_new (PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Too few items to process");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Too few items to process");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4869,8 +4858,10 @@ pk_transaction_resolve (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Too many items to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Too many items to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4892,13 +4883,14 @@ pk_transaction_resolve (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
 out:
-	g_free (packages_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -4911,9 +4903,9 @@ pk_transaction_search_details (PkTransaction *transaction,
 			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
 	gchar **values;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4928,8 +4920,10 @@ pk_transaction_search_details (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_SEARCH_DETAILS)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchDetails not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "SearchDetails not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4949,8 +4943,10 @@ pk_transaction_search_details (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4967,10 +4963,10 @@ pk_transaction_search_files (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	guint i;
 	PkBitfield filter;
 	gchar **values;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4985,8 +4981,10 @@ pk_transaction_search_files (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_SEARCH_FILE)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchFiles not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "SearchFiles not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -4999,10 +4997,12 @@ pk_transaction_search_files (PkTransaction *transaction,
 	}
 
 	/* when not an absolute path, disallow slashes in search */
-	for (i=0; values[i] != NULL; i++) {
+	for (i = 0; values[i] != NULL; i++) {
 		if (values[i][0] != '/' && strstr (values[i], "/") != NULL) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
-					     "Invalid search path");
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
+				     "Invalid search path");
 			pk_transaction_release_tid (transaction);
 			goto out;
 		}
@@ -5016,8 +5016,10 @@ pk_transaction_search_files (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5034,10 +5036,10 @@ pk_transaction_search_groups (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	guint i;
 	PkBitfield filter;
 	gchar **values;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5052,8 +5054,10 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_SEARCH_GROUP)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchGroups not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "SearchGroups not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5066,10 +5070,12 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	}
 
 	/* do not allow spaces */
-	for (i=0; values[i] != NULL; i++) {
+	for (i = 0; values[i] != NULL; i++) {
 		if (strstr (values[i], " ") != NULL) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
-					     "Invalid search containing spaces");
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
+				     "Invalid search containing spaces");
 			pk_transaction_release_tid (transaction);
 			goto out;
 		}
@@ -5083,8 +5089,10 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5101,9 +5109,9 @@ pk_transaction_search_names (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
 	gchar **values;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5118,8 +5126,10 @@ pk_transaction_search_names (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_SEARCH_NAME)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "SearchNames not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "SearchNames not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5139,8 +5149,10 @@ pk_transaction_search_names (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5167,15 +5179,17 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 		/* already set */
 		if (priv->locale != NULL) {
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					      "Already set locale to %s", priv->locale);
-			ret = FALSE;
-			goto out;
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "Already set locale to %s",
+				      priv->locale);
+			return FALSE;
 		}
 
 		/* success */
 		priv->locale = g_strdup (value);
-		goto out;
+		return TRUE;
 	}
 
 	/* frontend_socket=/tmp/socket.3456 */
@@ -5183,39 +5197,43 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 		/* already set */
 		if (priv->frontend_socket != NULL) {
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Already set frontend-socket to %s", priv->frontend_socket);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		/* nothing provided */
 		if (value == NULL || value[0] == '\0') {
-			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "Could not set frontend-socket to nothing");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		/* nothing provided */
 		if (value[0] != '/') {
-			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "frontend-socket has to be an absolute path");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		/* socket does not exist */
 		if (!g_file_test (value, G_FILE_TEST_EXISTS)) {
-			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "frontend-socket does not exist");
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 
 		/* success */
 		priv->frontend_socket = g_strdup (value);
-		goto out;
+		return TRUE;
 	}
 
 	/* background=true */
@@ -5223,11 +5241,13 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		priv->background = pk_hint_enum_from_string (value);
 		if (priv->background == PK_HINT_ENUM_INVALID) {
 			priv->background = PK_HINT_ENUM_UNSET;
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					      "background hint expects true or false, not %s", value);
-			ret = FALSE;
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "background hint expects true or false, not %s", value);
+			return FALSE;
 		}
-		goto out;
+		return TRUE;
 	}
 
 	/* interactive=true */
@@ -5235,11 +5255,13 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		priv->interactive = pk_hint_enum_from_string (value);
 		if (priv->interactive == PK_HINT_ENUM_INVALID) {
 			priv->interactive = PK_HINT_ENUM_UNSET;
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					      "interactive hint expects true or false, not %s", value);
-			ret = FALSE;
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "interactive hint expects true or false, not %s", value);
+			return FALSE;
 		}
-		goto out;
+		return TRUE;
 	}
 
 	/* cache-age=<time-in-seconds> */
@@ -5247,24 +5269,27 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		ret = pk_strtouint (value, &priv->cache_age);
 		if (!ret) {
 			priv->cache_age = G_MAXUINT;
-			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "cannot parse cache age value %s", value);
 			ret = FALSE;
 		}
 		if (priv->cache_age == 0) {
 			priv->cache_age = G_MAXUINT;
-			g_set_error_literal (error, PK_TRANSACTION_ERROR,
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "cannot set a cache age of zero");
-			ret = FALSE;
+			return FALSE;
 		}
-		goto out;
+		return TRUE;
 	}
 
-	/* to preserve forwards and backwards compatibility, we ignore extra options here */
+	/* to preserve forwards and backwards compatibility, we ignore
+	 * extra options here */
 	g_warning ("unknown option: %s with value %s", key, value);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -5275,40 +5300,38 @@ pk_transaction_set_hints (PkTransaction *transaction,
 			  GVariant *params,
 			  GDBusMethodInvocation *context)
 {
-	GError *error = NULL;
 	gboolean ret;
 	guint i;
-	gchar **sections;
-	gchar *dbg;
 	const gchar **hints = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *dbg = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(^a&s)",
-		       &hints);
-
+	g_variant_get (params, "(^a&s)", &hints);
 	dbg = g_strjoinv (", ", (gchar**) hints);
 	g_debug ("SetHints method called: %s", dbg);
 
 	/* parse */
-	for (i=0; hints[i] != NULL; i++) {
+	for (i = 0; hints[i] != NULL; i++) {
+		_cleanup_strv_free_ gchar **sections = NULL;
 		sections = g_strsplit (hints[i], "=", 2);
 		if (g_strv_length (sections) == 2) {
-			ret = pk_transaction_set_hint (transaction, sections[0], sections[1], &error);
+			ret = pk_transaction_set_hint (transaction,
+						       sections[0],
+						       sections[1],
+						       &error);
+			if (!ret)
+				goto out;
 		} else {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (&error, PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "Could not parse hint '%s'", hints[i]);
-			ret = FALSE;
-		}
-		g_strfreev (sections);
-
-		/* we failed, so abort current list */
-		if (!ret)
 			goto out;
+		}
 	}
 out:
-	g_free (dbg);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -5321,13 +5344,13 @@ pk_transaction_update_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
-	gchar *package_ids_temp;
-	gchar *transaction_flags_temp;
 	guint length;
 	guint max_length;
 	PkBitfield transaction_flags;
 	gchar **package_ids;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *package_ids_temp = NULL;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5344,8 +5367,10 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_UPDATE_PACKAGES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "UpdatePackages not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "UpdatePackages not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5359,8 +5384,11 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	if (max_length == 0)
 		goto out;
 	if (length > max_length) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "Too many packages to process (%i/%i)", length, max_length);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+			     "Too many packages to process (%i/%i)",
+			     length, max_length);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5368,8 +5396,11 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_ids_temp);
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+			     "The package id's '%s' are not valid",
+			     package_ids_temp);
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5393,8 +5424,6 @@ pk_transaction_update_packages (PkTransaction *transaction,
 		goto out;
 	}
 out:
-	g_free (package_ids_temp);
-	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -5407,9 +5436,9 @@ pk_transaction_what_provides (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield filter;
 	gchar **values;
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5424,8 +5453,10 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_WHAT_PROVIDES)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "WhatProvides not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "WhatProvides not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5445,8 +5476,10 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
+			     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5463,9 +5496,9 @@ pk_transaction_repair_system (PkTransaction *transaction,
 			      GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	gchar *transaction_flags_temp;
-	GError *error = NULL;
 	PkBitfield transaction_flags;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5479,8 +5512,10 @@ pk_transaction_repair_system (PkTransaction *transaction,
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_REPAIR_SYSTEM)) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "RepairSystem not supported by backend");
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "RepairSystem not supported by backend");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -5503,7 +5538,6 @@ pk_transaction_repair_system (PkTransaction *transaction,
 		goto out;
 	}
 out:
-	g_free (transaction_flags_temp);
 	pk_transaction_dbus_return (context, error);
 }
 
@@ -5527,60 +5561,34 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 			     const gchar *property_name, GError **error,
 			     gpointer user_data)
 {
-	GVariant *retval = NULL;
 	PkTransaction *transaction = PK_TRANSACTION (user_data);
 	PkTransactionPrivate *priv = transaction->priv;
 
-	if (g_strcmp0 (property_name, "Role") == 0) {
-		retval = g_variant_new_uint32 (priv->role);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "Status") == 0) {
-		retval = g_variant_new_uint32 (priv->status);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "LastPackage") == 0) {
-		retval = _g_variant_new_maybe_string (priv->last_package_id);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "Uid") == 0) {
-		retval = g_variant_new_uint32 (priv->uid);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "Percentage") == 0) {
-		retval = g_variant_new_uint32 (transaction->priv->percentage);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "AllowCancel") == 0) {
-		retval = g_variant_new_boolean (priv->allow_cancel);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "CallerActive") == 0) {
-		retval = g_variant_new_boolean (priv->caller_active);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "ElapsedTime") == 0) {
-		retval = g_variant_new_uint32 (priv->elapsed_time);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "RemainingTime") == 0) {
-		retval = g_variant_new_uint32 (priv->remaining_time);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "Speed") == 0) {
-		retval = g_variant_new_uint32 (priv->speed);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0) {
-		retval = g_variant_new_uint64 (priv->download_size_remaining);
-		goto out;
-	}
-	if (g_strcmp0 (property_name, "TransactionFlags") == 0) {
-		retval = g_variant_new_uint64 (priv->cached_transaction_flags);
-		goto out;
-	}
-out:
-	return retval;
+	if (g_strcmp0 (property_name, "Role") == 0)
+		return g_variant_new_uint32 (priv->role);
+	if (g_strcmp0 (property_name, "Status") == 0)
+		return g_variant_new_uint32 (priv->status);
+	if (g_strcmp0 (property_name, "LastPackage") == 0)
+		return _g_variant_new_maybe_string (priv->last_package_id);
+	if (g_strcmp0 (property_name, "Uid") == 0)
+		return g_variant_new_uint32 (priv->uid);
+	if (g_strcmp0 (property_name, "Percentage") == 0)
+		return g_variant_new_uint32 (transaction->priv->percentage);
+	if (g_strcmp0 (property_name, "AllowCancel") == 0)
+		return g_variant_new_boolean (priv->allow_cancel);
+	if (g_strcmp0 (property_name, "CallerActive") == 0)
+		return g_variant_new_boolean (priv->caller_active);
+	if (g_strcmp0 (property_name, "ElapsedTime") == 0)
+		return g_variant_new_uint32 (priv->elapsed_time);
+	if (g_strcmp0 (property_name, "RemainingTime") == 0)
+		return g_variant_new_uint32 (priv->remaining_time);
+	if (g_strcmp0 (property_name, "Speed") == 0)
+		return g_variant_new_uint32 (priv->speed);
+	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0)
+		return g_variant_new_uint64 (priv->download_size_remaining);
+	if (g_strcmp0 (property_name, "TransactionFlags") == 0)
+		return g_variant_new_uint64 (priv->cached_transaction_flags);
+	return NULL;
 }
 
 /**
@@ -5593,185 +5601,150 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 			    GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	PkTransaction *transaction = PK_TRANSACTION (user_data);
-	gboolean ret = TRUE;
 
 	g_return_if_fail (transaction->priv->sender != NULL);
 
 	/* check is the same as the sender that did CreateTransaction */
-	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
-	if (!ret) {
+	if (g_strcmp0 (transaction->priv->sender, sender) != 0) {
 		g_dbus_method_invocation_return_error (invocation,
 						       PK_TRANSACTION_ERROR,
 						       PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 						       "sender does not match (%s vs %s)",
 						       sender,
 						       transaction->priv->sender);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "SetHints") == 0) {
 		pk_transaction_set_hints (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "AcceptEula") == 0) {
 		pk_transaction_accept_eula (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "Cancel") == 0) {
 		pk_transaction_cancel (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "DownloadPackages") == 0) {
 		pk_transaction_download_packages (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetCategories") == 0) {
 		pk_transaction_get_categories (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "DependsOn") == 0) {
 		pk_transaction_depends_on (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetDetails") == 0) {
 		pk_transaction_get_details (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetDetailsLocal") == 0) {
 		pk_transaction_get_details_local (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetFilesLocal") == 0) {
 		pk_transaction_get_files_local (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetFiles") == 0) {
 		pk_transaction_get_files (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetOldTransactions") == 0) {
 		pk_transaction_get_old_transactions (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetPackages") == 0) {
 		pk_transaction_get_packages (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetRepoList") == 0) {
 		pk_transaction_get_repo_list (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RequiredBy") == 0) {
 		pk_transaction_required_by (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetUpdateDetail") == 0) {
 		pk_transaction_get_update_detail (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetUpdates") == 0) {
 		pk_transaction_get_updates (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "GetDistroUpgrades") == 0) {
 		pk_transaction_get_distro_upgrades (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "InstallFiles") == 0) {
 		pk_transaction_install_files (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "InstallPackages") == 0) {
 		pk_transaction_install_packages (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "InstallSignature") == 0) {
 		pk_transaction_install_signature (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RefreshCache") == 0) {
 		pk_transaction_refresh_cache (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RemovePackages") == 0) {
 		pk_transaction_remove_packages (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RepoEnable") == 0) {
 		pk_transaction_repo_enable (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RepoSetData") == 0) {
 		pk_transaction_repo_set_data (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RepoRemove") == 0) {
 		pk_transaction_repo_remove (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "Resolve") == 0) {
 		pk_transaction_resolve (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "SearchDetails") == 0) {
 		pk_transaction_search_details (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "SearchFiles") == 0) {
 		pk_transaction_search_files (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "SearchGroups") == 0) {
 		pk_transaction_search_groups (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "SearchNames") == 0) {
 		pk_transaction_search_names (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "UpdatePackages") == 0) {
 		pk_transaction_update_packages (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "WhatProvides") == 0) {
 		pk_transaction_what_provides (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
-
 	if (g_strcmp0 (method_name, "RepairSystem") == 0) {
 		pk_transaction_repair_system (transaction, parameters, invocation);
-		goto out;
+		return;
 	}
 
 	/* nothing matched */
@@ -5780,8 +5753,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 					       PK_TRANSACTION_ERROR_INVALID_STATE,
 					       "method from %s not recognised",
 					       sender);
-out:
-	return;
 }
 
 /**
@@ -5881,7 +5852,7 @@ static void
 pk_transaction_init (PkTransaction *transaction)
 {
 	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->caller_active = TRUE;
@@ -5898,19 +5869,14 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
 	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
-	if (transaction->priv->authority == NULL) {
+	if (transaction->priv->authority == NULL)
 		g_error ("failed to get pokit authority: %s", error->message);
-		g_error_free (error);
-	}
 	transaction->priv->cancellable = g_cancellable_new ();
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (transaction->priv->transaction_db, &error);
-	if (!ret) {
-		g_error ("PkEngine: failed to load transaction db: %s",
-			 error->message);
-		g_error_free (error);
-	}
+	if (!ret)
+		g_error ("PkEngine: failed to load transaction db: %s", error->message);
 }
 
 /**

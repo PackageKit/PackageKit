@@ -62,6 +62,7 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-common.h>
 
+#include "pk-cleanup.h"
 #include "pk-shared.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -384,16 +385,16 @@ static guint
 pk_transaction_list_get_exclusive_running (PkTransactionList *tlist)
 {
 	PkTransactionItem *item = NULL;
-	GPtrArray *array;
 	guint exclusive_running = 0;
 	guint i;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	/* anything running? */
 	array = pk_transaction_list_get_active_transactions (tlist);
 	if (array->len == 0)
-		goto out;
+		return 0;
 
 	/* check if we have any running locked (exclusive) transaction */
 	for (i = 0; i < array->len; i++) {
@@ -405,8 +406,6 @@ pk_transaction_list_get_exclusive_running (PkTransactionList *tlist)
 			exclusive_running++;
 		}
 	}
-out:
-	g_ptr_array_free (array, TRUE);
 	return exclusive_running;
 }
 
@@ -419,28 +418,23 @@ static gboolean
 pk_transaction_list_get_background_running (PkTransactionList *tlist)
 {
 	PkTransactionItem *item = NULL;
-	GPtrArray *array;
-	gboolean ret = FALSE;
 	guint i;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	/* anything running? */
 	array = pk_transaction_list_get_active_transactions (tlist);
 	if (array->len == 0)
-		goto out;
+		return FALSE;
 
 	/* check if we have any running background transaction */
 	for (i = 0; i < array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (item->background) {
-			ret = TRUE;
-			goto out;
-		}
+		if (item->background)
+			return TRUE;
 	}
-out:
-	g_ptr_array_free (array, TRUE);
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -631,7 +625,7 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL) {
 		g_set_error (error, 1, 0, "already added %s to list", tid);
-		goto out;
+		return FALSE;
 	}
 
 	/* add to the array */
@@ -654,21 +648,21 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to set transaction state 'new': %s", tid);
-		goto out;
+		return FALSE;
 	}
 
 	/* set the TID on the transaction */
 	ret = pk_transaction_set_tid (item->transaction, item->tid);
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to set TID: %s", tid);
-		goto out;
+		return FALSE;
 	}
 
 	/* set the DBUS sender on the transaction */
 	ret = pk_transaction_set_sender (item->transaction, sender);
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to set sender: %s", tid);
-		goto out;
+		return FALSE;
 	}
 
 	/* set the master PkBackend really early (i.e. before
@@ -690,19 +684,14 @@ pk_transaction_list_create (PkTransactionList *tlist,
 					    "Daemon",
 					    "SimultaneousTransactionsForUid",
 					    error);
-	if (max_count == 0) {
-		ret = FALSE;
-		goto out;
-	}
+	if (max_count == 0)
+		return FALSE;
 	if (count > max_count) {
 		g_set_error (error, 1, 0, "failed to allocate %s as uid %i already has %i transactions in progress", tid, item->uid, count);
 
 		/* free transaction, as it's never going to be added */
 		pk_transaction_list_item_free (item);
-
-		/* failure */
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
@@ -710,17 +699,14 @@ pk_transaction_list_create (PkTransactionList *tlist,
 					  "Daemon",
 					  "TransactionCreateCommitTimeout",
 					  error);
-	if (timeout == 0) {
-		ret = FALSE;
-		goto out;
-	}
+	if (timeout == 0)
+		return FALSE;
 	item->commit_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_no_commit_cb, item);
 	g_source_set_name_by_id (item->commit_id, "[PkTransactionList] commit");
 
 	g_debug ("adding transaction %p", item->transaction);
 	g_ptr_array_add (tlist->priv->array, item);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -734,16 +720,15 @@ pk_transaction_list_get_locked (PkTransactionList *tlist)
 {
 	PkBackendJob *job;
 	PkTransactionItem *item;
-	GPtrArray *array;
 	guint i;
-	gboolean ret = FALSE;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	/* anything running? */
 	array = pk_transaction_list_get_active_transactions (tlist);
 	if (array->len == 0)
-		goto out;
+		return FALSE;
 
 	/* check if any backend in running transaction is locked at time */
 	for (i = 0; i < array->len; i++) {
@@ -752,15 +737,10 @@ pk_transaction_list_get_locked (PkTransactionList *tlist)
 		job = pk_transaction_get_backend_job (item->transaction);
 		if (job == NULL)
 			continue;
-
-		ret = pk_backend_job_get_locked (job);
-		if (ret)
-			goto out;
+		if (pk_backend_job_get_locked (job))
+			return TRUE;
 	}
-
-out:
-	g_ptr_array_free (array, TRUE);
-	return ret;
+	return FALSE;
 }
 
 /**
@@ -886,10 +866,9 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 {
 	guint i;
 	guint length;
-	GPtrArray *parray;
-	gchar **array;
 	PkTransactionItem *item;
 	PkTransactionState state;
+	_cleanup_ptrarray_unref_ GPtrArray *parray = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
@@ -908,10 +887,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
 	g_debug ("%i transactions in list, %i committed but not finished", length, parray->len);
-	array = pk_ptr_array_to_strv (parray);
-	g_ptr_array_unref (parray);
-
-	return array;
+	return pk_ptr_array_to_strv (parray);
 }
 
 /**
@@ -979,10 +955,9 @@ out:
 static void
 pk_transaction_list_print (PkTransactionList *tlist)
 {
-	gchar *state;
+	_cleanup_free_ gchar *state = NULL;
 	state = pk_transaction_list_get_state (tlist);
 	g_debug ("%s", state);
-	g_free (state);
 }
 
 /**
@@ -1011,7 +986,7 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 	/* find all the transactions */
 	length = tlist->priv->array->len;
 	if (length == 0)
-		goto out;
+		return TRUE;
 
 	/* get state */
 	for (i = 0; i < length; i++) {
@@ -1062,7 +1037,6 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		g_warning ("everything is waiting!");
 		ret = FALSE;
 	}
-out:
 	return ret;
 }
 
@@ -1080,13 +1054,13 @@ pk_transaction_list_wedge_check2 (PkTransactionList *tlist)
 	ret = pk_transaction_list_is_consistent (tlist);
 	if (ret) {
 		g_debug ("panic over");
-		goto out;
+		return FALSE;
 	}
 
 	/* dump all the state we know */
 	g_warning ("dumping data:");
 	pk_transaction_list_print (tlist);
-out:
+
 	/* never repeat */
 	return FALSE;
 }

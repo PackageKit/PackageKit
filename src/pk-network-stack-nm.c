@@ -26,6 +26,7 @@
 #include <gio/gio.h>
 #include <NetworkManager.h>
 
+#include "pk-cleanup.h"
 #include "pk-network-stack-nm.h"
 
 #ifndef NM_CHECK_VERSION
@@ -67,10 +68,9 @@ static NMDeviceType
 pk_network_stack_nm_get_active_connection_type_for_device (PkNetworkStackNm *nstack_nm,
 							   const gchar *device)
 {
-	GDBusProxy *proxy;
-	GError *error = NULL;
-	GVariant *value = NULL;
-	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get if the device is default */
 	proxy = g_dbus_proxy_new_sync (nstack_nm->priv->bus,
@@ -83,20 +83,12 @@ pk_network_stack_nm_get_active_connection_type_for_device (PkNetworkStackNm *nst
 				       &error);
 	if (proxy == NULL) {
 		g_warning ("Error getting DeviceType: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	}
 	value = g_dbus_proxy_get_cached_property (proxy, "DeviceType");
 	if (value == NULL)
-		goto out;
-	type = g_variant_get_uint32 (value);
-	g_debug ("type: %i", type);
-out:
-	if (proxy != NULL)
-		g_object_unref (proxy);
-	if (value != NULL)
-		g_variant_unref (value);
-	return type;
+		return NM_DEVICE_TYPE_UNKNOWN;
+	return g_variant_get_uint32 (value);
 }
 
 /**
@@ -108,13 +100,13 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 {
 	const gchar *device;
 	gboolean is_default;
-	GDBusProxy *proxy;
-	GError *error = NULL;
-	GVariantIter *iter = NULL;
-	GVariant *value_default = NULL;
-	GVariant *value_devices = NULL;
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 	NMDeviceType type_tmp;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_variant_iter_free_ GVariantIter *iter = NULL;
+	_cleanup_variant_unref_ GVariant *value_default = NULL;
+	_cleanup_variant_unref_ GVariant *value_devices = NULL;
 
 	/* get if the device is default */
 	proxy = g_dbus_proxy_new_sync (nstack_nm->priv->bus,
@@ -127,41 +119,30 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 				       &error);
 	if (proxy == NULL) {
 		g_warning ("Error getting Default: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	}
 	value_default = g_dbus_proxy_get_cached_property (proxy, "Default");
 	if (value_default == NULL)
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	is_default = g_variant_get_boolean (value_default);
 	g_debug ("is_default: %i", is_default);
 	if (!is_default) {
 		g_debug ("not default, skipping");
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	}
 
 	/* get the physical devices for the connection */
 	value_devices = g_dbus_proxy_get_cached_property (proxy, "Devices");
 	if (value_devices == NULL)
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	g_variant_get (value_devices, "ao", &iter);
 
 	/* find the types of the active connection */
 	while (g_variant_iter_next (iter, "&o", &device)) {
 		type_tmp = pk_network_stack_nm_get_active_connection_type_for_device (nstack_nm,
 										      device);
-		type = pk_network_stack_nm_prioritise_connection_type (type,
-								       type_tmp);
+		type = pk_network_stack_nm_prioritise_connection_type (type, type_tmp);
 	}
-out:
-	if (iter != NULL)
-		g_variant_iter_free (iter);
-	if (proxy != NULL)
-		g_object_unref (proxy);
-	if (value_devices != NULL)
-		g_variant_unref (value_devices);
-	if (value_default != NULL)
-		g_variant_unref (value_default);
 	return type;
 }
 
@@ -172,12 +153,12 @@ static NMDeviceType
 pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 {
 	const gchar *active_connection;
-	GDBusProxy *proxy;
-	GError *error = NULL;
-	GVariantIter *iter = NULL;
-	GVariant *value = NULL;
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 	NMDeviceType type_tmp;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusProxy *proxy;
+	_cleanup_variant_iter_free_ GVariantIter *iter = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get proxy */
 	proxy = g_dbus_proxy_new_sync (nstack_nm->priv->bus,
@@ -190,12 +171,11 @@ pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 				       &error);
 	if (proxy == NULL) {
 		g_warning ("Error getting ActiveConnections: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	}
 	value = g_dbus_proxy_get_cached_property (proxy, "ActiveConnections");
 	if (value == NULL)
-		goto out;
+		return NM_DEVICE_TYPE_UNKNOWN;
 	g_variant_get (value, "ao", &iter);
 
 	/* find the active connection */
@@ -204,14 +184,6 @@ pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 											  active_connection);
 		type = pk_network_stack_nm_prioritise_connection_type (type, type_tmp);
 	}
-
-out:
-	if (iter != NULL)
-		g_variant_iter_free (iter);
-	if (proxy != NULL)
-		g_object_unref (proxy);
-	if (value != NULL)
-		g_variant_unref (value);
 	return type;
 }
 
@@ -327,16 +299,14 @@ pk_network_stack_nm_dbus_signal_cb (GDBusProxy *proxy,
 static void
 pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 {
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	nstack_nm->priv = PK_NETWORK_STACK_NM_GET_PRIVATE (nstack_nm);
 
 	/* get system connection */
 	nstack_nm->priv->bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
-	if (nstack_nm->priv->bus == NULL) {
+	if (nstack_nm->priv->bus == NULL)
 		g_warning ("Couldn't connect to system bus: %s", error->message);
-		g_error_free (error);
-	}
 
 	/* check if NM is on the bus */
 	nstack_nm->priv->watch_id =

@@ -31,6 +31,7 @@
  #include <systemd/sd-login.h>
 #endif
 
+#include "pk-cleanup.h"
 #include "pk-dbus.h"
 
 #define PK_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DBUS, PkDbusPrivate))
@@ -59,9 +60,9 @@ G_DEFINE_TYPE (PkDbus, pk_dbus, G_TYPE_OBJECT)
 guint
 pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 {
-	GError *error = NULL;
 	guint uid = G_MAXUINT;
-	GVariant *value = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
@@ -69,10 +70,8 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	/* set in the test suite */
 	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
 		g_debug ("using self-check shortcut");
-		uid = 500;
-		goto out;
+		return 500;
 	}
-
 	value = g_dbus_proxy_call_sync (dbus->priv->proxy_uid,
 					"GetConnectionUnixUser",
 					g_variant_new ("(s)",
@@ -84,13 +83,9 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	if (value == NULL) {
 		g_warning ("Failed to get uid for %s: %s",
 			   sender, error->message);
-		g_error_free (error);
-		goto out;
+		return G_MAXUINT;
 	}
 	g_variant_get (value, "(u)", &uid);
-out:
-	if (value != NULL)
-		g_variant_unref (value);
 	return uid;
 }
 
@@ -106,9 +101,9 @@ out:
 guint
 pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 {
-	GError *error = NULL;
 	guint pid = G_MAXUINT;
-	GVariant *value = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
@@ -116,13 +111,12 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	/* set in the test suite */
 	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
 		g_debug ("using self-check shortcut");
-		pid = G_MAXUINT - 1;
-		goto out;
+		return G_MAXUINT - 1;
 	}
 
 	/* no connection to DBus */
 	if (dbus->priv->proxy_pid == NULL)
-		goto out;
+		return G_MAXUINT;
 
 	/* get pid from DBus */
 	value = g_dbus_proxy_call_sync (dbus->priv->proxy_pid,
@@ -136,13 +130,9 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	if (value == NULL) {
 		g_warning ("Failed to get pid for %s: %s",
 			   sender, error->message);
-		g_error_free (error);
-		goto out;
+		return G_MAXUINT;
 	}
 	g_variant_get (value, "(u)", &pid);
-out:
-	if (value != NULL)
-		g_variant_unref (value);
 	return pid;
 }
 
@@ -159,10 +149,10 @@ gchar *
 pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 {
 	gboolean ret;
-	gchar *filename = NULL;
 	gchar *cmdline = NULL;
-	GError *error = NULL;
 	guint pid;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *filename = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
@@ -170,26 +160,21 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	/* set in the test suite */
 	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
 		g_debug ("using self-check shortcut");
-		cmdline = g_strdup ("/usr/sbin/packagekit");
-		goto out;
+		return g_strdup ("/usr/sbin/packagekit");
 	}
 
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
 		g_warning ("failed to get PID");
-		goto out;
+		return NULL;
 	}
 
 	/* get command line from proc */
 	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
 	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
-	if (!ret) {
+	if (!ret)
 		g_warning ("failed to get cmdline: %s", error->message);
-		g_error_free (error);
-	}
-out:
-	g_free (filename);
 	return cmdline;
 }
 
@@ -237,10 +222,10 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 {
 	gchar *session = NULL;
 #ifndef PK_BUILD_SYSTEMD
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 #endif
 	guint pid;
-	GVariant *value = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
@@ -281,14 +266,11 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	if (value == NULL) {
 		g_warning ("Failed to get session for %s: %s",
 			   sender, error->message);
-		g_error_free (error);
 		goto out;
 	}
 	g_variant_get (value, "(o)", &session);
 #endif
 out:
-	if (value != NULL)
-		g_variant_unref (value);
 	return session;
 }
 
@@ -334,16 +316,14 @@ pk_dbus_class_init (PkDbusClass *klass)
 static void
 pk_dbus_init (PkDbus *dbus)
 {
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 
 	/* use the bus to get the uid */
 	dbus->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
 						 NULL, &error);
 	if (dbus->priv->connection == NULL) {
-		g_warning ("cannot connect to the system bus: %s",
-			   error->message);
-		g_error_free (error);
+		g_warning ("cannot connect to the system bus: %s", error->message);
 		return;
 	}
 
@@ -360,7 +340,7 @@ pk_dbus_init (PkDbus *dbus)
 				       &error);
 	if (dbus->priv->proxy_pid == NULL) {
 		g_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
+		return;
 	}
 
 	/* connect to DBus so we can get the uid */
@@ -376,7 +356,7 @@ pk_dbus_init (PkDbus *dbus)
 				       &error);
 	if (dbus->priv->proxy_pid == NULL) {
 		g_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
+		return;
 	}
 
 	/* use ConsoleKit to get the session */
@@ -392,7 +372,7 @@ pk_dbus_init (PkDbus *dbus)
 				       &error);
 	if (dbus->priv->proxy_session == NULL) {
 		g_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
+		return;
 	}
 }
 

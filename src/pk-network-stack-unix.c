@@ -37,6 +37,7 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include "pk-cleanup.h"
 #include "pk-network-stack-unix.h"
 
 struct PkNetworkStackUnixPrivate
@@ -57,52 +58,47 @@ G_DEFINE_TYPE (PkNetworkStackUnix, pk_network_stack_unix, PK_TYPE_NETWORK_STACK)
 static gboolean
 pk_network_stack_unix_is_valid (const gchar *line)
 {
-	gchar **sections = NULL;
-	gboolean online = FALSE;
 	guint number_sections;
+	_cleanup_strv_free_ gchar **sections = NULL;
 
 	/* empty line */
 	if (line == NULL || line[0] == '\0')
-		goto out;
+		return FALSE;
 
 	/* tab delimited */
 	sections = g_strsplit (line, "\t", 0);
 	if (sections == NULL) {
 		g_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
-		goto out;
+		return FALSE;
 	}
 
 	/* is header? */
 	if (g_strcmp0 (sections[0], "Iface") == 0)
-		goto out;
+		return FALSE;
 
 	/* is loopback? */
 	if (g_strcmp0 (sections[0], "lo") == 0)
-		goto out;
+		return FALSE;
 
 	/* is correct parameters? */
 	number_sections = g_strv_length (sections);
 	if (number_sections != 11) {
 		g_warning ("invalid line '%s' (%i)", line, number_sections);
-		goto out;
+		return FALSE;
 	}
 
 	/* is destination zero (default route)? */
 	if (g_strcmp0 (sections[1], "00000000") == 0) {
 		g_debug ("destination %s is valid", sections[0]);
-		online = TRUE;
-		goto out;
+		return TRUE;
 	}
 
 	/* is gateway nonzero? */
 	if (g_strcmp0 (sections[2], "00000000") != 0) {
 		g_debug ("interface %s is valid", sections[0]);
-		online = TRUE;
-		goto out;
+		return TRUE;
 	}
-out:
-	g_strfreev (sections);
-	return online;
+	return FALSE;
 }
 
 /**
@@ -111,57 +107,42 @@ out:
 static PkNetworkEnum
 pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 {
-	gchar *contents = NULL;
 	gboolean ret;
-	GError *error = NULL;
-	gchar **lines = NULL;
-	guint number_lines;
 	guint i;
-	gboolean online = FALSE;
-	PkNetworkEnum state = PK_NETWORK_ENUM_ONLINE;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *contents = NULL;
+	_cleanup_strv_free_ gchar **lines = NULL;
 
 	/* no warning if the file is missing, like if no /proc */
-	if (!g_file_test (PK_NETWORK_PROC_ROUTE, G_FILE_TEST_EXISTS)) {
-		goto out;
-	}
+	if (!g_file_test (PK_NETWORK_PROC_ROUTE, G_FILE_TEST_EXISTS))
+		return PK_NETWORK_ENUM_ONLINE;
 
 	/* hack, because netlink is teh suck */
 	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
 	if (!ret) {
 		g_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
-		g_error_free (error);
-		/* no idea whatsoever! */
-		goto out;
+		return PK_NETWORK_ENUM_ONLINE;
 	}
 
 	/* something insane */
 	if (contents == NULL) {
 		g_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
-		goto out;
+		return PK_NETWORK_ENUM_ONLINE;
 	}
 
 	/* one line per interface */
 	lines = g_strsplit (contents, "\n", 0);
 	if (lines == NULL) {
 		g_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
-		goto out;
+		return PK_NETWORK_ENUM_ONLINE;
 	}
 
-	number_lines = g_strv_length (lines);
-	for (i=0; i<number_lines; i++) {
-
-		/* is valid interface */
-		ret = pk_network_stack_unix_is_valid (lines[i]);
-		if (ret)
-			online = TRUE;
+	/* is valid interface */
+	for (i = 0; lines[i] != NULL; i++) {
+		if (pk_network_stack_unix_is_valid (lines[i]))
+			return PK_NETWORK_ENUM_ONLINE;
 	}
-
-	if (!online)
-		state = PK_NETWORK_ENUM_OFFLINE;
-out:
-	g_free (contents);
-	g_strfreev (lines);
-	return state;
+	return PK_NETWORK_ENUM_OFFLINE;
 }
 
 /**
@@ -215,8 +196,8 @@ pk_network_stack_unix_is_enabled (PkNetworkStack *nstack)
 static void
 pk_network_stack_unix_init (PkNetworkStackUnix *nstack_unix)
 {
-	GError *error = NULL;
-	GFile *file;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
 
 	nstack_unix->priv = PK_NETWORK_STACK_UNIX_GET_PRIVATE (nstack_unix);
 	nstack_unix->priv->state_old = PK_NETWORK_ENUM_UNKNOWN;
@@ -230,14 +211,11 @@ pk_network_stack_unix_init (PkNetworkStackUnix *nstack_unix)
 							  &error);
 	if (nstack_unix->priv->monitor == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
-			   PK_NETWORK_PROC_ROUTE,
-			   error->message);
-		g_error_free (error);
+			   PK_NETWORK_PROC_ROUTE, error->message);
 	} else {
 		g_signal_connect (nstack_unix->priv->monitor, "changed",
 				  G_CALLBACK (pk_network_stack_unix_file_monitor_changed_cb), nstack_unix);
 	}
-	g_object_unref (file);
 }
 
 /**

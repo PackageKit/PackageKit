@@ -393,7 +393,7 @@ pk_enum_find_value (const PkEnumMatch *table, const gchar *string)
 	if (string == NULL) {
 		return table[0].value;
 	}
-	for (i=0;;i++) {
+	for (i = 0;;i++) {
 		string_tmp = table[i].string;
 		if (string_tmp == NULL)
 			break;
@@ -420,7 +420,7 @@ pk_enum_find_string (const PkEnumMatch *table, guint value)
 	guint tmp;
 	const gchar *string_tmp;
 
-	for (i=0;;i++) {
+	for (i = 0;;i++) {
 		string_tmp = table[i].string;
 		if (string_tmp == NULL)
 			break;

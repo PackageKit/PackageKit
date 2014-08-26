@@ -32,6 +32,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-transaction-list.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
@@ -75,20 +77,20 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 	GPtrArray *array = tlist->priv->transaction_ids;
 
 	/* debug */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		tid = g_ptr_array_index (array, i);
 		g_debug ("last:\t%s", tid);
 	}
-	for (i=0; transaction_ids[i] != NULL; i++)
+	for (i = 0; transaction_ids[i] != NULL; i++)
 		g_debug ("current:\t%s", transaction_ids[i]);
 
 	/* remove old entries */
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		tid = g_ptr_array_index (array, i);
 
 		/* is in new list */
 		ret = FALSE;
-		for (j=0; transaction_ids[j] != NULL; j++) {
+		for (j = 0; transaction_ids[j] != NULL; j++) {
 			ret = (g_strcmp0 (tid, transaction_ids[j]) == 0);
 			if (ret)
 				break;
@@ -105,11 +107,11 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 	}
 
 	/* add new entries */
-	for (i=0; transaction_ids[i] != NULL; i++) {
+	for (i = 0; transaction_ids[i] != NULL; i++) {
 
 		/* check to see if tid is in array */
 		ret = FALSE;
-		for (j=0; j<array->len; j++) {
+		for (j = 0; j<array->len; j++) {
 			tid = g_ptr_array_index (array, j);
 			ret = (g_strcmp0 (tid, transaction_ids[i]) == 0);
 			if (ret)
@@ -131,21 +133,18 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 static void
 pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkTransactionList *tlist)
 {
-	GError *error = NULL;
-	gchar **transaction_ids = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_strv_free_ gchar **transaction_ids = NULL;
 
 	/* get the result */
 	transaction_ids = pk_control_get_transaction_list_finish (control, res, &error);
 	if (transaction_ids == NULL) {
 		g_warning ("Failed to get transaction list: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* process */
 	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
-out:
-	g_strfreev (transaction_ids);
 }
 
 /**

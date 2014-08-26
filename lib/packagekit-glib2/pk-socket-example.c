@@ -22,21 +22,21 @@
 #include <gio/gio.h>
 #include <gio/gunixsocketaddress.h>
 
+#include "src/pk-cleanup.h"
+
 static gboolean
 pk_socket_example_accept_connection_cb (GSocket *socket, GIOCondition condition, gpointer user_data)
 {
-	GError *error = NULL;
 	gsize len;
 	gchar buffer[1024];
-	gboolean ret = TRUE;
 	GMainLoop *loop = (GMainLoop *) user_data;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
 		g_warning ("socket was disconnected");
 		g_main_loop_quit (loop);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* there is data */
@@ -44,30 +44,27 @@ pk_socket_example_accept_connection_cb (GSocket *socket, GIOCondition condition,
 		len = g_socket_receive (socket, buffer, 1024, NULL, &error);
 		if (error != NULL) {
 			g_warning ("failed to get data: %s", error->message);
-			g_error_free (error);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (len == 0)
-			goto out;
+			return TRUE;
 		g_debug ("got data: %s : %" G_GSIZE_FORMAT, buffer, len);
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 gint
 main (void)
 {
 	gboolean ret;
-	GSocket *socket = NULL;
-	GSocketAddress *address = NULL;
-	GError *error = NULL;
 	gsize wrote;
 	const gchar *buffer = "ping\n";
 	const gchar *socket_filename = "/tmp/pk-self-test.socket";
 	GSource *source;
-	GMainLoop *loop;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
+	_cleanup_object_unref_ GSocketAddress *address = NULL;
+	_cleanup_object_unref_ GSocket *socket = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();
@@ -79,8 +76,7 @@ main (void)
 	socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
 	if (socket == NULL) {
 		g_warning ("failed to create socket: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return 1;
 	}
 	g_socket_set_blocking (socket, FALSE);
 	g_socket_set_keepalive (socket, TRUE);
@@ -90,8 +86,7 @@ main (void)
 	ret = g_socket_connect (socket, address, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to connect to socket: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return 1;
 	}
 
 	/* socket has data */
@@ -103,18 +98,11 @@ main (void)
 	wrote = g_socket_send (socket, buffer, 5, NULL, &error);
 	if (wrote != 5) {
 		g_warning ("failed to write 5 bytes");
-		goto out;
+		return 1;
 	}
 
 	/* run main loop */
 	g_debug ("running main loop");
 	g_main_loop_run (loop);
-out:
-	if (loop != NULL)
-		g_main_loop_unref (loop);
-	if (socket != NULL)
-		g_object_unref (socket);
-	if (address != NULL)
-		g_object_unref (address);
 	return 0;
 }

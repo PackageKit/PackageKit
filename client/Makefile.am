@@ -39,6 +39,7 @@ AM_CPPFLAGS =						\
 	-DPK_COMPILATION				\
 	-DG_LOG_DOMAIN=\"PackageKit\"			\
 	-I$(top_builddir)/lib				\
+	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 
 bin_PROGRAMS =						\

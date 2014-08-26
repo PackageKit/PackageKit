@@ -32,6 +32,8 @@
 
 #include <glib-object.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-package.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -215,8 +217,7 @@ out:
 gboolean
 pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **sections;
+	_cleanup_strv_free_ gchar **sections = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -224,21 +225,17 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 	/* split */
 	sections = g_strsplit (data, "\t", -1);
 	if (g_strv_length (sections) != 3) {
-		ret = FALSE;
 		g_set_error_literal (error, 1, 0, "data invalid");
-		goto out;
+		return FALSE;
 	}
 
 	/* parse object */
 	package->priv->info = pk_info_enum_from_string (sections[0]);
-	ret = pk_package_set_id (package, sections[1], error);
-	if (!ret)
-		goto out;
+	if (!pk_package_set_id (package, sections[1], error))
+		return FALSE;
 	g_free (package->priv->summary);
 	package->priv->summary = g_strdup (sections[2]);
-out:
-	g_strfreev (sections);
-	return ret;
+	return TRUE;
 }
 
 /**

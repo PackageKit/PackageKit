@@ -28,6 +28,8 @@
 
 #include <glib.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-package-id.h>
 
 /**
@@ -73,7 +75,7 @@ out:
 gboolean
 pk_package_id_check (const gchar *package_id)
 {
-	gchar **sections;
+	_cleanup_strv_free_ gchar **sections = NULL;
 	gboolean ret;
 
 	/* NULL check */
@@ -89,9 +91,6 @@ pk_package_id_check (const gchar *package_id)
 	sections = pk_package_id_split (package_id);
 	if (sections == NULL)
 		return FALSE;
-
-	/* all okay */
-	g_strfreev (sections);
 	return TRUE;
 }
 
@@ -161,20 +160,16 @@ pk_package_id_equal_fuzzy_arch_section (const gchar *arch1, const gchar *arch2)
 gboolean
 pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_id2)
 {
-	gchar **sections1;
-	gchar **sections2;
-	gboolean ret = FALSE;
+	_cleanup_strv_free_ gchar **sections1 = NULL;
+	_cleanup_strv_free_ gchar **sections2 = NULL;
 
 	sections1 = pk_package_id_split (package_id1);
 	sections2 = pk_package_id_split (package_id2);
 	if (g_strcmp0 (sections1[0], sections2[0]) == 0 &&
 	    g_strcmp0 (sections1[1], sections2[1]) == 0 &&
 	    pk_package_id_equal_fuzzy_arch_section (sections1[2], sections2[2]))
-		ret = TRUE;
-
-	g_strfreev (sections1);
-	g_strfreev (sections2);
-	return ret;
+		return TRUE;
+	return FALSE;
 }
 
 /**
@@ -190,7 +185,7 @@ pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_i
 gchar *
 pk_package_id_to_printable (const gchar *package_id)
 {
-	gchar **parts = NULL;
+	_cleanup_strv_free_  gchar **parts = NULL;
 	gchar *value = NULL;
 	GString *string = NULL;
 
@@ -216,6 +211,5 @@ pk_package_id_to_printable (const gchar *package_id)
 out:
 	if (string != NULL)
 		value = g_string_free (string, FALSE);
-	g_strfreev (parts);
 	return value;
 }

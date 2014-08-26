@@ -5,6 +5,7 @@ AM_CPPFLAGS =						\
 	-DPK_COMPILATION				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-I$(top_builddir)/lib				\
+	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 
 libexec_PROGRAMS =					\

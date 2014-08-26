@@ -56,7 +56,6 @@ G_DEFINE_TYPE (PkPackageCache, pk_package_cache, G_TYPE_OBJECT)
 gboolean
 pk_package_cache_set_filename (PkPackageCache *pkcache, const gchar *filename, GError **error)
 {
-	gboolean ret = TRUE;
 	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_CACHE (pkcache), FALSE);
@@ -64,22 +63,18 @@ pk_package_cache_set_filename (PkPackageCache *pkcache, const gchar *filename, G
 	/* check database is in correct state */
 	if (priv->locked) {
 		g_set_error (error, 1, 0, "cache database is already open");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	g_free (priv->filename);
 
 	if (filename == NULL) {
 		g_set_error (error, 1, 0, "cache database not specified");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	priv->filename = g_strdup (filename);
-
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -104,7 +99,6 @@ pk_package_cache_get_dbversion_sqlite_cb (void *data, gint argc, gchar **argv, g
 static gboolean
 pk_package_cache_create_db (PkPackageCache *pkcache, GError **error)
 {
-	gboolean ret = TRUE;
 	const gchar *statement;
 	gint rc;
 	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
@@ -114,8 +108,7 @@ pk_package_cache_create_db (PkPackageCache *pkcache, GError **error)
 	/* check database is in correct state */
 	if (!priv->locked) {
 		g_set_error (error, 1, 0, "database is not open");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* create table for packages */
@@ -135,8 +128,7 @@ pk_package_cache_create_db (PkPackageCache *pkcache, GError **error)
 	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 	if (rc) {
 		g_set_error (error, 1, 0, "Can't create packages table: %s\n", sqlite3_errmsg (priv->db));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* create config - we don't use this right now, but might be useful later */
@@ -146,19 +138,15 @@ pk_package_cache_create_db (PkPackageCache *pkcache, GError **error)
 	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 	if (rc) {
 		g_set_error (error, 1, 0, "Can't create config table: %s\n", sqlite3_errmsg (priv->db));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 	statement = "INSERT INTO config (data, value) VALUES ('dbversion', 0);";
 	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 	if (rc) {
 		g_set_error (error, 1, 0, "Can't create dbversion: %s\n", sqlite3_errmsg (priv->db));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
-
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -181,8 +169,7 @@ pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **e
 	/* check database is in correct state */
 	if (priv->locked) {
 		g_set_error (error, 1, 0, "cache database is already open");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* check if database exists */
@@ -193,8 +180,7 @@ pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **e
 	rc = sqlite3_open (priv->filename, &priv->db);
 	if (rc != SQLITE_OK) {
 		g_set_error (error, 1, 0, "Can't open cache %s: %s\n", priv->filename, sqlite3_errmsg (priv->db));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* don't sync */
@@ -203,8 +189,7 @@ pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **e
 		rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 		if (rc != SQLITE_OK) {
 			g_set_error (error, 1, 0, "Can't turn off sync from %s: %s\n", priv->filename, sqlite3_errmsg (priv->db));
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 	}
 
@@ -223,12 +208,10 @@ pk_package_cache_open (PkPackageCache *pkcache, gboolean synchronous, GError **e
 		ret = pk_package_cache_create_db (pkcache, &e);
 		if (!ret) {
 			g_propagate_error (error, e);
-			goto out;
+			return FALSE;
 		}
 	}
-
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -249,7 +232,6 @@ pk_package_cache_get_version (PkPackageCache *pkcache)
 gboolean
 pk_package_cache_close (PkPackageCache *pkcache, gboolean vaccuum, GError **error)
 {
-	gboolean ret = TRUE;
 	gint rc;
 	const gchar *statement;
 	PkPackageCachePrivate *priv = PK_PACKAGE_CACHE (pkcache)->priv;
@@ -259,8 +241,7 @@ pk_package_cache_close (PkPackageCache *pkcache, gboolean vaccuum, GError **erro
 	/* check database is in correct state */
 	if (!priv->locked) {
 		g_set_error (error, 1, 0, "database is not open");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* reclaim memory */
@@ -269,16 +250,14 @@ pk_package_cache_close (PkPackageCache *pkcache, gboolean vaccuum, GError **erro
 		rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 		if (rc) {
 			g_set_error (error, 1, 0, "Can't vaccuum: %s\n", sqlite3_errmsg (priv->db));
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 	}
 
 	sqlite3_close (priv->db);
 	priv->locked = FALSE;
 	priv->dbversion = 0;
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -358,7 +337,6 @@ out:
 gboolean
 pk_package_cache_clear (PkPackageCache *pkcache, GError **error)
 {
-	gboolean ret = TRUE;
 	gint rc;
 	const gchar *statement = NULL;
 
@@ -368,21 +346,17 @@ pk_package_cache_clear (PkPackageCache *pkcache, GError **error)
 	/* check database is in correct state */
 	if (!priv->locked) {
 		g_set_error (error, 1, 0, "database is not open");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* SQL */
 	statement = "DELETE FROM packages;";
-
 	rc = sqlite3_exec (priv->db, statement, NULL, NULL, NULL);
 	if (rc) {
 		g_set_error (error, 1, 0, "Can't clear cache: %s\n", sqlite3_errmsg (priv->db));
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**

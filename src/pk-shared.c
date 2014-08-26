@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#include "pk-cleanup.h"
 #include "pk-resources.h"
 #include "pk-shared.h"
 
@@ -43,22 +44,21 @@ gboolean
 pk_directory_remove_contents (const gchar *directory)
 {
 	gboolean ret = FALSE;
-	GDir *dir;
-	GError *error = NULL;
 	const gchar *filename;
-	gchar *src;
 	gint retval;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_dir_close_ GDir *dir = NULL;
 
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
 	if (dir == NULL) {
 		g_warning ("cannot open directory: %s", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
 	/* find each */
 	while ((filename = g_dir_read_name (dir))) {
+		_cleanup_free_ gchar *src = NULL;
 		src = g_build_filename (directory, filename, NULL);
 		ret = g_file_test (src, G_FILE_TEST_IS_DIR);
 		if (ret) {
@@ -74,9 +74,7 @@ pk_directory_remove_contents (const gchar *directory)
 			if (retval != 0)
 				g_warning ("failed to delete %s", src);
 		}
-		g_free (src);
 	}
-	g_dir_close (dir);
 	ret = TRUE;
 out:
 	return ret;
@@ -88,9 +86,8 @@ out:
 GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
-	GBytes *data;
-	gchar *path;
-	GDBusNodeInfo *info = NULL;
+	_cleanup_bytes_unref_ GBytes *data = NULL;
+	_cleanup_free_ gchar *path = NULL;
 
 	/* lookup data */
 	path = g_build_filename ("/org/freedesktop/PackageKit", filename, NULL);
@@ -99,17 +96,10 @@ pk_load_introspection (const gchar *filename, GError **error)
 				       G_RESOURCE_LOOKUP_FLAGS_NONE,
 				       error);
 	if (data == NULL)
-		goto out;
+		return NULL;
 
 	/* build introspection from XML */
-	info = g_dbus_node_info_new_for_xml (g_bytes_get_data (data, NULL), error);
-	if (info == NULL)
-		goto out;
-out:
-	g_free (path);
-	if (data != NULL)
-		g_bytes_unref (data);
-	return info;
+	return g_dbus_node_info_new_for_xml (g_bytes_get_data (data, NULL), error);
 }
 
 /**
@@ -273,7 +263,7 @@ pk_strlen (const gchar *text, guint len)
 		return 0;
 
 	/* only count up to len */
-	for (i=1; i<len; i++) {
+	for (i = 1; i < len; i++) {
 		if (text[i] == '\0')
 			break;
 	}

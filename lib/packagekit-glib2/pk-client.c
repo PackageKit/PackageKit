@@ -36,6 +36,8 @@
 #include <locale.h>
 #include <stdlib.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-client-helper.h>
 #include <packagekit-glib2/pk-common.h>
@@ -215,8 +217,8 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 static void
 pk_client_fixup_dbus_error (GError *error)
 {
-	gchar *name = NULL;
 	const gchar *name_suffix = NULL;
+	_cleanup_free_ gchar *name = NULL;
 
 	g_return_if_fail (error != NULL);
 
@@ -226,12 +228,12 @@ pk_client_fixup_dbus_error (GError *error)
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
 		g_free (error->message);
 		error->message = g_strdup ("PolicyKit authorization failure");
-		goto out;
+		return;
 	}
 
 	/* is a remote error? */
 	if (!g_dbus_error_is_remote_error (error))
-		goto out;
+		return;
 
 	/* fall back to generic */
 	error->domain = PK_CLIENT_ERROR;
@@ -245,7 +247,7 @@ pk_client_fixup_dbus_error (GError *error)
 	if (g_strcmp0 (name_suffix, "Denied") == 0 ||
 	    g_strcmp0 (name_suffix, "RefusedByPolicy") == 0) {
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
-		goto out;
+		return;
 	}
 	if (g_strcmp0 (name_suffix, "PackageIdInvalid") == 0 ||
 		 g_strcmp0 (name_suffix, "SearchInvalid") == 0 ||
@@ -253,22 +255,20 @@ pk_client_fixup_dbus_error (GError *error)
 		 g_strcmp0 (name_suffix, "InvalidProvide") == 0 ||
 		 g_strcmp0 (name_suffix, "InputInvalid") == 0) {
 		error->code = PK_CLIENT_ERROR_INVALID_INPUT;
-		goto out;
+		return;
 	}
 	if (g_strcmp0 (name_suffix, "PackInvalid") == 0 ||
 	    g_strcmp0 (name_suffix, "NoSuchFile") == 0 ||
 	    g_strcmp0 (name_suffix, "MimeTypeNotSupported") == 0 ||
 	    g_strcmp0 (name_suffix, "NoSuchDirectory") == 0) {
 		error->code = PK_CLIENT_ERROR_INVALID_FILE;
-		goto out;
+		return;
 	}
 	if (g_strcmp0 (name_suffix, "NotSupported") == 0) {
 		error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
-		goto out;
+		return;
 	}
 	g_warning ("couldn't parse execption '%s', please report", name);
-out:
-	g_free (name);
 }
 
 /**
@@ -315,25 +315,24 @@ pk_client_convert_real_paths (gchar **paths, GError **error)
 {
 	guint i;
 	guint len;
-	gchar **res;
+	_cleanup_strv_free_ gchar **res = NULL;
 
 	/* create output array */
 	len = g_strv_length (paths);
 	res = g_new0 (gchar *, len+1);
 
 	/* resolve each path */
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		res[i] = pk_client_real_path (paths[i]);
 		if (res[i] == NULL) {
-			/* set an error, and abort, tearing down all our hard work */
-			g_set_error (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "could not resolve: %s", paths[i]);
-			g_strfreev (res);
-			res = NULL;
-			goto out;
+			g_set_error (error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_INVALID_INPUT,
+				     "could not resolve: %s", paths[i]);
+			return NULL;
 		}
 	}
-out:
-	return res;
+	return g_strdupv (res);
 }
 
 /**
@@ -347,28 +346,23 @@ out:
 static gchar *
 pk_client_get_user_temp (const gchar *subfolder, GError **error)
 {
-	GFile *file;
-	gboolean ret;
 	gchar *path = NULL;
+	_cleanup_object_unref_ GFile *file;
 
 	/* build path in home folder */
 	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);
 
 	/* find if exists */
 	file = g_file_new_for_path (path);
-	ret = g_file_query_exists (file, NULL);
-	if (ret)
-		goto out;
+	if (g_file_query_exists (file, NULL))
+		return path;
 
 	/* create as does not exist */
-	ret = g_file_make_directory_with_parents (file, NULL, error);
-	if (!ret) {
+	if (!g_file_make_directory_with_parents (file, NULL, error)) {
 		/* return nothing.. */
 		g_free (path);
-		path = NULL;
+		return NULL;
 	}
-out:
-	g_object_unref (file);
 	return path;
 }
 
@@ -378,22 +372,17 @@ out:
 static gboolean
 pk_client_is_file_native (const gchar *filename)
 {
-	gboolean ret;
-	GFile *source;
+	_cleanup_object_unref_ GFile *source = NULL;
 
 	/* does gvfs think the file is on a remote filesystem? */
 	source = g_file_new_for_path (filename);
-	ret = g_file_is_native (source);
-	if (!ret)
-		goto out;
+	if (!g_file_is_native (source))
+		return FALSE;
 
 	/* are we FUSE mounted */
-	ret = (g_strstr_len (filename, -1, "/.gvfs/") == NULL);
-	if (!ret)
-		goto out;
-out:
-	g_object_unref (source);
-	return ret;
+	if (g_strstr_len (filename, -1, "/.gvfs/") != NULL)
+		return FALSE;
+	return TRUE;
 }
 
 /**
@@ -579,8 +568,8 @@ pk_client_cancel_cb (GObject *source_object,
 		     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	GError *error = NULL;
-	GVariant *value;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
@@ -588,15 +577,11 @@ pk_client_cancel_cb (GObject *source_object,
 	if (value == NULL) {
 		/* there's not really a lot we can do here */
 		g_warning ("failed to cancel: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* finished this call */
 	g_debug ("cancelled %s", state->tid);
-out:
-	if (value != NULL)
-		g_variant_unref (value);
 }
 
 /**
@@ -663,7 +648,7 @@ static void
 pk_client_state_finish (PkClientState *state, const GError *error)
 {
 	gboolean ret;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	/* force finished (if not already set) so clients can update the UI's */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
@@ -703,11 +688,8 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 
 	/* remove any socket file */
 	if (state->client_helper != NULL) {
-		ret = pk_client_helper_stop (state->client_helper, &error_local);
-		if (!ret) {
+		if (!pk_client_helper_stop (state->client_helper, &error_local))
 			g_warning ("failed to stop the client helper: %s", error_local->message);
-			g_error_free (error_local);
-		}
 		g_object_unref (state->client_helper);
 	}
 
@@ -774,16 +756,14 @@ pk_client_signal_package (PkClientState *state,
 			  const gchar *summary)
 {
 	gboolean ret;
-	GError *error = NULL;
-	PkPackage *package;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkPackage *package = NULL;
 
 	/* create virtual package */
 	package = pk_package_new ();
-	ret = pk_package_set_id (package, package_id, &error);
-	if (!ret) {
+	if (!pk_package_set_id (package, package_id, &error)) {
 		g_warning ("failed to set package id for %s", package_id);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_object_set (package,
 		      "info", info_enum,
@@ -825,8 +805,6 @@ pk_client_signal_package (PkClientState *state,
 	default:
 		break;
 	}
-out:
-	g_object_unref (package);
 }
 
 /**
@@ -839,33 +817,28 @@ out:
 static void
 pk_client_copy_finished_remove_old_files (PkClientState *state)
 {
-	PkFiles *item;
-	GPtrArray *array = NULL;
 	guint i;
-	gchar **files;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
 	if (array == NULL) {
 		g_warning ("internal error, no files in array");
-		goto out;
+		return;
 	}
 
 	/* remove any without dest path */
-	for (i=0; i < array->len; ) {
+	for (i = 0; i < array->len; ) {
+		PkFiles *item;
+		gchar **files;
+
 		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "files", &files,
-			      NULL);
+		files = pk_files_get_files (item);
 		if (!g_str_has_prefix (files[0], state->directory))
 			g_ptr_array_remove_index_fast (array, i);
 		else
 			i++;
-		g_strfreev (files);
 	}
-out:
-	if (array != NULL)
-		g_ptr_array_unref (array);
 }
 
 /**
@@ -874,20 +847,17 @@ out:
 static void
 pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
 {
-	gboolean ret;
-	gchar *path;
-	GError *error = NULL;
+	_cleanup_free_ gchar *path = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* debug */
 	path = g_file_get_path (file);
 	g_debug ("finished copy of %s", path);
 
 	/* get the result */
-	ret = g_file_copy_finish (file, res, &error);
-	if (!ret) {
+	if (!g_file_copy_finish (file, res, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* no more copies pending? */
@@ -896,8 +866,6 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 		state->ret = TRUE;
 		pk_client_state_finish (state, NULL);
 	}
-out:
-	g_free (path);
 }
 
 /**
@@ -936,13 +904,13 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 static void
 pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, const gchar *source_file)
 {
-	gchar *basename;
-	gchar *path;
-	gchar **files = NULL;
-	GFile *source;
-	GFile *destination;
-	PkFiles *item = NULL;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *basename = NULL;
+	_cleanup_free_ gchar *path = NULL;
+	_cleanup_object_unref_ GFile *destination = NULL;
+	_cleanup_object_unref_ GFile *source = NULL;
+	_cleanup_object_unref_ PkFiles *item = NULL;
+	_cleanup_strv_free_ gchar **files = NULL;
 
 	/* generate the destination location */
 	basename = g_path_get_basename (source_file);
@@ -958,10 +926,10 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 			     PK_ERROR_ENUM_FILE_CONFLICTS,
 			     "file %s already exists", path);
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
-	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
+	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE,
+			   G_PRIORITY_DEFAULT, state->cancellable,
 			   (GFileProgressCallback) pk_client_copy_progress_cb, state,
 			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb, state);
 
@@ -975,16 +943,6 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_files (state->results, item);
-
-	/* free everything we've used */
-out:
-	if (item != NULL)
-		g_object_unref (item);
-	g_object_unref (source);
-	g_object_unref (destination);
-	g_strfreev (files);
-	g_free (basename);
-	g_free (path);
 }
 
 /**
@@ -1001,26 +959,20 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint j;
 	guint len;
 	PkFiles *item;
-	GPtrArray *array = NULL;
 	gboolean ret;
-	gchar *package_id;
-	gchar **files;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
 	if (array == NULL) {
 		g_warning ("internal error, no files in array");
-		goto out;
+		return;
 	}
 
 	/* get the number of files to copy */
-	for (i=0; i < array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "files", &files,
-			      NULL);
-		state->refcount += g_strv_length (files);
-		g_strfreev (files);
+		state->refcount += g_strv_length (pk_files_get_files (item));
 	}
 
 	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
@@ -1035,20 +987,16 @@ pk_client_copy_downloaded (PkClientState *state)
 	}
 
 	/* do the copies pipelined */
-	for (i=0; i < len; i++) {
+	for (i = 0; i < len; i++) {
+		gchar **files;
 		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "package-id", &package_id,
-			      "files", &files,
-			      NULL);
-		for (j=0; files[j] != NULL; j++)
-			pk_client_copy_downloaded_file (state, package_id, files[j]);
-		g_free (package_id);
-		g_strfreev (files);
+		files = pk_files_get_files (item);
+		for (j = 0; files[j] != NULL; j++) {
+			pk_client_copy_downloaded_file (state,
+							pk_files_get_package_id (item),
+							files[j]);
+		}
 	}
-out:
-	if (array != NULL)
-		g_ptr_array_unref (array);
 }
 
 /**
@@ -1059,8 +1007,8 @@ pk_client_signal_finished (PkClientState *state,
 			   PkExitEnum exit_enum,
 			   guint runtime)
 {
-	GError *error = NULL;
-	PkError *error_code = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
 
 	/* yay */
 	pk_results_set_exit_code (state->results, exit_enum);
@@ -1084,23 +1032,19 @@ pk_client_signal_finished (PkClientState *state,
 					     pk_exit_enum_to_string (exit_enum));
 		}
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* do we have to copy results? */
 	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
 	    state->directory != NULL) {
 		pk_client_copy_downloaded (state);
-		goto out;
+		return;
 	}
 
 	/* we're done */
 	state->ret = TRUE;
 	pk_client_state_finish (state, NULL);
-out:
-	if (error_code != NULL)
-		g_object_unref (error_code);
 }
 
 /**
@@ -1148,7 +1092,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		gchar *key;
 		GVariantIter *dictionary;
 		GVariant *value;
-		PkDetails *item;
+		_cleanup_object_unref_ PkDetails *item = NULL;
 		item = pk_details_new ();
 
 		if (g_variant_is_of_type (parameters, G_VARIANT_TYPE ("(a{sv})"))) {
@@ -1184,11 +1128,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 				      NULL);
 		}
 		pk_results_add_details (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
-		PkUpdateDetail *item;
+		_cleanup_object_unref_ PkUpdateDetail *item = NULL;
 		g_variant_get (parameters,
 			       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
 			       &tmp_str[0],
@@ -1221,11 +1164,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_update_detail (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Transaction") == 0) {
-		PkTransactionPast *item;
+		_cleanup_object_unref_ PkTransactionPast *item = NULL;
 		g_variant_get (parameters,
 			       "(&o&sbuu&su&s)",
 			       &tmp_str[0],
@@ -1250,11 +1192,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_transaction (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {
-		PkDistroUpgrade *item;
+		_cleanup_object_unref_ PkDistroUpgrade *item = NULL;
 		g_variant_get (parameters,
 			       "(u&s&s)",
 			       &tmp_uint,
@@ -1269,11 +1210,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_distro_upgrade (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
-		PkRequireRestart *item;
+		_cleanup_object_unref_ PkRequireRestart *item = NULL;
 		g_variant_get (parameters,
 			       "(u&s)",
 			       &tmp_uint,
@@ -1286,11 +1226,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_require_restart (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Category") == 0) {
-		PkCategory *item;
+		_cleanup_object_unref_ PkCategory *item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s&s)",
 			       &tmp_str[0],
@@ -1309,12 +1248,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_category (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Files") == 0) {
 		gchar **files;
-		PkFiles *item;
+		_cleanup_object_unref_ PkFiles *item = NULL;
 		g_variant_get (parameters,
 			       "(&s^a&s)",
 			       &tmp_str[0],
@@ -1327,11 +1265,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_files (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RepoSignatureRequired") == 0) {
-		PkRepoSignatureRequired *item;
+		_cleanup_object_unref_ PkRepoSignatureRequired *item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s&s&s&su)",
 			       &tmp_str[0],
@@ -1356,11 +1293,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_repo_signature_required (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "EulaRequired") == 0) {
-		PkEulaRequired *item;
+		_cleanup_object_unref_ PkEulaRequired *item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s)",
 			       &tmp_str[0],
@@ -1377,11 +1313,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_eula_required (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RepoDetail") == 0) {
-		PkRepoDetail *item;
+		_cleanup_object_unref_ PkRepoDetail *item = NULL;
 		g_variant_get (parameters,
 			       "(&s&sb)",
 			       &tmp_str[0],
@@ -1396,11 +1331,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_repo_detail (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "ErrorCode") == 0) {
-		PkError *item;
+		_cleanup_object_unref_ PkError *item = NULL;
 		g_variant_get (parameters,
 			       "(u&s)",
 			       &tmp_uint,
@@ -1413,11 +1347,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_set_error_code (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "MediaChangeRequired") == 0) {
-		PkMediaChangeRequired *item;
+		_cleanup_object_unref_ PkMediaChangeRequired *item = NULL;
 		g_variant_get (parameters,
 			       "(u&s&s)",
 			       &tmp_uint,
@@ -1432,11 +1365,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_media_change_required (state->results, item);
-		g_object_unref (item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
-		PkItemProgress *item;
+		_cleanup_object_unref_ PkItemProgress *item = NULL;
 		g_variant_get (parameters,
 			       "(&suu)",
 			       &tmp_str[0],
@@ -1456,12 +1388,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 						  PK_PROGRESS_TYPE_ITEM_PROGRESS,
 						  state->progress_user_data);
 		}
-		g_object_unref (item);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Destroy") == 0) {
+	if (g_strcmp0 (signal_name, "Destroy") == 0)
 		return;
-	}
 }
 
 /**
@@ -1470,19 +1400,18 @@ pk_client_signal_cb (GDBusProxy *proxy,
 static void
 pk_client_proxy_connect (PkClientState *state)
 {
-	gchar **props = NULL;
 	guint i;
-	GVariant *value_tmp;
+	_cleanup_strv_free_ gchar **props = NULL;
 
 	/* coldplug properties */
 	props = g_dbus_proxy_get_cached_property_names (state->proxy);
 	for (i = 0; props != NULL && props[i] != NULL; i++) {
+		_cleanup_variant_unref_ GVariant *value_tmp = NULL;
 		value_tmp = g_dbus_proxy_get_cached_property (state->proxy,
 							      props[i]);
 		pk_client_set_property_value (state,
 					      props[i],
 					      value_tmp);
-		g_variant_unref (value_tmp);
 	}
 
 	/* connect up signals */
@@ -1492,8 +1421,6 @@ pk_client_proxy_connect (PkClientState *state)
 	g_signal_connect (state->proxy, "g-signal",
 			  G_CALLBACK (pk_client_signal_cb),
 			  state);
-
-	g_strfreev (props);
 }
 
 /**
@@ -1504,10 +1431,10 @@ pk_client_method_cb (GObject *source_object,
 		     GAsyncResult *res,
 		     gpointer user_data)
 {
-	GError *error = NULL;
-	GVariant *value;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkClientState *state = (PkClientState *) user_data;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -1515,14 +1442,10 @@ pk_client_method_cb (GObject *source_object,
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* wait for ::Finished() */
-out:
-	if (value != NULL)
-		g_variant_unref (value);
 }
 
 /**
@@ -1551,10 +1474,10 @@ pk_client_set_hints_cb (GObject *source_object,
 			GAsyncResult *res,
 			gpointer user_data)
 {
-	GError *error = NULL;
-	GVariant *value;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkClientState *state = (PkClientState *) user_data;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -1562,8 +1485,7 @@ pk_client_set_hints_cb (GObject *source_object,
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we'll have results from now on */
@@ -1919,12 +1841,6 @@ pk_client_set_hints_cb (GObject *source_object,
 	} else {
 		g_assert_not_reached ();
 	}
-
-	/* we've sent this async */
-out:
-	if (value != NULL)
-		g_variant_unref (value);
-	return;
 }
 
 /**
@@ -1953,7 +1869,7 @@ pk_client_create_helper_argv_envp_test (PkClientState *state,
 			   G_FILE_TEST_EXISTS);
 	if (!ret) {
 		g_warning ("could not find the socket helper!");
-		goto out;
+		return FALSE;
 	}
 
 	/* setup simple test socket */
@@ -1961,8 +1877,7 @@ pk_client_create_helper_argv_envp_test (PkClientState *state,
 	*argv[0] = g_build_filename (TESTDATADIR,
 				     "pk-client-helper-test.py",
 				     NULL);
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1984,7 +1899,7 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 	ret = g_file_test ("/usr/bin/debconf-communicate",
 			   G_FILE_TEST_EXISTS);
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* setup simple test socket */
 	*argv = g_new0 (gchar *, 2);
@@ -2009,9 +1924,9 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 	if (display != NULL) {
 		envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
 		if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
-		  dialog = "kde";
+			dialog = "kde";
 		else
-		  dialog = "gnome";
+			dialog = "gnome";
 	}
 
 	/* indicate a prefered frontend */
@@ -2019,8 +1934,7 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 		envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
 		g_debug ("using frontend %s", dialog);
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -2030,12 +1944,11 @@ static gchar *
 pk_client_create_helper_socket (PkClientState *state)
 {
 	gboolean ret = FALSE;
-	gchar **argv = NULL;
-	gchar **envp = NULL;
-	gchar *hint = NULL;
-	gchar *socket_filename = NULL;
-	gchar *socket_id = NULL;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *socket_filename = NULL;
+	_cleanup_free_ gchar *socket_id = NULL;
+	_cleanup_strv_free_ gchar **argv = NULL;
+	_cleanup_strv_free_ gchar **envp = NULL;
 
 	/* use the test socket */
 	if (g_getenv ("PK_SELF_TEST") != NULL) {
@@ -2053,7 +1966,7 @@ pk_client_create_helper_socket (PkClientState *state)
 
 	/* no supported frontends available */
 	if (!ret)
-		goto out;
+		return FALSE;
 
 	/* create object */
 	state->client_helper = pk_client_helper_new ();
@@ -2066,18 +1979,11 @@ pk_client_create_helper_socket (PkClientState *state)
 	ret = pk_client_helper_start (state->client_helper, socket_filename, argv, envp, &error);
 	if (!ret) {
 		g_warning ("failed to open debconf socket: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return FALSE;
 	}
 
 	/* success */
-	hint = g_strdup_printf ("frontend-socket=%s", socket_filename);
-out:
-	g_free (socket_id);
-	g_free (socket_filename);
-	g_strfreev (argv);
-	g_strfreev (envp);
-	return hint;
+	return g_strdup_printf ("frontend-socket=%s", socket_filename);
 }
 
 /**
@@ -2089,9 +1995,9 @@ pk_client_get_proxy_cb (GObject *object,
 			gpointer user_data)
 {
 	gchar *hint;
-	GError *error = NULL;
-	GPtrArray *array;
 	PkClientState *state = (PkClientState *) user_data;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL)
@@ -2149,9 +2055,6 @@ pk_client_get_proxy_cb (GObject *object,
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
-
-	/* we've sent this async */
-	g_ptr_array_unref (array);
 }
 
 /**
@@ -2160,13 +2063,12 @@ pk_client_get_proxy_cb (GObject *object,
 static void
 pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
-	GError *error = NULL;
 	PkControl *control = PK_CONTROL (object);
+	_cleanup_error_free_ GError *error = NULL;
 
 	state->tid = pk_control_get_tid_finish (control, res, &error);
 	if (state->tid == NULL) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
 		return;
 	}
 
@@ -2234,9 +2136,9 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 			 PkProgressCallback progress_callback, gpointer progress_user_data,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2267,8 +2169,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2279,8 +2180,6 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2304,9 +2203,9 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2337,8 +2236,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2349,8 +2247,6 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2375,9 +2271,9 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2408,8 +2304,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2420,8 +2315,6 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2444,9 +2337,9 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2477,8 +2370,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2489,8 +2381,6 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2513,9 +2403,9 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2546,8 +2436,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2558,8 +2447,6 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2582,9 +2469,9 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2615,8 +2502,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2627,8 +2513,6 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2651,9 +2535,9 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2681,16 +2565,14 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 	state->files = pk_client_convert_real_paths (files, &error);
 	if (state->files == NULL) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2701,8 +2583,6 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2725,9 +2605,9 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2755,16 +2635,14 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 	state->files = pk_client_convert_real_paths (files, &error);
 	if (state->files == NULL) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2775,8 +2653,6 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2799,9 +2675,9 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2832,8 +2708,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2844,8 +2719,6 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2868,9 +2741,9 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2902,8 +2775,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2914,8 +2786,6 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -2937,9 +2807,9 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2969,8 +2839,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -2981,8 +2850,6 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3004,9 +2871,9 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3036,8 +2903,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3048,8 +2914,6 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3073,9 +2937,9 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3108,8 +2972,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3120,8 +2983,6 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3143,9 +3004,9 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3175,8 +3036,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3187,8 +3047,6 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3212,9 +3070,9 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3247,8 +3105,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3259,8 +3116,6 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3288,9 +3143,9 @@ pk_client_what_provides_async (PkClient *client,
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3321,8 +3176,7 @@ pk_client_what_provides_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3333,8 +3187,6 @@ pk_client_what_provides_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3356,9 +3208,9 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3387,8 +3239,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3399,8 +3250,6 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3422,9 +3271,9 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3455,8 +3304,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3467,8 +3315,6 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3489,9 +3335,9 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3520,8 +3366,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3532,8 +3377,6 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3567,9 +3410,9 @@ pk_client_remove_packages_async (PkClient *client,
 				 GAsyncReadyCallback callback_ready,
 				 gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3603,8 +3446,7 @@ pk_client_remove_packages_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3615,8 +3457,6 @@ pk_client_remove_packages_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3641,9 +3481,9 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3673,8 +3513,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3685,8 +3524,6 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3709,9 +3546,9 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 				  PkProgressCallback progress_callback, gpointer progress_user_data,
 				  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3743,8 +3580,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3755,8 +3591,6 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3780,9 +3614,9 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3814,8 +3648,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3826,8 +3659,6 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3855,9 +3686,9 @@ pk_client_update_packages_async (PkClient *client,
 				 GAsyncReadyCallback callback_ready,
 				 gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3889,8 +3720,7 @@ pk_client_update_packages_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -3901,8 +3731,6 @@ pk_client_update_packages_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -3911,15 +3739,12 @@ out:
 static void
 pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
 {
-	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* get the result */
-	ret = g_file_copy_finish (file, res, &error);
-	if (!ret) {
+	if (!g_file_copy_finish (file, res, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* no more copies pending? */
@@ -3930,8 +3755,6 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState
 					  (GAsyncReadyCallback) pk_client_get_tid_cb,
 					  state);
 	}
-out:
-	return;
 }
 
 /**
@@ -3940,14 +3763,11 @@ out:
 static void
 pk_client_copy_non_native_then_get_tid (PkClientState *state)
 {
-	GFile *source;
-	gchar *basename;
 	gchar *path;
-	GFile *destination;
-	gchar *user_temp = NULL;
-	GError *error = NULL;
 	gboolean ret;
 	guint i;
+	_cleanup_free_ gchar *user_temp = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* get a temp dir accessible by the daemon */
 	user_temp = pk_client_get_user_temp ("native-cache", &error);
@@ -3962,11 +3782,14 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 	}
 
 	/* copy each file that is non-native */
-	for (i=0; state->files[i] != NULL; i++) {
+	for (i = 0; state->files[i] != NULL; i++) {
 		ret = pk_client_is_file_native (state->files[i]);
 		g_debug ("%s native=%i", state->files[i], ret);
 		if (!ret) {
 			/* generate the destination location */
+			_cleanup_free_ gchar *basename = NULL;
+			_cleanup_object_unref_ GFile *destination = NULL;
+			_cleanup_object_unref_ GFile *source = NULL;
 			basename = g_path_get_basename (state->files[i]);
 			path = g_build_filename (user_temp, basename, NULL);
 			g_debug ("copy from %s to %s", state->files[i], path);
@@ -3977,16 +3800,12 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 			g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
 					   (GFileProgressCallback) pk_client_copy_progress_cb, state,
 					   (GAsyncReadyCallback) pk_client_copy_native_finished_cb, state);
-			g_object_unref (source);
-			g_object_unref (destination);
 
 			/* pass the new path to PackageKit */
 			g_free (state->files[i]);
 			state->files[i] = path;
-			g_free (basename);
 		}
 	}
-	g_free (user_temp);
 }
 
 /**
@@ -4015,11 +3834,11 @@ pk_client_install_files_async (PkClient *client,
 			       GAsyncReadyCallback callback_ready,
 			       gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
 	gboolean ret;
 	guint i;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4050,8 +3869,7 @@ pk_client_install_files_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4061,12 +3879,11 @@ pk_client_install_files_async (PkClient *client,
 	state->files = pk_client_convert_real_paths (files, &error);
 	if (state->files == NULL) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* how many non-native */
-	for (i=0; state->files[i] != NULL; i++) {
+	for (i = 0; state->files[i] != NULL; i++) {
 		ret = pk_client_is_file_native (state->files[i]);
 		/* on a FUSE mount (probably created by gvfs) and not readable by packagekitd */
 		if (!ret)
@@ -4080,13 +3897,11 @@ pk_client_install_files_async (PkClient *client,
 					  cancellable,
 					  (GAsyncReadyCallback) pk_client_get_tid_cb,
 					  state);
-		goto out;
+		return;
 	}
 
 	/* copy the files first */
 	pk_client_copy_non_native_then_get_tid (state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4108,9 +3923,9 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4140,8 +3955,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4152,8 +3966,6 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4175,9 +3987,9 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4207,8 +4019,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4219,8 +4030,6 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4243,9 +4052,9 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 			     PkProgressCallback progress_callback,
 			     gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4276,8 +4085,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4288,8 +4096,6 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4314,9 +4120,9 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 			       PkProgressCallback progress_callback,
 			       gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4348,8 +4154,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4360,8 +4165,6 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4391,9 +4194,9 @@ pk_client_repo_remove_async (PkClient *client,
 			     GAsyncReadyCallback callback_ready,
 			     gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4425,8 +4228,7 @@ pk_client_repo_remove_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4437,8 +4239,6 @@ pk_client_repo_remove_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**
@@ -4469,9 +4269,9 @@ pk_client_repair_system_async (PkClient *client,
 			       GAsyncReadyCallback callback_ready,
 			       gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4496,8 +4296,7 @@ pk_client_repair_system_async (PkClient *client,
 	/* check not already cancelled */
 	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4505,8 +4304,6 @@ pk_client_repair_system_async (PkClient *client,
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
-out:
-	g_object_unref (res);
 }
 
 /**********************************************************************/
@@ -4519,13 +4316,12 @@ pk_client_adopt_get_proxy_cb (GObject *object,
 			      GAsyncResult *res,
 			      gpointer user_data)
 {
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
 		return;
 	}
 
@@ -4556,9 +4352,9 @@ pk_client_adopt_async (PkClient *client,
 		       GAsyncReadyCallback callback_ready,
 		       gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4593,8 +4389,7 @@ pk_client_adopt_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4614,8 +4409,6 @@ pk_client_adopt_async (PkClient *client,
 
 	/* track state */
 	pk_client_state_add (client, state);
-out:
-	g_object_unref (res);
 }
 
 /**********************************************************************/
@@ -4704,13 +4497,12 @@ pk_client_get_progress_cb (GObject *source_object,
 			   GAsyncResult *res,
 			   gpointer user_data)
 {
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL) {
 		pk_client_get_progress_state_finish (state, error);
-		g_error_free (error);
 		return;
 	}
 
@@ -4740,9 +4532,9 @@ pk_client_get_progress_async (PkClient *client,
 			      GAsyncReadyCallback callback_ready,
 			      gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4769,8 +4561,7 @@ pk_client_get_progress_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4789,8 +4580,6 @@ pk_client_get_progress_async (PkClient *client,
 
 	/* track state */
 	pk_client_state_add (client, state);
-out:
-	g_object_unref (res);
 }
 
 /**********************************************************************/
@@ -4807,7 +4596,7 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 
 	/* just cancel the call */
 	array = client->priv->calls;
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		state = g_ptr_array_index (array, i);
 		if (state->proxy == NULL)
 			continue;

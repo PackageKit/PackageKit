@@ -261,7 +261,7 @@ pk_time_free_data (PkTime *pktime)
 	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
 
 	length = pktime->priv->array->len;
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		mem = g_ptr_array_index (pktime->priv->array, 0);
 		g_ptr_array_remove_index (pktime->priv->array, 0);
 		g_free (mem);

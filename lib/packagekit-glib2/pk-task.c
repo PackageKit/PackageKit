@@ -29,6 +29,8 @@
 
 #include <gio/gio.h>
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -127,11 +129,9 @@ pk_task_find_by_request (PkTask *task, guint request)
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		if (item->request == request)
-			goto out;
+			return item;
 	}
-	item = NULL;
-out:
-	return item;
+	return NULL;
 }
 
 /**
@@ -142,7 +142,9 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 {
 	/* get result */
 	if (state->ret) {
-		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref ((GObject*) state->results), g_object_unref);
+		g_simple_async_result_set_op_res_gpointer (state->res,
+							   g_object_ref ((GObject*) state->results),
+							   g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
 	}
@@ -323,12 +325,12 @@ static void
 pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
-	GError *error = NULL;
 	guint i;
 	guint length;
-	PkPackageSack *sack = NULL;
-	PkPackageSack *untrusted_sack = NULL;
-	PkResults *results;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
+	_cleanup_object_unref_ PkPackageSack *untrusted_sack = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -343,14 +345,12 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		/* handle case where this is not implemented */
 		if (error->code == PK_CLIENT_ERROR_NOT_SUPPORTED) {
 			pk_task_do_async_action (state);
-			g_error_free (error);
-			goto out;
+				return;
 		}
 
 		/* just abort */
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we own a copy now */
@@ -364,7 +364,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 				    PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 		/* retry this */
 		pk_task_do_async_simulate_action (state);
-		goto out;
+		return;
 	}
 
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
@@ -373,7 +373,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		 * ErrorCode enumerated value and detail. */
 		state->ret = TRUE;
 		pk_task_generic_state_finish (state, NULL);
-		goto out;
+		return;
 	}
 
 	/* get data */
@@ -401,7 +401,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* no results from simulate */
 	if (pk_package_sack_get_size (sack) == 0) {
 		pk_task_do_async_action (state);
-		goto out;
+		return;
 	}
 
 	/* sort the list, as clients will mostly want this */
@@ -409,14 +409,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (sack != NULL)
-		g_object_unref (sack);
-	if (untrusted_sack != NULL)
-		g_object_unref (untrusted_sack);
-	return;
 }
 
 /**
@@ -500,9 +492,8 @@ static void
 pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	PkError *error_code;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -514,8 +505,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we own a copy now */
@@ -526,21 +516,18 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		_cleanup_object_unref_ PkError *error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", pk_error_get_details (error_code));
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		g_object_unref (error_code);
-		goto out;
+		return;
 	}
 
 	/* now try the action again */
 	pk_task_do_async_action (state);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	return;
 }
 
 /**
@@ -549,29 +536,31 @@ out:
 static void
 pk_task_install_signatures (PkTaskState *state)
 {
-	GError *error = NULL;
-	GPtrArray *array;
 	PkRepoSignatureRequired *item;
-	gchar *key_id = NULL;
-	gchar *package_id = NULL;
 	PkSigTypeEnum type;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *key_id = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* get results */
 	array = pk_results_get_repo_signature_required_array (state->results);
 	if (array == NULL || array->len == 0) {
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no signatures to install");
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "no signatures to install");
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* did we get more than result? */
 	if (array->len > 1) {
 		/* TODO: support more than one signature */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "more than one signature to install");
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "more than one signature to install");
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get first item of data */
@@ -586,11 +575,6 @@ pk_task_install_signatures (PkTaskState *state)
 	pk_client_install_signature_async (PK_CLIENT(state->task), type, key_id, package_id,
 					   state->cancellable, state->progress_callback, state->progress_user_data,
 					   (GAsyncReadyCallback) pk_task_install_signatures_ready_cb, state);
-out:
-	g_free (package_id);
-	g_free (key_id);
-	if (array != NULL)
-		g_ptr_array_unref (array);
 }
 
 /**
@@ -600,9 +584,8 @@ static void
 pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	PkError *error_code;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -614,8 +597,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we own a copy now */
@@ -626,21 +608,18 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		_cleanup_object_unref_ PkError *error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", pk_error_get_details (error_code));
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		g_object_unref (error_code);
-		goto out;
+		return;
 	}
 
 	/* now try the action again */
 	pk_task_do_async_action (state);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	return;
 }
 
 /**
@@ -649,27 +628,29 @@ out:
 static void
 pk_task_accept_eulas (PkTaskState *state)
 {
-	GError *error = NULL;
-	GPtrArray *array;
 	PkEulaRequired *item;
-	gchar *eula_id = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *eula_id = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
 	if (array == NULL || array->len == 0) {
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no eulas to accept");
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "no eulas to accept");
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* did we get more than result? */
 	if (array->len > 1) {
 		/* TODO: support more than one eula */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "more than one eula to accept");
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "more than one eula to accept");
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get first item of data */
@@ -682,10 +663,6 @@ pk_task_accept_eulas (PkTaskState *state)
 	pk_client_accept_eula_async (PK_CLIENT(state->task), eula_id,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_task_accept_eulas_ready_cb, state);
-out:
-	g_free (eula_id);
-	if (array != NULL)
-		g_ptr_array_unref (array);
 }
 
 /**
@@ -695,9 +672,8 @@ static void
 pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	GError *error = NULL;
-	PkResults *results;
-	PkError *error_code;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -709,8 +685,7 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState 
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we own a copy now */
@@ -721,6 +696,7 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState 
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		_cleanup_object_unref_ PkError *error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
 		error = g_error_new (PK_CLIENT_ERROR,
@@ -728,16 +704,11 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState 
 				     "failed to repair: %s",
 				     pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		g_object_unref (error_code);
-		goto out;
+		return;
 	}
 
 	/* now try the action again */
 	pk_task_do_async_action (state);
-out:
-	if (results != NULL)
-		g_object_unref (results);
 }
 
 /**
@@ -750,14 +721,14 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
 		g_debug ("need to do install-sig");
 		pk_task_install_signatures (state);
-		goto out;
+		return FALSE;
 	}
 
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
 		g_debug ("need to do accept-eula");
 		pk_task_accept_eulas (state);
-		goto out;
+		return FALSE;
 	}
 
 	/* this needs another step in the dance */
@@ -769,15 +740,12 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 					       state->progress_callback,
 					       state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_repair_ready_cb, state);
-		goto out;
+		return FALSE;
 	}
 
 	/* doing task */
 	g_debug ("continuing with request %i", state->request);
 	pk_task_do_async_action (state);
-
-out:
-	/* never repeat */
 	return FALSE;
 }
 
@@ -812,24 +780,23 @@ pk_task_user_accepted (PkTask *task, guint request)
 static gboolean
 pk_task_user_declined_idle_cb (PkTaskState *state)
 {
-	GError *error;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* the introduction is finished */
 	if (state->simulate) {
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_DECLINED_SIMULATION, "user declined simulation");
+		g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_DECLINED_SIMULATION, "user declined simulation");
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return FALSE;
 	}
 
 	/* doing task */
 	g_debug ("declined request %i", state->request);
-	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined interaction");
+	g_set_error (&error,
+			     PK_CLIENT_ERROR,
+			     PK_CLIENT_ERROR_FAILED, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
-	g_error_free (error);
-
-out:
-	/* never repeat */
 	return FALSE;
 }
 
@@ -878,9 +845,9 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
-	GError *error = NULL;
-	PkResults *results;
 	gboolean interactive;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -892,8 +859,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
 		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* we own a copy now */
@@ -914,21 +880,22 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
-			goto out;
+			return;
 		}
 
 		/* no support */
 		if (klass->untrusted_question == NULL) {
-			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
-					     "could not do untrusted question as no klass support");
+			g_set_error (&error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_NOT_SUPPORTED,
+				     "could not do untrusted question as no klass support");
 			pk_task_generic_state_finish (state, error);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* run the callback */
 		klass->untrusted_question (task, state->request, state->results);
-		goto out;
+		return;
 	}
 
 	/* need key */
@@ -938,21 +905,22 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
-			goto out;
+			return;
 		}
 
 		/* no support */
 		if (klass->key_question == NULL) {
-			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
-					     "could not do key question as no klass support");
+			g_set_error (&error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_NOT_SUPPORTED,
+				     "could not do key question as no klass support");
 			pk_task_generic_state_finish (state, error);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* run the callback */
 		klass->key_question (task, state->request, state->results);
-		goto out;
+		return;
 	}
 
 	/* need repair */
@@ -962,7 +930,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
-			goto out;
+			return;
 		}
 
 		/* no support */
@@ -971,13 +939,12 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 					     PK_CLIENT_ERROR_NOT_SUPPORTED,
 					     "could not do repair question as no klass support");
 			pk_task_generic_state_finish (state, error);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* run the callback */
 		klass->repair_question (task, state->request, state->results);
-		goto out;
+		return;
 	}
 
 	/* need EULA */
@@ -987,21 +954,22 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
-			goto out;
+			return;
 		}
 
 		/* no support */
 		if (klass->eula_question == NULL) {
-			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
-					     "could not do eula question as no klass support");
+			g_set_error (&error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_NOT_SUPPORTED,
+				     "could not do eula question as no klass support");
 			pk_task_generic_state_finish (state, error);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* run the callback */
 		klass->eula_question (task, state->request, state->results);
-		goto out;
+		return;
 	}
 
 	/* need media change */
@@ -1011,21 +979,22 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
-			goto out;
+			return;
 		}
 
 		/* no support */
 		if (klass->media_change_question == NULL) {
-			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
-					     "could not do media change question as no klass support");
+			g_set_error (&error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_NOT_SUPPORTED,
+				     "could not do media change question as no klass support");
 			pk_task_generic_state_finish (state, error);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* run the callback */
 		klass->media_change_question (task, state->request, state->results);
-		goto out;
+		return;
 	}
 
 	/* just re-run the transaction after a small delay */
@@ -1033,18 +1002,14 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		state->retry_id = g_timeout_add (PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT,
 						 pk_task_retry_cancelled_transaction_cb,
 						 state);
-		goto out;
+		return;
 	}
 
 	/* we can't handle this, just finish the async method */
 	state->ret = TRUE;
 
 	/* we're done */
-	pk_task_generic_state_finish (state, error);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	return;
+	pk_task_generic_state_finish (state, NULL);
 }
 
 /**
@@ -1066,8 +1031,8 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_TASK (task));
@@ -1098,8 +1063,6 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1121,8 +1084,8 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1152,8 +1115,6 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1179,8 +1140,8 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1211,8 +1172,6 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1235,8 +1194,8 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1269,8 +1228,6 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1293,8 +1250,8 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 		       PkProgressCallback progress_callback, gpointer progress_user_data,
 		       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1322,8 +1279,6 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1346,8 +1301,8 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1375,8 +1330,6 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1399,8 +1352,8 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1428,8 +1381,6 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1452,8 +1403,8 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1481,8 +1432,6 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1505,8 +1454,8 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1534,8 +1483,6 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1557,8 +1504,8 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1585,8 +1532,6 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1608,8 +1553,8 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1636,8 +1581,6 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1660,8 +1603,8 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1689,8 +1632,6 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1712,8 +1653,8 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1740,8 +1681,6 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1765,8 +1704,8 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1795,8 +1734,6 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1818,8 +1755,8 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1846,8 +1783,6 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1871,8 +1806,8 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1901,8 +1836,6 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1926,8 +1859,8 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1955,8 +1888,6 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -1978,8 +1909,8 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 			 PkProgressCallback progress_callback, gpointer progress_user_data,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2006,8 +1937,6 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -2028,8 +1957,8 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2055,8 +1984,6 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -2078,8 +2005,8 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2106,8 +2033,6 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -2129,8 +2054,8 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2157,8 +2082,6 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -2181,8 +2104,8 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2210,8 +2133,6 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 
 	/* run task with callbacks */
 	pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**
@@ -2235,9 +2156,9 @@ pk_task_repair_system_async (PkTask *task,
 			     GAsyncReadyCallback callback_ready,
 			     gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkTaskState *state;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2265,8 +2186,6 @@ pk_task_repair_system_async (PkTask *task,
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
-
-	g_object_unref (res);
 }
 
 /**

@@ -10,6 +10,7 @@ AM_CPPFLAGS = \
 	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
+	-I$(top_srcdir)						\
 	-I$(top_srcdir)/lib					\
 	-I$(top_builddir)/lib					\
 	-I.							\

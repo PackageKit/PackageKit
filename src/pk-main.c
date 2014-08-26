@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-debug.h>
 
+#include "pk-cleanup.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
 
@@ -110,14 +111,13 @@ static gboolean
 pk_main_set_auto_backend (GKeyFile *conf, GError **error)
 {
 	const gchar *tmp;
-	gboolean ret = TRUE;
 	gchar *name_tmp;
-	GDir *dir = NULL;
-	GPtrArray *array = NULL;
+	_cleanup_dir_close_ GDir *dir = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
 	if (dir == NULL)
-		goto out;
+		return FALSE;
 	array = g_ptr_array_new_with_free_func (g_free);
 	do {
 		tmp = g_dir_read_name (dir);
@@ -146,21 +146,11 @@ pk_main_set_auto_backend (GKeyFile *conf, GError **error)
 	/* set best backend */
 	if (array->len == 0) {
 		g_set_error_literal (error, 1, 0, "No backends found");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 	tmp = g_ptr_array_index (array, 0);
-	g_key_file_set_string (conf,
-			       "Daemon",
-			       "DefaultBackend",
-			       tmp);
-
-out:
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	if (dir != NULL)
-		g_dir_close (dir);
-	return ret;
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", tmp);
+	return TRUE;
 }
 
 /**
@@ -204,13 +194,13 @@ main (int argc, char *argv[])
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
-	gchar *backend_name = NULL;
-	gchar *conf_filename = NULL;
-	PkEngine *engine = NULL;
-	GKeyFile *conf = NULL;
-	GError *error = NULL;
 	GOptionContext *context;
 	guint timer_id = 0;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *backend_name = NULL;
+	_cleanup_free_ gchar *conf_filename = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	_cleanup_object_unref_ PkEngine *engine = NULL;
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -270,7 +260,6 @@ main (int argc, char *argv[])
 					 G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		g_print ("Failed to load config file: %s", error->message);
-		g_error_free (error);
 		goto out;
 	}
 	g_key_file_set_boolean (conf, "Daemon", "KeepEnvironment", keep_environment);
@@ -295,9 +284,7 @@ main (int argc, char *argv[])
 	if (g_strcmp0 (backend_name, "auto") == 0) {
 		ret  = pk_main_set_auto_backend (conf, &error);
 		if (!ret) {
-			g_print ("Failed to resolve auto: %s",
-				 error->message);
-			g_error_free (error);
+			g_print ("Failed to resolve auto: %s", error->message);
 			goto out;
 		}
 	}
@@ -320,9 +307,7 @@ main (int argc, char *argv[])
 	ret = pk_engine_load_backend (engine, &error);
 	if (!ret) {
 		/* TRANSLATORS: cannot load the backend the user specified */
-		g_print ("Failed to load the backend: %s",
-			 error->message);
-		g_error_free (error);
+		g_print ("Failed to load the backend: %s", error->message);
 		goto out;
 	}
 
@@ -353,15 +338,8 @@ out:
 
 	if (timer_id > 0)
 		g_source_remove (timer_id);
-
 	if (loop != NULL)
 		g_main_loop_unref (loop);
-	g_key_file_unref (conf);
-	if (engine != NULL)
-		g_object_unref (engine);
-	g_free (backend_name);
-	g_free (conf_filename);
-
 exit_program:
 	return 0;
 }

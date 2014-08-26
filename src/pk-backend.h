@@ -36,6 +36,7 @@
 
 #include "pk-backend.h"
 #include "pk-backend-job.h"
+#include "pk-cleanup.h"
 
 G_BEGIN_DECLS
 

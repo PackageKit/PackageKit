@@ -225,7 +225,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (package_ids);
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		package_id = package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
 			pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor",
@@ -307,7 +307,7 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	len = g_strv_length (package_ids);
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		package_id = package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
 			to_strv[0] = "/usr/share/man/man1/boo";
@@ -382,7 +382,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	/* each one has a different detail for testing */
 	pk_backend_job_set_percentage (job, 0);
 	len = g_strv_length (priv->package_ids);
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		const gchar *to_array1[] = { NULL, NULL, NULL };
 		const gchar *to_array2[] = { NULL, NULL, NULL };
 		const gchar *to_array3[] = { NULL, NULL, NULL };
@@ -853,7 +853,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (search);
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		if (g_strcmp0 (search[i], "vips-doc") == 0 || g_strcmp0 (search[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
@@ -1256,20 +1256,18 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 			       GIOCondition condition,
 			       PkBackendJob *job)
 {
-	GError *error = NULL;
 	gsize len;
 	gchar buffer[1024];
-	gboolean ret = TRUE;
 	gint wrote = 0;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "socket was disconnected");
 		pk_backend_job_finished (job);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* there is data */
@@ -1279,12 +1277,10 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 						   "failed to read: %s", error->message);
 			pk_backend_job_finished (job);
-			g_error_free (error);
-			ret = FALSE;
-			goto out;
+			return FALSE;
 		}
 		if (len == 0)
-			goto out;
+			return TRUE;
 		buffer[len] = '\0';
 		if (g_strcmp0 (buffer, "pong\n") == 0) {
 			/* send a category so we can verify in the self checks */
@@ -1296,14 +1292,13 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 				pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 							   "failed to write to socket: %s", error->message);
 				pk_backend_job_finished (job);
-				g_error_free (error);
-				goto out;
+				return FALSE;
 			}
 			if (wrote != 8) {
 				pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 							   "failed to write, only %i bytes", wrote);
 				pk_backend_job_finished (job);
-				goto out;
+				return FALSE;
 			}
 		} else if (g_strcmp0 (buffer, "you said to me: invalid\n") == 0) {
 			g_debug ("ignoring invalid data (one is good)");
@@ -1312,11 +1307,10 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 						   "unexpected data: %s", buffer);
 			g_source_remove (job_data->signal_timeout);
 			pk_backend_job_finished (job);
-			goto out;
+			return FALSE;
 		}
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1329,13 +1323,13 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	const gchar *license_agreement;
 	gboolean has_eula;
 	gboolean ret;
-	gchar *frontend_socket = NULL;
-	GError *error = NULL;
 	gsize wrote;
-	GSocketAddress *address = NULL;
 	GSource *source;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	PkRoleEnum role;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *frontend_socket = NULL;
+	_cleanup_object_unref_ GSocketAddress *address = NULL;
 
 	/* FIXME: support only_trusted */
 	role = pk_backend_job_get_role (job);
@@ -1391,7 +1385,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 						   "failed to get frontend socket");
 			pk_backend_job_finished (job);
-			goto out;
+			return;
 		}
 
 		/* create socket */
@@ -1404,8 +1398,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 						   "failed to create socket: %s",
 						   error->message);
 			pk_backend_job_finished (job);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 		g_socket_set_blocking (job_data->socket, FALSE);
 		g_socket_set_keepalive (job_data->socket, TRUE);
@@ -1417,8 +1410,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 						   "failed to open socket: %s", error->message);
 			pk_backend_job_finished (job);
-			g_error_free (error);
-			goto out;
+			return;
 		}
 
 		/* socket has data */
@@ -1432,7 +1424,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
 						   "failed to write, only %i bytes", (gint) wrote);
 			pk_backend_job_finished (job);
-			goto out;
+			return;
 		}
 
 		/* FIXME: support only_trusted */
@@ -1440,7 +1432,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 						PK_RESTART_ENUM_SYSTEM,
 						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 		pk_backend_job_thread_create (job, pk_backend_update_system_thread, NULL, NULL);
-		goto out;
+		return;
 	}
 
 	/* check if something else locked the "fake-db" */
@@ -1462,10 +1454,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 
 	pk_backend_job_thread_create (job, pk_backend_update_packages_download_thread, NULL, NULL);
-out:
-	if (address != NULL)
-		g_object_unref (address);
-	g_free (frontend_socket);
 }
 
 /**

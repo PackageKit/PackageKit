@@ -30,6 +30,8 @@
 #include <unistd.h>
 #include <systemd/sd-journal.h>
 
+#include "src/pk-cleanup.h"
+
 #define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
 #define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
 #define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
@@ -42,25 +44,20 @@
 static void
 pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
-	gboolean ret;
-	gchar *cmd;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
 		return;
-	cmd = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
-	ret = g_spawn_command_line_async (cmd, &error);
-	if (!ret) {
+	cmdline = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
+	if (!g_spawn_command_line_async (cmdline, &error)) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to display message on splash: %s",
 				  error->message);
-		g_error_free (error);
-		error = NULL;
 	} else {
 		sd_journal_print (LOG_INFO, "sent msg to plymouth '%s'", msg);
 	}
-	g_free (cmd);
 }
 
 /**
@@ -69,24 +66,20 @@ pk_offline_update_set_plymouth_msg (const gchar *msg)
 static void
 pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
-	gboolean ret;
-	GError *error = NULL;
-	gchar *cmdline;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
 		return;
 	cmdline = g_strdup_printf ("plymouth change-mode --%s", mode);
-	ret = g_spawn_command_line_async (cmdline, &error);
-	if (!ret) {
+	if (!g_spawn_command_line_async (cmdline, &error)) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to change mode for splash: %s",
 				  error->message);
-		g_error_free (error);
 	} else {
 		sd_journal_print (LOG_INFO, "sent mode to plymouth '%s'", mode);
 	}
-	g_free (cmdline);
 }
 
 /**
@@ -95,23 +88,19 @@ pk_offline_update_set_plymouth_mode (const gchar *mode)
 static void
 pk_offline_update_set_plymouth_percentage (guint percentage)
 {
-	gboolean ret;
-	GError *error = NULL;
-	gchar *cmdline;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
 		return;
 	cmdline = g_strdup_printf ("plymouth system-update --progress=%i",
 				   percentage);
-	ret = g_spawn_command_line_async (cmdline, &error);
-	if (!ret) {
+	if (!g_spawn_command_line_async (cmdline, &error)) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to set percentage for splash: %s",
 				  error->message);
-		g_error_free (error);
 	}
-	g_free (cmdline);
 }
 
 /**
@@ -123,11 +112,11 @@ pk_offline_update_progress_cb (PkProgress *progress,
 			       gpointer user_data)
 {
 	PkInfoEnum info;
-	PkPackage *pkg = NULL;
 	PkProgressBar *progressbar = PK_PROGRESS_BAR (user_data);
 	PkStatusEnum status;
-	gchar *msg = NULL;
 	gint percentage;
+	_cleanup_free_ gchar *msg = NULL;
+	_cleanup_object_unref_ PkPackage *pkg = NULL;
 
 	switch (type) {
 	case PK_PROGRESS_TYPE_ROLE:
@@ -161,7 +150,7 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	case PK_PROGRESS_TYPE_PERCENTAGE:
 		g_object_get (progress, "percentage", &percentage, NULL);
 		if (percentage < 0)
-			goto out;
+			return;
 		sd_journal_print (LOG_INFO, "percentage %i%%", percentage);
 
 		/* TRANSLATORS: this is the message we send plymouth to
@@ -184,10 +173,6 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	default:
 		break;
 	}
-out:
-	if (pkg != NULL)
-		g_object_unref (pkg);
-	g_free (msg);
 }
 
 /**
@@ -196,9 +181,9 @@ out:
 static void
 pk_offline_update_reboot (void)
 {
-	GDBusConnection *connection;
-	GError *error = NULL;
-	GVariant *val = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusConnection *connection;
+	_cleanup_variant_unref_ GVariant *val = NULL;
 
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "rebooting");
@@ -210,8 +195,7 @@ pk_offline_update_reboot (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to get system bus connection: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	val = g_dbus_connection_call_sync (connection,
 					   "org.freedesktop.systemd1",
@@ -228,14 +212,8 @@ pk_offline_update_reboot (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to reboot: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
-out:
-	if (connection != NULL)
-		g_object_unref (connection);
-	if (val != NULL)
-		g_variant_unref (val);
 }
 
 /**
@@ -244,9 +222,9 @@ out:
 static void
 pk_offline_update_power_off (void)
 {
-	GDBusConnection *connection;
-	GError *error = NULL;
-	GVariant *val = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusConnection *connection = NULL;
+	_cleanup_variant_unref_ GVariant *val = NULL;
 
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "shutting down");
@@ -258,8 +236,7 @@ pk_offline_update_power_off (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to get system bus connection: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	val = g_dbus_connection_call_sync (connection,
 					   "org.freedesktop.systemd1",
@@ -276,14 +253,8 @@ pk_offline_update_power_off (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to power off: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
-out:
-	if (connection != NULL)
-		g_object_unref (connection);
-	if (val != NULL)
-		g_variant_unref (val);
 }
 
 /**
@@ -292,11 +263,11 @@ out:
 static void
 pk_offline_update_write_error (const GError *error)
 {
-	gboolean ret;
-	gchar *data = NULL;
-	GError *error_local = NULL;
-	GKeyFile *key_file;
 	PkErrorEnum error_enum = PK_ERROR_ENUM_UNKNOWN;
+	gboolean ret;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 
 	/* just write what we've got */
 	key_file = g_key_file_new ();
@@ -323,23 +294,16 @@ pk_offline_update_write_error (const GError *error)
 		sd_journal_print (LOG_WARNING,
 				  "failed to get keyfile data: %s",
 				  error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return;
 	}
 	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data,
-				   -1,
-				   &error_local);
+				   data, -1, &error_local);
 	if (!ret) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to write file: %s",
 				  error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return;
 	}
-out:
-	g_key_file_free (key_file);
-	g_free (data);
 }
 
 /**
@@ -349,14 +313,13 @@ static void
 pk_offline_update_write_results (PkResults *results)
 {
 	gboolean ret;
-	gchar *data = NULL;
 	GError *error = NULL;
-	GKeyFile *key_file;
 	GPtrArray *packages;
-	GString *string;
 	guint i;
 	PkError *pk_error;
 	PkPackage *package;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 
 	sd_journal_print (LOG_INFO, "writing actual results");
 	key_file = g_key_file_new ();
@@ -384,6 +347,7 @@ pk_offline_update_write_results (PkResults *results)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages != NULL) {
+		_cleanup_string_free_ GString *string = NULL;
 		string = g_string_new ("");
 		for (i = 0; i < packages->len; i++) {
 			package = g_ptr_array_index (packages, i);
@@ -403,7 +367,6 @@ pk_offline_update_write_results (PkResults *results)
 				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
 				       "Packages",
 				       string->str);
-		g_string_free (string, TRUE);
 	}
 
 	/* write file */
@@ -412,23 +375,16 @@ pk_offline_update_write_results (PkResults *results)
 		sd_journal_print (LOG_WARNING,
 				  "failed to get keyfile data: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data,
-				   -1,
-				   &error);
+				   data, -1, &error);
 	if (!ret) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to write file: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
-out:
-	g_key_file_free (key_file);
-	g_free (data);
 }
 
 /**
@@ -445,11 +401,11 @@ static void
 pk_offline_update_write_dummy_results (gchar **package_ids)
 {
 	gboolean ret;
-	gchar *data = NULL;
-	GError *error = NULL;
-	GKeyFile *key_file;
-	GString *string;
 	guint i;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
+	_cleanup_string_free_ GString *string = NULL;
 
 	sd_journal_print (LOG_INFO, "writing dummy results");
 	key_file = g_key_file_new ();
@@ -484,28 +440,20 @@ pk_offline_update_write_dummy_results (gchar **package_ids)
 		sd_journal_print (LOG_WARNING,
 				  "failed to get keyfile data: %s",
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data,
-				   -1,
-				   &error);
+				   data, -1, &error);
 	if (!ret) {
 		sd_journal_print (LOG_WARNING,
 				  "failed to write dummy %s: %s",
 				  PK_OFFLINE_UPDATE_RESULTS_FILENAME,
 				  error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* ensure this is written to disk */
 	sync ();
-out:
-	g_string_free (string, TRUE);
-	g_key_file_free (key_file);
-	g_free (data);
 }
 
 /**
@@ -539,38 +487,27 @@ static PkOfflineUpdateAction
 pk_offline_update_get_action (void)
 {
 	gboolean ret;
-	gchar *action_data = NULL;
 	PkOfflineUpdateAction action;
+	_cleanup_free_ gchar *action_data = NULL;
 
 	/* allow testing without rebooting */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL) {
 		g_print ("TESTING, so not doing action\n");
-		action = PK_OFFLINE_UPDATE_ACTION_NOTHING;
-		goto out;
+		return PK_OFFLINE_UPDATE_ACTION_NOTHING;
 	}
 
 	ret = g_file_get_contents (PK_OFFLINE_UPDATE_ACTION_FILENAME,
-				   &action_data,
-				   NULL,
-				   NULL);
+				   &action_data, NULL, NULL);
 	if (!ret) {
 		g_warning ("Failed to get post-update action, using reboot");
-		action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
-		goto out;
+		return PK_OFFLINE_UPDATE_ACTION_REBOOT;
 	}
-	if (g_strcmp0 (action_data, "reboot") == 0) {
-		action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
-		goto out;
-	}
-	if (g_strcmp0 (action_data, "power-off") == 0) {
-		action = PK_OFFLINE_UPDATE_ACTION_POWER_OFF;
-		goto out;
-	}
+	if (g_strcmp0 (action_data, "reboot") == 0)
+		return PK_OFFLINE_UPDATE_ACTION_REBOOT;
+	if (g_strcmp0 (action_data, "power-off") == 0)
+		return PK_OFFLINE_UPDATE_ACTION_POWER_OFF;
 	g_warning ("failed to parse action '%s', using reboot", action_data);
-	action = PK_OFFLINE_UPDATE_ACTION_REBOOT;
-out:
-	g_free (action_data);
-	return action;
+	return PK_OFFLINE_UPDATE_ACTION_REBOOT;
 }
 
 /**
@@ -579,17 +516,17 @@ out:
 int
 main (int argc, char *argv[])
 {
-	gboolean ret;
-	gchar **package_ids = NULL;
-	gchar *packages_data = NULL;
-	GError *error = NULL;
-	GFile *file = NULL;
-	gint retval;
-	GMainLoop *loop = NULL;
-	PkResults *results = NULL;
-	PkTask *task = NULL;
 	PkOfflineUpdateAction action;
-	PkProgressBar *progressbar = NULL;
+	gboolean ret;
+	gint retval;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *packages_data = NULL;
+	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ PkProgressBar *progressbar = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_object_unref_ PkTask *task = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();
@@ -624,7 +561,6 @@ main (int argc, char *argv[])
 				  "failed to read %s: %s",
 				  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 				  error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -654,7 +590,6 @@ main (int argc, char *argv[])
 		sd_journal_print (LOG_WARNING,
 				  "failed to update system: %s",
 				  error->message);
-		g_error_free (error);
 		goto out;
 	}
 	pk_progress_bar_end (progressbar);
@@ -671,10 +606,8 @@ main (int argc, char *argv[])
 					  "failed to delete %s: %s",
 					  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 					  error->message);
-			g_error_free (error);
 			goto out;
 		}
-		g_clear_error (&error);
 	}
 
 	retval = EXIT_SUCCESS;
@@ -691,17 +624,5 @@ out:
 		pk_offline_update_reboot ();
 	else if (action == PK_OFFLINE_UPDATE_ACTION_POWER_OFF)
 		pk_offline_update_power_off ();
-	g_free (packages_data);
-	g_strfreev (package_ids);
-	if (progressbar != NULL)
-		g_object_unref (progressbar);
-	if (file != NULL)
-		g_object_unref (file);
-	if (results != NULL)
-		g_object_unref (results);
-	if (task != NULL)
-		g_object_unref (task);
-	if (loop != NULL)
-		g_main_loop_unref (loop);
 	return retval;
 }

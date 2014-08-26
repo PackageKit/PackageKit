@@ -84,19 +84,17 @@ pk_network_get_network_state (PkNetwork *network)
 
 	/* try each networking stack in order of preference */
 	nstacks = network->priv->nstacks;
-	for (i=0; i<nstacks->len; i++) {
+	for (i = 0; i < nstacks->len; i++) {
 		nstack = g_ptr_array_index (nstacks, i);
 		if (pk_network_stack_is_enabled (nstack)) {
 			state = pk_network_stack_get_state (nstack);
 			if (state != PK_NETWORK_ENUM_UNKNOWN)
-				goto out;
+				return state;
 		}
 	}
 
 	/* no valid data providers */
-	state = PK_NETWORK_ENUM_ONLINE;
-out:
-	return state;
+	return PK_NETWORK_ENUM_ONLINE;
 }
 
 /**

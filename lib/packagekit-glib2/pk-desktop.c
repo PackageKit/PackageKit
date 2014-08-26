@@ -64,7 +64,7 @@ pk_desktop_sqlite_filename_cb (void *data, gint argc, gchar **argv, gchar **col_
 	gint i;
 
 	/* add the filename data to the array */
-	for (i=0; i<argc; i++) {
+	for (i = 0; i < argc; i++) {
 		if (g_strcmp0 (col_name[i], "filename") == 0 && argv[i] != NULL)
 			g_ptr_array_add (array, g_strdup (argv[i]));
 	}
@@ -82,7 +82,7 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
 	gint i;
 
 	/* add the filename data to the array */
-	for (i=0; i<argc; i++) {
+	for (i = 0; i < argc; i++) {
 		if (g_strcmp0 (col_name[i], "package") == 0 && argv[i] != NULL) {
 			*package = g_strdup (argv[i]);
 			break;

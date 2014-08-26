@@ -88,13 +88,13 @@ pk_plugin_details_cb (PkBackendJob *job,
 			PkDetails *item,
 			PkPlugin *plugin)
 {
-	gchar *package_id;
-	gchar *description;
-	gchar *license;
-	gchar *url;
 	guint64 size;
 	PkGroupEnum group;
-	PkPackage *package;
+	_cleanup_free_ gchar *description = NULL;
+	_cleanup_free_ gchar *license = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *url = NULL;
+	_cleanup_object_unref_ PkPackage *package = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -110,7 +110,7 @@ pk_plugin_details_cb (PkBackendJob *job,
 	package = pk_package_sack_find_by_id (plugin->priv->sack, package_id);
 	if (package == NULL) {
 		g_warning ("failed to find %s", package_id);
-		goto out;
+		return;
 	}
 
 	/* set data */
@@ -121,13 +121,6 @@ pk_plugin_details_cb (PkBackendJob *job,
 		      "url", url,
 		      "size", size,
 		      NULL);
-	g_object_unref (package);
-
-out:
-	g_free (package_id);
-	g_free (description);
-	g_free (license);
-	g_free (url);
 }
 
 /**
@@ -154,24 +147,14 @@ pk_plugin_package_array_to_string (GPtrArray *array)
 	guint i;
 	PkPackage *package;
 	GString *string;
-	PkInfoEnum info;
-	gchar *package_id;
-	gchar *summary;
 
 	string = g_string_new ("");
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		g_object_get (package,
-			      "info", &info,
-			      "package-id", &package_id,
-			      "summary", &summary,
-			      NULL);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_string (info),
-					package_id,
-					summary);
-		g_free (package_id);
-		g_free (summary);
+					pk_info_enum_to_string (pk_package_get_info (package)),
+					pk_package_get_id (package),
+					pk_package_get_summary (package));
 	}
 
 	/* remove trailing newline */
@@ -186,20 +169,16 @@ pk_plugin_package_array_to_string (GPtrArray *array)
 static void
 pk_plugin_save_package_list (PkPlugin *plugin, GPtrArray *pkg_array)
 {
-	GError *error = NULL;
 	gboolean ret;
-	gchar *data = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *data = NULL;
 
 	/* convert to a file and save the package list - we require this for backward-compatibility */
 	data = pk_plugin_package_array_to_string (pkg_array);
-
 	ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME,
-				data, -1, &error);
-	if (!ret) {
-		g_warning ("failed to save to file: %s",
-			error->message);
-		g_error_free (error);
-	}
+				   data, -1, &error);
+	if (!ret)
+		g_warning ("failed to save to file: %s", error->message);
 }
 
 /**
@@ -210,29 +189,28 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 				    PkTransaction *transaction)
 {
 	gboolean ret;
-	GError *error = NULL;
 	GKeyFile *conf;
 	PkRoleEnum role;
-	PkPackageCache *cache = NULL;
-	GPtrArray *pkg_array = NULL;
 	gchar **package_ids;
 	PkPackage *package;
 	uint i;
-
 	gboolean update_cache;
 	gboolean update_list;
 	PkPluginPrivate *priv = plugin->priv;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkPackageCache *cache = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *pkg_array = NULL;
 
 	/* skip simulate actions */
 	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-		goto out;
+		return;
 	}
 
 	/* skip only-download */
 	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		goto out;
+		return;
 	}
 
 	/* check the config file */
@@ -243,13 +221,12 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* check the role */
 	role = pk_transaction_get_role (transaction);
 	if (role != PK_ROLE_ENUM_REFRESH_CACHE)
-		goto out;
+		return;
 
 	/* check we can do the action */
-	if (!pk_backend_is_implemented (plugin->backend,
-	    PK_ROLE_ENUM_GET_PACKAGES)) {
+	if (!pk_backend_is_implemented (plugin->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
 		g_debug ("cannot get packages");
-		goto out;
+		return;
 	}
 
 	g_debug ("plugin: rebuilding package cache");
@@ -287,7 +264,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 		/* update UI (finished) */
 		pk_backend_job_set_percentage (plugin->job, 100);
 		pk_backend_job_set_status (plugin->job, PK_STATUS_ENUM_FINISHED);
-		goto out;
+		return;
 	}
 
 	/* fetch package details too, if possible */
@@ -319,7 +296,6 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	ret = pk_package_cache_open (cache, FALSE, &error);
 	if (!ret) {
 		g_warning ("%s: %s\n", "Failed to open cache", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -328,18 +304,16 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	pk_package_cache_clear (cache, &error);
 	if (!ret) {
 		g_warning ("%s: %s\n", "Failed to clear cache", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
 	/* add packages to cache */
 	g_clear_error (&error);
-	for (i=0; i<pkg_array->len; i++) {
+	for (i = 0; i < pkg_array->len; i++) {
 		package = g_ptr_array_index (pkg_array, i);
 		ret = pk_package_cache_add_package (cache, package, &error);
 		if (!ret) {
 			g_warning ("%s: %s\n", "Couldn't update cache", error->message);
-			g_error_free (error);
 			goto out;
 		}
 	}
@@ -352,13 +326,8 @@ out:
 	if (cache != NULL) {
 		g_clear_error (&error);
 		ret = pk_package_cache_close (cache, FALSE, &error);
-		if (!ret) {
+		if (!ret)
 			g_warning ("%s: %s\n", "Failed to close cache", error->message);
-			g_error_free (error);
-		}
-		g_object_unref (cache);
 	}
 
-	if (pkg_array != NULL)
-		g_ptr_array_unref (pkg_array);
 }

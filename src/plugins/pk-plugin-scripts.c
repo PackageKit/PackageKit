@@ -38,14 +38,14 @@ pk_plugin_get_description (void)
 static void
 pk_transaction_process_script (PkTransaction *transaction, const gchar *filename)
 {
-	GFile *file = NULL;
-	GFileInfo *info = NULL;
 	guint file_uid;
-	gchar *command = NULL;
 	gint exit_status = 0;
 	gboolean ret;
-	GError *error = NULL;
 	PkRoleEnum role;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *command = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileInfo *info = NULL;
 
 	/* get content type for file */
 	file = g_file_new_for_path (filename);
@@ -55,21 +55,21 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 				  G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
 	if (info == NULL) {
 		g_warning ("failed to get info: %s", error->message);
-		goto out;
+		return;
 	}
 
 	/* check is executable */
 	ret = g_file_info_get_attribute_boolean (info, G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE);
 	if (!ret) {
 		g_warning ("%s is not executable", filename);
-		goto out;
+		return;
 	}
 
 	/* check is owned by the correct user */
 	file_uid = g_file_info_get_attribute_uint32 (info, G_FILE_ATTRIBUTE_UNIX_UID);
 	if (file_uid != 0) {
 		g_warning ("%s is not owned by the root user", filename);
-		goto out;
+		return;
 	}
 
 	/* format the argument list */
@@ -82,17 +82,9 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 	ret = g_spawn_command_line_sync (command, NULL, NULL, &exit_status, &error);
 	if (!ret) {
 		g_warning ("failed to spawn %s [%i]: %s", command, exit_status, error->message);
-		g_error_free (error);
 	} else {
 		g_debug ("ran %s", command);
 	}
-
-out:
-	g_free (command);
-	if (info != NULL)
-		g_object_unref (info);
-	if (file != NULL)
-		g_object_unref (file);
 }
 
 /**
@@ -103,38 +95,27 @@ out:
 static void
 pk_transaction_process_scripts (PkTransaction *transaction, const gchar *location)
 {
-	GError *error = NULL;
-	gchar *filename;
-	gchar *dirname;
 	const gchar *file;
-	GDir *dir;
+	_cleanup_dir_close_ GDir *dir = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *dirname = NULL;
 
 	/* get location to search */
 	dirname = g_build_filename (SYSCONFDIR, "PackageKit", "events", location, NULL);
 	dir = g_dir_open (dirname, 0, &error);
 	if (dir == NULL) {
 		g_warning ("Failed to open %s: %s", dirname, error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* run scripts */
-	file = g_dir_read_name (dir);
-	while (file != NULL) {
+	while ((file = g_dir_read_name (dir)) != NULL) {
+		_cleanup_free_ gchar *filename = NULL;
+		if (g_strcmp0 (file, "README") == 0)
+			continue;
 		filename = g_build_filename (dirname, file, NULL);
-
-		/* we put this here */
-		if (g_strcmp0 (file, "README") != 0) {
-			pk_transaction_process_script (transaction, filename);
-		}
-
-		g_free (filename);
-		file = g_dir_read_name (dir);
+		pk_transaction_process_script (transaction, filename);
 	}
-out:
-	if (dir != NULL)
-		g_dir_close (dir);
-	g_free (dirname);
 }
 
 /**

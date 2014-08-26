@@ -42,18 +42,18 @@ static PkPackageSack *
 pk_plugin_get_existing_prepared_updates (const gchar *filename)
 {
 	gboolean ret;
-	gchar **package_ids = NULL;
-	gchar *packages_data = NULL;
-	GError *error = NULL;
 	PkPackageSack *sack;
 	guint i;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *packages_data = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* always return a valid sack, even for failure */
 	sack = pk_package_sack_new ();
 
 	/* does the file exist ? */
 	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-		goto out;
+		return sack;
 
 	/* get the list of packages to update */
 	ret = g_file_get_contents (filename,
@@ -62,17 +62,13 @@ pk_plugin_get_existing_prepared_updates (const gchar *filename)
 				   &error);
 	if (!ret) {
 		g_warning ("failed to read: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return sack;
 	}
 
 	/* add them to the new array */
 	package_ids = g_strsplit (packages_data, "\n", -1);
 	for (i = 0; package_ids[i] != NULL; i++)
 		pk_package_sack_add_package_by_id (sack, package_ids[i], NULL);
-out:
-	g_free (packages_data);
-	g_strfreev (package_ids);
 	return sack;
 }
 
@@ -105,10 +101,10 @@ pk_plugin_state_changed (PkPlugin *plugin)
 static void
 pk_plugin_transaction_update_packages (PkTransaction *transaction)
 {
-	GError *error = NULL;
 	gboolean ret;
 	gchar **package_ids;
-	gchar *packages_str = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *packages_str = NULL;
 
 	/* write the package ids to the prepared update file */
 	package_ids = pk_transaction_get_package_ids (transaction);
@@ -121,11 +117,7 @@ pk_plugin_transaction_update_packages (PkTransaction *transaction)
 		g_warning ("failed to write %s: %s",
 			   PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 			   error->message);
-		g_error_free (error);
-		goto out;
 	}
-out:
-	g_free (packages_str);
 }
 
 /**
@@ -136,17 +128,17 @@ pk_plugin_transaction_action_method (PkPlugin *plugin,
 				     PkTransaction *transaction,
 				     PkResults *results)
 {
-	GPtrArray *invalidated = NULL;
 	PkPackage *pkg;
-	PkPackageSack *sack;
 	const gchar *package_id;
 	gchar **package_ids;
 	guint i;
+	_cleanup_object_unref_ PkPackageSack *sack;
+	_cleanup_ptrarray_unref_ GPtrArray *invalidated = NULL;
 
 	/* get the existing prepared updates */
 	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	if (pk_package_sack_get_size (sack) == 0)
-		goto out;
+		return;
 
 	/* are there any requested packages that match in prepared-updates */
 	package_ids = pk_transaction_get_package_ids (transaction);
@@ -157,7 +149,7 @@ pk_plugin_transaction_action_method (PkPlugin *plugin,
 				 package_ids[i], pk_package_get_id (pkg));
 			pk_plugin_state_changed (plugin);
 			g_object_unref (pkg);
-			goto out;
+			return;
 		}
 	}
 
@@ -171,13 +163,9 @@ pk_plugin_transaction_action_method (PkPlugin *plugin,
 				 package_id, pk_package_get_id (pkg));
 			pk_plugin_state_changed (plugin);
 			g_object_unref (pkg);
-			goto out;
+			return;
 		}
 	}
-out:
-	if (invalidated != NULL)
-		g_ptr_array_unref (invalidated);
-	g_object_unref (sack);
 }
 
 /**
@@ -186,15 +174,15 @@ out:
 static void
 pk_plugin_transaction_get_updates (PkTransaction *transaction)
 {
-	GPtrArray *array;
 	PkResults *results;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	results = pk_transaction_get_results (transaction);
 	array = pk_results_get_package_array (results);
 	if (array->len != 0) {
 		g_debug ("got %i updates, so ignoring %s",
 			 array->len, PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-		goto out;
+		return;
 	}
 	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
 			 G_FILE_TEST_EXISTS)) {
@@ -205,8 +193,6 @@ pk_plugin_transaction_get_updates (PkTransaction *transaction)
 		g_debug ("No %s present, so no need to delete",
 			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
 	}
-out:
-	g_ptr_array_unref (array);
 }
 
 /**
@@ -230,14 +216,14 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	/* skip simulate actions */
 	if (pk_bitfield_contain (pk_transaction_get_transaction_flags (transaction),
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-		goto out;
+		return;
 	}
 
 	/* don't do anything if the method failed */
 	results = pk_transaction_get_results (transaction);
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		goto out;
+		return;
 
 	/* if we're doing UpdatePackages[only-download] then update the
 	 * prepared-updates file */
@@ -247,14 +233,14 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	    pk_bitfield_contain (transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		pk_plugin_transaction_update_packages (transaction);
-		goto out;
+		return;
 	}
 
 	/* if we do get-updates and there's no updates then remove
 	 * prepared-updates so the UI doesn't display update & reboot */
 	if (role == PK_ROLE_ENUM_GET_UPDATES) {
 		pk_plugin_transaction_get_updates (transaction);
-		goto out;
+		return;
 	}
 
 	/* delete the prepared updates file as it's no longer valid */
@@ -262,7 +248,7 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    role == PK_ROLE_ENUM_REPO_ENABLE) {
 		pk_plugin_state_changed (plugin);
-		goto out;
+		return;
 	}
 
 	/* delete the file if the action affected any package already listed in
@@ -272,6 +258,4 @@ pk_plugin_transaction_finished_end (PkPlugin *plugin,
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		pk_plugin_transaction_action_method (plugin, transaction, results);
 	}
-out:
-	return;
 }

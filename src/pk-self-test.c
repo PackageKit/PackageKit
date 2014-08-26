@@ -25,6 +25,7 @@
 #include <glib-object.h>
 #include <glib/gstdio.h>
 
+#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-dbus.h"
@@ -36,6 +37,7 @@
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
 #include "pk-transaction-list.h"
+
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID	14
 
@@ -163,13 +165,13 @@ pk_test_backend_package_cb (PkBackend *backend, PkPackage *package, gpointer use
 static void
 pk_test_backend_func (void)
 {
-	PkBackend *backend;
-	PkBackendJob *job;
-	GKeyFile *conf;
 	const gchar *text;
 	gboolean ret;
 	const gchar *filename;
 	GError *error = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	_cleanup_object_unref_ PkBackend *backend = NULL;
+	_cleanup_object_unref_ PkBackendJob *job = NULL;
 
 	/* get an backend */
 	conf = g_key_file_new ();
@@ -322,10 +324,6 @@ pk_test_backend_func (void)
 
 	/* stop the job again */
 	pk_backend_stop_job (backend, job);
-
-	g_key_file_unref (conf);
-	g_object_unref (job);
-	g_object_unref (backend);
 }
 
 static guint _backend_spawn_number_packages = 0;
@@ -356,13 +354,13 @@ static void
 pk_test_backend_spawn_func (void)
 {
 	PkBackendSpawn *backend_spawn;
-	PkBackend *backend;
-	PkBackendJob *job;
-	GKeyFile *conf;
 	const gchar *text;
 	gboolean ret;
 	gchar *uri;
 	GError *error = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	_cleanup_object_unref_ PkBackend *backend = NULL;
+	_cleanup_object_unref_ PkBackendJob *job = NULL;
 
 	/* get an backend_spawn */
 	conf = g_key_file_new ();
@@ -509,22 +507,15 @@ pk_test_backend_spawn_func (void)
 
 	/* done */
 	g_object_unref (backend_spawn);
-
-	/* we ref'd it manually for checking, so we need to unref it */
-	g_object_unref (job);
-	g_object_unref (backend);
-	g_key_file_unref (conf);
 }
 
 static void
 pk_test_dbus_func (void)
 {
-	PkDbus *dbus;
+	_cleanup_object_unref_ PkDbus *dbus;
 
 	dbus = pk_dbus_new ();
 	g_assert (dbus != NULL);
-
-	g_object_unref (dbus);
 }
 
 PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
@@ -564,12 +555,11 @@ cancel_cb (gpointer data)
 static void
 new_spawn_object (PkSpawn **pspawn)
 {
-	GKeyFile *conf;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
 	if (*pspawn != NULL)
 		g_object_unref (*pspawn);
 	conf = g_key_file_new ();
 	*pspawn = pk_spawn_new (conf);
-	g_key_file_unref (conf);
 	g_signal_connect (*pspawn, "exit",
 			  G_CALLBACK (pk_test_exit_cb), NULL);
 	g_signal_connect (*pspawn, "stdout",
@@ -588,11 +578,11 @@ idle_cb (gpointer user_data)
 static void
 pk_test_spawn_func (void)
 {
-	PkSpawn *spawn = NULL;
 	GError *error = NULL;
 	gboolean ret;
-	gchar **argv;
-	gchar **envp;
+	_cleanup_object_unref_ PkSpawn *spawn = NULL;
+	_cleanup_strv_free_ gchar **argv = NULL;
+	_cleanup_strv_free_ gchar **envp = NULL;
 
 	new_spawn_object (&spawn);
 
@@ -763,18 +753,14 @@ pk_test_spawn_func (void)
 	/* ask dispatcher to close (again) */
 	ret = pk_spawn_exit (spawn);
 	g_assert (!ret);
-
-	g_strfreev (argv);
-	g_strfreev (envp);
-	g_object_unref (spawn);
 }
 
 static void
 pk_test_time_func (void)
 {
-	PkTime *pktime = NULL;
 	gboolean ret;
 	guint value;
+	_cleanup_object_unref_ PkTime *pktime = NULL;
 
 	pktime = pk_time_new ();
 	g_assert (pktime != NULL);
@@ -828,18 +814,16 @@ pk_test_time_func (void)
 	value = pk_time_get_remaining (pktime);
 	g_assert_cmpint (value, >=, 1199);
 	g_assert_cmpint (value, <=, 1201);
-
-	g_object_unref (pktime);
 }
 
 static void
 pk_test_transaction_func (void)
 {
-	PkTransaction *transaction = NULL;
 	gboolean ret;
 	GError *error = NULL;
 	GDBusNodeInfo *introspection;
-	GKeyFile *conf;
+	_cleanup_object_unref_ PkTransaction *transaction = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
 
 	introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml", NULL);
 	g_assert (introspection != NULL);
@@ -861,22 +845,20 @@ pk_test_transaction_func (void)
 	g_assert (ret);
 	g_clear_error (&error);
 
-	g_object_unref (transaction);
-	g_key_file_unref (conf);
 	g_dbus_node_info_unref (introspection);
 }
 
 static void
 pk_test_transaction_db_func (void)
 {
-	PkTransactionDb *db;
 	guint value;
 	gchar *tid;
 	gboolean ret;
 	gdouble ms;
-	gchar *proxy_http = NULL;
-	gchar *proxy_ftp = NULL;
 	GError *error = NULL;
+	_cleanup_object_unref_ PkTransactionDb *db;
+	_cleanup_free_ gchar *proxy_http = NULL;
+	_cleanup_free_ gchar *proxy_ftp = NULL;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -992,10 +974,6 @@ pk_test_transaction_db_func (void)
 	g_assert (ret);
 	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:80");
 	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");
-
-	g_free (proxy_http);
-	g_free (proxy_ftp);
-	g_object_unref (db);
 }
 
 static PkTransactionDb *db = NULL;
@@ -1033,18 +1011,18 @@ pk_test_transaction_list_create_transaction (PkTransactionList *tlist)
 static void
 pk_test_transaction_list_func (void)
 {
-	PkTransactionList *tlist;
 	gboolean ret;
 	gchar *tid;
 	guint size;
 	gchar **array;
 	PkTransaction *transaction;
-	gchar *tid_item1;
-	gchar *tid_item2;
-	gchar *tid_item3;
-	PkBackend *backend;
-	GKeyFile *conf;
 	GError *error = NULL;
+	_cleanup_free_ gchar *tid_item1 = NULL;
+	_cleanup_free_ gchar *tid_item2 = NULL;
+	_cleanup_free_ gchar *tid_item3 = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	_cleanup_object_unref_ PkBackend *backend;
+	_cleanup_object_unref_ PkTransactionList *tlist;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1324,11 +1302,6 @@ pk_test_transaction_list_func (void)
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
 	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
-	/* free tids */
-	g_free (tid_item1);
-	g_free (tid_item2);
-	g_free (tid_item3);
-
 	/* wait for Cleanup */
 	_g_test_loop_wait (10000);
 
@@ -1342,16 +1315,12 @@ pk_test_transaction_list_func (void)
 	g_assert_cmpint (size, ==, 0);
 	g_strfreev (array);
 
-	g_object_unref (tlist);
-	g_object_unref (backend);
 	g_object_unref (db);
-	g_key_file_unref (conf);
 }
 
 static void
 pk_test_transaction_list_parallel_func (void)
 {
-	PkTransactionList *tlist;
 	guint size;
 	gboolean ret;
 	guint i;
@@ -1359,14 +1328,15 @@ pk_test_transaction_list_parallel_func (void)
 	PkTransaction *transaction1;
 	PkTransaction *transaction2;
 	PkTransaction *transaction3;
-	gchar *tid_item1;
-	gchar *tid_item2;
-	gchar *tid_item3;
-	gchar *tid_item4;
-	gchar *tid_item5;
-	PkBackend *backend;
-	GKeyFile *conf;
 	GError *error = NULL;
+	_cleanup_free_ gchar *tid_item1 = NULL;
+	_cleanup_free_ gchar *tid_item2 = NULL;
+	_cleanup_free_ gchar *tid_item3 = NULL;
+	_cleanup_free_ gchar *tid_item4 = NULL;
+	_cleanup_free_ gchar *tid_item5 = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	_cleanup_object_unref_ PkBackend *backend = NULL;
+	_cleanup_object_unref_ PkTransactionList *tlist = NULL;
 
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
@@ -1556,17 +1526,7 @@ pk_test_transaction_list_parallel_func (void)
 	g_assert_cmpint (size, ==, 0);
 	g_strfreev (array);
 
-	/* free tids */
-	g_free (tid_item1);
-	g_free (tid_item2);
-	g_free (tid_item3);
-	g_free (tid_item4);
-	g_free (tid_item5);
-
-	g_object_unref (tlist);
-	g_object_unref (backend);
 	g_object_unref (db);
-	g_key_file_unref (conf);
 }
 
 int

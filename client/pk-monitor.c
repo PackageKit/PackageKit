@@ -27,6 +27,8 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/packagekit.h>
 
+#include "src/pk-cleanup.h"
+
 static PkClient *client = NULL;
 
 /**
@@ -86,9 +88,9 @@ pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpoi
 static void
 pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *transaction_id)
 {
-	gchar *id;
-	gchar *text;
 	PkMediaTypeEnum type;
+	_cleanup_free_ gchar *id = NULL;
+	_cleanup_free_ gchar *text = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -99,8 +101,6 @@ pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *t
 
 	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
 		 transaction_id, pk_media_type_enum_to_string (type), id, text);
-	g_free (id);
-	g_free (text);
 }
 
 /**
@@ -109,20 +109,19 @@ pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *t
 static void
 pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
-	GError *error = NULL;
-	PkResults *results = NULL;
-	PkProgress *progress = NULL;
 	PkExitEnum exit_enum;
-	gchar *transaction_id = NULL;
-	PkError *error_code = NULL;
-	GPtrArray *media_array = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *transaction_id = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+	_cleanup_object_unref_ PkProgress *progress = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *media_array = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to adopt: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* get progress data about the transaction */
@@ -144,18 +143,12 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
-	if (error_code != NULL)
-		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
-out:
-	g_free (transaction_id);
-	if (media_array != NULL)
-		g_ptr_array_unref (media_array);
-	if (error_code != NULL)
-		g_object_unref (error_code);
-	if (progress != NULL)
-		g_object_unref (progress);
-	if (results != NULL)
-		g_object_unref (results);
+	if (error_code != NULL) {
+		g_print ("%s\terror code: %s, %s\n",
+			 transaction_id,
+			 pk_error_enum_to_string (pk_error_get_code (error_code)),
+			 pk_error_get_details (error_code));
+	}
 }
 
 /**
@@ -166,15 +159,15 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 {
 	PkRoleEnum role;
 	PkStatusEnum status;
-	PkPackage *package = NULL;
 	PkInfoEnum info;
-	PkItemProgress *item_progress = NULL;
 	guint percentage;
 	gboolean allow_cancel;
-	gchar *summary = NULL;
-	gchar *package_id = NULL;
-	gchar *package_id_tmp = NULL;
-	gchar *transaction_id = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *package_id_tmp = NULL;
+	_cleanup_free_ gchar *summary = NULL;
+	_cleanup_free_ gchar *transaction_id = NULL;
+	_cleanup_object_unref_ PkItemProgress *item_progress = NULL;
+	_cleanup_object_unref_ PkPackage *package = NULL;
 
 	/* get data */
 	g_object_get (progress,
@@ -190,7 +183,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 
 	/* don't print before we have properties */
 	if (transaction_id == NULL)
-		goto out;
+		return;
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_string (role));
@@ -220,15 +213,6 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 			 pk_item_progress_get_percentage (item_progress),
 			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)));
 	}
-out:
-	if (package != NULL)
-		g_object_unref (package);
-	if (item_progress != NULL)
-		g_object_unref (item_progress);
-	g_free (package_id);
-	g_free (package_id_tmp);
-	g_free (summary);
-	g_free (transaction_id);
 }
 
 /**
@@ -238,18 +222,16 @@ static void
 pk_monitor_list_print (PkTransactionList *tlist)
 {
 	guint i;
-	gchar **list;
+	_cleanup_strv_free_ gchar **list = NULL;
 
 	list = pk_transaction_list_get_ids (tlist);
 	g_print ("Transactions:\n");
 	if (list[0] == NULL) {
 		g_print (" [none]\n");
-		goto out;
+		return;
 	}
-	for (i=0; list[i] != NULL; i++)
+	for (i = 0; list[i] != NULL; i++)
 		g_print (" %i\t%s\n", i+1, list[i]);
-out:
-	g_strfreev (list);
 }
 
 /**
@@ -258,19 +240,16 @@ out:
 static void
 pk_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
-	GError *error = NULL;
-	gchar *state;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *state = NULL;
 
 	/* get the result */
 	state = pk_control_get_daemon_state_finish (control, res, &error);
 	if (state == NULL) {
 		g_print ("%s: %s", _("Failed to get daemon state"), error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_print ("Daemon state: '%s'\n", state);
-out:
-	g_free (state);
 }
 
 /**
@@ -323,15 +302,9 @@ pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *t
 static void
 pk_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
-	gboolean ret;
-	GError *error = NULL;
-
-	/* get result */
-	ret = pk_control_get_properties_finish (control, res, &error);
-	if (!ret) {
+	_cleanup_error_free_ GError *error = NULL;
+	if (!pk_control_get_properties_finish (control, res, &error))
 		g_print ("%s: %s", _("Failed to get properties"), error->message);
-		g_error_free (error);
-	}
 }
 
 /**
@@ -344,10 +317,10 @@ main (int argc, char *argv[])
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gint retval = EXIT_SUCCESS;
-	PkControl *control;
-	PkTransactionList *tlist;
 	gchar **transaction_ids;
 	guint i;
+	_cleanup_object_unref_ PkControl *control = NULL;
+	_cleanup_object_unref_ PkTransactionList *tlist = NULL;
 
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
@@ -409,7 +382,7 @@ main (int argc, char *argv[])
 
 	/* coldplug, but shouldn't be needed yet */
 	transaction_ids = pk_transaction_list_get_ids (tlist);
-	for (i=0; transaction_ids[i] != NULL; i++) {
+	for (i = 0; transaction_ids[i] != NULL; i++) {
 		g_warning ("need to coldplug %s", transaction_ids[i]);
 	}
 	g_strfreev (transaction_ids);
@@ -421,10 +394,7 @@ main (int argc, char *argv[])
 
 	/* spin */
 	g_main_loop_run (loop);
-
-	g_object_unref (control);
-	g_object_unref (tlist);
-	g_object_unref (client);
 out:
+	g_object_unref (client);
 	return retval;
 }

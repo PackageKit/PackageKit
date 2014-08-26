@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include "src/pk-cleanup.h"
+
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
@@ -112,14 +114,11 @@ static void
 pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
-	GPtrArray *array;
 	const gchar *package_id;
-	gchar *printable;
-	gchar *summary;
 	PkPackage *package;
-	PkPackageSack *sack;
-	PkInfoEnum info;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
@@ -129,25 +128,17 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 
 	/* print data */
 	array = pk_package_sack_get_array (sack);
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
+		_cleanup_free_ gchar *printable = NULL;
 		package = g_ptr_array_index (array, i);
-		g_object_get (package,
-			      "info", &info,
-			      "summary", &summary,
-			      NULL);
 		package_id = pk_package_get_id (package);
 		printable = pk_package_id_to_printable (package_id);
-		g_print ("%s\t%s\t%s\n", pk_info_enum_to_string (info), printable, summary);
-
-		g_free (summary);
-		g_free (printable);
+		g_print ("%s\t%s\t%s\n", pk_info_enum_to_string (pk_package_get_info (package)),
+			 printable, pk_package_get_summary (package));
 	}
 
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
-
-	g_object_unref (sack);
-	g_ptr_array_unref (array);
 }
 
 /**

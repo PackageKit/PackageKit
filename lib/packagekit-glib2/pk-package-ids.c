@@ -90,7 +90,7 @@ pk_package_ids_check (gchar **package_ids)
 
 	/* check all */
 	size = g_strv_length (package_ids);
-	for (i=0; i<size; i++) {
+	for (i = 0; i < size; i++) {
 		package_id = package_ids[i];
 		ret = pk_package_id_check (package_id);
 		if (!ret)
@@ -139,7 +139,7 @@ pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* iterate */
-	for (i=0; package_ids[i] != NULL; i++) {
+	for (i = 0; package_ids[i] != NULL; i++) {
 		if (g_strcmp0 (package_id, package_ids[i]) == 0)
 			return TRUE;
 	}
@@ -171,7 +171,7 @@ pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
 	result = g_new0 (gchar *, len+2);
 
 	/* iterate */
-	for (i=0; package_ids[i] != NULL; i++)
+	for (i = 0; package_ids[i] != NULL; i++)
 		result[i] = g_strdup (package_ids[i]);
 	result[i] = g_strdup (package_id);
 	return result;
@@ -204,9 +204,9 @@ pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
 	result = g_new0 (gchar *, len+1);
 
 	/* iterate */
-	for (i=0; package_ids[i] != NULL; i++)
+	for (i = 0; package_ids[i] != NULL; i++)
 		result[j++] = g_strdup (package_ids[i]);
-	for (i=0; package_ids_new[i] != NULL; i++)
+	for (i = 0; package_ids_new[i] != NULL; i++)
 		result[j++] = g_strdup (package_ids_new[i]);
 	return result;
 }
@@ -237,7 +237,7 @@ pk_package_ids_remove_id (gchar **package_ids, const gchar *package_id)
 	result = g_new0 (gchar *, len+1);
 
 	/* iterate */
-	for (i=0; package_ids[i] != NULL; i++) {
+	for (i = 0; package_ids[i] != NULL; i++) {
 		if (g_strcmp0 (package_id, package_ids[i]) != 0)
 			result[j++] = g_strdup (package_ids[i]);
 	}

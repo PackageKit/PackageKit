@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <pk-cleanup.h>
+
 #include <libhif-private.h>
 
 #include <hawkey/errno.h>
@@ -161,11 +163,11 @@ hif_emit_package_list_filter (PkBackendJob *job,
 			      PkBitfield filters,
 			      HyPackageList pkglist)
 {
-	GHashTable *hash_cost;
-	GHashTable *hash_installed;
 	HyPackage found;
 	HyPackage pkg;
 	guint i;
+	_cleanup_hashtable_unref_ GHashTable *hash_cost = NULL;
+	_cleanup_hashtable_unref_ GHashTable *hash_installed = NULL;
 
 	/* if a package exists in multiple repos, show the one with the lowest
 	 * cost of downloading */
@@ -240,8 +242,6 @@ hif_emit_package_list_filter (PkBackendJob *job,
 
 		hif_emit_package (job, PK_INFO_ENUM_UNKNOWN, pkg);
 	}
-	g_hash_table_unref (hash_cost);
-	g_hash_table_unref (hash_installed);
 }
 
 /**
@@ -279,30 +279,25 @@ hif_get_filter_for_ids (gchar **package_ids)
 {
 	gboolean available = FALSE;
 	gboolean installed = FALSE;
-	gchar **split;
 	guint i;
-	PkBitfield filters;
+	PkBitfield filters = 0;
 
 	for (i = 0; package_ids[i] != NULL && (!installed || !available); i++) {
-		split = pk_package_id_split (package_ids[i]);
+		_cleanup_strv_free_ gchar **split = pk_package_id_split (package_ids[i]);
 		if (g_strcmp0 (split[PK_PACKAGE_ID_DATA], "installed") == 0)
 			installed = TRUE;
 		else
 			available = TRUE;
-		g_strfreev (split);
 	}
 
 	/* a mixture */
-	if (installed && available) {
-		filters = pk_bitfield_value (PK_FILTER_ENUM_NONE);
-		goto out;
-	}
+	if (installed && available)
+		return pk_bitfield_value (PK_FILTER_ENUM_NONE);
 
 	/* we can restrict what's loaded into the sack */
 	if (!installed)
 		filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	if (!available)
 		filters = pk_bitfield_value (PK_FILTER_ENUM_INSTALLED);
-out:
 	return filters;
 }

@@ -26,6 +26,8 @@
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
 
+#include "src/pk-cleanup.h"
+
 #include "pk-client.h"
 #include "pk-client-helper.h"
 #include "pk-common.h"
@@ -590,8 +592,8 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
-	GPtrArray *categories;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *categories = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -601,19 +603,14 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 	/* make sure we handled the ping/pong frontend-socket thing, which is 5 + 1 */
 	categories = pk_results_get_category_array (results);
 	g_assert_cmpint (categories->len, ==, 1);
-	g_ptr_array_unref (categories);
-
-	g_object_unref (results);
 	_g_test_loop_quit ();
 }
 
 static void
 pk_test_client_func (void)
 {
-	PkClient *client;
 	gchar **package_ids;
 //	gchar *file;
-	GCancellable *cancellable;
 	gboolean ret;
 	gchar **values;
 	GError *error = NULL;
@@ -622,6 +619,8 @@ pk_test_client_func (void)
 	PkRoleEnum role;
 	PkStatusEnum status;
 //	PkResults *results;
+	_cleanup_object_unref_ GCancellable *cancellable = NULL;
+	_cleanup_object_unref_ PkClient *client = NULL;
 
 #if 0
 	/* test user temp */
@@ -783,9 +782,6 @@ pk_test_client_func (void)
 	g_assert (results != NULL);
 	g_object_unref (results);
 #endif
-
-	g_object_unref (cancellable);
-	g_object_unref (client);
 }
 
 static void
@@ -905,7 +901,8 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;"
-		     "what-provides;download-packages;get-distro-upgrades;repair-system");
+		     "what-provides;download-packages;get-distro-upgrades;"
+		     "get-old-transactions;repair-system;get-details-local;get-files-local");
 	g_free (text);
 
 	/* check filters */
@@ -978,7 +975,7 @@ pk_test_control_func (void)
 
 	/* get multiple TIDs async */
 	_refcount = LOOP_SIZE;
-	for (i=0; i<_refcount; i++) {
+	for (i = 0; i < _refcount; i++) {
 		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 	}
@@ -999,7 +996,7 @@ pk_test_control_func (void)
 
 	/* do multiple requests async */
 	_refcount = LOOP_SIZE * 4;
-	for (i=0; i<_refcount; i++) {
+	for (i = 0; i < _refcount; i++) {
 		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
@@ -1048,7 +1045,8 @@ pk_test_control_func (void)
 		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 		     "search-details;search-file;search-group;search-name;update-packages;"
-		     "what-provides;download-packages;get-distro-upgrades;repair-system");
+		     "what-provides;download-packages;get-distro-upgrades;"
+		     "get-old-transactions;repair-system;get-details-local;get-files-local");
 	g_free (text);
 
 	g_object_unref (control);
@@ -1144,7 +1142,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the exit bitfield */
-	for (i=0; i<PK_EXIT_ENUM_LAST; i++) {
+	for (i = 0; i < PK_EXIT_ENUM_LAST; i++) {
 		string = pk_exit_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1154,7 +1152,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the filter bitfield */
-	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
+	for (i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		string = pk_filter_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1164,7 +1162,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the restart bitfield */
-	for (i=0; i<PK_RESTART_ENUM_LAST; i++) {
+	for (i = 0; i < PK_RESTART_ENUM_LAST; i++) {
 		string = pk_restart_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1174,7 +1172,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the error_code bitfield */
-	for (i=0; i<PK_ERROR_ENUM_LAST; i++) {
+	for (i = 0; i < PK_ERROR_ENUM_LAST; i++) {
 		string = pk_error_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1204,7 +1202,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the sig_type bitfield */
-	for (i=0; i<PK_SIGTYPE_ENUM_LAST; i++) {
+	for (i = 0; i < PK_SIGTYPE_ENUM_LAST; i++) {
 		string = pk_sig_type_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1214,7 +1212,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the upgrade bitfield */
-	for (i=0; i<PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
+	for (i = 0; i < PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
 		string = pk_distro_upgrade_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1224,7 +1222,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the media type bitfield */
-	for (i=0; i<PK_MEDIA_TYPE_ENUM_LAST; i++) {
+	for (i = 0; i < PK_MEDIA_TYPE_ENUM_LAST; i++) {
 		string = pk_media_type_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -1626,17 +1624,14 @@ static void
 pk_test_task_install_packages_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
 	PkTask *task = PK_TASK (object);
-	GError *error = NULL;
-	PkResults *results;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* get the results */
 	results = pk_task_generic_finish (task, res, &error);
 	g_assert (results == NULL);
 	g_assert_cmpstr (error->message, ==, "could not do untrusted question as no klass support");
 
-	g_error_free (error);
-	if (results != NULL)
-		g_object_unref (results);
 	_g_test_loop_quit ();
 }
 

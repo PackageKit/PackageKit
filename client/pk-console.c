@@ -33,6 +33,8 @@
 #include <pwd.h>
 #include <locale.h>
 
+#include "src/pk-cleanup.h"
+
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
@@ -70,8 +72,7 @@ pk_strpad (const gchar *data, guint length)
 {
 	gint size;
 	guint data_len;
-	gchar *text;
-	gchar *padding;
+	_cleanup_free_ gchar *padding = NULL;
 
 	if (data == NULL)
 		return g_strnfill (length, ' ');
@@ -85,9 +86,7 @@ pk_strpad (const gchar *data, guint length)
 		return g_strdup (data);
 
 	padding = g_strnfill (size, ' ');
-	text = g_strdup_printf ("%s%s", data, padding);
-	g_free (padding);
-	return text;
+	return g_strdup_printf ("%s%s", data, padding);
 }
 
 /**
@@ -96,29 +95,23 @@ pk_strpad (const gchar *data, guint length)
 static void
 pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 {
-	gchar *printable = NULL;
-	gchar *printable_pad = NULL;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
-	gchar *info_pad = NULL;
-	gchar **split = NULL;
 	PkInfoEnum info;
-
-	/* get data */
-	g_object_get (package,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
+	const gchar *package_id;
+	_cleanup_free_ gchar *info_pad = NULL;
+	_cleanup_free_ gchar *printable = NULL;
+	_cleanup_free_ gchar *printable_pad = NULL;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	/* ignore finished */
+	info = pk_package_get_info (package);
 	if (info == PK_INFO_ENUM_FINISHED)
-		goto out;
+		return;
 
 	/* split */
+	package_id = pk_package_get_id (package);
 	split = pk_package_id_split (package_id);
 	if (split == NULL)
-		goto out;
+		return;
 
 	/* make these all the same length */
 	info_pad = pk_strpad (pk_info_enum_to_localised_past (info), 12);
@@ -133,18 +126,13 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 	/* don't pretty print */
 	if (!ctx->is_console) {
 		g_print ("%s %s\n", info_pad, printable);
-		goto out;
+		return;
 	}
 
 	/* pad the name-version */
 	printable_pad = pk_strpad (printable, 60);
-	g_print ("%s\t%s\t%s\n", info_pad, printable_pad, summary);
-out:
-	/* free all the data */
-	g_free (printable);
-	g_free (printable_pad);
-	g_free (info_pad);
-	g_strfreev (split);
+	g_print ("%s\t%s\t%s\n", info_pad, printable_pad,
+		 pk_package_get_summary (package));
 }
 
 /**
@@ -153,20 +141,18 @@ out:
 static void
 pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 {
-	struct passwd *pw;
+	PkRoleEnum role;
 	const gchar *role_text;
-	gchar **lines;
-	gchar **parts;
-	guint i, lines_len;
-	gchar *package = NULL;
-	gchar *tid;
-	gchar *timespec;
 	gboolean succeeded;
 	guint duration;
-	gchar *cmdline;
+	guint i, lines_len;
 	guint uid;
-	gchar *data;
-	PkRoleEnum role;
+	struct passwd *pw;
+	_cleanup_free_ gchar *cmdline = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_free_ gchar *tid = NULL;
+	_cleanup_free_ gchar *timespec = NULL;
+	_cleanup_strv_free_ gchar **lines = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -223,20 +209,13 @@ pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 		/* TRANSLATORS: these are packages touched by the transaction */
 		g_print (" %s\n", _("Affected packages: None"));
 	}
-	for (i=0; i<lines_len; i++) {
+	for (i = 0; i < lines_len; i++) {
+		_cleanup_free_ gchar *package = NULL;
+		_cleanup_strv_free_ gchar **parts;
 		parts = g_strsplit (lines[i], "\t", 3);
-
-		/* create printable */
 		package = pk_package_id_to_printable (parts[1]);
 		g_print (" - %s %s\n", parts[0], package);
-		g_free (package);
-		g_strfreev (parts);
 	}
-	g_free (tid);
-	g_free (timespec);
-	g_free (cmdline);
-	g_free (data);
-	g_strfreev (lines);
 }
 
 /**
@@ -245,9 +224,9 @@ pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 static void
 pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 {
-	gchar *name;
-	gchar *summary;
 	PkDistroUpgradeEnum state;
+	_cleanup_free_ gchar *name = NULL;
+	_cleanup_free_ gchar *summary = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -262,9 +241,6 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_string (state));
 	/* TRANSLATORS: this is any summary text describing the upgrade */
 	g_print (" %s: %s\n", _("Summary"), summary);
-
-	g_free (name);
-	g_free (summary);
 }
 
 /**
@@ -273,11 +249,11 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 static void
 pk_console_category_cb (PkCategory *item, gpointer user_data)
 {
-	gchar *name;
-	gchar *cat_id;
-	gchar *parent_id;
-	gchar *summary;
-	gchar *icon;
+	_cleanup_free_ gchar *name = NULL;
+	_cleanup_free_ gchar *cat_id = NULL;
+	_cleanup_free_ gchar *parent_id = NULL;
+	_cleanup_free_ gchar *summary = NULL;
+	_cleanup_free_ gchar *icon = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -304,12 +280,6 @@ pk_console_category_cb (PkCategory *item, gpointer user_data)
 	}
 	/* TRANSLATORS: this is preferred icon for the group */
 	g_print (" %s: %s\n", _("Icon"), icon);
-
-	g_free (name);
-	g_free (cat_id);
-	g_free (parent_id);
-	g_free (summary);
-	g_free (icon);
 }
 
 /**
@@ -318,20 +288,20 @@ pk_console_category_cb (PkCategory *item, gpointer user_data)
 static void
 pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 {
-	gchar *package = NULL;
-	gchar *package_id;
-	gchar **updates;
-	gchar **obsoletes;
-	gchar **vendor_urls;
-	gchar **bugzilla_urls;
-	gchar **cve_urls;
 	PkRestartEnum restart;
-	gchar *update_text;
-	gchar *changelog;
 	PkUpdateStateEnum state;
-	gchar *issued;
-	gchar *updated;
 	gchar *tmp;
+	_cleanup_free_ gchar *changelog = NULL;
+	_cleanup_free_ gchar *issued = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *package = NULL;
+	_cleanup_free_ gchar *updated = NULL;
+	_cleanup_free_ gchar *update_text = NULL;
+	_cleanup_strv_free_ gchar **bugzilla_urls = NULL;
+	_cleanup_strv_free_ gchar **cve_urls = NULL;
+	_cleanup_strv_free_ gchar **obsoletes = NULL;
+	_cleanup_strv_free_ gchar **updates = NULL;
+	_cleanup_strv_free_ gchar **vendor_urls = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -419,17 +389,6 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 		 * was updated */
 		g_print (" %s: %s\n", _("Updated"), updated);
 	}
-	g_free (package);
-	g_free (package_id);
-	g_strfreev (updates);
-	g_strfreev (obsoletes);
-	g_strfreev (vendor_urls);
-	g_strfreev (bugzilla_urls);
-	g_strfreev (cve_urls);
-	g_free (update_text);
-	g_free (changelog);
-	g_free (issued);
-	g_free (updated);
 }
 
 /**
@@ -473,9 +432,9 @@ pk_console_repo_detail_cb (PkRepoDetail *item, gpointer data)
 static void
 pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 {
-	gchar *package = NULL;
-	gchar *package_id;
 	PkRestartEnum restart;
+	_cleanup_free_ gchar *package = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -504,9 +463,6 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s\n", _("Application restart required by:"), package);
 	}
-
-	g_free (package_id);
-	g_free (package);
 }
 
 /**
@@ -515,14 +471,14 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 static void
 pk_console_details_cb (PkDetails *item, gpointer data)
 {
-	gchar *package = NULL;
-	gchar *package_id;
-	gchar *license;
-	gchar *description;
-	gchar *url;
-	gchar *summary;
 	PkGroupEnum group;
 	guint64 size;
+	_cleanup_free_ gchar *description = NULL;
+	_cleanup_free_ gchar *license = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *package = NULL;
+	_cleanup_free_ gchar *summary = NULL;
+	_cleanup_free_ gchar *url = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -547,13 +503,6 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	g_print ("  description: %s\n", description);
 	g_print ("  size:	%lu bytes\n", (long unsigned int) size);
 	g_print ("  url:	 %s\n", url);
-
-	g_free (package_id);
-	g_free (summary);
-	g_free (license);
-	g_free (description);
-	g_free (url);
-	g_free (package);
 }
 
 /**
@@ -565,25 +514,18 @@ pk_console_files_cb (PkFiles *item, gpointer data)
 	guint i;
 	gchar **files;
 
-	/* get data */
-	g_object_get (item,
-		      "files", &files,
-		      NULL);
-
 	/* empty */
+	files = pk_files_get_files (item);
 	if (files == NULL || files[0] == NULL) {
 		/* TRANSLATORS: This where the package has no files */
 		g_print ("%s\n", _("No files"));
-		goto out;
+		return;
 	}
 
 	/* TRANSLATORS: This a list files contained in the package */
 	g_print ("%s\n", _("Package files"));
-	for (i=0; files[i] != NULL; i++) {
+	for (i = 0; files[i] != NULL; i++)
 		g_print ("  %s\n", files[i]);
-	}
-out:
-	g_strfreev (files);
 }
 
 /**
@@ -626,10 +568,10 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	PkStatusEnum status;
 	PkRoleEnum role;
 	const gchar *text;
-	gchar *package_id = NULL;
-	gchar *printable = NULL;
 	guint64 transaction_flags;
 	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *printable = NULL;
 
 	/* role */
 	if (type == PK_PROGRESS_TYPE_ROLE) {
@@ -638,13 +580,13 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "transaction-flags", &transaction_flags,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
-			goto out;
+			return;
 
 		/* don't show the role when simulating */
 		if (ctx->defered_status != PK_STATUS_ENUM_UNKNOWN &&
 		    pk_bitfield_contain (transaction_flags,
 					 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
-			goto out;
+			return;
 
 		/* show new status on the bar */
 		text = pk_role_enum_to_localised_present (role);
@@ -652,7 +594,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			/* TRANSLATORS: the role is the point of the transaction,
 			 * e.g. update-packages */
 			g_print ("%s:\t%s\n", _("Transaction"), text);
-			goto out;
+			return;
 		}
 		pk_progress_bar_start (ctx->progressbar, text);
 	}
@@ -663,7 +605,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "package-id", &package_id,
 			      NULL);
 		if (package_id == NULL)
-			goto out;
+			return;
 
 		if (!ctx->is_console) {
 			/* create printable */
@@ -671,7 +613,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 
 			/* TRANSLATORS: the package that is being processed */
 			g_print ("%s:\t%s\n", _("Package"), printable);
-			goto out;
+			return;
 		}
 	}
 
@@ -683,11 +625,11 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		if (!ctx->is_console) {
 			/* only print the 10's */
 			if (percentage % 10 != 0)
-				goto out;
+				return;
 
 			/* TRANSLATORS: the percentage complete of the transaction */
 			g_print ("%s:\t%i\n", _("Percentage"), percentage);
-			goto out;
+			return;
 		}
 		pk_progress_bar_set_percentage (ctx->progressbar, percentage);
 	}
@@ -703,14 +645,14 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		/* don't show finished multiple times in the output */
 		if (role == PK_ROLE_ENUM_RESOLVE &&
 		    status == PK_STATUS_ENUM_FINISHED)
-			goto out;
+			return;
 
 		/* show new status on the bar */
 		if (!ctx->is_console) {
 			text = pk_status_enum_to_localised_text (status);
 			/* TRANSLATORS: the status of the transaction (e.g. downloading) */
 			g_print ("%s: \t%s\n", _("Status"), text);
-			goto out;
+			return;
 		}
 
 		/* defer most status actions for 50ms */
@@ -728,9 +670,6 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			pk_progress_bar_start (ctx->progressbar, text);
 		}
 	}
-out:
-	g_free (printable);
-	g_free (package_id);
 }
 
 /**
@@ -741,15 +680,15 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	const gchar *filename;
 	gboolean ret;
-	GError *error = NULL;
-	GFile *file = NULL;
 	GPtrArray *array;
-	PkError *error_code = NULL;
 	PkPackageSack *sack;
 	PkRestartEnum restart;
-	PkResults *results;
 	PkRoleEnum role;
 	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	/* no more progress */
 	if (ctx->is_console) {
@@ -765,7 +704,6 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		/* TRANSLATORS: we failed to get any results, which is pretty
 		 * fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
-		g_error_free (error);
 		ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
 		goto out;
 	}
@@ -918,18 +856,11 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		ret = pk_package_sack_to_file (sack, file, &error);
 		if (!ret) {
 			g_print ("%s: %s\n", _("Fatal error"), error->message);
-			g_error_free (error);
 			ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
 			goto out;
 		}
 	}
 out:
-	if (error_code != NULL)
-		g_object_unref (error_code);
-	if (file != NULL)
-		g_object_unref (file);
-	if (results != NULL)
-		g_object_unref (results);
 	g_main_loop_quit (ctx->loop);
 }
 
@@ -942,14 +873,12 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 	const gchar *package_id_tmp;
 	gchar *package_id = NULL;
 	gboolean valid;
-	gchar **tmp;
-	gchar **split = NULL;
-	PkResults *results;
-	GPtrArray *array = NULL;
 	guint i;
-	gchar *printable;
 	PkPackage *package;
-	PkError *error_code = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_strv_free_ gchar **tmp = NULL;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package_name);
@@ -966,7 +895,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 				     pk_console_progress_cb, ctx,
 				     error);
 	if (results == NULL)
-		goto out;
+		return NULL;
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
@@ -975,7 +904,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 				     PK_CONSOLE_ERROR,
 				     pk_error_get_code (error_code),
 				     pk_error_get_details (error_code));
-		goto out;
+		return NULL;
 	}
 
 	/* nothing found */
@@ -985,7 +914,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 			     PK_CONSOLE_ERROR,
 			     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 			     "could not find %s", package_name);
-		goto out;
+		return NULL;
 	}
 
 	/* just one thing found */
@@ -994,19 +923,20 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 		g_object_get (package,
 			      "package-id", &package_id,
 			      NULL);
-		goto out;
+		return g_strdup (pk_package_get_id (package));
 	}
 
 	/* TRANSLATORS: more than one package could be found that matched,
 	 * to follow is a list of possible packages  */
 	g_print ("%s\n", _("More than one package matches:"));
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
+		_cleanup_free_ gchar *printable = NULL;
+		_cleanup_strv_free_ gchar **split = NULL;
 		package = g_ptr_array_index (array, i);
 		package_id_tmp = pk_package_get_id (package);
 		split = pk_package_id_split (package_id_tmp);
 		printable = pk_package_id_to_printable (package_id_tmp);
 		g_print ("%i. %s [%s]\n", i+1, printable, split[PK_PACKAGE_ID_DATA]);
-		g_free (printable);
 	}
 
 	/* TRANSLATORS: This finds out which package in the list to use */
@@ -1016,20 +946,10 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				     "User aborted selection");
-		goto out;
+		return NULL;
 	}
-	package = g_ptr_array_index (array, i-1);
-	g_object_get (package,
-		      "package-id", &package_id,
-		      NULL);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	g_strfreev (tmp);
-	g_strfreev (split);
-	return package_id;
+	package = g_ptr_array_index (array, i - 1);
+	return g_strdup (pk_package_get_id (package));
 }
 
 /**
@@ -1038,12 +958,11 @@ out:
 static gchar **
 pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	GPtrArray *array;
-	gchar **package_ids = NULL;
 	guint i;
 	guint len;
 	gchar *package_id;
 	GError *error_local = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	/* get length */
 	len = g_strv_length (packages);
@@ -1067,7 +986,7 @@ pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 				continue;
 			} else {
 				g_propagate_error (error, error_local);
-				goto out;
+				return NULL;
 			}
 		}
 		g_ptr_array_add (array, package_id);
@@ -1080,15 +999,12 @@ pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 				     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				     /* TRANSLATORS: we couldn't find anything */
 				     _("No packages were found"));
-		goto out;
+		return NULL;
 	}
 
 	/* convert to GStrv */
 	g_ptr_array_add (array, NULL);
-	package_ids = g_strdupv ((gchar **) array->pdata);
-out:
-	g_ptr_array_unref (array);
-	return package_ids;
+	return g_strdupv ((gchar **) array->pdata);
 }
 
 /**
@@ -1097,15 +1013,13 @@ out:
 static gboolean
 pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
 	guint i;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* test to see if we've been given files, not packages */
-	for (i=0; packages[i] != NULL; i++) {
-		ret = !g_file_test (packages[i], G_FILE_TEST_EXISTS);
-		if (!ret) {
+	for (i = 0; packages[i] != NULL; i++) {
+		if (g_file_test (packages[i], G_FILE_TEST_EXISTS)) {
 			g_set_error (error,
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -1115,7 +1029,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 				     _("Expected package name, actually got file. "
 				       "Try using 'pkcon install-local %s' instead."),
 				     packages[i]);
-			goto out;
+			return FALSE;
 		}
 	}
 
@@ -1140,10 +1054,8 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find any available package: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
 		ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1151,9 +1063,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 					package_ids, ctx->cancellable,
 					pk_console_progress_cb, ctx,
 					pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1162,9 +1072,8 @@ out:
 static gboolean
 pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1176,9 +1085,7 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find the installed package: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1188,9 +1095,7 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
 				       pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1199,9 +1104,8 @@ out:
 static gboolean
 pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *directory, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1213,9 +1117,7 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find the package: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1225,9 +1127,7 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 					 ctx->cancellable,
 					 pk_console_progress_cb, ctx,
 					 pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1236,9 +1136,8 @@ out:
 static gboolean
 pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
@@ -1252,9 +1151,7 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find the package: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1263,9 +1160,7 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
 				       pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1274,10 +1169,9 @@ out:
 static gboolean
 pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	PkPackageSack *sack = NULL;
-	PkResults *results;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
+	_cleanup_object_unref_ PkResults *results;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* get the current updates */
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
@@ -1286,10 +1180,8 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 					    ctx->cancellable,
 					    pk_console_progress_cb, ctx,
 					    error);
-	if (results == NULL) {
-		ret = FALSE;
-		goto out;
-	}
+	if (results == NULL)
+		return FALSE;
 
 	/* do the async action */
 	sack = pk_results_get_package_sack (results);
@@ -1299,21 +1191,14 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 		/* TRANSLATORS: there are no updates, so nothing to do */
 		g_print ("%s\n", _("No packages require updating to newer versions."));
 		ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 	pk_task_update_packages_async (PK_TASK (ctx->task),
 				       package_ids,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
 				       pk_console_finished_cb, ctx);
-out:
-	if (sack != NULL)
-		g_object_unref (sack);
-	if (results != NULL)
-		g_object_unref (results);
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1322,9 +1207,8 @@ out:
 static gboolean
 pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1336,9 +1220,7 @@ pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1349,9 +1231,7 @@ pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				    ctx->cancellable,
 				    pk_console_progress_cb, ctx,
 				    pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1360,9 +1240,8 @@ out:
 static gboolean
 pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1373,9 +1252,7 @@ pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * dependencies for the package. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1386,9 +1263,7 @@ pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				   ctx->cancellable,
 				   pk_console_progress_cb, ctx,
 				   pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1397,9 +1272,8 @@ out:
 static gboolean
 pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1410,9 +1284,7 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * details about the package. The detailed error follows */
 			      _("This tool could not find all the packages: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1421,9 +1293,7 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				   ctx->cancellable,
 				   pk_console_progress_cb, ctx,
 				   pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1460,9 +1330,8 @@ pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 static gboolean
 pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1473,9 +1342,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			      * any software sources. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1484,9 +1351,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				 ctx->cancellable,
 				 pk_console_progress_cb, ctx,
 				 pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1495,9 +1360,8 @@ out:
 static gboolean
 pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	gboolean ret = TRUE;
-	gchar **package_ids = NULL;
-	GError *error_local = NULL;
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_strv_free_ gchar **package_ids;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1509,9 +1373,7 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 			      * any software sources. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
-		g_error_free (error_local);
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* do the async action */
@@ -1520,9 +1382,7 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 					 ctx->cancellable,
 					 pk_console_progress_cb, ctx,
 					 pk_console_finished_cb, ctx);
-out:
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1651,8 +1511,8 @@ static void
 pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	guint time_ms;
-	GError *error = NULL;
 	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* get the results */
 	time_ms = pk_control_get_time_since_action_finish (ctx->control, res, &error);
@@ -1660,7 +1520,6 @@ pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 		/* TRANSLATORS: we keep a database updated with the time that an
 		 * action was last executed */
 		g_print ("%s: %s\n", _("Failed to get the time since this action was last completed"), error->message);
-		g_error_free (error);
 		goto out;
 	}
 	/* TRANSLATORS: this is the time since this role was used */
@@ -1676,10 +1535,9 @@ static gboolean
 pk_console_offline_get_prepared (GError **error)
 {
 	gboolean ret;
-	gchar *data = NULL;
-	gchar **split = NULL;
-	gchar *tmp;
 	guint i;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	/* get data */
 	ret = g_file_get_contents ("/var/lib/PackageKit/prepared-update",
@@ -1689,20 +1547,18 @@ pk_console_offline_get_prepared (GError **error)
 				     1,
 				     PK_EXIT_CODE_FILE_NOT_FOUND,
 				     "No offline updates have been prepared");
-		goto out;
+		return FALSE;
 	}
 	split = g_strsplit (data, "\n", -1);
 	/* TRANSLATORS: There follows a list of packages downloaded and ready
 	 * to be updated */
 	g_print ("%s\n", _("Prepared updates:"));
 	for (i = 0; split[i] != NULL; i++) {
+		_cleanup_free_ gchar *tmp = NULL;
 		tmp = pk_package_id_to_printable (split[i]);
 		g_print ("%s\n", tmp);
-		g_free (tmp);
 	}
-out:
-	g_free (data);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1711,17 +1567,13 @@ out:
 static gboolean
 pk_console_offline_trigger (GError **error)
 {
-	gboolean ret;
-	gchar *cmdline;
-
+	_cleanup_free_ gchar *cmdline = NULL;
 	cmdline = g_strdup_printf ("pkexec %s/pk-trigger-offline-update", LIBEXECDIR);
-	ret = g_spawn_command_line_sync (cmdline,
-					 NULL,
-					 NULL,
-					 NULL,
-					 error);
-	g_free (cmdline);
-	return ret;
+	return g_spawn_command_line_sync (cmdline,
+					  NULL,
+					  NULL,
+					  NULL,
+					  error);
 }
 
 #define PK_OFFLINE_UPDATE_RESULTS	"PackageKit Offline Update Results"
@@ -1734,11 +1586,9 @@ pk_console_offline_status (GError **error)
 {
 	gboolean ret;
 	gboolean success;
-	gchar *data = NULL;
-	gchar **split = NULL;
 	gchar *tmp;
-	GKeyFile *file;
 	guint i;
+	_cleanup_keyfile_unref_ GKeyFile *file = NULL;
 
 	/* load data */
 	file = g_key_file_new ();
@@ -1751,7 +1601,7 @@ pk_console_offline_status (GError **error)
 				     1,
 				     PK_EXIT_CODE_FILE_NOT_FOUND,
 				     "No offline updates have been processed");
-		goto out;
+		return FALSE;
 	}
 
 	/* did it succeed */
@@ -1776,6 +1626,8 @@ pk_console_offline_status (GError **error)
 			g_print ("ErrorDetails:\%s\n", tmp);
 		g_free (tmp);
 	} else {
+		_cleanup_free_ gchar *data = NULL;
+		_cleanup_strv_free_ gchar **split = NULL;
 		g_print ("Status:\tSuccess\n");
 		data = g_key_file_get_string (file,
 					      PK_OFFLINE_UPDATE_RESULTS,
@@ -1788,10 +1640,7 @@ pk_console_offline_status (GError **error)
 			g_free (tmp);
 		}
 	}
-out:
-	g_key_file_free (file);
-	g_free (data);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1800,16 +1649,16 @@ out:
 static gboolean
 pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 {
-	GError *error_local = NULL;
 	const gchar *ftp_proxy;
 	const gchar *http_proxy;
 	gboolean ret = TRUE;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	/* is anything set */
 	http_proxy = g_getenv ("http_proxy");
 	ftp_proxy = g_getenv ("ftp_proxy");
 	if (http_proxy == NULL && ftp_proxy == NULL)
-		goto out;
+		return FALSE;
 
 	/* set all parameters */
 	ret = pk_control_set_proxy2 (ctx->control,
@@ -1829,11 +1678,9 @@ pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 			     /* TRANSLATORS: The network settings could not be sent */
 			     _("The proxy could not be set"),
 			     error_local->message);
-		g_error_free (error_local);
-		goto out;
+		return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -1844,7 +1691,6 @@ main (int argc, char *argv[])
 {
 	PkConsoleCtx *ctx = NULL;
 	gboolean ret;
-	GError *error = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean only_download = FALSE;
@@ -1855,15 +1701,16 @@ main (int argc, char *argv[])
 	gboolean program_version = FALSE;
 	gboolean run_mainloop = TRUE;
 	GOptionContext *context;
-	gchar *options_help;
-	gchar *filter = NULL;
-	gchar *summary = NULL;
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 	PkBitfield groups;
 	gchar *text;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *filter = NULL;
+	_cleanup_free_ gchar *options_help = NULL;
+	_cleanup_free_ gchar *summary = NULL;
 
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
@@ -1925,7 +1772,6 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to parse command line"), error->message);
-		g_error_free (error);
 		ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 		goto out_last;
 	}
@@ -1936,7 +1782,6 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
-		g_error_free (error);
 		ctx->retval = PK_EXIT_CODE_CANNOT_SETUP;
 		goto out_last;
 	}
@@ -2607,9 +2452,6 @@ out:
 	/* stop listening for polkit questions */
 	pk_polkit_agent_close ();
 
-	g_free (options_help);
-	g_free (filter);
-	g_free (summary);
 	if (ctx != NULL) {
 		retval_copy = ctx->retval;
 		g_object_unref (ctx->progressbar);

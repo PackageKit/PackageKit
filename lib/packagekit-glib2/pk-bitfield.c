@@ -28,6 +28,10 @@
 
 #include "config.h"
 
+#include "src/pk-cleanup.h"
+
+#include "src/pk-cleanup.h"
+
 #include <glib.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-bitfield.h>
@@ -57,7 +61,7 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 
 	/* process the valist */
 	va_start (args, value);
-	for (i=0;; i++) {
+	for (i = 0;; i++) {
 		value_temp = va_arg (args, gint);
 		/* do we have this one? */
 		if (pk_bitfield_contain (values, value_temp)) {
@@ -94,7 +98,7 @@ pk_bitfield_from_enums (gint value, ...)
 
 	/* process the valist */
 	va_start (args, value);
-	for (i=0;; i++) {
+	for (i = 0;; i++) {
 		value_temp = va_arg (args, gint);
 		if (value_temp == -1)
 			break;
@@ -122,7 +126,7 @@ pk_role_bitfield_to_string (PkBitfield roles)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<PK_ROLE_ENUM_LAST; i++) {
+	for (i = 0; i < PK_ROLE_ENUM_LAST; i++) {
 		if ((roles & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_role_enum_to_string (i));
@@ -152,25 +156,23 @@ PkBitfield
 pk_role_bitfield_from_string (const gchar *roles)
 {
 	PkBitfield roles_enum = 0;
-	gchar **split;
 	guint length;
 	guint i;
 	PkRoleEnum role;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	split = g_strsplit (roles, ";", 0);
 	if (split == NULL) {
 		g_warning ("unable to split");
-		goto out;
+		return 0;
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		role = pk_role_enum_from_string (split[i]);
 		if (role != PK_ROLE_ENUM_UNKNOWN)
 			roles_enum += pk_bitfield_value (role);
 	}
-out:
-	g_strfreev (split);
 	return roles_enum;
 }
 
@@ -191,7 +193,7 @@ pk_group_bitfield_to_string (PkBitfield groups)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<PK_GROUP_ENUM_LAST; i++) {
+	for (i = 0; i < PK_GROUP_ENUM_LAST; i++) {
 		if ((groups & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_group_enum_to_string (i));
@@ -221,25 +223,23 @@ PkBitfield
 pk_group_bitfield_from_string (const gchar *groups)
 {
 	PkBitfield groups_enum = 0;
-	gchar **split;
 	guint length;
 	guint i;
 	PkGroupEnum group;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	split = g_strsplit (groups, ";", 0);
 	if (split == NULL) {
 		g_warning ("unable to split");
-		goto out;
+		return 0;
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		group = pk_group_enum_from_string (split[i]);
 		if (group != PK_GROUP_ENUM_UNKNOWN)
 			groups_enum += pk_bitfield_value (group);
 	}
-out:
-	g_strfreev (split);
 	return groups_enum;
 }
 
@@ -264,7 +264,7 @@ pk_filter_bitfield_to_string (PkBitfield filters)
 		return g_strdup (pk_filter_enum_to_string (PK_FILTER_ENUM_NONE));
 
 	string = g_string_new ("");
-	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
+	for (i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_filter_enum_to_string (i));
@@ -294,25 +294,23 @@ PkBitfield
 pk_filter_bitfield_from_string (const gchar *filters)
 {
 	PkBitfield filters_enum = 0;
-	gchar **split;
 	guint length;
 	guint i;
 	PkFilterEnum filter;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	split = g_strsplit (filters, ";", 0);
 	if (split == NULL) {
 		g_warning ("unable to split");
-		goto out;
+		return 0;
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		filter = pk_filter_enum_from_string (split[i]);
 		if (filter != PK_FILTER_ENUM_UNKNOWN)
 			filters_enum += pk_bitfield_value (filter);
 	}
-out:
-	g_strfreev (split);
 	return filters_enum;
 }
 
@@ -337,7 +335,7 @@ pk_transaction_flag_bitfield_to_string (PkBitfield transaction_flags)
 		return g_strdup (pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
 
 	string = g_string_new ("");
-	for (i=0; i<PK_TRANSACTION_FLAG_ENUM_LAST; i++) {
+	for (i = 0; i < PK_TRANSACTION_FLAG_ENUM_LAST; i++) {
 		if ((transaction_flags & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_transaction_flag_enum_to_string (i));
@@ -367,23 +365,21 @@ PkBitfield
 pk_transaction_flag_bitfield_from_string (const gchar *transaction_flags)
 {
 	PkBitfield transaction_flags_enum = 0;
-	gchar **split;
 	guint length;
 	guint i;
 	PkFilterEnum transaction_flag;
+	_cleanup_strv_free_ gchar **split = NULL;
 
 	split = g_strsplit (transaction_flags, ";", 0);
 	if (split == NULL) {
 		g_warning ("unable to split");
-		goto out;
+		return 0;
 	}
 
 	length = g_strv_length (split);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		transaction_flag = pk_transaction_flag_enum_from_string (split[i]);
 		transaction_flags_enum += pk_bitfield_value (transaction_flag);
 	}
-out:
-	g_strfreev (split);
 	return transaction_flags_enum;
 }

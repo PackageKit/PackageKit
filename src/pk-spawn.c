@@ -40,6 +40,7 @@
 
 #include <glib/gi18n.h>
 
+#include "pk-cleanup.h"
 #include "pk-spawn.h"
 #include "pk-shared.h"
 
@@ -116,8 +117,8 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 {
 	guint i;
 	guint size;
-	gchar **lines;
 	guint bytes_processed;
+	_cleanup_strv_free_ gchar **lines = NULL;
 
 	/* if nothing then don't emit */
 	if (pk_strzero (string->str))
@@ -133,7 +134,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
-	for (i=0; i<(size-1); i++) {
+	for (i = 0; i < (size-1); i++) {
 		g_signal_emit (spawn, signals [SIGNAL_STDOUT], 0, lines[i]);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
@@ -141,8 +142,6 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 
 	/* remove the text we've processed */
 	g_string_erase (string, 0, bytes_processed);
-
-	g_strfreev (lines);
 	return TRUE;
 }
 
@@ -396,23 +395,20 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 {
 	gint wrote;
 	gint length;
-	gchar *buffer = NULL;
-	gboolean ret = TRUE;
+	_cleanup_free_ gchar *buffer = NULL;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
 		g_debug ("already finished, ignoring");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* is there a process running? */
 	if (spawn->priv->child_pid == -1) {
 		g_debug ("no child pid");
-		ret = FALSE;
-		goto out;
+		return FALSE;
 	}
 
 	/* buffer always has to have trailing newline */
@@ -425,12 +421,11 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		g_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
-		ret = FALSE;
+		g_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length,
+			   spawn->priv->stdin_fd, strerror (errno));
+		return FALSE;
 	}
-out:
-	g_free (buffer);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -507,7 +502,7 @@ pk_strvequal (gchar **id1, gchar **id2)
 		return FALSE;
 
 	/* text equal each one */
-	for (i=0; i<length1; i++) {
+	for (i = 0; i < length1; i++) {
 		if (g_strcmp0 (id1[i], id2[i]) != 0)
 			return FALSE;
 	}
@@ -526,24 +521,23 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	       PkSpawnArgvFlags flags, GError **error)
 {
 	gboolean ret = TRUE;
-	GError *error_local = NULL;
 	guint i;
 	guint len;
 	gint nice_value;
-	gchar *command;
 	const gchar *key;
 	gint rc;
+	_cleanup_error_free_ GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 
 	len = g_strv_length (argv);
-	for (i=0; i<len; i++)
+	for (i = 0; i < len; i++)
 		g_debug ("argv[%i] '%s'", i, argv[i]);
 	if (envp != NULL) {
 		len = g_strv_length (envp);
-		for (i=0; i<len; i++)
+		for (i = 0; i < len; i++)
 			g_debug ("envp[%i] '%s'", i, envp[i]);
 	}
 
@@ -567,12 +561,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 			g_debug ("not re-using instance due to policy");
 		} else {
 			/* join with tabs, as spaces could be in file name */
-			command = g_strjoinv ("\t", &argv[1]);
+			_cleanup_free_ gchar *command = g_strjoinv ("\t", &argv[1]);
 
 			/* reuse instance */
 			g_debug ("reusing instance");
 			ret = pk_spawn_send_stdin (spawn, command);
-			g_free (command);
 			if (ret)
 				goto out;
 
@@ -608,7 +601,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	/* we failed to invoke the helper */
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to spawn %s: %s", argv[0], error_local->message);
-		g_error_free (error_local);
 		goto out;
 	}
 

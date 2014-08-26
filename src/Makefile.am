@@ -89,6 +89,7 @@ plugininclude_GIRSOURCES =				\
 	pk-shared.h
 
 shared_SOURCES =					\
+	pk-cleanup.h					\
 	pk-dbus.c					\
 	pk-dbus.h					\
 	pk-transaction.c				\
