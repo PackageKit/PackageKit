@@ -50,12 +50,14 @@ struct _PkTaskPrivate
 	GPtrArray			*array;
 	gboolean			 simulate;
 	gboolean			 only_download;
+	gboolean			 only_trusted;
 };
 
 enum {
 	PROP_0,
 	PROP_SIMULATE,
 	PROP_ONLY_PREPARE,
+	PROP_ONLY_TRUSTED,
 	PROP_LAST
 };
 
@@ -1250,7 +1252,10 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	if (task->priv->only_trusted)
+		state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	else
+		state->transaction_flags = 0;
 	state->files = g_strdupv (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -2362,6 +2367,42 @@ pk_task_get_only_download (PkTask *task)
 	return task->priv->only_download;
 }
 
+
+/**
+ * pk_task_set_only_trusted:
+ * @task: a valid #PkTask instance
+ * @only_trusted: %TRUE to allow only authenticated packages
+ *
+ * If only authenticated packages should be allowed in the
+ * transaction.
+ *
+ * Since: 0.9.5
+ **/
+void
+pk_task_set_only_trusted (PkTask *task, gboolean only_trusted)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->only_trusted = only_trusted;
+	g_object_notify (G_OBJECT (task), "only-download");
+}
+
+/**
+ * pk_task_get_only_trusted:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we allow only authenticated packages in the transactoin.
+ *
+ * Return value: %TRUE if we allow only authenticated packages
+ *
+ * Since: 0.9.5
+ **/
+gboolean
+pk_task_get_only_trusted (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->only_trusted;
+}
+
 /**
  * pk_task_get_property:
  **/
@@ -2377,6 +2418,9 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 		break;
 	case PROP_ONLY_PREPARE:
 		g_value_set_boolean (value, priv->only_download);
+		break;
+	case PROP_ONLY_TRUSTED:
+		g_value_set_boolean (value, priv->only_trusted);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2399,6 +2443,9 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 		break;
 	case PROP_ONLY_PREPARE:
 		priv->only_download = g_value_get_boolean (value);
+		break;
+	case PROP_ONLY_TRUSTED:
+		priv->only_trusted = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2438,6 +2485,15 @@ pk_task_class_init (PkTaskClass *klass)
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ONLY_PREPARE, pspec);
 
+	/**
+	 * PkTask:only-trusted:
+	 *
+	 * Since: 0.9.5
+	 */
+	pspec = g_param_spec_boolean ("only-trusted", NULL, NULL,
+				      TRUE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ONLY_TRUSTED, pspec);
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
 

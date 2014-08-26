@@ -278,6 +278,9 @@ gboolean	 pk_task_get_interactive		(PkTask			*task);
 void		 pk_task_set_only_download		(PkTask			*task,
 							 gboolean		 only_download);
 gboolean	 pk_task_get_only_download		(PkTask			*task);
+void		 pk_task_set_only_trusted		(PkTask			*task,
+							 gboolean		 only_trusted);
+gboolean	 pk_task_get_only_trusted		(PkTask			*task);
 
 G_END_DECLS
 

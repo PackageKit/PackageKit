@@ -1851,6 +1851,7 @@ main (int argc, char *argv[])
 	guint cache_age = G_MAXUINT;
 	gint retval_copy = 0;
 	gboolean plain = FALSE;
+	gboolean allow_untrusted = FALSE;
 	gboolean program_version = FALSE;
 	gboolean run_mainloop = TRUE;
 	GOptionContext *context;
@@ -1886,6 +1887,9 @@ main (int argc, char *argv[])
 		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
 			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
+		{ "allow-untrusted", '\0', 0, G_OPTION_ARG_NONE, &allow_untrusted,
+			/* command line argument, do we ask questions */
+			_("Allow untrusted packages to be installed."), NULL },
 		{ NULL}
 	};
 
@@ -1974,6 +1978,7 @@ main (int argc, char *argv[])
 		      "interactive", !noninteractive,
 		      "only-download", only_download,
 		      "cache-age", cache_age,
+		      "only-trusted", !allow_untrusted,
 		      NULL);
 
 	/* set the proxy */

@@ -275,6 +275,10 @@ manpage.1: manpage.xml
         <term>-c, --cache-age <replaceable>AGE</replaceable></term>
         <listitem><para>Set the maximum acceptable age for cached metadata, in seconds. Use -1 for 'never'.</para></listitem>
       </varlistentry>
+      <varlistentry>
+        <term>--allow-untrusted</term>
+        <listitem><para>Allow untrusted packages to be installed.</para></listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
