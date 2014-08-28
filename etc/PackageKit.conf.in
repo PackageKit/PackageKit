@@ -4,13 +4,9 @@
 [Daemon]
 
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
-#
-# default=300
 ShutdownTimeout=300
 
 # Unlock the backend after this many seconds idle.
-#
-# default=5
 BackendShutdownTimeout=5
 
 # Set the priority of the spawned backend to this priority.
@@ -18,8 +14,6 @@ BackendShutdownTimeout=5
 #
 # Values range from -20 (most favorable) to 19 (least favorable)
 # A niceness value of 0 will not attempt to set any priority.
-#
-# default=0
 BackendSpawnNiceValue=0
 
 # Set the priority of the spawned backend to this priority for low priority tasks.
@@ -27,8 +21,6 @@ BackendSpawnNiceValue=0
 #
 # Values range from -20 (most favorable) to 19 (least favorable)
 # A niceness value of 0 will not attempt to set any priority.
-#
-# default=10
 BackendSpawnNiceValueBackground=10
 
 # Default backends, as chosen in the configure script. This will be used
@@ -37,24 +29,18 @@ BackendSpawnNiceValueBackground=10
 # The order they are specified is the order they are tried, so for the
 # value "foo,bar" first "foo" will be attempted and then "bar" if the
 # libpk_backend_foo.so module load failed.
-#
-# default=@defaultbackend@
 DefaultBackend=@defaultbackend@
 
 # The time in seconds to wait when we get the StateHasChanged method
 #
 # This should be used when a native tool has been used, and the update UIs
 # should be updated to reflect reality.
-#
-# default=2
 StateChangedTimeoutPriority=2
 
 # The time in seconds to wait after the computer has been resumed or any non
 # package related system event
 #
 # We don't want to be doing an update check at the busy time after a resume
-#
-# default=600
 StateChangedTimeoutNormal=600
 
 # The maximum number of requests a given user is able to request and queue
@@ -62,8 +48,6 @@ StateChangedTimeoutNormal=600
 # Setting this lower decreases the risk of a local denial of service, but may
 # cause errors if the desktop client is doing many requests to the daemon in a
 # short period of time.
-#
-# default=500
 SimultaneousTransactionsForUid=500
 
 # The maximum number of items that can be resolved in one method
@@ -71,16 +55,12 @@ SimultaneousTransactionsForUid=500
 # Setting this lower decreases the risk of a local denial of service, but may
 # cause errors if the desktop client is trying to resolve a large number of
 # packages in one method.
-#
-# default=1200
 MaximumItemsToResolve=1200
 
 # The maximum number of packages that can be processed in one method
 #
 # Setting this lower decreases the risk of a local denial of service, but may
 # cause errors if the desktop client is trying to do a large transaction.
-#
-# default=5000
 MaximumPackagesToProcess=5000
 
 # How long the transaction is valid before it's destroyed, in seconds
@@ -89,32 +69,15 @@ MaximumPackagesToProcess=5000
 # destroyed. Setting this longer will allow malicious clients to queue up large
 # number of authentication requests, but setting this shorter will reduce the
 # amount of time the user has to authenticate.
-#
-# default=300
 TransactionCreateCommitTimeout=300
 
 [Plugins]
 
 # Scan installed desktop files when we update or install packages
-#
-# NOTE: Don't enable this for backends that are slow doing SearchFile()
-#
-# default=true
 ScanDesktopFiles=true
 
 # Update the package cache on PackageKit transactions
-# The cache is used by client applications to fetch
-# package-information very fast.
-#
-# NOTE: Don't enable this for backends that are slow doing GetPackages()
-#       or GetDetails()
-#
-# default=false
 UpdatePackageCache=false
 
 # Update the package list on PackageKit transactions
-#
-# NOTE: Don't enable this for backends that are slow doing GetPackages()
-#
-# default=true
 UpdatePackageList=false
