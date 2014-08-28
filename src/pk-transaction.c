@@ -883,7 +883,6 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 	PkBackendJob *job;
 	PkExitEnum exit_code;
 	PkPlugin *plugin;
-	GMainContext *context;
 	PkPluginTransactionFunc plugin_func = NULL;
 
 	switch (phase) {
@@ -933,13 +932,6 @@ pk_transaction_plugin_phase (PkTransaction *transaction,
 		pk_backend_stop_job (transaction->priv->backend, job);
 		plugin->job = NULL;
 		plugin->backend = NULL;
-
-		context = g_main_context_default ();
-		/* dispatch does not work here, so we run iterations until all plugin events are processed */
-		if (context != NULL) {
-			while (g_main_context_pending (context))
-				g_main_context_iteration (context, FALSE);
-		}
 
 		/* quit the transaction if any of the plugins fail */
 		exit_code = pk_backend_job_get_exit_code (job);
