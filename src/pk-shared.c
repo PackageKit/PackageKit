@@ -269,3 +269,90 @@ pk_strlen (const gchar *text, guint len)
 	}
 	return i;
 }
+
+/**
+ * pk_util_get_config_filename:
+ **/
+gchar *
+pk_util_get_config_filename (void)
+{
+	gchar *path;
+
+#if PK_BUILD_LOCAL
+	/* try a local path first */
+	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		goto out;
+	g_debug ("local config file not found '%s'", path);
+	g_free (path);
+#endif
+	/* check the prefix path */
+	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		goto out;
+
+	/* none found! */
+	g_warning ("config file not found '%s'", path);
+	g_free (path);
+	path = NULL;
+out:
+	return path;
+}
+
+/**
+ * pk_util_sort_backends_cb:
+ **/
+static gint
+pk_util_sort_backends_cb (const gchar **name1, const gchar **name2)
+{
+	return g_strcmp0 (*name2, *name1);
+}
+
+/**
+ * pk_util_set_auto_backend:
+ **/
+gboolean
+pk_util_set_auto_backend (GKeyFile *conf, GError **error)
+{
+	const gchar *tmp;
+	gchar *name_tmp;
+	_cleanup_dir_close_ GDir *dir = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+
+	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
+	if (dir == NULL)
+		return FALSE;
+	array = g_ptr_array_new_with_free_func (g_free);
+	do {
+		tmp = g_dir_read_name (dir);
+		if (tmp == NULL)
+			break;
+		if (!g_str_has_prefix (tmp, "libpk_backend_"))
+			continue;
+		if (!g_str_has_suffix (tmp, G_MODULE_SUFFIX))
+			continue;
+		if (g_strstr_len (tmp, -1, "libpk_backend_dummy"))
+			continue;
+		if (g_strstr_len (tmp, -1, "libpk_backend_test"))
+			continue;
+
+		/* turn 'libpk_backend_test.so' into 'test' */
+		name_tmp = g_strdup (tmp + 14);
+		g_strdelimit (name_tmp, ".", '\0');
+		g_ptr_array_add (array,
+				 name_tmp);
+	} while (1);
+
+	/* need to sort by id predictably */
+	g_ptr_array_sort (array,
+			  (GCompareFunc) pk_util_sort_backends_cb);
+
+	/* set best backend */
+	if (array->len == 0) {
+		g_set_error_literal (error, 1, 0, "No backends found");
+		return FALSE;
+	}
+	tmp = g_ptr_array_index (array, 0);
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", tmp);
+	return TRUE;
+}
