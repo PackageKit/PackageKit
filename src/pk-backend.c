@@ -35,10 +35,13 @@
 #include <packagekit-glib2/pk-common.h>
 
 #include "pk-cleanup.h"
-#include "pk-network.h"
 #include "pk-backend.h"
 #include "pk-shared.h"
-#include "pk-notify.h"
+
+#ifdef PK_BUILD_DAEMON
+  #include "pk-network.h"
+  #include "pk-notify.h"
+#endif
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -197,7 +200,9 @@ struct PkBackendPrivate
 	PkBitfield		 roles;
 	GKeyFile		*conf;
 	GFileMonitor		*monitor;
+#ifdef PK_BUILD_DAEMON
 	PkNetwork		*network;
+#endif
 	gboolean		 backend_roles_set;
 	GHashTable		*thread_hash;
 	GMutex			 thread_hash_mutex;
@@ -629,6 +634,7 @@ pk_backend_unload (PkBackend *backend)
 gboolean
 pk_backend_repo_list_changed (PkBackend *backend)
 {
+#ifdef PK_BUILD_DAEMON
 	_cleanup_object_unref_ PkNotify *notify = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -636,6 +642,7 @@ pk_backend_repo_list_changed (PkBackend *backend)
 
 	notify = pk_notify_new ();
 	pk_notify_repo_list_changed (notify);
+#endif
 	return TRUE;
 }
 
@@ -762,6 +769,7 @@ pk_backend_bool_to_string (gboolean value)
 gboolean
 pk_backend_is_online (PkBackend *backend)
 {
+#ifdef PK_BUILD_DAEMON
 	PkNetworkEnum state;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	state = pk_network_get_network_state (backend->priv->network);
@@ -771,6 +779,9 @@ pk_backend_is_online (PkBackend *backend)
 	    state == PK_NETWORK_ENUM_WIRED)
 		return TRUE;
 	return FALSE;
+#else
+	return TRUE;
+#endif
 }
 
 /**
@@ -940,7 +951,9 @@ pk_backend_finalize (GObject *object)
 
 	g_free (backend->priv->name);
 
+#ifdef PK_BUILD_DAEMON
 	g_object_unref (backend->priv->network);
+#endif
 	g_key_file_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
@@ -1596,7 +1609,9 @@ static void
 pk_backend_init (PkBackend *backend)
 {
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
+#ifdef PK_BUILD_DAEMON
 	backend->priv->network = pk_network_new ();
+#endif
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->thread_hash = g_hash_table_new_full (g_direct_hash,
 							    g_direct_equal,

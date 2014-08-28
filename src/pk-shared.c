@@ -32,8 +32,11 @@
 #include <glib/gstdio.h>
 
 #include "pk-cleanup.h"
-#include "pk-resources.h"
 #include "pk-shared.h"
+
+#ifdef PK_BUILD_DAEMON
+  #include "pk-resources.h"
+#endif
 
 /**
  * pk_directory_remove_contents:
@@ -86,6 +89,7 @@ out:
 GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
+#ifdef PK_BUILD_DAEMON
 	_cleanup_bytes_unref_ GBytes *data = NULL;
 	_cleanup_free_ gchar *path = NULL;
 
@@ -100,6 +104,9 @@ pk_load_introspection (const gchar *filename, GError **error)
 
 	/* build introspection from XML */
 	return g_dbus_node_info_new_for_xml (g_bytes_get_data (data, NULL), error);
+#else
+	return NULL;
+#endif
 }
 
 /**

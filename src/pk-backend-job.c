@@ -32,8 +32,11 @@
 #include "pk-backend.h"
 #include "pk-backend-job.h"
 #include "pk-shared.h"
-#include "pk-sysdep.h"
 #include "pk-time.h"
+
+#ifdef PK_BUILD_DAEMON
+  #include "pk-sysdep.h"
+#endif
 
 #define PK_BACKEND_JOB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_JOB, PkBackendJobPrivate))
 
@@ -791,10 +794,12 @@ pk_backend_job_thread_setup (gpointer thread_data)
 	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* set idle IO priority */
+#ifdef PK_BUILD_DAEMON
 	if (helper->job->priv->background == PK_HINT_ENUM_TRUE) {
 		g_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (0);
 	}
+#endif
 
 	/* unref the thread here as it holds a reference itself and we do
 	 * not need to join() this at any stage */

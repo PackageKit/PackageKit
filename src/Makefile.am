@@ -138,7 +138,43 @@ shared_SOURCES +=					\
 	pk-network-stack-connman.c
 endif
 
-libexec_PROGRAMS = packagekitd
+libexec_PROGRAMS = packagekitd packagekit-direct
+
+packagekit_direct_SOURCES =				\
+	pk-backend.c					\
+	pk-backend.h					\
+	pk-backend-job.c				\
+	pk-backend-job.h				\
+	pk-cleanup.h					\
+	pk-direct.c					\
+	pk-shared.c					\
+	pk-shared.h					\
+	pk-time.c					\
+	pk-time.h
+
+packagekit_direct_CPPFLAGS =				\
+	$(AM_CPPFLAGS)					\
+	-DPK_DB_DIR=\""$(localstatedir)/lib/PackageKit"\"
+
+packagekit_direct_LDADD =				\
+	$(GLIB_LIBS)					\
+	$(GMODULE_LIBS)					\
+	$(NETWORK_MANAGER_LIBS)				\
+	$(CONNMAN_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(POLKIT_LIBS)					\
+	$(GIO_LIBS)					\
+	$(ARCHIVE_LIBS)					\
+	$(SYSTEMD_LIBS)
+
+packagekit_direct_LDFLAGS =				\
+	$(PIE_LDFLAGS)					\
+	$(RELRO_LDFLAGS)
+
+packagekit_direct_CFLAGS =				\
+	$(PIE_CFLAGS)					\
+	$(WARNINGFLAGS_C)
 
 packagekitd_SOURCES =					\
 	pk-main.c					\
@@ -146,6 +182,7 @@ packagekitd_SOURCES =					\
 
 packagekitd_CPPFLAGS =					\
 	$(AM_CPPFLAGS)					\
+	-DPK_BUILD_DAEMON=1				\
 	-DPK_DB_DIR=\""$(localstatedir)/lib/PackageKit"\"
 
 packagekitd_LDADD =					\
