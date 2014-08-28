@@ -37,8 +37,12 @@
 #include "pk-engine.h"
 #include "pk-transaction.h"
 
-static guint exit_idle_time;
-static GMainLoop *loop;
+typedef struct {
+	GMainLoop	*loop;
+	PkEngine	*engine;
+	guint		 exit_idle_time;
+	guint		 timer_id;
+} PkMainHelper;
 
 /**
  * timed_exit_cb:
@@ -59,14 +63,14 @@ timed_exit_cb (GMainLoop *mainloop)
  * pk_main_timeout_check_cb:
  **/
 static gboolean
-pk_main_timeout_check_cb (PkEngine *engine)
+pk_main_timeout_check_cb (PkMainHelper *helper)
 {
 	guint idle;
-	idle = pk_engine_get_seconds_idle (engine);
+	idle = pk_engine_get_seconds_idle (helper->engine);
 	g_debug ("idle is %i", idle);
-	if (idle > exit_idle_time) {
-		g_warning ("exit!!");
-		g_main_loop_quit (loop);
+	if (idle > helper->exit_idle_time) {
+		g_main_loop_quit (helper->loop);
+		helper->timer_id = 0;
 		return FALSE;
 	}
 	return TRUE;
@@ -188,13 +192,16 @@ out:
 int
 main (int argc, char *argv[])
 {
+	GMainLoop *loop = NULL;
+	GOptionContext *context;
+	PkMainHelper helper;
 	gboolean ret = TRUE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
-	GOptionContext *context;
+	guint exit_idle_time;
 	guint timer_id = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *backend_name = NULL;
@@ -321,8 +328,11 @@ main (int argc, char *argv[])
 
 	/* only poll when we are alive */
 	if (exit_idle_time != 0 && !disable_timer) {
-		timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
-		g_source_set_name_by_id (timer_id, "[PkMain] main poll");
+		helper.engine = engine;
+		helper.exit_idle_time = exit_idle_time;
+		helper.loop = loop;
+		helper.timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, &helper);
+		g_source_set_name_by_id (helper.timer_id, "[PkMain] main poll");
 	}
 
 	/* immediatly exit */
