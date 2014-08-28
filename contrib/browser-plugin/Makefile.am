@@ -9,6 +9,7 @@ packagekit_plugin_la_CPPFLAGS =			\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DMOZ_X11				\
 	-DGSEAL_ENABLE				\
+	-I$(top_builddir)/lib			\
 	-I$(top_srcdir)/lib
 
 packagekit_plugin_la_CFLAGS =			\
