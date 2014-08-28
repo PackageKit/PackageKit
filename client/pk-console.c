@@ -1658,7 +1658,7 @@ pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 	http_proxy = g_getenv ("http_proxy");
 	ftp_proxy = g_getenv ("ftp_proxy");
 	if (http_proxy == NULL && ftp_proxy == NULL)
-		return FALSE;
+		return TRUE;
 
 	/* set all parameters */
 	ret = pk_control_set_proxy2 (ctx->control,
@@ -2418,7 +2418,6 @@ main (int argc, char *argv[])
 					     _("File already exists: %s"), value);
 			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
-			return FALSE;
 		}
 
 		/* get package list */
