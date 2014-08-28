@@ -74,7 +74,7 @@ TransactionCreateCommitTimeout=300
 [Plugins]
 
 # Scan installed desktop files when we update or install packages
-ScanDesktopFiles=true
+ScanDesktopFiles=false
 
 # Update the package cache on PackageKit transactions
 UpdatePackageCache=false
