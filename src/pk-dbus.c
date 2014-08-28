@@ -354,7 +354,7 @@ pk_dbus_init (PkDbus *dbus)
 				       "org.freedesktop.DBus",
 				       NULL,
 				       &error);
-	if (dbus->priv->proxy_pid == NULL) {
+	if (dbus->priv->proxy_uid == NULL) {
 		g_warning ("cannot connect to DBus: %s", error->message);
 		return;
 	}
