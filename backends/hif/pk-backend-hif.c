@@ -1276,16 +1276,13 @@ pk_backend_refresh_source (PkBackendJob *job,
 					return FALSE;
 			} else {
 				g_propagate_error (error, error_local);
-				goto out;
+				return FALSE;
 			}
 		}
 	}
 
 	/* done */
-	if (!hif_state_done (state, error))
-		return FALSE;
-out:
-	return ret;
+	return hif_state_done (state, error);
 }
 
 /**
