@@ -367,6 +367,7 @@ int
 main (int argc, char *argv[])
 {
 	PkDirectPrivate *priv = NULL;
+	const gchar *destdir;
 	gboolean ret = TRUE;
 	gint retval = EXIT_SUCCESS;
 	_cleanup_error_free_ GError *error = NULL;
@@ -444,6 +445,11 @@ main (int argc, char *argv[])
 		retval = EXIT_FAILURE;
 		goto out;
 	}
+
+	/* support DESTDIR */
+	destdir = g_getenv ("DESTDIR");
+	if (destdir != NULL)
+		g_key_file_set_string (conf, "Daemon", "DestDir", destdir);
 
 	/* override the backend name */
 	if (backend_name != NULL)

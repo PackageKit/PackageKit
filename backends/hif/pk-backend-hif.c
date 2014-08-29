@@ -159,6 +159,10 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cache_dir = NULL;
+	_cleanup_free_ gchar *destdir = NULL;
+	_cleanup_free_ gchar *repo_dir = NULL;
+	_cleanup_free_ gchar *solv_dir = NULL;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -197,9 +201,15 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->context = hif_context_new ();
 	g_signal_connect (priv->context, "invalidate",
 			  G_CALLBACK (pk_backend_context_invaliate_cb), backend);
-	hif_context_set_cache_dir (priv->context, "/var/cache/PackageKit/metadata");
-	hif_context_set_solv_dir (priv->context, "/var/cache/PackageKit/hawkey/");
-	hif_context_set_repo_dir (priv->context, "/etc/yum.repos.d");
+	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
+	if (destdir == NULL)
+		destdir = g_strdup ("/");
+	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit/metadata", NULL);
+	hif_context_set_cache_dir (priv->context, cache_dir);
+	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit/hawkey", NULL);
+	hif_context_set_solv_dir (priv->context, solv_dir);
+	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
+	hif_context_set_repo_dir (priv->context, repo_dir);
 	hif_context_set_rpm_verbosity (priv->context, "info");
 	ret = hif_context_setup (priv->context, NULL, &error);
 	if (!ret)
