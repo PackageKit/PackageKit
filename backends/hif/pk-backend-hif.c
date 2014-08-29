@@ -1233,8 +1233,8 @@ pk_backend_refresh_source (PkBackendJob *job,
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
-				   50, /* check */
-				   50, /* download */
+				   2, /* check */
+				   98, /* download */
 				   -1);
 	if (!ret)
 		return FALSE;
@@ -1249,6 +1249,8 @@ pk_backend_refresh_source (PkBackendJob *job,
 		g_debug ("repo %s not okay [%s], refreshing",
 			 hif_source_get_id (src), error_local->message);
 		g_clear_error (&error_local);
+		if (!hif_state_finished (state_local, error))
+			return FALSE;
 	}
 
 	/* done */
@@ -1270,6 +1272,8 @@ pk_backend_refresh_source (PkBackendJob *job,
 					   hif_source_get_id (src),
 					   error_local->message);
 				g_clear_error (&error_local);
+				if (!hif_state_finished (state_local, error))
+					return FALSE;
 			} else {
 				g_propagate_error (error, error_local);
 				goto out;
