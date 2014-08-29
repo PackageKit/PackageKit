@@ -5163,7 +5163,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			 const gchar *value,
 			 GError **error)
 {
-	gboolean ret = TRUE;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	/* locale=en_GB.utf8 */
@@ -5258,14 +5257,13 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* cache-age=<time-in-seconds> */
 	if (g_strcmp0 (key, "cache-age") == 0) {
-		ret = pk_strtouint (value, &priv->cache_age);
-		if (!ret) {
+		if (!pk_strtouint (value, &priv->cache_age)) {
 			priv->cache_age = G_MAXUINT;
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "cannot parse cache age value %s", value);
-			ret = FALSE;
+			return FALSE;
 		}
 		if (priv->cache_age == 0) {
 			priv->cache_age = G_MAXUINT;
