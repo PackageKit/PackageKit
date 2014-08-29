@@ -1295,12 +1295,20 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 {
 	HifSource *src;
 	HifState *state_local;
+	HifState *state_loop;
+	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean force;
 	gboolean ret;
 	guint cnt = 0;
 	guint i;
 	_cleanup_error_free_ GError *error = NULL;
+
+	/* set state */
+	hif_state_set_steps (job_data->state, NULL,
+			     95, /* download */
+			     5, /* rebuild SAT */
+			     -1);
 
 	g_variant_get (params, "(b)", &force);
 
@@ -1322,7 +1330,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	}
 
 	/* refresh each repo */
-	hif_state_set_number_steps (job_data->state, cnt);
+	state_local = hif_state_get_child (job_data->state);
+	hif_state_set_number_steps (state_local, cnt);
 	for (i = 0; i < job_data->sources->len; i++) {
 		src = g_ptr_array_index (job_data->sources, i);
 		if (!hif_source_get_enabled (src))
@@ -1341,19 +1350,43 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		}
 
 		/* check and download */
-		state_local = hif_state_get_child (job_data->state);
-		ret = pk_backend_refresh_source (job, src, state_local, &error);
+		state_loop = hif_state_get_child (state_local);
+		ret = pk_backend_refresh_source (job, src, state_loop, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
 		}
 
 		/* done */
-		ret = hif_state_done (job_data->state, &error);
+		ret = hif_state_done (state_local, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
 		}
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		goto out;
+	}
+
+	/* regenerate the libsolv metadata */
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job, 0,
+						  HIF_CREATE_SACK_FLAG_NONE,
+						  state_local, &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		goto out;
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		goto out;
 	}
 out:
 	pk_backend_job_finished (job);
