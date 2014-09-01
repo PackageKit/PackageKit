@@ -227,6 +227,7 @@ pk_self_test_LDADD =					\
 
 pk_self_test_CPPFLAGS =					\
 	$(AM_CPPFLAGS)					\
+	-DPK_BUILD_DAEMON=1				\
 	-DPK_DB_DIR=\""."\"
 
 pk_self_test_CFLAGS =					\
