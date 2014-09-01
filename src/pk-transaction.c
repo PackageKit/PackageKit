@@ -2942,11 +2942,7 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
-		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
-		pk_transaction_allow_cancel_emit (transaction, FALSE);
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
-		pk_transaction_release_tid (transaction);
 		return;
 	}
 
@@ -3049,13 +3045,7 @@ pk_transaction_cancel (PkTransaction *transaction,
 skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
-		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
-		pk_transaction_allow_cancel_emit (transaction, FALSE);
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
-		pk_transaction_release_tid (transaction);
-
-		/* return from async with success */
 		pk_transaction_dbus_return (context, NULL);
 		goto out;
 	}
