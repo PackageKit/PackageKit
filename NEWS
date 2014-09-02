@@ -1,3 +1,28 @@
+Version 0.9.5
+~~~~~~~~~~~~~
+Released: 2014-09-02
+
+Backends:
+ - alpm: Port the ALPM backend to the latest API (Aleix Pol)
+ - hif: Fix a crash when refreshing a repo that is not enabled (Richard Hughes)
+ - hif: Fix up a few state warnings when refreshing (Richard Hughes)
+ - hif: Make the HyQuery refcounting easier to understand (Richard Hughes)
+ - hif: Regenerate the SAT indexes when refreshing the cache (Richard Hughes)
+ - hif: Support setting DESTDIR from packagekit-direct (Richard Hughes)
+
+New Features:
+ - Add --allow-untrusted option to pkcon (Michael Vogt)
+ - Add a new tool called packagekit-direct that can run without a daemon (Richard Hughes)
+ - Remove remaining time reporting (Richard Hughes)
+ - Remove the desktop.db plugin (Richard Hughes)
+
+Bugfixes:
+ - Do not commit the transaction manually but instead set the correct state (Richard Hughes)
+ - Do not log a critical warning when idle exiting (Richard Hughes)
+ - Fix a crash when we are cancelling a transaction that has not yet been run (Richard Hughes)
+ - Make browser-plugin search for npapi-sdk or mozilla-plugin (Matthias Klumpp)
+ - Never ever use g_main_context_iteration() manually (Richard Hughes)
+
 Version 0.9.4
 ~~~~~~~~~~~~~
 Released: 2014-07-17
