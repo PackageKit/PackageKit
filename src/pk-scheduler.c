@@ -100,6 +100,7 @@ typedef struct {
 	guint			 idle_id;
 	guint			 commit_id;
 	gulong			 finished_id;
+	gulong			 state_changed_id;
 	guint			 uid;
 	guint			 tries;
 } PkSchedulerItem;
@@ -196,6 +197,8 @@ pk_scheduler_item_free (PkSchedulerItem *item)
 	g_return_if_fail (item != NULL);
 	if (item->finished_id != 0)
 		g_signal_handler_disconnect (item->transaction, item->finished_id);
+	if (item->state_changed_id != 0)
+		g_signal_handler_disconnect (item->transaction, item->state_changed_id);
 	g_object_unref (item->transaction);
 	if (item->commit_id != 0)
 		g_source_remove (item->commit_id);
@@ -465,6 +468,21 @@ out:
 }
 
 /**
+ * pk_scheduler_transaction_state_changed_cb:
+ **/
+static void
+pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
+					   PkTransactionState state,
+					   PkScheduler *scheduler)
+{
+	/* release the ID as we are returning an error */
+	if (state == PK_TRANSACTION_STATE_ERROR) {
+		pk_scheduler_remove (scheduler, pk_transaction_get_tid (transaction));
+		return;
+	}
+}
+
+/**
  * pk_scheduler_transaction_finished_cb:
  **/
 static void
@@ -613,6 +631,10 @@ pk_scheduler_create (PkScheduler *scheduler,
 	item->finished_id =
 		g_signal_connect_after (item->transaction, "finished",
 					G_CALLBACK (pk_scheduler_transaction_finished_cb),
+					scheduler);
+	item->state_changed_id =
+		g_signal_connect_after (item->transaction, "state-changed",
+					G_CALLBACK (pk_scheduler_transaction_state_changed_cb),
 					scheduler);
 
 	/* set plugins */

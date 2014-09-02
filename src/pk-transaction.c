@@ -167,6 +167,7 @@ typedef enum {
 
 enum {
 	SIGNAL_FINISHED,
+	SIGNAL_STATE_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -803,6 +804,8 @@ pk_transaction_state_to_string (PkTransactionState state)
 		return "running";
 	if (state == PK_TRANSACTION_STATE_FINISHED)
 		return "finished";
+	if (state == PK_TRANSACTION_STATE_ERROR)
+		return "error";
 	return NULL;
 }
 
@@ -834,6 +837,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
 	transaction->priv->state = state;
+	g_signal_emit (transaction, signals[SIGNAL_STATE_CHANGED], 0, state);
 
 	/* update GUI */
 	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH) {
@@ -2276,19 +2280,6 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 }
 
 /**
- * pk_transaction_release_tid:
- **/
-static gboolean
-pk_transaction_release_tid (PkTransaction *transaction)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-
-	/* release the ID as we are returning an error */
-	return pk_scheduler_remove (transaction->priv->scheduler,
-				    transaction->priv->tid);
-}
-
-/**
  * pk_transaction_commit:
  **/
 G_GNUC_WARN_UNUSED_RESULT static gboolean
@@ -2301,7 +2292,7 @@ pk_transaction_commit (PkTransaction *transaction)
 
 	/* commit, so it appears in the JobList */
 	if (!pk_scheduler_commit (priv->scheduler, priv->tid)) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		g_warning ("failed to commit (job not run?)");
 		return FALSE;
 	}
@@ -2527,7 +2518,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
 		g_warning ("Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		return;
 	}
 
@@ -2694,7 +2685,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 					     "Could not commit to a transaction object");
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			return FALSE;
 		}
 		return TRUE;
@@ -2902,7 +2893,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (eula_id, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -2913,7 +2904,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 						   PK_ROLE_ENUM_ACCEPT_EULA,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3102,7 +3093,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "DownloadPackages not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3119,7 +3110,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3160,7 +3151,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3190,7 +3181,7 @@ pk_transaction_get_categories (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetCategories not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3203,7 +3194,7 @@ pk_transaction_get_categories (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3245,7 +3236,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "DependsOn not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3262,7 +3253,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3273,7 +3264,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3290,7 +3281,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3328,7 +3319,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetDetails not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3345,7 +3336,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3357,7 +3348,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid",
 			     package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3372,7 +3363,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3412,7 +3403,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetDetailsLocal not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3423,7 +3414,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "No filenames listed");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 	max_length = g_key_file_get_integer (transaction->priv->conf,
@@ -3437,7 +3428,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many files to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3452,7 +3443,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 				     "No such file %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 
@@ -3465,7 +3456,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 				     "Failed to get content type for file %s",
 				     full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 
@@ -3477,7 +3468,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 				     "MIME type '%s' not supported %s",
 				     content_type, full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 	}
@@ -3493,7 +3484,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3533,7 +3524,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetDetailsLocal not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3544,7 +3535,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "No filenames listed");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 	max_length = g_key_file_get_integer (transaction->priv->conf,
@@ -3558,7 +3549,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many files to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3573,7 +3564,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 				     "No such file %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 
@@ -3586,7 +3577,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 				     "Failed to get content type for file %s",
 				     full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 
@@ -3598,7 +3589,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
 				     "MIME type '%s' not supported %s",
 				     content_type, full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 	}
@@ -3614,7 +3605,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3644,7 +3635,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetDistroUpgrades not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3658,7 +3649,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3696,7 +3687,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetFiles not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3713,7 +3704,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3724,7 +3715,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3739,7 +3730,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3773,7 +3764,7 @@ pk_transaction_get_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetPackages not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3788,7 +3779,7 @@ pk_transaction_get_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3899,7 +3890,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetRepoList not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3914,7 +3905,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -3956,7 +3947,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RequiredBy not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3973,7 +3964,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -3984,7 +3975,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4001,7 +3992,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4039,7 +4030,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetUpdateDetail not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4056,7 +4047,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4068,7 +4059,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid",
 			     package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4083,7 +4074,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4117,7 +4108,7 @@ pk_transaction_get_updates (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetUpdates not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4132,7 +4123,7 @@ pk_transaction_get_updates (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4222,7 +4213,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "InstallFiles not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4240,7 +4231,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
 				     "No such file %s", full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
 
@@ -4252,7 +4243,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Failed to get content type for file %s",
 				     full_paths[i]);
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
 
@@ -4272,7 +4263,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 					     "MIME type '%s' not supported %s",
 					     content_type, full_paths[i]);
 			}
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
 	}
@@ -4292,7 +4283,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 						   PK_ROLE_ENUM_INSTALL_FILES,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4335,7 +4326,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "InstallPackages not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4352,7 +4343,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4363,7 +4354,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4382,7 +4373,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 						   PK_ROLE_ENUM_INSTALL_PACKAGES,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4423,14 +4414,14 @@ pk_transaction_install_signature (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "InstallSignature not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (key_id, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4441,7 +4432,7 @@ pk_transaction_install_signature (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id '%s' is not valid", package_id);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4455,7 +4446,7 @@ pk_transaction_install_signature (PkTransaction *transaction,
 						   PK_ROLE_ENUM_INSTALL_SIGNATURE,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4489,7 +4480,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RefreshCache not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4502,7 +4493,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REFRESH_CACHE,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4549,7 +4540,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RemovePackages not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4566,7 +4557,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4577,7 +4568,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid", package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4598,7 +4589,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REMOVE_PACKAGES,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4634,14 +4625,14 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RepoEnable not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4655,7 +4646,7 @@ pk_transaction_repo_enable (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REPO_ENABLE,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4694,14 +4685,14 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RepoSetData not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4716,7 +4707,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REPO_SET_DATA,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4757,14 +4748,14 @@ pk_transaction_repo_remove (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RepoSetData not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check for sanity */
 	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4779,7 +4770,7 @@ pk_transaction_repo_remove (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REPO_REMOVE,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4821,7 +4812,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "Resolve not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4832,7 +4823,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Too few items to process");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 	max_length = g_key_file_get_integer (transaction->priv->conf,
@@ -4846,7 +4837,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Too many items to process (%i/%i)", length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4854,7 +4845,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 	for (i = 0; i < length; i++) {
 		ret = pk_transaction_strvalidate (packages[i], &error);
 		if (!ret) {
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 	}
@@ -4871,7 +4862,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4908,14 +4899,14 @@ pk_transaction_search_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "SearchDetails not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4931,7 +4922,7 @@ pk_transaction_search_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -4969,14 +4960,14 @@ pk_transaction_search_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "SearchFiles not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -4987,7 +4978,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
 				     "Invalid search path");
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 	}
@@ -5004,7 +4995,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5042,14 +5033,14 @@ pk_transaction_search_groups (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "SearchGroups not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5060,7 +5051,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing spaces");
-			pk_transaction_release_tid (transaction);
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
 	}
@@ -5077,7 +5068,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5114,14 +5105,14 @@ pk_transaction_search_names (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "SearchNames not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5137,7 +5128,7 @@ pk_transaction_search_names (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5357,7 +5348,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "UpdatePackages not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5375,7 +5366,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)",
 			     length, max_length);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5387,7 +5378,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 			     "The package id's '%s' are not valid",
 			     package_ids_temp);
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5406,7 +5397,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 						   PK_ROLE_ENUM_UPDATE_PACKAGES,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5443,14 +5434,14 @@ pk_transaction_what_provides (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "WhatProvides not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* check the search term */
 	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5466,7 +5457,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
 			     "Could not commit to a transaction object");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5502,7 +5493,7 @@ pk_transaction_repair_system (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RepairSystem not supported by backend");
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
@@ -5520,7 +5511,7 @@ pk_transaction_repair_system (PkTransaction *transaction,
 						   PK_ROLE_ENUM_REPAIR_SYSTEM,
 						   &error);
 	if (!ret) {
-		pk_transaction_release_tid (transaction);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 out:
@@ -5826,6 +5817,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	signals[SIGNAL_STATE_CHANGED] =
+		g_signal_new ("state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));
 }
