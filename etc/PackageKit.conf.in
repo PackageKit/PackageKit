@@ -63,14 +63,6 @@ MaximumItemsToResolve=1200
 # cause errors if the desktop client is trying to do a large transaction.
 MaximumPackagesToProcess=5000
 
-# How long the transaction is valid before it's destroyed, in seconds
-#
-# The client only has a finite amount of time to use the object, else it is
-# destroyed. Setting this longer will allow malicious clients to queue up large
-# number of authentication requests, but setting this shorter will reduce the
-# amount of time the user has to authenticate.
-TransactionCreateCommitTimeout=300
-
 [Plugins]
 
 # Update the package cache on PackageKit transactions

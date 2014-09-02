@@ -1047,7 +1047,6 @@ pk_test_scheduler_func (void)
 	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	g_key_file_set_string (conf, "Daemon", "SimultaneousTransactionsForUid", "1000");
-	g_key_file_set_string (conf, "Daemon", "TransactionCreateCommitTimeout", "1000");
 	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
 
@@ -1348,7 +1347,6 @@ pk_test_scheduler_parallel_func (void)
 	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	g_key_file_set_string (conf, "Daemon", "SimultaneousTransactionsForUid", "1000");
-	g_key_file_set_string (conf, "Daemon", "TransactionCreateCommitTimeout", "1000");
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	backend = pk_backend_new (conf);
 	ret = pk_backend_load (backend, NULL);

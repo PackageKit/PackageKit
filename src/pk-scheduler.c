@@ -81,6 +81,9 @@ static void     pk_scheduler_finalize	(GObject	*object);
 /* how many times we should retry a locked transaction */
 #define PK_SCHEDULER_MAX_LOCK_RETRIES			4
 
+/* how long the transaction is valid before it's destroyed */
+#define PK_SCHEDULER_CREATE_COMMIT_TIMEOUT		300 /* s */
+
 struct PkSchedulerPrivate
 {
 	GPtrArray		*array;
@@ -650,7 +653,6 @@ pk_scheduler_create (PkScheduler *scheduler,
 {
 	guint count;
 	guint max_count;
-	guint timeout;
 	gboolean ret = FALSE;
 	PkSchedulerItem *item;
 
@@ -734,13 +736,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 	}
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
-	timeout = g_key_file_get_integer (scheduler->priv->conf,
-					  "Daemon",
-					  "TransactionCreateCommitTimeout",
-					  error);
-	if (timeout == 0)
-		return FALSE;
-	item->commit_id = g_timeout_add_seconds (timeout,
+	item->commit_id = g_timeout_add_seconds (PK_SCHEDULER_CREATE_COMMIT_TIMEOUT,
 						 pk_scheduler_no_commit_cb,
 						 item);
 	g_source_set_name_by_id (item->commit_id, "[PkScheduler] commit");
