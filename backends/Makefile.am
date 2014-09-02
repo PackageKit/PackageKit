@@ -24,10 +24,6 @@ if BACKEND_TYPE_HIF
 SUBDIRS += hif
 endif
 
-if BACKEND_TYPE_OPKG
-SUBDIRS += opkg
-endif
-
 if BACKEND_TYPE_KATJA
 SUBDIRS += katja
 endif

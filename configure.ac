@@ -425,7 +425,6 @@ AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),en
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(entropy, AS_HELP_STRING([--enable-entropy],[use the entropy backend]),enable_entropy=$enableval,enable_entropy=no)
 AC_ARG_ENABLE(hif, AS_HELP_STRING([--enable-hif],[use the hif backend]),enable_hif=$enableval,enable_hif=no)
-AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
@@ -442,7 +441,6 @@ AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ENTROPY, [test x$enable_entropy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_HIF, [test x$enable_hif = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
@@ -478,7 +476,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           auto,alpm,apt,aptcc,dummy,entropy,hif,opkg,pisi,portage,ports,katja,smart,urpmi,zypp (auto)]))
+                           auto,alpm,apt,aptcc,dummy,entropy,hif,pisi,portage,ports,katja,smart,urpmi,zypp (auto)]))
 if test x$with_default_backend = x; then
 	with_default_backend=auto
 fi
@@ -545,10 +543,6 @@ if test x$enable_aptcc = xyes; then
 	LDFLAGS="$save_LDFLAGS"
 	CFLAGS="$save_CFLAGS"
 	LIBS="$save_LIBS"
-fi
-
-if test x$enable_opkg = xyes; then
-	PKG_CHECK_MODULES(OPKG, libopkg >= 0.1.5)
 fi
 
 if test x$enable_alpm = xyes; then
@@ -619,7 +613,6 @@ backends/aptcc/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
 backends/hif/Makefile
-backends/opkg/Makefile
 backends/katja/Makefile
 backends/smart/Makefile
 backends/test/Makefile
@@ -691,7 +684,6 @@ echo "
         dummy backend:             ${enable_dummy}
         Entropy backend:           ${enable_entropy}
         Hif backend:               ${enable_hif}
-        OPKG backend:              ${enable_opkg}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
