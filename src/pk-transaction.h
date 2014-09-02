@@ -52,7 +52,6 @@ typedef struct
 typedef enum {
 	PK_TRANSACTION_STATE_NEW,
 	PK_TRANSACTION_STATE_WAITING_FOR_AUTH,
-	PK_TRANSACTION_STATE_COMMITTED,
 	PK_TRANSACTION_STATE_READY,
 	PK_TRANSACTION_STATE_RUNNING,
 	PK_TRANSACTION_STATE_FINISHED,
@@ -87,7 +86,7 @@ gchar		**pk_transaction_get_full_paths			(PkTransaction	*transaction);
 void		 pk_transaction_set_full_paths			(PkTransaction	*transaction,
 								 gchar		**full_paths);
 PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
-gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
+void		 pk_transaction_set_state			(PkTransaction	*transaction,
 								 PkTransactionState state);
 const gchar	*pk_transaction_state_to_string			(PkTransactionState state);
 const gchar	*pk_transaction_get_tid				(PkTransaction	*transaction);

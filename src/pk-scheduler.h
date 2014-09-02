@@ -60,9 +60,6 @@ gboolean	 pk_scheduler_create		(PkScheduler	*scheduler,
 						 GError		**error);
 gboolean	 pk_scheduler_remove		(PkScheduler	*scheduler,
 						 const gchar	*tid);
-gboolean	 pk_scheduler_commit		(PkScheduler	*scheduler,
-						 const gchar	*tid)
-						 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_scheduler_role_present	(PkScheduler	*scheduler,
 						 PkRoleEnum	 role);
 gchar		**pk_scheduler_get_array	(PkScheduler	*scheduler)

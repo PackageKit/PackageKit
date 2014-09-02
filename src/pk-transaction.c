@@ -56,7 +56,6 @@
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
-#include "pk-scheduler.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
@@ -111,7 +110,6 @@ struct PkTransactionPrivate
 	gchar			*sender;
 	gchar			*cmdline;
 	PkResults		*results;
-	PkScheduler		*scheduler;
 	PkTransactionDb		*transaction_db;
 
 	/* cached */
@@ -796,7 +794,7 @@ pk_transaction_state_to_string (PkTransactionState state)
 		return "new";
 	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH)
 		return "waiting-for-auth";
-	if (state == PK_TRANSACTION_STATE_COMMITTED)
+	if (state == PK_TRANSACTION_STATE_READY)
 		return "committed";
 	if (state == PK_TRANSACTION_STATE_READY)
 		return "ready";
@@ -817,27 +815,53 @@ pk_transaction_state_to_string (PkTransactionState state)
  *
  * 1. 'new'
  * 2. 'waiting for auth'  <--- waiting for PolicyKit (optional)
- * 3. 'committed'	 <--- when the client sets the role
- * 4. 'ready'	     <--- when the transaction is ready to be run
- * 5. 'running'	   <--- where PkBackend gets used
- * 6. 'finished'
+ * 3. 'ready'	     <--- when the transaction is ready to be run
+ * 4. 'running'	   <--- where PkBackend gets used
+ * 5. 'finished'
  *
  **/
-gboolean
+void
 pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 {
+	PkTransactionPrivate *priv = transaction->priv;
+
 	/* check we're not going backwards */
-	if (transaction->priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
-	    transaction->priv->state > state) {
+	if (priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
+	    priv->state > state) {
 		g_warning ("cannot set %s, as already %s",
 			   pk_transaction_state_to_string (state),
-			   pk_transaction_state_to_string (transaction->priv->state));
-		return FALSE;
+			   pk_transaction_state_to_string (priv->state));
 	}
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
-	transaction->priv->state = state;
+	priv->state = state;
 	g_signal_emit (transaction, signals[SIGNAL_STATE_CHANGED], 0, state);
+
+	/* only save into the database for useful stuff */
+	if (state == PK_TRANSACTION_STATE_READY &&
+	    (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	     priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	     priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+
+		/* add to database */
+		pk_transaction_db_add (priv->transaction_db, priv->tid);
+
+		/* save role in the database */
+		pk_transaction_db_set_role (priv->transaction_db, priv->tid, priv->role);
+
+		/* save uid */
+		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->uid);
+
+		/* save cmdline in db */
+		if (priv->cmdline != NULL)
+			pk_transaction_db_set_cmdline (priv->transaction_db, priv->tid, priv->cmdline);
+
+		/* report to syslog */
+		syslog (LOG_DAEMON | LOG_DEBUG,
+			"new %s transaction %s scheduled from uid %i",
+			pk_role_enum_to_string (priv->role),
+			priv->tid, priv->uid);
+	}
 
 	/* update GUI */
 	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH) {
@@ -854,13 +878,6 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 						      PK_BACKEND_PERCENTAGE_INVALID,
 						      0, 0);
 	}
-
-	/* we have no actions to perform here, so go straight to running */
-	if (state == PK_TRANSACTION_STATE_COMMITTED) {
-		/* TODO: do some things before we change states */
-		return pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
-	}
-	return TRUE;
 }
 
 /**
@@ -2280,51 +2297,6 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 }
 
 /**
- * pk_transaction_commit:
- **/
-G_GNUC_WARN_UNUSED_RESULT static gboolean
-pk_transaction_commit (PkTransaction *transaction)
-{
-	PkTransactionPrivate *priv = transaction->priv;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (priv->tid != NULL, FALSE);
-
-	/* commit, so it appears in the JobList */
-	if (!pk_scheduler_commit (priv->scheduler, priv->tid)) {
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		g_warning ("failed to commit (job not run?)");
-		return FALSE;
-	}
-
-	/* only save into the database for useful stuff */
-	if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-
-		/* add to database */
-		pk_transaction_db_add (priv->transaction_db, priv->tid);
-
-		/* save role in the database */
-		pk_transaction_db_set_role (priv->transaction_db, priv->tid, priv->role);
-
-		/* save uid */
-		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->uid);
-
-		/* save cmdline in db */
-		if (priv->cmdline != NULL)
-			pk_transaction_db_set_cmdline (priv->transaction_db, priv->tid, priv->cmdline);
-
-		/* report to syslog */
-		syslog (LOG_DAEMON | LOG_DEBUG,
-			"new %s transaction %s scheduled from uid %i",
-			pk_role_enum_to_string (priv->role),
-			priv->tid, priv->uid);
-	}
-	return TRUE;
-}
-
-/**
  * pk_transaction_finished_idle_cb:
  **/
 static gboolean
@@ -2513,14 +2485,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 			priv->uid);
 		return;
 	}
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_warning ("Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		return;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 
 	/* log success too */
 	syslog (LOG_AUTH | LOG_INFO, "uid %i obtained auth", priv->uid);
@@ -2680,14 +2645,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
 	    priv->skip_auth_check == TRUE) {
 		g_debug ("No authentication required");
-		if (!pk_transaction_commit (transaction)) {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-					     "Could not commit to a transaction object");
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			return FALSE;
-		}
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 		return TRUE;
 	}
 
@@ -3143,17 +3101,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_directory = g_strdup (directory);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3166,7 +3114,6 @@ pk_transaction_get_categories (PkTransaction *transaction,
 			       GVariant *params,
 			       GDBusMethodInvocation *context)
 {
-	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3186,17 +3133,7 @@ pk_transaction_get_categories (PkTransaction *transaction,
 	}
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_CATEGORIES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3273,17 +3210,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DEPENDS_ON);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3355,17 +3282,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3476,17 +3393,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3597,17 +3504,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES_LOCAL);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3620,7 +3517,6 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 				    GVariant *params,
 				    GDBusMethodInvocation *context)
 {
-	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3641,17 +3537,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 
 	/* save so we can run later */
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3722,17 +3608,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3745,7 +3621,6 @@ pk_transaction_get_packages (PkTransaction *transaction,
 			     GVariant *params,
 			     GDBusMethodInvocation *context)
 {
-	gboolean ret;
 	PkBitfield filter;
 	_cleanup_error_free_ GError *error = NULL;
 
@@ -3771,17 +3646,7 @@ pk_transaction_get_packages (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3871,7 +3736,6 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 			      GVariant *params,
 			      GDBusMethodInvocation *context)
 {
-	gboolean ret;
 	PkBitfield filter;
 	_cleanup_error_free_ GError *error = NULL;
 
@@ -3897,17 +3761,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -3984,17 +3838,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REQUIRED_BY);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4066,17 +3910,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4089,7 +3923,6 @@ pk_transaction_get_updates (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
 {
-	gboolean ret;
 	PkBitfield filter;
 	_cleanup_error_free_ GError *error = NULL;
 
@@ -4115,17 +3948,7 @@ pk_transaction_get_updates (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4854,17 +4677,7 @@ pk_transaction_resolve (PkTransaction *transaction,
 	transaction->priv->cached_package_ids = g_strdupv (packages);
 	transaction->priv->cached_filters = filter;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4914,17 +4727,7 @@ pk_transaction_search_details (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4987,17 +4790,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5060,17 +4853,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5120,17 +4903,7 @@ pk_transaction_search_names (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5449,17 +5222,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 	transaction->priv->cached_filters = filter;
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
-
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
-	if (!ret) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-			     "Could not commit to a transaction object");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5942,7 +5705,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->dbus);
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
-	g_object_unref (transaction->priv->scheduler);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->results);
@@ -5965,7 +5727,6 @@ pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 	PkTransaction *transaction;
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
 	transaction->priv->conf = g_key_file_ref (conf);
-	transaction->priv->scheduler = pk_scheduler_new (transaction->priv->conf);
 	transaction->priv->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }
