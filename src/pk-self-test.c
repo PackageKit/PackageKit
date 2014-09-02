@@ -32,7 +32,6 @@
 #include "pk-engine.h"
 #include "pk-notify.h"
 #include "pk-spawn.h"
-#include "pk-time.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -753,67 +752,6 @@ pk_test_spawn_func (void)
 	/* ask dispatcher to close (again) */
 	ret = pk_spawn_exit (spawn);
 	g_assert (!ret);
-}
-
-static void
-pk_test_time_func (void)
-{
-	gboolean ret;
-	guint value;
-	_cleanup_object_unref_ PkTime *pktime = NULL;
-
-	pktime = pk_time_new ();
-	g_assert (pktime != NULL);
-
-	/* get elapsed correctly at startup */
-	value = pk_time_get_elapsed (pktime);
-	g_assert_cmpint (value, <, 10);
-
-	/* ignore remaining correctly */
-	value = pk_time_get_remaining (pktime);
-	g_assert_cmpint (value, ==, 0);
-
-	g_usleep (1000*1000);
-
-	/* get elapsed correctly */
-	value = pk_time_get_elapsed (pktime);
-	g_assert_cmpint (value, >, 900);
-	g_assert_cmpint (value, <, 1100);
-
-	/* ignore remaining correctly when not enough entries */
-	value = pk_time_get_remaining (pktime);
-	g_assert_cmpint (value, ==, 0);
-
-	/* make sure we can add data */
-	ret = pk_time_add_data (pktime, 10);
-	g_assert (ret);
-
-	/* make sure we can get remaining correctly */
-	value = 20;
-	while (value < 60) {
-		pk_time_advance_clock (pktime, 2000);
-		pk_time_add_data (pktime, value);
-		value += 10;
-	}
-	value = pk_time_get_remaining (pktime);
-	g_assert_cmpint (value, >, 9);
-	g_assert_cmpint (value, <, 11);
-
-	/* reset */
-	g_object_unref (pktime);
-	pktime = pk_time_new ();
-
-	/* make sure we can do long times */
-	value = 10;
-	pk_time_add_data (pktime, 0);
-	while (value < 60) {
-		pk_time_advance_clock (pktime, 4*60*1000);
-		pk_time_add_data (pktime, value);
-		value += 10;
-	}
-	value = pk_time_get_remaining (pktime);
-	g_assert_cmpint (value, >=, 1199);
-	g_assert_cmpint (value, <=, 1201);
 }
 
 static void
@@ -1540,7 +1478,6 @@ main (int argc, char **argv)
 #endif
 
 	/* components */
-	g_test_add_func ("/packagekit/time", pk_test_time_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);

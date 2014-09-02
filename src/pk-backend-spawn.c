@@ -47,7 +47,6 @@
 #include "pk-backend-spawn.h"
 #include "pk-spawn.h"
 #include "pk-shared.h"
-#include "pk-time.h"
 
 //#define ENABLE_STRACE
 

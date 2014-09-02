@@ -103,8 +103,6 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
-	pk-time.h					\
-	pk-time.c					\
 	pk-network-stack.h				\
 	pk-network-stack.c				\
 	pk-network-stack-unix.c				\
@@ -148,9 +146,7 @@ packagekit_direct_SOURCES =				\
 	pk-cleanup.h					\
 	pk-direct.c					\
 	pk-shared.c					\
-	pk-shared.h					\
-	pk-time.c					\
-	pk-time.h
+	pk-shared.h
 
 packagekit_direct_CPPFLAGS =				\
 	$(AM_CPPFLAGS)					\

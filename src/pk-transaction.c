@@ -82,7 +82,6 @@ struct PkTransactionPrivate
 	PkTransactionState	 state;
 	guint			 percentage;
 	guint			 elapsed_time;
-	guint			 remaining_time;
 	guint			 speed;
 	guint			 download_size_remaining;
 	gboolean		 finished;
@@ -369,7 +368,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 	/* save so we can do GetProgress on a queued or finished transaction */
 	transaction->priv->percentage = percentage;
 	transaction->priv->elapsed_time = elapsed;
-	transaction->priv->remaining_time = remaining;
 
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
@@ -1809,21 +1807,6 @@ pk_transaction_percentage_cb (PkBackendJob *job,
 }
 
 /**
- * pk_transaction_remaining_cb:
- **/
-static void
-pk_transaction_remaining_cb (PkBackendJob *job,
-			     guint remaining_time,
-			     PkTransaction *transaction)
-{
-	/* emit */
-	transaction->priv->remaining_time = remaining_time;
-	pk_transaction_emit_property_changed (transaction,
-					      "RemainingTime",
-					      g_variant_new_uint32 (remaining_time));
-}
-
-/**
  * pk_transaction_signals_reset:
  *
  * Connect all backend_signals to the PkTransaction.
@@ -1870,10 +1853,6 @@ pk_transaction_signals_reset (PkTransaction *transaction,
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PERCENTAGE,
 				  (PkBackendJobVFunc) pk_transaction_percentage_cb,
-				  transaction);
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_REMAINING,
-				  (PkBackendJobVFunc) pk_transaction_remaining_cb,
 				  transaction);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_SPEED,
@@ -5251,8 +5230,6 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		return g_variant_new_boolean (priv->caller_active);
 	if (g_strcmp0 (property_name, "ElapsedTime") == 0)
 		return g_variant_new_uint32 (priv->elapsed_time);
-	if (g_strcmp0 (property_name, "RemainingTime") == 0)
-		return g_variant_new_uint32 (priv->remaining_time);
 	if (g_strcmp0 (property_name, "Speed") == 0)
 		return g_variant_new_uint32 (priv->speed);
 	if (g_strcmp0 (property_name, "DownloadSizeRemaining") == 0)

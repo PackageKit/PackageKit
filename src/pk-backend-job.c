@@ -32,7 +32,6 @@
 #include "pk-backend.h"
 #include "pk-backend-job.h"
 #include "pk-shared.h"
-#include "pk-time.h"
 
 #ifdef PK_BUILD_DAEMON
   #include "pk-sysdep.h"
@@ -113,7 +112,7 @@ struct PkBackendJobPrivate
 	PkErrorEnum		 last_error_code;
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
-	PkTime			*time;
+	GTimer			*timer;
 	gboolean		 started;
 };
 
@@ -555,7 +554,7 @@ guint
 pk_backend_job_get_runtime (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), 0);
-	return pk_time_get_elapsed (job->priv->time);
+	return g_timer_elapsed (job->priv->timer, NULL) * 1000;
 }
 
 /**
@@ -608,8 +607,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "Files";
 	if (id == PK_BACKEND_SIGNAL_PERCENTAGE)
 		return "Percentage";
-	if (id == PK_BACKEND_SIGNAL_REMAINING)
-		return "Remaining";
 	if (id == PK_BACKEND_SIGNAL_SPEED)
 		return "Speed";
 	if (id == PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING)
@@ -732,9 +729,7 @@ pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 			   pk_role_enum_to_string (job->priv->role));
 	}
 
-	/* reset the timer */
-	pk_time_reset (job->priv->time);
-
+	g_timer_reset (job->priv->timer);
 	job->priv->role = role;
 	job->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_backend_job_call_vfunc (job,
@@ -859,8 +854,6 @@ pk_backend_job_thread_create (PkBackendJob *job,
 void
 pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 {
-	guint remaining;
-
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
@@ -894,23 +887,6 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 				   PK_BACKEND_SIGNAL_PERCENTAGE,
 				   GUINT_TO_POINTER (percentage),
 				   NULL);
-
-	/* only compute time if we have data */
-	if (percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		/* needed for time remaining calculation */
-		pk_time_add_data (job->priv->time, percentage);
-
-		/* lets try this and print as debug */
-		remaining = pk_time_get_remaining (job->priv->time);
-		if (remaining != 0)
-			g_debug ("this will now take ~%i seconds", remaining);
-		job->priv->remaining = remaining;
-		pk_backend_job_call_vfunc (job,
-					   PK_BACKEND_SIGNAL_REMAINING,
-					   GUINT_TO_POINTER (remaining),
-					   NULL);
-	}
-
 }
 
 /**
@@ -1865,7 +1841,7 @@ pk_backend_job_finalize (GObject *object)
 	}
 	if (job->priv->params != NULL)
 		g_variant_unref (job->priv->params);
-	g_object_unref (job->priv->time);
+	g_timer_destroy (job->priv->timer);
 	g_key_file_unref (job->priv->conf);
 
 	G_OBJECT_CLASS (pk_backend_job_parent_class)->finalize (object);
@@ -1889,7 +1865,7 @@ static void
 pk_backend_job_init (PkBackendJob *job)
 {
 	job->priv = PK_BACKEND_JOB_GET_PRIVATE (job);
-	job->priv->time = pk_time_new ();
+	job->priv->timer = g_timer_new ();
 	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
 	pk_backend_job_reset (job);
 }
