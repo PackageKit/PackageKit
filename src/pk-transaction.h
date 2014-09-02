@@ -69,9 +69,10 @@ gboolean	 pk_transaction_run				(PkTransaction	*transaction)
 								 G_GNUC_WARN_UNUSED_RESULT;
 /* internal status */
 void		 pk_transaction_cancel_bg			(PkTransaction	*transaction);
+gboolean	 pk_transaction_get_background			(PkTransaction	*transaction);
 PkRoleEnum	 pk_transaction_get_role			(PkTransaction	*transaction);
 guint		 pk_transaction_get_uid				(PkTransaction	*transaction);
-GKeyFile		*pk_transaction_get_conf			(PkTransaction	*transaction);
+GKeyFile	*pk_transaction_get_conf			(PkTransaction	*transaction);
 void		 pk_transaction_set_backend			(PkTransaction	*transaction,
 								 PkBackend	*backend);
 PkBackendJob	*pk_transaction_get_backend_job 		(PkTransaction	*transaction);

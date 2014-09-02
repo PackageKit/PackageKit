@@ -102,7 +102,6 @@ typedef struct {
 	gulong			 finished_id;
 	guint			 uid;
 	guint			 tries;
-	gboolean		 background;
 } PkSchedulerItem;
 
 enum {
@@ -275,32 +274,6 @@ pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 }
 
 /**
- * pk_scheduler_set_background:
- **/
-void
-pk_scheduler_set_background (PkScheduler *scheduler, const gchar *tid, gboolean background)
-{
-	PkSchedulerItem *item;
-
-	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
-	g_return_if_fail (tid != NULL);
-
-	item = pk_scheduler_get_from_tid (scheduler, tid);
-	if (item == NULL) {
-		g_warning ("could not get %s", tid);
-		return;
-	}
-	if (item->background == background)
-		return;
-	if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_FINISHED) {
-		g_debug ("already finished %s, so waiting to timeout", tid);
-		return;
-	}
-	g_debug ("%s is now background: %i", tid, background);
-	item->background = background;
-}
-
-/**
  * pk_scheduler_remove_item_cb:
  **/
 static gboolean
@@ -430,7 +403,7 @@ pk_scheduler_get_background_running (PkScheduler *scheduler)
 	/* check if we have any running background transaction */
 	for (i = 0; i < array->len; i++) {
 		item = (PkSchedulerItem *) g_ptr_array_index (array, i);
-		if (item->background)
+		if (pk_transaction_get_background (item->transaction))
 			return TRUE;
 	}
 	return FALSE;
@@ -458,7 +431,7 @@ pk_scheduler_get_next_item (PkScheduler *scheduler)
 		item = (PkSchedulerItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 
-		if ((state == PK_TRANSACTION_STATE_READY) && (!item->background)) {
+		if ((state == PK_TRANSACTION_STATE_READY) && (!pk_transaction_get_background (item->transaction))) {
 			/* check if we can run the transaction now or if we need to wait for lock release */
 			if (pk_transaction_is_exclusive (item->transaction)) {
 				if (!exclusive_running)
@@ -771,7 +744,7 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
 		state = pk_transaction_get_state (item->transaction);
 		if (state != PK_TRANSACTION_STATE_RUNNING)
 			continue;
-		if (!item->background)
+		if (!pk_transaction_get_background (item->transaction))
 			continue;
 		g_debug ("cancelling running background transaction %s",
 			 item->tid);
@@ -851,7 +824,7 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 
 	/* is one of the current running transactions background, and this new
 	 * transaction foreground? */
-	if (!item->background && pk_scheduler_get_background_running (scheduler)) {
+	if (!pk_transaction_get_background (item->transaction) && pk_scheduler_get_background_running (scheduler)) {
 		g_debug ("cancelling running background transactions and instead running %s",
 			item->tid);
 		pk_scheduler_cancel_background (scheduler);
@@ -948,7 +921,7 @@ pk_scheduler_get_state (PkScheduler *scheduler)
 					pk_role_enum_to_string (role), item->tid,
 					pk_transaction_state_to_string (state),
 					pk_transaction_is_exclusive (item->transaction),
-					item->background);
+					pk_transaction_get_background (item->transaction));
 	}
 
 	/* nothing running */

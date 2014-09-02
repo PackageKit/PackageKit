@@ -279,6 +279,16 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_get_background:
+ */
+gboolean
+pk_transaction_get_background (PkTransaction *transaction)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	return transaction->priv->background;
+}
+
+/**
  * pk_transaction_finish_invalidate_caches:
  **/
 static gboolean
@@ -2288,14 +2298,6 @@ pk_transaction_commit (PkTransaction *transaction)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
-
-	/* set the idle really early as this affects scheduling */
-	if (priv->background == TRUE ||
-	    priv->background == FALSE) {
-		pk_scheduler_set_background (priv->scheduler,
-					     priv->tid,
-					     priv->background);
-	}
 
 	/* commit, so it appears in the JobList */
 	if (!pk_scheduler_commit (priv->scheduler, priv->tid)) {
