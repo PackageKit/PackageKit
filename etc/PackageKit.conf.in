@@ -9,20 +9,6 @@ ShutdownTimeout=300
 # Unlock the backend after this many seconds idle.
 BackendShutdownTimeout=5
 
-# Set the priority of the spawned backend to this priority.
-# This ensures the process does not hog the system when performing actions.
-#
-# Values range from -20 (most favorable) to 19 (least favorable)
-# A niceness value of 0 will not attempt to set any priority.
-BackendSpawnNiceValue=0
-
-# Set the priority of the spawned backend to this priority for low priority tasks.
-# This ensures the process does not hog the system when performing actions.
-#
-# Values range from -20 (most favorable) to 19 (least favorable)
-# A niceness value of 0 will not attempt to set any priority.
-BackendSpawnNiceValueBackground=10
-
 # Default backends, as chosen in the configure script. This will be used
 # where no --backend="foo" option is given to the daemon.
 #

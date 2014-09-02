@@ -523,8 +523,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	gboolean ret = TRUE;
 	guint i;
 	guint len;
-	gint nice_value;
-	const gchar *key;
+	gint nice_value = 0;
 	gint rc;
 	_cleanup_error_free_ GError *error_local = NULL;
 
@@ -605,11 +604,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	}
 
 	/* get the nice value and ensure we are in the valid range */
-	key = "BackendSpawnNiceValue";
 	if (spawn->priv->background)
-		key = "BackendSpawnNiceValueBackground";
-	nice_value = g_key_file_get_integer (spawn->priv->conf, "Daemon", key, NULL);
-	nice_value = CLAMP(nice_value, -20, 19);
+		nice_value = 10;
 
 #if HAVE_SETPRIORITY
 	/* don't completely bog the system down */
