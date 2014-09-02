@@ -123,10 +123,10 @@ shared_SOURCES =					\
 	pk-engine.c					\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
-	pk-transaction-db.h				\
+	pk-scheduler.c					\
+	pk-scheduler.h					\
 	pk-transaction-db.c				\
-	pk-transaction-list.c				\
-	pk-transaction-list.h
+	pk-transaction-db.h
 
 if PK_BUILD_NETWORKMANAGER
 shared_SOURCES +=					\

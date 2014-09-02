@@ -50,7 +50,7 @@
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
-#include "pk-transaction-list.h"
+#include "pk-scheduler.h"
 
 static void     pk_engine_finalize	(GObject       *object);
 static void	pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
@@ -63,7 +63,7 @@ struct PkEnginePrivate
 	GTimer			*timer;
 	gboolean		 notify_clients_of_upgrade;
 	gboolean		 shutdown_as_soon_as_possible;
-	PkTransactionList	*transaction_list;
+	PkScheduler		*scheduler;
 	PkTransactionDb		*transaction_db;
 	PkBackend		*backend;
 	PkNetwork		*network;
@@ -160,7 +160,7 @@ pk_engine_reset_timer (PkEngine *engine)
  * pk_engine_transaction_list_changed_cb:
  **/
 static void
-pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engine)
+pk_engine_transaction_list_changed_cb (PkScheduler *tlist, PkEngine *engine)
 {
 	_cleanup_strv_free_ gchar **transaction_list = NULL;
 	gboolean locked;
@@ -168,10 +168,10 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* automatically locked if the transaction cannot be cancelled */
-	locked = pk_transaction_list_get_locked (tlist);
+	locked = pk_scheduler_get_locked (tlist);
 	pk_engine_set_locked (engine, locked);
 
-	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
+	transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -399,7 +399,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 
 	/* check for transactions running - a transaction that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
-	size = pk_transaction_list_get_size (engine->priv->transaction_list);
+	size = pk_scheduler_get_size (engine->priv->scheduler);
 	if (size != 0) {
 		g_debug ("engine idle zero as %i transactions in progress", size);
 		return 0;
@@ -1300,7 +1300,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetDaemonState") == 0) {
-		data = pk_transaction_list_get_state (engine->priv->transaction_list);
+		data = pk_scheduler_get_state (engine->priv->scheduler);
 		value = g_variant_new ("(s)", data);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
@@ -1335,8 +1335,8 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		g_debug ("CreateTransaction method called");
 		data = pk_transaction_db_generate_id (engine->priv->transaction_db);
 		g_assert (data != NULL);
-		ret = pk_transaction_list_create (engine->priv->transaction_list,
-						  data, sender, &error);
+		ret = pk_scheduler_create (engine->priv->scheduler,
+					   data, sender, &error);
 		if (!ret) {
 			g_dbus_method_invocation_return_error (invocation,
 							       PK_ENGINE_ERROR,
@@ -1354,7 +1354,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetTransactionList") == 0) {
-		transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
+		transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
 		value = g_variant_new ("(^a&o)", transaction_list);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
@@ -1363,11 +1363,11 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "SuggestDaemonQuit") == 0) {
 
 		/* attempt to kill background tasks */
-		pk_transaction_list_cancel_queued (engine->priv->transaction_list);
-		pk_transaction_list_cancel_background (engine->priv->transaction_list);
+		pk_scheduler_cancel_queued (engine->priv->scheduler);
+		pk_scheduler_cancel_background (engine->priv->scheduler);
 
 		/* can we exit straight away */
-		size = pk_transaction_list_get_size (engine->priv->transaction_list);
+		size = pk_scheduler_get_size (engine->priv->scheduler);
 		if (size == 0) {
 			g_debug ("emitting quit");
 			g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
@@ -1702,7 +1702,7 @@ pk_engine_finalize (GObject *object)
 	g_timer_destroy (engine->priv->timer);
 	g_object_unref (engine->priv->monitor_conf);
 	g_object_unref (engine->priv->monitor_binary);
-	g_object_unref (engine->priv->transaction_list);
+	g_object_unref (engine->priv->scheduler);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
 	if (engine->priv->authority != NULL)
@@ -1730,12 +1730,12 @@ pk_engine_new (GKeyFile *conf)
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->priv->conf = g_key_file_ref (conf);
 	engine->priv->backend = pk_backend_new (engine->priv->conf);
-	engine->priv->transaction_list = pk_transaction_list_new (engine->priv->conf);
-	pk_transaction_list_set_backend (engine->priv->transaction_list,
+	engine->priv->scheduler = pk_scheduler_new (engine->priv->conf);
+	pk_scheduler_set_backend (engine->priv->scheduler,
 					 engine->priv->backend);
-	pk_transaction_list_set_plugins (engine->priv->transaction_list,
+	pk_scheduler_set_plugins (engine->priv->scheduler,
 					 engine->priv->plugins);
-	g_signal_connect (engine->priv->transaction_list, "changed",
+	g_signal_connect (engine->priv->scheduler, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 
 	/* get the StateHasChanged timeouts */

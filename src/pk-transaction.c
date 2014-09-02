@@ -56,7 +56,7 @@
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
-#include "pk-transaction-list.h"
+#include "pk-scheduler.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
@@ -111,7 +111,7 @@ struct PkTransactionPrivate
 	gchar			*sender;
 	gchar			*cmdline;
 	PkResults		*results;
-	PkTransactionList	*transaction_list;
+	PkScheduler		*scheduler;
 	PkTransactionDb		*transaction_db;
 
 	/* cached */
@@ -2274,8 +2274,8 @@ pk_transaction_release_tid (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
 	/* release the ID as we are returning an error */
-	return pk_transaction_list_remove (transaction->priv->transaction_list,
-					   transaction->priv->tid);
+	return pk_scheduler_remove (transaction->priv->scheduler,
+				    transaction->priv->tid);
 }
 
 /**
@@ -2292,13 +2292,13 @@ pk_transaction_commit (PkTransaction *transaction)
 	/* set the idle really early as this affects scheduling */
 	if (priv->background == PK_HINT_ENUM_TRUE ||
 	    priv->background == PK_HINT_ENUM_FALSE) {
-		pk_transaction_list_set_background (priv->transaction_list,
-					      priv->tid,
-					      priv->background);
+		pk_scheduler_set_background (priv->scheduler,
+					     priv->tid,
+					     priv->background);
 	}
 
 	/* commit, so it appears in the JobList */
-	if (!pk_transaction_list_commit (priv->transaction_list, priv->tid)) {
+	if (!pk_scheduler_commit (priv->scheduler, priv->tid)) {
 		pk_transaction_release_tid (transaction);
 		g_warning ("failed to commit (job not run?)");
 		return FALSE;
@@ -5941,7 +5941,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->dbus);
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
-	g_object_unref (transaction->priv->transaction_list);
+	g_object_unref (transaction->priv->scheduler);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->results);
@@ -5964,7 +5964,7 @@ pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 	PkTransaction *transaction;
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
 	transaction->priv->conf = g_key_file_ref (conf);
-	transaction->priv->transaction_list = pk_transaction_list_new (transaction->priv->conf);
+	transaction->priv->scheduler = pk_scheduler_new (transaction->priv->conf);
 	transaction->priv->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }
