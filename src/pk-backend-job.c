@@ -105,9 +105,9 @@ struct PkBackendJobPrivate
 	PkBitfield		 transaction_flags;
 	GKeyFile		*conf;
 	PkExitEnum		 exit;
-	PkHintEnum		 allow_cancel;
-	PkHintEnum		 background;
-	PkHintEnum		 interactive;
+	gboolean		 allow_cancel;
+	gboolean		 background;
+	gboolean		 interactive;
 	gboolean		 locked;
 	PkPackage		*last_package;
 	PkErrorEnum		 last_error_code;
@@ -499,10 +499,10 @@ pk_backend_job_set_user_data (PkBackendJob *job, gpointer user_data)
 /**
  * pk_backend_job_get_background:
  **/
-PkHintEnum
+gboolean
 pk_backend_job_get_background (PkBackendJob *job)
 {
-	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), PK_HINT_ENUM_UNSET);
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
 	return job->priv->background;
 }
 
@@ -510,7 +510,7 @@ pk_backend_job_get_background (PkBackendJob *job)
  * pk_backend_job_set_background:
  **/
 void
-pk_backend_job_set_background (PkBackendJob *job, PkHintEnum background)
+pk_backend_job_set_background (PkBackendJob *job, gboolean background)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	job->priv->background = background;
@@ -519,10 +519,10 @@ pk_backend_job_set_background (PkBackendJob *job, PkHintEnum background)
 /**
  * pk_backend_job_get_interactive:
  **/
-PkHintEnum
+gboolean
 pk_backend_job_get_interactive (PkBackendJob *job)
 {
-	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), PK_HINT_ENUM_UNSET);
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
 	return job->priv->interactive;
 }
 
@@ -530,7 +530,7 @@ pk_backend_job_get_interactive (PkBackendJob *job)
  * pk_backend_job_set_interactive:
  **/
 void
-pk_backend_job_set_interactive (PkBackendJob *job, PkHintEnum interactive)
+pk_backend_job_set_interactive (PkBackendJob *job, gboolean interactive)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	job->priv->interactive = interactive;
@@ -795,7 +795,7 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 	/* set idle IO priority */
 #ifdef PK_BUILD_DAEMON
-	if (helper->job->priv->background == PK_HINT_ENUM_TRUE) {
+	if (helper->job->priv->background == TRUE) {
 		g_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (0);
 	}
@@ -1711,7 +1711,7 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (job->priv->allow_cancel == (PkHintEnum) allow_cancel)
+	if (job->priv->allow_cancel == (gboolean) allow_cancel)
 		return;
 
 	/* emit */
@@ -1728,15 +1728,8 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 gboolean
 pk_backend_job_get_allow_cancel (PkBackendJob *job)
 {
-	gboolean allow_cancel = FALSE;
-
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-
-	/* return FALSE if we never set state */
-	if (job->priv->allow_cancel != PK_HINT_ENUM_UNSET)
-		allow_cancel = job->priv->allow_cancel;
-
-	return allow_cancel;
+	return job->priv->allow_cancel;
 }
 
 /**
@@ -1786,21 +1779,6 @@ pk_backend_job_get_exit_code (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), PK_EXIT_ENUM_UNKNOWN);
 	return job->priv->exit;
-}
-
-/**
- * pk_backend_job_use_background:
- **/
-gboolean
-pk_backend_job_use_background (PkBackendJob *job)
-{
-	/* the session has set it one way or the other */
-	if (job->priv->background == PK_HINT_ENUM_TRUE)
-		return TRUE;
-	if (job->priv->background == PK_HINT_ENUM_FALSE)
-		return FALSE;
-
-	return FALSE;
 }
 
 /**

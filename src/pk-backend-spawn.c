@@ -810,11 +810,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	g_hash_table_replace (env_table, g_strdup ("NETWORK"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* BACKGROUND */
-	ret = pk_backend_job_use_background (priv->job);
+	ret = pk_backend_job_get_background (priv->job);
 	g_hash_table_replace (env_table, g_strdup ("BACKGROUND"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* INTERACTIVE */
-	ret = pk_backend_job_get_interactive (priv->job) == PK_HINT_ENUM_TRUE;
+	ret = pk_backend_job_get_interactive (priv->job);
 	g_hash_table_replace (env_table, g_strdup ("INTERACTIVE"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* CACHE_AGE */
@@ -908,7 +908,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 				 const gchar *executable,
 				 va_list *args)
 {
-	PkHintEnum background;
+	gboolean background;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	PkSpawnArgvFlags flags = PK_SPAWN_ARGV_FLAGS_NONE;
 #if PK_BUILD_LOCAL
@@ -961,7 +961,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	/* copy idle setting from backend to PkSpawn instance */
 	background = pk_backend_job_get_background (job);
 	g_object_set (priv->spawn,
-		      "background", (background == PK_HINT_ENUM_TRUE),
+		      "background", (background == TRUE),
 		      NULL);
 
 #ifdef ENABLE_STRACE

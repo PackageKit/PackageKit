@@ -88,8 +88,8 @@ struct PkTransactionPrivate
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
 	gboolean		 exclusive;
-	PkHintEnum		 background;
-	PkHintEnum		 interactive;
+	gboolean		 background;
+	gboolean		 interactive;
 	gchar			*locale;
 	gchar			*frontend_socket;
 	guint			 cache_age;
@@ -2290,8 +2290,8 @@ pk_transaction_commit (PkTransaction *transaction)
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
 
 	/* set the idle really early as this affects scheduling */
-	if (priv->background == PK_HINT_ENUM_TRUE ||
-	    priv->background == PK_HINT_ENUM_FALSE) {
+	if (priv->background == TRUE ||
+	    priv->background == FALSE) {
 		pk_scheduler_set_background (priv->scheduler,
 					     priv->tid,
 					     priv->background);
@@ -5219,9 +5219,11 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
-		priv->background = pk_hint_enum_from_string (value);
-		if (priv->background == PK_HINT_ENUM_INVALID) {
-			priv->background = PK_HINT_ENUM_UNSET;
+		if (g_strcmp0 (value, "true") == 0) {
+			priv->background = TRUE;
+		} else if (g_strcmp0 (value, "false") == 0) {
+			priv->background = FALSE;
+		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
@@ -5233,9 +5235,11 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* interactive=true */
 	if (g_strcmp0 (key, "interactive") == 0) {
-		priv->interactive = pk_hint_enum_from_string (value);
-		if (priv->interactive == PK_HINT_ENUM_INVALID) {
-			priv->interactive = PK_HINT_ENUM_UNSET;
+		if (g_strcmp0 (value, "true") == 0) {
+			priv->interactive = TRUE;
+		} else if (g_strcmp0 (value, "false") == 0) {
+			priv->interactive = FALSE;
+		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
@@ -5842,7 +5846,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
-	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->dbus = pk_dbus_new ();

@@ -91,12 +91,12 @@ void		 pk_backend_job_set_transaction_flags	(PkBackendJob	*job,
 GVariant	*pk_backend_job_get_parameters		(PkBackendJob	*job);
 void		 pk_backend_job_set_parameters		(PkBackendJob	*job,
 							 GVariant	*params);
-PkHintEnum	 pk_backend_job_get_background		(PkBackendJob	*job);
+gboolean	 pk_backend_job_get_background		(PkBackendJob	*job);
 void		 pk_backend_job_set_background		(PkBackendJob	*job,
-							 PkHintEnum	 background);
-PkHintEnum	 pk_backend_job_get_interactive		(PkBackendJob	*job);
+							 gboolean	 background);
+gboolean	 pk_backend_job_get_interactive		(PkBackendJob	*job);
 void		 pk_backend_job_set_interactive		(PkBackendJob	*job,
-							 PkHintEnum	 interactive);
+							 gboolean	 interactive);
 void		 pk_backend_job_set_locked		(PkBackendJob	*job,
 							 gboolean	 locked);
 gboolean	 pk_backend_job_get_locked		(PkBackendJob	*job);
@@ -141,7 +141,6 @@ gchar		*pk_backend_job_get_pac			(PkBackendJob	*job);
 gchar		*pk_backend_job_get_locale		(PkBackendJob	*job);
 gchar		*pk_backend_job_get_frontend_socket	(PkBackendJob	*job);
 guint		 pk_backend_job_get_cache_age		(PkBackendJob	*job);
-gboolean	 pk_backend_job_use_background		(PkBackendJob	*job);
 
 /* transaction vfuncs */
 typedef void	 (*PkBackendJobVFunc)			(PkBackendJob	*job,

@@ -27,19 +27,7 @@
 
 G_BEGIN_DECLS
 
-/* a boolean with unset */
-typedef enum {
-	PK_HINT_ENUM_FALSE = FALSE,
-	PK_HINT_ENUM_TRUE = TRUE,
-	PK_HINT_ENUM_UNSET,
-	PK_HINT_ENUM_INVALID,
-	PK_HINT_ENUM_LAST
-} PkHintEnum;
-
 gboolean	 pk_directory_remove_contents		(const gchar	*directory);
-const gchar	*pk_hint_enum_to_string			(PkHintEnum	 hint);
-PkHintEnum	 pk_hint_enum_from_string		(const gchar	*hint);
-
 guint		 pk_strlen				(const gchar	*text,
 							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;
