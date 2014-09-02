@@ -34,8 +34,6 @@
       Backends are typically open-programmable, which means we can define a
       standard for what goes on stdin and stdout to try and maximise
       the common code between the backends.
-      The following section will explain the convention used on
-      <literal>backends/conary</literal> and <literal>backends/yum</literal>.
     </para>
     <para>
       If you are unable to write scripts that conform to these specifications
