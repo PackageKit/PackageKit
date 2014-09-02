@@ -30,16 +30,11 @@
 #include "config.h"
 
 #include <glib.h>
-#include <sqlite3.h>
 #include <packagekit-glib2/pk-desktop.h>
 
 static void     pk_desktop_finalize	(GObject        *object);
 
 #define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))
-
-/* Database format is:
- *   CREATE TABLE cache ( filename TEXT, package TEXT, show INTEGER, md5 TEXT );
- */
 
 /**
  * PkDesktopPrivate:
@@ -48,49 +43,11 @@ static void     pk_desktop_finalize	(GObject        *object);
  **/
 struct _PkDesktopPrivate
 {
-	sqlite3			*db;
+	gpointer		 dummy;
 };
 
 G_DEFINE_TYPE (PkDesktop, pk_desktop, G_TYPE_OBJECT)
 static gpointer pk_desktop_object = NULL;
-
-/**
- * pk_desktop_sqlite_filename_cb:
- **/
-static gint
-pk_desktop_sqlite_filename_cb (void *data, gint argc, gchar **argv, gchar **col_name)
-{
-	GPtrArray *array = (GPtrArray *) data;
-	gint i;
-
-	/* add the filename data to the array */
-	for (i = 0; i < argc; i++) {
-		if (g_strcmp0 (col_name[i], "filename") == 0 && argv[i] != NULL)
-			g_ptr_array_add (array, g_strdup (argv[i]));
-	}
-
-	return 0;
-}
-
-/**
- * pk_desktop_sqlite_package_cb:
- **/
-static gint
-pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_name)
-{
-	gchar **package = (gchar **) data;
-	gint i;
-
-	/* add the filename data to the array */
-	for (i = 0; i < argc; i++) {
-		if (g_strcmp0 (col_name[i], "package") == 0 && argv[i] != NULL) {
-			*package = g_strdup (argv[i]);
-			break;
-		}
-	}
-
-	return 0;
-}
 
 /**
  * pk_desktop_get_files_for_package:
@@ -108,31 +65,8 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
 GPtrArray *
 pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GError **error)
 {
-	gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-	GPtrArray *array = NULL;
-
-	g_return_val_if_fail (PK_IS_DESKTOP (desktop), NULL);
-	g_return_val_if_fail (package != NULL, NULL);
-
-	/* no database */
-	if (desktop->priv->db == NULL) {
-		g_set_error_literal (error, 1, 0, "database is not open");
-		goto out;
-	}
-
-	/* get packages */
-	array = g_ptr_array_new_with_free_func (g_free);
-	statement = g_strdup_printf ("SELECT filename FROM cache WHERE package = '%s'", package);
-	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
-	g_free (statement);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-	}
-out:
-	return array;
+	g_set_error_literal (error, 1, 0, "no longer supported");
+	return NULL;
 }
 
 /**
@@ -151,31 +85,8 @@ out:
 GPtrArray *
 pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GError **error)
 {
-	gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-	GPtrArray *array = NULL;
-
-	g_return_val_if_fail (PK_IS_DESKTOP (desktop), NULL);
-	g_return_val_if_fail (package != NULL, NULL);
-
-	/* no database */
-	if (desktop->priv->db == NULL) {
-		g_set_error_literal (error, 1, 0, "database is not open");
-		goto out;
-	}
-
-	/* get packages */
-	array = g_ptr_array_new_with_free_func (g_free);
-	statement = g_strdup_printf ("SELECT filename FROM cache WHERE package = '%s' AND show = 1", package);
-	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
-	g_free (statement);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-	}
-out:
-	return array;
+	g_set_error_literal (error, 1, 0, "no longer supported");
+	return NULL;
 }
 
 /**
@@ -193,36 +104,8 @@ out:
 gchar *
 pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GError **error)
 {
-	gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-	gchar *package = NULL;
-
-	g_return_val_if_fail (PK_IS_DESKTOP (desktop), NULL);
-	g_return_val_if_fail (filename != NULL, NULL);
-
-	/* no database */
-	if (desktop->priv->db == NULL) {
-		g_set_error_literal (error, 1, 0, "database is not open");
-		goto out;
-	}
-
-	/* get packages */
-	statement = g_strdup_printf ("SELECT package FROM cache WHERE filename = '%s' LIMIT 1", filename);
-	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_package_cb, &package, &error_msg);
-	g_free (statement);
-	if (rc != SQLITE_OK) {
-		g_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-	}
-
-	/* no result */
-	if (package == NULL) {
-		g_set_error (error, 1, 0, "could not find package for %s", filename);
-		goto out;
-	}
-out:
-	return package;
+	g_set_error_literal (error, 1, 0, "no longer supported");
+	return NULL;
 }
 
 /**
@@ -236,42 +119,6 @@ out:
 gboolean
 pk_desktop_open_database (PkDesktop *desktop, GError **error)
 {
-	const gchar *filename;
-	gboolean ret;
-	gint rc;
-
-	g_return_val_if_fail (PK_IS_DESKTOP (desktop), FALSE);
-
-	/* already opened */
-	if (desktop->priv->db != NULL)
-		return TRUE;
-
-	/* try the prefix, and then the system copy */
-	filename = PK_DESKTOP_DEFAULT_DATABASE;
-	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
-	if (!ret) {
-		filename = "/var/lib/PackageKit/desktop-files.db";
-		ret = g_file_test (filename, G_FILE_TEST_EXISTS);
-	}
-	if (!ret) {
-		g_set_error (error, 1, 0, "database %s is not present",
-			     filename);
-		return FALSE;
-	}
-
-	g_debug ("trying to open database '%s'", filename);
-	rc = sqlite3_open (filename, &desktop->priv->db);
-	if (rc != 0) {
-		g_warning ("Can't open database: %s\n", sqlite3_errmsg (desktop->priv->db));
-		g_set_error (error, 1, 0, "can't open database: %s", sqlite3_errmsg (desktop->priv->db));
-		sqlite3_close (desktop->priv->db);
-		desktop->priv->db = NULL;
-		return FALSE;
-	}
-
-	/* we don't need to keep syncing */
-	sqlite3_exec (desktop->priv->db, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-
 	return TRUE;
 }
 
@@ -301,14 +148,8 @@ pk_desktop_init (PkDesktop *desktop)
 static void
 pk_desktop_finalize (GObject *object)
 {
-	PkDesktop *desktop;
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_DESKTOP (object));
-	desktop = PK_DESKTOP (object);
-	g_return_if_fail (desktop->priv != NULL);
-
-	sqlite3_close (desktop->priv->db);
-
 	G_OBJECT_CLASS (pk_desktop_parent_class)->finalize (object);
 }
 
