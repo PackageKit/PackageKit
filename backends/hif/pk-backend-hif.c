@@ -120,10 +120,10 @@ pk_backend_sack_cache_invalidate (const gchar *why)
 }
 
 /**
- * pk_backend_yum_repos_changed_cb:
+ * pk_backend_hif_repos_changed_cb:
  **/
 static void
-pk_backend_yum_repos_changed_cb (HifRepos *self, PkBackend *backend)
+pk_backend_hif_repos_changed_cb (HifRepos *self, PkBackend *backend)
 {
 	pk_backend_sack_cache_invalidate ("yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
@@ -219,7 +219,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->repos = hif_repos_new (priv->context);
 	priv->repos_timer = g_timer_new ();
 	g_signal_connect (priv->repos, "changed",
-			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
+			  G_CALLBACK (pk_backend_hif_repos_changed_cb), backend);
 
 	lr_global_init ();
 }

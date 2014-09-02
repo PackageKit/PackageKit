@@ -7,7 +7,7 @@ packagekitd is a system activated daemon running as the root user (uid 0), which
 means the package management system is run as root also. The daemon receives
 untrusted input from the client, which means the daemon is security sensitive.
 
-First, a high level overview, in this case using the yum backend as an example:
+First, a high level overview, in this case using the hif backend as an example:
 
   gpk-update-icon      gpk-application
         |                 ___/
@@ -15,9 +15,7 @@ First, a high level overview, in this case using the yum backend as an example:
         |    /
    packagekitd -- [D-Bus] -- polkitd-1
         |
-      [pipe]
-        |
-   yumBackend.py (using yum)
+      thread using libhif (using librepo, hawkey, etc)
 
 packagekitd does not expose itself remotely over XMLRPC or other remote
 interface, and so a remote denial of service or exploit is impossible without a

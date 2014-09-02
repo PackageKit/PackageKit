@@ -1083,7 +1083,7 @@ pk_test_desktop_func (void)
 	/* get package */
 	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
 
-	/* dummy, not yum */
+	/* dummy, not hif */
 	if (g_strcmp0 (package, "vips-doc") == 0); {
 		g_debug ("created db with dummy, skipping remaining tests");
 		goto out;

@@ -434,7 +434,6 @@ AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),en
 AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]),enable_katja=$enableval,enable_katja=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
-AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -453,7 +452,6 @@ AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
 dnl ---------------------------------------------------------------------------
@@ -482,7 +480,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           auto,alpm,apt,aptcc,conary,dummy,entropy,hif,opkg,pisi,portage,ports,katja,smart,urpmi,yum,zypp (auto)]))
+                           auto,alpm,apt,aptcc,conary,dummy,entropy,hif,opkg,pisi,portage,ports,katja,smart,urpmi,zypp (auto)]))
 if test x$with_default_backend = x; then
 	with_default_backend=auto
 fi
@@ -612,7 +610,6 @@ contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
-contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
@@ -634,7 +631,6 @@ backends/urpmi/Makefile
 backends/urpmi/helpers/Makefile
 backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
-backends/yum/Makefile
 backends/pisi/Makefile
 backends/poldek/Makefile
 backends/portage/Makefile
@@ -707,7 +703,6 @@ echo "
         Katja backend:             ${enable_katja}
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
-        YUM backend:               ${enable_yum}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "

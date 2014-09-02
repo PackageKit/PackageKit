@@ -1,8 +1,6 @@
 Hif PackageKit Backend
 ----------------------
 
-This backend is designed to *replace* the yum backend in PackageKit.
-
 It uses the following libraries:
 
  * libhif : for tieing all the libraries below together

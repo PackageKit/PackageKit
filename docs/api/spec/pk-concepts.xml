@@ -794,7 +794,7 @@
     <para>
       If you have a multipart transaction that can be aborted in one phase but
       not another then the AllowCancel signal can be sent.
-      This allows for example the yum download to be cancelled, but not the
+      This allows for example the hif download to be cancelled, but not the
       install transaction.
       By cancelling a job all subtransactions are killed.
     </para>
@@ -1212,7 +1212,7 @@
     </para>
     <para>
       If the transaction is waiting for a package lock (when a legacy tool like
-      <literal>pirut</literal> is loaded and has the <literal>yum</literal> lock)
+      <literal>pirut</literal> is loaded and has the <literal>hif</literal> lock)
       then the transaction will be stuck at <literal>PK_STATUS_ENUM_WAITING_FOR_LOCK</literal>.
     </para>
     <para>

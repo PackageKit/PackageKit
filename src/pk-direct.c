@@ -378,7 +378,7 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
-		  /* TRANSLATORS: a backend is the system package tool, e.g. yum, apt */
+		  /* TRANSLATORS: a backend is the system package tool, e.g. hif, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
 		{ NULL }
 	};

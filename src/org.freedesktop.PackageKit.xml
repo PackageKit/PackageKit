@@ -47,7 +47,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            The backend name, e.g. <doc:tt>"yum"</doc:tt>.
+            The backend name, e.g. <doc:tt>"hif"</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>

@@ -81,7 +81,7 @@ pk_plugin_get_existing_prepared_updates (const gchar *filename)
 void
 pk_plugin_state_changed (PkPlugin *plugin)
 {
-	/* if the state changed because of a yum command that could
+	/* if the state changed because of a dnf command that could
 	 * have changed the updates list then nuke the prepared-updates
 	 * file */
 	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,

@@ -53,7 +53,7 @@ class PackagekitPackage:
         '''
 
         groups = license_field.split(" and ")
-        f = open('/usr/share/PackageKit/helpers/yum/licenses.txt', 'r')
+        f = open('/usr/share/PackageKit/helpers/hif/licenses.txt', 'r')
         free_licenses = f.readlines()
 
         if len(groups) == 0:
