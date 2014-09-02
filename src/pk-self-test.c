@@ -1044,7 +1044,6 @@ pk_test_scheduler_func (void)
 	conf = g_key_file_new ();
 	backend = pk_backend_new (conf);
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
-	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	ret = pk_backend_load (backend, NULL);
 	g_assert (ret);
@@ -1343,7 +1342,6 @@ pk_test_scheduler_parallel_func (void)
 
 	/* try to load a valid backend */
 	conf = g_key_file_new ();
-	g_key_file_set_string (conf, "Daemon", "MaximumItemsToResolve", "1000");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	backend = pk_backend_new (conf);

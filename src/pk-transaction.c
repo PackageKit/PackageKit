@@ -69,6 +69,9 @@ static gboolean pk_transaction_is_supported_content_type (PkTransaction *transac
 /* when the UID is invalid or not known */
 #define PK_TRANSACTION_UID_INVALID		G_MAXUINT
 
+/* maximum number of items that can be resolved in one go */
+#define PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE	1200
+
 struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
@@ -4611,7 +4614,6 @@ pk_transaction_resolve (PkTransaction *transaction,
 	gboolean ret;
 	guint i;
 	guint length;
-	guint max_length;
 	PkBitfield filter;
 	gchar **packages;
 	_cleanup_error_free_ GError *error = NULL;
@@ -4649,17 +4651,12 @@ pk_transaction_resolve (PkTransaction *transaction,
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumItemsToResolve",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
-			     "Too many items to process (%i/%i)", length, max_length);
+			     "Too many items to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
