@@ -17,12 +17,6 @@ BackendShutdownTimeout=5
 # libpk_backend_foo.so module load failed.
 DefaultBackend=@defaultbackend@
 
-# The maximum number of packages that can be processed in one method
-#
-# Setting this lower decreases the risk of a local denial of service, but may
-# cause errors if the desktop client is trying to do a large transaction.
-MaximumPackagesToProcess=5000
-
 [Plugins]
 
 # Update the package cache on PackageKit transactions

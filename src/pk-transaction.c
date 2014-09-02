@@ -72,6 +72,9 @@ static gboolean pk_transaction_is_supported_content_type (PkTransaction *transac
 /* maximum number of items that can be resolved in one go */
 #define PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE	1200
 
+/* maximum number of packages that can be processed in one go */
+#define PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS	5000
+
 struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
@@ -3030,7 +3033,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	gboolean ret;
 	gint retval;
 	guint length;
-	guint max_length;
 	gboolean store_in_cache;
 	gchar **package_ids = NULL;
 	_cleanup_error_free_ GError *error = NULL;
@@ -3060,17 +3062,12 @@ pk_transaction_download_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3152,7 +3149,6 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	gboolean ret;
 	gchar *package_ids_temp;
 	guint length;
-	guint max_length;
 	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
@@ -3182,17 +3178,12 @@ pk_transaction_depends_on (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3228,7 +3219,6 @@ pk_transaction_get_details (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	gchar **package_ids;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *package_ids_temp = NULL;
@@ -3255,17 +3245,12 @@ pk_transaction_get_details (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3304,7 +3289,6 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 	GError *error = NULL;
 	guint i;
 	guint length;
-	guint max_length;
 	_cleanup_free_ gchar *content_type = NULL;
 	_cleanup_free_ gchar *files_temp = NULL;
 
@@ -3337,17 +3321,11 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many files to process (%i/%i)", length, max_length);
+			     "Too many files to process (%i/%i)", length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3414,7 +3392,6 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 	GError *error_local = NULL;
 	guint i;
 	guint length;
-	guint max_length;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *content_type = NULL;
 	_cleanup_free_ gchar *files_temp = NULL;
@@ -3448,17 +3425,11 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many files to process (%i/%i)", length, max_length);
+			     "Too many files to process (%i/%i)", length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3555,7 +3526,6 @@ pk_transaction_get_files (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	gchar **package_ids;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *package_ids_temp = NULL;
@@ -3582,17 +3552,12 @@ pk_transaction_get_files (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3779,7 +3744,6 @@ pk_transaction_required_by (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	PkBitfield filter;
 	gchar **package_ids;
 	gboolean recursive;
@@ -3810,17 +3774,12 @@ pk_transaction_required_by (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3857,7 +3816,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	guint length;
-	guint max_length;
 	gchar **package_ids;
 	_cleanup_free_ gchar *package_ids_temp = NULL;
 
@@ -3883,17 +3841,12 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -4126,7 +4079,6 @@ pk_transaction_install_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	PkBitfield transaction_flags;
 	gchar **package_ids;
 	_cleanup_error_free_ GError *error = NULL;
@@ -4158,17 +4110,12 @@ pk_transaction_install_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -4336,7 +4283,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
@@ -4372,17 +4318,12 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)", length, max_length);
+			     "Too many packages to process (%i/%i)",
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -5092,7 +5033,6 @@ pk_transaction_update_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	guint max_length;
 	PkBitfield transaction_flags;
 	gchar **package_ids;
 	_cleanup_error_free_ GError *error = NULL;
@@ -5124,18 +5064,12 @@ pk_transaction_update_packages (PkTransaction *transaction,
 
 	/* check for length sanity */
 	length = g_strv_length (package_ids);
-	max_length = g_key_file_get_integer (transaction->priv->conf,
-					     "Daemon",
-					     "MaximumPackagesToProcess",
-					     &error);
-	if (max_length == 0)
-		goto out;
-	if (length > max_length) {
+	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 			     "Too many packages to process (%i/%i)",
-			     length, max_length);
+			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
