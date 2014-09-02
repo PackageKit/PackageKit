@@ -31,18 +31,6 @@ BackendSpawnNiceValueBackground=10
 # libpk_backend_foo.so module load failed.
 DefaultBackend=@defaultbackend@
 
-# The time in seconds to wait when we get the StateHasChanged method
-#
-# This should be used when a native tool has been used, and the update UIs
-# should be updated to reflect reality.
-StateChangedTimeoutPriority=2
-
-# The time in seconds to wait after the computer has been resumed or any non
-# package related system event
-#
-# We don't want to be doing an update check at the busy time after a resume
-StateChangedTimeoutNormal=600
-
 # The maximum number of items that can be resolved in one method
 #
 # Setting this lower decreases the risk of a local denial of service, but may

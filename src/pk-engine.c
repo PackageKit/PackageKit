@@ -58,6 +58,12 @@ static void	pk_engine_plugin_phase	(PkEngine *engine, PkPluginPhase phase);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
+/* how long to wait when we get the StateHasChanged method */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY	2 /* s */
+
+/* how long to wait after the computer has been resumed or any system event */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL		600 /* s */
+
 struct PkEnginePrivate
 {
 	GTimer			*timer;
@@ -80,8 +86,6 @@ struct PkEnginePrivate
 	const gchar		*backend_description;
 	const gchar		*backend_author;
 	gchar			*distro_id;
-	guint			 timeout_priority;
-	guint			 timeout_normal;
 	guint			 timeout_priority_id;
 	guint			 timeout_normal_id;
 	PolkitAuthority		*authority;
@@ -1388,7 +1392,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		/* have we already scheduled priority? */
 		if (engine->priv->timeout_priority_id != 0) {
 			g_debug ("Already asked to refresh priority state less than %i seconds ago",
-				 engine->priv->timeout_priority);
+				 PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY);
 			g_dbus_method_invocation_return_value (invocation, NULL);
 			return;
 		}
@@ -1401,7 +1405,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		/* are we normal, and already scheduled normal? */
 		if (!is_priority && engine->priv->timeout_normal_id != 0) {
 			g_debug ("Already asked to refresh normal state less than %i seconds ago",
-				 engine->priv->timeout_normal);
+				 PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL);
 			g_dbus_method_invocation_return_value (invocation, NULL);
 			return;
 		}
@@ -1416,13 +1420,13 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		/* wait a little delay in case we get multiple requests */
 		if (is_priority) {
 			engine->priv->timeout_priority_id =
-				g_timeout_add_seconds (engine->priv->timeout_priority,
+				g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY,
 						       pk_engine_state_changed_cb, engine);
 			g_source_set_name_by_id (engine->priv->timeout_priority_id,
 						 "[PkEngine] priority");
 		} else {
 			engine->priv->timeout_normal_id =
-				g_timeout_add_seconds (engine->priv->timeout_normal,
+				g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL,
 						       pk_engine_state_changed_cb, engine);
 			g_source_set_name_by_id (engine->priv->timeout_normal_id, "[PkEngine] normal");
 		}
@@ -1737,11 +1741,6 @@ pk_engine_new (GKeyFile *conf)
 					 engine->priv->plugins);
 	g_signal_connect (engine->priv->scheduler, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
-
-	/* get the StateHasChanged timeouts */
-	engine->priv->timeout_priority = (guint) g_key_file_get_integer (engine->priv->conf, "Daemon", "StateChangedTimeoutPriority", NULL);
-	engine->priv->timeout_normal = (guint) g_key_file_get_integer (engine->priv->conf, "Daemon", "StateChangedTimeoutNormal", NULL);
-
 	return PK_ENGINE (engine);
 }
 
