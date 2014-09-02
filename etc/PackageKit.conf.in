@@ -43,13 +43,6 @@ StateChangedTimeoutPriority=2
 # We don't want to be doing an update check at the busy time after a resume
 StateChangedTimeoutNormal=600
 
-# The maximum number of requests a given user is able to request and queue
-#
-# Setting this lower decreases the risk of a local denial of service, but may
-# cause errors if the desktop client is doing many requests to the daemon in a
-# short period of time.
-SimultaneousTransactionsForUid=500
-
 # The maximum number of items that can be resolved in one method
 #
 # Setting this lower decreases the risk of a local denial of service, but may

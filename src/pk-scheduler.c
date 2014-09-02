@@ -84,6 +84,9 @@ static void     pk_scheduler_finalize	(GObject	*object);
 /* how long the transaction is valid before it's destroyed */
 #define PK_SCHEDULER_CREATE_COMMIT_TIMEOUT		300 /* s */
 
+/* maximum number of requests a given user is able to request and queue */
+#define PK_SCHEDULER_SIMULTANEOUS_TRANSACTIONS_FOR_UID	500
+
 struct PkSchedulerPrivate
 {
 	GPtrArray		*array;
@@ -652,7 +655,6 @@ pk_scheduler_create (PkScheduler *scheduler,
 			    GError **error)
 {
 	guint count;
-	guint max_count;
 	gboolean ret = FALSE;
 	PkSchedulerItem *item;
 
@@ -719,13 +721,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 	count = pk_scheduler_get_number_transactions_for_uid (scheduler, item->uid);
 
 	/* would this take us over the maximum number of requests allowed */
-	max_count = g_key_file_get_integer (scheduler->priv->conf,
-					    "Daemon",
-					    "SimultaneousTransactionsForUid",
-					    error);
-	if (max_count == 0)
-		return FALSE;
-	if (count > max_count) {
+	if (count > PK_SCHEDULER_SIMULTANEOUS_TRANSACTIONS_FOR_UID) {
 		g_set_error (error, 1, 0,
 			     "failed to allocate %s as uid %i already has "
 			     "%i transactions in progress",
