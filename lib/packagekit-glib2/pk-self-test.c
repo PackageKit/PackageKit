@@ -1053,60 +1053,6 @@ pk_test_control_func (void)
 }
 
 static void
-pk_test_desktop_func (void)
-{
-	PkDesktop *desktop;
-	gboolean ret;
-	gchar *package;
-	GPtrArray *array;
-	GError *error = NULL;
-
-	desktop = pk_desktop_new ();
-	g_assert (desktop != NULL);
-
-	/* get package when not valid */
-	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
-	g_assert (package == NULL);
-
-	/* file does not exist */
-	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
-	if (!ret) {
-		g_debug ("skipping checks as database does not exist");
-		goto out;
-	}
-
-	/* open database */
-	ret = pk_desktop_open_database (desktop, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-
-	/* get package */
-	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
-
-	/* dummy, not hif */
-	if (g_strcmp0 (package, "vips-doc") == 0); {
-		g_debug ("created db with dummy, skipping remaining tests");
-		goto out;
-	}
-	g_assert_cmpstr (package, ==, "gnome-packagekit");
-	g_free (package);
-
-	/* get files */
-	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit", NULL);
-	g_assert (array != NULL);
-	g_assert_cmpint (array->len, >=, 5);
-	g_ptr_array_unref (array);
-
-	/* get shown files */
-	array = pk_desktop_get_shown_for_package (desktop, "gnome-packagekit", NULL);
-	g_assert (array != NULL);
-	g_assert_cmpint (array->len, >=, 3);
-	g_ptr_array_unref (array);
-out:
-	g_object_unref (desktop);
-}
-
-static void
 pk_test_enum_func (void)
 {
 	const gchar *string;
@@ -1989,7 +1935,6 @@ main (int argc, char **argv)
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);
 	g_test_add_func ("/packagekit-glib2/enum", pk_test_enum_func);
-	g_test_add_func ("/packagekit-glib2/desktop", pk_test_desktop_func);
 	g_test_add_func ("/packagekit-glib2/bitfield", pk_test_bitfield_func);
 	g_test_add_func ("/packagekit-glib2/package-id", pk_test_package_id_func);
 	g_test_add_func ("/packagekit-glib2/package-ids", pk_test_package_ids_func);
