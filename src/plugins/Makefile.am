@@ -30,7 +30,6 @@ clean-local:
 plugindir = $(LIBDIR)/packagekit-plugins-2
 plugin_LTLIBRARIES =					\
 	libpk_plugin_scripts.la				\
-	libpk_plugin-update-package-cache.la		\
 	libpk_plugin-systemd-updates.la
 
 libpk_plugin_systemd_updates_la_SOURCES = pk-plugin-systemd-updates.c
@@ -42,13 +41,5 @@ libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
 libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_scripts_la_LDFLAGS = -module -avoid-version
 libpk_plugin_scripts_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_update_package_cache_la_SOURCES = \
-						pk-plugin-update-package-cache.c \
-						pk-package-cache.h \
-						pk-package-cache.c
-libpk_plugin_update_package_cache_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_update_package_cache_la_LDFLAGS = -module -avoid-version
-libpk_plugin_update_package_cache_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
