@@ -52,7 +52,6 @@ EXTRA_DIST =						\
 	NEWS						\
 	autogen.sh					\
 	config.h					\
-	moc.mk						\
 	intltool-extract.in				\
 	intltool-merge.in				\
 	intltool-update.in
