@@ -401,13 +401,6 @@ AC_ARG_ENABLE(cron, AS_HELP_STRING([--enable-cron],[Build cron background functi
 AM_CONDITIONAL(PK_BUILD_CRON, test $build_cron = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - Able to build debuginfo-install functionality
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(debuginfo-install, AS_HELP_STRING([--enable-debuginfo-install],[Build debuginfo-install functionality]),
-	      build_debuginfo_install=$enableval,build_debuginfo_install=yes)
-AM_CONDITIONAL(PK_BUILD_DEBUGINFO_INSTALL, test $build_debuginfo_install = "yes")
-
-dnl ---------------------------------------------------------------------------
 dnl - Able to use systemd updates functionality
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build systemd updates functionality]),
@@ -599,7 +592,6 @@ contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
-contrib/debuginfo-install/Makefile
 contrib/systemd-updates/Makefile
 backends/Makefile
 backends/alpm/Makefile
@@ -666,7 +658,6 @@ echo "
         gobject-introspection:     ${found_introspection}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
-        debuginfo-install:         ${build_debuginfo_install}
         systemd-updates:           ${build_systemd_updates}
         python3:                   ${enable_python3}
         systemd system unit dir:   ${with_systemdsystemunitdir}

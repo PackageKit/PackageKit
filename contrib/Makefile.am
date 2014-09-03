@@ -20,10 +20,6 @@ if PK_BUILD_CRON
 SUBDIRS += cron
 endif
 
-if PK_BUILD_DEBUGINFO_INSTALL
-SUBDIRS += debuginfo-install
-endif
-
 if PK_BUILD_SYSTEMD_UPDATES
 SUBDIRS += systemd-updates
 endif

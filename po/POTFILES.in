@@ -5,7 +5,6 @@ client/pk-console.c
 client/pk-monitor.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c
-contrib/debuginfo-install/pk-debuginfo-install.c
 contrib/systemd-updates/pk-offline-update.c
 lib/packagekit-glib2/pk-console-shared.c
 lib/packagekit-glib2/pk-debug.c
