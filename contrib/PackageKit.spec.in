@@ -231,10 +231,6 @@ popd > /dev/null
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
-%dir %{_sysconfdir}/PackageKit/events
-%dir %{_sysconfdir}/PackageKit/events/post-transaction.d
-%dir %{_sysconfdir}/PackageKit/events/pre-transaction.d
-%{_sysconfdir}/PackageKit/events/*.d/README
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{python3_sitearch}/packagekit
 %dir %{_localstatedir}/cache/PackageKit

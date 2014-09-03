@@ -29,17 +29,11 @@ clean-local:
 # plugins
 plugindir = $(LIBDIR)/packagekit-plugins-3
 plugin_LTLIBRARIES =					\
-	libpk_plugin_scripts.la				\
 	libpk_plugin-systemd-updates.la
 
 libpk_plugin_systemd_updates_la_SOURCES = pk-plugin-systemd-updates.c
 libpk_plugin_systemd_updates_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_plugin_systemd_updates_la_LDFLAGS = -module -avoid-version
 libpk_plugin_systemd_updates_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_plugin_scripts_la_SOURCES = pk-plugin-scripts.c
-libpk_plugin_scripts_la_LIBADD = $(PK_PLUGIN_LIBS)
-libpk_plugin_scripts_la_LDFLAGS = -module -avoid-version
-libpk_plugin_scripts_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 
 -include $(top_srcdir)/git.mk
