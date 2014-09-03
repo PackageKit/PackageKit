@@ -207,24 +207,6 @@ pk_ptr_array_to_strv (GPtrArray *array)
 }
 
 /**
- * pk_get_os_release:
- *
- * Return value: The current OS release, e.g. "7.2-RELEASE"
- * Note: Don't use this function if you can get this data from /etc/foo
- **/
-static gchar *
-pk_get_distro_id_os_release (void)
-{
-	gint retval;
-	struct utsname buf;
-
-	retval = uname (&buf);
-	if (retval != 0)
-		return g_strdup ("unknown");
-	return g_strdup (buf.release);
-}
-
-/**
  * pk_get_machine_type:
  *
  * Return value: The current machine ID, e.g. "i386"
@@ -243,17 +225,29 @@ pk_get_distro_id_machine_type (void)
 }
 
 /**
- * pk_get_distro_id_parse_os_release:
+ * pk_get_distro_id:
+ *
+ * Return value: the distro-id, typically "distro;version;arch"
  **/
-static gchar *
-pk_get_distro_id_parse_os_release (const gchar *contents, const gchar *arch)
+gchar *
+pk_get_distro_id (void)
 {
 	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *arch = NULL;
+	_cleanup_free_ gchar *contents = NULL;
 	_cleanup_free_ gchar *name = NULL;
 	_cleanup_free_ gchar *version = NULL;
 	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 	_cleanup_string_free_ GString *str = NULL;
+
+	/* we don't want distro specific results in 'make check' */
+	if (g_getenv ("PK_SELF_TEST") != NULL)
+		return g_strdup ("selftest;11.91;i686");
+
+	/* load data */
+	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, NULL))
+		return NULL;
 
 	/* make a valid GKeyFile from the .ini data by prepending a header */
 	str = g_string_new (contents);
@@ -272,176 +266,6 @@ pk_get_distro_id_parse_os_release (const gchar *contents, const gchar *arch)
 	version = g_key_file_get_string (key_file, "os-release", "VERSION_ID", NULL);
 	if (version == NULL)
 		return NULL;
-	return g_strdup_printf ("%s;%s;%s", name, version, arch);
-}
-
-/**
- * pk_get_distro_id:
- *
- * Return value: the distro-id, typically "distro;version;arch"
- **/
-gchar *
-pk_get_distro_id (void)
-{
-	guint i;
-	gboolean ret;
-	gchar *distro_id = NULL;
-	_cleanup_free_ gchar *arch = NULL;
-	_cleanup_free_ gchar *contents = NULL;
-	_cleanup_free_ gchar *distro = NULL;
-	_cleanup_free_ gchar *version = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
-
-	/* The distro id property should have the
-	   format "distro;version;arch" as this is
-	   used to determine if a specific package
-	   can be installed on a certain machine.
-	   For instance, x86_64 packages cannot be
-	   installed on a i386 machine.
-	*/
-
-	/* we don't want distro specific results in 'make check' */
-	if (g_getenv ("PK_SELF_TEST") != NULL)
-		return g_strdup ("selftest;11.91;i686");
-
-	/* we can't get arch from /etc */
 	arch = pk_get_distro_id_machine_type ();
-
-	/* check for anything that supports os-release */
-	ret = g_file_get_contents ("/etc/os-release", &contents, NULL, NULL);
-	if (ret) {
-		distro_id = pk_get_distro_id_parse_os_release (contents, arch);
-		if (distro_id != NULL)
-			return distro_id;
-	}
-
-	/* check for fedora */
-	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
-	if (ret) {
-		/* Fedora release 8.92 (Rawhide) */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("fedora;%s;%s", split[2], arch);
-	}
-
-	/* check for suse */
-	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
-	if (ret) {
-		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
-		g_strdelimit (contents, "()\n", ' ');
-
-		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("suse;%s-%s;%s", split[1], split[3], arch);
-	}
-
-	/* check for meego */
-	ret = g_file_get_contents ("/etc/meego-release", &contents, NULL, NULL);
-	if (ret) {
-		/* Meego release 1.0 (MeeGo) */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("meego;%s;%s", split[2], arch);
-	}
-
-	/* check for foresight or foresight derivatives */
-	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
-	if (ret) {
-		/* Foresight Linux 2 */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("foresight;%s;%s", split[2], arch);
-	}
-
-	/* check for PLD */
-	ret = g_file_get_contents ("/etc/pld-release", &contents, NULL, NULL);
-	if (ret) {
-		/* 2.99 PLD Linux (Th) */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("pld;%s;%s", split[0], arch);
-	}
-
-	/* check for Arch */
-	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
-	if (ret) {
-		/* complete! */
-		return g_strdup_printf ("arch;current;%s", arch);
-	}
-
-	/* check for LSB */
-	ret = g_file_get_contents ("/etc/lsb-release", &contents, NULL, NULL);
-	if (ret) {
-		/* split by lines */
-		split = g_strsplit (contents, "\n", -1);
-		for (i = 0; split[i] != NULL; i++) {
-			if (g_str_has_prefix (split[i], "DISTRIB_ID="))
-				distro = g_ascii_strdown (&split[i][11], -1);
-			if (g_str_has_prefix (split[i], "DISTRIB_RELEASE="))
-				version = g_ascii_strdown (&split[i][16], -1);
-		}
-
-		/* complete! */
-		return g_strdup_printf ("%s;%s;%s", distro, version, arch);
-	}
-
-	/* check for Debian or Debian derivatives */
-	ret = g_file_get_contents ("/etc/debian_version", &contents, NULL, NULL);
-	if (ret) {
-		/* remove "\n": "squeeze/sid\n" */
-		g_strdelimit (contents, "\n", '\0');
-		/* removes leading and trailing whitespace */
-		g_strstrip (contents);
-
-		/* complete! */
-		return g_strdup_printf ("debian;%s;%s", contents, arch);
-	}
-
-	/* check for Slackware */
-	ret = g_file_get_contents ("/etc/slackware-version", &contents, NULL, NULL);
-	if (ret) {
-		/* Slackware 13.0 */
-		split = g_strsplit (contents, " ", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("slackware;%s;%s", split[1], arch);
-	}
-
-#ifdef __FreeBSD__
-	ret = TRUE;
-#endif
-	/* FreeBSD */
-	if (ret) {
-		/* we can't get version from /etc */
-		version = pk_get_distro_id_os_release ();
-		if (version == NULL)
-			return NULL;
-
-		/* 7.2-RELEASE */
-		split = g_strsplit (version, "-", 0);
-		if (split == NULL)
-			return NULL;
-
-		/* complete! */
-		return g_strdup_printf ("freebsd;%s;%s", split[0], arch);
-	}
-	return NULL;
+	return g_strdup_printf ("%s;%s;%s", name, version, arch);
 }
