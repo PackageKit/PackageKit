@@ -17,6 +17,7 @@ AM_CPPFLAGS =						\
 	-DSBINDIR=\"$(sbindir)\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"	\
+	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 
 pkgconfigdir = $(libdir)/pkgconfig

@@ -1534,28 +1534,22 @@ out:
 static gboolean
 pk_console_offline_get_prepared (GError **error)
 {
-	gboolean ret;
 	guint i;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* get data */
-	ret = g_file_get_contents ("/var/lib/PackageKit/prepared-update",
-				   &data, NULL, NULL);
-	if (!ret) {
-		g_set_error_literal (error,
-				     1,
-				     PK_EXIT_CODE_FILE_NOT_FOUND,
-				     "No offline updates have been prepared");
+	package_ids = pk_offline_get_prepared_ids (error);
+	if (package_ids == NULL) {
+		(*error)->code = PK_EXIT_CODE_FILE_NOT_FOUND;
 		return FALSE;
 	}
-	split = g_strsplit (data, "\n", -1);
+
 	/* TRANSLATORS: There follows a list of packages downloaded and ready
 	 * to be updated */
 	g_print ("%s\n", _("Prepared updates:"));
-	for (i = 0; split[i] != NULL; i++) {
+	for (i = 0; package_ids[i] != NULL; i++) {
 		_cleanup_free_ gchar *tmp = NULL;
-		tmp = pk_package_id_to_printable (split[i]);
+		tmp = pk_package_id_to_printable (package_ids[i]);
 		g_print ("%s\n", tmp);
 	}
 	return TRUE;
@@ -1567,16 +1561,8 @@ pk_console_offline_get_prepared (GError **error)
 static gboolean
 pk_console_offline_trigger (GError **error)
 {
-	_cleanup_free_ gchar *cmdline = NULL;
-	cmdline = g_strdup_printf ("pkexec %s/pk-trigger-offline-update", LIBEXECDIR);
-	return g_spawn_command_line_sync (cmdline,
-					  NULL,
-					  NULL,
-					  NULL,
-					  error);
+	return pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, error);
 }
-
-#define PK_OFFLINE_UPDATE_RESULTS	"PackageKit Offline Update Results"
 
 /**
  * pk_console_offline_status:
@@ -1584,60 +1570,28 @@ pk_console_offline_trigger (GError **error)
 static gboolean
 pk_console_offline_status (GError **error)
 {
-	gboolean ret;
-	gboolean success;
-	gchar *tmp;
-	guint i;
-	_cleanup_keyfile_unref_ GKeyFile *file = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
 
-	/* load data */
-	file = g_key_file_new ();
-	ret = g_key_file_load_from_file (file,
-					 "/var/lib/PackageKit/offline-update-competed",
-					 G_KEY_FILE_NONE,
-					 NULL);
-	if (!ret) {
-		g_set_error_literal (error,
-				     1,
-				     PK_EXIT_CODE_FILE_NOT_FOUND,
-				     "No offline updates have been processed");
+	results = pk_offline_get_results (error);
+	if (results == NULL)
 		return FALSE;
-	}
-
-	/* did it succeed */
-	success = g_key_file_get_boolean (file,
-					  PK_OFFLINE_UPDATE_RESULTS,
-					  "Success",
-					  NULL);
-	if (!success) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		g_print ("Status:\tFailed\n");
-		tmp = g_key_file_get_string (file,
-					     PK_OFFLINE_UPDATE_RESULTS,
-					     "ErrorCode",
-					     NULL);
-		if (tmp != NULL)
-			g_print ("ErrorCode:\%s\n", tmp);
-		g_free (tmp);
-		tmp = g_key_file_get_string (file,
-					     PK_OFFLINE_UPDATE_RESULTS,
-					     "ErrorDetails",
-					     NULL);
-		if (tmp != NULL)
-			g_print ("ErrorDetails:\%s\n", tmp);
-		g_free (tmp);
+		g_print ("ErrorCode:\%s\n", pk_error_enum_to_string (pk_error_get_code (error_code)));
+		g_print ("ErrorDetails:\%s\n", pk_error_get_details (error_code));
 	} else {
-		_cleanup_free_ gchar *data = NULL;
-		_cleanup_strv_free_ gchar **split = NULL;
+		guint i;
+		_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 		g_print ("Status:\tSuccess\n");
-		data = g_key_file_get_string (file,
-					      PK_OFFLINE_UPDATE_RESULTS,
-					      "Packages",
-					      NULL);
-		split = g_strsplit (data, ";", -1);
-		for (i = 0; split[i] != NULL; i++) {
-			tmp = pk_package_id_to_printable (split[i]);
+		array = pk_results_get_package_array (results);
+		for (i = 0; i < array->len; i++) {
+			PkPackage *pkg;
+			_cleanup_free_ gchar *tmp = NULL;
+			pkg = g_ptr_array_index (array, i);
+			tmp = pk_package_id_to_printable (pk_package_get_id (pkg));
 			g_print ("Updated %s\n", tmp);
-			g_free (tmp);
 		}
 	}
 	return TRUE;

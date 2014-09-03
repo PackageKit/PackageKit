@@ -112,6 +112,10 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-media-change-required.h				\
 	pk-item-progress.c					\
 	pk-item-progress.h					\
+	pk-offline.c						\
+	pk-offline.h						\
+	pk-offline-private.c					\
+	pk-offline-private.h					\
 	pk-package.c						\
 	pk-package.h						\
 	pk-package-id.c						\
@@ -191,10 +195,10 @@ check_PROGRAMS =						\
 	pk-test-private
 
 pk_test_private_SOURCES =					\
+	$(libpackagekit_glib2_la_SOURCES)			\
 	pk-test-private.c
 
 pk_test_private_LDADD =						\
-	libpackagekit-glib2.la					\
 	libpackagekitprivate.a					\
 	$(GLIB_LIBS)						\
 	$(SELFTEST_LIBS)					\
@@ -203,14 +207,15 @@ pk_test_private_LDADD =						\
 	$(ARCHIVE_LIBS)
 
 pk_test_private_CFLAGS =					\
+	-DPK_OFFLINE_DESTDIR=\"/tmp/PackageKit-self-test\"	\
 	$(AM_CFLAGS)						\
 	$(WARNINGFLAGS_C)
 
 pk_test_daemon_SOURCES =					\
+	$(libpackagekit_glib2_la_SOURCES)			\
 	pk-test-daemon.c
 
 pk_test_daemon_LDADD =						\
-	libpackagekit-glib2.la					\
 	libpackagekitprivate.a					\
 	$(GLIB_LIBS)						\
 	$(SELFTEST_LIBS)					\

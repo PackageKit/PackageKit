@@ -32,12 +32,6 @@
 
 #include "src/pk-cleanup.h"
 
-#define PK_OFFLINE_UPDATE_RESULTS_GROUP		"PackageKit Offline Update Results"
-#define PK_OFFLINE_UPDATE_TRIGGER_FILENAME	"/system-update"
-#define PK_OFFLINE_UPDATE_RESULTS_FILENAME	"/var/lib/PackageKit/offline-update-competed"
-#define PK_OFFLINE_UPDATE_ACTION_FILENAME	"/var/lib/PackageKit/offline-update-action"
-#define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
-
 /**
  * pk_offline_update_set_plymouth_msg:
  **/
@@ -263,47 +257,23 @@ pk_offline_update_power_off (void)
 static void
 pk_offline_update_write_error (const GError *error)
 {
-	PkErrorEnum error_enum = PK_ERROR_ENUM_UNKNOWN;
-	gboolean ret;
+	PkErrorEnum error_enum = error->code;
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
+	_cleanup_object_unref_ PkError *pk_error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
-	/* just write what we've got */
-	key_file = g_key_file_new ();
-	g_key_file_set_boolean (key_file,
-				PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				"Success",
-				FALSE);
-	g_key_file_set_string (key_file,
-			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-			       "ErrorDetails",
-			       error->message);
+	sd_journal_print (LOG_INFO, "writing failed results");
+	results = pk_results_new ();
+	pk_error = pk_error_new ();
 	if (error->code >= 0xff)
 		error_enum = error->code - 0xff;
-	if (error_enum != PK_ERROR_ENUM_UNKNOWN) {
-		g_key_file_set_string (key_file,
-				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				       "ErrorCode",
-				       pk_error_enum_to_string (error_enum));
-	}
-
-	/* write file */
-	data = g_key_file_to_data (key_file, NULL, &error_local);
-	if (data == NULL) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to get keyfile data: %s",
-				  error_local->message);
-		return;
-	}
-	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data, -1, &error_local);
-	if (!ret) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to write file: %s",
-				  error_local->message);
-		return;
-	}
+	g_object_set (error,
+		      "code", PK_ERROR_ENUM_FAILED_INITIALIZATION,
+		      "details", error->message,
+		      NULL);
+	pk_results_set_error_code (results, pk_error);
+	if (!pk_offline_auth_set_results (results, &error_local))
+		sd_journal_print (LOG_WARNING, "%s", error_local->message);
 }
 
 /**
@@ -312,79 +282,10 @@ pk_offline_update_write_error (const GError *error)
 static void
 pk_offline_update_write_results (PkResults *results)
 {
-	gboolean ret;
-	GError *error = NULL;
-	GPtrArray *packages;
-	guint i;
-	PkError *pk_error;
-	PkPackage *package;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
-
+	_cleanup_error_free_ GError *error = NULL;
 	sd_journal_print (LOG_INFO, "writing actual results");
-	key_file = g_key_file_new ();
-	pk_error = pk_results_get_error_code (results);
-	if (pk_error != NULL) {
-		g_key_file_set_boolean (key_file,
-					PK_OFFLINE_UPDATE_RESULTS_GROUP,
-					"Success",
-					FALSE);
-		g_key_file_set_string (key_file,
-				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				       "ErrorCode",
-				       pk_error_enum_to_string (pk_error_get_code (pk_error)));
-		g_key_file_set_string (key_file,
-				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				       "ErrorDetails",
-				       pk_error_get_details (pk_error));
-	} else {
-		g_key_file_set_boolean (key_file,
-					PK_OFFLINE_UPDATE_RESULTS_GROUP,
-					"Success",
-					TRUE);
-	}
-
-	/* save packages if any set */
-	packages = pk_results_get_package_array (results);
-	if (packages != NULL) {
-		_cleanup_string_free_ GString *string = NULL;
-		string = g_string_new ("");
-		for (i = 0; i < packages->len; i++) {
-			package = g_ptr_array_index (packages, i);
-			switch (pk_package_get_info (package)) {
-			case PK_INFO_ENUM_UPDATING:
-			case PK_INFO_ENUM_INSTALLING:
-				g_string_append_printf (string, "%s,",
-							pk_package_get_id (package));
-				break;
-			default:
-				break;
-			}
-		}
-		if (string->len > 0)
-			g_string_set_size (string, string->len - 1);
-		g_key_file_set_string (key_file,
-				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				       "Packages",
-				       string->str);
-	}
-
-	/* write file */
-	data = g_key_file_to_data (key_file, NULL, &error);
-	if (data == NULL) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to get keyfile data: %s",
-				  error->message);
-		return;
-	}
-	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data, -1, &error);
-	if (!ret) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to write file: %s",
-				  error->message);
-		return;
-	}
+	if (!pk_offline_auth_set_results (results, &error))
+		sd_journal_print (LOG_WARNING, "%s", error->message);
 }
 
 /**
@@ -400,57 +301,20 @@ pk_offline_update_write_results (PkResults *results)
 static void
 pk_offline_update_write_dummy_results (gchar **package_ids)
 {
-	gboolean ret;
-	guint i;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
-	_cleanup_string_free_ GString *string = NULL;
+	_cleanup_object_unref_ PkError *pk_error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
 
 	sd_journal_print (LOG_INFO, "writing dummy results");
-	key_file = g_key_file_new ();
-	g_key_file_set_boolean (key_file,
-				PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				"Success",
-				FALSE);
-	g_key_file_set_string (key_file,
-			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-			       "ErrorCode",
-			       pk_error_enum_to_string (PK_ERROR_ENUM_FAILED_INITIALIZATION));
-	g_key_file_set_string (key_file,
-			       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-			       "ErrorDetails",
-			       "The transaction did not complete");
-
-	/* save packages if any set */
-	string = g_string_new ("");
-	for (i = 0; package_ids[i] != NULL; i++)
-		g_string_append_printf (string, "%s,", package_ids[i]);
-	if (string->len > 0)
-		g_string_set_size (string, string->len - 1); {
-		g_key_file_set_string (key_file,
-				       PK_OFFLINE_UPDATE_RESULTS_GROUP,
-				       "Packages",
-				       string->str);
-	}
-
-	/* write file */
-	data = g_key_file_to_data (key_file, NULL, &error);
-	if (data == NULL) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to get keyfile data: %s",
-				  error->message);
-		return;
-	}
-	ret = g_file_set_contents (PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				   data, -1, &error);
-	if (!ret) {
-		sd_journal_print (LOG_WARNING,
-				  "failed to write dummy %s: %s",
-				  PK_OFFLINE_UPDATE_RESULTS_FILENAME,
-				  error->message);
-		return;
-	}
+	results = pk_results_new ();
+	pk_error = pk_error_new ();
+	g_object_set (error,
+		      "code", PK_ERROR_ENUM_FAILED_INITIALIZATION,
+		      "details", "The transaction did not complete",
+		      NULL);
+	pk_results_set_error_code (results, pk_error);
+	if (!pk_offline_auth_set_results (results, &error))
+		sd_journal_print (LOG_WARNING, "%s", error->message);
 
 	/* ensure this is written to disk */
 	sync ();
@@ -477,37 +341,22 @@ pk_offline_update_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
-typedef enum {
-	PK_OFFLINE_UPDATE_ACTION_NOTHING,
-	PK_OFFLINE_UPDATE_ACTION_REBOOT,
-	PK_OFFLINE_UPDATE_ACTION_POWER_OFF
-} PkOfflineUpdateAction;
-
-static PkOfflineUpdateAction
+static PkOfflineAction
 pk_offline_update_get_action (void)
 {
-	gboolean ret;
-	PkOfflineUpdateAction action;
-	_cleanup_free_ gchar *action_data = NULL;
+	PkOfflineAction action;
 
 	/* allow testing without rebooting */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL) {
 		g_print ("TESTING, so not doing action\n");
-		return PK_OFFLINE_UPDATE_ACTION_NOTHING;
+		return PK_OFFLINE_ACTION_UNKNOWN;
 	}
-
-	ret = g_file_get_contents (PK_OFFLINE_UPDATE_ACTION_FILENAME,
-				   &action_data, NULL, NULL);
-	if (!ret) {
-		g_warning ("Failed to get post-update action, using reboot");
-		return PK_OFFLINE_UPDATE_ACTION_REBOOT;
+	action = pk_offline_get_action (NULL);
+	if (action == PK_OFFLINE_ACTION_UNKNOWN) {
+		g_warning ("failed to parse action, using reboot");
+		return PK_OFFLINE_ACTION_REBOOT;
 	}
-	if (g_strcmp0 (action_data, "reboot") == 0)
-		return PK_OFFLINE_UPDATE_ACTION_REBOOT;
-	if (g_strcmp0 (action_data, "power-off") == 0)
-		return PK_OFFLINE_UPDATE_ACTION_POWER_OFF;
-	g_warning ("failed to parse action '%s', using reboot", action_data);
-	return PK_OFFLINE_UPDATE_ACTION_REBOOT;
+	return action;
 }
 
 /**
@@ -516,11 +365,10 @@ pk_offline_update_get_action (void)
 int
 main (int argc, char *argv[])
 {
-	PkOfflineUpdateAction action;
+	PkOfflineAction action;
 	gboolean ret;
 	gint retval;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *packages_data = NULL;
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
 	_cleanup_object_unref_ GFile *file = NULL;
 	_cleanup_object_unref_ PkProgressBar *progressbar = NULL;
@@ -541,7 +389,7 @@ main (int argc, char *argv[])
 	}
 
 	/* always do this first to avoid a loop if this tool segfaults */
-	g_unlink (PK_OFFLINE_UPDATE_TRIGGER_FILENAME);
+	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
 
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
@@ -551,15 +399,12 @@ main (int argc, char *argv[])
 				NULL);
 
 	/* get the list of packages to update */
-	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-				   &packages_data,
-				   NULL,
-				   &error);
-	if (!ret) {
+	package_ids = pk_offline_get_prepared_ids (&error);
+	if (package_ids == NULL) {
 		retval = EXIT_FAILURE;
 		sd_journal_print (LOG_WARNING,
 				  "failed to read %s: %s",
-				  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
+				  PK_OFFLINE_PREPARED_FILENAME,
 				  error->message);
 		goto out;
 	}
@@ -575,7 +420,6 @@ main (int argc, char *argv[])
 	pk_offline_update_set_plymouth_mode ("updates");
 	/* TRANSLATORS: we've started doing offline updates */
 	pk_offline_update_set_plymouth_msg (_("Installing updates, this could take a while..."));
-	package_ids = g_strsplit (packages_data, "\n", -1);
 	pk_offline_update_write_dummy_results (package_ids);
 	results = pk_client_update_packages (PK_CLIENT (task),
 					     0,
@@ -597,17 +441,13 @@ main (int argc, char *argv[])
 
 	/* delete prepared-update file if it's not already been done by the
 	 * pk-plugin-systemd-update daemon plugin */
-	file = g_file_new_for_path (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-	ret = g_file_delete (file, NULL, &error);
-	if (!ret) {
-		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
-			retval = EXIT_FAILURE;
-			sd_journal_print (LOG_WARNING,
-					  "failed to delete %s: %s",
-					  PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-					  error->message);
-			goto out;
-		}
+	if (!pk_offline_auth_invalidate (&error)) {
+		retval = EXIT_FAILURE;
+		sd_journal_print (LOG_WARNING,
+				  "failed to delete %s: %s",
+				  PK_OFFLINE_PREPARED_FILENAME,
+				  error->message);
+		goto out;
 	}
 
 	retval = EXIT_SUCCESS;
@@ -620,9 +460,9 @@ out:
 	}
 	/* we have to manually either restart or shutdown */
 	action = pk_offline_update_get_action ();
-	if (action == PK_OFFLINE_UPDATE_ACTION_REBOOT)
+	if (action == PK_OFFLINE_ACTION_REBOOT)
 		pk_offline_update_reboot ();
-	else if (action == PK_OFFLINE_UPDATE_ACTION_POWER_OFF)
+	else if (action == PK_OFFLINE_ACTION_POWER_OFF)
 		pk_offline_update_power_off ();
 	return retval;
 }

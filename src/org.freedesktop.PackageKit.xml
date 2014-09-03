@@ -499,5 +499,74 @@
     </signal>
 
   </interface>
+
+  <!--*********************************************************************-->
+  <interface name="org.freedesktop.PackageKit.Offline">
+    <doc:doc>
+      <doc:description>
+        <doc:para>
+          The interface used for interacting with offline actions.
+        </doc:para>
+      </doc:description>
+    </doc:doc>
+
+    <!--*********************************************************************-->
+    <property name="TriggerAction" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The action to take when finished applying updates, known values
+            are <doc:tt>power-off</doc:tt>, <doc:tt>reboot</doc:tt> or
+            <doc:tt>unknown</doc:tt> if no offline update is scheduled.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*********************************************************************-->
+    <method name="ClearResults">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Clears the offline update results store.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+    <!--*********************************************************************-->
+    <method name="Trigger">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Triggers the offline update for next boot.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="action" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The action to take when finished applying updates, known values
+              are <doc:tt>power-off</doc:tt> and <doc:tt>reboot</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
+    <method name="Cancel">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Cancels the offline update so the next boot procceeds as normal.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+  </interface>
+
 </node>
 

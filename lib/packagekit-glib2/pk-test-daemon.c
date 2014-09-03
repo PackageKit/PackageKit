@@ -32,6 +32,8 @@
 #include "pk-client-helper.h"
 #include "pk-control.h"
 #include "pk-console-shared.h"
+#include "pk-offline.h"
+#include "pk-offline-private.h"
 #include "pk-package-ids.h"
 #include "pk-results.h"
 #include "pk-task.h"
@@ -109,6 +111,77 @@ _g_test_loop_quit (void)
 }
 
 /**********************************************************************/
+
+static void
+pk_test_offline_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkClient *client = PK_CLIENT (object);
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+
+	_g_test_loop_quit ();
+}
+
+static void
+pk_test_offline_func (void)
+{
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_object_unref_ PkClient *client = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
+
+	/* set up an offline update */
+	client = pk_client_new ();
+	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora");
+	pk_client_update_packages_async (client,
+					 pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, -1),
+					 package_ids,
+					 NULL,
+					 NULL, NULL,
+					 pk_test_offline_cb, NULL);
+	_g_test_loop_run_with_timeout (25000);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* check prepared contents */
+	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &data, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
+
+	/* trigger */
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* cancel the trigger */
+	ret = pk_offline_cancel (NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* ensure a cache update kills the prepared update file */
+	pk_client_refresh_cache_async (client, FALSE, NULL, NULL, NULL,
+				       pk_test_offline_cb, NULL);
+	_g_test_loop_run_with_timeout (25000);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+}
 
 /**
  * pk_test_client_helper_output_cb:
@@ -1364,6 +1437,7 @@ main (int argc, char **argv)
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
 
 	/* tests go here */
+	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
 	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);

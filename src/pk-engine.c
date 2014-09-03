@@ -37,6 +37,8 @@
 
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <packagekit-glib2/pk-offline.h>
+#include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-version.h>
 #include <polkit/polkit.h>
 
@@ -1039,6 +1041,34 @@ _g_variant_new_maybe_string (const gchar *value)
 }
 
 /**
+ * pk_engine_offline_get_property:
+ **/
+static GVariant *
+pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sender,
+				const gchar *object_path, const gchar *interface_name,
+				const gchar *property_name, GError **error,
+				gpointer user_data)
+{
+	PkEngine *engine = PK_ENGINE (user_data);
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+	if (g_strcmp0 (property_name, "TriggerAction") == 0) {
+		PkOfflineAction action = pk_offline_get_action (NULL);
+		return g_variant_new_string (pk_offline_action_to_string (action));
+	}
+
+	/* return an error */
+	g_set_error (error,
+		     PK_ENGINE_ERROR,
+		     PK_ENGINE_ERROR_NOT_SUPPORTED,
+		     "failed to get property '%s'",
+		     property_name);
+	return NULL;
+}
+
+/**
  * pk_engine_daemon_get_property:
  **/
 static GVariant *
@@ -1479,6 +1509,166 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 }
 
+typedef enum {
+	PK_ENGINE_OFFLINE_ROLE_CANCEL,
+	PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS,
+	PK_ENGINE_OFFLINE_ROLE_TRIGGER,
+	PK_ENGINE_OFFLINE_ROLE_LAST
+} PkEngineOfflineRole;
+
+typedef struct {
+	GDBusMethodInvocation	*invocation;
+	PkEngineOfflineRole	 role;
+	PkOfflineAction		 action;
+} PkEngineOfflineAsyncHelper;
+
+/**
+ * pk_engine_offline_helper_free:
+ **/
+static void
+pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
+{
+	g_object_unref (helper->invocation);
+	g_free (helper);
+}
+
+/**
+ * pk_engine_offline_helper_cb:
+ **/
+static void
+pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
+	gboolean ret;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ PolkitAuthorizationResult *result = NULL;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (POLKIT_AUTHORITY (source), res, &error);
+	if (result == NULL) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "could not check for auth: %s",
+						       error->message);
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "failed to obtain auth");
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	switch (helper->role) {
+	case PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS:
+		ret = pk_offline_auth_clear_results (&error);
+		break;
+	case PK_ENGINE_OFFLINE_ROLE_CANCEL:
+		ret = pk_offline_auth_cancel (&error);
+		break;
+	case PK_ENGINE_OFFLINE_ROLE_TRIGGER:
+		ret = pk_offline_auth_trigger (helper->action, &error);
+		break;
+	default:
+		g_assert_not_reached ();
+	}
+	if (!ret) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_INVALID_STATE,
+						       "%s", error->message);
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	/* all okay */
+	g_dbus_method_invocation_return_value (helper->invocation, NULL);
+	pk_engine_offline_helper_free (helper);
+}
+
+/**
+ * pk_engine_offline_method_call:
+ **/
+static void
+pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender,
+			       const gchar *object_path, const gchar *interface_name,
+			       const gchar *method_name, GVariant *parameters,
+			       GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	PkEngine *engine = PK_ENGINE (user_data);
+	PkEngineOfflineAsyncHelper *helper;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PolkitSubject *subject = NULL;
+
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+	/* set up polkit */
+	subject = polkit_system_bus_name_new (sender);
+
+	if (g_strcmp0 (method_name, "Cancel") == 0) {
+		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->role = PK_ENGINE_OFFLINE_ROLE_CANCEL;
+		helper->invocation = g_object_ref (invocation);
+		polkit_authority_check_authorization (engine->priv->authority, subject,
+						      "org.freedesktop.packagekit.trigger-offline-update",
+						      NULL,
+						      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+						      NULL,
+						      pk_engine_offline_helper_cb,
+						      helper);
+		return;
+	}
+	if (g_strcmp0 (method_name, "ClearResults") == 0) {
+		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->role = PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS;
+		helper->invocation = g_object_ref (invocation);
+		polkit_authority_check_authorization (engine->priv->authority, subject,
+						      "org.freedesktop.packagekit.clear-offline-update",
+						      NULL,
+						      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+						      NULL,
+						      pk_engine_offline_helper_cb,
+						      helper);
+		return;
+	}
+	if (g_strcmp0 (method_name, "Trigger") == 0) {
+		const gchar *tmp;
+		PkOfflineAction action;
+		g_variant_get (parameters, "(&s)", &tmp);
+		action = pk_offline_action_from_string (tmp);
+		if (action == PK_OFFLINE_ACTION_UNKNOWN) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_NOT_SUPPORTED,
+							       "action %s unsupported",
+							       tmp);
+			return;
+		}
+		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
+		helper->invocation = g_object_ref (invocation);
+		helper->action = action;
+		polkit_authority_check_authorization (engine->priv->authority, subject,
+						      "org.freedesktop.packagekit.trigger-offline-update",
+						      NULL,
+						      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+						      NULL,
+						      pk_engine_offline_helper_cb,
+						      helper);
+		return;
+	}
+}
+
 #ifdef PK_BUILD_SYSTEMD
 /**
  * pk_engine_proxy_logind_cb:
@@ -1507,10 +1697,14 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 {
 	PkEngine *engine = PK_ENGINE (user_data);
 	guint registration_id;
-
-	static const GDBusInterfaceVTable interface_vtable = {
+	static const GDBusInterfaceVTable iface_daemon_vtable = {
 		pk_engine_daemon_method_call,
 		pk_engine_daemon_get_property,
+		NULL
+	};
+	static const GDBusInterfaceVTable iface_offline_vtable = {
+		pk_engine_offline_method_call,
+		pk_engine_offline_get_property,
 		NULL
 	};
 
@@ -1534,7 +1728,15 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	registration_id = g_dbus_connection_register_object (connection,
 							     PK_DBUS_PATH,
 							     engine->priv->introspection->interfaces[0],
-							     &interface_vtable,
+							     &iface_daemon_vtable,
+							     engine,  /* user_data */
+							     NULL,  /* user_data_free_func */
+							     NULL); /* GError** */
+	g_assert (registration_id > 0);
+	registration_id = g_dbus_connection_register_object (connection,
+							     PK_DBUS_PATH,
+							     engine->priv->introspection->interfaces[1],
+							     &iface_offline_vtable,
 							     engine,  /* user_data */
 							     NULL,  /* user_data_free_func */
 							     NULL); /* GError** */

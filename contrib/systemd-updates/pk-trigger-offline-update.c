@@ -29,8 +29,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define PK_OFFLINE_UPDATE_GENERATOR_FLAG	"/system-update"
-#define PK_OFFLINE_UPDATE_ACTION_FILENAME	"/var/lib/PackageKit/offline-update-action"
+/* just include the header, link to none of the symbols */
+#include "lib/packagekit-glib2/pk-offline-private.h"
 
 int
 main (int argc, char *argv[])
@@ -48,9 +48,9 @@ main (int argc, char *argv[])
 	}
 
 	if (argc > 1 && strcmp (argv[1], "--cancel") == 0) {
-		rc = unlink (PK_OFFLINE_UPDATE_GENERATOR_FLAG);
+		rc = unlink (PK_OFFLINE_TRIGGER_FILENAME);
 		if (rc < 0) {
-			fprintf (stderr, "Failed to remove file " PK_OFFLINE_UPDATE_GENERATOR_FLAG ": %s\n",
+			fprintf (stderr, "Failed to remove file " PK_OFFLINE_TRIGGER_FILENAME ": %s\n",
 				 strerror (errno));
 			retval = EXIT_FAILURE;
 			goto out;
@@ -60,10 +60,10 @@ main (int argc, char *argv[])
 	}
 
 	/* open success action */
-	fp = fopen (PK_OFFLINE_UPDATE_ACTION_FILENAME, "w+");
+	fp = fopen (PK_OFFLINE_ACTION_FILENAME, "w+");
 	if (fp == NULL) {
 		fprintf (stderr, "Failed to open %s for writing\n",
-			 PK_OFFLINE_UPDATE_ACTION_FILENAME);
+			 PK_OFFLINE_ACTION_FILENAME);
 		retval = EXIT_FAILURE;
 		goto out;
 	}
@@ -74,7 +74,7 @@ main (int argc, char *argv[])
 	}
 
 	/* create symlink for the systemd-system-update-generator */
-	rc = symlink ("/var/cache", PK_OFFLINE_UPDATE_GENERATOR_FLAG);
+	rc = symlink ("/var/cache", PK_OFFLINE_TRIGGER_FILENAME);
 	if (rc < 0) {
 		fprintf (stderr, "Failed to create symlink: %s\n",
 			 strerror (errno));
@@ -93,7 +93,7 @@ main (int argc, char *argv[])
 
 	/* change it to the PackageKit user so the daemon can delete
 	 * the file if any package state changes */
-	rc = lchown (PK_OFFLINE_UPDATE_GENERATOR_FLAG, pw->pw_uid, -1);
+	rc = lchown (PK_OFFLINE_TRIGGER_FILENAME, pw->pw_uid, -1);
 	if (rc < 0) {
 		fprintf (stderr, "Failed to change owner of symlink: %s\n",
 			 strerror (errno));

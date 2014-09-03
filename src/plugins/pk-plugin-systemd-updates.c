@@ -24,7 +24,8 @@
 #include <glib/gstdio.h>
 #include <pk-plugin.h>
 
-#define PK_OFFLINE_PREPARED_UPDATE_FILENAME	"/var/lib/PackageKit/prepared-update"
+#include <packagekit-glib2/pk-offline.h>
+#include <packagekit-glib2/pk-offline-private.h>
 
 /**
  * pk_plugin_get_description:
@@ -81,18 +82,13 @@ pk_plugin_get_existing_prepared_updates (const gchar *filename)
 void
 pk_plugin_state_changed (PkPlugin *plugin)
 {
+	_cleanup_error_free_ GError *error = NULL;
 	/* if the state changed because of a dnf command that could
 	 * have changed the updates list then nuke the prepared-updates
 	 * file */
-	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-			 G_FILE_TEST_EXISTS)) {
-		g_debug ("Removing %s as state has changed",
-			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-		g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-	} else {
-		g_debug ("No %s needed to be deleted",
-			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-	}
+	g_debug ("Invalidating any offline update as state changed");
+	if (!pk_offline_auth_invalidate (&error))
+		g_warning ("failed to invalidate: %s", error->message);
 }
 
 /**
@@ -101,23 +97,13 @@ pk_plugin_state_changed (PkPlugin *plugin)
 static void
 pk_plugin_transaction_update_packages (PkTransaction *transaction)
 {
-	gboolean ret;
 	gchar **package_ids;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *packages_str = NULL;
 
 	/* write the package ids to the prepared update file */
 	package_ids = pk_transaction_get_package_ids (transaction);
-	packages_str = g_strjoinv ("\n", package_ids);
-	ret = g_file_set_contents (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-				   packages_str,
-				   -1,
-				   &error);
-	if (!ret) {
-		g_warning ("failed to write %s: %s",
-			   PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-			   error->message);
-	}
+	if (!pk_offline_auth_set_prepared_ids (package_ids, &error))
+		g_warning ("failed to write offline update: %s", error->message);
 }
 
 /**
@@ -136,7 +122,7 @@ pk_plugin_transaction_action_method (PkPlugin *plugin,
 	_cleanup_ptrarray_unref_ GPtrArray *invalidated = NULL;
 
 	/* get the existing prepared updates */
-	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_FILENAME);
 	if (pk_package_sack_get_size (sack) == 0)
 		return;
 
@@ -175,24 +161,17 @@ static void
 pk_plugin_transaction_get_updates (PkTransaction *transaction)
 {
 	PkResults *results;
+	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	results = pk_transaction_get_results (transaction);
 	array = pk_results_get_package_array (results);
 	if (array->len != 0) {
-		g_debug ("got %i updates, so ignoring %s",
-			 array->len, PK_OFFLINE_PREPARED_UPDATE_FILENAME);
+		g_debug ("got %i updates, so ignoring offline update", array->len);
 		return;
 	}
-	if (g_file_test (PK_OFFLINE_PREPARED_UPDATE_FILENAME,
-			 G_FILE_TEST_EXISTS)) {
-		g_debug ("Removing %s as no updates",
-			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-		g_unlink (PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-	} else {
-		g_debug ("No %s present, so no need to delete",
-			 PK_OFFLINE_PREPARED_UPDATE_FILENAME);
-	}
+	if (!pk_offline_auth_invalidate (&error))
+		g_warning ("failed to invalidate: %s", error->message);
 }
 
 /**

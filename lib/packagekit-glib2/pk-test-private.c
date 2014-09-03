@@ -28,6 +28,8 @@
 #include "pk-common.h"
 #include "pk-debug.h"
 #include "pk-enum.h"
+#include "pk-offline.h"
+#include "pk-offline-private.h"
 #include "pk-package.h"
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
@@ -598,6 +600,202 @@ pk_test_package_func (void)
 	g_object_unref (package);
 }
 
+static void
+pk_test_offline_func (void)
+{
+	const gchar *package_ids[] = { "powertop;0.1.3;i386;fedora", NULL };
+	gboolean ret;
+	gchar **package_ids_tmp = NULL;
+	gchar *tmp;
+	guint64 mtime;
+	PkOfflineAction action;
+	PkPackage *pkg;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GFileMonitor *monitor = NULL;
+	_cleanup_object_unref_ PkError *pk_error = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
+	const gchar *results_failed =
+			"[PackageKit Offline Update Results]\n"
+			"Success=false\n"
+			"ErrorCode=missing-gpg-signature\n"
+			"ErrorDetails=signature is not installed\n";
+	const gchar *results_success =
+			"[PackageKit Offline Update Results]\n"
+			"Success=true\n"
+			"Packages=upower;0.9.16-1.fc17;x86_64;updates,"
+				 "zif;0.3.0-1.fc17;x86_64;updates\n";
+
+	/* cleanup */
+	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
+		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
+						 NULL, NULL, NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+	}
+	g_assert_cmpint (g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755), ==, 0);
+
+	/* test enums */
+	g_assert_cmpint (pk_offline_action_from_string ("unknown"), ==, PK_OFFLINE_ACTION_UNKNOWN);
+	g_assert_cmpint (pk_offline_action_from_string ("reboot"), ==, PK_OFFLINE_ACTION_REBOOT);
+	g_assert_cmpint (pk_offline_action_from_string ("power-off"), ==, PK_OFFLINE_ACTION_POWER_OFF);
+	g_assert_cmpint (pk_offline_action_from_string ("XXX"), ==, PK_OFFLINE_ACTION_UNKNOWN);
+
+	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_UNKNOWN), ==, "unknown");
+	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_REBOOT), ==, "reboot");
+	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_POWER_OFF), ==, "power-off");
+	g_assert_cmpstr (pk_offline_action_to_string (999), ==, NULL);
+
+	/* test no action set */
+	action = pk_offline_get_action (&error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_clear_error (&error);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_UNKNOWN);
+
+	/* test actions */
+	ret = pk_offline_auth_set_action (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	action = pk_offline_get_action (&error);
+	g_assert_no_error (error);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
+	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, "reboot");
+	g_free (tmp);
+
+	/* try to trigger without the fake updates set */
+	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_clear_error (&error);
+	g_assert (!ret);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* set up some fake updates */
+	ret = pk_offline_auth_set_prepared_ids ((gchar **) package_ids, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	package_ids_tmp = pk_offline_get_prepared_ids (&error);
+	g_assert_no_error (error);
+	g_assert_cmpint (g_strv_length (package_ids_tmp), ==, 1);
+	g_assert_cmpstr (package_ids_tmp[0], ==, "powertop;0.1.3;i386;fedora");
+	g_strfreev (package_ids_tmp);
+	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, "powertop;0.1.3;i386;fedora");
+	g_free (tmp);
+
+	/* check monitor */
+	monitor = pk_offline_get_prepared_monitor (NULL, &error);
+	g_assert_no_error (error);
+	g_assert (monitor != NULL);
+
+	/* trigger with the fake updates set */
+	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* cancel the trigger */
+	ret = pk_offline_auth_cancel (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* invalidate the update set */
+	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	ret = pk_offline_auth_invalidate (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* no results yet */
+	ret = pk_offline_auth_clear_results (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	results = pk_offline_get_results (&error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_assert (results == NULL);
+	g_clear_error (&error);
+	mtime = pk_offline_get_results_mtime (&error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_assert (mtime == 0);
+	g_clear_error (&error);
+
+	/* save some dummy success results */
+	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_success,
+				   -1, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* check the results */
+	results = pk_offline_get_results (&error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_SUCCESS);
+	pk_error = pk_results_get_error_code (results);
+	g_assert (pk_error == NULL);
+	packages = pk_results_get_package_array (results);
+	g_assert (packages != NULL);
+	g_assert_cmpint (packages->len, ==, 2);
+	pkg = g_ptr_array_index (packages, 0);
+	g_assert_cmpstr (pk_package_get_id (pkg), ==, "upower;0.9.16-1.fc17;x86_64;updates");
+	pkg = g_ptr_array_index (packages, 1);
+	g_assert_cmpstr (pk_package_get_id (pkg), ==, "zif;0.3.0-1.fc17;x86_64;updates");
+	g_object_unref (results);
+
+	/* save some dummy failed results */
+	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_failed,
+				   -1, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* check the results */
+	results = pk_offline_get_results (&error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_FAILED);
+	pk_error = pk_results_get_error_code (results);
+	g_assert (pk_error != NULL);
+	g_assert_cmpint (pk_error_get_code (pk_error), ==, PK_ERROR_ENUM_MISSING_GPG_SIGNATURE);
+	g_assert_cmpstr (pk_error_get_details (pk_error), ==, "signature is not installed");
+
+	/* clear the results file */
+	ret = pk_offline_auth_clear_results (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* re-instate the results file with cached data */
+	ret = pk_offline_auth_set_results (results, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	ret = g_file_get_contents (PK_OFFLINE_RESULTS_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, results_failed);
+	g_free (tmp);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -623,6 +821,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/results", pk_test_results_func);
 	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
 	g_test_add_func ("/packagekit-glib2/progress-bar", pk_test_progress_bar);
+	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 
 	return g_test_run ();
 }

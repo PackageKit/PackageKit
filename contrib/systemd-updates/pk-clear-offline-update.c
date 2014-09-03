@@ -25,6 +25,9 @@
 #include <string.h>
 #include <unistd.h>
 
+/* just include the header, link to none of the symbols */
+#include "lib/packagekit-glib2/pk-offline-private.h"
+
 int
 main (int argc, char *argv[])
 {
@@ -37,10 +40,9 @@ main (int argc, char *argv[])
 	}
 
 	/* Just delete the file, no questions asked :) */
-	rc = unlink ("/var/lib/PackageKit/offline-update-competed");
+	rc = unlink (PK_OFFLINE_RESULTS_FILENAME);
 	if (rc < 0) {
-		fprintf (stderr, "Failed to remove file: %s\n",
-			 strerror (errno));
+		fprintf (stderr, "Failed to remove file: %s\n", strerror (errno));
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;

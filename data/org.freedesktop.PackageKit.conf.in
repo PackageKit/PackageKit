@@ -20,6 +20,8 @@
     <allow send_destination="org.freedesktop.PackageKit"
            send_interface="org.freedesktop.PackageKit.Transaction"/>
     <allow send_destination="org.freedesktop.PackageKit"
+           send_interface="org.freedesktop.PackageKit.Offline"/>
+    <allow send_destination="org.freedesktop.PackageKit"
            send_interface="org.freedesktop.DBus.Properties"/>
     <allow send_destination="org.freedesktop.PackageKit"
            send_interface="org.freedesktop.DBus.Introspectable"/>

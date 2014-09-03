@@ -27,6 +27,7 @@
 #include <packagekit-glib2/pk-task-sync.h>
 #include <packagekit-glib2/pk-task-text.h>
 #include <packagekit-glib2/pk-console-shared.h>
+#include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-progress-bar.h>
 #include <packagekit-glib2/pk-spawn-polkit-agent.h>
 
