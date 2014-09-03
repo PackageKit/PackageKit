@@ -70,20 +70,6 @@ pk_ioprio_set_idle (GPid pid)
 	return (ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class) == 0);
 }
 
-/**
- * pk_ioprio_set_best_effort:
- *
- * Set the IO priority to best_effort
- **/
-gboolean
-pk_ioprio_set_best_effort (GPid pid)
-{
-	gint prio = 7;
-	gint class = IOPRIO_CLASS_BE << IOPRIO_CLASS_SHIFT;
-
-	return (ioprio_set (IOPRIO_WHO_PROCESS, pid, prio | class) == 0);
-}
-
 #else
 
 /**
@@ -91,15 +77,6 @@ pk_ioprio_set_best_effort (GPid pid)
  **/
 gboolean
 pk_ioprio_set_idle (GPid pid)
-{
-	return TRUE;
-}
-
-/**
- * pk_ioprio_set_best_effort:
- **/
-gboolean
-pk_ioprio_set_best_effort (GPid pid)
 {
 	return TRUE;
 }

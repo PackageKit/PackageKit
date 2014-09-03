@@ -27,7 +27,6 @@
 G_BEGIN_DECLS
 
 gboolean	pk_ioprio_set_idle		(GPid		pid);
-gboolean	pk_ioprio_set_best_effort	(GPid		pid);
 
 G_END_DECLS
 
