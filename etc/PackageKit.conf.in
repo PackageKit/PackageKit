@@ -3,9 +3,6 @@
 
 [Daemon]
 
-# Unlock the backend after this many seconds idle.
-BackendShutdownTimeout=5
-
 # Default backends, as chosen in the configure script. This will be used
 # where no --backend="foo" option is given to the daemon.
 #
