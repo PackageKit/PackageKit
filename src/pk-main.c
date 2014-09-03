@@ -114,7 +114,7 @@ main (int argc, char *argv[])
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gboolean keep_environment = FALSE;
-	guint exit_idle_time;
+	gint exit_idle_time;
 	guint timer_id = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *backend_name = NULL;
@@ -189,6 +189,8 @@ main (int argc, char *argv[])
 
 	/* after how long do we timeout? */
 	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", NULL);
+	if (exit_idle_time == 0)
+		exit_idle_time = 300;
 	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	/* override the backend name */
@@ -240,7 +242,7 @@ main (int argc, char *argv[])
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
 
 	/* only poll when we are alive */
-	if (exit_idle_time != 0 && !disable_timer) {
+	if (exit_idle_time > 0 && !disable_timer) {
 		helper.engine = engine;
 		helper.exit_idle_time = exit_idle_time;
 		helper.loop = loop;

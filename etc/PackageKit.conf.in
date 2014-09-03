@@ -3,9 +3,6 @@
 
 [Daemon]
 
-# Shut down the daemon after this many seconds idle. 0 means don't shutdown.
-ShutdownTimeout=300
-
 # Unlock the backend after this many seconds idle.
 BackendShutdownTimeout=5
 
