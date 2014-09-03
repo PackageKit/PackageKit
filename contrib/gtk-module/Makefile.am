@@ -3,6 +3,12 @@ SUBDIRS = gtk2
 if PK_BUILD_GTK_MODULE
 APP = gedit --new-window GLASS.txt
 
+AM_CPPFLAGS =						\
+	-I$(top_builddir)				\
+	-I$(top_builddir)/lib				\
+	-I$(top_srcdir)					\
+	-I$(top_srcdir)/lib
+
 moduledir = $(LIBDIR)/gtk-3.0/modules
 module_LTLIBRARIES = libpk-gtk-module.la
 libpk_gtk_module_la_SOURCES = pk-gtk-module.c

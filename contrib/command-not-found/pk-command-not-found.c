@@ -31,6 +31,8 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
+#include "src/pk-cleanup.h"
+
 #define PK_MAX_PATH_LEN 1023
 
 typedef enum {
@@ -178,10 +180,10 @@ pk_cnf_find_alternatives_remove_double (const gchar *cmd, guint len, GPtrArray *
 	guint i, j;
 	gchar *possible;
 
-	for (i=1; i<len; i++) {
+	for (i = 1; i < len; i++) {
 		if (cmd[i-1] == cmd[i]) {
 			possible = g_strdup (cmd);
-			for (j=i; j<len; j++)
+			for (j = i; j < len; j++)
 				possible[j] = possible[j+1];
 			possible[len-1] = '\0';
 			g_ptr_array_add (array, possible);
@@ -200,10 +202,10 @@ pk_cnf_find_alternatives_locale (const gchar *cmd, guint len, GPtrArray *array)
 	guint i, j;
 	gchar *possible;
 
-	for (i=1; i<len; i++) {
+	for (i = 1; i < len; i++) {
 		if (cmd[i-1] == 'o' && cmd[i] == 'u') {
 			possible = g_strdup (cmd);
-			for (j=i; j<len; j++)
+			for (j = i; j < len; j++)
 				possible[j] = possible[j+1];
 			possible[len-1] = '\0';
 			g_ptr_array_add (array, possible);
@@ -219,8 +221,8 @@ pk_cnf_find_alternatives_locale (const gchar *cmd, guint len, GPtrArray *array)
 static void
 pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
 {
-	GHashTable *hash;
 	const gchar *tmp;
+	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
 
 	hash = g_hash_table_new (g_str_hash, g_str_equal);
 	g_hash_table_insert (hash, (gpointer) "smuser", (gpointer) "usermod");
@@ -286,7 +288,6 @@ pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
 	tmp = g_hash_table_lookup (hash, cmd);
 	if (tmp != NULL)
 		g_ptr_array_add (array, g_strdup (tmp));
-	g_hash_table_unref (hash);
 }
 
 /**
@@ -344,14 +345,14 @@ static GPtrArray *
 pk_cnf_find_alternatives (const gchar *cmd, guint len)
 {
 	GPtrArray *array;
-	GPtrArray *possible;
-	GPtrArray *unique;
 	const gchar *cmdt;
 	const gchar *cmdt2;
 	guint i, j;
 	gchar buffer_bin[PK_MAX_PATH_LEN+1];
 	gchar buffer_sbin[PK_MAX_PATH_LEN+1];
 	gboolean ret;
+	_cleanup_ptrarray_unref_ GPtrArray *possible = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *unique = NULL;
 
 	array = g_ptr_array_new_with_free_func (g_free);
 	possible = g_ptr_array_new_with_free_func (g_free);
@@ -409,9 +410,6 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 		if (ret)
 			g_ptr_array_add (array, g_strdup (cmdt));
 	}
-
-	g_ptr_array_unref (possible);
-	g_ptr_array_free (unique, TRUE);
 	return array;
 }
 
@@ -486,7 +484,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	gchar **package_ids = NULL;
 	const gchar *prefixes[] = {"/usr/bin", "/usr/sbin", "/bin", "/sbin", NULL};
 	gchar **values = NULL;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	GPtrArray *array = NULL;
 	guint i;
 	guint len;
@@ -498,7 +496,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	/* create new array of full paths */
 	len = g_strv_length ((gchar **)prefixes);
 	values = g_new0 (gchar *, len + 1);
-	for (i=0; prefixes[i] != NULL; i++)
+	for (i = 0; prefixes[i] != NULL; i++)
 		values[i] = g_build_filename (prefixes[i], cmd, NULL);
 
 	/* only allow searching for a limited amount of time */
@@ -518,7 +516,6 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 			/* TRANSLATORS: we failed to find the package, this shouldn't happen */
 			g_printerr ("%s: %s\n", _("Failed to search for file"), error->message);
 		}
-		g_error_free (error);
 		goto out;
 	}
 
@@ -581,13 +578,12 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 {
 	PkCnfPolicy policy;
 	gchar *policy_text;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* get from file */
 	policy_text = g_key_file_get_string (file, "CommandNotFound", key, &error);
 	if (policy_text == NULL) {
 		g_warning ("failed to get key %s: %s", key, error->message);
-		g_error_free (error);
 	}
 
 	/* convert to enum */
@@ -605,7 +601,7 @@ pk_cnf_get_config (void)
 	GKeyFile *file;
 	gchar *path;
 	gboolean ret;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 	PkCnfPolicyConfig *config;
 
 	/* create */
@@ -627,7 +623,6 @@ pk_cnf_get_config (void)
 	ret = g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		g_printerr ("failed to load config file: %s\n", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -662,28 +657,21 @@ out:
 static gint
 pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 {
-	gboolean ret;
-	gint exit_status;
-	gchar *cmd;
-	gchar *args;
-	GError *error = NULL;
+	gint exit_status = EXIT_FAILURE;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *args = NULL;
+	_cleanup_free_ gchar *cmd = NULL;
 
 	/* ensure program starts on a fresh line */
 	g_print ("\n");
 
 	args = g_strjoinv (" ", arguments);
 	cmd = g_strjoin (" ", exec, args, NULL);
-	ret = g_spawn_command_line_sync (cmd, NULL, NULL, &exit_status, &error);
-	if (!ret) {
+	if (!g_spawn_command_line_sync (cmd, NULL, NULL, &exit_status, &error)) {
 		/* TRANSLATORS: we failed to launch the executable, the error follows */
 		g_printerr ("%s '%s': %s\n", _("Failed to launch:"), cmd, error->message);
-		g_error_free (error);
-		goto out;
 	}
-out:
-	g_free (args);
-	g_free (cmd);
-	return ret;
+	return exit_status;
 }
 
 /**
@@ -692,11 +680,10 @@ out:
 static gboolean
 pk_cnf_install_package_id (const gchar *package_id)
 {
-	GError *error = NULL;
-	PkResults *results = NULL;
-	gchar **package_ids;
-	gboolean ret = FALSE;
-	PkError *error_code = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* do install */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -705,8 +692,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to install the package */
 		g_printerr ("%s: %s\n", _("Failed to install packages"), error->message);
-		g_error_free (error);
-		goto out;
+		return FALSE;
 	}
 
 	/* check error code */
@@ -714,17 +700,9 @@ pk_cnf_install_package_id (const gchar *package_id)
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
 		g_printerr ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
-		goto out;
+		return FALSE;
 	}
-
-	ret = TRUE;
-out:
-	if (error_code != NULL)
-		g_object_unref (error_code);
-	if (results != NULL)
-		g_object_unref (results);
-	g_strfreev (package_ids);
-	return ret;
+	return TRUE;
 }
 
 /**
@@ -753,8 +731,6 @@ int
 main (int argc, char *argv[])
 {
 	gboolean ret;
-	GPtrArray *array = NULL;
-	gchar **package_ids = NULL;
 	PkCnfPolicyConfig *config = NULL;
 	guint i;
 	guint len;
@@ -762,6 +738,8 @@ main (int argc, char *argv[])
 	const gchar *possible;
 	gchar **parts;
 	guint retval = EXIT_COMMAND_NOT_FOUND;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -911,7 +889,7 @@ main (int argc, char *argv[])
 			if (config->multiple_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: Show the user a list of packages that provide this command */
 				g_printerr ("%s\n", _("Packages providing this file are:"));
-				for (i=0; package_ids[i] != NULL; i++) {
+				for (i = 0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
 					g_printerr ("'%s'\n", parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
@@ -921,7 +899,7 @@ main (int argc, char *argv[])
 			} else if (config->multiple_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: Show the user a list of packages that they can install to provide this command */
 				g_printerr ("%s:\n", _("Suitable packages are:"));
-				for (i=0; package_ids[i] != NULL; i++) {
+				for (i = 0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
 					g_printerr ("%i\t'%s'\n", i+1, parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
@@ -943,7 +921,6 @@ main (int argc, char *argv[])
 		}
 	}
 out:
-	g_strfreev (package_ids);
 	if (task != NULL)
 		g_object_unref (task);
 	if (cancellable != NULL)
@@ -952,9 +929,6 @@ out:
 		g_strfreev (config->locations);
 		g_free (config);
 	}
-	if (array != NULL)
-		g_ptr_array_unref (array);
-
 	return retval;
 }
 

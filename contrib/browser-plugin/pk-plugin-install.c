@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2014 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2008 Red Hat, Inc.
  *
  * Licensed under the GNU General Public License Version 2
@@ -35,6 +35,8 @@
 #include <packagekit-glib2/packagekit.h>
 
 #include "pk-plugin-install.h"
+
+#include "src/pk-cleanup.h"
 
 #define PK_PLUGIN_INSTALL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PLUGIN_INSTALL, PkPluginInstallPrivate))
 
@@ -186,22 +188,20 @@ static void
 pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInstall *self)
 {
 	PkClient *client = PK_CLIENT (object);
-	GError *error = NULL;
-	PkResults *results = NULL;
-	GPtrArray *packages = NULL;
 	PkPackage *item;
-	gchar *filename = NULL;
-	gchar **split = NULL;
-	PkError *error_code = NULL;
 	PkInfoEnum info;
-	gchar *package_id = NULL;
-	gchar *summary = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *filename = NULL;
+	_cleanup_free_ gchar *package_id = NULL;
+	_cleanup_free_ gchar *summary = NULL;
+	_cleanup_object_unref_ PkError *error_code = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to resolve: %s", error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -237,6 +237,7 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 
 	/* parse the data */
 	if (info == PK_INFO_ENUM_AVAILABLE) {
+		_cleanup_strv_free_ gchar **split = NULL;
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, AVAILABLE);
 		else if (self->priv->status == INSTALLED)
@@ -244,12 +245,11 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		split = pk_package_id_split (package_id);
 		pk_plugin_install_set_available_package_name (self, split[0]);
 		pk_plugin_install_set_available_version (self, split[1]);
-		g_strfreev (split);
-
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 
 	} else if (info == PK_INFO_ENUM_INSTALLED) {
+		_cleanup_strv_free_ gchar **split = NULL;
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, INSTALLED);
 		else if (self->priv->status == AVAILABLE)
@@ -257,29 +257,17 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		split = pk_package_id_split (package_id);
 		pk_plugin_install_set_installed_package_name (self, split[0]);
 		pk_plugin_install_set_installed_version (self, split[1]);
-		g_strfreev (split);
-
 		pk_plugin_install_set_status (self, INSTALLED);
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 	}
 out:
-	g_free (filename);
-	g_free (package_id);
-	g_free (summary);
-
 	/* we didn't get any results, or we failed */
 	if (self->priv->status == IN_PROGRESS) {
 		pk_plugin_install_set_status (self, UNAVAILABLE);
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 	}
-	if (error_code != NULL)
-		g_object_unref (error_code);
-	if (packages != NULL)
-		g_ptr_array_unref (packages);
-	if (results != NULL)
-		g_object_unref (results);
 }
 
 /**
@@ -288,9 +276,7 @@ out:
 static void
 pk_plugin_install_recheck (PkPluginInstall *self)
 {
-//	guint i;
 	const gchar *data;
-//	gchar **package_ids;
 
 	self->priv->status = IN_PROGRESS;
 	pk_plugin_install_set_available_version (self, NULL);
@@ -322,14 +308,12 @@ static void
 pk_plugin_install_append_markup (GString *str, const gchar *format, ...)
 {
 	va_list vap;
-	gchar *tmp;
+	_cleanup_free_ gchar *tmp = NULL;
 
 	va_start (vap, format);
 	tmp = g_markup_vprintf_escaped (format, vap);
 	va_end (vap);
-
 	g_string_append (str, tmp);
-	g_free (tmp);
 }
 
 /**
@@ -405,7 +389,7 @@ pk_plugin_install_ensure_layout (PkPluginInstall *self,
 				 PangoFontDescription *font_desc,
 				 guint32 link_color)
 {
-	GString *markup = g_string_new (NULL);
+	_cleanup_string_free_ GString *markup = g_string_new (NULL);
 
 	if (self->priv->pango_layout != NULL)
 		return;
@@ -475,7 +459,6 @@ pk_plugin_install_ensure_layout (PkPluginInstall *self,
 	}
 
 	pango_layout_set_markup (self->priv->pango_layout, markup->str, -1);
-	g_string_free (markup, TRUE);
 }
 
 /**
@@ -580,13 +563,13 @@ pk_plugin_install_draw (PkPlugin *plugin, cairo_t *cr)
 	guint height;
 	guint radius;
 	GtkIconTheme *theme;
-	GdkPixbuf *pixbuf = NULL;
 	PangoRectangle rect;
 	PkPluginInstall *self = PK_PLUGIN_INSTALL (plugin);
 	guint sep;
 	const gchar *data;
 	PangoColor color;
 	gboolean has_color;
+	_cleanup_object_unref_ GdkPixbuf *pixbuf = NULL;
 
 	/* get parameters */
 	g_object_get (self,
@@ -673,8 +656,6 @@ update_spinner:
 						x + sep + 48 + sep + rect.width + 2 * sep,
 						y + (height - SPINNER_SIZE) / 2);
 	}
-	if (pixbuf != NULL)
-		g_object_unref (pixbuf);
 	return TRUE;
 }
 
@@ -813,18 +794,12 @@ pk_plugin_install_method_finished_cb (GObject *source_object,
 {
 	PkPluginInstall *self = PK_PLUGIN_INSTALL (user_data);
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	GError *error = NULL;
-	GVariant *value;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
-	if (value == NULL) {
+	if (value == NULL)
 		g_warning ("Error occurred during install: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	if (value != NULL)
-		g_variant_unref (value);
 	pk_plugin_install_recheck (self);
 }
 
@@ -837,7 +812,7 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 	GdkEvent *event;
 	GdkWindow *window;
 	guint xid = 0;
-	gchar **packages;
+	_cleanup_strv_free_ gchar **packages = NULL;
 
 	if (self->priv->available_package_name == NULL) {
 		g_warning ("No available package to install");
@@ -866,7 +841,6 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 			   self->priv->cancellable,
 			   pk_plugin_install_method_finished_cb,
 			   self);
-	g_strfreev (packages);
 
 	pk_plugin_install_set_status (self, INSTALLING);
 	pk_plugin_install_clear_layout (self);
@@ -896,8 +870,8 @@ pk_plugin_install_get_server_timestamp ()
 static void
 pk_plugin_install_run_application (PkPluginInstall *self, Time event_time)
 {
-	GError *error = NULL;
-	GdkAppLaunchContext *context;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GdkAppLaunchContext *context = NULL;
 
 	if (self->priv->app_info == 0) {
 		g_warning ("Didn't find application to launch");
@@ -909,14 +883,10 @@ pk_plugin_install_run_application (PkPluginInstall *self, Time event_time)
 
 	context = gdk_app_launch_context_new ();
 	gdk_app_launch_context_set_timestamp (context, event_time);
-	if (!g_app_info_launch (self->priv->app_info, NULL, G_APP_LAUNCH_CONTEXT (context), &error)) {
-		g_warning ("%s\n", error->message);
-		g_clear_error (&error);
-		return;
+	if (!g_app_info_launch (self->priv->app_info, NULL,
+	    G_APP_LAUNCH_CONTEXT (context), &error)) {
+		g_warning ("%s", error->message);
 	}
-
-	if (context != NULL)
-		g_object_unref (context);
 }
 
 /**
@@ -1047,8 +1017,7 @@ pk_plugin_install_class_init (PkPluginInstallClass *klass)
 static void
 pk_plugin_install_init (PkPluginInstall *self)
 {
-	GError *error = NULL;
-
+	_cleanup_error_free_ GError *error = NULL;
 	self->priv = PK_PLUGIN_INSTALL_GET_PRIVATE (self);
 	self->priv->status = IN_PROGRESS;
 	self->priv->client = pk_client_new ();
@@ -1067,13 +1036,11 @@ pk_plugin_install_init (PkPluginInstall *self)
 	if (self->priv->session_pk_proxy == NULL) {
 		g_warning ("Error connecting to PK session instance: %s",
 			   error->message);
-		g_error_free (error);
 	}
 }
 
 /**
  * pk_plugin_install_new:
- * Return value: A new plugin_install class instance.
  **/
 PkPluginInstall *
 pk_plugin_install_new (void)

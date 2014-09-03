@@ -11,32 +11,30 @@ AM_CPPFLAGS =						\
 	-DPK_COMPILATION				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
+	-I$(top_builddir)				\
 	-I$(top_builddir)/lib				\
+	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 
 libexec_PROGRAMS = pk-command-not-found
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(NULL)
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a
 
 pk_command_not_found_SOURCES =				\
-	pk-command-not-found.c				\
-	$(NULL)
+	pk-command-not-found.c
 
 pk_command_not_found_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
+	$(PK_GLIB2_LIBS)
 
 pk_command_not_found_LDFLAGS =				\
 	$(PIE_LDFLAGS)
 
 pk_command_not_found_CFLAGS =				\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh

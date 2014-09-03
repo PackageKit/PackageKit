@@ -15,45 +15,39 @@ AM_CPPFLAGS =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-I$(top_builddir)				\
 	-I$(top_builddir)/lib				\
-	-I$(top_srcdir)/lib				\
-	$(NULL)
+	-I$(top_srcdir)					\
+	-I$(top_srcdir)/lib
 
 PK_GLIB2_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(NULL)
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
 
 libexec_PROGRAMS =					\
-	pk-gstreamer-install				\
-	$(NULL)
+	pk-gstreamer-install
 
 pk_gstreamer_install_SOURCES =				\
-	pk-gstreamer-install.c				\
-	$(NULL)
+	pk-gstreamer-install.c
 
 pk_gstreamer_install_LDADD =				\
 	$(PK_GSTREAMER_PLUGIN_LIBS)			\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
+	$(PK_GLIB2_LIBS)
 
 pk_gstreamer_install_LDFLAGS =				\
 	$(PIE_LDFLAGS)
 
 pk_gstreamer_install_CFLAGS =				\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 clean-local:
 	rm -f *~
 
 EXTRA_DIST =						\
-	README						\
-	$(NULL)
+	README
 
 MAINTAINERCLEANFILES =					\
-	*~			      			\
-	Makefile.in					\
-	$(NULL)
+	*~						\
+	Makefile.in
 
 
 -include $(top_srcdir)/git.mk

@@ -103,11 +103,11 @@ pk_main_newp (NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, 
 	g_signal_connect (plugin, "refresh", G_CALLBACK (pk_main_refresh_cb), instance);
 
 	/* set data */
-	for (i=0; i<argc; i++) {
+	for (i = 0; i < argc; i++) {
 		if (g_strcmp0 (argn[i], "displayname") == 0 ||
 		    g_strcmp0 (argn[i], "packagenames") == 0 ||
-                    g_strcmp0 (argn[i], "radius") == 0 ||
-                    g_strcmp0 (argn[i], "color") == 0)
+		    g_strcmp0 (argn[i], "radius") == 0 ||
+		    g_strcmp0 (argn[i], "color") == 0)
 			pk_plugin_set_data (plugin, argn[i], argv[i]);
 	}
 

@@ -31,6 +31,8 @@
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
 
+#include "src/pk-cleanup.h"
+
 /**
  * Try guessing the XID of the toplevel window that triggered us
  **/
@@ -68,19 +70,15 @@ pk_install_fonts_method_finished_cb (GObject *source_object,
 				     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	GError *error = NULL;
-	GVariant *value;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		g_warning ("Error occurred during install: %s", error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
-out:
 	/* XXX Make gtk/pango reload fonts? */
-	if (value != NULL)
-		g_variant_unref (value);
 }
 
 static GPtrArray *tags;
@@ -88,10 +86,10 @@ static GPtrArray *tags;
 static gboolean
 pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 {
-	GDBusProxy *proxy = NULL;
 	guint xid;
-	gchar **font_tags;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_strv_free_ gchar **font_tags = NULL;
 
 	g_return_val_if_fail (tags->len > 0, FALSE);
 
@@ -114,10 +112,8 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 					       NULL,
 					       &error);
 	if (proxy == NULL) {
-		g_warning ("Error connecting to PK session instance: %s",
-			   error->message);
-		g_error_free (error);
-		goto out;
+		g_warning ("Error connecting to PK session instance: %s", error->message);
+		return FALSE;
 	}
 
 	/* invoke the method */
@@ -134,11 +130,6 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 			   NULL);
 
 	g_debug ("InstallFontconfigResources method invoked");
-
-out:
-	g_strfreev (font_tags);
-	if (proxy != NULL)
-		g_object_unref (proxy);
 	return FALSE;
 }
 

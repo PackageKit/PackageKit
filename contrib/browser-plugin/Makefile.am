@@ -9,16 +9,16 @@ packagekit_plugin_la_CPPFLAGS =			\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DMOZ_X11				\
 	-DGSEAL_ENABLE				\
+	-I$(top_builddir)			\
 	-I$(top_builddir)/lib			\
+	-I$(top_srcdir)				\
 	-I$(top_srcdir)/lib
 
 packagekit_plugin_la_CFLAGS =			\
-	$(WARNINGFLAGS_C)			\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 packagekit_plugin_la_LIBADD =			\
-	$(PK_BROWSER_PLUGIN_LIBS)		\
-	$(NULL)
+	$(PK_BROWSER_PLUGIN_LIBS)
 
 packagekit_plugin_la_LIBADD +=			\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
@@ -32,6 +32,5 @@ packagekit_plugin_la_SOURCES =			\
 
 EXTRA_DIST =					\
 	tests/test.html
-
 
 -include $(top_srcdir)/git.mk

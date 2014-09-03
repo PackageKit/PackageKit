@@ -2,13 +2,11 @@
 AUTOMAKE_OPTIONS = 1.7
 
 EXTRA_DIST =						\
-	pk-debuginfo-install.xml			\
-	$(NULL)
+	pk-debuginfo-install.xml
 
 if HAVE_XSLTPROC
 man_MANS =						\
-	pk-debuginfo-install.1				\
-	$(NULL)
+	pk-debuginfo-install.1
 endif
 
 if HAVE_XSLTPROC
@@ -24,31 +22,29 @@ AM_CPPFLAGS =						\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
+	-I$(top_builddir)				\
 	-I$(top_builddir)/lib				\
+	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 
 bin_PROGRAMS = pk-debuginfo-install
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(NULL)
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a
 
 pk_debuginfo_install_SOURCES =				\
-	pk-debuginfo-install.c				\
-	$(NULL)
+	pk-debuginfo-install.c
 
 pk_debuginfo_install_LDADD =				\
 	$(GLIB_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
+	$(PK_GLIB2_LIBS)
 
 pk_debuginfo_install_LDFLAGS =				\
 	$(PIE_LDFLAGS)
 
 pk_debuginfo_install_CFLAGS =				\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
+	$(WARNINGFLAGS_C)
 
 CLEANFILES = $(man_MANS)
 
@@ -57,6 +53,5 @@ clean-local:
 	rm -f *.1
 	rm -f manpage.*
 	rm -f *.out
-
 
 -include $(top_srcdir)/git.mk

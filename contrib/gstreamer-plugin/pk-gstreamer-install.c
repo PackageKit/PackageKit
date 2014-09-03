@@ -26,6 +26,8 @@
 #include <sys/utsname.h>
 #include <packagekit-glib2/packagekit.h>
 
+#include "src/pk-cleanup.h"
+
 typedef struct {
 	GstStructure	*structure;
 	gchar		*type_name;
@@ -47,37 +49,36 @@ enum {
 static PkGstCodecInfo *
 pk_gst_parse_codec (const gchar *codec)
 {
-	gchar **split = NULL;
-	gchar **ss = NULL;
 	GstStructure *s;
-	gchar *type_name = NULL;
-	gchar *caps = NULL;
 	PkGstCodecInfo *info = NULL;
+	_cleanup_free_ gchar *caps = NULL;
+	_cleanup_free_ gchar *type_name = NULL;
+	_cleanup_strv_free_ gchar **split = NULL;
+	_cleanup_strv_free_ gchar **ss = NULL;
 
 	split = g_strsplit (codec, "|", -1);
 	if (split == NULL || g_strv_length (split) != 5) {
 		g_message ("PackageKit: not a GStreamer codec line");
-		goto out;
+		return NULL;
 	}
 	if (g_strcmp0 (split[0], "gstreamer") != 0) {
 		g_message ("PackageKit: not a GStreamer codec request");
-		goto out;
+		return NULL;
 	}
 	if (g_strcmp0 (split[1], "0.10") != 0 &&
 	    g_strcmp0 (split[1], "1.0") != 0) {
 		g_message ("PackageKit: not recognised GStreamer version");
-		goto out;
+		return NULL;
 	}
 
 	if (g_str_has_prefix (split[4], "uri") != FALSE) {
 		/* split uri */
 		ss = g_strsplit (split[4], " ", 2);
-
 		info = g_new0 (PkGstCodecInfo, 1);
 		info->app_name = g_strdup (split[2]);
 		info->codec_name = g_strdup (split[3]);
 		info->type_name = g_strdup (ss[0]);
-		goto out;
+		return info;
 	}
 
 	/* split */
@@ -88,7 +89,7 @@ pk_gst_parse_codec (const gchar *codec)
 	s = gst_structure_from_string (caps, NULL);
 	if (s == NULL) {
 		g_message ("PackageKit: failed to parse caps: %s", caps);
-		goto out;
+		return NULL;
 	}
 
 	/* remove fields that are almost always just MIN-MAX of some sort
@@ -109,12 +110,6 @@ pk_gst_parse_codec (const gchar *codec)
 	info->codec_name = g_strdup (split[3]);
 	info->type_name = g_strdup (type_name);
 	info->structure = s;
-
-out:
-	g_free (caps);
-	g_free (type_name);
-	g_strfreev (ss);
-	g_strfreev (split);
 	return info;
 }
 
@@ -160,7 +155,8 @@ pk_gst_structure_to_provide (GstStructure *s)
 {
 	GString *string;
 	guint i, num_fields;
-	GList *fields, *l;
+	GList *l;
+	_cleanup_list_free_ GList *fields;
 
 	num_fields = gst_structure_n_fields (s);
 	fields = NULL;
@@ -208,9 +204,6 @@ pk_gst_structure_to_provide (GstStructure *s)
 
 		g_free (field_name);
 	}
-
-	g_list_free (fields);
-
 	return g_string_free (string, FALSE);
 }
 
@@ -273,19 +266,18 @@ out:
 int
 main (int argc, gchar **argv)
 {
-	GDBusProxy *proxy = NULL;
 	GOptionContext *context;
-	GError *error = NULL;
 	guint i;
 	guint len;
 	gchar **codecs = NULL;
 	gint xid = 0;
-	gint retval = GST_INSTALL_PLUGINS_ERROR;
 	const gchar *suffix;
-	gchar **resources = NULL;
-	GPtrArray *array = NULL;
 	gchar *resource;
-	GVariant *value = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	_cleanup_strv_free_ gchar **resources = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -305,13 +297,12 @@ main (int argc, gchar **argv)
 	if (!g_option_context_parse (context, &argc, &argv, &error)) {
 		g_print ("%s\nRun '%s --help' to see a full list of available command line options.\n",
 			 error->message, argv[0]);
-		g_error_free (error);
-		goto out;
+		return GST_INSTALL_PLUGINS_ERROR;
 	}
 	if (codecs == NULL) {
 		g_print ("Missing codecs information\n");
 		g_print ("Run 'with --help' to see a full list of available command line options.\n");
-		goto out;
+		return GST_INSTALL_PLUGINS_ERROR;
 	}
 
 	/* this is our parent window */
@@ -330,8 +321,7 @@ main (int argc, gchar **argv)
 	if (proxy == NULL) {
 		g_warning ("Cannot connect to PackageKit session service: %s",
 			   error->message);
-		g_error_free (error);
-		goto out;
+		return GST_INSTALL_PLUGINS_ERROR;
 	}
 
 	/* use a ()(64bit) suffix for 64 bit */
@@ -342,9 +332,8 @@ main (int argc, gchar **argv)
 	resources = g_new0 (gchar*, len+1);
 
 	/* process argv */
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		PkGstCodecInfo *info;
-		gchar *s;
 		gchar *type;
 		const gchar *gstreamer_version;
 
@@ -363,13 +352,13 @@ main (int argc, gchar **argv)
 
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
+			_cleanup_free_ gchar *s;
 			s = pk_gst_structure_to_provide (info->structure);
 			type = g_strdup_printf ("gstreamer%s(%s-%s)%s%s",
 						gstreamer_version,
 						info->type_name,
 						gst_structure_get_name (info->structure),
 						s, suffix);
-			g_free (s);
 			g_message ("PackageKit: structure: %s", type);
 		} else {
 			type = g_strdup_printf ("gstreamer%s(%s)%s",
@@ -390,7 +379,7 @@ main (int argc, gchar **argv)
 	/* nothing parsed */
 	if (array->len == 0) {
 		g_message ("no codec lines could be parsed");
-		goto out;
+		return GST_INSTALL_PLUGINS_ERROR;
 	}
 
 	/* convert to a GStrv */
@@ -400,36 +389,22 @@ main (int argc, gchar **argv)
 	value = g_dbus_proxy_call_sync (proxy,
 					"InstallGStreamerResources",
 					g_variant_new ("(u^a&ss)",
-						  xid,
-						  resources,
-						  "hide-finished"),
+						       xid,
+						       resources,
+						       "hide-finished"),
 					G_DBUS_CALL_FLAGS_NONE,
 					60 * 60 * 1000, /* 1 hour */
 					NULL,
 					&error);
 	if (value == NULL) {
 		/* use the error string to return a good GStreamer exit code */
-		retval = GST_INSTALL_PLUGINS_NOT_FOUND;
-		if (g_strrstr (error->message, "did not agree to search") != NULL)
-			retval = GST_INSTALL_PLUGINS_USER_ABORT;
-		else if (g_strrstr (error->message, "not all codecs were installed") != NULL)
-			retval = GST_INSTALL_PLUGINS_PARTIAL_SUCCESS;
 		g_message ("PackageKit: Did not install codec: %s", error->message);
-		g_error_free (error);
-		goto out;
+		if (g_strrstr (error->message, "did not agree to search") != NULL)
+			return GST_INSTALL_PLUGINS_USER_ABORT;
+		if (g_strrstr (error->message, "not all codecs were installed") != NULL)
+			return GST_INSTALL_PLUGINS_PARTIAL_SUCCESS;
+		return GST_INSTALL_PLUGINS_NOT_FOUND;
 	}
-
-	/* all okay */
-	retval = GST_INSTALL_PLUGINS_SUCCESS;
-
-out:
-	if (value != NULL)
-		g_variant_unref (value);
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	g_strfreev (resources);
-	if (proxy != NULL)
-		g_object_unref (proxy);
-	return retval;
+	return GST_INSTALL_PLUGINS_SUCCESS;
 }
 
