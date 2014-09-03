@@ -55,13 +55,12 @@ EXTRA_DIST =						\
 	moc.mk						\
 	intltool-extract.in				\
 	intltool-merge.in				\
-	intltool-update.in				\
-	$(NULL)
+	intltool-update.in
 
 DISTCHECK_CONFIGURE_FLAGS =				\
 	--disable-bash-completion			\
 	--enable-gtk-doc				\
-	--with-default-backend=dummy			\
+	--disable-daemon-tests				\
 	--with-systemdsystemunitdir=/tmp
 
 distclean-local:

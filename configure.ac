@@ -418,6 +418,14 @@ if test x$build_systemd_updates = xyes; then
 	AC_DEFINE(PK_HAS_OFFLINE_UPDATES,1,[Has offline updates])
 fi
 
+# don't do daemon checks when running make distcheck
+AC_ARG_ENABLE(daemon-tests, AS_HELP_STRING([--enable-daemon-tests],
+	      [Test the daemon using the dummy backend]),
+	      enable_daemon_tests=$enableval,enable_daemon_tests=yes)
+if test x$enable_daemon_tests = xyes; then
+	AC_DEFINE(PK_ENABLE_DAEMON_TESTS,1,[Has offline updates])
+fi
+
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
@@ -469,19 +477,6 @@ else
 fi
 AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
-
-dnl ---------------------------------------------------------------------------
-dnl - Compile time default choice of backend
-dnl ---------------------------------------------------------------------------
-AC_ARG_WITH([default_backend],
-	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use
-                           auto,alpm,apt,aptcc,dummy,entropy,hif,pisi,portage,ports,katja,smart,urpmi,zypp (auto)]))
-if test x$with_default_backend = x; then
-	with_default_backend=auto
-fi
-AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
-AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_hif = xyes; then
 	PKG_CHECK_MODULES(HIF, libhif >= 0.1.0)
@@ -692,5 +687,4 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         Zypp backend:              ${enable_zypp}
-        Default backend:           ${with_default_backend}
 "

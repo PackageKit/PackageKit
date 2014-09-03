@@ -174,7 +174,6 @@ using PackageKit.
 %else
         --disable-bash-completion \
 %endif
-        --with-default-backend=auto \
         --with-python-package-dir=%{python3_sitearch} \
         --disable-local \
         --disable-strict \

@@ -457,7 +457,7 @@ main (int argc, char *argv[])
 
 	/* resolve 'auto' to an actual name */
 	backend_name = g_key_file_get_string (conf, "Daemon", "DefaultBackend", NULL);
-	if (g_strcmp0 (backend_name, "auto") == 0) {
+	if (backend_name == NULL || g_strcmp0 (backend_name, "auto") == 0) {
 		if (!pk_util_set_auto_backend (conf, &error)) {
 			g_print ("Failed to resolve auto: %s\n", error->message);
 			retval = EXIT_FAILURE;

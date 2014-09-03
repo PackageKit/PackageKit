@@ -50,6 +50,8 @@
 #include "pk-progress-bar.h"
 #include "pk-debug.h"
 
+static gboolean enable_daemon_tests = FALSE;
+
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
 static guint _test_loop_timeout_id = 0;
@@ -292,6 +294,10 @@ pk_test_client_helper_func (void)
 	GSocketAddress *address = NULL;
 	gsize wrote;
 	GSource *source;
+
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
 
 	client_helper = pk_client_helper_new ();
 	g_assert (client_helper != NULL);
@@ -622,6 +628,10 @@ pk_test_client_func (void)
 	_cleanup_object_unref_ GCancellable *cancellable = NULL;
 	_cleanup_object_unref_ PkClient *client = NULL;
 
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
+
 #if 0
 	/* test user temp */
 	file = pk_client_get_user_temp ("self-test", NULL);
@@ -827,6 +837,10 @@ pk_test_console_func (void)
 {
 	gboolean ret;
 
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
+
 	/* get prompt 1 */
 	ret = pk_console_get_prompt ("press enter", TRUE);
 	g_assert (ret);
@@ -962,6 +976,10 @@ pk_test_control_func (void)
 	PkBitfield roles;
 	guint i;
 	const guint LOOP_SIZE = 5;
+
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
 
 	/* get control */
 	control = pk_control_new ();
@@ -1350,6 +1368,10 @@ pk_test_package_sack_func (void)
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 	guint64 bytes;
 
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
+
 	sack = pk_package_sack_new ();
 	g_assert (sack != NULL);
 
@@ -1599,6 +1621,10 @@ pk_test_task_func (void)
 	PkTask *task;
 	gchar **package_ids;
 
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
+
 	task = pk_task_new ();
 	g_assert (task != NULL);
 
@@ -1661,6 +1687,10 @@ pk_test_task_text_func (void)
 {
 	PkTaskText *task;
 	gchar **package_ids;
+
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
 
 	task = pk_task_text_new ();
 	g_assert (task != NULL);
@@ -1731,6 +1761,10 @@ pk_test_task_wrapper_func (void)
 	PkTaskWrapper *task;
 	gchar **package_ids;
 
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
+
 	task = pk_task_wrapper_new ();
 	g_assert (task != NULL);
 
@@ -1799,6 +1833,10 @@ pk_test_transaction_list_func (void)
 	PkTransactionList *tlist;
 	PkClient *client;
 	gchar **package_ids;
+
+	/* don't run when using make distcheck */
+	if (!enable_daemon_tests)
+		return;
 
 	/* get transaction_list object */
 	tlist = pk_transaction_list_new ();
@@ -1925,9 +1963,9 @@ main (int argc, char **argv)
 	pk_debug_set_verbose (TRUE);
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
-	/* don't run when using make distcheck */
-	if (g_strcmp0 (DEFAULT_BACKEND, "dummy") == 0)
-		return 0;
+#ifdef PK_ENABLE_DAEMON_TESTS
+	enable_daemon_tests = TRUE;
+#endif
 
 	/* some libraries need to know */
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
