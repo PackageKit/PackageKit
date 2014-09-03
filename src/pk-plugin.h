@@ -35,7 +35,6 @@ typedef struct PkPluginPrivate PkPluginPrivate;
 typedef struct {
 	GModule			*module;
 	PkBackend		*backend;
-	PkBackendJob		*job;
 	PkPluginPrivate		*priv;
 } PkPlugin;
 
