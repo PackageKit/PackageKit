@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -59,27 +59,6 @@ G_BEGIN_DECLS
  * The DBUS interface for the transactions
  */
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
-
-/**
- * PK_SERVICE_PACK_GROUP_NAME:
- *
- * The group name of the Service Pack config file
- */
-#define	PK_SERVICE_PACK_GROUP_NAME	"PackageKit Service Pack"
-
-/**
- * PK_PACKAGE_LIST_FILENAME:
- *
- * The default location of the package list
- */
-#define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
-
-/**
- * PK_PACKAGE_CACHE_FILENAME:
- *
- * The default location of the package cache database
- */
-#define	PK_SYSTEM_PACKAGE_CACHE_FILENAME	"/var/lib/PackageKit/package-cache.db"
 
 void		 pk_common_test				(gpointer	 user_data);
 gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
