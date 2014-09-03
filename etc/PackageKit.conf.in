@@ -16,11 +16,3 @@ BackendShutdownTimeout=5
 # value "foo,bar" first "foo" will be attempted and then "bar" if the
 # libpk_backend_foo.so module load failed.
 DefaultBackend=@defaultbackend@
-
-[Plugins]
-
-# Update the package cache on PackageKit transactions
-UpdatePackageCache=false
-
-# Update the package list on PackageKit transactions
-UpdatePackageList=false
