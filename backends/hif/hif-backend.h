@@ -30,8 +30,6 @@
 
 #include <pk-backend.h>
 
-PkErrorEnum	 hif_rc_to_error_enum		(gint			 rc);
-const gchar	*hif_rc_to_error_str		(gint			 rc);
 PkInfoEnum	 hif_advisory_type_to_info_enum	(HyAdvisoryType		 type);
 void		 hif_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
