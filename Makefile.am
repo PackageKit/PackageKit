@@ -17,9 +17,6 @@ SUBDIRS = 						\
 clean-local :
 	rm -f *~
 
-security-check:
-	flawfinder `find -name "*.c"`
-
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
 
@@ -71,24 +68,6 @@ distclean-local:
 	if test $(srdcir) = .; then :; else \
 		rm -f ChangeLog; \
 	fi
-
-coverity:
-	$(MAKE);					\
-	cd src; $(MAKE) clean; cd -;			\
-	cd lib; $(MAKE) clean; cd -;			\
-	cd backends; $(MAKE) clean; cd -;		\
-	cd client; $(MAKE) clean; cd -;			\
-	cd contrib; $(MAKE) clean; cd -;		\
-	cd tools; $(MAKE) clean; cd -;			\
-	cov-build --dir cov-int $(MAKE);		\
-	tar czvf packagekit-coverity.tgz cov-int;	\
-	set COVERITY_EMAIL=`cat ~/.coverity | grep EMAIL | cut -f2`; \
-	set COVERITY_PASSWORD=`cat ~/.coverity | grep PASSWORD_PackageKit | cut -f2`; \
-	curl --form file=@packagekit-coverity.tgz	\
-	     --form project=PackageKit			\
-	     --form password=$(COVERITY_PASSWORD)	\
-	     --form email=$(COVERITY_EMAIL)		\
-	     http://scan5.coverity.com/cgi-bin/upload.py
 
 ChangeLog:
 	@echo Creating $@
