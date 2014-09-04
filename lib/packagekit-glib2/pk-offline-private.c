@@ -274,13 +274,13 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 gboolean
 pk_offline_auth_set_results (PkResults *results, GError **error)
 {
-	GPtrArray *packages;
 	guint i;
 	PkPackage *package;
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_free_ gchar *data = NULL;
 	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
 	_cleanup_object_unref_ PkError *pk_error = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 

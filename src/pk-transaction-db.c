@@ -933,6 +933,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	/* session proxy saving (since 0.5.1) */
 	if (!pk_transaction_db_execute (tdb, "SELECT * FROM proxy LIMIT 1", &error_local)) {
 		g_debug ("adding table proxy: %s", error_local->message);
+		g_clear_error (&error_local);
 		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_https TEXT, proxy_ftp TEXT, proxy_socks TEXT, no_proxy TEXT, pac TEXT, uid INTEGER, session TEXT);";
 		if (!pk_transaction_db_execute (tdb, statement, error))
 			return FALSE;

@@ -5510,6 +5510,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->tid);
 	g_free (transaction->priv->sender);
 	g_free (transaction->priv->cmdline);
+	g_ptr_array_unref (transaction->priv->supported_content_types);
 
 	if (transaction->priv->connection != NULL)
 		g_object_unref (transaction->priv->connection);
