@@ -846,7 +846,6 @@ pk_scheduler_get_array (PkScheduler *scheduler)
 		/* only return in the list if its committed and not finished */
 		state = pk_transaction_get_state (item->transaction);
 		if (state == PK_TRANSACTION_STATE_READY ||
-		    state == PK_TRANSACTION_STATE_READY ||
 		    state == PK_TRANSACTION_STATE_RUNNING)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
@@ -960,8 +959,6 @@ pk_scheduler_is_consistent (PkScheduler *scheduler)
 			running++;
 		if (state == PK_TRANSACTION_STATE_READY)
 			waiting++;
-		if (state == PK_TRANSACTION_STATE_READY)
-			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
 		role = pk_transaction_get_role (item->transaction);
@@ -998,7 +995,6 @@ pk_scheduler_is_consistent (PkScheduler *scheduler)
 	/* nothing running */
 	if (waiting == length) {
 		pk_scheduler_print (scheduler);
-		g_warning ("everything is waiting!");
 		ret = FALSE;
 	}
 	return ret;
