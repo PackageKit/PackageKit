@@ -1499,6 +1499,7 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 #ifdef PK_HAS_OFFLINE_UPDATES
 	g_string_append_printf (string, "  %s\n", "offline-get-prepared");
 	g_string_append_printf (string, "  %s\n", "offline-trigger");
+	g_string_append_printf (string, "  %s\n", "offline-cancel");
 	g_string_append_printf (string, "  %s\n", "offline-status");
 #endif
 	return g_string_free (string, FALSE);
@@ -1553,15 +1554,6 @@ pk_console_offline_get_prepared (GError **error)
 		g_print ("%s\n", tmp);
 	}
 	return TRUE;
-}
-
-/**
- * pk_console_offline_trigger:
- **/
-static gboolean
-pk_console_offline_trigger (GError **error)
-{
-	return pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, error);
 }
 
 /**
@@ -2320,7 +2312,14 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "offline-trigger") == 0) {
 
 		run_mainloop = FALSE;
-		ret = pk_console_offline_trigger (&error);
+		ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, &error);
+		if (!ret)
+			ctx->retval = error->code;
+
+	} else if (strcmp (mode, "offline-cancel") == 0) {
+
+		run_mainloop = FALSE;
+		ret = pk_offline_cancel (NULL, &error);
 		if (!ret)
 			ctx->retval = error->code;
 
