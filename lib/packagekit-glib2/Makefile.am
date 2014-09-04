@@ -41,6 +41,7 @@ HEADER_FILES =							\
 	pk-common.h						\
 	pk-control.h						\
 	pk-control-sync.h					\
+	pk-desktop.h						\
 	pk-details.h						\
 	pk-distro-upgrade.h					\
 	pk-enum.h						\
@@ -92,6 +93,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-control-sync.h					\
 	pk-debug.c						\
 	pk-debug.h						\
+	pk-desktop.c						\
+	pk-desktop.h						\
 	pk-details.c						\
 	pk-details.h						\
 	pk-distro-upgrade.c					\

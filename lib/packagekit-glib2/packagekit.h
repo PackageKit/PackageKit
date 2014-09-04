@@ -34,6 +34,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-control-sync.h>
+#include <packagekit-glib2/pk-desktop.h>
 #include <packagekit-glib2/pk-details.h>
 #include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
