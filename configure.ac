@@ -1,8 +1,8 @@
 # Copyright (C) 2007-2012 Richard Hughes <richard@hughsie.com>
 
-m4_define([pk_major_version], [0])
-m4_define([pk_minor_version], [9])
-m4_define([pk_micro_version], [6])
+m4_define([pk_major_version], [1])
+m4_define([pk_minor_version], [0])
+m4_define([pk_micro_version], [0])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
