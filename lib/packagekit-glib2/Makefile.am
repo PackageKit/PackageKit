@@ -187,12 +187,13 @@ pk_socket_example_LDADD = $(GIO_LIBS) $(GLIB_LIBS)
 pk_socket_example_CFLAGS = $(WARNINGFLAGS_C)
 
 check_PROGRAMS =						\
-	pk-self-test
+	pk-test-daemon						\
+	pk-test-private
 
-pk_self_test_SOURCES =						\
-	pk-self-test.c
+pk_test_private_SOURCES =					\
+	pk-test-private.c
 
-pk_self_test_LDADD =						\
+pk_test_private_LDADD =						\
 	libpackagekit-glib2.la					\
 	libpackagekitprivate.a					\
 	$(GLIB_LIBS)						\
@@ -201,9 +202,27 @@ pk_self_test_LDADD =						\
 	$(SQLITE_LIBS)						\
 	$(ARCHIVE_LIBS)
 
-pk_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)
+pk_test_private_CFLAGS =					\
+	$(AM_CFLAGS)						\
+	$(WARNINGFLAGS_C)
 
-TESTS = pk-self-test
+pk_test_daemon_SOURCES =					\
+	pk-test-daemon.c
+
+pk_test_daemon_LDADD =						\
+	libpackagekit-glib2.la					\
+	libpackagekitprivate.a					\
+	$(GLIB_LIBS)						\
+	$(SELFTEST_LIBS)					\
+	$(POLKIT_LIBS)						\
+	$(SQLITE_LIBS)						\
+	$(ARCHIVE_LIBS)
+
+pk_test_daemon_CFLAGS =						\
+	$(AM_CFLAGS)						\
+	$(WARNINGFLAGS_C)
+
+TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
