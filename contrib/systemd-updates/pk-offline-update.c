@@ -26,6 +26,7 @@
 #include <gio/gio.h>
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
+#include <packagekit-glib2/pk-offline-private.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <systemd/sd-journal.h>

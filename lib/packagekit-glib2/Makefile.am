@@ -50,6 +50,7 @@ HEADER_FILES =							\
 	pk-files.h						\
 	pk-media-change-required.h				\
 	pk-item-progress.h					\
+	pk-offline.h						\
 	pk-package.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
