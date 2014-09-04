@@ -42,6 +42,7 @@
 #include <gio/gio.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-results.h>
@@ -1128,6 +1129,115 @@ pk_transaction_is_finished_with_lock_required (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_offline_invalidate_check:
+ */
+static void
+pk_transaction_offline_invalidate_check (PkTransaction *transaction)
+{
+	PkPackage *pkg;
+	const gchar *package_id;
+	gchar **package_ids;
+	guint i;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ PkPackageSack *sack;
+	_cleanup_ptrarray_unref_ GPtrArray *invalidated = NULL;
+
+	/* get the existing prepared updates */
+	sack = pk_offline_get_prepared_sack (NULL);
+	if (sack == NULL)
+		return;
+
+	/* are there any requested packages that match in prepared-updates */
+	package_ids = transaction->priv->cached_package_ids;
+	for (i = 0; package_ids[i] != NULL; i++) {
+		pkg = pk_package_sack_find_by_id_name_arch (sack, package_ids[i]);
+		if (pkg != NULL) {
+			g_debug ("%s modified %s, invalidating prepared-updates",
+				 package_ids[i], pk_package_get_id (pkg));
+			if (!pk_offline_auth_invalidate (&error)) {
+				g_warning ("failed to invalidate: %s",
+					   error->message);
+			}
+			g_object_unref (pkg);
+			return;
+		}
+	}
+
+	/* are there any changed deps that match a package in prepared-updates */
+	invalidated = pk_results_get_package_array (transaction->priv->results);
+	for (i = 0; i < invalidated->len; i++) {
+		package_id = pk_package_get_id (g_ptr_array_index (invalidated, i));
+		pkg = pk_package_sack_find_by_id_name_arch (sack, package_id);
+		if (pkg != NULL) {
+			g_debug ("%s modified %s, invalidating prepared-updates",
+				 package_id, pk_package_get_id (pkg));
+			if (!pk_offline_auth_invalidate (&error)) {
+				g_warning ("failed to invalidate: %s",
+					   error->message);
+			}
+			g_object_unref (pkg);
+			return;
+		}
+	}
+}
+
+/**
+ * pk_transaction_offline_finished:
+ **/
+static void
+pk_transaction_offline_finished (PkTransaction *transaction)
+{
+	PkBitfield transaction_flags;
+	gchar **package_ids;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+
+	/* if we're doing UpdatePackages[only-download] then update the
+	 * prepared-updates file */
+	transaction_flags = transaction->priv->cached_transaction_flags;
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		package_ids = transaction->priv->cached_package_ids;
+		if (!pk_offline_auth_set_prepared_ids (package_ids, &error)) {
+			g_warning ("failed to write offline update: %s",
+				   error->message);
+		}
+		return;
+	}
+
+	switch (transaction->priv->role) {
+	case PK_ROLE_ENUM_GET_UPDATES:
+		/* if we do get-updates and there's no updates then remove
+		 * prepared-updates so the UI doesn't display update & reboot */
+		array = pk_results_get_package_array (transaction->priv->results);
+		if (array->len == 0) {
+			if (!pk_offline_auth_invalidate (&error)) {
+				g_warning ("failed to invalidate: %s",
+					   error->message);
+			}
+		}
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+	case PK_ROLE_ENUM_REPO_SET_DATA:
+	case PK_ROLE_ENUM_REPO_ENABLE:
+		/* delete the prepared updates file as it's not valid */
+		if (!pk_offline_auth_invalidate (&error))
+			g_warning ("failed to invalidate: %s", error->message);
+		break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		/* delete the file if the action affected any package
+		 * already listed in the prepared updates file */
+		pk_transaction_offline_invalidate_check (transaction);
+		break;
+	default:
+		break;
+	}
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -1137,6 +1247,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	guint i;
 	PkPackage *item;
 	PkInfoEnum info;
+	PkBitfield transaction_flags;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1164,6 +1275,13 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* run the plugins */
 	pk_transaction_plugin_phase (transaction,
 				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END);
+
+	/* handle offline updates */
+	transaction_flags = transaction->priv->cached_transaction_flags;
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
+	    !pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		pk_transaction_offline_finished (transaction);
+	}
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)

@@ -349,8 +349,13 @@ pk_engine_state_changed_cb (gpointer data)
 {
 	PkNetworkEnum state;
 	PkEngine *engine = PK_ENGINE (data);
+	_cleanup_error_free_ GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* we're done something low-level */
+	if (!pk_offline_auth_invalidate (&error))
+		g_warning ("failed to invalidate: %s", error->message);
 
 	/* run the plugin hook */
 	pk_engine_plugin_phase (engine, PK_PLUGIN_PHASE_STATE_CHANGED);
