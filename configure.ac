@@ -628,8 +628,6 @@ lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
 src/Makefile
-src/plugins/Makefile
-src/plugins/packagekit-plugin.pc
 client/Makefile
 po/Makefile.in
 ],[

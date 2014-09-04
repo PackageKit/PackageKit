@@ -72,8 +72,6 @@ PkTransaction	*pk_scheduler_get_transaction	(PkScheduler	*scheduler,
 						 const gchar	*tid);
 void		 pk_scheduler_cancel_background	(PkScheduler	*scheduler);
 void		 pk_scheduler_cancel_queued	(PkScheduler	*scheduler);
-void		 pk_scheduler_set_plugins	(PkScheduler	*scheduler,
-						 GPtrArray	*plugins);
 void		 pk_scheduler_set_backend	(PkScheduler	*scheduler,
 						 PkBackend	*backend);
 

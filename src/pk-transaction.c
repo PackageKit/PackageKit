@@ -52,7 +52,6 @@
 #include "pk-backend.h"
 #include "pk-dbus.h"
 #include "pk-notify.h"
-#include "pk-plugin.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -136,7 +135,6 @@ struct PkTransactionPrivate
 	gchar			*cached_value;
 	gchar			*cached_directory;
 	gchar			*cached_cat_id;
-	GPtrArray		*plugins;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
 	GDBusConnection		*connection;
@@ -258,16 +256,6 @@ pk_transaction_error_quark (void)
 					     PK_DBUS_INTERFACE_TRANSACTION ".NumberOfPackagesInvalid");
 	}
 	return quark;
-}
-
-/**
- * pk_transaction_set_plugins:
- */
-void
-pk_transaction_set_plugins (PkTransaction *transaction,
-			    GPtrArray *plugins)
-{
-	transaction->priv->plugins = g_ptr_array_ref (plugins);
 }
 
 /**
@@ -904,72 +892,6 @@ pk_transaction_get_uid (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_plugin_phase:
- **/
-static void
-pk_transaction_plugin_phase (PkTransaction *transaction,
-			     PkPluginPhase phase)
-{
-	const gchar *function = NULL;
-	gboolean ran_one = FALSE;
-	gboolean ret;
-	guint i;
-	PkPlugin *plugin;
-	PkPluginTransactionFunc plugin_func = NULL;
-
-	switch (phase) {
-	case PK_PLUGIN_PHASE_TRANSACTION_RUN:
-		function = "pk_plugin_transaction_run";
-		break;
-	case PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES:
-		function = "pk_plugin_transaction_content_types";
-		break;
-	case PK_PLUGIN_PHASE_TRANSACTION_STARTED:
-		function = "pk_plugin_transaction_started";
-		break;
-	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS:
-		function = "pk_plugin_transaction_finished_results";
-		break;
-	case PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END:
-		function = "pk_plugin_transaction_finished_end";
-		break;
-	default:
-		g_assert_not_reached ();
-		break;
-	}
-
-	g_assert (function != NULL);
-	if (transaction->priv->plugins == NULL)
-		goto out;
-
-	/* run each plugin */
-	for (i = 0; i < transaction->priv->plugins->len; i++) {
-		plugin = g_ptr_array_index (transaction->priv->plugins, i);
-		ret = g_module_symbol (plugin->module,
-				       function,
-				       (gpointer *) &plugin_func);
-		if (!ret)
-			continue;
-
-		ran_one = TRUE;
-		g_debug ("run %s on %s",
-			 function,
-			 g_module_name (plugin->module));
-		plugin->backend = transaction->priv->backend;
-		plugin_func (plugin, transaction);
-		plugin->backend = NULL;
-	}
-out:
-	/* set this to a known state */
-	if (transaction->priv->job != NULL) {
-		pk_transaction_signals_reset (transaction,
-					    transaction->priv->job);
-	}
-	if (!ran_one)
-		g_debug ("no plugins provided %s", function);
-}
-
-/**
  * pk_transaction_get_conf:
  *
  * Returns: (transfer none): GKeyFile of this transaction
@@ -1267,14 +1189,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 		return;
 	}
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_RESULTS);
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_FINISHED_END);
 
 	/* handle offline updates */
 	transaction_flags = transaction->priv->cached_transaction_flags;
@@ -2009,8 +1923,7 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
 	g_return_val_if_fail (transaction->priv->backend != NULL, FALSE);
 
-	/* create main job for transaction, which is *not* used
-	 * for plugins */
+	/* create main job for transaction */
 	priv->job = pk_backend_job_new (transaction->priv->conf);
 	pk_backend_job_set_background (priv->job, priv->background);
 	pk_backend_job_set_interactive (priv->job, priv->interactive);
@@ -2053,9 +1966,7 @@ pk_transaction_run (PkTransaction *transaction)
 		return TRUE;
 	}
 
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_RUN);
+	/* run the job */
 	pk_backend_start_job (priv->backend, priv->job);
 
 	/* is an error code set? */
@@ -2082,23 +1993,6 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* reset after the pre-transaction checks */
 	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_STARTED);
-
-	/* check again if we should skip this transaction */
-	exit_status = pk_backend_job_get_exit_code (priv->job);
-	if (exit_status == PK_EXIT_ENUM_SKIP_TRANSACTION) {
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
-		return TRUE;
-	}
-
-	/* did the plugin finish or abort the transaction? */
-	if (exit_status != PK_EXIT_ENUM_UNKNOWN)  {
-		pk_transaction_finished_emit (transaction, exit_status, 0);
-		return TRUE;
-	}
 
 	/* do the correct action with the cached parameters */
 	switch (priv->role) {
@@ -2643,54 +2537,6 @@ pk_transaction_role_to_action_allow_untrusted (PkRoleEnum role)
 }
 
 /**
- * pk_transaction_plugin_get_action:
- *
- * Allow plugins to override the default PolicyKit action.
- **/
-static const gchar *
-pk_transaction_plugin_get_action (PkTransaction *transaction,
-				  const gchar *action_id)
-{
-	const gchar *function = "pk_plugin_transaction_get_action";
-	gboolean ran_one = FALSE;
-	gboolean ret;
-	guint i;
-	PkPlugin *plugin;
-	PkPluginGetActionFunc plugin_func = NULL;
-
-	if (transaction->priv->plugins == NULL)
-		goto out;
-
-	/* run each plugin */
-	for (i = 0; i < transaction->priv->plugins->len; i++) {
-		plugin = g_ptr_array_index (transaction->priv->plugins, i);
-		ret = g_module_symbol (plugin->module,
-				       function,
-				       (gpointer *) &plugin_func);
-		if (!ret)
-			continue;
-
-		ran_one = TRUE;
-		g_debug ("run %s on %s",
-			 function,
-			 g_module_name (plugin->module));
-		plugin->backend = transaction->priv->backend;
-		action_id = plugin_func (plugin, transaction, action_id);
-		plugin->backend = NULL;
-	}
-
-out:
-	/* set this to a known state */
-	if (transaction->priv->job != NULL) {
-		pk_transaction_signals_reset (transaction,
-					      transaction->priv->job);
-	}
-	if (!ran_one)
-		g_debug ("no plugins provided %s", function);
-	return action_id;
-}
-
-/**
  * pk_transaction_obtain_authorization:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
@@ -2741,18 +2587,6 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 		action_id = pk_transaction_role_to_action_only_trusted (role);
 	} else {
 		action_id = pk_transaction_role_to_action_allow_untrusted (role);
-	}
-
-	/* allow plugins to override */
-	action_id = pk_transaction_plugin_get_action (transaction, action_id);
-
-	if (action_id == NULL) {
-		g_set_error (error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-			     "policykit type required for '%s'",
-			     pk_role_enum_to_string (role));
-		return FALSE;
 	}
 
 	/* log */
@@ -4066,10 +3900,6 @@ pk_transaction_install_files (PkTransaction *transaction,
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
-
-	/* run the plugins */
-	pk_transaction_plugin_phase (transaction,
-				     PK_PLUGIN_PHASE_TRANSACTION_CONTENT_TYPES);
 
 	/* check all files exists and are valid */
 	length = g_strv_length (full_paths);
@@ -5529,21 +5359,6 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 }
 
 /**
- * pk_transaction_add_supported_content_type:
- *
- * Designed to be used by plugins.
- **/
-void
-pk_transaction_add_supported_content_type (PkTransaction *transaction,
-					const gchar *mime_type)
-{
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_debug ("added supported content type of %s", mime_type);
-	g_ptr_array_add (transaction->priv->supported_content_types,
-			 g_strdup (mime_type));
-}
-
-/**
  * pk_transaction_reset_after_lock_error:
  **/
 void
@@ -5710,8 +5525,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->results);
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
-	if (transaction->priv->plugins != NULL)
-		g_ptr_array_unref (transaction->priv->plugins);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }

@@ -93,7 +93,6 @@ struct PkSchedulerPrivate
 	guint			 unwedge1_id;
 	guint			 unwedge2_id;
 	GKeyFile		*conf;
-	GPtrArray		*plugins;
 	PkBackend		*backend;
 	GDBusNodeInfo		*introspection;
 };
@@ -683,12 +682,6 @@ pk_scheduler_create (PkScheduler *scheduler,
 					G_CALLBACK (pk_scheduler_transaction_state_changed_cb),
 					scheduler);
 
-	/* set plugins */
-	if (scheduler->priv->plugins != NULL) {
-		pk_transaction_set_plugins (item->transaction,
-					    scheduler->priv->plugins);
-	}
-
 	/* set transaction state */
 	pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
 
@@ -1059,17 +1052,6 @@ pk_scheduler_wedge_check1 (PkScheduler *scheduler)
 }
 
 /**
- * pk_scheduler_set_plugins:
- */
-void
-pk_scheduler_set_plugins (PkScheduler *scheduler,
-				 GPtrArray *plugins)
-{
-	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
-	scheduler->priv->plugins = g_ptr_array_ref (plugins);
-}
-
-/**
  * pk_scheduler_set_backend:
  *
  * Note: this is the master PkBackend that is used when the transaction
@@ -1148,8 +1130,6 @@ pk_scheduler_finalize (GObject *object)
 	g_ptr_array_free (scheduler->priv->array, TRUE);
 	g_dbus_node_info_unref (scheduler->priv->introspection);
 	g_key_file_unref (scheduler->priv->conf);
-	if (scheduler->priv->plugins != NULL)
-		g_ptr_array_unref (scheduler->priv->plugins);
 	if (scheduler->priv->backend != NULL)
 		g_object_unref (scheduler->priv->backend);
 

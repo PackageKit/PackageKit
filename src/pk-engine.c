@@ -48,7 +48,6 @@
 #include "pk-engine.h"
 #include "pk-network.h"
 #include "pk-notify.h"
-#include "pk-plugin.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -56,7 +55,6 @@
 
 static void     pk_engine_finalize	(GObject       *object);
 static void	pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
-static void	pk_engine_plugin_phase	(PkEngine *engine, PkPluginPhase phase);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
@@ -93,7 +91,6 @@ struct PkEnginePrivate
 	PolkitAuthority		*authority;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
-	GPtrArray		*plugins;
 	guint			 owner_id;
 	GDBusNodeInfo		*introspection;
 	GDBusConnection		*connection;
@@ -356,9 +353,6 @@ pk_engine_state_changed_cb (gpointer data)
 	/* we're done something low-level */
 	if (!pk_offline_auth_invalidate (&error))
 		g_warning ("failed to invalidate: %s", error->message);
-
-	/* run the plugin hook */
-	pk_engine_plugin_phase (engine, PK_PLUGIN_PHASE_STATE_CHANGED);
 
 	/* if network is not up, then just reschedule */
 	state = pk_network_get_network_state (engine->priv->network);
@@ -826,144 +820,6 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	pk_engine_emit_property_changed (engine,
 					 "NetworkState",
 					 g_variant_new_uint32 (network_state));
-}
-
-
-/**
- * pk_engine_load_plugin:
- */
-static void
-pk_engine_load_plugin (PkEngine *engine,
-		       const gchar *filename)
-{
-	gboolean ret;
-	GModule *module;
-	PkPlugin *plugin;
-	PkPluginGetDescFunc plugin_desc = NULL;
-
-	module = g_module_open (filename,
-				0);
-	if (module == NULL) {
-		g_warning ("failed to open plugin %s: %s",
-			   filename, g_module_error ());
-		return;
-	}
-
-	/* get description */
-	ret = g_module_symbol (module,
-			       "pk_plugin_get_description",
-			       (gpointer *) &plugin_desc);
-	if (!ret) {
-		g_warning ("Plugin %s requires description",
-			   filename);
-		g_module_close (module);
-		return;
-	}
-	g_debug ("opened plugin %s", filename);
-
-	plugin = g_new0 (PkPlugin, 1);
-	plugin->module = module;
-	g_ptr_array_add (engine->priv->plugins, plugin);
-}
-
-/**
- * pk_engine_load_plugins:
- */
-static void
-pk_engine_load_plugins (PkEngine *engine)
-{
-	const gchar *filename_tmp;
-	_cleanup_free_ gchar *path = NULL;
-	_cleanup_dir_close_ GDir *dir = NULL;
-	_cleanup_error_free_ GError *error = NULL;
-
-	/* search in the plugin directory for plugins */
-	path = g_build_filename (LIBDIR, "packagekit-plugins-3", NULL);
-	dir = g_dir_open (path, 0, &error);
-	if (dir == NULL) {
-		g_warning ("failed to open plugin directory: %s",
-			   error->message);
-		return;
-	}
-
-	/* try to open each plugin */
-	g_debug ("searching for plugins in %s", path);
-	do {
-		_cleanup_free_ gchar *filename_plugin = NULL;
-		filename_tmp = g_dir_read_name (dir);
-		if (filename_tmp == NULL)
-			break;
-		if (!g_str_has_suffix (filename_tmp, ".so"))
-			continue;
-		filename_plugin = g_build_filename (path,
-						    filename_tmp,
-						    NULL);
-		pk_engine_load_plugin (engine,
-					    filename_plugin);
-	} while (TRUE);
-}
-
-/**
- * pk_engine_plugin_free:
- **/
-static void
-pk_engine_plugin_free (PkPlugin *plugin)
-{
-	g_free (plugin->priv);
-	g_module_close (plugin->module);
-	g_free (plugin);
-}
-
-
-/**
- * pk_engine_plugin_phase:
- **/
-static void
-pk_engine_plugin_phase (PkEngine *engine,
-			PkPluginPhase phase)
-{
-	guint i;
-	const gchar *function = NULL;
-	gboolean ret;
-	PkPluginFunc plugin_func = NULL;
-	PkPlugin *plugin;
-
-	switch (phase) {
-	case PK_PLUGIN_PHASE_INIT:
-		function = "pk_plugin_initialize";
-		break;
-	case PK_PLUGIN_PHASE_DESTROY:
-		function = "pk_plugin_destroy";
-		break;
-	case PK_PLUGIN_PHASE_STATE_CHANGED:
-		function = "pk_plugin_state_changed";
-		break;
-	default:
-		g_assert_not_reached ();
-		break;
-	}
-
-	g_assert (function != NULL);
-
-	/* run each plugin */
-	for (i = 0; i < engine->priv->plugins->len; i++) {
-		plugin = g_ptr_array_index (engine->priv->plugins, i);
-		ret = g_module_symbol (plugin->module,
-				       function,
-				       (gpointer *) &plugin_func);
-		if (!ret)
-			continue;
-		g_debug ("run %s on %s",
-			 function,
-			 g_module_name (plugin->module));
-
-		/* use the master PkBackend instance in case the plugin
-		 * wants to check if roles are supported in initialize */
-		plugin->backend = engine->priv->backend;
-		plugin_func (plugin);
-		plugin->backend = NULL;
-		g_debug ("finished %s", function);
-	}
 }
 
 /**
@@ -1826,10 +1682,6 @@ pk_engine_init (PkEngine *engine)
 	/* setup file watches */
 	pk_engine_setup_file_monitors (engine);
 
-	/* get plugins */
-	engine->priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_engine_plugin_free);
-	pk_engine_load_plugins (engine);
-
 	/* we use a trasaction db to store old transactions */
 	engine->priv->transaction_db = pk_transaction_db_new ();
 
@@ -1843,19 +1695,6 @@ pk_engine_init (PkEngine *engine)
 				pk_engine_on_name_acquired_cb,
 				pk_engine_on_name_lost_cb,
 				engine, NULL);
-}
-
-/**
- * pk_engine_plugins_init:
- *
- * Initialize all engine plugins. This has to be called after
- * the backend instance has been created, since some plugins
- * might use the backend while initializing.
- **/
-void
-pk_engine_plugins_init (PkEngine *engine)
-{
-	pk_engine_plugin_phase (engine, PK_PLUGIN_PHASE_INIT);
 }
 
 /**
@@ -1873,10 +1712,6 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
-
-	/* run the plugins */
-	pk_engine_plugin_phase (engine,
-				PK_PLUGIN_PHASE_DESTROY);
 
 	/* if we set an state changed notifier, clear */
 	if (engine->priv->timeout_priority_id != 0) {
@@ -1922,7 +1757,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->backend);
 	g_key_file_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
-	g_ptr_array_unref (engine->priv->plugins);
 	g_strfreev (engine->priv->mime_types);
 	g_free (engine->priv->distro_id);
 
@@ -1943,9 +1777,7 @@ pk_engine_new (GKeyFile *conf)
 	engine->priv->backend = pk_backend_new (engine->priv->conf);
 	engine->priv->scheduler = pk_scheduler_new (engine->priv->conf);
 	pk_scheduler_set_backend (engine->priv->scheduler,
-					 engine->priv->backend);
-	pk_scheduler_set_plugins (engine->priv->scheduler,
-					 engine->priv->plugins);
+				  engine->priv->backend);
 	g_signal_connect (engine->priv->scheduler, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 	return PK_ENGINE (engine);

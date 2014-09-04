@@ -72,6 +72,7 @@ Obsoletes: PackageKit-zif < 0.8.13-2
 # components now built-in
 Obsoletes: PackageKit-debug-install < 0.8.15-2
 Obsoletes: PackageKit-hawkey < 0.8.15-2
+Obsoletes: PackageKit-backend-devel < 0.9.6
 
 # Udev no longer provides this functionality
 Obsoletes: PackageKit-device-rebind < 0.8.13-2
@@ -187,7 +188,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-plugins-3/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
@@ -262,9 +262,6 @@ popd > /dev/null
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
-%dir %{_libdir}/packagekit-plugins-3
-%{_libdir}/packagekit-plugins-3/*.so
-%{_libdir}/girepository-1.0/PackageKitPlugin-1.0.typelib
 %{_datadir}/dbus-1/interfaces/*.xml
 %{_unitdir}/packagekit-offline-update.service
 %{_unitdir}/packagekit.service
@@ -312,15 +309,7 @@ popd > /dev/null
 %dir %{_includedir}/PackageKit/packagekit-glib2
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
-%{_datadir}/gir-1.0/PackageKitPlugin-1.0.gir
 %{_datadir}/gtk-doc/html/PackageKit
-
-%files backend-devel
-%defattr(-,root,root,-)
-%dir %{_includedir}/PackageKit
-%{_includedir}/PackageKit/plugin
-%{_libdir}/pkgconfig/packagekit-plugin.pc
-
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

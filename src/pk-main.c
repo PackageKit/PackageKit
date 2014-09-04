@@ -233,9 +233,6 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* initialize all plugins */
-	pk_engine_plugins_init (engine);
-
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
 	if (timed_exit)

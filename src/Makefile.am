@@ -1,17 +1,6 @@
 ## We require new-style dependency handling.
 AUTOMAKE_OPTIONS = 1.7
 
-if HAVE_INTROSPECTION
--include $(INTROSPECTION_MAKEFILE)
-INTROSPECTION_GIRS =
-INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) \
-			     --add-include-path=$(top_builddir)/lib/packagekit-glib2
-INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) \
-			      --includedir=$(top_builddir)/lib/packagekit-glib2
-endif
-
-SUBDIRS = plugins
-
 PK_GLIB2_LIBS =	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
 
 AM_CPPFLAGS =						\
@@ -64,29 +53,6 @@ pk-resources.h: packagekit.gresource.xml
 		--generate-header			\
 		--c-name pk				\
 		$(srcdir)/packagekit.gresource.xml
-
-pluginincludedir=$(includedir)/PackageKit/plugin
-plugininclude_HEADERS =					\
-	packagekit-plugin.h				\
-	pk-shared.h					\
-	pk-backend.h					\
-	pk-backend-spawn.h				\
-	pk-backend-job.h				\
-	pk-plugin.h					\
-	pk-transaction.h
-
-plugininclude_GIRSOURCES =				\
-	pk-plugin.h					\
-	pk-backend.c					\
-	pk-backend.h					\
-	pk-backend-job.c				\
-	pk-backend-job.h				\
-	pk-transaction.c				\
-	pk-transaction.h				\
-	pk-resources.c					\
-	pk-resources.h					\
-	pk-shared.c					\
-	pk-shared.h
 
 shared_SOURCES =					\
 	pk-cleanup.h					\
@@ -252,60 +218,5 @@ CLEANFILES =						\
 
 EXTRA_DIST =						\
 	packagekit.gresource.xml
-
-if HAVE_INTROSPECTION
-
-# Build dummy library for g-ir-scanner to parse
-noinst_LTLIBRARIES = libpkplugins.la
-
-libpkplugins_la_SOURCES = $(plugininclude_GIRSOURCES) $(shared_SOURCES)
-
-libpkplugins_la_LIBADD =				\
-	$(GLIB_LIBS)					\
-	$(GMODULE_LIBS)					\
-	$(NETWORK_MANAGER_LIBS)				\
-	$(CONNMAN_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(PYTHON_LIBS)					\
-	$(POLKIT_LIBS)					\
-	$(GIO_LIBS)					\
-	$(ARCHIVE_LIBS)					\
-	$(SYSTEMD_LIBS)
-
-
-libpkplugins_la_CPPFLAGS =				\
-	$(AM_CPPFLAGS)					\
-	-DPK_DB_DIR=\""$(localstatedir)/lib/PackageKit"\"
-
-libpkplugins_la_CFLAGS =				\
-	$(PIE_CFLAGS)					\
-	$(WARNINGFLAGS_C)
-
-PackageKitPlugin-1.0.gir: libpkplugins.la $(plugininclude_GIRSOURCES)
-PackageKitPlugin_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
-PackageKitPlugin_1_0_gir_CFLAGS = $(AM_CPPFLAGS)						\
-				-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
-				-DI_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
-PackageKitPlugin_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
-					--symbol-prefix=pk \
-					--warn-all \
-					--include-uninstalled=$(top_builddir)/lib/packagekit-glib2/PackageKitGlib-1.0.gir \
-					--add-include-path=$(srcdir) \
-					--add-include-path=$(top_builddir)/lib/packagekit-glib2 \
-					--library-path=$(top_builddir)/lib/packagekit-glib2 \
-					--c-include="plugin/packagekit-plugin.h"
-PackageKitPlugin_1_0_gir_LIBS = libpkplugins.la
-PackageKitPlugin_1_0_gir_FILES = $(plugininclude_GIRSOURCES)
-INTROSPECTION_GIRS += PackageKitPlugin-1.0.gir
-
-girdir = $(datadir)/gir-1.0
-gir_DATA = $(INTROSPECTION_GIRS)
-
-typelibdir = $(libdir)/girepository-1.0
-typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
-
-CLEANFILES += $(gir_DATA) $(typelib_DATA)
-endif
 
 -include $(top_srcdir)/git.mk
