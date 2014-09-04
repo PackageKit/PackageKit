@@ -37,43 +37,6 @@ pk_plugin_get_description (void)
 }
 
 /**
- * pk_plugin_get_existing_prepared_updates:
- **/
-static PkPackageSack *
-pk_plugin_get_existing_prepared_updates (const gchar *filename)
-{
-	gboolean ret;
-	PkPackageSack *sack;
-	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *packages_data = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
-
-	/* always return a valid sack, even for failure */
-	sack = pk_package_sack_new ();
-
-	/* does the file exist ? */
-	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-		return sack;
-
-	/* get the list of packages to update */
-	ret = g_file_get_contents (filename,
-				   &packages_data,
-				   NULL,
-				   &error);
-	if (!ret) {
-		g_warning ("failed to read: %s", error->message);
-		return sack;
-	}
-
-	/* add them to the new array */
-	package_ids = g_strsplit (packages_data, "\n", -1);
-	for (i = 0; package_ids[i] != NULL; i++)
-		pk_package_sack_add_package_by_id (sack, package_ids[i], NULL);
-	return sack;
-}
-
-/**
  * pk_plugin_state_changed:
  *
  * Delete the prepared-update if the daemon state has changed, for
@@ -122,8 +85,8 @@ pk_plugin_transaction_action_method (PkPlugin *plugin,
 	_cleanup_ptrarray_unref_ GPtrArray *invalidated = NULL;
 
 	/* get the existing prepared updates */
-	sack = pk_plugin_get_existing_prepared_updates (PK_OFFLINE_PREPARED_FILENAME);
-	if (pk_package_sack_get_size (sack) == 0)
+	sack = pk_offline_get_prepared_sack (NULL);
+	if (sack == NULL)
 		return;
 
 	/* are there any requested packages that match in prepared-updates */

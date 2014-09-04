@@ -613,6 +613,7 @@ pk_test_offline_func (void)
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ GFileMonitor *monitor = NULL;
 	_cleanup_object_unref_ PkError *pk_error = NULL;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
 	_cleanup_object_unref_ PkResults *results = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
 	const gchar *results_failed =
@@ -675,6 +676,12 @@ pk_test_offline_func (void)
 	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
+	/* get empty sack */
+	sack = pk_offline_get_prepared_sack (&error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_assert (sack == NULL);
+	g_clear_error (&error);
+
 	/* set up some fake updates */
 	ret = pk_offline_auth_set_prepared_ids ((gchar **) package_ids, &error);
 	g_assert_no_error (error);
@@ -689,6 +696,10 @@ pk_test_offline_func (void)
 	g_assert (ret);
 	g_assert_cmpstr (tmp, ==, "powertop;0.1.3;i386;fedora");
 	g_free (tmp);
+	sack = pk_offline_get_prepared_sack (&error);
+	g_assert_no_error (error);
+	g_assert (sack != NULL);
+	g_assert_cmpint (pk_package_sack_get_size (sack), ==, 1);
 
 	/* check monitor */
 	monitor = pk_offline_get_prepared_monitor (NULL, &error);

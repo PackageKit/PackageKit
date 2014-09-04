@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+#include "pk-package-sack.h"
 #include "pk-results.h"
 
 G_BEGIN_DECLS
@@ -73,6 +74,7 @@ const gchar		*pk_offline_action_to_string	(PkOfflineAction	 action);
 PkOfflineAction		 pk_offline_action_from_string	(const gchar		*action);
 PkOfflineAction		 pk_offline_get_action		(GError			**error);
 gchar			**pk_offline_get_prepared_ids	(GError			**error);
+PkPackageSack		*pk_offline_get_prepared_sack	(GError			**error);
 GFileMonitor		*pk_offline_get_prepared_monitor(GCancellable		*cancellable,
 							 GError			**error);
 PkResults		*pk_offline_get_results		(GError			**error);

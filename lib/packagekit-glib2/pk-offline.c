@@ -261,12 +261,45 @@ pk_offline_get_action (GError **error)
 }
 
 /**
+ * pk_offline_get_prepared_sack:
+ * @error: A #GError or %NULL
+ *
+ * Gets a package sack of the packages in the prepared transaction.
+ *
+ * Return value: (transfer full): A new #PkPackageSack, or %NULL
+ *
+ * Since: 0.9.6
+ **/
+PkPackageSack *
+pk_offline_get_prepared_sack (GError **error)
+{
+	guint i;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
+
+	/* get the list of packages */
+	package_ids = pk_offline_get_prepared_ids (error);
+	if (package_ids == NULL)
+		return NULL;
+
+	/* add them to the new array */
+	sack = pk_package_sack_new ();
+	for (i = 0; package_ids[i] != NULL; i++) {
+		if (!pk_package_sack_add_package_by_id (sack,
+							package_ids[i],
+							error))
+			return NULL;
+	}
+	return g_object_ref (sack);
+}
+
+/**
  * pk_offline_get_prepared_ids:
  * @error: A #GError or %NULL
  *
  * Gets the package-ids in the prepared transaction.
  *
- * Return value: (transfer full): array of package-ids
+ * Return value: (transfer full): array of package-ids, or %NULL
  *
  * Since: 0.9.6
  **/
