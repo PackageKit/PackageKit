@@ -90,8 +90,7 @@ static void     pk_scheduler_finalize	(GObject	*object);
 struct PkSchedulerPrivate
 {
 	GPtrArray		*array;
-	guint			 unwedge1_id;
-	guint			 unwedge2_id;
+	guint			 unwedge_id;
 	GKeyFile		*conf;
 	PkBackend		*backend;
 	GDBusNodeInfo		*introspection;
@@ -1001,49 +1000,14 @@ pk_scheduler_is_consistent (PkScheduler *scheduler)
 }
 
 /**
- * pk_scheduler_wedge_check2:
+ * pk_scheduler_wedge_check:
  **/
 static gboolean
-pk_scheduler_wedge_check2 (PkScheduler *scheduler)
+pk_scheduler_wedge_check (PkScheduler *scheduler)
 {
-	gboolean ret;
-
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
-
-	g_debug ("checking consistency a second time");
-	ret = pk_scheduler_is_consistent (scheduler);
-	if (ret) {
-		g_debug ("panic over");
-		return FALSE;
-	}
-
-	/* dump all the state we know */
-	g_warning ("dumping data:");
-	pk_scheduler_print (scheduler);
-
-	/* never repeat */
-	return FALSE;
-}
-
-/**
- * pk_scheduler_wedge_check1:
- **/
-static gboolean
-pk_scheduler_wedge_check1 (PkScheduler *scheduler)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
-
-	ret = pk_scheduler_is_consistent (scheduler);
-	if (!ret) {
-		/* we have to do this twice, as we might idle add inbetween a transition */
-		g_warning ("list is consistent, scheduling another check");
-		scheduler->priv->unwedge2_id = g_timeout_add (500, (GSourceFunc) pk_scheduler_wedge_check2, scheduler);
-		g_source_set_name_by_id (scheduler->priv->unwedge2_id, "[PkScheduler] wedge-check");
-	}
-
-	/* always repeat */
+	if (!pk_scheduler_is_consistent (scheduler))
+		g_warning ("list is not consistent");
 	return TRUE;
 }
 
@@ -1096,10 +1060,9 @@ pk_scheduler_init (PkScheduler *scheduler)
 	scheduler->priv->array = g_ptr_array_new ();
 	scheduler->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
 							    NULL);
-	scheduler->priv->unwedge2_id = 0;
-	scheduler->priv->unwedge1_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
-							  (GSourceFunc) pk_scheduler_wedge_check1, scheduler);
-	g_source_set_name_by_id (scheduler->priv->unwedge1_id, "[PkScheduler] wedge-check (main)");
+	scheduler->priv->unwedge_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
+							  (GSourceFunc) pk_scheduler_wedge_check, scheduler);
+	g_source_set_name_by_id (scheduler->priv->unwedge_id, "[PkScheduler] wedge-check (main)");
 }
 
 /**
@@ -1117,10 +1080,8 @@ pk_scheduler_finalize (GObject *object)
 
 	g_return_if_fail (scheduler->priv != NULL);
 
-	if (scheduler->priv->unwedge1_id != 0)
-		g_source_remove (scheduler->priv->unwedge1_id);
-	if (scheduler->priv->unwedge2_id != 0)
-		g_source_remove (scheduler->priv->unwedge2_id);
+	if (scheduler->priv->unwedge_id != 0)
+		g_source_remove (scheduler->priv->unwedge_id);
 
 	g_ptr_array_foreach (scheduler->priv->array, (GFunc) pk_scheduler_item_free, NULL);
 	g_ptr_array_free (scheduler->priv->array, TRUE);
