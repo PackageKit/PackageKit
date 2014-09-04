@@ -489,6 +489,7 @@ pk_test_backend_spawn_func (void)
 
 	/* needed to avoid an error */
 	ret = pk_backend_load (backend, NULL);
+	g_assert (ret);
 
 	/* test search-name.sh running */
 	ret = pk_backend_spawn_helper (backend_spawn, job, "search-name.sh", "none", "bar", NULL);
