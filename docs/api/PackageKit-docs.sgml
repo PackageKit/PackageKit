@@ -68,7 +68,6 @@
     <xi:include href="xml/pk-category.xml"/>
     <xi:include href="xml/pk-client.xml"/>
     <xi:include href="xml/pk-control.xml"/>
-    <xi:include href="xml/pk-desktop.xml"/>
     <xi:include href="xml/pk-details.xml"/>
     <xi:include href="xml/pk-distro-upgrade.xml"/>
     <xi:include href="xml/pk-error.xml"/>
