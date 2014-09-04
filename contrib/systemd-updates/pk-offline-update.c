@@ -258,17 +258,15 @@ pk_offline_update_power_off (void)
 static void
 pk_offline_update_write_error (const GError *error)
 {
-	PkErrorEnum error_enum = error->code;
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_object_unref_ PkError *pk_error = NULL;
 	_cleanup_object_unref_ PkResults *results = NULL;
 
 	sd_journal_print (LOG_INFO, "writing failed results");
 	results = pk_results_new ();
+	pk_results_set_exit_code (results, PK_EXIT_ENUM_FAILED);
 	pk_error = pk_error_new ();
-	if (error->code >= 0xff)
-		error_enum = error->code - 0xff;
-	g_object_set (error,
+	g_object_set (pk_error,
 		      "code", PK_ERROR_ENUM_FAILED_INITIALIZATION,
 		      "details", error->message,
 		      NULL);
@@ -308,8 +306,9 @@ pk_offline_update_write_dummy_results (gchar **package_ids)
 
 	sd_journal_print (LOG_INFO, "writing dummy results");
 	results = pk_results_new ();
+	pk_results_set_exit_code (results, PK_EXIT_ENUM_FAILED);
 	pk_error = pk_error_new ();
-	g_object_set (error,
+	g_object_set (pk_error,
 		      "code", PK_ERROR_ENUM_FAILED_INITIALIZATION,
 		      "details", "The transaction did not complete",
 		      NULL);

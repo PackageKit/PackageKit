@@ -329,7 +329,6 @@ main (int argc, gchar **argv)
 
 	array = g_ptr_array_new_with_free_func (g_free);
 	len = g_strv_length (codecs);
-	resources = g_new0 (gchar*, len+1);
 
 	/* process argv */
 	for (i = 0; i < len; i++) {
