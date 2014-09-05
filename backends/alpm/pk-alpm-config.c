@@ -27,9 +27,9 @@
 #include <sys/utsname.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-config.h"
-#include "pk-backend-databases.h"
-#include "pk-backend-error.h"
+#include "pk-alpm-config.h"
+#include "pk-alpm-databases.h"
+#include "pk-alpm-error.h"
 
 typedef struct
 {
@@ -46,18 +46,18 @@ typedef struct
 
 	 alpm_list_t		*sections;
 	 GRegex			*xrepo, *xarch;
-} PkBackendConfig;
+} PkAlpmConfig;
 
 typedef struct
 {
 	 gchar		*name;
 	 alpm_list_t	*servers, *siglevels;
-} PkBackendConfigSection;
+} PkAlpmConfigSection;
 
-static PkBackendConfig *
-pk_backend_config_new (void)
+static PkAlpmConfig *
+pk_alpm_config_new (void)
 {
-	PkBackendConfig *config = g_new0 (PkBackendConfig, 1);
+	PkAlpmConfig *config = g_new0 (PkAlpmConfig, 1);
 	config->deltaratio = 0.0;
 
 	config->xrepo = g_regex_new ("\\$repo", 0, 0, NULL);
@@ -67,9 +67,9 @@ pk_backend_config_new (void)
 }
 
 static void
-pk_backend_config_section_free (gpointer data)
+pk_alpm_config_section_free (gpointer data)
 {
-	PkBackendConfigSection *section = data;
+	PkAlpmConfigSection *section = data;
 	if (section == NULL)
 		return;
 	g_free (section->name);
@@ -80,7 +80,7 @@ pk_backend_config_section_free (gpointer data)
 }
 
 static void
-pk_backend_config_free (PkBackendConfig *config)
+pk_alpm_config_free (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -101,7 +101,7 @@ pk_backend_config_free (PkBackendConfig *config)
 	FREELIST (config->noupgrades);
 	FREELIST (config->remotefilesiglevels);
 
-	alpm_list_free_inner (config->sections, pk_backend_config_section_free);
+	alpm_list_free_inner (config->sections, pk_alpm_config_section_free);
 	alpm_list_free (config->sections);
 
 	g_regex_unref (config->xrepo);
@@ -109,7 +109,7 @@ pk_backend_config_free (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_checkspace (PkBackendConfig *config)
+pk_alpm_config_set_checkspace (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -117,7 +117,7 @@ pk_backend_config_set_checkspace (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_color (PkBackendConfig *config)
+pk_alpm_config_set_color (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -125,7 +125,7 @@ pk_backend_config_set_color (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_ilovecandy (PkBackendConfig *config)
+pk_alpm_config_set_ilovecandy (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -133,7 +133,7 @@ pk_backend_config_set_ilovecandy (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_totaldl (PkBackendConfig *config)
+pk_alpm_config_set_totaldl (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -141,7 +141,7 @@ pk_backend_config_set_totaldl (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_usedelta (PkBackendConfig *config)
+pk_alpm_config_set_usedelta (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -149,7 +149,7 @@ pk_backend_config_set_usedelta (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_usesyslog (PkBackendConfig *config)
+pk_alpm_config_set_usesyslog (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -157,7 +157,7 @@ pk_backend_config_set_usesyslog (PkBackendConfig *config)
 }
 
 static void
-pk_backend_config_set_verbosepkglists (PkBackendConfig *config)
+pk_alpm_config_set_verbosepkglists (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
 
@@ -167,23 +167,23 @@ pk_backend_config_set_verbosepkglists (PkBackendConfig *config)
 typedef struct
 {
 	 const gchar	*name;
-	 void		(*func) (PkBackendConfig *config);
-} PkBackendConfigBoolean;
+	 void		(*func) (PkAlpmConfig *config);
+} PkAlpmConfigBoolean;
 
 /* keep this in alphabetical order */
-static const PkBackendConfigBoolean pk_backend_config_boolean_options[] = {
-	{ "CheckSpace", pk_backend_config_set_checkspace },
-	{ "Color", pk_backend_config_set_color },
-	{ "ILoveCandy", pk_backend_config_set_ilovecandy },
-	{ "TotalDownload", pk_backend_config_set_totaldl },
-	{ "UseDelta", pk_backend_config_set_usedelta },
-	{ "UseSyslog", pk_backend_config_set_usesyslog },
-	{ "VerbosePkgLists", pk_backend_config_set_verbosepkglists },
+static const PkAlpmConfigBoolean pk_alpm_config_boolean_options[] = {
+	{ "CheckSpace", pk_alpm_config_set_checkspace },
+	{ "Color", pk_alpm_config_set_color },
+	{ "ILoveCandy", pk_alpm_config_set_ilovecandy },
+	{ "TotalDownload", pk_alpm_config_set_totaldl },
+	{ "UseDelta", pk_alpm_config_set_usedelta },
+	{ "UseSyslog", pk_alpm_config_set_usesyslog },
+	{ "VerbosePkgLists", pk_alpm_config_set_verbosepkglists },
 	{ NULL, NULL }
 };
 
 static gboolean
-pk_backend_config_set_boolean (PkBackendConfig *config, const gchar *option)
+pk_alpm_config_set_boolean (PkAlpmConfig *config, const gchar *option)
 {
 	gsize i;
 
@@ -191,20 +191,20 @@ pk_backend_config_set_boolean (PkBackendConfig *config, const gchar *option)
 	g_return_val_if_fail (option != NULL, FALSE);
 
 	for (i = 0;; ++i) {
-		const gchar *name = pk_backend_config_boolean_options[i].name;
+		const gchar *name = pk_alpm_config_boolean_options[i].name;
 		gint cmp = g_strcmp0 (option, name);
 
 		if (name == NULL || cmp < 0) {
 			return FALSE;
 		} else if (cmp == 0) {
-			pk_backend_config_boolean_options[i].func (config);
+			pk_alpm_config_boolean_options[i].func (config);
 			return TRUE;
 		}
 	}
 }
 
 static void
-pk_backend_config_add_cachedir (PkBackendConfig *config, const gchar *path)
+pk_alpm_config_add_cachedir (PkAlpmConfig *config, const gchar *path)
 {
 	gsize length;
 	gchar *cachedir;
@@ -220,7 +220,7 @@ pk_backend_config_add_cachedir (PkBackendConfig *config, const gchar *path)
 }
 
 static void
-pk_backend_config_set_arch (PkBackendConfig *config, const gchar *arch)
+pk_alpm_config_set_arch (PkAlpmConfig *config, const gchar *arch)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (arch != NULL);
@@ -236,7 +236,7 @@ pk_backend_config_set_arch (PkBackendConfig *config, const gchar *arch)
 }
 
 static void
-pk_backend_config_set_cleanmethod (PkBackendConfig *config, const gchar *method)
+pk_alpm_config_set_cleanmethod (PkAlpmConfig *config, const gchar *method)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (method != NULL);
@@ -246,7 +246,7 @@ pk_backend_config_set_cleanmethod (PkBackendConfig *config, const gchar *method)
 }
 
 static void
-pk_backend_config_set_dbpath (PkBackendConfig *config, const gchar *path)
+pk_alpm_config_set_dbpath (PkAlpmConfig *config, const gchar *path)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (path != NULL);
@@ -256,7 +256,7 @@ pk_backend_config_set_dbpath (PkBackendConfig *config, const gchar *path)
 }
 
 static void
-pk_backend_config_set_gpgdir (PkBackendConfig *config, const gchar *path)
+pk_alpm_config_set_gpgdir (PkAlpmConfig *config, const gchar *path)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (path != NULL);
@@ -266,7 +266,7 @@ pk_backend_config_set_gpgdir (PkBackendConfig *config, const gchar *path)
 }
 
 static void
-pk_backend_config_set_logfile (PkBackendConfig *config, const gchar *filename)
+pk_alpm_config_set_logfile (PkAlpmConfig *config, const gchar *filename)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (filename != NULL);
@@ -276,7 +276,7 @@ pk_backend_config_set_logfile (PkBackendConfig *config, const gchar *filename)
 }
 
 static void
-pk_backend_config_set_root (PkBackendConfig *config, const gchar *path)
+pk_alpm_config_set_root (PkAlpmConfig *config, const gchar *path)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (path != NULL);
@@ -286,7 +286,7 @@ pk_backend_config_set_root (PkBackendConfig *config, const gchar *path)
 }
 
 static void
-pk_backend_config_set_deltaratio (PkBackendConfig *config, const gchar *number)
+pk_alpm_config_set_deltaratio (PkAlpmConfig *config, const gchar *number)
 {
 	gdouble ratio;
 	gchar *endptr;
@@ -302,7 +302,7 @@ pk_backend_config_set_deltaratio (PkBackendConfig *config, const gchar *number)
 }
 
 static void
-pk_backend_config_set_xfercmd (PkBackendConfig *config, const gchar *command)
+pk_alpm_config_set_xfercmd (PkAlpmConfig *config, const gchar *command)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (command != NULL);
@@ -314,25 +314,25 @@ pk_backend_config_set_xfercmd (PkBackendConfig *config, const gchar *command)
 typedef struct
 {
 	 const gchar	*name;
-	 void		(*func) (PkBackendConfig *config, const gchar *s);
-} PkBackendConfigString;
+	 void		(*func) (PkAlpmConfig *config, const gchar *s);
+} PkAlpmConfigString;
 
 /* keep this in alphabetical order */
-static const PkBackendConfigString pk_backend_config_string_options[] = {
-	{ "Architecture", pk_backend_config_set_arch },
-	{ "CacheDir", pk_backend_config_add_cachedir },
-	{ "CleanMethod", pk_backend_config_set_cleanmethod },
-	{ "DBPath", pk_backend_config_set_dbpath },
-	{ "GPGDir", pk_backend_config_set_gpgdir },
-	{ "LogFile", pk_backend_config_set_logfile },
-	{ "RootDir", pk_backend_config_set_root },
-	{ "UseDelta", pk_backend_config_set_deltaratio },
-	{ "XferCommand", pk_backend_config_set_xfercmd },
+static const PkAlpmConfigString pk_alpm_config_string_options[] = {
+	{ "Architecture", pk_alpm_config_set_arch },
+	{ "CacheDir", pk_alpm_config_add_cachedir },
+	{ "CleanMethod", pk_alpm_config_set_cleanmethod },
+	{ "DBPath", pk_alpm_config_set_dbpath },
+	{ "GPGDir", pk_alpm_config_set_gpgdir },
+	{ "LogFile", pk_alpm_config_set_logfile },
+	{ "RootDir", pk_alpm_config_set_root },
+	{ "UseDelta", pk_alpm_config_set_deltaratio },
+	{ "XferCommand", pk_alpm_config_set_xfercmd },
 	{ NULL, NULL }
 };
 
 static gboolean
-pk_backend_config_set_string (PkBackendConfig *config, const gchar *option,
+pk_alpm_config_set_string (PkAlpmConfig *config, const gchar *option,
 			      const gchar *s)
 {
 	gsize i;
@@ -342,13 +342,13 @@ pk_backend_config_set_string (PkBackendConfig *config, const gchar *option,
 	g_return_val_if_fail (s != NULL, FALSE);
 
 	for (i = 0;; ++i) {
-		const gchar *name = pk_backend_config_string_options[i].name;
+		const gchar *name = pk_alpm_config_string_options[i].name;
 		gint cmp = g_strcmp0 (option, name);
 
 		if (name == NULL || cmp < 0) {
 			return FALSE;
 		} else if (cmp == 0) {
-			pk_backend_config_string_options[i].func (config, s);
+			pk_alpm_config_string_options[i].func (config, s);
 			return TRUE;
 		}
 	}
@@ -358,24 +358,24 @@ typedef struct
 {
 	const gchar	*name;
 	glong		 offset;
-} PkBackendConfigList;
+} PkAlpmConfigList;
 
 /* keep this in alphabetical order */
-static const PkBackendConfigList pk_backend_config_list_options[] = {
-	{ "HoldPkg", G_STRUCT_OFFSET (PkBackendConfig, holdpkgs) },
-	{ "IgnoreGroup", G_STRUCT_OFFSET (PkBackendConfig, ignoregroups) },
-	{ "IgnorePkg", G_STRUCT_OFFSET (PkBackendConfig, ignorepkgs) },
-	{ "LocalFileSigLevel", G_STRUCT_OFFSET (PkBackendConfig,
+static const PkAlpmConfigList pk_alpm_config_list_options[] = {
+	{ "HoldPkg", G_STRUCT_OFFSET (PkAlpmConfig, holdpkgs) },
+	{ "IgnoreGroup", G_STRUCT_OFFSET (PkAlpmConfig, ignoregroups) },
+	{ "IgnorePkg", G_STRUCT_OFFSET (PkAlpmConfig, ignorepkgs) },
+	{ "LocalFileSigLevel", G_STRUCT_OFFSET (PkAlpmConfig,
 						localfilesiglevels) },
-	{ "NoExtract", G_STRUCT_OFFSET (PkBackendConfig, noextracts) },
-	{ "NoUpgrade", G_STRUCT_OFFSET (PkBackendConfig, noupgrades) },
-	{ "RemoteFileSigLevel", G_STRUCT_OFFSET (PkBackendConfig,
+	{ "NoExtract", G_STRUCT_OFFSET (PkAlpmConfig, noextracts) },
+	{ "NoUpgrade", G_STRUCT_OFFSET (PkAlpmConfig, noupgrades) },
+	{ "RemoteFileSigLevel", G_STRUCT_OFFSET (PkAlpmConfig,
 						 remotefilesiglevels) },
 	{ NULL, 0 }
 };
 
 static alpm_list_t *
-alpm_list_add_words (alpm_list_t *list, const gchar *words)
+pk_alpm_list_add_words (alpm_list_t *list, const gchar *words)
 {
 	gchar *str;
 
@@ -391,7 +391,7 @@ alpm_list_add_words (alpm_list_t *list, const gchar *words)
 }
 
 static gboolean
-pk_backend_config_set_list (PkBackendConfig *config, const gchar *option,
+pk_alpm_config_set_list (PkAlpmConfig *config, const gchar *option,
 			    const gchar *words)
 {
 	gsize i;
@@ -401,53 +401,53 @@ pk_backend_config_set_list (PkBackendConfig *config, const gchar *option,
 	g_return_val_if_fail (words != NULL, FALSE);
 
 	for (i = 0;; ++i) {
-		const gchar *name = pk_backend_config_list_options[i].name;
+		const gchar *name = pk_alpm_config_list_options[i].name;
 		gint cmp = g_strcmp0 (option, name);
 
 		if (name == NULL || cmp < 0) {
 			return FALSE;
 		} else if (cmp == 0) {
-			glong offset = pk_backend_config_list_options[i].offset;
+			glong offset = pk_alpm_config_list_options[i].offset;
 			alpm_list_t **list = G_STRUCT_MEMBER_P (config, offset);
-			*list = alpm_list_add_words (*list, words);
+			*list = pk_alpm_list_add_words (*list, words);
 			return TRUE;
 		}
 	}
 }
 
 static gint
-pk_backend_config_section_match (gconstpointer element, gconstpointer name)
+pk_alpm_config_section_match (gconstpointer element, gconstpointer name)
 {
-	const PkBackendConfigSection *section = element;
+	const PkAlpmConfigSection *section = element;
 
 	g_return_val_if_fail (section != NULL, -1);
 
 	return g_strcmp0 (section->name, name);
 }
 
-static PkBackendConfigSection *
-pk_backend_config_enter_section (PkBackendConfig *config, const gchar *name)
+static PkAlpmConfigSection *
+pk_alpm_config_enter_section (PkAlpmConfig *config, const gchar *name)
 {
-	PkBackendConfigSection *section;
+	PkAlpmConfigSection *section;
 
 	g_return_val_if_fail (config != NULL, NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 
 	section = alpm_list_find (config->sections, name,
-				  pk_backend_config_section_match);
+				  pk_alpm_config_section_match);
 	if (section != NULL) {
 		return section;
 	}
 
-	section = g_new0 (PkBackendConfigSection, 1);
+	section = g_new0 (PkAlpmConfigSection, 1);
 	section->name = g_strdup (name);
 	config->sections = alpm_list_add (config->sections, section);
 	return section;
 }
 
 static gboolean
-pk_backend_config_add_server (PkBackendConfig *config,
-			      PkBackendConfigSection *section,
+pk_alpm_config_add_server (PkAlpmConfig *config,
+			      PkAlpmConfigSection *section,
 			      const gchar *address, GError **e)
 {
 	_cleanup_free_ gchar *url = NULL;
@@ -468,7 +468,7 @@ pk_backend_config_add_server (PkBackendConfig *config,
 		if (url == NULL)
 			return FALSE;
 	} else if (strstr (url, "$arch") != NULL) {
-		g_set_error (e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
+		g_set_error (e, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
 			     "url contained $arch, which is not set");
 		return FALSE;
 	}
@@ -478,20 +478,20 @@ pk_backend_config_add_server (PkBackendConfig *config,
 }
 
 static void
-pk_backend_config_add_siglevel (PkBackendConfig *config,
-				PkBackendConfigSection *section,
+pk_alpm_config_add_siglevel (PkAlpmConfig *config,
+				PkAlpmConfigSection *section,
 				const gchar *words)
 {
 	g_return_if_fail (config != NULL);
 	g_return_if_fail (section != NULL);
 	g_return_if_fail (words != NULL);
 
-	section->siglevels = alpm_list_add_words (section->siglevels, words);
+	section->siglevels = pk_alpm_list_add_words (section->siglevels, words);
 }
 
 static gboolean
-pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
-			 PkBackendConfigSection *section, GError **error)
+pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
+			 PkAlpmConfigSection *section, GError **error)
 {
 	_cleanup_object_unref_ GFile *file = NULL;
 	_cleanup_object_unref_ GFileInputStream *is = NULL;
@@ -517,7 +517,6 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 
 		if (line == NULL)
 			break;
-
 		/* skip empty lines */
 		g_strstrip (line);
 		if (*line == '\0' || *line == '#')
@@ -533,19 +532,19 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 			str = line + 1;
 
 			if (*str == '\0') {
-				g_set_error (&e, ALPM_ERROR,
-					     ALPM_ERR_CONFIG_INVALID,
+				g_set_error (&e, PK_ALPM_ERROR,
+					     PK_ALPM_ERR_CONFIG_INVALID,
 					     "empty section name");
 				break;
 			}
 
-			section = pk_backend_config_enter_section (config, str);
+			section = pk_alpm_config_enter_section (config, str);
 			continue;
 		}
 
 		/* parse a directive */
 		if (section == NULL) {
-			g_set_error (&e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
+			g_set_error (&e, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
 				     "directive must belong to a section");
 			break;
 		}
@@ -558,9 +557,9 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 
 		if (str == NULL) {
 			/* set a boolean directive */
-			if (pk_backend_config_section_match (section,
+			if (pk_alpm_config_section_match (section,
 							     "options") == 0 &&
-			    pk_backend_config_set_boolean (config, key)) {
+			    pk_alpm_config_set_boolean (config, key)) {
 				continue;
 			}
 			/* report error below */
@@ -574,7 +573,7 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 
 			/* parse the files that matched */
 			for (i = 0; i < match.gl_pathc; ++i) {
-				if (!pk_backend_config_parse (config,
+				if (!pk_alpm_config_parse (config,
 							      match.gl_pathv[i],
 							      section, &e)) {
 					break;
@@ -585,16 +584,16 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 			if (e == NULL)
 				continue;
 			break;
-		} else if (pk_backend_config_section_match (section,
+		} else if (pk_alpm_config_section_match (section,
 							    "options") == 0) {
 			/* set a string or list directive */
-			if (pk_backend_config_set_string (config, key, str) ||
-			    pk_backend_config_set_list (config, key, str)) {
+			if (pk_alpm_config_set_string (config, key, str) ||
+			    pk_alpm_config_set_list (config, key, str)) {
 				continue;
 			}
 			/* report error below */
 		} else if (g_strcmp0 (key, "Server") == 0) {
-			if (!pk_backend_config_add_server (config, section,
+			if (!pk_alpm_config_add_server (config, section,
 							   str, &e)) {
 				break;
 			}
@@ -602,12 +601,12 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 		}
 
 		if (g_strcmp0 (key, "SigLevel") == 0 && str != NULL) {
-			pk_backend_config_add_siglevel (config, section, str);
+			pk_alpm_config_add_siglevel (config, section, str);
 			continue;
 		}
 
 		/* report errors from above */
-		g_set_error (&e, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
+		g_set_error (&e, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
 			     "unrecognised directive '%s'", key);
 		break;
 	}
@@ -620,7 +619,7 @@ pk_backend_config_parse (PkBackendConfig *config, const gchar *filename,
 }
 
 static alpm_handle_t *
-pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
+pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 {
 	alpm_handle_t *handle;
 	alpm_errno_t errno;
@@ -644,7 +643,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 	g_debug ("initializing alpm");
 	handle = alpm_initialize (config->root, config->dbpath, &errno);
 	if (handle == NULL) {
-		g_set_error_literal (error, ALPM_ERROR, errno,
+		g_set_error_literal (error, PK_ALPM_ERROR, errno,
 				     alpm_strerror (errno));
 		return handle;
 	}
@@ -657,7 +656,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 
 	if (alpm_option_set_gpgdir (handle, config->gpgdir) < 0) {
 		errno = alpm_errno (handle);
-		g_set_error (error, ALPM_ERROR, errno, "GPGDir: %s",
+		g_set_error (error, PK_ALPM_ERROR, errno, "GPGDir: %s",
 			     alpm_strerror (errno));
 		return handle;
 	}
@@ -670,7 +669,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 
 	if (alpm_option_set_logfile (handle, config->logfile) < 0) {
 		errno = alpm_errno (handle);
-		g_set_error (error, ALPM_ERROR, errno, "LogFile: %s",
+		g_set_error (error, PK_ALPM_ERROR, errno, "LogFile: %s",
 			     alpm_strerror (errno));
 		return handle;
 	}
@@ -685,7 +684,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 	/* alpm takes ownership */
 	if (alpm_option_set_cachedirs (handle, config->cachedirs) < 0) {
 		errno = alpm_errno (handle);
-		g_set_error (error, ALPM_ERROR, errno, "CacheDir: %s",
+		g_set_error (error, PK_ALPM_ERROR, errno, "CacheDir: %s",
 			     alpm_strerror (errno));
 		return handle;
 	}
@@ -695,8 +694,7 @@ pk_backend_config_initialize_alpm (PkBackendConfig *config, GError **error)
 }
 
 static alpm_siglevel_t
-alpm_siglevel_parse (alpm_siglevel_t base, const alpm_list_t *list,
-		     GError **error)
+pk_alpm_siglevel_parse (alpm_siglevel_t base, const alpm_list_t *list, GError **error)
 {
 	for (; list != NULL; list = list->next) {
 		gboolean package = TRUE, database = TRUE;
@@ -759,7 +757,7 @@ alpm_siglevel_parse (alpm_siglevel_t base, const alpm_list_t *list,
 				base |= ALPM_SIG_DATABASE_UNKNOWN_OK;
 			}
 		} else {
-			g_set_error (error, ALPM_ERROR, ALPM_ERR_CONFIG_INVALID,
+			g_set_error (error, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
 				     "invalid SigLevel value: %s", level);
 			return ALPM_SIG_USE_DEFAULT;
 		}
@@ -769,15 +767,14 @@ alpm_siglevel_parse (alpm_siglevel_t base, const alpm_list_t *list,
 }
 
 static alpm_siglevel_t
-alpm_siglevel_cross (alpm_siglevel_t base, const alpm_list_t *list,
-		     GError **error)
+pk_alpm_siglevel_cross (alpm_siglevel_t base, const alpm_list_t *list, GError **error)
 {
 	alpm_siglevel_t level;
 
 	if (list == NULL)
 		return base;
 
-	level = alpm_siglevel_parse (0, list, error);
+	level = pk_alpm_siglevel_parse (0, list, error);
 	if (level == ALPM_SIG_USE_DEFAULT)
 		return level;
 
@@ -793,12 +790,12 @@ alpm_siglevel_cross (alpm_siglevel_t base, const alpm_list_t *list,
 }
 
 static gboolean
-pk_backend_config_configure_repos (PkBackendConfig *config,
+pk_alpm_config_configure_repos (PkAlpmConfig *config,
 				   alpm_handle_t *handle, GError **error)
 {
 	alpm_siglevel_t base, local, remote;
 	const alpm_list_t *i;
-	PkBackendConfigSection *options;
+	PkAlpmConfigSection *options;
 
 	g_return_val_if_fail (config != NULL, FALSE);
 
@@ -808,15 +805,15 @@ pk_backend_config_configure_repos (PkBackendConfig *config,
 	i = config->sections;
 	options = i->data;
 
-	base = alpm_siglevel_parse (base, options->siglevels, error);
+	base = pk_alpm_siglevel_parse (base, options->siglevels, error);
 	if (base == ALPM_SIG_USE_DEFAULT)
 		return FALSE;
 
-	local = alpm_siglevel_cross (base, config->localfilesiglevels, error);
+	local = pk_alpm_siglevel_cross (base, config->localfilesiglevels, error);
 	if (local == ALPM_SIG_USE_DEFAULT)
 		return FALSE;
 
-	remote = alpm_siglevel_cross (base, config->remotefilesiglevels, error);
+	remote = pk_alpm_siglevel_cross (base, config->remotefilesiglevels, error);
 	if (remote == ALPM_SIG_USE_DEFAULT)
 		return FALSE;
 
@@ -825,26 +822,26 @@ pk_backend_config_configure_repos (PkBackendConfig *config,
 	alpm_option_set_remote_file_siglevel (handle, remote);
 
 	while ((i = i->next) != NULL) {
-		PkBackendConfigSection *repo = i->data;
+		PkAlpmConfigSection *repo = i->data;
 		alpm_siglevel_t level;
 
-		level = alpm_siglevel_parse (base, repo->siglevels, error);
+		level = pk_alpm_siglevel_parse (base, repo->siglevels, error);
 		if (level == ALPM_SIG_USE_DEFAULT)
 			return FALSE;
-		pkalpm_backend_add_database (repo->name, repo->servers, level);
+		pk_alpm_add_database (repo->name, repo->servers, level);
 	}
 
 	return TRUE;
 }
 
 static alpm_handle_t *
-pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
+pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
 {
 	alpm_handle_t *handle;
 
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	handle = pk_backend_config_initialize_alpm (config, error);
+	handle = pk_alpm_config_initialize_alpm (config, error);
 	if (handle == NULL)
 		return NULL;
 
@@ -859,7 +856,7 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 	config->xfercmd = NULL;
 
 	if (xfercmd != NULL) {
-		alpm_option_set_fetchcb (handle, pkalpm_backend_fetchcb);
+		alpm_option_set_fetchcb (handle, pk_alpm_fetchcb);
 	} else {
 		alpm_option_set_fetchcb (handle, NULL);
 	}
@@ -885,28 +882,28 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 	alpm_option_set_noupgrades (handle, config->noupgrades);
 	config->noupgrades = NULL;
 
-	pk_backend_config_configure_repos (config, handle, error);
+	pk_alpm_config_configure_repos (config, handle, error);
 
 	return handle;
 }
 
 alpm_handle_t *
-pk_backend_configure (const gchar *filename, GError **error)
+pk_alpm_configure (const gchar *filename, GError **error)
 {
-	PkBackendConfig *config;
+	PkAlpmConfig *config;
 	alpm_handle_t *handle = NULL;
 	GError *e = NULL;
 
 	g_return_val_if_fail (filename != NULL, FALSE);
 
 	g_debug ("reading config from %s", filename);
-	config = pk_backend_config_new ();
-	pk_backend_config_enter_section (config, "options");
+	config = pk_alpm_config_new ();
+	pk_alpm_config_enter_section (config, "options");
 
-	if (pk_backend_config_parse (config, filename, NULL, &e))
-		handle = pk_backend_config_configure_alpm (config, &e);
+	if (pk_alpm_config_parse (config, filename, NULL, &e))
+		handle = pk_alpm_config_configure_alpm (config, &e);
 
-	pk_backend_config_free (config);
+	pk_alpm_config_free (config);
 	if (e != NULL) {
 		g_propagate_error (error, e);
 		if (handle != NULL)

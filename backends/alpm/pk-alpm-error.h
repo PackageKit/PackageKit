@@ -21,17 +21,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <alpm.h>
 #include <pk-backend.h>
 
-void		 pkalpm_backend_add_database		(const gchar *name,
-							 alpm_list_t *servers,
-							 alpm_siglevel_t level);
+#define	 PK_ALPM_ERROR		(pk_alpm_error_quark ())
 
-gboolean	 pkalpm_backend_disable_signatures		(GError **error);
+enum {
+	PK_ALPM_ERR_CONFIG_INVALID = 0x10000,
+	PK_ALPM_ERR_PKG_HELD
+};
 
-gboolean	 pkalpm_backend_enable_signatures		(GError **error);
+void	 pk_alpm_error_emit	(PkBackendJob* job, GError* error);
 
-gboolean	 pkalpm_backend_initialize_databases	(GError **error);
-
-void		 pkalpm_backend_destroy_databases		();
+GQuark	 pk_alpm_error_quark	(void);

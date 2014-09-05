@@ -1936,10 +1936,10 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * pk_backend_transaction_check_untrusted_repos:
+ * pk_alpm_transaction_check_untrusted_repos:
  */
 static GPtrArray *
-pk_backend_transaction_check_untrusted_repos (GPtrArray *sources,
+pk_alpm_transaction_check_untrusted_repos (GPtrArray *sources,
 					      HyGoal goal,
 					      GError **error)
 {
@@ -1993,10 +1993,10 @@ out:
 }
 
 /**
- * pk_backend_transaction_simulate:
+ * pk_alpm_transaction_simulate:
  */
 static gboolean
-pk_backend_transaction_simulate (PkBackendJob *job,
+pk_alpm_transaction_simulate (PkBackendJob *job,
 				 HifState *state,
 				 GError **error)
 {
@@ -2021,7 +2021,7 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 
 	/* mark any explicitly-untrusted packages so that the transaction skips
 	 * straight to only_trusted=FALSE after simulate */
-	untrusted = pk_backend_transaction_check_untrusted_repos (job_data->sources,
+	untrusted = pk_alpm_transaction_check_untrusted_repos (job_data->sources,
 								  job_data->goal, error);
 	if (untrusted == NULL) {
 		ret = FALSE;
@@ -2061,10 +2061,10 @@ out:
 }
 
 /**
- * pk_backend_transaction_download_commit:
+ * pk_alpm_transaction_download_commit:
  */
 static gboolean
-pk_backend_transaction_download_commit (PkBackendJob *job,
+pk_alpm_transaction_download_commit (PkBackendJob *job,
 					HifState *state,
 					GError **error)
 {
@@ -2116,10 +2116,10 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 }
 
 /**
- * pk_backend_transaction_run:
+ * pk_alpm_transaction_run:
  */
 static gboolean
-pk_backend_transaction_run (PkBackendJob *job,
+pk_alpm_transaction_run (PkBackendJob *job,
 			    HifState *state,
 			    GError **error)
 {
@@ -2162,7 +2162,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (pk_bitfield_contain (job_data->transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		state_local = hif_state_get_child (state);
-		ret = pk_backend_transaction_simulate (job,
+		ret = pk_alpm_transaction_simulate (job,
 						       state_local,
 						       error);
 		if (!ret)
@@ -2184,7 +2184,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 
 	/* download and commit transaction */
 	state_local = hif_state_get_child (state);
-	ret = pk_backend_transaction_download_commit (job, state_local, error);
+	ret = pk_alpm_transaction_download_commit (job, state_local, error);
 	if (!ret)
 		return FALSE;
 
@@ -2350,7 +2350,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	ret = pk_backend_transaction_run (job, state_local, &error);
+	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
@@ -2561,7 +2561,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	ret = pk_backend_transaction_run (job, state_local, &error);
+	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
@@ -2691,7 +2691,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	ret = pk_backend_transaction_run (job, state_local, &error);
+	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
@@ -2802,7 +2802,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	ret = pk_backend_transaction_run (job, state_local, &error);
+	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
@@ -2938,7 +2938,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* run transaction */
 	state_local = hif_state_get_child (job_data->state);
-	ret = pk_backend_transaction_run (job, state_local, &error);
+	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;

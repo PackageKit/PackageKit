@@ -22,12 +22,12 @@
  */
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-error.h"
-#include "pk-backend-groups.h"
-#include "pk-backend-packages.h"
+#include "pk-alpm-error.h"
+#include "pk-alpm-groups.h"
+#include "pk-alpm-packages.h"
 
 gchar *
-pkalpm_pkg_build_id (alpm_pkg_t *pkg)
+pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 {
 	const gchar *name, *version, *arch, *repo;
 
@@ -51,19 +51,19 @@ pkalpm_pkg_build_id (alpm_pkg_t *pkg)
 }
 
 void
-pkalpm_backend_pkg (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
+pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
 {
 	gchar *package;
 
 	g_return_if_fail (pkg != NULL);
 
-	package = pkalpm_pkg_build_id (pkg);
+	package = pk_alpm_pkg_build_id (pkg);
 	pk_backend_job_package (job, info, package, alpm_pkg_get_desc (pkg));
 	g_free (package);
 }
 
 alpm_pkg_t *
-pkalpm_backend_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
+pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 {
 	gchar **package;
 	const gchar *repo_id;
@@ -108,7 +108,7 @@ pkalpm_backend_find_pkg (PkBackendJob *job, const gchar *package_id, GError **er
 
 	if (pkg == NULL) {
 		int code = ALPM_ERR_PKG_NOT_FOUND;
-		g_set_error (error, ALPM_ERROR, code, "%s: %s", package_id,
+		g_set_error (error, PK_ALPM_ERROR, code, "%s: %s", package_id,
 			     alpm_strerror (code));
 	}
 	g_strfreev (package);
@@ -125,7 +125,7 @@ pk_backend_resolve_package (PkBackendJob *job, const gchar *package, PkBitfield 
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (localdb != NULL, FALSE);
 
-	pkg = pkalpm_backend_find_pkg (job, package, error);
+	pkg = pk_alpm_find_pkg (job, package, error);
 	if (pkg == NULL)
 		return FALSE;
 
@@ -134,10 +134,10 @@ pk_backend_resolve_package (PkBackendJob *job, const gchar *package, PkBitfield 
 
 	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_LOCALDB) {
 		if (!skip_local)
-			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_INSTALLED);
+			pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_INSTALLED);
 	} else {
 		if (!skip_remote)
-			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_AVAILABLE);
+			pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_AVAILABLE);
 	}
 
 	return TRUE;
@@ -161,7 +161,7 @@ pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filter
 	pkg = alpm_db_get_pkg (localdb, name);
 	if (pkg != NULL) {
 		if (!skip_local) {
-			pkalpm_backend_pkg (job, pkg, PK_INFO_ENUM_INSTALLED);
+			pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_INSTALLED);
 			return TRUE;
 		}
 	} else if (!skip_remote) {
@@ -169,7 +169,7 @@ pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filter
 		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
 			if (pkg != NULL) {
-				pkalpm_backend_pkg (job, pkg,
+				pk_alpm_pkg_emit (job, pkg,
 						PK_INFO_ENUM_AVAILABLE);
 				return TRUE;
 			}
@@ -177,7 +177,7 @@ pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filter
 	}
 
 	code = ALPM_ERR_PKG_NOT_FOUND;
-	g_set_error (error, ALPM_ERROR, code, "%s: %s", name,
+	g_set_error (error, PK_ALPM_ERROR, code, "%s: %s", name,
 		     alpm_strerror (code));
 	return FALSE;
 }
@@ -192,7 +192,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	g_variant_get (params, "(t^a&s)", &filters, &search);
 
 	for (; *search != NULL; ++search) {
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
 		/* find a package with the given id or name */
@@ -205,7 +205,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		}
 	}
 
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -216,7 +216,7 @@ pk_backend_resolve (PkBackend *self,
 {
 	g_return_if_fail (search != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_resolve_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_resolve_thread, NULL);
 }
 
 static void
@@ -238,10 +238,10 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		const gchar *desc, *url;
 		gulong size;
 
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
-		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
+		pkg = pk_alpm_find_pkg (job, *packages, &error);
 		if (pkg == NULL)
 			break;
 
@@ -258,7 +258,7 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 			}
 		}
 
-		group = pk_group_enum_from_string (pkalpm_pkg_get_group (pkg));
+		group = pk_group_enum_from_string (pk_alpm_pkg_get_group (pkg));
 		desc = alpm_pkg_get_desc (pkg);
 		url = alpm_pkg_get_url (pkg);
 
@@ -273,7 +273,7 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		g_string_free (licenses, TRUE);
 	}
 
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -281,7 +281,7 @@ pk_backend_get_details (PkBackend *self,
 			PkBackendJob *job,
 			gchar **package_ids)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_details_thread, package_ids);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_details_thread, package_ids);
 }
 
 static void
@@ -301,10 +301,10 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		gsize i;
 		_cleanup_strv_free_ GString *files = NULL;
 
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
-		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
+		pkg = pk_alpm_find_pkg (job, *packages, &error);
 		if (pkg == NULL)
 			break;
 
@@ -321,7 +321,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		pk_backend_job_files (job, *packages, &files->str);
 	}
 
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -329,5 +329,5 @@ pk_backend_get_files (PkBackend *self,
 		      PkBackendJob *job,
 		      gchar **package_ids)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_files_thread, package_ids);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_files_thread, package_ids);
 }

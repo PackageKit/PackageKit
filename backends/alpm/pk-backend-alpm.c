@@ -30,16 +30,16 @@
 #include <pk-backend-spawn.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-config.h"
-#include "pk-backend-databases.h"
-#include "pk-backend-error.h"
-#include "pk-backend-groups.h"
-#include "pk-backend-transaction.h"
+#include "pk-alpm-config.h"
+#include "pk-alpm-databases.h"
+#include "pk-alpm-error.h"
+#include "pk-alpm-groups.h"
+#include "pk-alpm-transaction.h"
 
 PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;
 static GMutex mutex;
-static gboolean envInitialized = FALSE;
+static gboolean env_initialized = FALSE;
 
 alpm_handle_t *alpm = NULL;
 alpm_db_t *localdb = NULL;
@@ -61,7 +61,7 @@ pk_backend_get_author (PkBackend *self)
 }
 
 static gboolean
-pk_backend_spawn (PkBackend *self, const gchar *command)
+pk_alpm_spawn (PkBackend *self, const gchar *command)
 {
 	int status;
 	_cleanup_error_free_ GError *error = NULL;
@@ -88,7 +88,7 @@ pk_backend_spawn (PkBackend *self, const gchar *command)
 }
 
 gint
-pkalpm_backend_fetchcb (const gchar *url, const gchar *path, gint force)
+pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
 {
 	GRegex *xo, *xi;
 	gint result = 0;
@@ -135,7 +135,7 @@ pkalpm_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 		goto out;
 	}
 
-	if (!pk_backend_spawn (backend, finalcmd)) {
+	if (!pk_alpm_spawn (backend, finalcmd)) {
 		result = -1;
 		goto out;
 	}
@@ -157,7 +157,7 @@ out:
 }
 
 static void
-pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
+pk_alpm_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 {
 	_cleanup_free_ gchar *output = NULL;
 
@@ -175,7 +175,7 @@ pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 		break;
 	case ALPM_LOG_WARNING:
 		g_warning ("%s", output);
-		pkalpm_backend_output (output);
+		pk_alpm_transaction_output (output);
 		break;
 	default:
 		g_warning ("%s", output);
@@ -184,7 +184,7 @@ pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 }
 
 static void
-pk_backend_configure_environment (PkBackendJob *job)
+pk_alpm_configure_environment (PkBackendJob *job)
 {
 	struct utsname un;
 	gchar *value;
@@ -248,21 +248,21 @@ pk_backend_configure_environment (PkBackendJob *job)
 }
 
 static gboolean
-pk_backend_initialize_alpm (PkBackend *self, GError **error)
+pk_alpm_initialize (PkBackend *self, GError **error)
 {
-	alpm = pk_backend_configure (PK_BACKEND_CONFIG_FILE, error);
+	alpm = pk_alpm_configure (PK_BACKEND_CONFIG_FILE, error);
 	if (alpm == NULL) {
 		g_prefix_error (error, "using %s: ", PK_BACKEND_CONFIG_FILE);
 		return FALSE;
 	}
 
 	backend = self;
-	alpm_option_set_logcb (alpm, pk_backend_logcb);
+	alpm_option_set_logcb (alpm, pk_alpm_logcb);
 
 	localdb = alpm_get_localdb (alpm);
 	if (localdb == NULL) {
 		alpm_errno_t errno = alpm_errno (alpm);
-		g_set_error (error, ALPM_ERROR, errno, "[%s]: %s", "local",
+		g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s", "local",
 			     alpm_strerror (errno));
 	}
 
@@ -270,7 +270,7 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 }
 
 static void
-pk_backend_destroy_alpm ()
+pk_alpm_destroy (void)
 {
 	if (alpm != NULL) {
 		if (alpm_trans_get_flags (alpm) < 0)
@@ -290,20 +290,20 @@ void
 pk_backend_initialize (GKeyFile *conf, PkBackend *self)
 {
 	_cleanup_error_free_ GError *error = NULL;
-	if (!pk_backend_initialize_alpm (self, &error))
+	if (!pk_alpm_initialize (self, &error))
 		g_error ("Failed to initialize alpm: %s", error->message);
-	if (!pkalpm_backend_initialize_databases (&error))
+	if (!pk_alpm_initialize_databases (&error))
 		g_error ("Failed to initialize databases: %s", error->message);
-	if (!pkalpm_backend_initialize_groups (self, &error))
+	if (!pk_alpm_groups_initialize (self, &error))
 		g_error ("Failed to initialize groups: %s", error->message);
 }
 
 void
 pk_backend_destroy (PkBackend *self)
 {
-	pkalpm_backend_destroy_groups (self);
-	pkalpm_backend_destroy_databases (self);
-	pk_backend_destroy_alpm ();
+	pk_alpm_groups_destroy (self);
+	pk_alpm_destroy_databases (self);
+	pk_alpm_destroy ();
 }
 
 PkBitfield
@@ -324,7 +324,7 @@ pk_backend_get_mime_types (PkBackend *self)
 }
 
 void
-pkalpm_backend_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func, gpointer data)
+pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func, gpointer data)
 {
 	g_return_if_fail (func != NULL);
 
@@ -345,7 +345,7 @@ pkalpm_backend_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFu
 }
 
 gboolean
-pkalpm_is_backend_cancelled (PkBackendJob *job)
+pk_alpm_is_backend_cancelled (PkBackendJob *job)
 {
 	gboolean cancelled;
 
@@ -361,7 +361,7 @@ pkalpm_is_backend_cancelled (PkBackendJob *job)
 }
 
 gboolean
-pk_backend_finish (PkBackendJob *job, GError *error)
+pk_alpm_finish (PkBackendJob *job, GError *error)
 {
 	gboolean cancelled = FALSE;
 
@@ -378,7 +378,7 @@ pk_backend_finish (PkBackendJob *job, GError *error)
 	g_mutex_unlock (&mutex);
 
 	if (error != NULL)
-		pk_backend_error (job, error);
+		pk_alpm_error_emit (job, error);
 
 	if (cancelled)
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_CANCEL);
@@ -388,10 +388,10 @@ pk_backend_finish (PkBackendJob *job, GError *error)
 }
 
 void
-pk_backend_start_job(PkBackend* self, PkBackendJob* job)
+pk_backend_start_job (PkBackend* self, PkBackendJob* job)
 {
-	if (!envInitialized) {
-		pk_backend_configure_environment (job);
-		envInitialized = TRUE; //we only need to do it once
+	if (!env_initialized) {
+		pk_alpm_configure_environment (job);
+		env_initialized = TRUE; //we only need to do it once
 	}
 }

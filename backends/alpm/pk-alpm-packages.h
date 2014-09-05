@@ -24,9 +24,10 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gboolean	 pkalpm_backend_initialize_groups	(PkBackend *self,
-						 GError **error);
+gchar		*pk_alpm_pkg_build_id	(alpm_pkg_t *pkg);
 
-void		 pkalpm_backend_destroy_groups	(PkBackend *self);
+void		 pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info);
 
-const gchar	*pkalpm_pkg_get_group		(alpm_pkg_t *pkg);
+alpm_pkg_t	*pk_alpm_find_pkg (PkBackendJob *job,
+					 const gchar *package_id,
+					 GError **error);

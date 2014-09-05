@@ -24,10 +24,14 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gchar		*pkalpm_pkg_build_id	(alpm_pkg_t *pkg);
+void		 pk_alpm_add_database		(const gchar *name,
+							 alpm_list_t *servers,
+							 alpm_siglevel_t level);
 
-void		 pkalpm_backend_pkg (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info);
+gboolean	 pk_alpm_disable_signatures		(GError **error);
 
-alpm_pkg_t	*pkalpm_backend_find_pkg (PkBackendJob *job,
-					 const gchar *package_id,
-					 GError **error);
+gboolean	 pk_alpm_enable_signatures		(GError **error);
+
+gboolean	 pk_alpm_initialize_databases	(GError **error);
+
+void		 pk_alpm_destroy_databases		();

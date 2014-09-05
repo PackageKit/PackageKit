@@ -35,14 +35,12 @@ extern gchar *xfercmd;
 extern alpm_list_t *holdpkgs;
 extern alpm_list_t *syncfirsts;
 
-gint		 pkalpm_backend_fetchcb	(const gchar *url, const gchar *path,
+gint		 pk_alpm_fetchcb	(const gchar *url, const gchar *path,
 					 gint force);
 
-void		 pkalpm_backend_run	(PkBackendJob *job, PkStatusEnum status,
+void		 pk_alpm_run	(PkBackendJob *job, PkStatusEnum status,
 					 PkBackendJobThreadFunc func, gpointer data);
 
-gboolean	 pkalpm_is_backend_cancelled	(PkBackendJob* job);
+gboolean	 pk_alpm_is_backend_cancelled	(PkBackendJob* job);
 
-gboolean	 pk_backend_finish	(PkBackendJob *job, GError *error);
-
-void		 pk_backend_start_job(PkBackend *backend, PkBackendJob *job);
+gboolean	 pk_alpm_finish	(PkBackendJob *job, GError *error);

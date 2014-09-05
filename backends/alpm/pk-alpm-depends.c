@@ -25,11 +25,11 @@
 #include <pk-backend.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-error.h"
-#include "pk-backend-packages.h"
+#include "pk-alpm-error.h"
+#include "pk-alpm-packages.h"
 
 static alpm_pkg_t *
-alpm_list_find_pkg (const alpm_list_t *pkgs, const gchar *name)
+pk_alpm_list_find_pkgname (const alpm_list_t *pkgs, const gchar *name)
 {
 	g_return_val_if_fail (name != NULL, NULL);
 
@@ -42,7 +42,7 @@ alpm_list_find_pkg (const alpm_list_t *pkgs, const gchar *name)
 }
 
 static alpm_list_t *
-pkalpm_backend_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
+pk_alpm_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
 			      const gchar *depend, gboolean recursive,
 			      PkBitfield filters, GError **error)
 {
@@ -69,7 +69,7 @@ pkalpm_backend_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
 
 	if (provider != NULL) {
 		if (!skip_local) {
-			pkalpm_backend_pkg (job, provider, PK_INFO_ENUM_INSTALLED);
+			pk_alpm_pkg_emit (job, provider, PK_INFO_ENUM_INSTALLED);
 			/* assume later dependencies will also be local */
 			if (recursive) {
 				pkgs = alpm_list_add (pkgs, provider);
@@ -85,13 +85,13 @@ pkalpm_backend_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
 
 	if (provider != NULL) {
 		if (!skip_remote)
-			pkalpm_backend_pkg (job, provider, PK_INFO_ENUM_AVAILABLE);
+			pk_alpm_pkg_emit (job, provider, PK_INFO_ENUM_AVAILABLE);
 		/* keep looking for local dependencies */
 		if (recursive)
 			pkgs = alpm_list_add (pkgs, provider);
 	} else {
 		int code = ALPM_ERR_UNSATISFIED_DEPS;
-		g_set_error (error, ALPM_ERROR, code, "%s: %s", depend,
+		g_set_error (error, PK_ALPM_ERROR, code, "%s: %s", depend,
 			     alpm_strerror (code));
 	}
 
@@ -107,19 +107,19 @@ pk_backend_find_requirer (PkBackendJob *job, alpm_list_t *pkgs, const gchar *nam
 	g_return_val_if_fail (name != NULL, pkgs);
 	g_return_val_if_fail (localdb != NULL, pkgs);
 
-	if (alpm_list_find_pkg (pkgs, name) != NULL)
+	if (pk_alpm_list_find_pkgname (pkgs, name) != NULL)
 		return pkgs;
 
 	/* look for local requirers */
 	requirer = alpm_db_get_pkg (localdb, name);
 
 	if (requirer != NULL) {
-		pkalpm_backend_pkg (job, requirer, PK_INFO_ENUM_INSTALLED);
+		pk_alpm_pkg_emit (job, requirer, PK_INFO_ENUM_INSTALLED);
 		if (recursive)
 			pkgs = alpm_list_add (pkgs, requirer);
 	} else {
 		int code = ALPM_ERR_PKG_NOT_FOUND;
-		g_set_error (error, ALPM_ERROR, code, "%s: %s", name,
+		g_set_error (error, PK_ALPM_ERROR, code, "%s: %s", name,
 			     alpm_strerror (code));
 	}
 
@@ -142,10 +142,10 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;
 
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
-		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
+		pkg = pk_alpm_find_pkg (job, *packages, &error);
 		if (pkg == NULL)
 			break;
 
@@ -156,23 +156,23 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (i = pkgs; i != NULL; i = i->next) {
 		const alpm_list_t *depends;
 
-		if (pkalpm_is_backend_cancelled (job) || error != NULL)
+		if (pk_alpm_is_backend_cancelled (job) || error != NULL)
 			break;
 
 		depends = alpm_pkg_get_depends (i->data);
 		for (; depends != NULL; depends = depends->next) {
 			_cleanup_free_ gchar *depend = NULL;
 
-			if (pkalpm_is_backend_cancelled (job) || error != NULL)
+			if (pk_alpm_is_backend_cancelled (job) || error != NULL)
 				break;
 
 			depend = alpm_dep_compute_string (depends->data);
-			pkgs = pkalpm_backend_find_provider (job, pkgs, depend, recursive, filters, &error);
+			pkgs = pk_alpm_find_provider (job, pkgs, depend, recursive, filters, &error);
 		}
 	}
 
 	alpm_list_free (pkgs);
-	pk_backend_finish (job, NULL);
+	pk_alpm_finish (job, NULL);
 }
 
 static void
@@ -191,10 +191,10 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;
 
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
-		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
+		pkg = pk_alpm_find_pkg (job, *packages, &error);
 		if (pkg == NULL)
 			break;
 
@@ -205,12 +205,12 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (i = pkgs; i != NULL; i = i->next) {
 		alpm_list_t *requiredby;
 
-		if (pkalpm_is_backend_cancelled (job) || error != NULL)
+		if (pk_alpm_is_backend_cancelled (job) || error != NULL)
 			break;
 
 		requiredby = alpm_pkg_compute_requiredby (i->data);
 		for (; requiredby != NULL; requiredby = requiredby->next) {
-			if (pkalpm_is_backend_cancelled (job) || error != NULL)
+			if (pk_alpm_is_backend_cancelled (job) || error != NULL)
 				break;
 
 			pkgs = pk_backend_find_requirer (job, pkgs,
@@ -221,7 +221,7 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	}
 
 	alpm_list_free (pkgs);
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -231,7 +231,7 @@ pk_backend_depends_on (PkBackend    *self,
 		       gchar **package_ids,
 		       gboolean    recursive)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_depends_on_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_depends_on_thread, NULL);
 }
 
 void
@@ -241,5 +241,5 @@ pk_backend_required_by (PkBackend *self,
 			gchar **package_ids,
 			gboolean    recursive)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_required_by_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_required_by_thread, NULL);
 }

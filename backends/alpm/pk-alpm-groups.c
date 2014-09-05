@@ -24,13 +24,13 @@
 #include <gio/gio.h>
 #include <string.h>
 
-#include "pk-backend-groups.h"
+#include "pk-alpm-groups.h"
 
 static GHashTable *grps = NULL;
 static PkBitfield groups = 0;
 
 static GHashTable *
-group_map_new (GError **error)
+pk_alpm_group_map_new (GError **error)
 {
 	GHashTable *map;
 	_cleanup_object_unref_ GFile *file = NULL;
@@ -96,22 +96,22 @@ group_map_new (GError **error)
 }
 
 gboolean
-pkalpm_backend_initialize_groups (PkBackend *self, GError **error)
+pk_alpm_groups_initialize (PkBackend *self, GError **error)
 {
-	grps = group_map_new (error);
+	grps = pk_alpm_group_map_new (error);
 
 	return (grps != NULL);
 }
 
 void
-pkalpm_backend_destroy_groups (PkBackend *self)
+pk_alpm_groups_destroy (PkBackend *self)
 {
 	if (grps != NULL)
 		g_hash_table_unref (grps);
 }
 
 const gchar *
-pkalpm_pkg_get_group (alpm_pkg_t *pkg)
+pk_alpm_pkg_get_group (alpm_pkg_t *pkg)
 {
 	const alpm_list_t *i;
 

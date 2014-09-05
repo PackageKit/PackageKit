@@ -25,12 +25,12 @@
 #include <pk-backend.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
-#include "pk-backend-error.h"
-#include "pk-backend-transaction.h"
+#include "pk-alpm-databases.h"
+#include "pk-alpm-error.h"
+#include "pk-alpm-transaction.h"
 
 static gint
-alpm_add_file (const gchar *filename)
+pk_alpm_install_add_file (const gchar *filename)
 {
 	alpm_pkg_t *pkg;
 	alpm_siglevel_t level;
@@ -52,14 +52,14 @@ alpm_add_file (const gchar *filename)
 }
 
 static gboolean
-pk_backend_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **error)
+pk_alpm_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **error)
 {
 	g_return_val_if_fail (paths != NULL, FALSE);
 
 	for (; *paths != NULL; ++paths) {
-		if (alpm_add_file (*paths) < 0) {
+		if (pk_alpm_install_add_file (*paths) < 0) {
 			alpm_errno_t errno = alpm_errno (alpm);
-			g_set_error (error, ALPM_ERROR, errno, "%s: %s",
+			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s",
 				     *paths, alpm_strerror (errno));
 			return FALSE;
 		}
@@ -81,23 +81,23 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 				  &full_paths);
 	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pkalpm_backend_disable_signatures (&error))
+	if (!only_trusted && !pk_alpm_disable_signatures (&error))
 		goto out;
 
-	if (pk_backend_transaction_initialize (job, 0, 0, &error) &&
-	    pk_backend_transaction_add_targets (job, full_paths, &error) &&
-	    pk_backend_transaction_simulate (&error)) {
-		pk_backend_transaction_commit (job, &error);
+	if (pk_alpm_transaction_initialize (job, 0, 0, &error) &&
+	    pk_alpm_transaction_add_targets (job, full_paths, &error) &&
+	    pk_alpm_transaction_simulate (&error)) {
+		pk_alpm_transaction_commit (job, &error);
 	}
 out:
-	pk_backend_transaction_end (job, (error == NULL) ? &error : NULL);
+	pk_alpm_transaction_end (job, (error == NULL) ? &error : NULL);
 
 	if (!only_trusted) {
 		GError **e = (error == NULL) ? &error : NULL;
-		pkalpm_backend_enable_signatures (e);
+		pk_alpm_enable_signatures (e);
 	}
 
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -108,5 +108,5 @@ pk_backend_install_files (PkBackend *self,
 {
 	g_return_if_fail (full_paths != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP, pk_backend_install_files_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_install_files_thread, NULL);
 }

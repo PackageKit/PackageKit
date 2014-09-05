@@ -21,15 +21,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <alpm.h>
 #include <pk-backend.h>
 
-#define	 ALPM_ERROR		(pkalpm_error_quark ())
+gboolean	 pk_alpm_groups_initialize	(PkBackend *self,
+						 GError **error);
 
-enum {
-	ALPM_ERR_CONFIG_INVALID = 0x10000,
-	ALPM_ERR_PKG_HELD
-};
+void		 pk_alpm_groups_destroy		(PkBackend *self);
 
-void	 pk_backend_error	(PkBackendJob* job, GError* error);
-
-GQuark	 pkalpm_error_quark	(void);
+const gchar	*pk_alpm_pkg_get_group		(alpm_pkg_t *pkg);

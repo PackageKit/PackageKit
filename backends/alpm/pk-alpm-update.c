@@ -28,12 +28,12 @@
 #include <sys/stat.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-error.h"
-#include "pk-backend-packages.h"
-#include "pk-backend-transaction.h"
+#include "pk-alpm-error.h"
+#include "pk-alpm-packages.h"
+#include "pk-alpm-transaction.h"
 
 static gchar *
-alpm_pkg_build_replaces (alpm_pkg_t *pkg)
+pk_alpm_pkg_build_replaces (alpm_pkg_t *pkg)
 {
 	const alpm_list_t *i;
 	GString *string = NULL;
@@ -46,7 +46,7 @@ alpm_pkg_build_replaces (alpm_pkg_t *pkg)
 		alpm_pkg_t *replaces = alpm_db_get_pkg (localdb, i->data);
 
 		if (replaces != NULL) {
-			_cleanup_free_ gchar *package = pkalpm_pkg_build_id (replaces);
+			_cleanup_free_ gchar *package = pk_alpm_pkg_build_id (replaces);
 			if (string == NULL) {
 				string = g_string_new (package);
 			} else {
@@ -61,7 +61,7 @@ alpm_pkg_build_replaces (alpm_pkg_t *pkg)
 }
 
 static gchar *
-alpm_pkg_build_urls (alpm_pkg_t *pkg)
+pk_alpm_pkg_build_urls (alpm_pkg_t *pkg)
 {
 	GString *string = g_string_new ("");
 #ifdef ALPM_PACKAGE_URL
@@ -93,7 +93,7 @@ alpm_pkg_build_urls (alpm_pkg_t *pkg)
 }
 
 static gboolean
-alpm_pkg_same_pkgver (alpm_pkg_t *a, alpm_pkg_t *b)
+pk_alpm_pkg_same_pkgver (alpm_pkg_t *a, alpm_pkg_t *b)
 {
 	const gchar *version_a, *version_b, *last_a, *last_b;
 	gsize length_a, length_b;
@@ -125,7 +125,7 @@ alpm_pkg_same_pkgver (alpm_pkg_t *a, alpm_pkg_t *b)
 }
 
 static gchar *
-alpm_time_to_iso8601 (alpm_time_t time)
+pk_alpm_time_to_iso8601 (alpm_time_t time)
 {
 	GDateTime *date = g_date_time_new_from_unix_utc (time);
 	gchar *result;
@@ -162,17 +162,17 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		_cleanup_free_ gchar *issued = NULL;
 		_cleanup_free_ gchar *updated = NULL;
 
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
-		pkg = pkalpm_backend_find_pkg (job, *packages, &error);
+		pkg = pk_alpm_find_pkg (job, *packages, &error);
 		if (pkg == NULL)
 			break;
 
 		old = alpm_db_get_pkg (localdb, alpm_pkg_get_name (pkg));
 		if (old != NULL) {
-			upgrades = pkalpm_pkg_build_id (old);
-			if (alpm_pkg_same_pkgver (pkg, old)) {
+			upgrades = pk_alpm_pkg_build_id (old);
+			if (pk_alpm_pkg_same_pkgver (pkg, old)) {
 				reason = "Update to a newer release";
 			} else {
 				reason = "Update to a new upstream version";
@@ -182,8 +182,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		}
 
 		db = alpm_pkg_get_db (pkg);
-		replaces = alpm_pkg_build_replaces (pkg);
-		urls = alpm_pkg_build_urls (pkg);
+		replaces = pk_alpm_pkg_build_replaces (pkg);
+		urls = pk_alpm_pkg_build_urls (pkg);
 
 		if (g_str_has_prefix (alpm_pkg_get_name (pkg), "kernel"))
 			restart = PK_RESTART_ENUM_SYSTEM;
@@ -193,12 +193,12 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 
 		built = alpm_pkg_get_builddate (pkg);
 		if (built > 0)
-			issued = alpm_time_to_iso8601 (built);
+			issued = pk_alpm_time_to_iso8601 (built);
 
 		if (upgrades != NULL) {
 			installed = alpm_pkg_get_installdate (old);
 			if (installed > 0)
-				updated = alpm_time_to_iso8601 (installed);
+				updated = pk_alpm_time_to_iso8601 (installed);
 		}
 
 		pk_backend_job_update_detail (job, *packages, &upgrades,
@@ -207,7 +207,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 					      issued, updated);
 	}
 
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -215,7 +215,7 @@ pk_backend_get_update_detail (PkBackend * self,
 			      PkBackendJob *job,
 			      gchar **package_ids)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_update_detail_thread, package_ids);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_update_detail_thread, package_ids);
 }
 
 static gboolean
@@ -227,7 +227,7 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	if (!pk_backend_transaction_initialize (job, 0, NULL, error))
+	if (!pk_alpm_transaction_initialize (job, 0, NULL, error))
 		return FALSE;
 
 	alpm_logaction (alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
@@ -243,7 +243,7 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 	for (; i != NULL; i = i->next) {
 		gint result;
 
-		if (pkalpm_is_backend_cancelled (job)) {
+		if (pk_alpm_is_backend_cancelled (job)) {
 			/* pretend to be finished */
 			i = NULL;
 			break;
@@ -256,7 +256,7 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 			dlcb ("", 1, 1);
 		} else if (result < 0) {
 			alpm_errno_t errno = alpm_errno (alpm);
-			g_set_error (error, ALPM_ERROR, errno, "[%s]: %s",
+			g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s",
 				     alpm_db_get_name (i->data),
 				     alpm_strerror (errno));
 			break;
@@ -266,13 +266,13 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 	totaldlcb (0);
 
 	if (i == NULL)
-		return pk_backend_transaction_end (job, error);
-	pk_backend_transaction_end (job, NULL);
+		return pk_alpm_transaction_end (job, error);
+	pk_alpm_transaction_end (job, NULL);
 	return FALSE;
 }
 
 static gboolean
-alpm_pkg_is_ignorepkg (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_ignorepkg (alpm_pkg_t *pkg)
 {
 	const alpm_list_t *ignorepkgs, *ignoregroups, *i;
 
@@ -293,7 +293,7 @@ alpm_pkg_is_ignorepkg (alpm_pkg_t *pkg)
 }
 
 static gboolean
-alpm_pkg_is_syncfirst (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_syncfirst (alpm_pkg_t *pkg)
 {
 	g_return_val_if_fail (pkg != NULL, FALSE);
 
@@ -304,7 +304,7 @@ alpm_pkg_is_syncfirst (alpm_pkg_t *pkg)
 }
 
 static gboolean
-alpm_pkg_replaces (alpm_pkg_t *pkg, const gchar *name)
+pk_alpm_pkg_replaces (alpm_pkg_t *pkg, const gchar *name)
 {
 	g_return_val_if_fail (pkg != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
@@ -313,7 +313,7 @@ alpm_pkg_replaces (alpm_pkg_t *pkg, const gchar *name)
 }
 
 static alpm_pkg_t *
-alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
+pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 {
 	const gchar *name;
 	const alpm_list_t *i;
@@ -335,7 +335,7 @@ alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 
 		i = alpm_db_get_pkgcache (dbs->data);
 		for (; i != NULL; i = i->next) {
-			if (alpm_pkg_replaces (i->data, name))
+			if (pk_alpm_pkg_replaces (i->data, name))
 				return i->data;
 		}
 	}
@@ -371,20 +371,20 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	syncdbs = alpm_get_syncdbs (alpm);
 	for (i = alpm_db_get_pkgcache (localdb); i != NULL; i = i->next) {
 		PkInfoEnum info = PK_INFO_ENUM_NORMAL;
-		alpm_pkg_t *upgrade = alpm_pkg_find_update (i->data, syncdbs);
+		alpm_pkg_t *upgrade = pk_alpm_pkg_find_update (i->data, syncdbs);
 		if (upgrade == NULL)
 			continue;
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
-		if (alpm_pkg_is_ignorepkg (upgrade)) {
+		if (pk_alpm_pkg_is_ignorepkg (upgrade)) {
 			info = PK_INFO_ENUM_BLOCKED;
-		} else if (alpm_pkg_is_syncfirst (upgrade)) {
+		} else if (pk_alpm_pkg_is_syncfirst (upgrade)) {
 			info = PK_INFO_ENUM_IMPORTANT;
 		}
-		pkalpm_backend_pkg (job, upgrade, info);
+		pk_alpm_pkg_emit (job, upgrade, info);
 	}
 
-	pk_backend_finish (job, NULL);
+	pk_alpm_finish (job, NULL);
 }
 
 void
@@ -392,7 +392,7 @@ pk_backend_get_updates (PkBackend *self,
 			PkBackendJob *job,
 			PkBitfield filters)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_updates_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_updates_thread, NULL);
 }
 
 static void
@@ -407,7 +407,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p
 	g_variant_get (params, "(b)", &force);
 
 	pk_backend_update_databases (job, force, &error);
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -415,5 +415,5 @@ pk_backend_refresh_cache (PkBackend *self,
 			  PkBackendJob *job,
 			  gboolean force)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP, pk_backend_refresh_cache_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_refresh_cache_thread, NULL);
 }

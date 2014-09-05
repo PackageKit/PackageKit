@@ -26,8 +26,8 @@
 #include <string.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-groups.h"
-#include "pk-backend-packages.h"
+#include "pk-alpm-groups.h"
+#include "pk-alpm-packages.h"
 
 static gpointer
 pk_backend_pattern_needle (const gchar *needle, GError **error)
@@ -157,7 +157,7 @@ pk_backend_match_group (alpm_pkg_t *pkg, const gchar *needle)
 	g_return_val_if_fail (needle != NULL, FALSE);
 
 	/* match the group the package is in */
-	return g_strcmp0 (needle, pkalpm_pkg_get_group (pkg)) == 0;
+	return g_strcmp0 (needle, pk_alpm_pkg_get_group (pkg)) == 0;
 }
 
 static gboolean
@@ -171,7 +171,7 @@ pk_backend_match_name (alpm_pkg_t *pkg, GRegex *regex)
 }
 
 static gboolean
-pk_backend_match_provides (alpm_pkg_t *pkg, gpointer pattern)
+pk_alpm_pkg_match_provides (alpm_pkg_t *pkg, gpointer pattern)
 {
 	/* TODO: implement GStreamer codecs, Pango fonts, etc. */
 	const alpm_list_t *i;
@@ -232,11 +232,11 @@ static MatchFunc match_funcs[] = {
 	(MatchFunc) pk_backend_match_file,
 	(MatchFunc) pk_backend_match_group,
 	(MatchFunc) pk_backend_match_name,
-	pk_backend_match_provides
+	pk_alpm_pkg_match_provides
 };
 
 static gboolean
-alpm_pkg_is_local (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_local (alpm_pkg_t *pkg)
 {
 	alpm_pkg_t *local;
 
@@ -274,7 +274,7 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 
 	/* emit packages that match all search terms */
 	for (i = alpm_db_get_pkgcache (db); i != NULL; i = i->next) {
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
 		for (j = patterns; j != NULL; j = j->next) {
@@ -285,10 +285,10 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 		/* all search terms matched */
 		if (j == NULL) {
 			if (db == localdb) {
-				pkalpm_backend_pkg (job, i->data,
+				pk_alpm_pkg_emit (job, i->data,
 						PK_INFO_ENUM_INSTALLED);
-			} else if (!alpm_pkg_is_local (i->data)) {
-				pkalpm_backend_pkg (job, i->data,
+			} else if (!pk_alpm_pkg_is_local (i->data)) {
+				pk_alpm_pkg_emit (job, i->data,
 						PK_INFO_ENUM_AVAILABLE);
 			}
 		}
@@ -388,7 +388,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		goto out;
 
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
-		if (pkalpm_is_backend_cancelled (job))
+		if (pk_alpm_is_backend_cancelled (job))
 			break;
 
 		pk_backend_search_db (job, i->data, match_func, patterns);
@@ -397,7 +397,7 @@ out:
 	if (pattern_free != NULL)
 		alpm_list_free_inner (patterns, pattern_free);
 	alpm_list_free (patterns);
-	pk_backend_finish (job, error);
+	pk_alpm_finish (job, error);
 }
 
 void
@@ -405,7 +405,7 @@ pk_backend_get_packages (PkBackend  *self,
 			 PkBackendJob *job,
 			 PkBitfield filters)
 {
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
@@ -416,7 +416,7 @@ pk_backend_search_details (PkBackend    *self,
 {
 	g_return_if_fail (search != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
@@ -431,7 +431,7 @@ pk_backend_search_files (PkBackend  *self,
 // 	pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
 // 	pk_backend_set_uint (self, "filters", filters);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
@@ -442,7 +442,7 @@ pk_backend_search_groups (PkBackend *self,
 {
 	g_return_if_fail (search != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
@@ -453,7 +453,7 @@ pk_backend_search_names (PkBackend  *self,
 {
 	g_return_if_fail (search != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
@@ -465,5 +465,5 @@ pk_backend_what_provides (PkBackend *self,
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (search != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
