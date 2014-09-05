@@ -99,6 +99,7 @@ struct PkBackendJobPrivate
 	guint			 speed;
 	guint			 uid;
 	GVariant		*params;
+	GCancellable		*cancellable;
 	PkBackend		*backend;
 	PkBackendJobVFuncItem	 vfunc_items[PK_BACKEND_SIGNAL_LAST];
 	PkBitfield		 transaction_flags;
@@ -158,6 +159,17 @@ pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
 	if (item->vfunc == NULL)
 		return FALSE;
 	return TRUE;
+}
+
+/**
+ * pk_backend_job_get_cancellable:
+ *
+ * Return value: (transfer none): a #GCancellable
+ **/
+GCancellable *
+pk_backend_job_get_cancellable (PkBackendJob *job)
+{
+	return job->priv->cancellable;
 }
 
 /**
@@ -1843,6 +1855,7 @@ pk_backend_job_finalize (GObject *object)
 		g_variant_unref (job->priv->params);
 	g_timer_destroy (job->priv->timer);
 	g_key_file_unref (job->priv->conf);
+	g_object_unref (job->priv->cancellable);
 
 	G_OBJECT_CLASS (pk_backend_job_parent_class)->finalize (object);
 }
@@ -1866,6 +1879,7 @@ pk_backend_job_init (PkBackendJob *job)
 {
 	job->priv = PK_BACKEND_JOB_GET_PRIVATE (job);
 	job->priv->timer = g_timer_new ();
+	job->priv->cancellable = g_cancellable_new ();
 	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
 	pk_backend_job_reset (job);
 }

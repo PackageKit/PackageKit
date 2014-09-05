@@ -984,7 +984,12 @@ pk_backend_class_init (PkBackendClass *klass)
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
+	GCancellable *cancellable;
 	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* cancel */
+	cancellable = pk_backend_job_get_cancellable (job);
+	g_cancellable_cancel (cancellable);
 
 	/* call into the backend */
 	backend->priv->desc->cancel (backend, job);

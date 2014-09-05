@@ -81,6 +81,7 @@ void		 pk_backend_job_reset			(PkBackendJob	*job);
 gpointer	 pk_backend_job_get_backend		(PkBackendJob	*job);
 void		 pk_backend_job_set_backend		(PkBackendJob	*job,
 							 gpointer	 backend);
+GCancellable	*pk_backend_job_get_cancellable		(PkBackendJob	*job);
 gpointer	 pk_backend_job_get_user_data		(PkBackendJob	*job);
 void		 pk_backend_job_set_user_data		(PkBackendJob	*job,
 							 gpointer	 user_data);

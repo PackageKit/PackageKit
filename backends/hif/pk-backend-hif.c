@@ -61,7 +61,6 @@ typedef struct {
 
 typedef struct {
 	GPtrArray	*sources;
-	GCancellable	*cancellable;
 	HifState	*state;
 	PkBitfield	 transaction_flags;
 	HyGoal		 goal;
@@ -332,11 +331,11 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	PkBackendHifJobData *job_data;
 	job_data = g_new0 (PkBackendHifJobData, 1);
 	pk_backend_job_set_user_data (job, job_data);
-	job_data->cancellable = g_cancellable_new ();
 
 	/* HifState */
 	job_data->state = hif_state_new ();
-	hif_state_set_cancellable (job_data->state, job_data->cancellable);
+	hif_state_set_cancellable (job_data->state,
+				   pk_backend_job_get_cancellable (job));
 	g_signal_connect (job_data->state, "percentage-changed",
 			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
 			  job);
@@ -356,19 +355,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_RUNNING);
 }
 
-#if 0
-/**
- * pk_backend_reset_job:
- */
-void
-pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
-{
-	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	hif_state_reset (job_data->state);
-	g_cancellable_reset (job_data->cancellable);
-}
-#endif
-
 /**
  * pk_backend_stop_job:
  */
@@ -377,7 +363,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 
-	g_object_unref (job_data->cancellable);
 	if (job_data->state != NULL) {
 		hif_state_release_locks (job_data->state);
 		g_object_unref (job_data->state);
@@ -1931,8 +1916,6 @@ pk_backend_download_packages (PkBackend *backend,
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
-	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	g_cancellable_cancel (job_data->cancellable);
 }
 
 /**
