@@ -366,7 +366,6 @@ int
 main (int argc, char *argv[])
 {
 	PkOfflineAction action;
-	gboolean ret;
 	gint retval;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
