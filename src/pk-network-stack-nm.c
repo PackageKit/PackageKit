@@ -249,8 +249,12 @@ pk_network_stack_nm_appeared_cb (GDBusConnection *connection,
 				 const gchar *name_owner,
 				 gpointer user_data)
 {
+	PkNetworkEnum network_state;
 	PkNetworkStackNm *nstack_nm = PK_NETWORK_STACK_NM (user_data);
 	nstack_nm->priv->is_enabled = TRUE;
+	network_state = pk_network_stack_nm_get_state (PK_NETWORK_STACK (user_data));
+	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_nm),
+			       "state-changed", network_state);
 }
 
 /**
