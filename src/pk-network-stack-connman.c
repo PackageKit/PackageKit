@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
-#include <dbus/dbus-glib.h>
 
 #include "pk-cleanup.h"
 #include "pk-network-stack-connman.h"
@@ -43,43 +42,7 @@ G_DEFINE_TYPE (PkNetworkStackConnman, pk_network_stack_connman, PK_TYPE_NETWORK_
 
 #define CONNMAN_DBUS_NAME			"net.connman"
 #define CONNMAN_MANAGER_DBUS_INTERFACE		CONNMAN_DBUS_NAME ".Manager"
-#define CONNMAN_SERVICE_DBUS_INTERFACE		CONNMAN_DBUS_NAME ".Service"
 #define CONNMAN_MANAGER_DBUS_PATH		"/"
-
-/**
- * pk_network_stack_connman_iterate_list:
- **/
-static void
-pk_network_stack_connman_iterate_list (const GValue *value, gpointer user_data)
-{
-	GSList **list = user_data;
-	gchar *path = g_value_dup_boxed (value);
-
-	if (path == NULL)
-		return;
-
-	*list = g_slist_append (*list, path);
-}
-
-/**
- * pk_network_stack_connman_get_connection_type:
- **/
-static PkNetworkEnum
-pk_network_stack_connman_get_connection_type (const GValue *value)
-{
-	const char *type = value ? g_value_get_string(value) : NULL;
-
-	if (type == NULL)
-		return PK_NETWORK_ENUM_UNKNOWN;
-	else if (g_str_equal (type, "ethernet"))
-		return PK_NETWORK_ENUM_WIRED;
-	else if (g_str_equal (type, "wifi"))
-		return PK_NETWORK_ENUM_WIFI;
-	else if (g_str_equal (type, "wimax"))
-		return PK_NETWORK_ENUM_MOBILE;
-
-	return PK_NETWORK_ENUM_UNKNOWN;
-}
 
 /**
  * pk_network_stack_connman_get_state:
@@ -87,89 +50,32 @@ pk_network_stack_connman_get_connection_type (const GValue *value)
 static PkNetworkEnum
 pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 {
-	GDBusProxy *proxy, *proxy_service;
-	GError *error = NULL;
-	GHashTable *hash_manager = NULL;
-	GHashTable *hash_service = NULL;
-	GValue *value;
-	GSList *list;
-	GSList *services_list = NULL;
-	gchar *state;
-	PkNetworkEnum type;
+	PkNetworkEnum type = PK_NETWORK_ENUM_ONLINE;
 	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (nstack);
-	GDBusConnection *connection = nstack_connman->priv->bus;
-
-	proxy = nstack_connman->priv->proxy;
-	proxy_service = NULL;
+	const gchar *state;
+	_cleanup_variant_unref_ GVariant *res = NULL;
+	_cleanup_variant_unref_ GVariant *child = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
 	/* get services */
-	g_dbus_proxy_call_sync (proxy, "GetProperties", &error,
-			   G_TYPE_INVALID,
-			   dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash_manager,
-			   G_TYPE_INVALID);
-	if (error != NULL || hash_manager == NULL) {
-		if (error)
-			g_clear_error (&error);
+	res = g_dbus_proxy_call_sync (nstack_connman->priv->proxy,
+				      "GetProperties",
+				      NULL,
+				      G_DBUS_CALL_FLAGS_NONE,
+				      -1,
+				      NULL,
+				      &error);
+	if (res == NULL) {
+		g_warning ("Failed to get properties: %s", error->message);
 		return PK_NETWORK_ENUM_UNKNOWN;
 	}
-
-	value = g_hash_table_lookup (hash_manager, "State");
-	state = value ? g_value_dup_string (value) : NULL;
-
-	if (g_str_equal (state, "online") == FALSE)
-		return PK_NETWORK_ENUM_OFFLINE;
-
-	value = g_hash_table_lookup (hash_manager, "Services");
-	if (value == NULL)
+	child = g_variant_get_child_value (res, 0);
+	if (!g_variant_lookup (child, "State", "&s", &state)) {
+		g_warning ("Failed to get State property");
 		return PK_NETWORK_ENUM_UNKNOWN;
-
-	dbus_g_type_collection_value_iterate (value, pk_network_stack_connman_iterate_list, &services_list);
-
-	for (list = services_list; list; list = list->next) {
-		gchar *path = list->data;
-
-		g_debug ("service path is %s", path);
-
-		proxy_service = g_dbus_proxy_new_sync (connection,
-						       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
-						       NULL,
-						       CONNMAN_DBUS_NAME,
-						       path,
-						       CONNMAN_SERVICE_DBUS_INTERFACE,
-						       NULL,
-						       &error);
-
-		if (proxy_service != NULL)
-			break;
 	}
-
-	/* free service list */
-	for (list = services_list; list; list = list->next) {
-		gchar *path = list->data;
-		g_free (path);
-	}
-	g_slist_free (services_list);
-
-	if (proxy_service == NULL)
-		return PK_NETWORK_ENUM_UNKNOWN;
-
-	/* now proxy_service point to first available service */
-	/* get connection type for i t*/
-	g_dbus_proxy_call_sync (proxy_service, "GetProperties", &error,
-			   G_TYPE_INVALID,
-			   dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash_service,
-			   G_TYPE_INVALID);
-	if (error != NULL || hash_service == NULL) {
-		if (error)
-			g_clear_error (&error);
-		return PK_NETWORK_ENUM_OFFLINE;
-	}
-
-	value = g_hash_table_lookup (hash_service, "Type");
-	type = pk_network_stack_connman_get_connection_type (value);
-
-	g_debug ("network type is %s", pk_network_enum_to_string (type));
-	g_object_unref (proxy_service);
+	if (g_strcmp0 (state, "online") != 0)
+		type = PK_NETWORK_ENUM_OFFLINE;
 	return type;
 }
 
@@ -187,8 +93,8 @@ pk_network_stack_connman_state_changed (PkNetworkStackConnman *nstack_connman,
 	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
 
 	g_variant_get (parameters, "(&sv)", &property, &value);
-	if (property && value && (g_str_equal (property, "State") == TRUE)) {
-		gchar *state = NULL;
+	if (value != NULL && (g_strcmp0 (property, "State") == 0)) {
+		const gchar *state = NULL;
 
 		g_variant_get (value, "&s", &state);
 		if (state == NULL) 
@@ -255,8 +161,12 @@ pk_network_stack_connman_appeared_cb (GDBusConnection *connection,
 				      const gchar *name_owner,
 				      gpointer user_data)
 {
+	PkNetworkEnum network_state;
 	PkNetworkStackConnman *nstack_connman = PK_NETWORK_STACK_CONNMAN (user_data);
 	nstack_connman->priv->is_enabled = TRUE;
+	network_state = pk_network_stack_connman_get_state (PK_NETWORK_STACK (user_data));
+	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman),
+			       "state-changed", network_state);
 }
 
 /**
@@ -271,38 +181,6 @@ pk_network_stack_connman_vanished_cb (GDBusConnection *connection,
 	nstack_connman->priv->is_enabled = FALSE;
 }
 
-static void
-pk_marshal_VOID__STRING_BOXED (GClosure *closure,
-			       GValue *return_value G_GNUC_UNUSED,
-			       guint n_param_values,
-			       const GValue *param_values,
-			       gpointer invocation_hint G_GNUC_UNUSED,
-			       gpointer marshal_data)
-{
-	typedef void (*GMarshalFunc_VOID__STRING_BOXED) (gpointer data1,
-		gpointer arg_1,
-		gpointer arg_2,
-		gpointer data2);
-		register GMarshalFunc_VOID__STRING_BOXED callback;
-		register GCClosure *cc = (GCClosure*) closure;
-		register gpointer data1, data2;
-
-	g_return_if_fail (n_param_values == 3);
-
-	if (G_CCLOSURE_SWAP_DATA (closure)) {
-		data1 = closure->data;
-		data2 = g_value_get_pointer (param_values + 0);
-	} else {
-		data1 = g_value_get_pointer (param_values + 0);
-		data2 = closure->data;
-	}
-	callback = (GMarshalFunc_VOID__STRING_BOXED) (marshal_data ? marshal_data : cc->callback);
-	callback (data1,
-		 g_value_get_string (param_values + 1),
-		 g_value_get_boxed (param_values + 2),
-		 data2);
-}
-
 /**
  * pk_network_stack_connman_init:
  **/
@@ -313,10 +191,6 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	_cleanup_error_free_ GError *error = NULL;
 
 	nstack_connman->priv = PK_NETWORK_STACK_CONNMAN_GET_PRIVATE (nstack_connman);
-
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_BOXED,
-					   G_TYPE_NONE, G_TYPE_STRING,
-					   G_TYPE_VALUE, G_TYPE_INVALID);
 
 	/* get system connection */
 	nstack_connman->priv->bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
