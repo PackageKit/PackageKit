@@ -24,7 +24,7 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gchar		*alpm_pkg_build_id	(alpm_pkg_t *pkg);
+gchar		*pkalpm_pkg_build_id	(alpm_pkg_t *pkg);
 
 void		 pkalpm_backend_pkg (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info);
 

@@ -33,19 +33,16 @@ static GHashTable *
 group_map_new (GError **error)
 {
 	GHashTable *map;
-	GFile *file;
-
-	GFileInputStream *is;
-	GDataInputStream *input;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileInputStream *is = NULL;
+	_cleanup_object_unref_ GDataInputStream *input = NULL;
 
 	GError *e = NULL;
 
 	g_debug ("reading group map from %s", PK_BACKEND_GROUP_FILE);
 	file = g_file_new_for_path (PK_BACKEND_GROUP_FILE);
 	is = g_file_read (file, NULL, &e);
-
 	if (is == NULL) {
-		g_object_unref (file);
 		g_propagate_error (error, e);
 		return NULL;
 	}
@@ -62,9 +59,8 @@ group_map_new (GError **error)
 
 		if (value != NULL) {
 			g_strstrip (value);
-		} else {
+		} else
 			break;
-		}
 
 		if (*value == '\0' || *value == '#') {
 			g_free (value);
@@ -91,24 +87,17 @@ group_map_new (GError **error)
 		}
 	}
 
-	g_object_unref (input);
-	g_object_unref (is);
-	g_object_unref (file);
-
 	if (e != NULL) {
 		g_hash_table_unref (map);
 		g_propagate_error (error, e);
 		return NULL;
-	} else {
-		return map;
 	}
+	return map;
 }
 
 gboolean
 pkalpm_backend_initialize_groups (PkBackend *self, GError **error)
 {
-	g_return_val_if_fail (self != NULL, FALSE);
-
 	grps = group_map_new (error);
 
 	return (grps != NULL);
@@ -117,15 +106,12 @@ pkalpm_backend_initialize_groups (PkBackend *self, GError **error)
 void
 pkalpm_backend_destroy_groups (PkBackend *self)
 {
-	g_return_if_fail (self != NULL);
-
-	if (grps != NULL) {
+	if (grps != NULL)
 		g_hash_table_unref (grps);
-	}
 }
 
 const gchar *
-alpm_pkg_get_group (alpm_pkg_t *pkg)
+pkalpm_pkg_get_group (alpm_pkg_t *pkg)
 {
 	const alpm_list_t *i;
 
@@ -135,10 +121,8 @@ alpm_pkg_get_group (alpm_pkg_t *pkg)
 	/* use the first group that we recognise */
 	for (i = alpm_pkg_get_groups (pkg); i != NULL; i = i->next) {
 		gpointer value = g_hash_table_lookup (grps, i->data);
-
-		if (value != NULL) {
+		if (value != NULL)
 			return (const gchar *) value;
-		}
 	}
 
 	return "other";
@@ -147,7 +131,5 @@ alpm_pkg_get_group (alpm_pkg_t *pkg)
 PkBitfield
 pk_backend_get_groups (PkBackend *self)
 {
-	g_return_val_if_fail (self != NULL, 0);
-
 	return groups;
 }

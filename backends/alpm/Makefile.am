@@ -27,33 +27,41 @@ DEFS = -DPK_BACKEND_CONFIG_FILE=\"$(PK_BACKEND_CONFIG_FILE)\" \
        -DG_LOG_DOMAIN=\"PackageKit-alpm\"
 
 confdir = $(sysconfdir)/PackageKit/alpm.d
-conf_DATA = groups.list \
-	    pacman.conf \
-	    repos.list
+conf_DATA =								\
+	groups.list							\
+	pacman.conf							\
+	repos.list
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_alpm.la
 
-libpk_backend_alpm_la_SOURCES = pk-backend-alpm.c \
-				pk-backend-config.c \
-				pk-backend-databases.c \
-				pk-backend-depends.c \
-				pk-backend-error.c \
-				pk-backend-groups.c \
-				pk-backend-install.c \
-				pk-backend-packages.c \
-				pk-backend-remove.c \
-				pk-backend-search.c \
-				pk-backend-sync.c \
-				pk-backend-transaction.c \
-				pk-backend-update.c
-libpk_backend_alpm_la_LIBADD = $(PK_PLUGIN_LIBS) \
-			       $(ALPM_LIBS)
-libpk_backend_alpm_la_LDFLAGS = -module \
-				-avoid-version
-libpk_backend_alpm_la_CFLAGS = $(PK_PLUGIN_CFLAGS) \
-			       $(ALPM_CFLAGS) \
-			       $(WARNINGFLAGS_C)
+libpk_backend_alpm_la_SOURCES =						\
+	pk-backend-alpm.c						\
+	pk-backend-alpm.h						\
+	pk-backend-config.c						\
+	pk-backend-config.h						\
+	pk-backend-databases.c						\
+	pk-backend-databases.h						\
+	pk-backend-depends.c						\
+	pk-backend-error.c						\
+	pk-backend-error.h						\
+	pk-backend-groups.c						\
+	pk-backend-groups.h						\
+	pk-backend-install.c						\
+	pk-backend-packages.c						\
+	pk-backend-packages.h						\
+	pk-backend-remove.c						\
+	pk-backend-search.c						\
+	pk-backend-sync.c						\
+	pk-backend-transaction.c					\
+	pk-backend-transaction.h					\
+	pk-backend-update.c
+libpk_backend_alpm_la_LIBADD = $(PK_PLUGIN_LIBS) $(ALPM_LIBS)
+libpk_backend_alpm_la_LDFLAGS = -module -avoid-version
+libpk_backend_alpm_la_CFLAGS =						\
+	$(PK_PLUGIN_CFLAGS)						\
+	$(ALPM_CFLAGS)							\
+	$(WARNINGFLAGS_C)
 
 EXTRA_DIST = $(conf_DATA) $(libpk_backend_alpm_la_SOURCES:.c=.h)
 

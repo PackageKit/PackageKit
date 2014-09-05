@@ -36,4 +36,4 @@ gboolean	 pk_backend_transaction_end		(PkBackendJob *job, GError **error);
 
 gboolean	 pk_backend_transaction_finish		(PkBackendJob *job, GError *error);
 
-void		 pkalpm_backend_output	(const gchar* output);
+void		 pkalpm_backend_output			(const gchar* output);

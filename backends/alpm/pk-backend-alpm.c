@@ -51,16 +51,12 @@ alpm_list_t *syncfirsts = NULL;
 const gchar *
 pk_backend_get_description (PkBackend *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
-
 	return "alpm";
 }
 
 const gchar *
 pk_backend_get_author (PkBackend *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
-
 	return "Jonathan Conder <jonno.conder@gmail.com>";
 }
 
@@ -68,14 +64,12 @@ static gboolean
 pk_backend_spawn (PkBackend *self, const gchar *command)
 {
 	int status;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (command != NULL, FALSE);
 
 	if (!g_spawn_command_line_sync (command, NULL, NULL, &status, &error)) {
 		g_warning ("could not spawn command: %s", error->message);
-		g_error_free (error);
 		return FALSE;
 	}
 
@@ -94,12 +88,16 @@ pk_backend_spawn (PkBackend *self, const gchar *command)
 }
 
 gint
-pk_backend_fetchcb (const gchar *url, const gchar *path, gint force)
+pkalpm_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 {
 	GRegex *xo, *xi;
-	gchar *oldpwd, *basename, *file, *part;
-	gchar *tempcmd = NULL, *finalcmd = NULL;
 	gint result = 0;
+	_cleanup_free_ gchar *basename = NULL;
+	_cleanup_free_ gchar *file = NULL;
+	_cleanup_free_ gchar *finalcmd = NULL;
+	_cleanup_free_ gchar *oldpwd = NULL;
+	_cleanup_free_ gchar *part = NULL;
+	_cleanup_free_ gchar *tempcmd = NULL;
 
 	g_return_val_if_fail (url != NULL, -1);
 	g_return_val_if_fail (path != NULL, -1);
@@ -108,7 +106,7 @@ pk_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 
 	oldpwd = g_get_current_dir ();
 	if (g_chdir (path) < 0) {
-		g_warning ("could not find or read directory %s", path);
+		g_warning ("could not find or read directory '%s'", path);
 		g_free (oldpwd);
 		return -1;
 	}
@@ -120,12 +118,10 @@ pk_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 	file = g_strconcat (path, basename, NULL);
 	part = g_strconcat (file, ".part", NULL);
 
-	if (force != 0 && g_file_test (part, G_FILE_TEST_EXISTS)) {
+	if (force != 0 && g_file_test (part, G_FILE_TEST_EXISTS))
 		g_unlink (part);
-	}
-	if (force != 0 && g_file_test (file, G_FILE_TEST_EXISTS)) {
+	if (force != 0 && g_file_test (file, G_FILE_TEST_EXISTS))
 		g_unlink (file);
-	}
 
 	tempcmd = g_regex_replace_literal (xo, xfercmd, -1, 0, part, 0, NULL);
 	if (tempcmd == NULL) {
@@ -142,7 +138,8 @@ pk_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 	if (!pk_backend_spawn (backend, finalcmd)) {
 		result = -1;
 		goto out;
-	} else if (g_strrstr (xfercmd, "%o") != NULL) {
+	}
+	if (g_strrstr (xfercmd, "%o") != NULL) {
 		/* using .part filename */
 		if (g_rename (part, file) < 0) {
 			g_warning ("could not rename %s", part);
@@ -150,20 +147,11 @@ pk_backend_fetchcb (const gchar *url, const gchar *path, gint force)
 			goto out;
 		}
 	}
-
 out:
-	g_free (finalcmd);
-	g_free (tempcmd);
-
-	g_free (part);
-	g_free (file);
-	g_free (basename);
-
 	g_regex_unref (xi);
 	g_regex_unref (xo);
 
 	g_chdir (oldpwd);
-	g_free (oldpwd);
 
 	return result;
 }
@@ -171,34 +159,28 @@ out:
 static void
 pk_backend_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 {
-	gchar *output;
+	_cleanup_free_ gchar *output = NULL;
 
 	g_return_if_fail (backend != NULL);
 
-	if (format != NULL && format[0] != '\0') {
-		output = g_strdup_vprintf (format, args);
-	} else {
+	if (format == NULL || format[0] == '\0')
 		return;
-	}
+	output = g_strdup_vprintf (format, args);
 
 	/* report important output to PackageKit */
 	switch (level) {
-		case ALPM_LOG_DEBUG:
-		case ALPM_LOG_FUNCTION:
-			g_debug ("%s", output);
-			break;
-
-		case ALPM_LOG_WARNING:
-			g_warning ("%s", output);
-			pkalpm_backend_output (output);
-			break;
-
-		default:
-			g_warning ("%s", output);
-			break;
+	case ALPM_LOG_DEBUG:
+	case ALPM_LOG_FUNCTION:
+		g_debug ("%s", output);
+		break;
+	case ALPM_LOG_WARNING:
+		g_warning ("%s", output);
+		pkalpm_backend_output (output);
+		break;
+	default:
+		g_warning ("%s", output);
+		break;
 	}
-
-	g_free (output);
 }
 
 static void
@@ -206,8 +188,6 @@ pk_backend_configure_environment (PkBackendJob *job)
 {
 	struct utsname un;
 	gchar *value;
-
-	g_return_if_fail (job != NULL);
 
 	/* PATH might have been nuked by D-Bus */
 	g_setenv ("PATH", PK_BACKEND_DEFAULT_PATH, FALSE);
@@ -219,7 +199,7 @@ pk_backend_configure_environment (PkBackendJob *job)
 	g_setenv ("HTTP_USER_AGENT", value, FALSE);
 	g_free (value);
 
-    value = pk_backend_job_get_locale (job);
+	value = pk_backend_job_get_locale (job);
 	if (value != NULL) {
 		setlocale (LC_ALL, value);
 		g_free (value);
@@ -227,33 +207,29 @@ pk_backend_configure_environment (PkBackendJob *job)
 
 	value = pk_backend_job_get_proxy_http (job);
 	if (value != NULL) {
-		gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("http_proxy", uri, TRUE);
-		g_free (uri);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_https (job);
 	if (value != NULL) {
-		gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("https_proxy", uri, TRUE);
-		g_free (uri);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_ftp (job);
 	if (value != NULL) {
-		gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("ftp_proxy", uri, TRUE);
-		g_free (uri);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_socks (job);
 	if (value != NULL) {
-		gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("socks_proxy", uri, TRUE);
-		g_free (uri);
 		g_free (value);
 	}
 
@@ -265,9 +241,8 @@ pk_backend_configure_environment (PkBackendJob *job)
 
 	value = pk_backend_job_get_pac (job);
 	if (value != NULL) {
-		gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
 		g_setenv ("pac", uri, TRUE);
-		g_free (uri);
 		g_free (value);
 	}
 }
@@ -275,10 +250,9 @@ pk_backend_configure_environment (PkBackendJob *job)
 static gboolean
 pk_backend_initialize_alpm (PkBackend *self, GError **error)
 {
-	g_return_val_if_fail (self != NULL, FALSE);
-
 	alpm = pk_backend_configure (PK_BACKEND_CONFIG_FILE, error);
 	if (alpm == NULL) {
+		g_prefix_error (error, "using %s: ", PK_BACKEND_CONFIG_FILE);
 		return FALSE;
 	}
 
@@ -299,11 +273,9 @@ static void
 pk_backend_destroy_alpm ()
 {
 	if (alpm != NULL) {
-		if (alpm_trans_get_flags (alpm) < 0) {
+		if (alpm_trans_get_flags (alpm) < 0)
 			alpm_trans_release (alpm);
-		}
 		alpm_release (alpm);
-
 		alpm = NULL;
 		backend = NULL;
 	}
@@ -317,23 +289,18 @@ pk_backend_destroy_alpm ()
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *self)
 {
-	GError *error = NULL;
-
-	g_return_if_fail (self != NULL);
-
-	if (!pk_backend_initialize_alpm (self, &error) ||
-	    !pkalpm_backend_initialize_databases (&error) ||
-	    !pkalpm_backend_initialize_groups (self, &error)) {
-		g_error ("%s", error->message);
-		g_error_free (error);
-	}
+	_cleanup_error_free_ GError *error = NULL;
+	if (!pk_backend_initialize_alpm (self, &error))
+		g_error ("Failed to initialize alpm: %s", error->message);
+	if (!pkalpm_backend_initialize_databases (&error))
+		g_error ("Failed to initialize databases: %s", error->message);
+	if (!pkalpm_backend_initialize_groups (self, &error))
+		g_error ("Failed to initialize groups: %s", error->message);
 }
 
 void
 pk_backend_destroy (PkBackend *self)
 {
-	g_return_if_fail (self != NULL);
-
 	pkalpm_backend_destroy_groups (self);
 	pkalpm_backend_destroy_databases (self);
 	pk_backend_destroy_alpm ();
@@ -342,8 +309,6 @@ pk_backend_destroy (PkBackend *self)
 PkBitfield
 pk_backend_get_filters (PkBackend *self)
 {
-	g_return_val_if_fail (self != NULL, 0);
-
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
@@ -361,7 +326,6 @@ pk_backend_get_mime_types (PkBackend *self)
 void
 pkalpm_backend_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func, gpointer data)
 {
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (func != NULL);
 
 	g_mutex_lock (&mutex);
@@ -380,52 +344,26 @@ pkalpm_backend_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFu
 	pk_backend_job_thread_create (job, func, data, NULL);
 }
 
-void
-pk_backend_cancel (PkBackend *self, PkBackendJob *job)
-{
-	g_return_if_fail (self != NULL);
-
-    g_mutex_lock (&mutex);
-
-	if (cancellable != NULL) {
-		g_cancellable_cancel (cancellable);
-	}
-
-	g_mutex_unlock (&mutex);
-}
-
 gboolean
-pk_backend_cancelled (PkBackendJob *job)
+pkalpm_is_backend_cancelled (PkBackendJob *job)
 {
 	gboolean cancelled;
 
-	g_return_val_if_fail (job != NULL, FALSE);
 	g_return_val_if_fail (cancellable != NULL, FALSE);
 
-    g_mutex_lock (&mutex);
+	g_mutex_lock (&mutex);
 
 	cancelled = g_cancellable_is_cancelled (cancellable);
 
-    g_mutex_unlock (&mutex);
+	g_mutex_unlock (&mutex);
 
 	return cancelled;
-}
-
-void
-pk_backend_finish_error(PkBackendJob* job, const gchar* errormsg)
-{
-	pk_backend_job_error_code(job,
-							  PK_ERROR_ENUM_NOT_SUPPORTED,
-							  "%s", errormsg);
-	pk_backend_finish(job, 0);
 }
 
 gboolean
 pk_backend_finish (PkBackendJob *job, GError *error)
 {
 	gboolean cancelled = FALSE;
-
-	g_return_val_if_fail (job != NULL, FALSE);
 
 	pk_backend_job_set_allow_cancel (job, FALSE);
 
@@ -439,20 +377,18 @@ pk_backend_finish (PkBackendJob *job, GError *error)
 
 	g_mutex_unlock (&mutex);
 
-	if (error != NULL) {
+	if (error != NULL)
 		pk_backend_error (job, error);
-		g_error_free (error);
-	}
 
-	if (cancelled) {
+	if (cancelled)
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_CANCEL);
-	}
 
 	pk_backend_job_finished (job);
 	return (error == NULL);
 }
 
-void pk_backend_start_job(PkBackend* self, PkBackendJob* job)
+void
+pk_backend_start_job(PkBackend* self, PkBackendJob* job)
 {
 	if (!envInitialized) {
 		pk_backend_configure_environment (job);

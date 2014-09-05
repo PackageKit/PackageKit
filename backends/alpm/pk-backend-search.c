@@ -28,7 +28,6 @@
 #include "pk-backend-alpm.h"
 #include "pk-backend-groups.h"
 #include "pk-backend-packages.h"
-#include "pk-backend-search.h"
 
 static gpointer
 pk_backend_pattern_needle (const gchar *needle, GError **error)
@@ -39,16 +38,10 @@ pk_backend_pattern_needle (const gchar *needle, GError **error)
 static gpointer
 pk_backend_pattern_regex (const gchar *needle, GError **error)
 {
-	gchar *pattern;
-	GRegex *regex;
-
+	_cleanup_free_ gchar *pattern = NULL;
 	g_return_val_if_fail (needle != NULL, NULL);
-
 	pattern = g_regex_escape_string (needle, -1);
-	regex = g_regex_new (pattern, G_REGEX_CASELESS, 0, error);
-	g_free (pattern);
-
-	return regex;
+	return g_regex_new (pattern, G_REGEX_CASELESS, 0, error);
 }
 
 static gpointer
@@ -95,29 +88,24 @@ pk_backend_match_details (alpm_pkg_t *pkg, GRegex *regex)
 	g_return_val_if_fail (regex != NULL, FALSE);
 
 	/* match the name first... */
-	if (g_regex_match (regex, alpm_pkg_get_name (pkg), 0, NULL)) {
+	if (g_regex_match (regex, alpm_pkg_get_name (pkg), 0, NULL))
 		return TRUE;
-	}
 
 	/* ... then the description... */
 	desc = alpm_pkg_get_desc (pkg);
-	if (desc != NULL && g_regex_match (regex, desc, 0, NULL)) {
+	if (desc != NULL && g_regex_match (regex, desc, 0, NULL))
 		return TRUE;
-	}
 
 	/* ... then the database... */
 	db = alpm_pkg_get_db (pkg);
 	if (db != NULL && g_regex_match (regex, alpm_db_get_name (db),
-					 G_REGEX_MATCH_ANCHORED, NULL)) {
+					 G_REGEX_MATCH_ANCHORED, NULL))
 		return TRUE;
-	}
 
 	/* ... then the licenses */
 	for (i = alpm_pkg_get_licenses (pkg); i != NULL; i = i->next) {
-		if (g_regex_match (regex, i->data, G_REGEX_MATCH_ANCHORED,
-				   NULL)) {
+		if (g_regex_match (regex, i->data, G_REGEX_MATCH_ANCHORED, NULL))
 			return TRUE;
-		}
 	}
 
 	return FALSE;
@@ -139,9 +127,8 @@ pk_backend_match_file (alpm_pkg_t *pkg, const gchar *needle)
 		for (i = 0; i < files->count; ++i) {
 			const gchar *file = files->files[i].name;
 			/* match the full path of file */
-			if (g_strcmp0 (file, needle + 1) == 0) {
+			if (g_strcmp0 (file, needle + 1) == 0)
 				return TRUE;
-			}
 		}
 	} else {
 		for (i = 0; i < files->count; ++i) {
@@ -155,9 +142,8 @@ pk_backend_match_file (alpm_pkg_t *pkg, const gchar *needle)
 			}
 
 			/* match the basename of file */
-			if (g_strcmp0 (name, needle) == 0) {
+			if (g_strcmp0 (name, needle) == 0)
 				return TRUE;
-			}
 		}
 	}
 
@@ -171,7 +157,7 @@ pk_backend_match_group (alpm_pkg_t *pkg, const gchar *needle)
 	g_return_val_if_fail (needle != NULL, FALSE);
 
 	/* match the group the package is in */
-	return g_strcmp0 (needle, alpm_pkg_get_group (pkg)) == 0;
+	return g_strcmp0 (needle, pkalpm_pkg_get_group (pkg)) == 0;
 }
 
 static gboolean
@@ -199,11 +185,9 @@ pk_backend_match_provides (alpm_pkg_t *pkg, gpointer pattern)
 
 		for (; *needle == *name; ++needle, ++name) {
 			if (*needle == '\0') {
-				if (*name == '\0' || *name == '=') {
+				if (*name == '\0' || *name == '=')
 					return TRUE;
-				} else {
-					break;
-				}
+				break;
 			}
 		}
 	}
@@ -261,9 +245,8 @@ alpm_pkg_is_local (alpm_pkg_t *pkg)
 
 	/* find an installed package with the same name */
 	local = alpm_db_get_pkg (localdb, alpm_pkg_get_name (pkg));
-	if (local == NULL) {
+	if (local == NULL)
 		return FALSE;
-	}
 
 	/* make sure the installed version is the same */
 	if (alpm_pkg_vercmp (alpm_pkg_get_version (local),
@@ -286,20 +269,17 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 {
 	const alpm_list_t *i, *j;
 
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (db != NULL);
 	g_return_if_fail (match != NULL);
 
 	/* emit packages that match all search terms */
 	for (i = alpm_db_get_pkgcache (db); i != NULL; i = i->next) {
-		if (pk_backend_cancelled (job)) {
+		if (pkalpm_is_backend_cancelled (job))
 			break;
-		}
 
 		for (j = patterns; j != NULL; j = j->next) {
-			if (!match (i->data, j->data)) {
+			if (!match (i->data, j->data))
 				break;
-			}
 		}
 
 		/* all search terms matched */
@@ -331,59 +311,58 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 
 	const alpm_list_t *i;
 	alpm_list_t *patterns = NULL;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
 
-	pkalpm_end_job_if_fail (job != NULL, job);
-	pkalpm_end_job_if_fail (alpm != NULL, job);
-	pkalpm_end_job_if_fail (localdb != NULL, job);
-	pkalpm_end_job_if_fail (p == NULL, job);
+	g_return_if_fail (alpm != NULL);
+	g_return_if_fail (localdb != NULL);
+	g_return_if_fail (p == NULL);
 
 	role = pk_backend_job_get_role(job);
 	switch(role) {
-		case PK_ROLE_ENUM_GET_PACKAGES:
-			type = SEARCH_TYPE_ALL;
-			g_variant_get(params, "(t)", &filters);
-			break;
-		case PK_ROLE_ENUM_GET_DETAILS:
-			type = SEARCH_TYPE_DETAILS;
-			g_variant_get(params, "(^a&s)", &needles);
-			break;
-		case PK_ROLE_ENUM_SEARCH_FILE:
-			type = SEARCH_TYPE_FILES;
-			g_variant_get(params, "(t^a&s)", &filters, &needles);
-			break;
-		case PK_ROLE_ENUM_SEARCH_GROUP:
-			type = SEARCH_TYPE_GROUP;
-			g_variant_get(params, "(t^a&s)", &filters, &needles);
-			break;
-		case PK_ROLE_ENUM_SEARCH_NAME:
-			type = SEARCH_TYPE_NAME;
-			g_variant_get(params, "(t^a&s)", &filters, &needles);
-			break;
-		case PK_ROLE_ENUM_WHAT_PROVIDES:
-			type = SEARCH_TYPE_PROVIDES;
-			g_variant_get(params, "(t^a&s)", &filters, &needles);
-			break;
-		case PK_ROLE_ENUM_SEARCH_DETAILS:
-			type = SEARCH_TYPE_DETAILS;
-			g_variant_get(params, "(t^a&s)",
-						  &filters,
-						  &needles);
-			break;
-		default:
-			type = 0;
-			g_assert(0);
-			break;
+	case PK_ROLE_ENUM_GET_PACKAGES:
+		type = SEARCH_TYPE_ALL;
+		g_variant_get (params, "(t)", &filters);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS:
+		type = SEARCH_TYPE_DETAILS;
+		g_variant_get (params, "(^a&s)", &needles);
+		break;
+	case PK_ROLE_ENUM_SEARCH_FILE:
+		type = SEARCH_TYPE_FILES;
+		g_variant_get (params, "(t^a&s)", &filters, &needles);
+		break;
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+		type = SEARCH_TYPE_GROUP;
+		g_variant_get (params, "(t^a&s)", &filters, &needles);
+		break;
+	case PK_ROLE_ENUM_SEARCH_NAME:
+		type = SEARCH_TYPE_NAME;
+		g_variant_get (params, "(t^a&s)", &filters, &needles);
+		break;
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+		type = SEARCH_TYPE_PROVIDES;
+		g_variant_get (params, "(t^a&s)", &filters, &needles);
+		break;
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+		type = SEARCH_TYPE_DETAILS;
+		g_variant_get (params, "(t^a&s)",
+					  &filters,
+					  &needles);
+		break;
+	default:
+		type = 0;
+		g_assert_not_reached ();
+		break;
 	}
 
-	pkalpm_end_job_if_fail (type < SEARCH_TYPE_LAST, job);
+	g_return_if_fail (type < SEARCH_TYPE_LAST);
 
 	pattern_func = pattern_funcs[type];
 	pattern_free = pattern_frees[type];
 	match_func = match_funcs[type];
 
-	pkalpm_end_job_if_fail (pattern_func != NULL, job);
-	pkalpm_end_job_if_fail (match_func != NULL, job);
+	g_return_if_fail (pattern_func != NULL);
+	g_return_if_fail (match_func != NULL);
 
 	skip_local = pk_bitfield_contain (filters,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
@@ -394,56 +373,47 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		for (; *needles != NULL; ++needles) {
 			gpointer pattern = pattern_func (*needles, &error);
 
-			if (pattern == NULL) {
+			if (pattern == NULL)
 				goto out;
-			}
 
 			patterns = alpm_list_add (patterns, pattern);
 		}
 	}
 
 	/* find installed packages first */
-	if (!skip_local) {
+	if (!skip_local)
 		pk_backend_search_db (job, localdb, match_func, patterns);
-	}
 
-	if (skip_remote) {
+	if (skip_remote)
 		goto out;
-	}
 
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
-		if (pk_backend_cancelled (job)) {
+		if (pkalpm_is_backend_cancelled (job))
 			break;
-		}
 
 		pk_backend_search_db (job, i->data, match_func, patterns);
 	}
-
 out:
-	if (pattern_free != NULL) {
+	if (pattern_free != NULL)
 		alpm_list_free_inner (patterns, pattern_free);
-	}
 	alpm_list_free (patterns);
 	pk_backend_finish (job, error);
 }
 
 void
 pk_backend_get_packages (PkBackend  *self,
-                         PkBackendJob   *job,
-                         PkBitfield  filters)
+			 PkBackendJob *job,
+			 PkBitfield filters)
 {
-	g_return_if_fail (self != NULL);
-
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
 pk_backend_search_details (PkBackend    *self,
-                           PkBackendJob   *job,
-                           PkBitfield  filters,
-                           gchar      **search)
+			   PkBackendJob *job,
+			   PkBitfield filters,
+			   gchar      **search)
 {
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (search != NULL);
 
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
@@ -451,12 +421,11 @@ pk_backend_search_details (PkBackend    *self,
 
 void
 pk_backend_search_files (PkBackend  *self,
-                         PkBackendJob   *job,
-                         PkBitfield  filters,
-                         gchar      **search)
+			 PkBackendJob *job,
+			 PkBitfield filters,
+			 gchar      **search)
 {
-	g_return_if_fail (job != NULL);
-    g_return_if_fail (search != NULL);
+	g_return_if_fail (search != NULL);
 
 // 	/* speed up search by restricting it to local database */
 // 	pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
@@ -467,23 +436,21 @@ pk_backend_search_files (PkBackend  *self,
 
 void
 pk_backend_search_groups (PkBackend *self,
-                          PkBackendJob   *job,
-                          PkBitfield  filters,
-                          gchar      **search)
+			  PkBackendJob *job,
+			  PkBitfield filters,
+			  gchar      **search)
 {
-	g_return_if_fail (job != NULL);
-    g_return_if_fail (search != NULL);
+	g_return_if_fail (search != NULL);
 
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }
 
 void
 pk_backend_search_names (PkBackend  *self,
-                         PkBackendJob   *job,
-                         PkBitfield  filters,
-                         gchar      **search)
+			 PkBackendJob *job,
+			 PkBitfield filters,
+			 gchar      **search)
 {
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (search != NULL);
 
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
@@ -491,11 +458,11 @@ pk_backend_search_names (PkBackend  *self,
 
 void
 pk_backend_what_provides (PkBackend *self,
-                          PkBackendJob   *job,
-                          PkBitfield  filters,
-                          gchar      **search)
+			  PkBackendJob *job,
+			  PkBitfield filters,
+			  gchar      **search)
 {
-    g_return_if_fail (backend != NULL);
+	g_return_if_fail (backend != NULL);
 	g_return_if_fail (search != NULL);
 
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);

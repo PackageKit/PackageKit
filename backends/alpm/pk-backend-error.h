@@ -23,7 +23,7 @@
 
 #include <pk-backend.h>
 
-#define	 ALPM_ERROR		(alpm_error_quark ())
+#define	 ALPM_ERROR		(pkalpm_error_quark ())
 
 enum {
 	ALPM_ERR_CONFIG_INVALID = 0x10000,
@@ -32,4 +32,4 @@ enum {
 
 void	 pk_backend_error	(PkBackendJob* job, GError* error);
 
-GQuark	 alpm_error_quark	(void);
+GQuark	 pkalpm_error_quark	(void);

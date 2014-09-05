@@ -40,19 +40,15 @@ static GHashTable *
 disabled_repos_new (GError **error)
 {
 	GHashTable *table;
-	GFile *file;
-
-	GFileInputStream *is;
-	GDataInputStream *input;
-
 	GError *e = NULL;
+	_cleanup_object_unref_ GDataInputStream *input = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileInputStream *is = NULL;
 
 	g_debug ("reading disabled repos from %s", PK_BACKEND_REPO_FILE);
 	file = g_file_new_for_path (PK_BACKEND_REPO_FILE);
 	is = g_file_read (file, NULL, &e);
-
 	if (is == NULL) {
-		g_object_unref (file);
 		g_propagate_error (error, e);
 		return NULL;
 	}
@@ -65,13 +61,9 @@ disabled_repos_new (GError **error)
 		gchar *line;
 
 		line = g_data_input_stream_read_line (input, NULL, NULL, &e);
-
-		if (line != NULL) {
-			g_strstrip (line);
-		} else {
+		if (line == NULL)
 			break;
-		}
-
+		g_strstrip (line);
 		if (*line == '\0' || *line == '#') {
 			g_free (line);
 			continue;
@@ -80,27 +72,21 @@ disabled_repos_new (GError **error)
 		g_hash_table_insert (table, line, GINT_TO_POINTER (1));
 	}
 
-	g_object_unref (input);
-	g_object_unref (is);
-	g_object_unref (file);
-
 	if (e != NULL) {
 		g_hash_table_unref (table);
 		g_propagate_error (error, e);
 		return NULL;
-	} else {
-		return table;
 	}
+	return table;
 }
 
 static void
 disabled_repos_free (GHashTable *table)
 {
 	GHashTableIter iter;
-	GFile *file;
-
-	GFileOutputStream *os;
-	GDataOutputStream *output;
+	_cleanup_object_unref_ GDataOutputStream *output = NULL;
+	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFileOutputStream *os = NULL;
 
 	const gchar *line;
 
@@ -109,9 +95,7 @@ disabled_repos_free (GHashTable *table)
 	g_debug ("storing disabled repos in %s", PK_BACKEND_REPO_FILE);
 	file = g_file_new_for_path (PK_BACKEND_REPO_FILE);
 	os = g_file_replace (file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL);
-
 	if (os == NULL) {
-		g_object_unref (file);
 		g_hash_table_unref (table);
 		return;
 	}
@@ -123,10 +107,6 @@ disabled_repos_free (GHashTable *table)
 	while (g_hash_table_iter_next (&iter, (gpointer *) &line, NULL) &&
 	       g_data_output_stream_put_string (output, line, NULL, NULL) &&
 	       g_data_output_stream_put_byte (output, '\n', NULL, NULL));
-
-	g_object_unref (output);
-	g_object_unref (os);
-	g_object_unref (file);
 
 	g_hash_table_unref (table);
 }
@@ -206,13 +186,11 @@ gboolean
 pkalpm_backend_initialize_databases (GError **error)
 {
 	disabled = disabled_repos_new (error);
-	if (disabled == NULL) {
+	if (disabled == NULL)
 		return FALSE;
-	}
 
-	if (!disabled_repos_configure (disabled, TRUE, error)) {
+	if (!disabled_repos_configure (disabled, TRUE, error))
 		return FALSE;
-	}
 
 	return TRUE;
 }
@@ -222,9 +200,8 @@ pkalpm_backend_destroy_databases ()
 {
 	alpm_list_t *i;
 
-	if (disabled != NULL) {
+	if (disabled != NULL)
 		disabled_repos_free (disabled);
-	}
 
 	for (i = configured; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
@@ -238,15 +215,9 @@ pkalpm_backend_destroy_databases ()
 static gboolean
 pk_backend_repo_info (PkBackendJob *job, const gchar *repo, gboolean enabled)
 {
-	gchar *description;
-
-	g_return_val_if_fail (job != NULL, FALSE);
-	g_return_val_if_fail (repo != NULL, FALSE);
-
+	_cleanup_free_ gchar *description = NULL;
 	description = g_strdup_printf ("[%s]", repo);
 	pk_backend_job_repo_detail (job, repo, description, enabled);
-	g_free (description);
-
 	return TRUE;
 }
 
@@ -258,16 +229,15 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 	GHashTableIter iter;
 	gpointer key, value;
 
-	pkalpm_end_job_if_fail (job != NULL, job);
-	pkalpm_end_job_if_fail (alpm != NULL, job);
-	pkalpm_end_job_if_fail (disabled != NULL, job);
+	g_return_if_fail (alpm != NULL);
+	g_return_if_fail (disabled != NULL);
 
 	/* emit enabled repos */
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
 		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
 
-		if (pk_backend_cancelled (job)) {
+		if (pkalpm_is_backend_cancelled (job)) {
 			goto out;
 		} else {
 			pk_backend_repo_info (job, repo, TRUE);
@@ -279,41 +249,34 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		const gchar *repo = (const gchar *) key;
 
-		if (pk_backend_cancelled (job)) {
+		if (pkalpm_is_backend_cancelled (job)) {
 			goto out;
 		} else {
 			pk_backend_repo_info (job, repo, FALSE);
 		}
 	}
-
 out:
 	pk_backend_finish (job, NULL);
 }
 
 void
 pk_backend_get_repo_list (PkBackend *self,
-                          PkBackendJob   *job,
-                          PkBitfield  filters)
+			  PkBackendJob *job,
+			  PkBitfield filters)
 {
-	g_return_if_fail (self != NULL);
-
 	pkalpm_backend_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_repo_list_thread, NULL);
 }
 
 static void
 pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer data)
 {
-	gchar *repo;
+	const gchar *repo;
 	gboolean enabled;
+	_cleanup_error_free_ GError *error = NULL;
 
-	GError *error = NULL;
-
-	pkalpm_end_job_if_fail (job != NULL, job);
-	pkalpm_end_job_if_fail (disabled != NULL, job);
+	g_return_if_fail (disabled != NULL);
 
 	g_variant_get (params, "(&sb)", &repo, &enabled);
-
-	pkalpm_end_job_if_fail (repo != NULL, job);
 
 	if (g_hash_table_remove (disabled, repo)) {
 		/* reload configuration to preserve ordering */
@@ -326,10 +289,8 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer dat
 			     repo, alpm_strerror (code));
 	}
 
-	if (error != NULL) {
+	if (error != NULL)
 		pk_backend_error (job, error);
-		g_error_free (error);
-	}
 
 	pk_backend_job_finished (job);
 }
@@ -341,10 +302,8 @@ pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params,
 	const alpm_list_t *i;
 	const gchar *repo;
 	gboolean enabled;
+	_cleanup_error_free_ GError *error = NULL;
 
-	GError *error = NULL;
-
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (alpm != NULL);
 
 	g_variant_get (params, "(&sb)", &repo, &enabled);
@@ -376,21 +335,18 @@ pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params,
 			     alpm_strerror (code));
 	}
 
-	if (error != NULL) {
+	if (error != NULL)
 		pk_backend_error (job, error);
-		g_error_free (error);
-	}
 
 	pk_backend_job_finished (job);
 }
 
 void
-pk_backend_repo_enable (PkBackend   *self,
-                        PkBackendJob   *job,
-                        const gchar    *repo_id,
-                        gboolean    enabled)
+pk_backend_repo_enable (PkBackend *self,
+			PkBackendJob *job,
+			const gchar    *repo_id,
+			gboolean    enabled)
 {
-	g_return_if_fail (job != NULL);
 	g_return_if_fail (repo_id != NULL);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);

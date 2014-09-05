@@ -27,7 +27,6 @@
 #include "pk-backend-alpm.h"
 #include "pk-backend-databases.h"
 #include "pk-backend-error.h"
-#include "pk-backend-install.h"
 #include "pk-backend-transaction.h"
 
 static gint
@@ -41,9 +40,8 @@ alpm_add_file (const gchar *filename)
 
 	level = alpm_option_get_local_file_siglevel (alpm);
 
-	if (alpm_pkg_load (alpm, filename, 1, level, &pkg) < 0) {
+	if (alpm_pkg_load (alpm, filename, 1, level, &pkg) < 0)
 		return -1;
-	}
 
 	if (alpm_add_pkg (alpm, pkg) < 0) {
 		alpm_pkg_free (pkg);
@@ -56,8 +54,6 @@ alpm_add_file (const gchar *filename)
 static gboolean
 pk_backend_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **error)
 {
-	g_return_val_if_fail (job != NULL, FALSE);
-
 	g_return_val_if_fail (paths != NULL, FALSE);
 
 	for (; *paths != NULL; ++paths) {
@@ -76,27 +72,23 @@ static void
 pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gboolean only_trusted;
-	GError *error = NULL;
 	gchar** full_paths;
 	PkBitfield flags;
+	_cleanup_error_free_ GError *error = NULL;
 
-	pkalpm_end_job_if_fail (job != NULL, job);
-
-	g_variant_get(params, "(t^a&s)",
+	g_variant_get (params, "(t^a&s)",
 				  &flags,
 				  &full_paths);
 	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pkalpm_backend_disable_signatures (&error)) {
+	if (!only_trusted && !pkalpm_backend_disable_signatures (&error))
 		goto out;
-	}
 
 	if (pk_backend_transaction_initialize (job, 0, 0, &error) &&
 	    pk_backend_transaction_add_targets (job, full_paths, &error) &&
 	    pk_backend_transaction_simulate (&error)) {
 		pk_backend_transaction_commit (job, &error);
 	}
-
 out:
 	pk_backend_transaction_end (job, (error == NULL) ? &error : NULL);
 
@@ -110,13 +102,11 @@ out:
 
 void
 pk_backend_install_files (PkBackend *self,
-                          PkBackendJob   *job,
-                          PkBitfield  transaction_flags,
-                          gchar      **full_paths)
+			  PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar      **full_paths)
 {
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (full_paths != NULL);
 
-	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP,
-			pk_backend_install_files_thread, NULL);
+	pkalpm_backend_run (job, PK_STATUS_ENUM_SETUP, pk_backend_install_files_thread, NULL);
 }
