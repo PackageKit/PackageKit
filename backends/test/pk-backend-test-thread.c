@@ -68,7 +68,6 @@ pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer u
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -107,7 +106,6 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 		if (is_cancelled) {
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 					       "The thread was stopped successfully");
-			pk_backend_job_finished (job);
 			return;
 		}
 		pk_backend_job_set_percentage (job, percentage);
@@ -122,7 +120,6 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
-	pk_backend_job_finished (job);
 }
 
 /**

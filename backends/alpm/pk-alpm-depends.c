@@ -172,7 +172,6 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	}
 
 	alpm_list_free (pkgs);
-	pk_alpm_finish (job, NULL);
 }
 
 static void

@@ -1634,8 +1634,6 @@ zypp_backend_finished_error (PkBackendJob  *job, PkErrorEnum err_code,
 	pk_backend_job_error_code (job, err_code, "%s", buffer);
 
 	g_free (buffer);
-
-	pk_backend_job_finished (job);
 }
 
 
@@ -1728,7 +1726,6 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -1786,8 +1783,6 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		solver.setForceResolve (false);
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1863,7 +1858,6 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	
@@ -1979,8 +1973,6 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
 		return;
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2005,7 +1997,6 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2051,8 +2042,6 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			return;
 		}
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2073,14 +2062,12 @@ backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	// refresh the repos before checking for updates
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2108,8 +2095,6 @@ backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 			}
 		}
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2133,12 +2118,10 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
 	zypp_refresh_cache (job, zypp, force);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2188,7 +2171,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2199,7 +2181,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	// refresh the repos before checking for updates
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2246,7 +2227,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 
 	pk_backend_job_set_percentage (job, 100);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2273,7 +2253,6 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		       &full_paths);
 	
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2354,8 +2333,6 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2379,7 +2356,6 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 		&package_ids);
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2450,8 +2426,6 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 		g_ptr_array_unref(bugzilla);
 		g_ptr_array_unref(cve);
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2478,13 +2452,11 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
 	// refresh the repos before installing packages
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2528,7 +2500,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 				it->statusReset ();
 			}
 			delete (items);
-			pk_backend_job_finished (job);
 			return;
 		}
 		delete (items);
@@ -2540,8 +2511,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
 		return;
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2568,8 +2537,6 @@ backend_install_signature_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_SIG_CHECK);
 	priv->signatures.push_back ((string)(key_id));
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2605,7 +2572,6 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	zypp->resolver()->setCleandepsOnRemove(autoremove);
@@ -2662,8 +2628,6 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
 		return;
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2691,7 +2655,6 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	
@@ -2757,8 +2720,6 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 		
 		zypp_emit_filtered_packages_in_list (job, _filters, pkgs);
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2787,13 +2748,11 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
 	// refresh the repos before searching
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2847,8 +2806,6 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 		copy( q.begin(), q.end(), back_inserter( v ) );
 	}
 	zypp_emit_filtered_packages_in_list (job, _filters, v);
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2885,7 +2842,6 @@ backend_search_group_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -2920,7 +2876,6 @@ backend_search_group_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	zypp_emit_filtered_packages_in_list (job, _filters, v);
 
 	pk_backend_job_set_percentage (job, 100);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3048,7 +3003,6 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -3087,8 +3041,6 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		to_strv[0] = temp.c_str ();
 		pk_backend_job_files (job, package_ids[i], (gchar **) to_strv);	// file_list
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3113,7 +3065,6 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -3128,7 +3079,6 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 
 	zypp_emit_filtered_packages_in_list (job, _filters, v);
 
-	pk_backend_job_finished (job);
 }
 /**
   * pk_backend_get_packages:
@@ -3153,7 +3103,6 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	ResPool pool = zypp_build_pool (zypp, TRUE);
@@ -3190,8 +3139,6 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3220,7 +3167,6 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 	ZYpp::Ptr zypp = zjob.get_zypp();
 		
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -3234,7 +3180,6 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 		if (g_ascii_strcasecmp (parameter, "add") != 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			if (!zypp_is_valid_repo (job, repo)){
-				pk_backend_job_finished (job);
 				return;
 			}
 		}
@@ -3323,8 +3268,6 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 	} catch (const Exception &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asString ().c_str ());
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3383,7 +3326,6 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -3460,7 +3402,6 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 		g_hash_table_unref (installed_hash);
 	}
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3497,12 +3438,10 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
-		pk_backend_job_finished (job);
 		return;
 	}
 
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		pk_backend_job_finished (job);
 		return;
 	}
 
@@ -3529,7 +3468,6 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			if (size > stat.f_bavail * 4) {
 				pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
 					"Insufficient space in download directory '%s'.", repo_dir.c_str());
-				pk_backend_job_finished (job);
 				return;
 			}
 
@@ -3560,8 +3498,6 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str());
 		return;
 	}
-
-	pk_backend_job_finished (job);
 }
 
 /**

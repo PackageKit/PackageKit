@@ -893,7 +893,6 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		}
 	}
 	pk_backend_job_set_percentage (job, 100);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -947,7 +946,6 @@ pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer 
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips \"documentation\" package.");
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1024,7 +1022,7 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						   "The task was stopped successfully");
-			goto out;
+			return;
 		}
 		g_usleep (2000);
 	}
@@ -1048,8 +1046,6 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1086,7 +1082,6 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						   "The task was stopped successfully");
-			pk_backend_job_finished (job);
 			break;
 		}
 
@@ -1097,7 +1092,6 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 							"An HTML widget for GTK+ 2.0");
 				priv->updated_gtkhtml = FALSE;
 			}
-			pk_backend_job_finished (job);
 			break;
 		}
 		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
@@ -1196,7 +1190,6 @@ pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 			if (job_data->socket_listen_id != 0)
 				g_source_remove (job_data->socket_listen_id);
 
-			pk_backend_job_finished (job);
 			break;
 		}
 		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {

@@ -191,11 +191,6 @@ bool AptIntf::cancelled() const
     return m_cancel;
 }
 
-void AptIntf::emitFinished()
-{
-    pk_backend_job_finished(m_job);
-}
-
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 {
     if (filters != 0) {
@@ -1132,7 +1127,6 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
             pk_backend_job_error_code(m_job,
                                       PK_ERROR_ENUM_GROUP_NOT_FOUND,
                                       "An empty group was received");
-            pk_backend_job_finished(m_job);
             return output;
         } else {
             groups.push_back(pk_group_enum_from_string(values[i]));

@@ -809,6 +809,7 @@ pk_backend_job_thread_setup (gpointer thread_data)
 	/* run original function with automatic locking */
 	pk_backend_thread_start (helper->backend, helper->job, helper->func);
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
+	pk_backend_job_finished (helper->job);
 	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* set idle IO priority */
@@ -1790,14 +1791,14 @@ pk_backend_job_finished (PkBackendJob *job)
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	/* find out what we just did */
-	role_text = pk_role_enum_to_string (job->priv->role);
-
 	/* check we have not already finished */
 	if (job->priv->finished) {
 		g_warning ("already finished");
 		return;
 	}
+
+	/* find out what we just did */
+	role_text = pk_role_enum_to_string (job->priv->role);
 
 	/* ensure the same number of ::Files() were sent as packages for DownloadPackages */
 	if (!job->priv->set_error &&

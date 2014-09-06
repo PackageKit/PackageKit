@@ -235,27 +235,19 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
 		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
-
-		if (pk_backend_job_is_cancelled (job)) {
-			goto out;
-		} else {
-			pk_backend_repo_info (job, repo, TRUE);
-		}
+		if (pk_backend_job_is_cancelled (job))
+			return;
+		pk_backend_repo_info (job, repo, TRUE);
 	}
 
 	/* emit disabled repos */
 	g_hash_table_iter_init (&iter, disabled);
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		const gchar *repo = (const gchar *) key;
-
-		if (pk_backend_job_is_cancelled (job)) {
-			goto out;
-		} else {
-			pk_backend_repo_info (job, repo, FALSE);
-		}
+		if (pk_backend_job_is_cancelled (job))
+			return;
+		pk_backend_repo_info (job, repo, FALSE);
 	}
-out:
-	pk_alpm_finish (job, NULL);
 }
 
 void
@@ -290,8 +282,6 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer dat
 
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);
-
-	pk_backend_job_finished (job);
 }
 
 static void
@@ -336,8 +326,6 @@ pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params,
 
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);
-
-	pk_backend_job_finished (job);
 }
 
 void

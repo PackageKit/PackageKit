@@ -233,7 +233,6 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 	g_free(search);
 
 	pk_backend_job_set_percentage(job, 100);
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
@@ -287,7 +286,6 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 	g_free(search);
 
 	pk_backend_job_set_percentage(job, 100);
-	pk_backend_job_finished (job);
 }
 
 void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
@@ -366,8 +364,6 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
 
 out:
 	sqlite3_finalize(stmt);
-
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids) {
@@ -419,7 +415,6 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 	}
 
 	pk_backend_job_set_percentage(job, 100);
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages) {
@@ -471,8 +466,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 
 out:
 	sqlite3_finalize(stmt);
-
-	pk_backend_job_finished (job);
 }
 
 void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory) {
@@ -646,7 +639,6 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 	}
 
 out:
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
@@ -747,8 +739,6 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 
 out:
 	sqlite3_finalize(stmt);
-
-	pk_backend_job_finished (job);
 }
 
 void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters) {
@@ -805,8 +795,6 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 			g_strfreev(pkg_tokens);
 		}
 	}
-
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
@@ -833,8 +821,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	if (!tmp_dir_name) {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", err->message);
 		g_error_free(err);
-		pk_backend_job_finished(job);
-		return;
+			return;
 	}
 
 	g_variant_get(params, "(b)", &force);
@@ -897,7 +884,6 @@ out:
 	pk_directory_remove_contents(tmp_dir_name);
 	g_rmdir(tmp_dir_name);
 	g_free(tmp_dir_name);
-	pk_backend_job_finished(job);
 }
 
 void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force) {
@@ -927,8 +913,6 @@ static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *par
 									  NULL,
 									  NULL);
 	}
-
-	pk_backend_job_finished (job);
 }
 
 void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids) {

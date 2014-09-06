@@ -229,7 +229,6 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -245,7 +244,6 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
                                       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                       "%s",
                                       pi);
-            apt->emitFinished();
             return;
         }
 
@@ -255,7 +253,6 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
                                       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                       "Couldn't find package %s",
                                       pi);
-            apt->emitFinished();
             return;
         }
 
@@ -268,8 +265,6 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
 
     // It's faster to emmit the packages here than in the matching part
     apt->emitPackages(output, filters);
-
-    apt->emitFinished();
 }
 
 /**
@@ -312,7 +307,6 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -320,8 +314,6 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
         pk_backend_job_error_code(job,
                                   PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                   "Invalid package id");
-        pk_backend_job_finished(job);
-        apt->emitFinished();
         return;
     }
 
@@ -333,7 +325,6 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
                                       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                       "%s",
                                       pi);
-            apt->emitFinished();
             return;
         }
 
@@ -343,14 +334,11 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
                                       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                       "Couldn't find package %s",
                                       pi);
-            apt->emitFinished();
             return;
         }
 
         apt->emitPackageFiles(pi);
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -373,7 +361,6 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug ("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -381,8 +368,6 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
         pk_backend_job_error_code(job,
                                   PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                   "Invalid package id");
-        pk_backend_job_finished(job);
-        apt->emitFinished();
         return;
     }
 
@@ -394,8 +379,6 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
     } else {
         apt->emitDetails(pkgs);
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -424,7 +407,6 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -436,8 +418,6 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
 
     apt->emitUpdates(updates, filters);
     apt->emitPackages(blocked, filters, PK_INFO_ENUM_BLOCKED);
-
-    apt->emitFinished();
 }
 
 /**
@@ -466,7 +446,6 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         g_strfreev(values);
-        apt->emitFinished();
         return;
     }
 
@@ -479,8 +458,6 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
 
     // It's faster to emit the packages here rather than in the matching part
     apt->emitPackages(output, filters);
-
-    apt->emitFinished();
 }
 
 /**
@@ -512,7 +489,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -554,7 +530,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                                         PK_ERROR_ENUM_PACKAGE_ID_INVALID,
                                         "%s",
                                         pi);
-                apt->emitFinished();
                 return;
             }
 
@@ -580,7 +555,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                                     ver,
                                     directory,
                                     storeFileName)) {
-                    apt->emitFinished();
                     return;
                 }
 
@@ -596,7 +570,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                 && apt->cancelled() == false) {
             // We failed and we did not cancel
             show_errors(job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
-            apt->emitFinished();
             return;
         }
 
@@ -605,8 +578,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                                   PK_ERROR_ENUM_NO_NETWORK,
                                   "Cannot download packages whilst offline");
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -630,7 +601,6 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
     
@@ -646,8 +616,6 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
                                   PK_ERROR_ENUM_NO_NETWORK,
                                   "Cannot refresh cache whilst offline");
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -671,7 +639,6 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -679,8 +646,6 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 
     // It's faster to emmit the packages here rather than in the matching part
     apt->emitPackages(pkgs, filters);
-
-    apt->emitFinished();
 }
 
 /**
@@ -707,7 +672,6 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
     if (!pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
         if (!apt->init()) {
             g_debug("Failed to create apt cache");
-            apt->emitFinished();
             return;
         }
 
@@ -718,8 +682,6 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
         // It's faster to emit the packages here rather than in the matching part
         apt->emitPackages(output, filters);
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -742,7 +704,6 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -752,8 +713,6 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
     apt->emitPackages(output, filters);
 
     pk_backend_job_set_percentage(job, 100);
-
-    apt->emitFinished();
 }
 
 /**
@@ -780,13 +739,11 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         g_free(search);
-        apt->emitFinished();
         return;
     }
 
     if (_error->PendingError() == true) {
         g_free(search);
-        apt->emitFinished();
         return;
     }
 
@@ -807,8 +764,6 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     apt->emitPackages(output, filters);
 
     pk_backend_job_set_percentage(job, 100);
-
-    apt->emitFinished();
 }
 
 /**
@@ -881,7 +836,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -896,13 +850,11 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             pk_backend_job_error_code(job,
                                   PK_ERROR_ENUM_NOT_SUPPORTED,
                                   "The backend can only proccess one file at time.");
-            apt->emitFinished();
             return;
         }
 
         // get the list of packages to install
         if (!apt->markFileForInstall(full_paths[0], installPkgs, removePkgs)) {
-            apt->emitFinished();
             return;
         }
 
@@ -921,7 +873,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                       "Could not find package(s)");
-            apt->emitFinished();
             return;
         }
     }
@@ -938,7 +889,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     if (!ret) {
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
-        apt->emitFinished();
         return;
     }
 
@@ -947,20 +897,16 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         gchar *path;
         for (uint i = 0; i < g_strv_length(full_paths); ++i) {
             if (apt->cancelled()) {
-                apt->emitFinished();
                 break;
             }
 
             path = full_paths[i];
             if (!apt->installFile(path, simulate)) {
                 cout << "Installation of DEB file " << path << " failed." << endl;
-                apt->emitFinished();
                 return;
             }
         }
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -1058,7 +1004,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     if (_lst.ReadVendors() == false) {
         _error->Error("Cannot read vendors.list file");
         show_errors(job, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
-        apt->emitFinished();
         return;
     }
 
@@ -1106,7 +1051,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
                     if (!apt->init()) {
                         g_debug("Failed to create apt cache");
-                        apt->emitFinished();
                         return;
                     }
 
@@ -1123,7 +1067,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         if (!ret) {
                             // Print transaction errors
                             g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
-                            apt->emitFinished();
                             return;
                         }
                     }
@@ -1151,8 +1094,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
         _error->Error("Could not found the repository");
         show_errors(job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
     }
-
-    apt->emitFinished();
 }
 
 /**
@@ -1194,7 +1135,6 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        apt->emitFinished();
         return;
     }
 
@@ -1203,8 +1143,6 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
 
     // It's faster to emmit the packages rather here than in the matching part
     apt->emitPackages(output, filters);
-
-    apt->emitFinished();
 }
 
 /**

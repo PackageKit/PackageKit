@@ -383,8 +383,6 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		}
 		pk_alpm_pkg_emit (job, upgrade, info);
 	}
-
-	pk_alpm_finish (job, NULL);
 }
 
 void

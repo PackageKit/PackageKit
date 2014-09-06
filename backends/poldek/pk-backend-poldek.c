@@ -1811,8 +1811,6 @@ search_package_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 out:
 	if (array)
 		g_ptr_array_unref (array);
-
-	pk_backend_job_finished (job);
 }
 
 static void
@@ -1863,8 +1861,6 @@ update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	}
 
 	g_free (command);
-
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1974,8 +1970,6 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	poclidek_rcmd_free (rcmd);
 	poldek_ts_free (ts);
-
-	pk_backend_job_finished (job);
 }
 
 static void
@@ -2527,8 +2521,6 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 	}
 
 	poldek_ts_free (ts);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2584,8 +2576,6 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	n_array_free (deppkgs);
 	n_array_free (available);
 	n_array_free (installed);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2645,8 +2635,6 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			pkg_free (pkg);
 		}
 	}
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2716,8 +2704,6 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			pkg_free (pkg);
 		}
 	}
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2784,8 +2770,6 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	n_array_cfree (&installed);
 	n_array_cfree (&available);
 	n_array_cfree (&packages);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2838,8 +2822,6 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	n_array_free (reqpkgs);
 	n_array_free (installed);
 	n_array_free (available);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -2976,8 +2958,6 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 		g_strfreev (parts);
 	}
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -3030,8 +3010,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	if (sigint_reached ())
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -3092,8 +3070,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 	}
 
 	g_free (command);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -3168,8 +3144,6 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 	poldek_reload (job, TRUE);
 
 	pk_backend_job_set_percentage (job, 100);
-
-	pk_backend_job_finished (job);
 }
 
 void
@@ -3230,8 +3204,6 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	g_free (command);
-
-	pk_backend_job_finished (job);
 }
 
 void

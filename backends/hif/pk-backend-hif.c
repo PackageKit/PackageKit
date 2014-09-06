@@ -922,7 +922,6 @@ out:
 		hy_packagelist_free (pkglist);
 	if (query != NULL)
 		hy_query_free (query);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1075,7 +1074,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 					   error->code,
 					   "failed to scan yum.repos.d: %s",
 					   error->message);
-		goto out;
+		return;
 	}
 
 	/* none? */
@@ -1083,7 +1082,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_REPO_NOT_FOUND,
 					   "failed to find any repos");
-		goto out;
+		return;
 	}
 
 	/* emit each repo */
@@ -1098,8 +1097,6 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 					    description,
 					    hif_source_get_enabled (src));
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1180,7 +1177,6 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	pk_backend_job_set_percentage (job, 100);
 out:
 	hif_state_release_locks (job_data->state);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1335,7 +1331,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	ret = pk_backend_ensure_sources (job_data, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* count the enabled sources */
@@ -1364,7 +1360,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 			ret = hif_source_clean (src, &error);
 			if (!ret) {
 				pk_backend_job_error_code (job, error->code, "%s", error->message);
-				goto out;
+				return;
 			}
 		}
 
@@ -1373,14 +1369,14 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		ret = pk_backend_refresh_source (job, src, state_loop, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			goto out;
+			return;
 		}
 
 		/* done */
 		ret = hif_state_done (state_local, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			goto out;
+			return;
 		}
 	}
 
@@ -1388,7 +1384,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	ret = hif_state_done (job_data->state, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* regenerate the libsolv metadata */
@@ -1398,17 +1394,15 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 						  state_local, &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	ret = hif_state_done (job_data->state, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1537,26 +1531,26 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* emit details */
@@ -1577,10 +1571,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1630,13 +1622,13 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* ensure packages are not already installed */
@@ -1647,7 +1639,7 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 						   PK_ERROR_ENUM_FILE_NOT_FOUND,
 						   "Failed to open %s",
 						   full_paths[i]);
-			goto out;
+			return;
 		}
 		pk_backend_job_details (job,
 					hif_package_get_id (pkg),
@@ -1662,10 +1654,8 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1716,13 +1706,13 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* ensure packages are not already installed */
@@ -1734,7 +1724,7 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 						   PK_ERROR_ENUM_FILE_NOT_FOUND,
 						   "Failed to open %s",
 						   full_paths[i]);
-			goto out;
+			return;
 		}
 		/* sort and list according to name */
 		files_array = hy_package_get_files (pkg);
@@ -1747,10 +1737,8 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -1803,13 +1791,13 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	ret = pk_backend_ensure_sources (job_data, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* get sack */
@@ -1821,26 +1809,26 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* download packages */
@@ -1853,7 +1841,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "Failed to find %s", package_ids[i]);
-			goto out;
+			return;
 		}
 
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
@@ -1867,7 +1855,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 					hy_package_get_name (pkg));
 			pk_backend_job_error_code (job, error->code,
 						   "%s", error->message);
-			goto out;
+			return;
 		}
 
 		/* download */
@@ -1880,7 +1868,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		if (tmp == NULL) {
 			pk_backend_job_error_code (job, error->code,
 						   "%s", error->message);
-			goto out;
+			return;
 		}
 
 		/* add to download list */
@@ -1890,7 +1878,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		ret = hif_state_done (state_local, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			goto out;
+			return;
 		}
 	}
 	g_ptr_array_add (files, NULL);
@@ -1898,7 +1886,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* emit files so that the daemon will copy these */
@@ -1907,10 +1895,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2023,10 +2009,8 @@ pk_alpm_transaction_simulate (PkBackendJob *job,
 	untrusted = pk_alpm_transaction_check_untrusted_repos (job_data->backend,
 							       job_data->sources,
 							       job_data->goal, error);
-	if (untrusted == NULL) {
-		ret = FALSE;
-		goto out;
-	}
+	if (untrusted == NULL)
+		return FALSE;
 
 	/* done */
 	if (!hif_state_done (state, error))
@@ -2054,10 +2038,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job,
 	hif_emit_package_list (job, PK_INFO_ENUM_DOWNGRADING, pkglist);
 
 	/* done */
-	if (!hif_state_done (state, error))
-		return FALSE;
-out:
-	return ret;
+	return hif_state_done (state, error);
 }
 
 /**
@@ -2369,7 +2350,6 @@ out:
 		hy_query_free (query);
 	if (query_release != NULL)
 		hy_query_free (query_release);
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2483,13 +2463,13 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_NOT_SUPPORTED,
 					   "autoremove is not supported");
-		goto out;
+		return;
 	}
 	if (!allow_deps) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_NOT_SUPPORTED,
 					   "!allow_deps is not supported");
-		goto out;
+		return;
 	}
 
 	/* get sack */
@@ -2502,13 +2482,13 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	//TODO: check if we're trying to remove protected packages like:
@@ -2518,34 +2498,33 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	for (i = 0; package_ids[i] != NULL; i++) {
 		ret = hif_is_installed_package_id_name_arch (sack, package_ids[i]);
 		if (!ret) {
-			gchar *printable_tmp;
+			_cleanup_free_ gchar *printable_tmp = NULL;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
 						   "%s is not already installed",
 						   printable_tmp);
-			g_free (printable_tmp);
-			goto out;
+			return;
 		}
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* remove packages */
@@ -2556,7 +2535,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "Failed to find %s", package_ids[i]);
-			goto out;
+			return;
 		}
 		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_erase (job_data->goal, pkg);
@@ -2567,16 +2546,14 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2635,13 +2612,13 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* ensure packages are not already installed */
@@ -2655,27 +2632,27 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 						   "%s is aleady installed",
 						   printable_tmp);
 			g_free (printable_tmp);
-			goto out;
+			return;
 		}
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find remote packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* install packages */
@@ -2686,7 +2663,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "Failed to find %s", package_ids[i]);
-			goto out;
+			return;
 		}
 		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_install (job_data->goal, pkg);
@@ -2697,16 +2674,14 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2764,13 +2739,13 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* ensure packages are not already installed */
@@ -2782,7 +2757,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 						   PK_ERROR_ENUM_FILE_NOT_FOUND,
 						   "Failed to open %s",
 						   full_paths[i]);
-			goto out;
+			return;
 		}
 
 		/* we don't download this, we just use it */
@@ -2793,7 +2768,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* install packages */
@@ -2808,16 +2783,14 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -2875,7 +2848,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* set up the sack for packages that should only ever be installed, never updated */
@@ -2885,7 +2858,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* ensure packages are not already installed */
@@ -2899,26 +2872,26 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						   "cannot update: %s is not already installed",
 						   printable_tmp);
 			g_free (printable_tmp);
-			goto out;
+			return;
 		}
 	}
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* install packages */
@@ -2929,7 +2902,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "Failed to find %s", package_ids[i]);
-			goto out;
+			return;
 		}
 		hif_package_set_user_action (pkg, TRUE);
 
@@ -2945,16 +2918,14 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	ret = pk_alpm_transaction_run (job, state_local, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3046,26 +3017,26 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find packages */
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* emit details */
@@ -3075,7 +3046,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "Failed to find %s", package_ids[i]);
-			goto out;
+			return;
 		}
 
 		/* sort and list according to name */
@@ -3102,10 +3073,8 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3157,13 +3126,13 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* find remote packages */
@@ -3171,13 +3140,13 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	hash = hif_utils_find_package_ids (sack, package_ids, &error);
 	if (hash == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* emit details for each */
@@ -3248,10 +3217,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
+		return;
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**
@@ -3297,7 +3264,7 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 	transaction_flags = pk_backend_job_get_transaction_flags (job);
 	if (pk_bitfield_contain (transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
-		goto out;
+		return;
 
 	/* open the directory */
 	dir = g_dir_open ("/var/lib/rpm", 0, &error);
@@ -3305,7 +3272,7 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
 					   "%s", error->message);
-		goto out;
+		return;
 	}
 
 	/* remove the indexes */
@@ -3319,11 +3286,9 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 						   PK_ERROR_ENUM_FILE_CONFLICTS,
 						   "Failed to delete %s: %s",
 						   tmp, error->message);
-			goto out;
+			return;
 		}
 	}
-out:
-	pk_backend_job_finished (job);
 }
 
 /**

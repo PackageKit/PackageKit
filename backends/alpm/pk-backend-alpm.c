@@ -341,7 +341,6 @@ pk_alpm_finish (PkBackendJob *job, GError *error)
 	cancellable = NULL;
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);
-	pk_backend_job_finished (job);
 	return (error == NULL);
 }
 
