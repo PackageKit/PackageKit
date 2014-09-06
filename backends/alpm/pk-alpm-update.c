@@ -33,17 +33,18 @@
 #include "pk-alpm-transaction.h"
 
 static gchar *
-pk_alpm_pkg_build_replaces (alpm_pkg_t *pkg)
+pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
 	GString *string = NULL;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
-	g_return_val_if_fail (localdb != NULL, NULL);
 
 	/* make a list of the packages that package replaces */
 	for (i = alpm_pkg_get_replaces (pkg); i != NULL; i = i->next) {
-		alpm_pkg_t *replaces = alpm_db_get_pkg (localdb, i->data);
+		alpm_pkg_t *replaces = alpm_db_get_pkg (priv->localdb, i->data);
 
 		if (replaces != NULL) {
 			_cleanup_free_ gchar *package = pk_alpm_pkg_build_id (replaces);
@@ -141,10 +142,10 @@ pk_alpm_time_to_iso8601 (alpm_time_t time)
 static void
 pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **packages;
 	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_if_fail (localdb != NULL);
 
 	packages = (gchar**) p;
 
@@ -169,7 +170,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		if (pkg == NULL)
 			break;
 
-		old = alpm_db_get_pkg (localdb, alpm_pkg_get_name (pkg));
+		old = alpm_db_get_pkg (priv->localdb, alpm_pkg_get_name (pkg));
 		if (old != NULL) {
 			upgrades = pk_alpm_pkg_build_id (old);
 			if (pk_alpm_pkg_same_pkgver (pkg, old)) {
@@ -182,7 +183,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		}
 
 		db = alpm_pkg_get_db (pkg);
-		replaces = pk_alpm_pkg_build_replaces (pkg);
+		replaces = pk_alpm_pkg_build_replaces (job, pkg);
 		urls = pk_alpm_pkg_build_urls (pkg);
 
 		if (g_str_has_prefix (alpm_pkg_get_name (pkg), "kernel"))
@@ -221,23 +222,23 @@ pk_backend_get_update_detail (PkBackend * self,
 static gboolean
 pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_cb_download dlcb;
 	alpm_cb_totaldl totaldlcb;
 	const alpm_list_t *i;
 
-	g_return_val_if_fail (alpm != NULL, FALSE);
-
 	if (!pk_alpm_transaction_initialize (job, 0, NULL, error))
 		return FALSE;
 
-	alpm_logaction (alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
+	alpm_logaction (priv->alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
-	dlcb = alpm_option_get_dlcb (alpm);
-	totaldlcb = alpm_option_get_totaldlcb (alpm);
+	dlcb = alpm_option_get_dlcb (priv->alpm);
+	totaldlcb = alpm_option_get_totaldlcb (priv->alpm);
 
 	/* set total size to minus the number of databases */
-	i = alpm_get_syncdbs (alpm);
+	i = alpm_get_syncdbs (priv->alpm);
 	totaldlcb (-alpm_list_count (i));
 
 	for (; i != NULL; i = i->next) {
@@ -255,7 +256,7 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 			/* fake the download when already up to date */
 			dlcb ("", 1, 1);
 		} else if (result < 0) {
-			alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s",
 				     alpm_db_get_name (i->data),
 				     alpm_strerror (errno));
@@ -272,18 +273,18 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 }
 
 static gboolean
-pk_alpm_pkg_is_ignorepkg (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_ignorepkg (PkBackend *backend, alpm_pkg_t *pkg)
 {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *ignorepkgs, *ignoregroups, *i;
 
 	g_return_val_if_fail (pkg != NULL, TRUE);
-	g_return_val_if_fail (alpm != NULL, TRUE);
 
-	ignorepkgs = alpm_option_get_ignorepkgs (alpm);
+	ignorepkgs = alpm_option_get_ignorepkgs (priv->alpm);
 	if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL)
 		return TRUE;
 
-	ignoregroups = alpm_option_get_ignoregroups (alpm);
+	ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
 	for (i = alpm_pkg_get_groups (pkg); i != NULL; i = i->next) {
 		if (alpm_list_find_str (ignoregroups, i->data) != NULL)
 			return TRUE;
@@ -293,13 +294,11 @@ pk_alpm_pkg_is_ignorepkg (alpm_pkg_t *pkg)
 }
 
 static gboolean
-pk_alpm_pkg_is_syncfirst (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_syncfirst (alpm_list_t *syncfirsts, alpm_pkg_t *pkg)
 {
 	g_return_val_if_fail (pkg != NULL, FALSE);
-
 	if (alpm_list_find_str (syncfirsts, alpm_pkg_get_name (pkg)) != NULL)
 		return TRUE;
-
 	return FALSE;
 }
 
@@ -346,12 +345,11 @@ pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 static void
 pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	struct stat cache;
 	time_t one_hour_ago;
 	const alpm_list_t *i, *syncdbs;
-
-	g_return_if_fail (alpm != NULL);
-	g_return_if_fail (localdb != NULL);
 
 	time (&one_hour_ago);
 	one_hour_ago -= 60 * 60;
@@ -368,17 +366,17 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	}
 
 	/* find outdated and replacement packages */
-	syncdbs = alpm_get_syncdbs (alpm);
-	for (i = alpm_db_get_pkgcache (localdb); i != NULL; i = i->next) {
+	syncdbs = alpm_get_syncdbs (priv->alpm);
+	for (i = alpm_db_get_pkgcache (priv->localdb); i != NULL; i = i->next) {
 		PkInfoEnum info = PK_INFO_ENUM_NORMAL;
 		alpm_pkg_t *upgrade = pk_alpm_pkg_find_update (i->data, syncdbs);
 		if (upgrade == NULL)
 			continue;
 		if (pk_backend_job_is_cancelled (job))
 			break;
-		if (pk_alpm_pkg_is_ignorepkg (upgrade)) {
+		if (pk_alpm_pkg_is_ignorepkg (backend, upgrade)) {
 			info = PK_INFO_ENUM_BLOCKED;
-		} else if (pk_alpm_pkg_is_syncfirst (upgrade)) {
+		} else if (pk_alpm_pkg_is_syncfirst (priv->syncfirsts, upgrade)) {
 			info = PK_INFO_ENUM_IMPORTANT;
 		}
 		pk_alpm_pkg_emit (job, upgrade, info);

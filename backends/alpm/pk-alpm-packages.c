@@ -65,6 +65,8 @@ pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
 alpm_pkg_t *
 pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **package;
 	const gchar *repo_id;
 	alpm_db_t *db = NULL;
@@ -72,17 +74,15 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 
 	g_return_val_if_fail (job != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
-	g_return_val_if_fail (alpm != NULL, NULL);
-	g_return_val_if_fail (localdb != NULL, NULL);
 
 	package = pk_package_id_split (package_id);
 	repo_id = package[PK_PACKAGE_ID_DATA];
 
 	/* find the database to search in */
 	if (g_strcmp0 (repo_id, "installed") == 0) {
-		db = localdb;
+		db = priv->localdb;
 	} else {
-		const alpm_list_t *i = alpm_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
 		for (; i != NULL; i = i->next) {
 			const gchar *repo = alpm_db_get_name (i->data);
 
@@ -123,7 +123,6 @@ pk_backend_resolve_package (PkBackendJob *job, const gchar *package, PkBitfield 
 	gboolean skip_local, skip_remote;
 
 	g_return_val_if_fail (package != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	pkg = pk_alpm_find_pkg (job, package, error);
 	if (pkg == NULL)
@@ -146,26 +145,26 @@ pk_backend_resolve_package (PkBackendJob *job, const gchar *package, PkBitfield 
 static gboolean
 pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filters, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_pkg_t *pkg;
 	int code;
 
 	gboolean skip_local, skip_remote;
 
 	g_return_val_if_fail (name != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	skip_local = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
-	pkg = alpm_db_get_pkg (localdb, name);
+	pkg = alpm_db_get_pkg (priv->localdb, name);
 	if (pkg != NULL) {
 		if (!skip_local) {
 			pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_INSTALLED);
 			return TRUE;
 		}
 	} else if (!skip_remote) {
-		const alpm_list_t *i = alpm_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
 		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
 			if (pkg != NULL) {
@@ -224,8 +223,6 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_if_fail (localdb != NULL);
 
 	packages = (gchar**) p;
 
@@ -287,10 +284,10 @@ pk_backend_get_details (PkBackend *self,
 static void
 pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **packages;
 	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_if_fail (alpm != NULL);
 
 	packages = (gchar**) p;
 
@@ -308,7 +305,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		if (pkg == NULL)
 			break;
 
-		root = alpm_option_get_root (alpm);
+		root = alpm_option_get_root (priv->alpm);
 		files = g_string_new ("");
 
 		filelist = alpm_pkg_get_files (pkg);

@@ -31,17 +31,18 @@
 static gboolean
 pk_alpm_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError **error)
 {
-	g_return_val_if_fail (alpm != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
 		_cleanup_strv_free_ gchar **package = pk_package_id_split (*packages);
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
-		if (pkg == NULL || alpm_remove_pkg (alpm, pkg) < 0) {
-			alpm_errno_t errno = alpm_errno (alpm);
+		alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
+		if (pkg == NULL || alpm_remove_pkg (priv->alpm, pkg) < 0) {
+			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", name,
 				     alpm_strerror (errno));
 			g_strfreev (package);
@@ -53,18 +54,18 @@ pk_alpm_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError 
 }
 
 static gboolean
-pk_alpm_transaction_remove_simulate (GError **error)
+pk_alpm_transaction_remove_simulate (PkBackendJob *job, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
 
-	g_return_val_if_fail (alpm != NULL, FALSE);
-
-	if (!pk_alpm_transaction_simulate (error))
+	if (!pk_alpm_transaction_simulate (job, error))
 		return FALSE;
 
-	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_remove (priv->alpm); i != NULL; i = i->next) {
 		const gchar *name = alpm_pkg_get_name (i->data);
-		if (alpm_list_find_str (holdpkgs, name)) {
+		if (alpm_list_find_str (priv->holdpkgs, name)) {
 			g_set_error (error, PK_ALPM_ERROR, PK_ALPM_ERR_PKG_HELD,
 				     "%s: %s", name,
 				     "could not remove HoldPkg");
@@ -100,7 +101,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer
 
 	if (pk_alpm_transaction_initialize (job, flags, NULL, &error) &&
 	    pk_alpm_transaction_remove_targets (job, package_ids, &error) &&
-	    pk_alpm_transaction_remove_simulate (&error)) {
+	    pk_alpm_transaction_remove_simulate (job, &error)) {
 		pk_alpm_transaction_commit (job, &error);
 	}
 

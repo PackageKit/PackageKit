@@ -33,7 +33,9 @@
 static gboolean
 pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GError **error)
 {
-	g_return_val_if_fail (alpm != NULL, FALSE);
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
@@ -41,7 +43,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		const alpm_list_t *i = alpm_get_syncdbs (alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
 		alpm_pkg_t *pkg;
 
 		for (; i != NULL; i = i->next) {
@@ -58,8 +60,8 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
-		if (pkg == NULL || alpm_add_pkg (alpm, pkg) < 0) {
-			alpm_errno_t errno = alpm_errno (alpm);
+		if (pkg == NULL || alpm_add_pkg (priv->alpm, pkg) < 0) {
+			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
 			g_strfreev (package);
@@ -73,13 +75,13 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 static void
 pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *cachedirs = NULL;
 	const gchar *directory;
 	const gchar **package_ids;
 	alpm_transflag_t flags = 0;
 	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_if_fail (alpm != NULL);
 
 	g_variant_get (params, "(^a&ss)",
 				  &package_ids,
@@ -88,11 +90,11 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 	if (directory != NULL) {
 		/* download files to a PackageKit directory */
 		gchar *cachedir = strdup (directory);
-		const alpm_list_t *old = alpm_option_get_cachedirs (alpm);
+		const alpm_list_t *old = alpm_option_get_cachedirs (priv->alpm);
 		alpm_list_t *new = alpm_list_add (NULL, cachedir);
 
 		cachedirs = alpm_list_strdup (old);
-		alpm_option_set_cachedirs (alpm, new);
+		alpm_option_set_cachedirs (priv->alpm, new);
 	}
 
 	flags |= ALPM_TRANS_FLAG_NODEPS;
@@ -101,13 +103,13 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 
 	if (pk_alpm_transaction_initialize (job, flags, directory, &error) &&
 	    pk_alpm_transaction_sync_targets (job, package_ids, &error) &&
-	    pk_alpm_transaction_simulate (&error)) {
+	    pk_alpm_transaction_simulate (job, &error)) {
 		pk_alpm_transaction_commit (job, &error);
 	}
 
 	if (directory != NULL) {
 		g_assert (cachedirs);
-		alpm_option_set_cachedirs (alpm, cachedirs);
+		alpm_option_set_cachedirs (priv->alpm, cachedirs);
 	}
 
 	pk_alpm_transaction_finish (job, error);
@@ -127,6 +129,7 @@ pk_backend_download_packages (PkBackend *self,
 static void
 pk_backend_install_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
 	gboolean only_trusted;
 	PkBitfield transaction_flags = 0;
 	const gchar **package_ids;
@@ -137,12 +140,12 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant* params, gpointe
 				  &package_ids);
 	only_trusted = transaction_flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pk_alpm_disable_signatures (&error))
+	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
 	if (pk_alpm_transaction_initialize (job, 0, NULL, &error) &&
 	    pk_alpm_transaction_sync_targets (job, package_ids, &error) &&
-	    pk_alpm_transaction_simulate (&error)) {
+	    pk_alpm_transaction_simulate (job, &error)) {
 		pk_alpm_transaction_commit (job, &error);
 	}
 
@@ -150,7 +153,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant* params, gpointe
 out:
 	if (!only_trusted) {
 		GError **e = (error == NULL) ? &error : NULL;
-		pk_alpm_enable_signatures (e);
+		pk_alpm_enable_signatures (backend, e);
 	}
 
 	pk_alpm_finish (job, error);
@@ -168,13 +171,14 @@ pk_backend_install_packages (PkBackend  *self,
 static gboolean
 pk_alpm_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i, *replaces;
 
 	g_return_val_if_fail (pkg != NULL, FALSE);
-	g_return_val_if_fail (alpm != NULL, FALSE);
 
 	replaces = alpm_pkg_get_replaces (pkg);
-	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_remove (priv->alpm); i != NULL; i = i->next) {
 		alpm_pkg_t *rpkg = (alpm_pkg_t *) i->data;
 		const gchar *rname = alpm_pkg_get_name (rpkg);
 
@@ -193,6 +197,8 @@ pk_alpm_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 static void
 pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	PkBitfield flags;
 	gboolean only_trusted;
 	const alpm_list_t *i;
@@ -200,29 +206,26 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 	const gchar** package_ids;
 	_cleanup_error_free_ GError *error = NULL;
 
-	g_return_if_fail (alpm != NULL);
-	g_return_if_fail (localdb != NULL);
-
 	g_variant_get (params, "(t^a&s)", &flags, &package_ids);
 	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pk_alpm_disable_signatures (&error))
+	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
 	if (!pk_alpm_transaction_initialize (job, 0, NULL, &error) ||
 	    !pk_alpm_transaction_sync_targets (job, package_ids, &error) ||
-	    !pk_alpm_transaction_simulate (&error)) {
+	    !pk_alpm_transaction_simulate (job, &error)) {
 		goto out;
 	}
 
 	/* change the install reason of packages that replace dependencies */
-	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
+	for (i = alpm_trans_get_add (priv->alpm); i != NULL; i = i->next) {
 		alpm_pkg_t *pkg = (alpm_pkg_t *) i->data;
 		const gchar *name = alpm_pkg_get_name (pkg);
 
 		if (pk_backend_job_is_cancelled (job))
 			goto out;
-		if (alpm_db_get_pkg (localdb, name) != NULL)
+		if (alpm_db_get_pkg (priv->localdb, name) != NULL)
 			continue;
 
 		if (pk_alpm_replaces_dependencies (job, pkg))
@@ -234,7 +237,7 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 
 	for (i = asdeps; i != NULL; i = i->next) {
 		const gchar *name = (const gchar *) i->data;
-		alpm_pkg_t *pkg = alpm_db_get_pkg (localdb, name);
+		alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
 		alpm_pkg_set_reason (pkg, ALPM_PKG_REASON_DEPEND);
 	}
 out:
@@ -242,7 +245,7 @@ out:
 
 	if (!only_trusted) {
 		GError **e = (error == NULL) ? &error : NULL;
-		pk_alpm_enable_signatures (e);
+		pk_alpm_enable_signatures (backend, e);
 	}
 
 	alpm_list_free_inner (asdeps, g_free);

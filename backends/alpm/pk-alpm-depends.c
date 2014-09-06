@@ -43,17 +43,17 @@ pk_alpm_list_find_pkgname (const alpm_list_t *pkgs, const gchar *name)
 
 static alpm_list_t *
 pk_alpm_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
-			      const gchar *depend, gboolean recursive,
-			      PkBitfield filters, GError **error)
+		       const gchar *depend, gboolean recursive,
+		       PkBitfield filters, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gboolean skip_local, skip_remote;
 
 	alpm_pkg_t *provider;
 	alpm_list_t *pkgcache, *syncdbs;
 
 	g_return_val_if_fail (depend != NULL, pkgs);
-	g_return_val_if_fail (alpm != NULL, pkgs);
-	g_return_val_if_fail (localdb != NULL, pkgs);
 
 	skip_local = pk_bitfield_contain (filters,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
@@ -64,7 +64,7 @@ pk_alpm_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
 	}
 
 	/* look for local dependencies */
-	pkgcache = alpm_db_get_pkgcache (localdb);
+	pkgcache = alpm_db_get_pkgcache (priv->localdb);
 	provider = alpm_find_satisfier (pkgcache, depend);
 
 	if (provider != NULL) {
@@ -80,8 +80,8 @@ pk_alpm_find_provider (PkBackendJob *job, alpm_list_t *pkgs,
 	}
 
 	/* look for remote dependencies */
-	syncdbs = alpm_get_syncdbs (alpm);
-	provider = alpm_find_dbs_satisfier (alpm, syncdbs, depend);
+	syncdbs = alpm_get_syncdbs (priv->alpm);
+	provider = alpm_find_dbs_satisfier (priv->alpm, syncdbs, depend);
 
 	if (provider != NULL) {
 		if (!skip_remote)
@@ -102,16 +102,17 @@ static alpm_list_t *
 pk_backend_find_requirer (PkBackendJob *job, alpm_list_t *pkgs, const gchar *name, gboolean recursive,
 			  GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_pkg_t *requirer;
 
 	g_return_val_if_fail (name != NULL, pkgs);
-	g_return_val_if_fail (localdb != NULL, pkgs);
 
 	if (pk_alpm_list_find_pkgname (pkgs, name) != NULL)
 		return pkgs;
 
 	/* look for local requirers */
-	requirer = alpm_db_get_pkg (localdb, name);
+	requirer = alpm_db_get_pkg (priv->localdb, name);
 
 	if (requirer != NULL) {
 		pk_alpm_pkg_emit (job, requirer, PK_INFO_ENUM_INSTALLED);

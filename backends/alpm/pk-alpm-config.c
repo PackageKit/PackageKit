@@ -25,11 +25,15 @@
 #include <glob.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <glib/gstdio.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-alpm-config.h"
 #include "pk-alpm-databases.h"
 #include "pk-alpm-error.h"
+
+// bad API choice
+static gchar *xfercmd = NULL;
 
 typedef struct
 {
@@ -46,6 +50,7 @@ typedef struct
 
 	 alpm_list_t		*sections;
 	 GRegex			*xrepo, *xarch;
+	 PkBackend		*backend;
 } PkAlpmConfig;
 
 typedef struct
@@ -55,9 +60,10 @@ typedef struct
 } PkAlpmConfigSection;
 
 static PkAlpmConfig *
-pk_alpm_config_new (void)
+pk_alpm_config_new (PkBackend *backend)
 {
 	PkAlpmConfig *config = g_new0 (PkAlpmConfig, 1);
+	config->backend = backend;
 	config->deltaratio = 0.0;
 
 	config->xrepo = g_regex_new ("\\$repo", 0, 0, NULL);
@@ -834,9 +840,105 @@ pk_alpm_config_configure_repos (PkAlpmConfig *config,
 	return TRUE;
 }
 
+static gboolean
+pk_alpm_spawn (const gchar *command)
+{
+	int status;
+	_cleanup_error_free_ GError *error = NULL;
+
+	g_return_val_if_fail (command != NULL, FALSE);
+
+	if (!g_spawn_command_line_sync (command, NULL, NULL, &status, &error)) {
+		g_warning ("could not spawn command: %s", error->message);
+		return FALSE;
+	}
+
+	if (WIFEXITED (status) == 0) {
+		g_warning ("command did not execute correctly");
+		return FALSE;
+	}
+
+	if (WEXITSTATUS (status) != EXIT_SUCCESS) {
+		gint code = WEXITSTATUS (status);
+		g_warning ("command returned error code %d", code);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gint
+pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
+{
+	GRegex *xo, *xi;
+	gint result = 0;
+	_cleanup_free_ gchar *basename = NULL;
+	_cleanup_free_ gchar *file = NULL;
+	_cleanup_free_ gchar *finalcmd = NULL;
+	_cleanup_free_ gchar *oldpwd = NULL;
+	_cleanup_free_ gchar *part = NULL;
+	_cleanup_free_ gchar *tempcmd = NULL;
+
+	g_return_val_if_fail (url != NULL, -1);
+	g_return_val_if_fail (path != NULL, -1);
+	g_return_val_if_fail (xfercmd != NULL, -1);
+
+	oldpwd = g_get_current_dir ();
+	if (g_chdir (path) < 0) {
+		g_warning ("could not find or read directory '%s'", path);
+		g_free (oldpwd);
+		return -1;
+	}
+
+	xo = g_regex_new ("%o", 0, 0, NULL);
+	xi = g_regex_new ("%u", 0, 0, NULL);
+
+	basename = g_path_get_basename (url);
+	file = g_strconcat (path, basename, NULL);
+	part = g_strconcat (file, ".part", NULL);
+
+	if (force != 0 && g_file_test (part, G_FILE_TEST_EXISTS))
+		g_unlink (part);
+	if (force != 0 && g_file_test (file, G_FILE_TEST_EXISTS))
+		g_unlink (file);
+
+	tempcmd = g_regex_replace_literal (xo, xfercmd, -1, 0, part, 0, NULL);
+	if (tempcmd == NULL) {
+		result = -1;
+		goto out;
+	}
+
+	finalcmd = g_regex_replace_literal (xi, tempcmd, -1, 0, url, 0, NULL);
+	if (finalcmd == NULL) {
+		result = -1;
+		goto out;
+	}
+
+	if (!pk_alpm_spawn (finalcmd)) {
+		result = -1;
+		goto out;
+	}
+	if (g_strrstr (xfercmd, "%o") != NULL) {
+		/* using .part filename */
+		if (g_rename (part, file) < 0) {
+			g_warning ("could not rename %s", part);
+			result = -1;
+			goto out;
+		}
+	}
+out:
+	g_regex_unref (xi);
+	g_regex_unref (xo);
+
+	g_chdir (oldpwd);
+
+	return result;
+}
+
 static alpm_handle_t *
 pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
 {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (config->backend);
 	alpm_handle_t *handle;
 
 	g_return_val_if_fail (config != NULL, FALSE);
@@ -862,8 +964,8 @@ pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
 	}
 
 	/* backend takes ownership */
-	FREELIST (holdpkgs);
-	holdpkgs = config->holdpkgs;
+	FREELIST (priv->holdpkgs);
+	priv->holdpkgs = config->holdpkgs;
 	config->holdpkgs = NULL;
 
 	/* alpm takes ownership */
@@ -888,7 +990,7 @@ pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
 }
 
 alpm_handle_t *
-pk_alpm_configure (const gchar *filename, GError **error)
+pk_alpm_configure (PkBackend *backend, const gchar *filename, GError **error)
 {
 	PkAlpmConfig *config;
 	alpm_handle_t *handle = NULL;
@@ -897,7 +999,7 @@ pk_alpm_configure (const gchar *filename, GError **error)
 	g_return_val_if_fail (filename != NULL, FALSE);
 
 	g_debug ("reading config from %s", filename);
-	config = pk_alpm_config_new ();
+	config = pk_alpm_config_new (backend);
 	pk_alpm_config_enter_section (config, "options");
 
 	if (pk_alpm_config_parse (config, filename, NULL, &e))

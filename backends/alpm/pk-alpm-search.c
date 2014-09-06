@@ -30,13 +30,13 @@
 #include "pk-alpm-packages.h"
 
 static gpointer
-pk_backend_pattern_needle (const gchar *needle, GError **error)
+pk_backend_pattern_needle (PkBackend *backend, const gchar *needle, GError **error)
 {
 	return (gpointer) needle;
 }
 
 static gpointer
-pk_backend_pattern_regex (const gchar *needle, GError **error)
+pk_backend_pattern_regex (PkBackend *backend, const gchar *needle, GError **error)
 {
 	_cleanup_free_ gchar *pattern = NULL;
 	g_return_val_if_fail (needle != NULL, NULL);
@@ -45,13 +45,13 @@ pk_backend_pattern_regex (const gchar *needle, GError **error)
 }
 
 static gpointer
-pk_backend_pattern_chroot (const gchar *needle, GError **error)
+pk_backend_pattern_chroot (PkBackend *backend, const gchar *needle, GError **error)
 {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	g_return_val_if_fail (needle != NULL, NULL);
-	g_return_val_if_fail (alpm != NULL, NULL);
 
 	if (G_IS_DIR_SEPARATOR (*needle)) {
-		const gchar *file = needle, *root = alpm_option_get_root (alpm);
+		const gchar *file = needle, *root = alpm_option_get_root (priv->alpm);
 
 		/* adjust needle to the correct prefix */
 		for (; *file == *root; ++file, ++root) {
@@ -205,7 +205,7 @@ typedef enum {
 	SEARCH_TYPE_LAST
 } SearchType;
 
-typedef gpointer (*PatternFunc) (const gchar *needle, GError **error);
+typedef gpointer (*PatternFunc) (PkBackend *backend, const gchar *needle, GError **error);
 typedef gboolean (*MatchFunc) (alpm_pkg_t *pkg, gpointer pattern);
 
 static PatternFunc pattern_funcs[] = {
@@ -236,15 +236,16 @@ static MatchFunc match_funcs[] = {
 };
 
 static gboolean
-pk_alpm_pkg_is_local (alpm_pkg_t *pkg)
+pk_alpm_pkg_is_local (PkBackendJob *job, alpm_pkg_t *pkg)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_pkg_t *local;
 
 	g_return_val_if_fail (pkg != NULL, FALSE);
-	g_return_val_if_fail (localdb != NULL, FALSE);
 
 	/* find an installed package with the same name */
-	local = alpm_db_get_pkg (localdb, alpm_pkg_get_name (pkg));
+	local = alpm_db_get_pkg (priv->localdb, alpm_pkg_get_name (pkg));
 	if (local == NULL)
 		return FALSE;
 
@@ -267,6 +268,8 @@ static void
 pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 		      const alpm_list_t *patterns)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i, *j;
 
 	g_return_if_fail (db != NULL);
@@ -284,10 +287,10 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 
 		/* all search terms matched */
 		if (j == NULL) {
-			if (db == localdb) {
+			if (db == priv->localdb) {
 				pk_alpm_pkg_emit (job, i->data,
 						PK_INFO_ENUM_INSTALLED);
-			} else if (!pk_alpm_pkg_is_local (i->data)) {
+			} else if (!pk_alpm_pkg_is_local (job, i->data)) {
 				pk_alpm_pkg_emit (job, i->data,
 						PK_INFO_ENUM_AVAILABLE);
 			}
@@ -298,6 +301,8 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 static void
 pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **needles = NULL;
 	SearchType type;
 
@@ -313,8 +318,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	alpm_list_t *patterns = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 
-	g_return_if_fail (alpm != NULL);
-	g_return_if_fail (localdb != NULL);
 	g_return_if_fail (p == NULL);
 
 	role = pk_backend_job_get_role(job);
@@ -371,7 +374,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	/* convert search terms to the pattern requested */
 	if (needles) {
 		for (; *needles != NULL; ++needles) {
-			gpointer pattern = pattern_func (*needles, &error);
+			gpointer pattern = pattern_func (backend, *needles, &error);
 
 			if (pattern == NULL)
 				goto out;
@@ -382,12 +385,12 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 
 	/* find installed packages first */
 	if (!skip_local)
-		pk_backend_search_db (job, localdb, match_func, patterns);
+		pk_backend_search_db (job, priv->localdb, match_func, patterns);
 
 	if (skip_remote)
 		goto out;
 
-	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
+	for (i = alpm_get_syncdbs (priv->alpm); i != NULL; i = i->next) {
 		if (pk_backend_job_is_cancelled (job))
 			break;
 
@@ -462,7 +465,6 @@ pk_backend_what_provides (PkBackend *self,
 			  PkBitfield filters,
 			  gchar      **search)
 {
-	g_return_if_fail (backend != NULL);
 	g_return_if_fail (search != NULL);
 
 	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);

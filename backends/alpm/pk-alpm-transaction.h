@@ -26,7 +26,7 @@
 
 gboolean	 pk_alpm_transaction_initialize		(PkBackendJob *job, alpm_transflag_t flags, const gchar* dirname, GError **error);
 
-gboolean	 pk_alpm_transaction_simulate		(GError **error);
+gboolean	 pk_alpm_transaction_simulate		(PkBackendJob *job, GError **error);
 
 void		 pk_alpm_transaction_packages		(PkBackendJob *job);
 

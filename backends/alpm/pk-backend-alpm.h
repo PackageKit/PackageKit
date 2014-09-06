@@ -25,20 +25,15 @@
 #include <gio/gio.h>
 #include <pk-backend.h>
 
-extern PkBackend *backend;
-extern GCancellable *cancellable;
+typedef struct {
+	gboolean	 env_initialized;
+	alpm_db_t	*localdb;
+	alpm_list_t	*syncfirsts;
+	alpm_list_t	*holdpkgs;
+	alpm_handle_t	*alpm;
+} PkBackendAlpmPrivate;
 
-extern alpm_handle_t *alpm;
-extern alpm_db_t *localdb;
-
-extern gchar *xfercmd;
-extern alpm_list_t *holdpkgs;
-extern alpm_list_t *syncfirsts;
-
-gint		 pk_alpm_fetchcb	(const gchar *url, const gchar *path,
-					 gint force);
-
-void		 pk_alpm_run	(PkBackendJob *job, PkStatusEnum status,
+void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,
 					 PkBackendJobThreadFunc func, gpointer data);
 
-gboolean	 pk_alpm_finish	(PkBackendJob *job, GError *error);
+gboolean	 pk_alpm_finish		(PkBackendJob *job, GError *error);

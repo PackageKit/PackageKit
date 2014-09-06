@@ -24,4 +24,4 @@
 #include <alpm.h>
 #include <glib.h>
 
-alpm_handle_t	*pk_alpm_configure	(const gchar *filename, GError **error);
+alpm_handle_t	*pk_alpm_configure	(PkBackend *backend, const gchar *filename, GError **error);

@@ -36,131 +36,22 @@
 #include "pk-alpm-groups.h"
 #include "pk-alpm-transaction.h"
 
-PkBackend *backend = NULL;
-GCancellable *cancellable = NULL;
-static gboolean env_initialized = FALSE;
-
-alpm_handle_t *alpm = NULL;
-alpm_db_t *localdb = NULL;
-
-gchar *xfercmd = NULL;
-alpm_list_t *holdpkgs = NULL;
-alpm_list_t *syncfirsts = NULL;
-
 const gchar *
-pk_backend_get_description (PkBackend *self)
+pk_backend_get_description (PkBackend *backend)
 {
 	return "alpm";
 }
 
 const gchar *
-pk_backend_get_author (PkBackend *self)
+pk_backend_get_author (PkBackend *backend)
 {
 	return "Jonathan Conder <jonno.conder@gmail.com>";
-}
-
-static gboolean
-pk_alpm_spawn (PkBackend *self, const gchar *command)
-{
-	int status;
-	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_val_if_fail (command != NULL, FALSE);
-
-	if (!g_spawn_command_line_sync (command, NULL, NULL, &status, &error)) {
-		g_warning ("could not spawn command: %s", error->message);
-		return FALSE;
-	}
-
-	if (WIFEXITED (status) == 0) {
-		g_warning ("command did not execute correctly");
-		return FALSE;
-	}
-
-	if (WEXITSTATUS (status) != EXIT_SUCCESS) {
-		gint code = WEXITSTATUS (status);
-		g_warning ("command returned error code %d", code);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-gint
-pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
-{
-	GRegex *xo, *xi;
-	gint result = 0;
-	_cleanup_free_ gchar *basename = NULL;
-	_cleanup_free_ gchar *file = NULL;
-	_cleanup_free_ gchar *finalcmd = NULL;
-	_cleanup_free_ gchar *oldpwd = NULL;
-	_cleanup_free_ gchar *part = NULL;
-	_cleanup_free_ gchar *tempcmd = NULL;
-
-	g_return_val_if_fail (url != NULL, -1);
-	g_return_val_if_fail (path != NULL, -1);
-	g_return_val_if_fail (xfercmd != NULL, -1);
-	g_return_val_if_fail (backend != NULL, -1);
-
-	oldpwd = g_get_current_dir ();
-	if (g_chdir (path) < 0) {
-		g_warning ("could not find or read directory '%s'", path);
-		g_free (oldpwd);
-		return -1;
-	}
-
-	xo = g_regex_new ("%o", 0, 0, NULL);
-	xi = g_regex_new ("%u", 0, 0, NULL);
-
-	basename = g_path_get_basename (url);
-	file = g_strconcat (path, basename, NULL);
-	part = g_strconcat (file, ".part", NULL);
-
-	if (force != 0 && g_file_test (part, G_FILE_TEST_EXISTS))
-		g_unlink (part);
-	if (force != 0 && g_file_test (file, G_FILE_TEST_EXISTS))
-		g_unlink (file);
-
-	tempcmd = g_regex_replace_literal (xo, xfercmd, -1, 0, part, 0, NULL);
-	if (tempcmd == NULL) {
-		result = -1;
-		goto out;
-	}
-
-	finalcmd = g_regex_replace_literal (xi, tempcmd, -1, 0, url, 0, NULL);
-	if (finalcmd == NULL) {
-		result = -1;
-		goto out;
-	}
-
-	if (!pk_alpm_spawn (backend, finalcmd)) {
-		result = -1;
-		goto out;
-	}
-	if (g_strrstr (xfercmd, "%o") != NULL) {
-		/* using .part filename */
-		if (g_rename (part, file) < 0) {
-			g_warning ("could not rename %s", part);
-			result = -1;
-			goto out;
-		}
-	}
-out:
-	g_regex_unref (xi);
-	g_regex_unref (xo);
-
-	g_chdir (oldpwd);
-
-	return result;
 }
 
 static void
 pk_alpm_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 {
 	_cleanup_free_ gchar *output = NULL;
-
-	g_return_if_fail (backend != NULL);
 
 	if (format == NULL || format[0] == '\0')
 		return;
@@ -247,20 +138,21 @@ pk_alpm_configure_environment (PkBackendJob *job)
 }
 
 static gboolean
-pk_alpm_initialize (PkBackend *self, GError **error)
+pk_alpm_initialize (PkBackend *backend, GError **error)
 {
-	alpm = pk_alpm_configure (PK_BACKEND_CONFIG_FILE, error);
-	if (alpm == NULL) {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+
+	priv->alpm = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, error);
+	if (priv->alpm == NULL) {
 		g_prefix_error (error, "using %s: ", PK_BACKEND_CONFIG_FILE);
 		return FALSE;
 	}
 
-	backend = self;
-	alpm_option_set_logcb (alpm, pk_alpm_logcb);
+	alpm_option_set_logcb (priv->alpm, pk_alpm_logcb);
 
-	localdb = alpm_get_localdb (alpm);
-	if (localdb == NULL) {
-		alpm_errno_t errno = alpm_errno (alpm);
+	priv->localdb = alpm_get_localdb (priv->alpm);
+	if (priv->localdb == NULL) {
+		alpm_errno_t errno = alpm_errno (priv->alpm);
 		g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s", "local",
 			     alpm_strerror (errno));
 	}
@@ -268,51 +160,50 @@ pk_alpm_initialize (PkBackend *self, GError **error)
 	return TRUE;
 }
 
-static void
-pk_alpm_destroy (void)
-{
-	if (alpm != NULL) {
-		if (alpm_trans_get_flags (alpm) < 0)
-			alpm_trans_release (alpm);
-		alpm_release (alpm);
-		alpm = NULL;
-		backend = NULL;
-	}
-
-	FREELIST (syncfirsts);
-	FREELIST (holdpkgs);
-	g_free (xfercmd);
-	xfercmd = NULL;
-}
-
 void
-pk_backend_initialize (GKeyFile *conf, PkBackend *self)
+pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
+	PkBackendAlpmPrivate *priv;
+
 	_cleanup_error_free_ GError *error = NULL;
-	if (!pk_alpm_initialize (self, &error))
+
+	priv = g_new0 (PkBackendAlpmPrivate, 1);
+	pk_backend_set_user_data (backend, priv);
+
+	if (!pk_alpm_initialize (backend, &error))
 		g_error ("Failed to initialize alpm: %s", error->message);
-	if (!pk_alpm_initialize_databases (&error))
+	if (!pk_alpm_initialize_databases (backend, &error))
 		g_error ("Failed to initialize databases: %s", error->message);
-	if (!pk_alpm_groups_initialize (self, &error))
+	if (!pk_alpm_groups_initialize (backend, &error))
 		g_error ("Failed to initialize groups: %s", error->message);
 }
 
 void
-pk_backend_destroy (PkBackend *self)
+pk_backend_destroy (PkBackend *backend)
 {
-	pk_alpm_groups_destroy (self);
-	pk_alpm_destroy_databases (self);
-	pk_alpm_destroy ();
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	pk_alpm_groups_destroy (backend);
+	pk_alpm_destroy_databases (backend);
+
+	if (priv->alpm != NULL) {
+		if (alpm_trans_get_flags (priv->alpm) < 0)
+			alpm_trans_release (priv->alpm);
+		alpm_release (priv->alpm);
+	}
+
+	FREELIST (priv->syncfirsts);
+	FREELIST (priv->holdpkgs);
+	g_free (priv);
 }
 
 PkBitfield
-pk_backend_get_filters (PkBackend *self)
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 }
 
 gchar **
-pk_backend_get_mime_types (PkBackend *self)
+pk_backend_get_mime_types (PkBackend *backend)
 {
 	/* packages currently use .pkg.tar.gz and .pkg.tar.xz */
 	const gchar *mime_types[] = {
@@ -327,10 +218,7 @@ pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func
 {
 	g_return_if_fail (func != NULL);
 
-	cancellable = pk_backend_job_get_cancellable (job);
-
 	pk_backend_job_set_allow_cancel (job, TRUE);
-
 	pk_backend_job_set_status (job, status);
 	pk_backend_job_thread_create (job, func, data, NULL);
 }
@@ -338,17 +226,17 @@ pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func
 gboolean
 pk_alpm_finish (PkBackendJob *job, GError *error)
 {
-	cancellable = NULL;
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);
 	return (error == NULL);
 }
 
 void
-pk_backend_start_job (PkBackend* self, PkBackendJob* job)
+pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-	if (!env_initialized) {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	if (!priv->env_initialized) {
 		pk_alpm_configure_environment (job);
-		env_initialized = TRUE; //we only need to do it once
+		priv->env_initialized = TRUE; //we only need to do it once
 	}
 }

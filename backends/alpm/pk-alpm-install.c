@@ -30,20 +30,21 @@
 #include "pk-alpm-transaction.h"
 
 static gint
-pk_alpm_install_add_file (const gchar *filename)
+pk_alpm_install_add_file (PkBackendJob *job, const gchar *filename)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_pkg_t *pkg;
 	alpm_siglevel_t level;
 
 	g_return_val_if_fail (filename != NULL, -1);
-	g_return_val_if_fail (alpm != NULL, -1);
 
-	level = alpm_option_get_local_file_siglevel (alpm);
+	level = alpm_option_get_local_file_siglevel (priv->alpm);
 
-	if (alpm_pkg_load (alpm, filename, 1, level, &pkg) < 0)
+	if (alpm_pkg_load (priv->alpm, filename, 1, level, &pkg) < 0)
 		return -1;
 
-	if (alpm_add_pkg (alpm, pkg) < 0) {
+	if (alpm_add_pkg (priv->alpm, pkg) < 0) {
 		alpm_pkg_free (pkg);
 		return -1;
 	}
@@ -54,11 +55,14 @@ pk_alpm_install_add_file (const gchar *filename)
 static gboolean
 pk_alpm_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **error)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+
 	g_return_val_if_fail (paths != NULL, FALSE);
 
 	for (; *paths != NULL; ++paths) {
-		if (pk_alpm_install_add_file (*paths) < 0) {
-			alpm_errno_t errno = alpm_errno (alpm);
+		if (pk_alpm_install_add_file (job, *paths) < 0) {
+			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s",
 				     *paths, alpm_strerror (errno));
 			return FALSE;
@@ -71,6 +75,7 @@ pk_alpm_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **erro
 static void
 pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
 	gboolean only_trusted;
 	gchar** full_paths;
 	PkBitfield flags;
@@ -81,12 +86,12 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 				  &full_paths);
 	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
 
-	if (!only_trusted && !pk_alpm_disable_signatures (&error))
+	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
 	if (pk_alpm_transaction_initialize (job, 0, 0, &error) &&
 	    pk_alpm_transaction_add_targets (job, full_paths, &error) &&
-	    pk_alpm_transaction_simulate (&error)) {
+	    pk_alpm_transaction_simulate (job, &error)) {
 		pk_alpm_transaction_commit (job, &error);
 	}
 out:
@@ -94,7 +99,7 @@ out:
 
 	if (!only_trusted) {
 		GError **e = (error == NULL) ? &error : NULL;
-		pk_alpm_enable_signatures (e);
+		pk_alpm_enable_signatures (backend, e);
 	}
 
 	pk_alpm_finish (job, error);
