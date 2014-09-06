@@ -311,7 +311,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	MatchFunc match_func;
 
 	PkRoleEnum role;
-	PkBitfield filters;
+	PkBitfield filters = 0;
 	gboolean skip_local, skip_remote;
 
 	const alpm_list_t *i;
@@ -353,7 +353,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 					  &needles);
 		break;
 	default:
-		type = 0;
 		g_assert_not_reached ();
 		break;
 	}
