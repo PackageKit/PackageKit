@@ -240,6 +240,9 @@ void		 pk_backend_accept_eula			(PkBackend	*backend,
 							 const gchar	*eula_id);
 gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
 							 const gchar	*eula_id);
+gpointer	 pk_backend_get_user_data		(PkBackend	*backend);
+void		 pk_backend_set_user_data		(PkBackend	*backend,
+							 gpointer	 user_data);
 
 G_END_DECLS
 

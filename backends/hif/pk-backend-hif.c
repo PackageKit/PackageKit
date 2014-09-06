@@ -62,11 +62,10 @@ typedef struct {
 typedef struct {
 	GPtrArray	*sources;
 	HifState	*state;
+	PkBackend	*backend;
 	PkBitfield	 transaction_flags;
 	HyGoal		 goal;
 } PkBackendHifJobData;
-
-static PkBackendHifPrivate *priv;
 
 /**
  * pk_backend_get_description:
@@ -99,11 +98,12 @@ pk_backend_supports_parallelization (PkBackend *backend)
  * pk_backend_sack_cache_invalidate:
  **/
 static void
-pk_backend_sack_cache_invalidate (const gchar *why)
+pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 {
 	GList *values;
 	GList *l;
 	HifSackCacheItem *cache_item;
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 
 	/* set all the cached sacks as invalid */
 	g_mutex_lock (&priv->sack_mutex);
@@ -124,7 +124,7 @@ pk_backend_sack_cache_invalidate (const gchar *why)
 static void
 pk_backend_hif_repos_changed_cb (HifRepos *self, PkBackend *backend)
 {
-	pk_backend_sack_cache_invalidate ("yum.repos.d changed");
+	pk_backend_sack_cache_invalidate (backend, "yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
 }
 
@@ -147,7 +147,7 @@ pk_backend_context_invaliate_cb (HifContext *context,
 				 const gchar *message,
 				 PkBackend *backend)
 {
-	pk_backend_sack_cache_invalidate (message);
+	pk_backend_sack_cache_invalidate (backend, message);
 }
 
 /**
@@ -157,6 +157,7 @@ void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	gboolean ret;
+	PkBackendHifPrivate *priv;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *cache_dir = NULL;
 	_cleanup_free_ gchar *destdir = NULL;
@@ -169,6 +170,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	/* create private area */
 	priv = g_new0 (PkBackendHifPrivate, 1);
+	pk_backend_set_user_data (backend, priv);
 
 	g_debug ("Using Hif %i.%i.%i",
 		 HIF_MAJOR_VERSION,
@@ -229,6 +231,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 void
 pk_backend_destroy (PkBackend *backend)
 {
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
 	g_timer_destroy (priv->repos_timer);
@@ -330,6 +333,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifJobData *job_data;
 	job_data = g_new0 (PkBackendHifJobData, 1);
+	job_data->backend = backend;
 	pk_backend_job_set_user_data (job, job_data);
 
 	/* HifState */
@@ -381,6 +385,8 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 static gboolean
 pk_backend_ensure_sources (PkBackendHifJobData *job_data, GError **error)
 {
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
+
 	/* already set */
 	if (job_data->sources != NULL)
 		return TRUE;
@@ -484,6 +490,8 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	HifSackCacheItem *cache_item = NULL;
 	HifState *state_local;
 	HySack sack = NULL;
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	_cleanup_free_ gchar *cache_key = NULL;
 
 	/* don't add if we're going to filter out anyway */
@@ -646,9 +654,11 @@ hif_utils_run_query_with_newest_filter (HySack sack, HyQuery query)
  * hif_utils_run_query_with_filters:
  */
 static HyPackageList
-hif_utils_run_query_with_filters (HySack sack, HyQuery query, PkBitfield filters)
+hif_utils_run_query_with_filters (PkBackend *backend, HySack sack,
+				  HyQuery query, PkBitfield filters)
 {
 	HyPackageList results;
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	const gchar *application_glob = "/usr/share/applications/*.desktop";
 
 	/* arch */
@@ -750,6 +760,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HyQuery query = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_strv_free_ gchar **search = NULL;
@@ -814,27 +825,27 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	query = hy_query_create (sack);
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_GET_PACKAGES:
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE:
 		hy_query_filter_in (query, HY_PKG_FILE, HY_EQ, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		hy_query_filter_provides_in (query, search);
-		pkglist = hif_utils_run_query_with_filters (sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		job_data->goal = hy_goal_create (sack);
@@ -1048,6 +1059,8 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 {
 	guint i;
 	HifSource *src;
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	PkBitfield filters;
 	_cleanup_ptrarray_unref_ GPtrArray *sources = NULL;
 	_cleanup_error_free_ GError *error = NULL;
@@ -1114,6 +1127,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	gboolean ret = FALSE;
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	_cleanup_error_free_ GError *error = NULL;
 
 	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
@@ -1765,6 +1779,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	HyPackage pkg;
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
@@ -1922,15 +1937,15 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
  * pk_alpm_transaction_check_untrusted_repos:
  */
 static GPtrArray *
-pk_alpm_transaction_check_untrusted_repos (GPtrArray *sources,
-					      HyGoal goal,
-					      GError **error)
+pk_alpm_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sources,
+					   HyGoal goal, GError **error)
 {
 	gboolean ret = TRUE;
 	GPtrArray *array = NULL;
 	guint i;
 	HifSource *src;
 	HyPackage pkg;
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	_cleanup_ptrarray_unref_ GPtrArray *install = NULL;
 
 	/* find any packages in untrusted repos */
@@ -1986,6 +2001,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job,
 	HifDb *db;
 	HyPackageList pkglist;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean ret;
 	_cleanup_ptrarray_unref_ GPtrArray *untrusted = NULL;
 
@@ -2004,8 +2020,9 @@ pk_alpm_transaction_simulate (PkBackendJob *job,
 
 	/* mark any explicitly-untrusted packages so that the transaction skips
 	 * straight to only_trusted=FALSE after simulate */
-	untrusted = pk_alpm_transaction_check_untrusted_repos (job_data->sources,
-								  job_data->goal, error);
+	untrusted = pk_alpm_transaction_check_untrusted_repos (job_data->backend,
+							       job_data->sources,
+							       job_data->goal, error);
 	if (untrusted == NULL) {
 		ret = FALSE;
 		goto out;
@@ -2055,6 +2072,7 @@ pk_alpm_transaction_download_commit (PkBackendJob *job,
 	HifState *state_local;
 	HifTransaction *transaction;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 
 	/* nothing to download */
 	transaction = hif_context_get_transaction (priv->context);
@@ -2109,6 +2127,7 @@ pk_alpm_transaction_run (PkBackendJob *job,
 	HifState *state_local;
 	HifTransaction *transaction;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean ret = TRUE;
 
 	/* set state */
@@ -2192,6 +2211,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	HyQuery query_release = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 	const gchar *from_repo;
 	const gchar *repo_filename;
@@ -2821,6 +2841,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean ret;
 	gchar **package_ids;

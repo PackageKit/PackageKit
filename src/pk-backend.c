@@ -204,6 +204,7 @@ struct PkBackendPrivate
 	PkNetwork		*network;
 #endif
 	gboolean		 backend_roles_set;
+	gpointer		 user_data;
 	GHashTable		*thread_hash;
 	GMutex			 thread_hash_mutex;
 };
@@ -880,6 +881,28 @@ pk_backend_get_accepted_eula_string (PkBackend *backend)
 	/* remove the trailing ';' */
 	g_string_set_size (string, string->len -1);
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_backend_get_user_data:
+ *
+ * Return value: (transfer none): Job user data
+ **/
+gpointer
+pk_backend_get_user_data (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return backend->priv->user_data;
+}
+
+/**
+ * pk_backend_set_user_data:
+ **/
+void
+pk_backend_set_user_data (PkBackend *backend, gpointer user_data)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->user_data = user_data;
 }
 
 /**
