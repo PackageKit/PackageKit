@@ -338,18 +338,9 @@ pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func
 gboolean
 pk_alpm_finish (PkBackendJob *job, GError *error)
 {
-	gboolean cancelled = FALSE;
-
-	pk_backend_job_set_allow_cancel (job, FALSE);
-
 	cancellable = NULL;
-
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);
-
-	if (cancelled)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_CANCEL);
-
 	pk_backend_job_finished (job);
 	return (error == NULL);
 }
