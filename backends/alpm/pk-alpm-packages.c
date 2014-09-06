@@ -192,7 +192,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	g_variant_get (params, "(t^a&s)", &filters, &search);
 
 	for (; *search != NULL; ++search) {
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		/* find a package with the given id or name */
@@ -238,7 +238,7 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		const gchar *desc, *url;
 		gulong size;
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pkg = pk_alpm_find_pkg (job, *packages, &error);
@@ -301,7 +301,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		gsize i;
 		_cleanup_strv_free_ GString *files = NULL;
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pkg = pk_alpm_find_pkg (job, *packages, &error);

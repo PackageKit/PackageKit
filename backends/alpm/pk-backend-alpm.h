@@ -41,6 +41,4 @@ gint		 pk_alpm_fetchcb	(const gchar *url, const gchar *path,
 void		 pk_alpm_run	(PkBackendJob *job, PkStatusEnum status,
 					 PkBackendJobThreadFunc func, gpointer data);
 
-gboolean	 pk_alpm_is_backend_cancelled	(PkBackendJob* job);
-
 gboolean	 pk_alpm_finish	(PkBackendJob *job, GError *error);

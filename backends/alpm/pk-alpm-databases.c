@@ -236,7 +236,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 		alpm_db_t *db = (alpm_db_t *) i->data;
 		const gchar *repo = alpm_db_get_name (db);
 
-		if (pk_alpm_is_backend_cancelled (job)) {
+		if (pk_backend_job_is_cancelled (job)) {
 			goto out;
 		} else {
 			pk_backend_repo_info (job, repo, TRUE);
@@ -248,7 +248,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params,
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		const gchar *repo = (const gchar *) key;
 
-		if (pk_alpm_is_backend_cancelled (job)) {
+		if (pk_backend_job_is_cancelled (job)) {
 			goto out;
 		} else {
 			pk_backend_repo_info (job, repo, FALSE);

@@ -38,7 +38,6 @@
 
 PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;
-static GMutex mutex;
 static gboolean env_initialized = FALSE;
 
 alpm_handle_t *alpm = NULL;
@@ -328,36 +327,12 @@ pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func
 {
 	g_return_if_fail (func != NULL);
 
-	g_mutex_lock (&mutex);
-
-	if (cancellable != NULL) {
-		g_warning ("cancellable was not NULL");
-		g_object_unref (cancellable);
-	}
-	cancellable = g_cancellable_new ();
-
-	g_mutex_unlock (&mutex);
+	cancellable = pk_backend_job_get_cancellable (job);
 
 	pk_backend_job_set_allow_cancel (job, TRUE);
 
 	pk_backend_job_set_status (job, status);
 	pk_backend_job_thread_create (job, func, data, NULL);
-}
-
-gboolean
-pk_alpm_is_backend_cancelled (PkBackendJob *job)
-{
-	gboolean cancelled;
-
-	g_return_val_if_fail (cancellable != NULL, FALSE);
-
-	g_mutex_lock (&mutex);
-
-	cancelled = g_cancellable_is_cancelled (cancellable);
-
-	g_mutex_unlock (&mutex);
-
-	return cancelled;
 }
 
 gboolean
@@ -367,15 +342,7 @@ pk_alpm_finish (PkBackendJob *job, GError *error)
 
 	pk_backend_job_set_allow_cancel (job, FALSE);
 
-	g_mutex_lock (&mutex);
-
-	if (cancellable != NULL) {
-		cancelled = g_cancellable_is_cancelled (cancellable);
-		g_object_unref (cancellable);
-		cancellable = NULL;
-	}
-
-	g_mutex_unlock (&mutex);
+	cancellable = NULL;
 
 	if (error != NULL)
 		pk_alpm_error_emit (job, error);

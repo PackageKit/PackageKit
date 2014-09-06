@@ -274,7 +274,7 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 
 	/* emit packages that match all search terms */
 	for (i = alpm_db_get_pkgcache (db); i != NULL; i = i->next) {
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		for (j = patterns; j != NULL; j = j->next) {
@@ -388,7 +388,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		goto out;
 
 	for (i = alpm_get_syncdbs (alpm); i != NULL; i = i->next) {
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pk_backend_search_db (job, i->data, match_func, patterns);

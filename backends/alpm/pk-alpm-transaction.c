@@ -926,7 +926,7 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 
 	/* emit packages that would have been installed */
 	for (i = alpm_trans_get_add (alpm); i != NULL; i = i->next) {
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break; else {
 			const gchar *name = alpm_pkg_get_name (i->data);
 
@@ -952,7 +952,7 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 
 	/* emit packages that would have been removed */
 	for (i = alpm_trans_get_remove (alpm); i != NULL; i = i->next) {
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 		pk_alpm_pkg_emit (job, i->data, info);
 	}
@@ -981,7 +981,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 
 	g_return_val_if_fail (alpm != NULL, FALSE);
 
-	if (pk_alpm_is_backend_cancelled (job))
+	if (pk_backend_job_is_cancelled (job))
 		return TRUE;
 
 	pk_backend_job_set_allow_cancel (job, FALSE);

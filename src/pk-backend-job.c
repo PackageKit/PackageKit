@@ -173,6 +173,17 @@ pk_backend_job_get_cancellable (PkBackendJob *job)
 }
 
 /**
+ * pk_backend_job_is_cancelled:
+ *
+ * Return value: (transfer none): a #GCancellable
+ **/
+gboolean
+pk_backend_job_is_cancelled (PkBackendJob *job)
+{
+	return g_cancellable_is_cancelled (job->priv->cancellable);
+}
+
+/**
  * pk_backend_job_get_backend:
  *
  * Return value: (transfer none): Associated PkBackend instance

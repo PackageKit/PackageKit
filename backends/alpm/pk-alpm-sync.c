@@ -178,7 +178,7 @@ pk_alpm_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 		alpm_pkg_t *rpkg = (alpm_pkg_t *) i->data;
 		const gchar *rname = alpm_pkg_get_name (rpkg);
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			return FALSE;
 		if (alpm_list_find_str (replaces, rname) == NULL)
 			continue;
@@ -220,7 +220,7 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 		alpm_pkg_t *pkg = (alpm_pkg_t *) i->data;
 		const gchar *name = alpm_pkg_get_name (pkg);
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			goto out;
 		if (alpm_db_get_pkg (localdb, name) != NULL)
 			continue;

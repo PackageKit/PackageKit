@@ -142,7 +142,7 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pkg = pk_alpm_find_pkg (job, *packages, &error);
@@ -156,14 +156,14 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (i = pkgs; i != NULL; i = i->next) {
 		const alpm_list_t *depends;
 
-		if (pk_alpm_is_backend_cancelled (job) || error != NULL)
+		if (pk_backend_job_is_cancelled (job) || error != NULL)
 			break;
 
 		depends = alpm_pkg_get_depends (i->data);
 		for (; depends != NULL; depends = depends->next) {
 			_cleanup_free_ gchar *depend = NULL;
 
-			if (pk_alpm_is_backend_cancelled (job) || error != NULL)
+			if (pk_backend_job_is_cancelled (job) || error != NULL)
 				break;
 
 			depend = alpm_dep_compute_string (depends->data);
@@ -191,7 +191,7 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (; *packages != NULL; ++packages) {
 		alpm_pkg_t *pkg;
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pkg = pk_alpm_find_pkg (job, *packages, &error);
@@ -205,12 +205,12 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (i = pkgs; i != NULL; i = i->next) {
 		alpm_list_t *requiredby;
 
-		if (pk_alpm_is_backend_cancelled (job) || error != NULL)
+		if (pk_backend_job_is_cancelled (job) || error != NULL)
 			break;
 
 		requiredby = alpm_pkg_compute_requiredby (i->data);
 		for (; requiredby != NULL; requiredby = requiredby->next) {
-			if (pk_alpm_is_backend_cancelled (job) || error != NULL)
+			if (pk_backend_job_is_cancelled (job) || error != NULL)
 				break;
 
 			pkgs = pk_backend_find_requirer (job, pkgs,

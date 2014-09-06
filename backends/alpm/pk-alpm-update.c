@@ -162,7 +162,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		_cleanup_free_ gchar *issued = NULL;
 		_cleanup_free_ gchar *updated = NULL;
 
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 
 		pkg = pk_alpm_find_pkg (job, *packages, &error);
@@ -243,7 +243,7 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 	for (; i != NULL; i = i->next) {
 		gint result;
 
-		if (pk_alpm_is_backend_cancelled (job)) {
+		if (pk_backend_job_is_cancelled (job)) {
 			/* pretend to be finished */
 			i = NULL;
 			break;
@@ -374,7 +374,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		alpm_pkg_t *upgrade = pk_alpm_pkg_find_update (i->data, syncdbs);
 		if (upgrade == NULL)
 			continue;
-		if (pk_alpm_is_backend_cancelled (job))
+		if (pk_backend_job_is_cancelled (job))
 			break;
 		if (pk_alpm_pkg_is_ignorepkg (upgrade)) {
 			info = PK_INFO_ENUM_BLOCKED;
