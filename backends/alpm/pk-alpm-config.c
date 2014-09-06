@@ -635,14 +635,14 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 
 	if (config->root == NULL || *config->root == '\0') {
 		g_free (config->root);
-		config->root = g_strdup (PK_BACKEND_DEFAULT_ROOT);
+		config->root = g_strdup ("/");
 	} else if (!g_str_has_suffix (config->root, G_DIR_SEPARATOR_S)) {
 		dir = 0;
 	}
 
 	if (config->dbpath == NULL) {
 		config->dbpath = g_strconcat (config->root,
-					      PK_BACKEND_DEFAULT_DBPATH + dir,
+					      "/var/lib/pacman/" + dir,
 					      NULL);
 	}
 
@@ -656,7 +656,7 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 
 	if (config->gpgdir == NULL) {
 		config->gpgdir = g_strconcat (config->root,
-					      PK_BACKEND_DEFAULT_GPGDIR + dir,
+					      "/etc/pacman.d/gnupg/" + dir,
 					      NULL);
 	}
 
@@ -669,7 +669,7 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 
 	if (config->logfile == NULL) {
 		config->logfile = g_strconcat (config->root,
-					       PK_BACKEND_DEFAULT_LOGFILE + dir,
+					       "/var/log/pacman.log" + dir,
 					       NULL);
 	}
 
@@ -682,7 +682,7 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 
 	if (config->cachedirs == NULL) {
 		gchar *path = g_strconcat (config->root,
-					   PK_BACKEND_DEFAULT_CACHEDIR + dir,
+					   "/var/cache/pacman/pkg/" + dir,
 					   NULL);
 		config->cachedirs = alpm_list_add (NULL, path);
 	}

@@ -355,7 +355,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	one_hour_ago -= 60 * 60;
 
 	/* refresh databases if they are older than an hour */
-	if (g_stat (ALPM_CACHE_PATH, &cache) < 0 ||
+	if (g_stat ("/var/lib/pacman/sync", &cache) < 0 ||
 	    cache.st_mtime < one_hour_ago) {
 		_cleanup_error_free_ GError *error = NULL;
 		/* show updates even if the databases could not be updated */
