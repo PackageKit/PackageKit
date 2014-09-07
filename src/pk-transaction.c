@@ -2797,6 +2797,12 @@ pk_transaction_cancel (PkTransaction *transaction,
 skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
+		_cleanup_free_ gchar *msg = NULL;
+		msg = g_strdup_printf ("%s was cancelled and was never run",
+				       transaction->priv->tid);
+		pk_transaction_error_code_emit (transaction,
+						PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						msg);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		pk_transaction_dbus_return (context, NULL);
 		goto out;
