@@ -243,7 +243,6 @@ gboolean
 pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 {
 	PkSchedulerItem *item;
-	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
@@ -275,8 +274,7 @@ pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 		g_source_remove (item->idle_id);
 		item->idle_id = 0;
 	}
-	ret = pk_scheduler_remove_internal (scheduler, item);
-	return ret;
+	return pk_scheduler_remove_internal (scheduler, item);
 }
 
 /**
