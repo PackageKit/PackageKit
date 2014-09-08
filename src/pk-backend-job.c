@@ -1643,7 +1643,7 @@ pk_backend_job_error_code (PkBackendJob *job,
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_NEED_UNTRUSTED);
 	else if (error_code == PK_ERROR_ENUM_CANCELLED_PRIORITY)
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_CANCELLED_PRIORITY);
-	else
+	else if (job->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_FAILED);
 
 	/* set the hint that RepairSystem is needed */
