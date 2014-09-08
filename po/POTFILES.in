@@ -3,9 +3,9 @@
 # Please keep this file sorted alphabetically.
 client/pk-console.c
 client/pk-monitor.c
+client/pk-offline-update.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c
-contrib/systemd-updates/pk-offline-update.c
 lib/packagekit-glib2/pk-console-shared.c
 lib/packagekit-glib2/pk-debug.c
 lib/packagekit-glib2/pk-enum.c

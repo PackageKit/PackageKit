@@ -19,7 +19,9 @@ servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
-systemdservice_in_files = packagekit.service.in
+systemdservice_in_files =				\
+	packagekit.service.in				\
+	packagekit-offline-update.service.in
 
 if PK_BUILD_SYSTEMD
 systemdservicedir       = $(systemdsystemunitdir)

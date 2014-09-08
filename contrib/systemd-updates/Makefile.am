@@ -10,7 +10,6 @@ AM_CPPFLAGS =						\
 
 libexec_PROGRAMS =					\
 	pk-clear-offline-update				\
-	pk-offline-update				\
 	pk-trigger-offline-update
 
 pk_trigger_offline_update_SOURCES =				\
@@ -26,36 +25,5 @@ pk_clear_offline_update_CFLAGS =				\
 	$(WARNINGFLAGS_C)
 pk_clear_offline_update_LDFLAGS =				\
 	$(PIE_LDFLAGS)
-
-PK_GLIB2_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
-
-pk_offline_update_SOURCES =				\
-	pk-offline-update.c
-
-pk_offline_update_LDADD =				\
-	$(GLIB_LIBS)					\
-	$(GIO_LIBS)					\
-	$(LIBSYSTEMD_JOURNAL_LIBS)			\
-	$(PK_GLIB2_LIBS)
-
-pk_offline_update_LDFLAGS =				\
-	$(PIE_LDFLAGS)
-
-pk_offline_update_CFLAGS =				\
-	$(WARNINGFLAGS_C)
-
-systemdservicedir = $(systemdsystemunitdir)
-systemdservice_in_files = packagekit-offline-update.service.in
-systemdservice_DATA = $(systemdservice_in_files:.service.in=.service)
-
-$(systemdservice_DATA): $(systemdservice_in_files) Makefile
-	@sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
-
-EXTRA_DIST = $(systemdservice_in_files)
-
-DISTCLEANFILES =					\
-	$(systemdservice_DATA)
 
 -include $(top_srcdir)/git.mk
