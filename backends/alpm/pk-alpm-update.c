@@ -61,36 +61,15 @@ pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
 	return g_string_free (string, FALSE);
 }
 
-static gchar *
+static gchar **
 pk_alpm_pkg_build_urls (alpm_pkg_t *pkg)
 {
-	GString *string = g_string_new ("");
-#ifdef ALPM_PACKAGE_URL
-	const gchar *name, *arch, *repo, *url;
-#else
-	const gchar *url;
-#endif
-
-	g_return_val_if_fail (pkg != NULL, NULL);
-
-	/* grab the URL of the package... */
-	url = alpm_pkg_get_url (pkg);
-	if (url != NULL) {
-		g_string_append_printf (string, "%s;Package website;", url);
-	}
-
-#ifdef ALPM_PACKAGE_URL
-	/* ... and construct the distro URL if possible */
-	name = alpm_pkg_get_name (pkg);
-	arch = alpm_pkg_get_arch (pkg);
-	repo = alpm_db_get_name (alpm_pkg_get_db (pkg));
-
-	g_string_append_printf (string, ALPM_PACKAGE_URL ";Distribution page;",
-				repo, arch, name);
-#endif
-
-	g_string_truncate (string, string->len - 1);
-	return g_string_free (string, FALSE);
+	gchar **urls = g_new0 (gchar *, 2);
+	urls[0] = g_strdup_printf ("http://www.archlinux.org/packages/%s/%s/%s/",
+				   alpm_db_get_name (alpm_pkg_get_db (pkg)),
+				   alpm_pkg_get_arch (pkg),
+				   alpm_pkg_get_name (pkg));
+	return urls;
 }
 
 static gboolean
@@ -159,7 +138,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		alpm_time_t built, installed;
 		_cleanup_free_ gchar *upgrades = NULL;
 		_cleanup_free_ gchar *replaces = NULL;
-		_cleanup_free_ gchar *urls = NULL;
+		_cleanup_strv_free_ gchar **urls = NULL;
 		_cleanup_free_ gchar *issued = NULL;
 		_cleanup_free_ gchar *updated = NULL;
 
@@ -203,7 +182,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		}
 
 		pk_backend_job_update_detail (job, *packages, &upgrades,
-					      &replaces, &urls, NULL, NULL,
+					      &replaces, urls, NULL, NULL,
 					      restart, reason, NULL, state,
 					      issued, updated);
 	}

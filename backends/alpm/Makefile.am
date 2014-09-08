@@ -4,13 +4,10 @@ PK_BACKEND_REPO_FILE = $(confdir)/repos.list
 
 PK_BACKEND_DEFAULT_PATH = "/bin:/usr/bin:/sbin:/usr/sbin"
 
-ALPM_PACKAGE_URL = "http://www.archlinux.org/packages/%s/%s/%s/"
-
 DEFS = -DPK_BACKEND_CONFIG_FILE=\"$(PK_BACKEND_CONFIG_FILE)\" \
        -DPK_BACKEND_GROUP_FILE=\"$(PK_BACKEND_GROUP_FILE)\" \
        -DPK_BACKEND_REPO_FILE=\"$(PK_BACKEND_REPO_FILE)\" \
        -DPK_BACKEND_DEFAULT_PATH=\"$(PK_BACKEND_DEFAULT_PATH)\" \
-       -DALPM_PACKAGE_URL=\"$(ALPM_PACKAGE_URL)\" \
        -DPK_LOG_PREFIX=\"PACKAGEKIT\" \
        -DG_LOG_DOMAIN=\"PackageKit-alpm\"
 
