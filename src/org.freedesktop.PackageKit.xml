@@ -528,7 +528,7 @@
           <doc:para>
             The action to take when finished applying updates, known values
             are <doc:tt>power-off</doc:tt>, <doc:tt>reboot</doc:tt> or
-            <doc:tt>unknown</doc:tt> if no offline update is scheduled.
+            <doc:tt>unset</doc:tt> if no offline update is scheduled.
           </doc:para>
         </doc:description>
       </doc:doc>
