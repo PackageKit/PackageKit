@@ -721,7 +721,7 @@ pk_test_offline_func (void)
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* invalidate the update set */
@@ -733,7 +733,7 @@ pk_test_offline_func (void)
 	g_assert (ret);
 	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* no results yet */
@@ -793,7 +793,7 @@ pk_test_offline_func (void)
 	g_assert (ret);
 	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* re-instate the results file with cached data */

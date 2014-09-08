@@ -77,6 +77,8 @@ gchar			**pk_offline_get_prepared_ids	(GError			**error);
 PkPackageSack		*pk_offline_get_prepared_sack	(GError			**error);
 GFileMonitor		*pk_offline_get_prepared_monitor(GCancellable		*cancellable,
 							 GError			**error);
+GFileMonitor		*pk_offline_get_action_monitor	(GCancellable		*cancellable,
+							 GError			**error);
 PkResults		*pk_offline_get_results		(GError			**error);
 guint64			 pk_offline_get_results_mtime	(GError			**error);
 gboolean		 pk_offline_cancel		(GCancellable		*cancellable,

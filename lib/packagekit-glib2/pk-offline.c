@@ -218,6 +218,8 @@ pk_offline_trigger (PkOfflineAction action, GCancellable *cancellable, GError **
  *
  * Gets the action that will be taken after the offline action has completed.
  *
+ * An error is set if the the value %PK_OFFLINE_ACTION_UNKNOWN is returned.
+ *
  * Return value: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
  *
  * Since: 0.9.6
@@ -353,6 +355,26 @@ pk_offline_get_prepared_monitor (GCancellable *cancellable, GError **error)
 	_cleanup_object_unref_ GFile *file = NULL;
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	file = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
+	return g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, error);
+}
+
+/**
+ * pk_offline_get_action_monitor:
+ * @cancellable: A #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Gets a file monitor for the trigger.
+ *
+ * Return value: (transfer full): A #GFileMonitor, or %NULL
+ *
+ * Since: 0.9.6
+ **/
+GFileMonitor *
+pk_offline_get_action_monitor (GCancellable *cancellable, GError **error)
+{
+	_cleanup_object_unref_ GFile *file = NULL;
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+	file = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
 	return g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, error);
 }
 

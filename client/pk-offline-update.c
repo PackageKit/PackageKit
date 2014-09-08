@@ -390,6 +390,10 @@ main (int argc, char *argv[])
 	/* always do this first to avoid a loop if this tool segfaults */
 	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
 
+	/* get the action, and then delete the file */
+	action = pk_offline_update_get_action ();
+	g_unlink (PK_OFFLINE_ACTION_FILENAME);
+
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
 				SIGINT,
@@ -458,7 +462,6 @@ out:
 		g_main_loop_run (loop);
 	}
 	/* we have to manually either restart or shutdown */
-	action = pk_offline_update_get_action ();
 	if (action == PK_OFFLINE_ACTION_REBOOT)
 		pk_offline_update_reboot ();
 	else if (action == PK_OFFLINE_ACTION_POWER_OFF)
