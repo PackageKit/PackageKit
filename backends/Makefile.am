@@ -28,10 +28,6 @@ if BACKEND_TYPE_KATJA
 SUBDIRS += katja
 endif
 
-if BACKEND_TYPE_SMART
-SUBDIRS += smart
-endif
-
 if BACKEND_TYPE_URPMI
 SUBDIRS += urpmi
 endif

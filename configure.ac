@@ -432,7 +432,6 @@ AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend])
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
 AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
 AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]),enable_katja=$enableval,enable_katja=no)
-AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
@@ -448,7 +447,6 @@ AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
@@ -602,7 +600,6 @@ backends/dummy/Makefile
 backends/entropy/Makefile
 backends/hif/Makefile
 backends/katja/Makefile
-backends/smart/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile
@@ -674,7 +671,6 @@ echo "
         Portage backend:           ${enable_portage}
         Ports backend:             ${enable_ports}
         Katja backend:             ${enable_katja}
-        SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         Zypp backend:              ${enable_zypp}
 "
