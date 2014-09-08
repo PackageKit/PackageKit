@@ -78,6 +78,7 @@ struct PkEnginePrivate
 	PkDbus			*dbus;
 	GFileMonitor		*monitor_conf;
 	GFileMonitor		*monitor_binary;
+	GFileMonitor		*monitor_offline;
 	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
@@ -215,6 +216,40 @@ pk_engine_emit_property_changed (PkEngine *engine,
 				       "PropertiesChanged",
 				       g_variant_new ("(sa{sv}as)",
 				       PK_DBUS_INTERFACE,
+				       &builder,
+				       &invalidated_builder),
+				       NULL);
+}
+
+/**
+ * pk_engine_emit_offline_property_changed:
+ **/
+static void
+pk_engine_emit_offline_property_changed (PkEngine *engine,
+					 const gchar *property_name,
+					 GVariant *property_value)
+{
+	GVariantBuilder builder;
+	GVariantBuilder invalidated_builder;
+
+	/* not yet connected */
+	if (engine->priv->connection == NULL)
+		return;
+
+	/* build the dict */
+	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+	g_variant_builder_add (&builder,
+			       "{sv}",
+			       property_name,
+			       property_value);
+	g_dbus_connection_emit_signal (engine->priv->connection,
+				       NULL,
+				       PK_DBUS_PATH,
+				       "org.freedesktop.DBus.Properties",
+				       "PropertiesChanged",
+				       g_variant_new ("(sa{sv}as)",
+				       PK_DBUS_INTERFACE_OFFLINE,
 				       &builder,
 				       &invalidated_builder),
 				       NULL);
@@ -803,6 +838,24 @@ pk_engine_binary_file_changed_cb (GFileMonitor *file_monitor,
 }
 
 /**
+ * pk_engine_offline_file_changed_cb:
+ **/
+static void
+pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
+				   GFile *file, GFile *other_file,
+				   GFileMonitorEvent event_type,
+				   PkEngine *engine)
+{
+	gboolean ret;
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	ret = g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS);
+	pk_engine_emit_offline_property_changed (engine,
+						 "UpdatePrepared",
+						 g_variant_new_boolean (ret));
+}
+
+/**
  * pk_engine_network_state_changed_cb:
  **/
 static void
@@ -860,6 +913,16 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 	}
 	g_signal_connect (engine->priv->monitor_conf, "changed",
 			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
+
+	/* set up the prepared update monitor */
+	engine->priv->monitor_offline = pk_offline_get_prepared_monitor (NULL, &error);
+	if (engine->priv->introspection == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   PK_OFFLINE_PREPARED_FILENAME, error->message);
+		return;
+	}
+	g_signal_connect (engine->priv->monitor_offline, "changed",
+			  G_CALLBACK (pk_engine_offline_file_changed_cb), engine);
 }
 
 /**
@@ -918,6 +981,13 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 	if (g_strcmp0 (property_name, "TriggerAction") == 0) {
 		PkOfflineAction action = pk_offline_get_action (NULL);
 		return g_variant_new_string (pk_offline_action_to_string (action));
+	}
+
+	/* stat the file */
+	if (g_strcmp0 (property_name, "UpdatePrepared") == 0) {
+		gboolean ret;
+		ret = g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS);
+		return g_variant_new_boolean (ret);
 	}
 
 	/* return an error */
@@ -1748,6 +1818,7 @@ pk_engine_finalize (GObject *object)
 	g_timer_destroy (engine->priv->timer);
 	g_object_unref (engine->priv->monitor_conf);
 	g_object_unref (engine->priv->monitor_binary);
+	g_object_unref (engine->priv->monitor_offline);
 	g_object_unref (engine->priv->scheduler);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);

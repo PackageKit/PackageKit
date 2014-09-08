@@ -511,6 +511,17 @@
     </doc:doc>
 
     <!--*********************************************************************-->
+    <property name="UpdatePrepared" type="b" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            If an update has been prepared and is ready to be triggered.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*********************************************************************-->
     <property name="TriggerAction" type="s" access="read">
       <doc:doc>
         <doc:description>

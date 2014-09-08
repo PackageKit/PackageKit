@@ -61,6 +61,13 @@ G_BEGIN_DECLS
 #define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
 /**
+ * PK_DBUS_INTERFACE_OFFLINE:
+ *
+ * The DBUS interface for the offline update functionality
+ */
+#define	PK_DBUS_INTERFACE_OFFLINE	"org.freedesktop.PackageKit.Offline"
+
+/**
  * PK_PACKAGE_LIST_FILENAME:
  *
  * The default location of the package list
