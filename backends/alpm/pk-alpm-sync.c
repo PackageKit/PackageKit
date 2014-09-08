@@ -203,6 +203,7 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 	gboolean only_trusted;
 	const alpm_list_t *i;
 	alpm_list_t *asdeps = NULL;
+	alpm_transflag_t alpm_flags = 0;
 	const gchar** package_ids;
 	_cleanup_error_free_ GError *error = NULL;
 
@@ -212,7 +213,11 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
-	if (!pk_alpm_transaction_initialize (job, 0, NULL, &error) ||
+	/* only download packages */
+	if (flags & PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)
+		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
+
+	if (!pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error) ||
 	    !pk_alpm_transaction_sync_targets (job, package_ids, &error) ||
 	    !pk_alpm_transaction_simulate (job, &error)) {
 		goto out;
