@@ -387,12 +387,12 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* always do this first to avoid a loop if this tool segfaults */
-	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
-
 	/* get the action, and then delete the file */
 	action = pk_offline_update_get_action ();
 	g_unlink (PK_OFFLINE_ACTION_FILENAME);
+
+	/* always do this first to avoid a loop if this tool segfaults */
+	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
 
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,

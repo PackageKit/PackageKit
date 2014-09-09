@@ -233,6 +233,16 @@ pk_offline_get_action (GError **error)
 
 	g_return_val_if_fail (error == NULL || *error == NULL, PK_OFFLINE_ACTION_UNKNOWN);
 
+	/* we can't have an action if we're not triggered */
+	if (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_NO_DATA,
+			     "%s does not exist",
+			     PK_OFFLINE_TRIGGER_FILENAME);
+		return PK_OFFLINE_ACTION_UNKNOWN;
+	}
+
 	/* read data file */
 	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME,
 				  &action_data, NULL, &error_local)) {

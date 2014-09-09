@@ -653,19 +653,6 @@ pk_test_offline_func (void)
 	g_clear_error (&error);
 	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_UNKNOWN);
 
-	/* test actions */
-	ret = pk_offline_auth_set_action (PK_OFFLINE_ACTION_REBOOT, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	action = pk_offline_get_action (&error);
-	g_assert_no_error (error);
-	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
-	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_assert_cmpstr (tmp, ==, "reboot");
-	g_free (tmp);
-
 	/* try to trigger without the fake updates set */
 	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
 	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
@@ -673,7 +660,7 @@ pk_test_offline_func (void)
 	g_assert (!ret);
 	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* get empty sack */
@@ -714,6 +701,16 @@ pk_test_offline_func (void)
 	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* test actions */
+	action = pk_offline_get_action (&error);
+	g_assert_no_error (error);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
+	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, "reboot");
+	g_free (tmp);
 
 	/* cancel the trigger */
 	ret = pk_offline_auth_cancel (&error);
