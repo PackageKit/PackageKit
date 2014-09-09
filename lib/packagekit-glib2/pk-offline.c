@@ -504,7 +504,7 @@ pk_offline_get_results (GError **error)
 	if (data != NULL) {
 		package_ids = g_strsplit (data, ",", -1);
 		for (i = 0; package_ids[i] != NULL; i++) {
-			_cleanup_object_unref_ PkPackage *pkg;
+			_cleanup_object_unref_ PkPackage *pkg = NULL;
 			pkg = pk_package_new ();
 			pk_package_set_info (pkg, PK_INFO_ENUM_UPDATING);
 			if (!pk_package_set_id (pkg, package_ids[i], error))

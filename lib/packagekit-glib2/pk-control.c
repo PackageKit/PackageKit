@@ -398,7 +398,7 @@ pk_control_proxy_connect (PkControlState *state)
 	/* coldplug properties */
 	props = g_dbus_proxy_get_cached_property_names (state->proxy);
 	for (i = 0; props != NULL && props[i] != NULL; i++) {
-		_cleanup_variant_unref_ GVariant *value_tmp;
+		_cleanup_variant_unref_ GVariant *value_tmp = NULL;
 		value_tmp = g_dbus_proxy_get_cached_property (state->proxy, props[i]);
 		pk_control_set_property_value (state->control,
 					       props[i],
@@ -466,7 +466,7 @@ pk_control_get_tid_cb (GObject *source_object,
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkControlState *state = (PkControlState *) user_data;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -666,7 +666,7 @@ pk_control_suggest_daemon_quit_cb (GObject *source_object,
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkControlState *state = (PkControlState *) user_data;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value;
+	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);

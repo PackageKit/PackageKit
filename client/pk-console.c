@@ -211,7 +211,7 @@ pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 	}
 	for (i = 0; i < lines_len; i++) {
 		_cleanup_free_ gchar *package = NULL;
-		_cleanup_strv_free_ gchar **parts;
+		_cleanup_strv_free_ gchar **parts = NULL;
 		parts = g_strsplit (lines[i], "\t", 3);
 		package = pk_package_id_to_printable (parts[1]);
 		g_print (" - %s %s\n", parts[0], package);
@@ -1105,7 +1105,7 @@ static gboolean
 pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *directory, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1137,7 +1137,7 @@ static gboolean
 pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
@@ -1170,7 +1170,7 @@ static gboolean
 pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 {
 	_cleanup_object_unref_ PkPackageSack *sack = NULL;
-	_cleanup_object_unref_ PkResults *results;
+	_cleanup_object_unref_ PkResults *results = NULL;
 	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	/* get the current updates */
@@ -1208,7 +1208,7 @@ static gboolean
 pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
@@ -1241,7 +1241,7 @@ static gboolean
 pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1273,7 +1273,7 @@ static gboolean
 pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1331,7 +1331,7 @@ static gboolean
 pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
@@ -1361,7 +1361,7 @@ static gboolean
 pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_strv_free_ gchar **package_ids;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);

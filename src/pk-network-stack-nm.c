@@ -156,7 +156,7 @@ pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 	NMDeviceType type_tmp;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusProxy *proxy;
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
 	_cleanup_variant_iter_free_ GVariantIter *iter = NULL;
 	_cleanup_variant_unref_ GVariant *value = NULL;
 

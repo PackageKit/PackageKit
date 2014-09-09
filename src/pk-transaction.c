@@ -965,7 +965,7 @@ pk_transaction_offline_invalidate_check (PkTransaction *transaction)
 	gchar **package_ids;
 	guint i;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkPackageSack *sack;
+	_cleanup_object_unref_ PkPackageSack *sack = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *invalidated = NULL;
 
 	/* get the existing prepared updates */

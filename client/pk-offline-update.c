@@ -177,7 +177,7 @@ static void
 pk_offline_update_reboot (void)
 {
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusConnection *connection;
+	_cleanup_object_unref_ GDBusConnection *connection = NULL;
 	_cleanup_variant_unref_ GVariant *val = NULL;
 
 	/* reboot using systemd */

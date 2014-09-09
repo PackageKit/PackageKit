@@ -347,7 +347,7 @@ static gchar *
 pk_client_get_user_temp (const gchar *subfolder, GError **error)
 {
 	gchar *path = NULL;
-	_cleanup_object_unref_ GFile *file;
+	_cleanup_object_unref_ GFile *file = NULL;
 
 	/* build path in home folder */
 	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);

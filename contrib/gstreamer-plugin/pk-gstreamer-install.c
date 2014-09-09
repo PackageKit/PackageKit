@@ -156,7 +156,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 	GString *string;
 	guint i, num_fields;
 	GList *l;
-	_cleanup_list_free_ GList *fields;
+	_cleanup_list_free_ GList *fields = NULL;
 
 	num_fields = gst_structure_n_fields (s);
 	fields = NULL;
@@ -351,7 +351,7 @@ main (int argc, gchar **argv)
 
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
-			_cleanup_free_ gchar *s;
+			_cleanup_free_ gchar *s = NULL;
 			s = pk_gst_structure_to_provide (info->structure);
 			type = g_strdup_printf ("gstreamer%s(%s-%s)%s%s",
 						gstreamer_version,
