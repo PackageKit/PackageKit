@@ -161,6 +161,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *cache_dir = NULL;
 	_cleanup_free_ gchar *destdir = NULL;
+	_cleanup_free_ gchar *lock_dir = NULL;
 	_cleanup_free_ gchar *repo_dir = NULL;
 	_cleanup_free_ gchar *solv_dir = NULL;
 
@@ -205,12 +206,15 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
 	if (destdir == NULL)
 		destdir = g_strdup ("/");
+	hif_context_set_install_root (priv->context, destdir);
 	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit/metadata", NULL);
 	hif_context_set_cache_dir (priv->context, cache_dir);
 	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit/hawkey", NULL);
 	hif_context_set_solv_dir (priv->context, solv_dir);
 	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
 	hif_context_set_repo_dir (priv->context, repo_dir);
+	lock_dir = g_build_filename (destdir, "/var/run", NULL);
+	hif_context_set_lock_dir (priv->context, lock_dir);
 	hif_context_set_rpm_verbosity (priv->context, "info");
 	ret = hif_context_setup (priv->context, NULL, &error);
 	if (!ret)
