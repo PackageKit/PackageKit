@@ -35,6 +35,7 @@
 
 #include <hawkey/advisory.h>
 #include <hawkey/advisoryref.h>
+#include <hawkey/errno.h>
 #include <hawkey/packagelist.h>
 #include <hawkey/packageset.h>
 #include <hawkey/query.h>
@@ -478,6 +479,30 @@ hif_utils_create_cache_key (HifSackAddFlags flags)
 }
 
 /**
+ * hif_utils_real_path:
+ *
+ * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
+ **/
+static gchar *
+hif_utils_real_path (const gchar *path)
+{
+	gchar *real = NULL;
+	char *temp;
+
+	/* don't trust realpath one little bit */
+	if (path == NULL)
+		return NULL;
+
+	/* glibc allocates us a buffer to try and fix some brain damage */
+	temp = realpath (path, NULL);
+	if (temp == NULL)
+		return NULL;
+	real = g_strdup (temp);
+	free (temp);
+	return real;
+}
+
+/**
  * hif_utils_create_sack_for_filters:
  */
 static HySack
@@ -487,7 +512,6 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 				   HifState *state,
 				   GError **error)
 {
-	const gchar *cachedir = "/var/cache/PackageKit/hif";
 	gboolean ret;
 	gint rc;
 	HifSackAddFlags flags = HIF_SACK_ADD_FLAG_FILELISTS;
@@ -497,6 +521,8 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	_cleanup_free_ gchar *cache_key = NULL;
+	_cleanup_free_ gchar *install_root = NULL;
+	_cleanup_free_ gchar *solv_dir = NULL;
 
 	/* don't add if we're going to filter out anyway */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
@@ -555,13 +581,14 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* create empty sack */
-	sack = hy_sack_create (cachedir, NULL, NULL, HY_MAKE_CACHE_DIR);
+	solv_dir = hif_utils_real_path (hif_context_get_solv_dir (priv->context));
+	install_root = hif_utils_real_path (hif_context_get_install_root (priv->context));
+	sack = hy_sack_create (solv_dir, NULL, install_root, HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
-		ret = FALSE;
-		g_set_error (error,
-			     HIF_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     "failed to create sack cache");
+		ret = hif_rc_to_gerror (hy_get_errno (), error);
+		g_prefix_error (error, "failed to create sack in %s for %s: ",
+				hif_context_get_solv_dir (priv->context),
+				hif_context_get_install_root (priv->context));
 		goto out;
 	}
 
