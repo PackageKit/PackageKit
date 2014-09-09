@@ -29,4 +29,8 @@ bashcompletiondir = $(BASH_COMPLETIONS_DIR)
 dist_bashcompletion_DATA = pkcon
 endif
 
+EXTRA_DIST = generate-md-archive.sh
+
+CLEANFILES = cached-metadata.tar
+
 -include $(top_srcdir)/git.mk

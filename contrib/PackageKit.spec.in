@@ -10,6 +10,9 @@ License:   GPLv2+ and LGPLv2+
 URL:       http://www.freedesktop.org/software/PackageKit/
 Source0:   http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
 
+# generated using contrib/generate-md-archive.sh in the PackageKit source tree
+Source1:   cached-metadata.tar
+
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: shared-mime-info
 Requires: comps-extras
@@ -91,6 +94,15 @@ Provides: PackageKit-libs = %{version}-%{release}
 
 %description glib
 GLib libraries for accessing PackageKit.
+
+%package cached-metadata
+Summary: Cached metadata for PackageKit
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description cached-metadata
+Cached metadata allows application installers to start instantly on the
+LiveCD or installed system without downloading files from the internet or
+regenerating the SAT caches. It can safely removed if not required.
 
 %package cron
 Summary: Cron job and related utilities for PackageKit
@@ -208,6 +220,10 @@ pushd ${RPM_BUILD_ROOT}%{_datadir}/PackageKit > /dev/null
 ln -s ../pixmaps/comps icons
 popd > /dev/null
 
+# ship cached metadata on the LiveCD
+# http://blogs.gnome.org/hughsie/2014/08/29/putting-packagekit-metadata-on-the-fedora-livecd/
+tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
+
 %find_lang %name
 
 %post
@@ -269,6 +285,12 @@ popd > /dev/null
 %if 0%{?rhel} == 0
 %{_libdir}/packagekit-backend/libpk_backend_hif.so
 %endif
+
+%files cached-metadata
+%defattr(-,root,root,-)
+%{_datadir}/PackageKit/hawkey
+%{_datadir}/PackageKit/hawkey/*
+%{_datadir}/PackageKit/metadata/*
 
 %files glib
 %defattr(-,root,root,-)
