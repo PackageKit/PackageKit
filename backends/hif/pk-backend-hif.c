@@ -152,6 +152,27 @@ pk_backend_context_invaliate_cb (HifContext *context,
 }
 
 /**
+ * pk_backend_copy_recursive:
+ */
+static gboolean
+pk_backend_copy_recursive (const gchar *src, const gchar *dest, GError **error)
+{
+	gint rc;
+	_cleanup_free_ gchar *cmd = NULL;
+
+	rc = g_mkdir_with_parents (dest, 0700);
+	if (rc < 0) {
+		g_set_error (error,
+			     HIF_ERROR,
+			     HIF_ERROR_FAILED,
+			     "failed to create %s", dest);
+		return FALSE;
+	}
+	cmd = g_strdup_printf ("cp --recursive %s %s", src, dest);
+	return g_spawn_command_line_sync (cmd, NULL, NULL, NULL, error);
+}
+
+/**
  * pk_backend_initialize:
  */
 void
@@ -160,10 +181,13 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	gboolean ret;
 	PkBackendHifPrivate *priv;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *cache_dir_fb = NULL;
 	_cleanup_free_ gchar *cache_dir = NULL;
+	_cleanup_free_ gchar *cache_root = NULL;
 	_cleanup_free_ gchar *destdir = NULL;
 	_cleanup_free_ gchar *lock_dir = NULL;
 	_cleanup_free_ gchar *repo_dir = NULL;
+	_cleanup_free_ gchar *solv_dir_fb = NULL;
 	_cleanup_free_ gchar *solv_dir = NULL;
 
 	/* use logging */
@@ -217,6 +241,25 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	lock_dir = g_build_filename (destdir, "/var/run", NULL);
 	hif_context_set_lock_dir (priv->context, lock_dir);
 	hif_context_set_rpm_verbosity (priv->context, "info");
+
+	/* if our cachedir is empty, copy over some default metadata */
+	cache_root = g_build_filename (destdir, "/var/cache/PackageKit", NULL);
+	cache_dir_fb = g_build_filename (destdir, "/usr/share/PackageKit/metadata", NULL);
+	if (g_file_test (cache_dir_fb, G_FILE_TEST_EXISTS) &&
+	    !g_file_test (cache_dir, G_FILE_TEST_EXISTS)) {
+		g_debug ("copying %s to %s", cache_dir_fb, cache_root);
+		if (!pk_backend_copy_recursive (cache_dir_fb, cache_root, &error))
+			g_error ("Failed to copy metadata cache: %s", error->message);
+	}
+	solv_dir_fb = g_build_filename (destdir, "/usr/share/PackageKit/hawkey", NULL);
+	if (g_file_test (solv_dir_fb, G_FILE_TEST_EXISTS) &&
+	    !g_file_test (solv_dir, G_FILE_TEST_EXISTS)) {
+		g_debug ("copying %s to %s", solv_dir_fb, cache_root);
+		if (!pk_backend_copy_recursive (solv_dir_fb, cache_root, &error))
+			g_error ("Failed to copy hawkey cache: %s", error->message);
+	}
+
+	/* set up context */
 	ret = hif_context_setup (priv->context, NULL, &error);
 	if (!ret)
 		g_error ("failed to setup context: %s", error->message);
