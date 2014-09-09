@@ -365,7 +365,7 @@ pk_offline_update_get_action (void)
 int
 main (int argc, char *argv[])
 {
-	PkOfflineAction action;
+	PkOfflineAction action = PK_OFFLINE_ACTION_UNKNOWN;
 	gint retval;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
