@@ -26,6 +26,9 @@
 #include <pk-backend.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <utime.h>
+#include <errno.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-alpm-error.h"
@@ -198,13 +201,96 @@ pk_backend_get_update_detail (PkBackend * self,
 	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_update_detail_thread, package_ids);
 }
 
+static gchar *
+pk_alpm_update_get_db_timestamp_filename (alpm_db_t *db)
+{
+	return g_strconcat ("/var/cache/PackageKit/alpm/",
+			    alpm_db_get_name (db),
+			    ".db.timestamp",
+			    NULL);
+}
+
 static gboolean
-pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
+pk_alpm_update_is_db_fresh (PkBackendJob *job, alpm_db_t *db)
+{
+	guint cache_age;
+	GStatBuf stat_buffer;
+	_cleanup_free_ gchar *timestamp_filename = NULL;
+
+	cache_age = pk_backend_job_get_cache_age (job);
+
+	timestamp_filename = pk_alpm_update_get_db_timestamp_filename (db);
+
+	if (cache_age < 0 || cache_age >= G_MAXUINT)
+		return FALSE;
+
+	if (g_stat (timestamp_filename, &stat_buffer) < 0)
+		return FALSE;
+
+	return stat_buffer.st_mtime >= (time (NULL) - cache_age);
+}
+
+static gboolean
+pk_alpm_update_set_db_timestamp (alpm_db_t *db, GError **error)
+{
+	_cleanup_free_ gchar *timestamp_filename = NULL;
+	struct utimbuf times;
+
+	timestamp_filename = pk_alpm_update_get_db_timestamp_filename (db);
+
+	times.actime = time (NULL);
+	times.modtime = time (NULL);
+
+	if (g_mkdir_with_parents ("/var/cache/PackageKit/alpm/", 0755) < 0) {
+		g_set_error_literal (error, PK_ALPM_ERROR, errno, strerror(errno));
+		return FALSE;
+	}
+
+	if (!g_file_set_contents (timestamp_filename, "", 0, error)) {
+		return FALSE;
+	}
+
+	if (g_utime (timestamp_filename, &times) < 0) {
+		g_set_error_literal (error, PK_ALPM_ERROR, errno, strerror(errno));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+pk_alpm_update_database (PkBackendJob *job, gint force, alpm_db_t *db, GError **error)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_cb_download dlcb;
+	gint result;
+
+	dlcb = alpm_option_get_dlcb (priv->alpm);
+
+	if (pk_alpm_update_is_db_fresh (job, db))
+		return TRUE;
+
+	result = alpm_db_update (force, db);
+	if (result > 0) {
+		dlcb ("", 1, 1);
+	} else if (result < 0) {
+		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "[%s]: %s",
+				alpm_db_get_name (db),
+				alpm_strerror (errno));
+		return FALSE;
+	}
+
+	return pk_alpm_update_set_db_timestamp (db, error);
+}
+
+static gboolean
+pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
+{
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_cb_totaldl totaldlcb;
+	gboolean ret;
 	const alpm_list_t *i;
 
 	if (!pk_alpm_transaction_initialize (job, 0, NULL, error))
@@ -213,7 +299,6 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 	alpm_logaction (priv->alpm, PK_LOG_PREFIX, "synchronizing package lists\n");
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
-	dlcb = alpm_option_get_dlcb (priv->alpm);
 	totaldlcb = alpm_option_get_totaldlcb (priv->alpm);
 
 	/* set total size to minus the number of databases */
@@ -221,24 +306,14 @@ pk_backend_update_databases (PkBackendJob *job, gint force, GError **error)
 	totaldlcb (-alpm_list_count (i));
 
 	for (; i != NULL; i = i->next) {
-		gint result;
-
 		if (pk_backend_job_is_cancelled (job)) {
 			/* pretend to be finished */
 			i = NULL;
 			break;
 		}
 
-		result = alpm_db_update (force, i->data);
-
-		if (result > 0) {
-			/* fake the download when already up to date */
-			dlcb ("", 1, 1);
-		} else if (result < 0) {
-			alpm_errno_t errno = alpm_errno (priv->alpm);
-			g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s",
-				     alpm_db_get_name (i->data),
-				     alpm_strerror (errno));
+		ret = pk_alpm_update_database (job, force, i->data, error);
+		if (!ret) {
 			break;
 		}
 	}
@@ -326,22 +401,11 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	struct stat cache;
-	time_t one_hour_ago;
 	const alpm_list_t *i, *syncdbs;
+	_cleanup_error_free_ GError *error = NULL;
 
-	time (&one_hour_ago);
-	one_hour_ago -= 60 * 60;
-
-	/* refresh databases if they are older than an hour */
-	if (g_stat ("/var/lib/pacman/sync", &cache) < 0 ||
-	    cache.st_mtime < one_hour_ago) {
-		_cleanup_error_free_ GError *error = NULL;
-		/* show updates even if the databases could not be updated */
-		if (!pk_backend_update_databases (job, 0, &error))
-			g_warning ("%s", error->message);
-	} else {
-		g_debug ("databases have been refreshed recently");
+	if (!pk_alpm_update_databases (job, 0, &error)) {
+		return pk_alpm_error_emit (job, error);
 	}
 
 	/* find outdated and replacement packages */
@@ -381,7 +445,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p
 	/* download databases even if they are older than current */
 	g_variant_get (params, "(b)", &force);
 
-	pk_backend_update_databases (job, force, &error);
+	pk_alpm_update_databases (job, force, &error);
 	pk_alpm_finish (job, error);
 }
 
