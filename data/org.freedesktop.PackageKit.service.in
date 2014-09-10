@@ -1,6 +1,6 @@
 [D-BUS Service]
 Name=org.freedesktop.PackageKit
-Exec=@servicedir@/packagekitd
+Exec=@libexecdir@/packagekitd
 User=@PACKAGEKIT_USER@
 SystemdService=packagekit.service
 

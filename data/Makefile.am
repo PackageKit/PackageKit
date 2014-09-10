@@ -13,11 +13,13 @@ dbusdir = ${DBUS_SYS_DIR}
 dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf
 
+%.service: %.service.in Makefile
+	$(AM_V_GEN)sed -e 's|\@libexecdir\@|$(libexecdir)|' \
+	               -e 's|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|' $< > $@.tmp && mv $@.tmp $@
+
 servicemaindir       = $(DBUS_SERVICES_DIR)
 servicemain_in_files = org.freedesktop.PackageKit.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
-$(servicemain_DATA): $(servicemain_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
 systemdservice_in_files =				\
 	packagekit.service.in				\
@@ -26,8 +28,6 @@ systemdservice_in_files =				\
 if PK_BUILD_SYSTEMD
 systemdservicedir       = $(systemdsystemunitdir)
 systemdservice_DATA     = $(systemdservice_in_files:.service.in=.service)
-$(systemdservice_DATA): $(systemdservice_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@.tmp && mv $@.tmp $@
 endif
 
 

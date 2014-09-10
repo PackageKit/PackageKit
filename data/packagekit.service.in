@@ -5,4 +5,4 @@ Description=PackageKit Daemon
 Type=dbus
 BusName=org.freedesktop.PackageKit
 User=@PACKAGEKIT_USER@
-ExecStart=@servicedir@/packagekitd
+ExecStart=@libexecdir@/packagekitd
