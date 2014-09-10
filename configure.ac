@@ -244,7 +244,7 @@ AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and log
 	      enable_systemd=$enableval,enable_systemd=yes)
 AM_CONDITIONAL(PK_BUILD_SYSTEMD, test x$enable_systemd = xyes)
 if test x$enable_systemd = xyes; then
-	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login)
+	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login libsystemd-journal)
 	AC_ARG_WITH([systemdsystemunitdir],
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 		    [],
@@ -401,17 +401,6 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(cron, AS_HELP_STRING([--enable-cron],[Build cron background functionality]),
 	      build_cron=$enableval,build_cron=yes)
 AM_CONDITIONAL(PK_BUILD_CRON, test $build_cron = "yes")
-
-dnl ---------------------------------------------------------------------------
-dnl - Able to use systemd updates functionality
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(systemd-updates, AS_HELP_STRING([--enable-systemd-updates],[Build systemd updates functionality]),
-	      build_systemd_updates=$enableval,build_systemd_updates=yes)
-AM_CONDITIONAL(PK_BUILD_SYSTEMD_UPDATES, test $build_systemd_updates = "yes")
-if test x$build_systemd_updates = xyes; then
-	PKG_CHECK_MODULES(LIBSYSTEMD_JOURNAL, libsystemd-journal)
-	AC_DEFINE(PK_HAS_OFFLINE_UPDATES,1,[Has offline updates])
-fi
 
 # don't do daemon checks when running make distcheck
 AC_ARG_ENABLE(daemon-tests, AS_HELP_STRING([--enable-daemon-tests],

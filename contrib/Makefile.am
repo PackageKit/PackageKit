@@ -20,7 +20,7 @@ if PK_BUILD_CRON
 SUBDIRS += cron
 endif
 
-if PK_BUILD_SYSTEMD_UPDATES
+if HAVE_SYSTEMD
 SUBDIRS += systemd-updates
 endif
 

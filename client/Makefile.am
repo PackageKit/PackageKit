@@ -82,7 +82,7 @@ pkmon_LDFLAGS =						\
 pkmon_CFLAGS =						\
 	$(WARNINGFLAGS_C)
 
-if PK_BUILD_SYSTEMD_UPDATES
+if HAVE_SYSTEMD
 
 libexec_PROGRAMS =					\
 	pk-offline-update
@@ -93,7 +93,7 @@ pk_offline_update_SOURCES =				\
 pk_offline_update_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(GIO_LIBS)					\
-	$(LIBSYSTEMD_JOURNAL_LIBS)			\
+	$(SYSTEMD_LIBS)					\
 	$(PK_GLIB2_LIBS)
 
 pk_offline_update_LDFLAGS =				\
