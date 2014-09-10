@@ -318,7 +318,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
 	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
 if test x$enable_browser_plugin = xyes; then
-	PKG_CHECK_EXISTS([npapi-sdk], mozilla_plugin=npapi-sdk, mozilla_plugin=moilla-plugin) 
+	PKG_CHECK_EXISTS([npapi-sdk], mozilla_plugin=npapi-sdk, mozilla_plugin=mozilla-plugin)
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
 			  $mozilla_plugin	\
 			  gio-unix-2.0		\
