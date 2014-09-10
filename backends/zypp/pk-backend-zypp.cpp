@@ -1021,6 +1021,19 @@ zypp_package_is_devel (const sat::Solvable &item)
 		 g_str_has_suffix (cstr, "-devel") );
 }
 
+static gboolean
+zypp_package_provides_application (const sat::Solvable &item)
+{
+	Capabilities provides = item.provides();
+	for_(capit, provides.begin(), provides.end())
+	{
+		if (g_str_has_prefix (((Capability) *capit).c_str(), "application("))
+			return TRUE;
+	}
+	return FALSE;
+
+}
+
 /**
  * should we omit a solvable from a result because of filtering ?
  */
@@ -1056,6 +1069,11 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 		if (i == PK_FILTER_ENUM_DEVELOPMENT && !zypp_package_is_devel (item))
 			return TRUE;
 		if (i == PK_FILTER_ENUM_NOT_DEVELOPMENT && zypp_package_is_devel (item))
+			return TRUE;
+
+		if (i == PK_FILTER_ENUM_APPLICATION && !zypp_package_provides_application (item))
+			return TRUE;
+		if (i == PK_FILTER_ENUM_NOT_APPLICATION && zypp_package_provides_application (item))
 			return TRUE;
 
 		// FIXME: add more enums - cf. libzif logic and pk-enum.h
@@ -1807,6 +1825,7 @@ pk_backend_get_filters (PkBackend *backend)
 				       PK_FILTER_ENUM_ARCH,
 				       PK_FILTER_ENUM_NEWEST,
 				       PK_FILTER_ENUM_SOURCE,
+				       PK_FILTER_ENUM_APPLICATION,
 				       -1);
 }
 
