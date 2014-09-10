@@ -60,9 +60,6 @@ Remember:
 * Never allocate a buffer on user input
 * Output from backends is trusted, they are run from standard locations
 
-Use 'make security-check' to find obvious security problems.
-Use "ITS4: ignore" if you are totally 100% sure that it's not a problem.
-
 Submitting Patches
 ------------------
 Use 'git format-patch' to generate patches against a checked out copy
