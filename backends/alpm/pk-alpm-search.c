@@ -264,9 +264,27 @@ pk_alpm_pkg_is_local (PkBackendJob *job, alpm_pkg_t *pkg)
 	return TRUE;
 }
 
+static gboolean
+pk_alpm_search_is_application (alpm_pkg_t *pkg) {
+	guint i;
+	alpm_filelist_t *filelist;
+	GRegex _cleanup_regex_unref_ *regex = NULL;
+
+	filelist = alpm_pkg_get_files (pkg);
+	regex = g_regex_new ("^usr/share/applications/.*\\.desktop$", 0, 0, NULL);
+
+	for (i = 0; i < filelist->count; i++) {
+		const alpm_file_t *file = filelist->files + i;
+		if (g_regex_match (regex, file->name, 0, NULL)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 static void
 pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
-		      const alpm_list_t *patterns)
+		      const alpm_list_t *patterns, PkBitfield filters)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -285,15 +303,22 @@ pk_backend_search_db (PkBackendJob *job, alpm_db_t *db, MatchFunc match,
 				break;
 		}
 
-		/* all search terms matched */
-		if (j == NULL) {
-			if (db == priv->localdb) {
-				pk_alpm_pkg_emit (job, i->data,
-						PK_INFO_ENUM_INSTALLED);
-			} else if (!pk_alpm_pkg_is_local (job, i->data)) {
-				pk_alpm_pkg_emit (job, i->data,
-						PK_INFO_ENUM_AVAILABLE);
-			}
+		/* not all search terms matched */
+		if (j != NULL)
+			continue;
+
+		/* want applications */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_APPLICATION) && !pk_alpm_search_is_application (i->data))
+			continue;
+
+		/* don't want applications */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_APPLICATION) && pk_alpm_search_is_application (i->data))
+			continue;
+
+		if (db == priv->localdb) {
+			pk_alpm_pkg_emit (job, i->data, PK_INFO_ENUM_INSTALLED);
+		} else if (!pk_alpm_pkg_is_local (job, i->data)) {
+			pk_alpm_pkg_emit (job, i->data, PK_INFO_ENUM_AVAILABLE);
 		}
 	}
 }
@@ -384,7 +409,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 
 	/* find installed packages first */
 	if (!skip_local)
-		pk_backend_search_db (job, priv->localdb, match_func, patterns);
+		pk_backend_search_db (job, priv->localdb, match_func, patterns, filters);
 
 	if (skip_remote)
 		goto out;
@@ -393,7 +418,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		if (pk_backend_job_is_cancelled (job))
 			break;
 
-		pk_backend_search_db (job, i->data, match_func, patterns);
+		pk_backend_search_db (job, i->data, match_func, patterns, filters);
 	}
 out:
 	if (pattern_free != NULL)
