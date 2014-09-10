@@ -1676,7 +1676,7 @@ pk_backend_get_author (PkBackend *backend)
 {
 	return g_strdup ("Boyd Timothy <btimothy@gmail.com>, "
 			 "Scott Reeves <sreeves@novell.com>, "
-			 "Stefan Haas <shaas@suse.de>"
+			 "Stefan Haas <shaas@suse.de>, "
 			 "ZYpp developers <zypp-devel@opensuse.org>");
 }
 
