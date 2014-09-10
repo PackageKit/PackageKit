@@ -1034,6 +1034,18 @@ zypp_package_provides_application (const sat::Solvable &item)
 
 }
 
+static gboolean
+zypp_package_is_cached (const sat::Solvable &item)
+{
+	if ( isKind<Package>( item ) )
+	{
+		Package::Ptr pkg( make<Package>( item ) );
+		return pkg->isCached();
+	}
+	return FALSE;
+}
+
+
 /**
  * should we omit a solvable from a result because of filtering ?
  */
@@ -1074,6 +1086,11 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 		if (i == PK_FILTER_ENUM_APPLICATION && !zypp_package_provides_application (item))
 			return TRUE;
 		if (i == PK_FILTER_ENUM_NOT_APPLICATION && zypp_package_provides_application (item))
+			return TRUE;
+
+		if (i == PK_FILTER_ENUM_DOWNLOADED && !zypp_package_is_cached (item))
+			return TRUE;
+		if (i == PK_FILTER_ENUM_NOT_DOWNLOADED && zypp_package_is_cached (item))
 			return TRUE;
 
 		// FIXME: add more enums - cf. libzif logic and pk-enum.h
@@ -1826,6 +1843,7 @@ pk_backend_get_filters (PkBackend *backend)
 				       PK_FILTER_ENUM_NEWEST,
 				       PK_FILTER_ENUM_SOURCE,
 				       PK_FILTER_ENUM_APPLICATION,
+				       PK_FILTER_ENUM_DOWNLOADED,
 				       -1);
 }
 
