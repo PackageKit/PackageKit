@@ -746,30 +746,6 @@ zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 }
 
 /**
-* check and warns the user that a repository may be outdated
-*/
-void
-warn_outdated_repos(PkBackendJob *job, const ResPool & pool)
-{
-	Repository repoobj;
-	ResPool::repository_iterator it;
-	for ( it = pool.knownRepositoriesBegin();
-		it != pool.knownRepositoriesEnd();
-		++it )
-	{
-		Repository repo(*it);
-		if ( repo.maybeOutdated() )
-		{
-			// warn the user
-			pk_backend_job_message (job,
-					PK_MESSAGE_ENUM_BROKEN_MIRROR,
-					str::form("The repository %s seems to be outdated. You may want to try another mirror.",
-					repo.alias().c_str()).c_str() );
-		}
-	}
-}
-
-/**
   * Return the rpmHeader of a package
   */
 target::rpm::RpmHeader::constPtr
@@ -1610,7 +1586,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		pk_backend_job_set_percentage (job, i >= num_of_repos ? 100 : (100 * i) / num_of_repos);
 	}
 	if (repo_messages != NULL)
-		pk_backend_job_message (job, PK_MESSAGE_ENUM_CONNECTION_REFUSED, repo_messages);
+		g_printf(repo_messages);
 
 	g_free (repo_messages);
 	return TRUE;
@@ -2031,6 +2007,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 			pk_backend_job_details (job,
 				package_ids[i],				// package_id
+				(pkg ? pkg->summary().c_str() : "" ),   // Package summary
 				(pkg ? pkg->license().c_str() : "" ),	// license is Package attribute
 				get_enum_group(pkg ? pkg->group() : ""),// PkGroupEnum
 				obj->description().c_str(),		// description is common attibute
@@ -2186,9 +2163,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	pk_backend_job_set_percentage (job, 40);
-
-	// check if the repositories may be dead (feature #301904)
-	warn_outdated_repos (job, pool);
 
 	set<PoolItem> candidates;
 	zypp_get_updates (job, zypp, candidates);
