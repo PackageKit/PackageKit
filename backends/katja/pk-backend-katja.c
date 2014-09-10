@@ -631,14 +631,13 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 			if (err) {
 				pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE, "%s", err->message);
 				g_error_free(err);
-				goto out;
+
+				return;
 			}
 
 			pk_backend_job_set_percentage(job, 100);
 		}
 	}
-
-out:
 }
 
 void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
