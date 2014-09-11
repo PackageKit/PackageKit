@@ -1449,6 +1449,7 @@ typedef enum {
 
 typedef struct {
 	GDBusMethodInvocation	*invocation;
+	PkEngine		*engine;
 	PkEngineOfflineRole	 role;
 	PkOfflineAction		 action;
 } PkEngineOfflineAsyncHelper;
@@ -1459,6 +1460,7 @@ typedef struct {
 static void
 pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
 {
+	g_object_unref (helper->engine);
 	g_object_unref (helper->invocation);
 	g_free (helper);
 }
@@ -1470,6 +1472,7 @@ static void
 pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 {
 	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
+	PkOfflineAction action;
 	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ GFile *file = NULL;
@@ -1519,7 +1522,12 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 		return;
 	}
 
-	/* all okay */
+	/* refresh cached dbus properties */
+	action = pk_offline_get_action (NULL);
+	pk_engine_emit_offline_property_changed (helper->engine,
+						 "TriggerAction",
+						 g_variant_new_string (pk_offline_action_to_string (action)));
+
 	g_dbus_method_invocation_return_value (helper->invocation, NULL);
 	pk_engine_offline_helper_free (helper);
 }
@@ -1548,6 +1556,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 
 	if (g_strcmp0 (method_name, "Cancel") == 0) {
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CANCEL;
 		helper->invocation = g_object_ref (invocation);
 		polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -1561,6 +1570,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 	}
 	if (g_strcmp0 (method_name, "ClearResults") == 0) {
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS;
 		helper->invocation = g_object_ref (invocation);
 		polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -1586,6 +1596,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 			return;
 		}
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
