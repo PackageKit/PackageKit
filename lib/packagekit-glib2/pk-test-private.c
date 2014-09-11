@@ -640,18 +640,19 @@ pk_test_offline_func (void)
 	g_assert_cmpint (pk_offline_action_from_string ("unknown"), ==, PK_OFFLINE_ACTION_UNKNOWN);
 	g_assert_cmpint (pk_offline_action_from_string ("reboot"), ==, PK_OFFLINE_ACTION_REBOOT);
 	g_assert_cmpint (pk_offline_action_from_string ("power-off"), ==, PK_OFFLINE_ACTION_POWER_OFF);
+	g_assert_cmpint (pk_offline_action_from_string ("unset"), ==, PK_OFFLINE_ACTION_UNSET);
 	g_assert_cmpint (pk_offline_action_from_string ("XXX"), ==, PK_OFFLINE_ACTION_UNKNOWN);
 
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_UNKNOWN), ==, "unknown");
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_REBOOT), ==, "reboot");
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_POWER_OFF), ==, "power-off");
+	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_UNSET), ==, "unset");
 	g_assert_cmpstr (pk_offline_action_to_string (999), ==, NULL);
 
 	/* test no action set */
 	action = pk_offline_get_action (&error);
-	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
-	g_clear_error (&error);
-	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_UNKNOWN);
+	g_assert_no_error (error);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_UNSET);
 
 	/* try to trigger without the fake updates set */
 	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);

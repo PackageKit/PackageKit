@@ -980,10 +980,7 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 
 	if (g_strcmp0 (property_name, "TriggerAction") == 0) {
 		PkOfflineAction action = pk_offline_get_action (NULL);
-		const gchar *tmp = "unset";
-		if (action != PK_OFFLINE_ACTION_UNKNOWN)
-			tmp = pk_offline_action_to_string (action);
-		return g_variant_new_string (tmp);
+		return g_variant_new_string (pk_offline_action_to_string (action));
 	}
 
 	/* stat the file */

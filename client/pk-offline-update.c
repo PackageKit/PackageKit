@@ -349,7 +349,7 @@ pk_offline_update_get_action (void)
 	/* allow testing without rebooting */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL) {
 		g_print ("TESTING, so not doing action\n");
-		return PK_OFFLINE_ACTION_UNKNOWN;
+		return PK_OFFLINE_ACTION_UNSET;
 	}
 	action = pk_offline_get_action (NULL);
 	if (action == PK_OFFLINE_ACTION_UNKNOWN) {

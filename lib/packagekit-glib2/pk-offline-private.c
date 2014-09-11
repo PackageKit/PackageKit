@@ -58,6 +58,9 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 			     "Failed to set unknown %i", action);
 		return FALSE;
 	}
+	if (action == PK_OFFLINE_ACTION_UNSET)
+		return pk_offline_auth_cancel (error);
+
 	action_str = pk_offline_action_to_string (action);
 	if (action_str == NULL) {
 		g_set_error (error,

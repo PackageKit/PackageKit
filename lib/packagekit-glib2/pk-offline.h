@@ -41,6 +41,7 @@ G_BEGIN_DECLS
  * @PK_OFFLINE_ACTION_UNKNOWN:		Unknown
  * @PK_OFFLINE_ACTION_REBOOT:		Reboot
  * @PK_OFFLINE_ACTION_POWER_OFF:	Power-off
+ * @PK_OFFLINE_ACTION_UNSET:		No action set
  *
  * Actions that can be taken after an offline operation.
  */
@@ -48,6 +49,7 @@ typedef enum {
 	PK_OFFLINE_ACTION_UNKNOWN,
 	PK_OFFLINE_ACTION_REBOOT,
 	PK_OFFLINE_ACTION_POWER_OFF,
+	PK_OFFLINE_ACTION_UNSET,
 	/*< private >*/
 	PK_OFFLINE_ACTION_LAST
 } PkOfflineAction;

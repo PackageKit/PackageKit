@@ -67,6 +67,8 @@ pk_offline_action_to_string (PkOfflineAction action)
 		return "reboot";
 	if (action == PK_OFFLINE_ACTION_POWER_OFF)
 		return "power-off";
+	if (action == PK_OFFLINE_ACTION_UNSET)
+		return "unset";
 	return NULL;
 }
 
@@ -89,6 +91,8 @@ pk_offline_action_from_string (const gchar *action)
 		return PK_OFFLINE_ACTION_REBOOT;
 	if (g_strcmp0 (action, "power-off") == 0)
 		return PK_OFFLINE_ACTION_POWER_OFF;
+	if (g_strcmp0 (action, "unset") == 0)
+		return PK_OFFLINE_ACTION_UNSET;
 	return PK_OFFLINE_ACTION_UNKNOWN;
 }
 
@@ -233,27 +237,14 @@ pk_offline_get_action (GError **error)
 
 	g_return_val_if_fail (error == NULL || *error == NULL, PK_OFFLINE_ACTION_UNKNOWN);
 
-	/* we can't have an action if we're not triggered */
-	if (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS)) {
-		g_set_error (error,
-			     PK_OFFLINE_ERROR,
-			     PK_OFFLINE_ERROR_NO_DATA,
-			     "%s does not exist",
-			     PK_OFFLINE_TRIGGER_FILENAME);
-		return PK_OFFLINE_ACTION_UNKNOWN;
-	}
+	/* is the trigger set? */
+	if (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS) ||
+	    !g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS))
+		return PK_OFFLINE_ACTION_UNSET;
 
 	/* read data file */
 	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME,
 				  &action_data, NULL, &error_local)) {
-		if (g_error_matches (error_local, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
-			g_set_error (error,
-				     PK_OFFLINE_ERROR,
-				     PK_OFFLINE_ERROR_NO_DATA,
-				     "%s does not exist",
-				     PK_OFFLINE_ACTION_FILENAME);
-			return PK_OFFLINE_ACTION_UNKNOWN;
-		}
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
