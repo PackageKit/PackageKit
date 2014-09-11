@@ -16,7 +16,7 @@ typedef struct {
 	KatjaBinary parent;
 
 	/* public */
-	GString *index_file;
+	gchar *index_file;
 } KatjaDl;
 
 typedef struct {

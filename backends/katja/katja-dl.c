@@ -18,7 +18,7 @@ GSList *katja_dl_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl)
 
 	/* There is no ChangeLog yet to check if there are updates or not. Just mark the index file for download */
 	source_dest = g_malloc_n(3, sizeof(gchar *));
-	source_dest[0] = g_strdup(KATJA_DL(binary)->index_file->str);
+	source_dest[0] = g_strdup(KATJA_DL(binary)->index_file);
 	source_dest[1] = g_build_filename(tmpl, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)), "IndexFile", NULL);
 	source_dest[2] = NULL;
 	/* Check if the remote file can be found */
@@ -197,7 +197,7 @@ static void katja_dl_finalize(GObject *object) {
 
 	dl = KATJA_DL(object);
 	if (dl->index_file)
-		g_string_free(dl->index_file, TRUE);
+		g_free(dl->index_file);
 
 	G_OBJECT_CLASS(katja_dl_parent_class)->finalize(object);
 }
@@ -240,7 +240,7 @@ KatjaDl *katja_dl_new(gchar *name, gchar *mirror, gushort order, gchar *blacklis
 	if (blacklist) /* Blacklist if set */
 		KATJA_BINARY(dl)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
 
-	dl->index_file = g_string_new(index_file);
+	dl->index_file = index_file;
 
 	return KATJA_DL(dl);
 }

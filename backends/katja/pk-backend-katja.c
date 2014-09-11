@@ -12,7 +12,7 @@ static GSList *repos = NULL;
 
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
-	gchar *path, *val, *blacklist, **groups;
+	gchar *path, *blacklist, **groups;
 	gint ret;
 	gushort i;
 	gsize groups_len;
@@ -44,19 +44,19 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 
 	katja_conf_file = g_file_new_for_path(path);
 	if (!(file_info = g_file_query_info(katja_conf_file,
-										"time::modified-usec",
-										G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
-										NULL,
-										&err))) {
+					"time::modified-usec",
+					G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+					NULL,
+					&err))) {
 		g_error("%s", err->message);
 		g_error_free(err);
 	}
 
 	if ((ret = sqlite3_prepare_v2(db,
-							"UPDATE cache_info SET value = ? WHERE key LIKE 'last_modification'",
-							-1,
-							&stmt,
-							NULL)) == SQLITE_OK) {
+					"UPDATE cache_info SET value = ? WHERE key LIKE 'last_modification'",
+					-1,
+					&stmt,
+					NULL)) == SQLITE_OK) {
 		ret = sqlite3_bind_int(stmt, 1, g_file_info_get_attribute_uint32(file_info, "time::modified-usec"));
 		if (ret == SQLITE_OK)
 			ret = sqlite3_step(stmt);
@@ -78,26 +78,23 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 		blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
 		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
 			repo = katja_slackpkg_new(groups[i],
-									  g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
-									  i + 1,
-									  blacklist,
-									  g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
-			if (repo)
-				repos = g_slist_append(repos, repo);
+					 g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
+					  i + 1,
+					  blacklist,
+					  g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
 		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
-			val = g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL);
 			repo = katja_dl_new(groups[i],
-								g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
-								i + 1,
-								blacklist,
-								val);
-			g_free(val);
-
-			if (repo)
-				repos = g_slist_append(repos, repo);
-			else
-				g_free(groups[i]);
+					g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
+					i + 1,
+					blacklist,
+					g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
 		}
+
+		if (repo)
+			repos = g_slist_append(repos, repo);
+		else
+			g_free(groups[i]);
+
 		g_free(blacklist);
 	}
 	g_free(groups);
