@@ -20,10 +20,6 @@ if PK_BUILD_CRON
 SUBDIRS += cron
 endif
 
-if HAVE_SYSTEMD
-SUBDIRS += systemd-updates
-endif
-
 if HAVE_BASH_COMPLETION
 bashcompletiondir = $(BASH_COMPLETIONS_DIR)
 dist_bashcompletion_DATA = pkcon

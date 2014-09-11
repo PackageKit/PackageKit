@@ -581,7 +581,6 @@ contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
-contrib/systemd-updates/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
