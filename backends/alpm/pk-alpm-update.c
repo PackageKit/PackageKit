@@ -396,6 +396,22 @@ pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 	return NULL;
 }
 
+static gboolean
+pk_alpm_update_is_pkg_downloaded (alpm_pkg_t *pkg)
+{
+	_cleanup_free_ gchar *filename = NULL;
+
+	filename = g_strconcat ("/var/cache/pacman/pkg/",
+				alpm_pkg_get_name (pkg),
+				"-",
+				alpm_pkg_get_version (pkg),
+				"-",
+				alpm_pkg_get_arch (pkg),
+				".pkg.tar.xz",
+				NULL);
+	return g_file_test (filename, G_FILE_TEST_IS_REGULAR);
+}
+
 static void
 pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
@@ -403,9 +419,14 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i, *syncdbs;
 	_cleanup_error_free_ GError *error = NULL;
+	PkBitfield filters = 0;
 
 	if (!pk_alpm_update_databases (job, 0, &error)) {
 		return pk_alpm_error_emit (job, error);
+	}
+
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
+		g_variant_get (params, "(t)", &filters);
 	}
 
 	/* find outdated and replacement packages */
@@ -422,6 +443,15 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		} else if (pk_alpm_pkg_is_syncfirst (priv->syncfirsts, upgrade)) {
 			info = PK_INFO_ENUM_IMPORTANT;
 		}
+
+		/* want downloaded packages */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) && !pk_alpm_update_is_pkg_downloaded (upgrade))
+			continue;
+
+		/* don't want downloaded packages */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) && pk_alpm_update_is_pkg_downloaded (upgrade))
+			continue;
+
 		pk_alpm_pkg_emit (job, upgrade, info);
 	}
 }
