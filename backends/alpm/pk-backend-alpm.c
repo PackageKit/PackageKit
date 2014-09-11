@@ -45,7 +45,9 @@ pk_backend_get_description (PkBackend *backend)
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return "Jonathan Conder <jonno.conder@gmail.com>";
+	return "Aleix Pol i Gonzàlez <aleixpol@kde.org>, "
+	       "Fabien Bourigault <bourigaultfabien@gmail.com>, "
+	       "Jonathan Conder <jonno.conder@gmail.com>";
 }
 
 static void
