@@ -48,7 +48,6 @@ EXTRA_DIST =						\
 	INSTALL						\
 	README						\
 	HACKING						\
-	TODO						\
 	NEWS						\
 	autogen.sh					\
 	config.h					\
