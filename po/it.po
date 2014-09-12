@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-02 11:26+0100\n"
-"PO-Revision-Date: 2014-09-02 10:26+0000\n"
+"POT-Creation-Date: 2014-09-12 13:06+0100\n"
+"PO-Revision-Date: 2014-09-12 12:06+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/packagekit/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -129,7 +129,7 @@ msgstr "Gruppo superiore"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
-#: ../client/pk-console.c:276 ../client/pk-console.c:2334
+#: ../client/pk-console.c:276 ../client/pk-console.c:2278
 msgid "Name"
 msgstr "Nome"
 
@@ -301,7 +301,7 @@ msgstr "Non ci sono pacchetti da aggiornare"
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:727
-#: ../contrib/command-not-found/pk-command-not-found.c:716
+#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "The transaction failed"
 msgstr "La transazione non è riuscita"
 
@@ -429,88 +429,87 @@ msgstr "Sottocomandi:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1521
 msgid "Failed to get the time since this action was last completed"
 msgstr "Determinazione dell'ora dell'ultima azione completata non riuscita"
 
 #. TRANSLATORS: this is the time since this role was used
-#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1525
 msgid "Time since"
 msgstr "Tempo trascorso"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
-#: ../client/pk-console.c:1555
+#: ../client/pk-console.c:1548
 msgid "Prepared updates:"
 msgstr "Aggiornamenti pronti:"
 
 #. TRANSLATORS: The network settings could not be sent
-#: ../client/pk-console.c:1679
+#: ../client/pk-console.c:1623
 msgid "The proxy could not be set"
 msgstr "Il proxy potrebbe non essere impostato"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1718 ../client/pk-monitor.c:327
+#: ../client/pk-console.c:1662 ../client/pk-monitor.c:327
 msgid "Show the program version and exit"
 msgstr "Mostra la versione del programma ed esce"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1721
+#: ../client/pk-console.c:1665
 msgid "Set the filter, e.g. installed"
 msgstr "Imposta il filtro, es. «installed»"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1724
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
+#: ../client/pk-console.c:1668
 msgid "Install the packages without asking for confirmation"
 msgstr "Installa i pacchetti senza chiedere conferma"
 
 #. command line argument, do we just download or apply changes
-#: ../client/pk-console.c:1727
+#: ../client/pk-console.c:1671
 msgid "Prepare the transaction by downloading pakages only"
 msgstr "Prepara la transazione scaricando solamente i pacchetti"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1730
+#: ../client/pk-console.c:1674
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Esegue il comando sfruttando i momenti di inattività della rete e consumando meno energia elettrica"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1733
+#: ../client/pk-console.c:1677
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "Stampa su schermo output da elaborare al computer piuttosto che usare widget animati"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1736
+#: ../client/pk-console.c:1680
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "L'età massima della cache dei metadati. Usare -1 per \"never\"."
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1739
+#: ../client/pk-console.c:1683
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Consente di installare pacchetti non fidati"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1774
+#: ../client/pk-console.c:1718
 msgid "Failed to parse command line"
 msgstr "Analisi della riga di comando non riuscita"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1784
+#: ../client/pk-console.c:1728
 msgid "Failed to contact PackageKit"
 msgstr "Non è stato possibile contattare PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: ../client/pk-console.c:1845
+#: ../client/pk-console.c:1789
 msgid "The filter specified was invalid"
 msgstr "Il filtro specificato non era valido"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
-#: ../client/pk-console.c:1871
+#: ../client/pk-console.c:1815
 msgid "A search type is required, e.g. name"
 msgstr "È richiesto specificare un tipo di ricerca, es. «name»"
 
@@ -518,91 +517,91 @@ msgstr "È richiesto specificare un tipo di ricerca, es. «name»"
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
-#: ../client/pk-console.c:1881 ../client/pk-console.c:1898
-#: ../client/pk-console.c:1915 ../client/pk-console.c:1932
+#: ../client/pk-console.c:1825 ../client/pk-console.c:1842
+#: ../client/pk-console.c:1859 ../client/pk-console.c:1876
 msgid "A search term is required"
 msgstr "È richiesto specificare un termine di ricerca"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1958
+#: ../client/pk-console.c:1902
 msgid "A package name to install is required"
 msgstr "È richiesto specificare un nome di pacchetto da installare"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1972
+#: ../client/pk-console.c:1916
 msgid "A filename to install is required"
 msgstr "È richiesto specificare un nome di file da installare"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:1988
+#: ../client/pk-console.c:1932
 msgid "A type, key_id and package_id are required"
 msgstr "È richiesto specificare un tipo, un key_id e un package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
-#: ../client/pk-console.c:2006
+#: ../client/pk-console.c:1950
 msgid "A package name to remove is required"
 msgstr "È richiesto specificare un nome di un pacchetto da rimuovere"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
-#: ../client/pk-console.c:2019
+#: ../client/pk-console.c:1963
 msgid "A destination directory and the package names to download are required"
 msgstr "È richiesto specificare una directory di destinazione e il nome dei pacchetti da scaricare"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
-#: ../client/pk-console.c:2029
+#: ../client/pk-console.c:1973
 msgid "Directory not found"
 msgstr "Directory non trovata"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:1988
 msgid "A licence identifier (eula-id) is required"
 msgstr "È richiesto specificare un identificatore di licenza (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
-#: ../client/pk-console.c:2070
+#: ../client/pk-console.c:2014
 msgid "A package name to resolve is required"
 msgstr "È richiesto specificare un nome di pacchetto da risolvere"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
-#: ../client/pk-console.c:2087 ../client/pk-console.c:2104
+#: ../client/pk-console.c:2031 ../client/pk-console.c:2048
 msgid "A repository name is required"
 msgstr "È richiesto specificare un nome di repository"
 
-#: ../client/pk-console.c:2120
+#: ../client/pk-console.c:2064
 msgid "A repo name, parameter and value are required"
 msgstr "È richiesto specificare un nome di repository, un parametro e un valore"
 
-#: ../client/pk-console.c:2137
+#: ../client/pk-console.c:2081
 msgid "A repo id and autoremove required"
 msgstr "È richiesto specificare un ID e un autoremove"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: ../client/pk-console.c:2164
+#: ../client/pk-console.c:2108
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "È richiesto specificare un'azione, per esempio «update-packages»"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: ../client/pk-console.c:2174
+#: ../client/pk-console.c:2118
 msgid "A correct role is required"
 msgstr "È richiesto specificare un'azione corretta"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
-#: ../client/pk-console.c:2188 ../client/pk-console.c:2205
-#: ../client/pk-console.c:2217 ../client/pk-console.c:2247
-#: ../client/pk-console.c:2280
+#: ../client/pk-console.c:2132 ../client/pk-console.c:2149
+#: ../client/pk-console.c:2161 ../client/pk-console.c:2191
+#: ../client/pk-console.c:2224
 msgid "A package name is required"
 msgstr "È richiesto specificare un nome di pacchetto"
 
@@ -610,46 +609,46 @@ msgstr "È richiesto specificare un nome di pacchetto"
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: ../client/pk-console.c:2231
+#: ../client/pk-console.c:2175
 msgid "A package provide string is required"
 msgstr "È richiesto specificare la stringa dei pacchetti forniti"
 
-#: ../client/pk-console.c:2258 ../client/pk-console.c:2269
+#: ../client/pk-console.c:2202 ../client/pk-console.c:2213
 msgid "A filename is required"
 msgstr "È richiesto un nome di file"
 
 #. TRANSLATORS: this is the description of the backend
-#: ../client/pk-console.c:2338
+#: ../client/pk-console.c:2282
 msgid "Description"
 msgstr "Descrizione"
 
 #. TRANSLATORS: this is the author of the backend
-#: ../client/pk-console.c:2342
+#: ../client/pk-console.c:2286
 msgid "Author"
 msgstr "Autore"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:2405
+#: ../client/pk-console.c:2356
 msgid "You need to specify a list file to create"
 msgstr "È richiesto specificare un file da creare"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
-#: ../client/pk-console.c:2418
+#: ../client/pk-console.c:2369
 #, c-format
 msgid "File already exists: %s"
 msgstr "Il file esiste già: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
-#: ../client/pk-console.c:2436
+#: ../client/pk-console.c:2387
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "L'opzione «%s» non è supportata"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2446
+#: ../client/pk-console.c:2397
 msgid "Command failed"
 msgstr "Comando non riuscito"
 
@@ -666,381 +665,181 @@ msgstr "Recupero delle proprietà non riuscito"
 msgid "PackageKit Monitor"
 msgstr "PackageKit Monitor"
 
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion
+#: ../client/pk-offline-update.c:153
+msgid "Installing Updates"
+msgstr "Installazione aggiornamenti"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:187
+msgid "Rebooting after installing updates…"
+msgstr "Riavvio dopo l'installazione degli aggiornamenti…"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:228
+msgid "Shutting down after installing updates…"
+msgstr "Spegnimento del sistema dopo l'installazione degli aggiornamenti…"
+
+#. TRANSLATORS: we've started doing offline updates
+#: ../client/pk-offline-update.c:425
+msgid "Installing updates, this could take a while..."
+msgstr "Installazione degli aggiornamenti, potrebbe richiedere del tempo…"
+
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:422
+#: ../contrib/browser-plugin/pk-plugin-install.c:406
 msgid "Getting package information..."
 msgstr "Recupero informazioni sul pacchetto..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:428
+#: ../contrib/browser-plugin/pk-plugin-install.c:412
 #, c-format
 msgid "Run %s"
 msgstr "Eseguire %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:434
+#: ../contrib/browser-plugin/pk-plugin-install.c:418
 msgid "Installed version"
 msgstr "Versione installata"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:442
+#: ../contrib/browser-plugin/pk-plugin-install.c:426
 #, c-format
 msgid "Run version %s now"
 msgstr "Eseguire la versione %s ora"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:448
+#: ../contrib/browser-plugin/pk-plugin-install.c:432
 msgid "Run now"
 msgstr "Eseguire ora"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:454
+#: ../contrib/browser-plugin/pk-plugin-install.c:438
 #, c-format
 msgid "Update to version %s"
 msgstr "Aggiornare alla versione %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:460
+#: ../contrib/browser-plugin/pk-plugin-install.c:444
 #, c-format
 msgid "Install %s now"
 msgstr "Installare %s ora"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:463
+#: ../contrib/browser-plugin/pk-plugin-install.c:447
 msgid "Version"
 msgstr "Versione"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:468
+#: ../contrib/browser-plugin/pk-plugin-install.c:452
 msgid "No packages found for your system"
 msgstr "Non è stato trovato alcun pacchetto per il sistema in uso"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:473
+#: ../contrib/browser-plugin/pk-plugin-install.c:457
 msgid "Installing..."
 msgstr "Installazione..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:442
+#: ../contrib/command-not-found/pk-command-not-found.c:440
 msgid "Downloading details about the software sources."
 msgstr "Scaricamento dettagli riguardo le sorgenti software."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:446
+#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Scaricamento elenco dei file (potrebbe impiegare del tempo)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:450
+#: ../contrib/command-not-found/pk-command-not-found.c:448
 msgid "Waiting for package manager lock."
 msgstr "Attesa del blocco del gestore di pacchetti."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:454
+#: ../contrib/command-not-found/pk-command-not-found.c:452
 msgid "Loading list of packages."
 msgstr "Caricamento elenco dei pacchetti."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:519
+#: ../contrib/command-not-found/pk-command-not-found.c:517
 msgid "Failed to search for file"
 msgstr "Ricerca del file non riuscita"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:532
+#: ../contrib/command-not-found/pk-command-not-found.c:529
 msgid "Getting the list of files failed"
 msgstr "Recupero dell'elenco dei file non riuscito"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:679
+#: ../contrib/command-not-found/pk-command-not-found.c:672
 msgid "Failed to launch:"
 msgstr "Esecuzione non riuscita:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:707
+#: ../contrib/command-not-found/pk-command-not-found.c:694
 msgid "Failed to install packages"
 msgstr "Installazione dei pacchetti non riuscita"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:841
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "command not found"
 msgstr "comando non trovato"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:858
+#: ../contrib/command-not-found/pk-command-not-found.c:802
 msgid "Similar command is:"
 msgstr "Un comando simile è:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:871
+#: ../contrib/command-not-found/pk-command-not-found.c:815
 msgid "Run similar command:"
 msgstr "Eseguire un comando simile:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:883
-#: ../contrib/command-not-found/pk-command-not-found.c:892
+#: ../contrib/command-not-found/pk-command-not-found.c:827
+#: ../contrib/command-not-found/pk-command-not-found.c:836
 msgid "Similar commands are:"
 msgstr "Comandi simili sono:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:899
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
 msgstr "Scegliere un comando da eseguire"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:918
+#: ../contrib/command-not-found/pk-command-not-found.c:861
 msgid "The package providing this file is:"
 msgstr "Il pacchetto che fornisce questo file è:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:925
+#: ../contrib/command-not-found/pk-command-not-found.c:868
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Installare il pacchetto «%s» per fornire il comando «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:948
+#: ../contrib/command-not-found/pk-command-not-found.c:891
 msgid "Packages providing this file are:"
 msgstr "I pacchetti che forniscono questo file sono:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:958
+#: ../contrib/command-not-found/pk-command-not-found.c:901
 msgid "Suitable packages are:"
 msgstr "Pacchetti adeguati sono:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:966
+#: ../contrib/command-not-found/pk-command-not-found.c:909
 msgid "Please choose a package to install"
 msgstr "Scegliere un pacchetto da installare"
 
-#: ../contrib/command-not-found/pk-command-not-found.c:968
+#: ../contrib/command-not-found/pk-command-not-found.c:911
 msgid "User aborted selection"
 msgstr "L'utente ha annullato la selezione"
-
-#. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
-msgid "Starting install"
-msgstr "Avvio installazione"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
-#, c-format
-msgid "Failed to find the package %s, or already installed: %s"
-msgstr "Ricerca del pacchetto %s non riuscita oppure è già installato: %s"
-
-#. command line argument, simulate what would be done, but don't actually do
-#. it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
-msgstr "Non installa alcun pacchetto, simula le operazioni"
-
-#. command line argument, do we skip packages that depend on the ones
-#. specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
-msgid "Do not install dependencies of the core packages"
-msgstr "Non installa le dipendenze dei pacchetti principali"
-
-#. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
-msgid "Do not display information or progress"
-msgstr "Non mostra le informazioni o l'avanzamento"
-
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:544
-msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit Debuginfo Installer"
-
-#. TRANSLATORS: the use needs to specify a list of package names on the
-#. command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
-#, c-format
-msgid "ERROR: Specify package names to install."
-msgstr "ERRORE: specificare i nomi dei pacchetti da installare."
-
-#. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:594
-#, c-format
-msgid "Getting sources list"
-msgstr "Recupero elenco sorgenti"
-
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:604
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:679
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:807
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:918
-msgid "FAILED."
-msgstr "NON RIUSCITA."
-
-#. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:619
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:659
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:778
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:889
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:933
-#, c-format
-msgid "OK."
-msgstr "OK."
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
-#, c-format
-msgid "Found %i enabled and %i disabled sources."
-msgstr "Trovate %i sorgenti abilitate e %i disabilitate."
-
-#. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:629
-#, c-format
-msgid "Finding debugging sources"
-msgstr "Ricerca sorgenti di debug"
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:662
-#, c-format
-msgid "Found %i disabled debuginfo repos."
-msgstr "Trovati %i repository di debug disabilitati."
-
-#. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:669
-#, c-format
-msgid "Enabling debugging sources"
-msgstr "Abilitazione sorgenti di debug"
-
-#. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:697
-#, c-format
-msgid "Enabled %i debugging sources."
-msgstr "Abilitate %i sorgenti di debug."
-
-#. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:704
-#, c-format
-msgid "Finding debugging packages"
-msgstr "Ricerca pacchetti di debug"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#, c-format
-msgid "Failed to find the package %s: %s"
-msgstr "Ricerca del pacchetto %s non riuscita: %s"
-
-#. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:739
-#, c-format
-msgid "Failed to find the debuginfo package %s: %s"
-msgstr "Ricerca del pacchetto debuginfo %s non riuscita: %s"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
-#, c-format
-msgid "Found no packages to install."
-msgstr "Non è stato trovato alcun pacchetto da installare."
-
-#. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#, c-format
-msgid "Found %i packages:"
-msgstr "Trovati %i pacchetti:"
-
-#. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:797
-#, c-format
-msgid "Finding packages that depend on these packages"
-msgstr "Ricerca di pacchetti che dipendono da questi"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:810
-#, c-format
-msgid "Could not find dependent packages: %s"
-msgstr "Impossibile trovare i pacchetti dipendenti: %s"
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
-#, c-format
-msgid "Found %i extra packages."
-msgstr "Trovati %i pacchetti aggiuntivi."
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
-#, c-format
-msgid "No extra packages required."
-msgstr "Nessun pacchetto aggiuntivo richiesto."
-
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list
-#. them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:839
-#, c-format
-msgid "Found %i packages to install:"
-msgstr "Trovati %i pacchetti da installare:"
-
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the
-#. action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
-#, c-format
-msgid "Not installing packages in simulate mode"
-msgstr "I pacchetti non vengono installati nella modalità di simulazione"
-
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:864
-#: ../lib/packagekit-glib2/pk-console-shared.c:216
-#, c-format
-msgid "Installing packages"
-msgstr "Installazione pacchetti"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:877
-#, c-format
-msgid "Could not install packages: %s"
-msgstr "Impossibile installare i pacchetti: %s"
-
-#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:909
-#, c-format
-msgid "Disabling sources previously enabled"
-msgstr "Disabilitazione sorgenti precedentemente abilitate"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
-#. error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:921
-#, c-format
-msgid "Could not disable the debugging sources: %s"
-msgstr "Impossibile disabilitare le sorgenti di debug: %s"
-
-#. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:936
-#, c-format
-msgid "Disabled %i debugging sources."
-msgstr "Disabilitate %i sorgenti di debug."
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:158
-msgid "Installing Updates"
-msgstr "Installazione aggiornamenti"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:192
-msgid "Rebooting after installing updates…"
-msgstr "Riavvio dopo l'installazione degli aggiornamenti…"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:233
-msgid "Shutting down after installing updates…"
-msgstr "Spegnimento del sistema dopo l'installazione degli aggiornamenti…"
-
-#. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:577
-msgid "Installing updates, this could take a while..."
-msgstr "Installazione degli aggiornamenti, potrebbe richiedere del tempo…"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1089,6 +888,11 @@ msgstr "Rimozione dei pacchetti"
 #: ../lib/packagekit-glib2/pk-enum.c:1224
 msgid "Downloading packages"
 msgstr "Scaricamento dei pacchetti"
+
+#. TRANSLATORS: transaction state, installing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:216
+msgid "Installing packages"
+msgstr "Installazione pacchetti"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: ../lib/packagekit-glib2/pk-console-shared.c:220
@@ -1826,66 +1630,71 @@ msgstr "È richiesto autenticarsi per ripulire i messaggi degli aggiornamenti of
 #: ../src/pk-direct.c:109
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias a %s"
 
 #: ../src/pk-direct.c:184
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Comando non trovato. Comandi validi sono:"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-direct.c:382 ../src/pk-main.c:128
+#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#: ../src/pk-direct.c:404 ../src/pk-main.c:128
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Backend per la gestione dei pacchetti da utilizzare, es. dummy"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:398
+#: ../src/pk-direct.c:420
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Aggiorna la cache"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:402
+#: ../src/pk-direct.c:424
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Aggiorna la cache (forzato)"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:406
+#: ../src/pk-direct.c:428
 msgid "Search by names"
-msgstr ""
+msgstr "Cerca per nomi"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:410
+#: ../src/pk-direct.c:432
 msgid "Search by details"
-msgstr ""
+msgstr "Cerca per dettagli"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:414
+#: ../src/pk-direct.c:436
 msgid "Search by files"
+msgstr "Cerca per file"
+
+#. TRANSLATORS: command description
+#: ../src/pk-direct.c:440
+msgid "Set repository options"
 msgstr ""
 
 #. TRANSLATORS: program name
-#: ../src/pk-direct.c:427
+#: ../src/pk-direct.c:453
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: ../src/pk-direct.c:433
+#: ../src/pk-direct.c:459
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Analisi degli argomenti non riuscita"
 
 #. TRANSLATORS: probably not yet installed
-#: ../src/pk-direct.c:444
+#: ../src/pk-direct.c:470
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Caricamento del file di configurazione non riuscito"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: ../src/pk-direct.c:477
+#: ../src/pk-direct.c:503
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Caricamento del backend non riuscito"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: ../src/pk-direct.c:515
+#: ../src/pk-direct.c:541
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Rilascio del backend non riuscito"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:131
@@ -1918,22 +1727,22 @@ msgid "PackageKit service"
 msgstr "Servizio PackageKit"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2708
+#: ../src/pk-transaction.c:2524
 msgid "The software is not from a trusted source."
 msgstr "Il software non proviene da una sorgente fidata."
 
-#: ../src/pk-transaction.c:2716
+#: ../src/pk-transaction.c:2532
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "È consigliabile non aggiornare questo pacchetto se non si è sicuri che sia affidabile."
 
-#: ../src/pk-transaction.c:2717
+#: ../src/pk-transaction.c:2533
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "È consigliabile non aggiornare questi pacchetti se non si è sicuri che siano affidabili."
 
-#: ../src/pk-transaction.c:2727
+#: ../src/pk-transaction.c:2543
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "È consigliabile non installare questo pacchetto se non si è sicuri che sia affidabile."
 
-#: ../src/pk-transaction.c:2728
+#: ../src/pk-transaction.c:2544
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "È consigliabile non installare questi pacchetti se non si è sicuri che siano affidabili."

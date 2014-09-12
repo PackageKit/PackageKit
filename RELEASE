@@ -5,7 +5,7 @@ PackageKit Release Notes
 git shortlog PACKAGEKIT_0_9_5.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.9.6
+Version 1.0.0
 ~~~~~~~~~~~~~
 Released: 2014-xx-xx
 
@@ -26,7 +26,7 @@ Bugfixes:
 
 cd po
 make PackageKit.pot
-INTLTOOL_EXTRACT="/usr/bin/intltool-extract" XGETTEXT="/usr/bin/xgettext --no-location" srcdir=. /usr/bin/intltool-update --gettext-package colord --pot
+INTLTOOL_EXTRACT="/usr/bin/intltool-extract" XGETTEXT="/usr/bin/xgettext --no-location" srcdir=. /usr/bin/intltool-update --gettext-package PackageKit --pot
 tx push --source
 tx pull --all --minimum-perc=5
 git add *.po
@@ -35,8 +35,8 @@ git add *.po
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.9.6"
-git tag -s -f -m "Release 0.9.6" PACKAGEKIT_0_9_6
+git commit -a -m "Release version 1.0.0"
+git tag -s -f -m "Release 1.0.0" PACKAGEKIT_1_0_0
 <gpg password>
 git push --tags
 git push

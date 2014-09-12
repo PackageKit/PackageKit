@@ -1,3 +1,84 @@
+Version 1.0.0
+~~~~~~~~~~~~~
+Released: 2014-09-12
+
+Notes:
+ - After over 7 years, 99 tarball releases and 11697 commits from 284 people
+   we've finally released the first stable version. Woohoo!
+
+ - I wanted to sent out a heart-felt thank you to all the people who have
+   contributed to the success of this project. I couldn't have done it on my
+   own and quite a few people were more important than they realize.
+
+ - Now, onto more practical aspects. These are the big changes for this release:
+
+  * The offline update functionality has moved to a proper D-Bus interface and
+    the pkexec helpers have been removed. Offline updates is an important
+    feature that no longer deserves to be bolted-on. All the existing users
+    have been ported to the new interface, but you need 3.13.92 if you're
+    running GNOME from unstable or jhbuild.
+
+  * No more plugins. Both in-tree and out-of-tree plugins were the biggest
+    source of crashes, and with the systemd offline updates merged into the core
+    daemon they are just not reuired anymore. All affected projects have been
+    notified.
+
+  * No more conary, opkg, smart or yum plugins. These have been unmaintained and
+    broken for over two years, so time to give them the heave-ho.
+
+  * The alpm, aptcc, hif and zypp plugins have had lots of love, and are up to
+    date with the latest features and working well.
+
+Backends:
+ - alpm: Add APPLICATION filter (Fabien Bourigault)
+ - alpm: Add DOWNLOADED filter for get-updates (Fabien Bourigault)
+ - alpm: Correctly namespace files and symbols (Richard Hughes)
+ - alpm: Don't crash when emitting the update details URLs (Richard Hughes)
+ - alpm: Don't set the cancellable or status before finished (Richard Hughes)
+ - alpm: Honor cache age while refreshing repos (Fabien Bourigault)
+ - alpm: Honor only download flag for update packages (Fabien Bourigault)
+ - alpm: Use a helper structure for backend data (Richard Hughes)
+ - alpm: Use the system database rather than the one in the prefix (Richard Hughes)
+ - aptcc: Link against -lutil for forkpty (Colin Watson)
+ - conary: Remove the Conary backend (Richard Hughes)
+ - hif: Make the lock dir respect the DESTDIR (Richard Hughes)
+ - hif: Remove some unused functions (Richard Hughes)
+ - hif: Use a real path for hy_sack_create() (Richard Hughes)
+ - hif: Use hif_source_commit() for new versions of the library (Richard Hughes)
+ - hif: Use the cached metadata if available (Richard Hughes)
+ - katja: Fix repository initialization flaw (Eugene Wissner)
+ - opkg: Remove the opkg backend (Richard Hughes)
+ - smart: Remove the SMART backend (Richard Hughes)
+ - yum: Remove the yum backend (Richard Hughes)
+ - zypp: Add APPLICATION filter support (Dominique Leuenberger)
+ - zypp: Add DOWNLOADED filter support (Dominique Leuenberger)
+ - zypp: Update to build with PK 0.9.x (Dominique Leuenberger)
+
+New Features:
+ - Add a D-Bus interface and helpers for offline support (Richard Hughes, Kalev Lember)
+ - Add a repo-set-data command to packagekit-direct (Richard Hughes)
+ - Add a simple script that generates some offline metadata (Richard Hughes)
+ - Add pk_backend_job_get_cancellable() (Richard Hughes)
+ - Add pk_backend_job_is_cancelled() (Richard Hughes)
+ - Add pk_backend_set_user_data() (Richard Hughes)
+ - Add pk_offline_get_prepared_sack() and use it in the systemd-updates plugin (Richard Hughes)
+ - Remove pk-debuginfo-install (Richard Hughes)
+ - Remove support for distros not supporting /etc/os-release (Richard Hughes)
+ - Remove the --enable-systemd-updates configure switch (Richard Hughes)
+ - Remove the events/pre-transaction.d functionality (Richard Hughes)
+ - Remove the pkexec systemd helpers (Richard Hughes)
+ - Remove the plugin interface (Richard Hughes)
+ - Remove various options from the config file (Richard Hughes)
+
+Bugfixes:
+ - Automatically do pk_backend_job_finished() for threaded backends (Richard Hughes)
+ - Do not shutdown the daemon on idle by default (Richard Hughes)
+ - Fix compile of the ConnMan network support (Richard Hughes)
+ - Fix packagekit-offline-update.service generation (Kalev Lember)
+ - Increase the default transaction limits (Matthias Klumpp)
+ - Prefer npapi-sdk over mozilla-plugins (Dominique Leuenberger)
+ - Refresh the NetworkManager state when the daemon starts (Richard Hughes)
+
 Version 0.9.5
 ~~~~~~~~~~~~~
 Released: 2014-09-02

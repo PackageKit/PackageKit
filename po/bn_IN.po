@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-02 11:26+0100\n"
-"PO-Revision-Date: 2014-09-02 10:26+0000\n"
+"POT-Creation-Date: 2014-09-12 13:06+0100\n"
+"PO-Revision-Date: 2014-09-12 12:06+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Bengali (India) (http://www.transifex.com/projects/p/packagekit/language/bn_IN/)\n"
 "MIME-Version: 1.0\n"
@@ -123,7 +123,7 @@ msgstr "ঊর্ধ্বতন"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
-#: ../client/pk-console.c:276 ../client/pk-console.c:2334
+#: ../client/pk-console.c:276 ../client/pk-console.c:2278
 msgid "Name"
 msgstr "নাম"
 
@@ -295,7 +295,7 @@ msgstr ""
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:727
-#: ../contrib/command-not-found/pk-command-not-found.c:716
+#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "The transaction failed"
 msgstr "ট্রানস্যাকশন বিফল হয়েছে"
 
@@ -423,88 +423,87 @@ msgstr "সাব-কমান্ড:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1521
 msgid "Failed to get the time since this action was last completed"
 msgstr "চিহ্নিত কর্ম সর্বশেষ সমাপ্তির সময়ের পরে অতিবাহিত সময় প্রাপ্ত করা যায়নি"
 
 #. TRANSLATORS: this is the time since this role was used
-#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1525
 msgid "Time since"
 msgstr ""
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
-#: ../client/pk-console.c:1555
+#: ../client/pk-console.c:1548
 msgid "Prepared updates:"
 msgstr ""
 
 #. TRANSLATORS: The network settings could not be sent
-#: ../client/pk-console.c:1679
+#: ../client/pk-console.c:1623
 msgid "The proxy could not be set"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1718 ../client/pk-monitor.c:327
+#: ../client/pk-console.c:1662 ../client/pk-monitor.c:327
 msgid "Show the program version and exit"
 msgstr "Show the program version and exit"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1721
+#: ../client/pk-console.c:1665
 msgid "Set the filter, e.g. installed"
 msgstr "Set the filter, e.g. installed"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1724
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
+#: ../client/pk-console.c:1668
 msgid "Install the packages without asking for confirmation"
 msgstr "Install the packages without asking for confirmation"
 
 #. command line argument, do we just download or apply changes
-#: ../client/pk-console.c:1727
+#: ../client/pk-console.c:1671
 msgid "Prepare the transaction by downloading pakages only"
 msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1730
+#: ../client/pk-console.c:1674
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Run the command using idle network bandwidth and also using less power"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1733
+#: ../client/pk-console.c:1677
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "Print to screen a machine readable output, rather than using animated widgets"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1736
+#: ../client/pk-console.c:1680
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr ""
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1739
+#: ../client/pk-console.c:1683
 msgid "Allow untrusted packages to be installed."
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1774
+#: ../client/pk-console.c:1718
 msgid "Failed to parse command line"
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1784
+#: ../client/pk-console.c:1728
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit-র সাথে সংযোগ স্থাপন করতে ব্যর্থ"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: ../client/pk-console.c:1845
+#: ../client/pk-console.c:1789
 msgid "The filter specified was invalid"
 msgstr "নির্ধারিত ফিল্টার বৈধ নয়"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
-#: ../client/pk-console.c:1871
+#: ../client/pk-console.c:1815
 msgid "A search type is required, e.g. name"
 msgstr "অনুসন্ধানের ধরন আবশ্যক, উদাহরণ নাম (name)"
 
@@ -512,91 +511,91 @@ msgstr "অনুসন্ধানের ধরন আবশ্যক, উদ�
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
-#: ../client/pk-console.c:1881 ../client/pk-console.c:1898
-#: ../client/pk-console.c:1915 ../client/pk-console.c:1932
+#: ../client/pk-console.c:1825 ../client/pk-console.c:1842
+#: ../client/pk-console.c:1859 ../client/pk-console.c:1876
 msgid "A search term is required"
 msgstr "অনুসন্ধানের উদ্দেশ্যে কিছু তথ্য লেখা আবশ্যক"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1958
+#: ../client/pk-console.c:1902
 msgid "A package name to install is required"
 msgstr "ইনস্টল করার উদ্দেশ্যে প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1972
+#: ../client/pk-console.c:1916
 msgid "A filename to install is required"
 msgstr "ইনস্টলেশনের জন্য ফাইলের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:1988
+#: ../client/pk-console.c:1932
 msgid "A type, key_id and package_id are required"
 msgstr "ধরন, key_id ও package_id উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
-#: ../client/pk-console.c:2006
+#: ../client/pk-console.c:1950
 msgid "A package name to remove is required"
 msgstr "অপসারণের জন্য প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
-#: ../client/pk-console.c:2019
+#: ../client/pk-console.c:1963
 msgid "A destination directory and the package names to download are required"
 msgstr "উদ্দিষ্ট ডিরেক্টরি ও ডাউনলোড করার উদ্দেশ্যে প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
-#: ../client/pk-console.c:2029
+#: ../client/pk-console.c:1973
 msgid "Directory not found"
 msgstr "ডিরেক্টরি পাওয়া যায়নি"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:1988
 msgid "A licence identifier (eula-id) is required"
 msgstr "লাইসেন্স পরিচয়কারী (eula-id) উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
-#: ../client/pk-console.c:2070
+#: ../client/pk-console.c:2014
 msgid "A package name to resolve is required"
 msgstr "মীমাংসা করার উদ্দেশ্যে প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
-#: ../client/pk-console.c:2087 ../client/pk-console.c:2104
+#: ../client/pk-console.c:2031 ../client/pk-console.c:2048
 msgid "A repository name is required"
 msgstr "সংগ্রহস্থলের নাম উল্লেখ আবশ্যক"
 
-#: ../client/pk-console.c:2120
+#: ../client/pk-console.c:2064
 msgid "A repo name, parameter and value are required"
 msgstr "একটি repo-র নাম, পরামিতি ও মান নির্ধারণ করা আবশ্যক"
 
-#: ../client/pk-console.c:2137
+#: ../client/pk-console.c:2081
 msgid "A repo id and autoremove required"
 msgstr ""
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: ../client/pk-console.c:2164
+#: ../client/pk-console.c:2108
 msgid "An action, e.g. 'update-packages' is required"
 msgstr ""
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: ../client/pk-console.c:2174
+#: ../client/pk-console.c:2118
 msgid "A correct role is required"
 msgstr "সঠিক ভূমিকা উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
-#: ../client/pk-console.c:2188 ../client/pk-console.c:2205
-#: ../client/pk-console.c:2217 ../client/pk-console.c:2247
-#: ../client/pk-console.c:2280
+#: ../client/pk-console.c:2132 ../client/pk-console.c:2149
+#: ../client/pk-console.c:2161 ../client/pk-console.c:2191
+#: ../client/pk-console.c:2224
 msgid "A package name is required"
 msgstr "প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
@@ -604,46 +603,46 @@ msgstr "প্যাকেজের নাম উল্লেখ করা আ�
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: ../client/pk-console.c:2231
+#: ../client/pk-console.c:2175
 msgid "A package provide string is required"
 msgstr "প্যাকেজ দ্বারা উপলব্ধ (provides) সামগ্রী সংক্রান্ত তথ্য উল্লেখ করা আবশ্যক"
 
-#: ../client/pk-console.c:2258 ../client/pk-console.c:2269
+#: ../client/pk-console.c:2202 ../client/pk-console.c:2213
 msgid "A filename is required"
 msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
-#: ../client/pk-console.c:2338
+#: ../client/pk-console.c:2282
 msgid "Description"
 msgstr ""
 
 #. TRANSLATORS: this is the author of the backend
-#: ../client/pk-console.c:2342
+#: ../client/pk-console.c:2286
 msgid "Author"
 msgstr ""
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:2405
+#: ../client/pk-console.c:2356
 msgid "You need to specify a list file to create"
 msgstr ""
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
-#: ../client/pk-console.c:2418
+#: ../client/pk-console.c:2369
 #, c-format
 msgid "File already exists: %s"
 msgstr ""
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
-#: ../client/pk-console.c:2436
+#: ../client/pk-console.c:2387
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "'%s' বিকল্পটি সমর্থিত নয়"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2446
+#: ../client/pk-console.c:2397
 msgid "Command failed"
 msgstr "কমান্ড বিফল"
 
@@ -660,380 +659,180 @@ msgstr ""
 msgid "PackageKit Monitor"
 msgstr "PackageKit Monitor"
 
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion
+#: ../client/pk-offline-update.c:153
+msgid "Installing Updates"
+msgstr ""
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:187
+msgid "Rebooting after installing updates…"
+msgstr ""
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:228
+msgid "Shutting down after installing updates…"
+msgstr ""
+
+#. TRANSLATORS: we've started doing offline updates
+#: ../client/pk-offline-update.c:425
+msgid "Installing updates, this could take a while..."
+msgstr ""
+
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:422
+#: ../contrib/browser-plugin/pk-plugin-install.c:406
 msgid "Getting package information..."
 msgstr "প্যাকেজ সংক্রান্ত তথ্য প্রাপ্ত করা হচ্ছে..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:428
+#: ../contrib/browser-plugin/pk-plugin-install.c:412
 #, c-format
 msgid "Run %s"
 msgstr "%s সঞ্চালন করুন"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:434
+#: ../contrib/browser-plugin/pk-plugin-install.c:418
 msgid "Installed version"
 msgstr "ইনস্টল করা সংস্করণ"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:442
+#: ../contrib/browser-plugin/pk-plugin-install.c:426
 #, c-format
 msgid "Run version %s now"
 msgstr "%s সংস্করণ এখন সঞ্চালন করুন"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:448
+#: ../contrib/browser-plugin/pk-plugin-install.c:432
 msgid "Run now"
 msgstr "এখন সঞ্চালন করুন"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:454
+#: ../contrib/browser-plugin/pk-plugin-install.c:438
 #, c-format
 msgid "Update to version %s"
 msgstr "%s সংস্করণে আপডেট করুন"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:460
+#: ../contrib/browser-plugin/pk-plugin-install.c:444
 #, c-format
 msgid "Install %s now"
 msgstr "%s এখন ইনস্টল করুন"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:463
+#: ../contrib/browser-plugin/pk-plugin-install.c:447
 msgid "Version"
 msgstr "সংস্করণ"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:468
+#: ../contrib/browser-plugin/pk-plugin-install.c:452
 msgid "No packages found for your system"
 msgstr "আপনার সিস্টেমের জন্য কোনো প্যাকেজ পাওয়া যায়নি"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:473
+#: ../contrib/browser-plugin/pk-plugin-install.c:457
 msgid "Installing..."
 msgstr "ইনস্টল করা হচ্ছে..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:442
+#: ../contrib/command-not-found/pk-command-not-found.c:440
 msgid "Downloading details about the software sources."
 msgstr "সফ্টওয়্যারের উৎসস্থল সম্পর্কে বিরবণ ডাউনলোড করা হচ্ছে।"
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:446
+#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "ফাইলের তালিকা ডাউনলোড করা হচ্ছে (এই কাজে কিছু সময় ব্যয় হওয়ার সম্ভাবনা রয়েছে)।"
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:450
+#: ../contrib/command-not-found/pk-command-not-found.c:448
 msgid "Waiting for package manager lock."
 msgstr "প্যাকেজ পরিচালনব্যবস্থার লক প্রাপ্ত করার অপেক্ষা চলছে।"
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:454
+#: ../contrib/command-not-found/pk-command-not-found.c:452
 msgid "Loading list of packages."
 msgstr "প্যাকেজের তালিকা লোড করা হচ্ছ।"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:519
+#: ../contrib/command-not-found/pk-command-not-found.c:517
 msgid "Failed to search for file"
 msgstr "ফাইল অনুসন্ধান করতে ব্যর্থ"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:532
+#: ../contrib/command-not-found/pk-command-not-found.c:529
 msgid "Getting the list of files failed"
 msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:679
+#: ../contrib/command-not-found/pk-command-not-found.c:672
 msgid "Failed to launch:"
 msgstr "চিহ্নিত সামগ্রী আরম্ভ করতে ব্যর্থ:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:707
+#: ../contrib/command-not-found/pk-command-not-found.c:694
 msgid "Failed to install packages"
 msgstr "প্যাকেজ ইনস্টল করা যায়নি"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:841
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "command not found"
 msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:858
+#: ../contrib/command-not-found/pk-command-not-found.c:802
 msgid "Similar command is:"
 msgstr "অনুরূপ কমান্ড হল:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:871
+#: ../contrib/command-not-found/pk-command-not-found.c:815
 msgid "Run similar command:"
 msgstr "অনুরূপ কমান্ড সঞ্চালন করুন:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:883
-#: ../contrib/command-not-found/pk-command-not-found.c:892
+#: ../contrib/command-not-found/pk-command-not-found.c:827
+#: ../contrib/command-not-found/pk-command-not-found.c:836
 msgid "Similar commands are:"
 msgstr "অনুরূপ কমান্ড হল:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:899
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
 msgstr "অনুগ্রহ করে সঞ্চালনের জন্য কমান্ড নির্বাচন করুন"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:918
+#: ../contrib/command-not-found/pk-command-not-found.c:861
 msgid "The package providing this file is:"
 msgstr "এই প্যাকেজ উপলব্ধকারী ফাইল হল:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:925
+#: ../contrib/command-not-found/pk-command-not-found.c:868
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' প্যাকেজটি ইনস্টল করা হবে কি? এটি সাহায্যে '%s' কমান্ডটি ব্যবহারের উদ্দেশ্যে উপলব্ধ করা হবে।"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:948
+#: ../contrib/command-not-found/pk-command-not-found.c:891
 msgid "Packages providing this file are:"
 msgstr "এই ফাইল উপলব্ধকারী প্যাকেজগুলি হল:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:958
+#: ../contrib/command-not-found/pk-command-not-found.c:901
 msgid "Suitable packages are:"
 msgstr "প্রযোজ্য প্যাকেজগুলি হল:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:966
+#: ../contrib/command-not-found/pk-command-not-found.c:909
 msgid "Please choose a package to install"
 msgstr "অনুগ্রহ করে ইনস্টল করার জন্য একটি প্যাকেজ নির্বাচন করুন"
 
-#: ../contrib/command-not-found/pk-command-not-found.c:968
+#: ../contrib/command-not-found/pk-command-not-found.c:911
 msgid "User aborted selection"
-msgstr ""
-
-#. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
-msgid "Starting install"
-msgstr "ইনস্টলেশন আরম্ভ করা হচ্ছে"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
-#, c-format
-msgid "Failed to find the package %s, or already installed: %s"
-msgstr "%s প্যাকেজটি পাওয়া যায়নি, অথবা পূর্বেই ইনস্টল করা হয়েছে: %s"
-
-#. command line argument, simulate what would be done, but don't actually do
-#. it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
-msgstr "কোনো প্যাকেজ ইনস্টল করা হবে না, শুধুমাত্র নির্ধারিত ইনস্টলেশনের অনুকরণ করা হবে"
-
-#. command line argument, do we skip packages that depend on the ones
-#. specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
-msgid "Do not install dependencies of the core packages"
-msgstr "মূল প্যাকেজের নির্ভরতার প্যাকেজগুলি ইনস্টল করা হবে না"
-
-#. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
-msgid "Do not display information or progress"
-msgstr "তথ্য অথবা প্রগতি প্রদর্শন করা হবে না"
-
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:544
-msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit Debuginfo ইনস্টলার"
-
-#. TRANSLATORS: the use needs to specify a list of package names on the
-#. command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
-#, c-format
-msgid "ERROR: Specify package names to install."
-msgstr "ERROR: ইনস্টলেশনের জন্য প্যাকেজের নাম নির্ধারণ করুন।"
-
-#. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:594
-#, c-format
-msgid "Getting sources list"
-msgstr "উৎসের তালিকা প্রাপ্ত করা হচ্ছে"
-
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:604
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:679
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:807
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:918
-msgid "FAILED."
-msgstr "বিফল।"
-
-#. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:619
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:659
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:778
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:889
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:933
-#, c-format
-msgid "OK."
-msgstr "ঠিক আছে।"
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
-#, c-format
-msgid "Found %i enabled and %i disabled sources."
-msgstr "%i-টি সক্রিয় ও %i-টি নিষ্ক্রিয় উৎসস্থল পাওয়া গিয়েছে।"
-
-#. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:629
-#, c-format
-msgid "Finding debugging sources"
-msgstr "ডিবাগ করতে ব্যবহারযোগ্য উৎসস্থল অনুসন্ধান করা হচ্ছে"
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:662
-#, c-format
-msgid "Found %i disabled debuginfo repos."
-msgstr "%i-টি নিষ্ক্রিয় debuginfo উৎসস্থল পাওয়া গিয়েছে।"
-
-#. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:669
-#, c-format
-msgid "Enabling debugging sources"
-msgstr "ডিবাগ করতে ব্যবহারযোগ্য উৎসস্থল সক্রিয় করা হচ্ছে"
-
-#. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:697
-#, c-format
-msgid "Enabled %i debugging sources."
-msgstr "ডিবাগের জন্য %i-টি উৎসস্থল সক্রিয় করা হয়েছে।"
-
-#. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:704
-#, c-format
-msgid "Finding debugging packages"
-msgstr "ডিবাগের জন্য প্যাকেজ অনুসন্ধান করা হচ্ছে"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#, c-format
-msgid "Failed to find the package %s: %s"
-msgstr "%s প্যাকেজ পাওয়া যায়নি: %s"
-
-#. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:739
-#, c-format
-msgid "Failed to find the debuginfo package %s: %s"
-msgstr "%s debuginfo প্যাকেজ পাওয়া যায়নি: %s"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
-#, c-format
-msgid "Found no packages to install."
-msgstr "ইনস্টল করার জন্য কোনো প্যাকেজ পাওয়া যায়নি।"
-
-#. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#, c-format
-msgid "Found %i packages:"
-msgstr "%i-টি প্যাকেজ পাওয়া যায়নি:"
-
-#. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:797
-#, c-format
-msgid "Finding packages that depend on these packages"
-msgstr "এই প্যাকেজগুলির উপর নির্ভরশীল প্যাকেজ অনুসন্ধান করা হচ্ছে"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:810
-#, c-format
-msgid "Could not find dependent packages: %s"
-msgstr ""
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
-#, c-format
-msgid "Found %i extra packages."
-msgstr "%i-টি অতিরিক্ত প্যাকেজ পাওয়া গিয়েছে।"
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
-#, c-format
-msgid "No extra packages required."
-msgstr "অতিরিক্ত কোনো প্যাকেজের প্রয়োজন নেই।"
-
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list
-#. them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:839
-#, c-format
-msgid "Found %i packages to install:"
-msgstr "ইনস্টল করার যোগ্য %i-টি প্যাকেজ পাওয়া গিয়েছে:"
-
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the
-#. action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
-#, c-format
-msgid "Not installing packages in simulate mode"
-msgstr "অনুকরণের মোডে কোনো প্যাকেজ ইনস্টল করা হচ্ছে না"
-
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:864
-#: ../lib/packagekit-glib2/pk-console-shared.c:216
-#, c-format
-msgid "Installing packages"
-msgstr "প্যাকেজ ইনস্টল করা হচ্ছে"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:877
-#, c-format
-msgid "Could not install packages: %s"
-msgstr "প্যাকেজ ইনস্টল করা যায়নি: %s"
-
-#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:909
-#, c-format
-msgid "Disabling sources previously enabled"
-msgstr "পূর্বে সক্রিয় করা উৎসস্থল নিষ্ক্রিয় করা হচ্ছে"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
-#. error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:921
-#, c-format
-msgid "Could not disable the debugging sources: %s"
-msgstr "ডিবাগের জন্য ব্যবহারযোগ্য উৎসস্থল নিষ্ক্রিয় করা যায়নি: %s"
-
-#. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:936
-#, c-format
-msgid "Disabled %i debugging sources."
-msgstr "ডিবাগের জন্য ব্যবহারযোগ্য %i-টি উৎসস্থল নিষ্ক্রিয় করা হয়েছে।"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:158
-msgid "Installing Updates"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:192
-msgid "Rebooting after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:233
-msgid "Shutting down after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:577
-msgid "Installing updates, this could take a while..."
 msgstr ""
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
@@ -1083,6 +882,11 @@ msgstr "প্যাকেজ মুছে ফেলা হচ্ছে"
 #: ../lib/packagekit-glib2/pk-enum.c:1224
 msgid "Downloading packages"
 msgstr "প্যাকেজ ডাউনলোড করা হচ্ছে"
+
+#. TRANSLATORS: transaction state, installing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:216
+msgid "Installing packages"
+msgstr "প্যাকেজ ইনস্টল করা হচ্ছে"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: ../lib/packagekit-glib2/pk-console-shared.c:220
@@ -1826,58 +1630,63 @@ msgstr ""
 msgid "Command not found, valid commands are:"
 msgstr ""
 
-#. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-direct.c:382 ../src/pk-main.c:128
+#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#: ../src/pk-direct.c:404 ../src/pk-main.c:128
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "প্যাকেজ করতে ব্যবহৃত ব্যাক-এন্ড, উদাহরণ dummy"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:398
+#: ../src/pk-direct.c:420
 msgid "Refresh the cache"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:402
+#: ../src/pk-direct.c:424
 msgid "Refresh the cache (forced)"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:406
+#: ../src/pk-direct.c:428
 msgid "Search by names"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:410
+#: ../src/pk-direct.c:432
 msgid "Search by details"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:414
+#: ../src/pk-direct.c:436
 msgid "Search by files"
 msgstr ""
 
+#. TRANSLATORS: command description
+#: ../src/pk-direct.c:440
+msgid "Set repository options"
+msgstr ""
+
 #. TRANSLATORS: program name
-#: ../src/pk-direct.c:427
+#: ../src/pk-direct.c:453
 msgid "PackageKit"
 msgstr ""
 
 #. TRANSLATORS: the user didn't read the man page
-#: ../src/pk-direct.c:433
+#: ../src/pk-direct.c:459
 msgid "Failed to parse arguments"
 msgstr ""
 
 #. TRANSLATORS: probably not yet installed
-#: ../src/pk-direct.c:444
+#: ../src/pk-direct.c:470
 msgid "Failed to load the config file"
 msgstr ""
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: ../src/pk-direct.c:477
+#: ../src/pk-direct.c:503
 msgid "Failed to load the backend"
 msgstr ""
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: ../src/pk-direct.c:515
+#: ../src/pk-direct.c:541
 msgid "Failed to unload the backend"
 msgstr ""
 
@@ -1912,22 +1721,22 @@ msgid "PackageKit service"
 msgstr "PackageKit পরিসেবা"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2708
+#: ../src/pk-transaction.c:2524
 msgid "The software is not from a trusted source."
 msgstr "বিশ্বস্ত উৎসস্থল থেকে সফ্টওয়্যারটি প্রাপ্ত করা হয়নি।"
 
-#: ../src/pk-transaction.c:2716
+#: ../src/pk-transaction.c:2532
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"
 
-#: ../src/pk-transaction.c:2717
+#: ../src/pk-transaction.c:2533
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজগুলি আপডেট না করা উচিত।"
 
-#: ../src/pk-transaction.c:2727
+#: ../src/pk-transaction.c:2543
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি ইনস্টল না করা উচিত।"
 
-#: ../src/pk-transaction.c:2728
+#: ../src/pk-transaction.c:2544
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"

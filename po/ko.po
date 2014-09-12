@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-02 11:26+0100\n"
-"PO-Revision-Date: 2014-09-02 10:26+0000\n"
+"POT-Creation-Date: 2014-09-12 13:06+0100\n"
+"PO-Revision-Date: 2014-09-12 12:06+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Korean (http://www.transifex.com/projects/p/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
@@ -124,7 +124,7 @@ msgstr "부모"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
-#: ../client/pk-console.c:276 ../client/pk-console.c:2334
+#: ../client/pk-console.c:276 ../client/pk-console.c:2278
 msgid "Name"
 msgstr "이름"
 
@@ -296,7 +296,7 @@ msgstr "업데이트할 패키지가 없습니다."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:727
-#: ../contrib/command-not-found/pk-command-not-found.c:716
+#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "The transaction failed"
 msgstr "트랜잭션에 실패했습니다."
 
@@ -424,88 +424,87 @@ msgstr "하위 명령:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: ../client/pk-console.c:1522
+#: ../client/pk-console.c:1521
 msgid "Failed to get the time since this action was last completed"
 msgstr "마지막으로 이 동작을 실행한 시간을 알 수 없음"
 
 #. TRANSLATORS: this is the time since this role was used
-#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1525
 msgid "Time since"
 msgstr ""
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
-#: ../client/pk-console.c:1555
+#: ../client/pk-console.c:1548
 msgid "Prepared updates:"
 msgstr "준비한 업데이트:"
 
 #. TRANSLATORS: The network settings could not be sent
-#: ../client/pk-console.c:1679
+#: ../client/pk-console.c:1623
 msgid "The proxy could not be set"
 msgstr "프록시를 설정할 수 없습니다"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1718 ../client/pk-monitor.c:327
+#: ../client/pk-console.c:1662 ../client/pk-monitor.c:327
 msgid "Show the program version and exit"
 msgstr "프로그램 버전을 보여 주고 종료"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1721
+#: ../client/pk-console.c:1665
 msgid "Set the filter, e.g. installed"
 msgstr "필터 설정, 예: 설치됨"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1724
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
+#: ../client/pk-console.c:1668
 msgid "Install the packages without asking for confirmation"
 msgstr "확인 사항을 묻지 않고 패키지를 설치"
 
 #. command line argument, do we just download or apply changes
-#: ../client/pk-console.c:1727
+#: ../client/pk-console.c:1671
 msgid "Prepare the transaction by downloading pakages only"
 msgstr "패키지 다운로드를 통해서만 트랜잭션을 준비"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1730
+#: ../client/pk-console.c:1674
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "유휴 네트워크 대역폭과 적은 전원을 사용하여 명령 실행"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1733
+#: ../client/pk-console.c:1677
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "애니메이션 위젯 대신 컴퓨터가 읽을 수 있는 형식으로 출력"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1736
+#: ../client/pk-console.c:1680
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "최대 메타데이터 캐시 시간. -1을 사용하면 '설정하지 않음'."
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1739
+#: ../client/pk-console.c:1683
 msgid "Allow untrusted packages to be installed."
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1774
+#: ../client/pk-console.c:1718
 msgid "Failed to parse command line"
 msgstr "명령 줄 해석에 실패했습니다"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1784
+#: ../client/pk-console.c:1728
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit과 연결하는 데 실패했습니다."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: ../client/pk-console.c:1845
+#: ../client/pk-console.c:1789
 msgid "The filter specified was invalid"
 msgstr "정의된 필터가 올바르지 않습니다"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
-#: ../client/pk-console.c:1871
+#: ../client/pk-console.c:1815
 msgid "A search type is required, e.g. name"
 msgstr "검색 유형이 필요합니다. 예: 이름"
 
@@ -513,91 +512,91 @@ msgstr "검색 유형이 필요합니다. 예: 이름"
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
-#: ../client/pk-console.c:1881 ../client/pk-console.c:1898
-#: ../client/pk-console.c:1915 ../client/pk-console.c:1932
+#: ../client/pk-console.c:1825 ../client/pk-console.c:1842
+#: ../client/pk-console.c:1859 ../client/pk-console.c:1876
 msgid "A search term is required"
 msgstr "검색 단어가 필요합니다"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1958
+#: ../client/pk-console.c:1902
 msgid "A package name to install is required"
 msgstr "설치할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1972
+#: ../client/pk-console.c:1916
 msgid "A filename to install is required"
 msgstr "설치할 파일 이름이 필요합니다"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:1988
+#: ../client/pk-console.c:1932
 msgid "A type, key_id and package_id are required"
 msgstr "유형, key_id, package_id가 필요합니다"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
-#: ../client/pk-console.c:2006
+#: ../client/pk-console.c:1950
 msgid "A package name to remove is required"
 msgstr "제거할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
-#: ../client/pk-console.c:2019
+#: ../client/pk-console.c:1963
 msgid "A destination directory and the package names to download are required"
 msgstr "대상 디렉터리와 다운로드할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
-#: ../client/pk-console.c:2029
+#: ../client/pk-console.c:1973
 msgid "Directory not found"
 msgstr "디렉터리를 찾을 수 없습니다"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:1988
 msgid "A licence identifier (eula-id) is required"
 msgstr "라이선스 식별자(eula-id)가 필요합니다"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
-#: ../client/pk-console.c:2070
+#: ../client/pk-console.c:2014
 msgid "A package name to resolve is required"
 msgstr "해석할 패키지 이름이 필요합니다"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
-#: ../client/pk-console.c:2087 ../client/pk-console.c:2104
+#: ../client/pk-console.c:2031 ../client/pk-console.c:2048
 msgid "A repository name is required"
 msgstr "저장소 이름이 필요합니다"
 
-#: ../client/pk-console.c:2120
+#: ../client/pk-console.c:2064
 msgid "A repo name, parameter and value are required"
 msgstr "저장소 이름, 인자, 값이 필요합니다"
 
-#: ../client/pk-console.c:2137
+#: ../client/pk-console.c:2081
 msgid "A repo id and autoremove required"
 msgstr "저장소  ID와 자동 제거가 필요합니다"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: ../client/pk-console.c:2164
+#: ../client/pk-console.c:2108
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "동작, 예: 'update-packages'가 필요합니다"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: ../client/pk-console.c:2174
+#: ../client/pk-console.c:2118
 msgid "A correct role is required"
 msgstr "올바른 규칙이 필요합니다"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
-#: ../client/pk-console.c:2188 ../client/pk-console.c:2205
-#: ../client/pk-console.c:2217 ../client/pk-console.c:2247
-#: ../client/pk-console.c:2280
+#: ../client/pk-console.c:2132 ../client/pk-console.c:2149
+#: ../client/pk-console.c:2161 ../client/pk-console.c:2191
+#: ../client/pk-console.c:2224
 msgid "A package name is required"
 msgstr "패키지 이름이 필요합니다"
 
@@ -605,46 +604,46 @@ msgstr "패키지 이름이 필요합니다"
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: ../client/pk-console.c:2231
+#: ../client/pk-console.c:2175
 msgid "A package provide string is required"
 msgstr "패키지 제공 문자열이 필요합니다"
 
-#: ../client/pk-console.c:2258 ../client/pk-console.c:2269
+#: ../client/pk-console.c:2202 ../client/pk-console.c:2213
 msgid "A filename is required"
 msgstr "파일 이름이 필요합니다"
 
 #. TRANSLATORS: this is the description of the backend
-#: ../client/pk-console.c:2338
+#: ../client/pk-console.c:2282
 msgid "Description"
 msgstr "설명"
 
 #. TRANSLATORS: this is the author of the backend
-#: ../client/pk-console.c:2342
+#: ../client/pk-console.c:2286
 msgid "Author"
 msgstr "작성자"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:2405
+#: ../client/pk-console.c:2356
 msgid "You need to specify a list file to create"
 msgstr "만들 파일 목록을 지정해야 합니다."
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
-#: ../client/pk-console.c:2418
+#: ../client/pk-console.c:2369
 #, c-format
 msgid "File already exists: %s"
 msgstr "파일이 이미 있습니다: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
-#: ../client/pk-console.c:2436
+#: ../client/pk-console.c:2387
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "옵션 '%s'이(가) 지원되지 않습니다"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2446
+#: ../client/pk-console.c:2397
 msgid "Command failed"
 msgstr "명령에 실패했습니다"
 
@@ -661,381 +660,181 @@ msgstr "속성을 가져오는 데 실패했습니다"
 msgid "PackageKit Monitor"
 msgstr "PackageKit 감시자"
 
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion
+#: ../client/pk-offline-update.c:153
+msgid "Installing Updates"
+msgstr "업데이트 설치중"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:187
+msgid "Rebooting after installing updates…"
+msgstr "업데이트 설치 후 재부팅중..."
+
+#. TRANSLATORS: we've finished doing offline updates
+#: ../client/pk-offline-update.c:228
+msgid "Shutting down after installing updates…"
+msgstr "업데이트 설치 후 시스템 끄는 중..."
+
+#. TRANSLATORS: we've started doing offline updates
+#: ../client/pk-offline-update.c:425
+msgid "Installing updates, this could take a while..."
+msgstr "업데이트 설치중입니다, 조금 시간이 걸릴 수 있습니다..."
+
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:422
+#: ../contrib/browser-plugin/pk-plugin-install.c:406
 msgid "Getting package information..."
 msgstr "패키지 정보 가져오는 중..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:428
+#: ../contrib/browser-plugin/pk-plugin-install.c:412
 #, c-format
 msgid "Run %s"
 msgstr "%s 실행"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:434
+#: ../contrib/browser-plugin/pk-plugin-install.c:418
 msgid "Installed version"
 msgstr "설치된 버전"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:442
+#: ../contrib/browser-plugin/pk-plugin-install.c:426
 #, c-format
 msgid "Run version %s now"
 msgstr "버전 %s 지금 실행"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:448
+#: ../contrib/browser-plugin/pk-plugin-install.c:432
 msgid "Run now"
 msgstr "지금 실행"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:454
+#: ../contrib/browser-plugin/pk-plugin-install.c:438
 #, c-format
 msgid "Update to version %s"
 msgstr "버전 %s(으)로 업데이트"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:460
+#: ../contrib/browser-plugin/pk-plugin-install.c:444
 #, c-format
 msgid "Install %s now"
 msgstr "지금 %s 설치"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:463
+#: ../contrib/browser-plugin/pk-plugin-install.c:447
 msgid "Version"
 msgstr "버전"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:468
+#: ../contrib/browser-plugin/pk-plugin-install.c:452
 msgid "No packages found for your system"
 msgstr "시스템에서 찾은 패키지가 없습니다"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:473
+#: ../contrib/browser-plugin/pk-plugin-install.c:457
 msgid "Installing..."
 msgstr "설치 중..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:442
+#: ../contrib/command-not-found/pk-command-not-found.c:440
 msgid "Downloading details about the software sources."
 msgstr "프로그램 원본의 자세한 정보 다운로드 중."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:446
+#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "파일 목록 다운로드 중 (완료되려면 시간이 좀 걸립니다)"
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:450
+#: ../contrib/command-not-found/pk-command-not-found.c:448
 msgid "Waiting for package manager lock."
 msgstr "패키지 관리자 잠금 해제 대기 중."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:454
+#: ../contrib/command-not-found/pk-command-not-found.c:452
 msgid "Loading list of packages."
 msgstr "패키지 목록 불러오는 중."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:519
+#: ../contrib/command-not-found/pk-command-not-found.c:517
 msgid "Failed to search for file"
 msgstr "파일 검색에 실패했습니다"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:532
+#: ../contrib/command-not-found/pk-command-not-found.c:529
 msgid "Getting the list of files failed"
 msgstr "실패한 파일 목록 가져오는 중"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:679
+#: ../contrib/command-not-found/pk-command-not-found.c:672
 msgid "Failed to launch:"
 msgstr "실행에 실패했습니다:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:707
+#: ../contrib/command-not-found/pk-command-not-found.c:694
 msgid "Failed to install packages"
 msgstr "패키지 설치에 실패했습니다"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:841
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "command not found"
 msgstr "명령을 찾을 수 없습니다"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:858
+#: ../contrib/command-not-found/pk-command-not-found.c:802
 msgid "Similar command is:"
 msgstr "유사한 명령:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:871
+#: ../contrib/command-not-found/pk-command-not-found.c:815
 msgid "Run similar command:"
 msgstr "유사한 명령 실행:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:883
-#: ../contrib/command-not-found/pk-command-not-found.c:892
+#: ../contrib/command-not-found/pk-command-not-found.c:827
+#: ../contrib/command-not-found/pk-command-not-found.c:836
 msgid "Similar commands are:"
 msgstr "유사한 명령:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:899
+#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
 msgstr "실행할 명령을 선택하십시오"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:918
+#: ../contrib/command-not-found/pk-command-not-found.c:861
 msgid "The package providing this file is:"
 msgstr "이 파일을 제공하는 패키지:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:925
+#: ../contrib/command-not-found/pk-command-not-found.c:868
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "패키지 '%s'을(를) 명령 '%s'을(를) 제공하기 위해 설치합니까?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:948
+#: ../contrib/command-not-found/pk-command-not-found.c:891
 msgid "Packages providing this file are:"
 msgstr "이 파일들이 제공되는 패키지들:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:958
+#: ../contrib/command-not-found/pk-command-not-found.c:901
 msgid "Suitable packages are:"
 msgstr "알맞은 패키지들:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:966
+#: ../contrib/command-not-found/pk-command-not-found.c:909
 msgid "Please choose a package to install"
 msgstr "설치하기 위한 패키지를 선택하여 주시기 바랍니다"
 
-#: ../contrib/command-not-found/pk-command-not-found.c:968
+#: ../contrib/command-not-found/pk-command-not-found.c:911
 msgid "User aborted selection"
 msgstr "사용자가 선택을 취소했습니다"
-
-#. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
-msgid "Starting install"
-msgstr "설치 시작 중"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
-#, c-format
-msgid "Failed to find the package %s, or already installed: %s"
-msgstr "패키지 %s를 찾는데 실패했거나, 이미 설치되었습니다: %s"
-
-#. command line argument, simulate what would be done, but don't actually do
-#. it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
-msgstr "실제로 어떤 패키지도 설치하지 말고, 어떤 것들이 설치되는지 시연하기만 합니다"
-
-#. command line argument, do we skip packages that depend on the ones
-#. specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
-msgid "Do not install dependencies of the core packages"
-msgstr "핵심 패키지와 관련된 것들을 설치하지 않습니다"
-
-#. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
-msgid "Do not display information or progress"
-msgstr "정보나 진행과정을 표시하지 않습니다"
-
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:544
-msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit Debuginfo 설치자"
-
-#. TRANSLATORS: the use needs to specify a list of package names on the
-#. command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
-#, c-format
-msgid "ERROR: Specify package names to install."
-msgstr "오류: 설치할 패키지 이름을 지정하여 주십시오"
-
-#. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:594
-#, c-format
-msgid "Getting sources list"
-msgstr "원본 목록 가져오는 중"
-
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:604
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:679
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:807
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:918
-msgid "FAILED."
-msgstr "실패."
-
-#. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:619
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:659
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:778
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:889
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:933
-#, c-format
-msgid "OK."
-msgstr "완료."
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
-#, c-format
-msgid "Found %i enabled and %i disabled sources."
-msgstr "%i 개의 활성화 된, %i 개의 비활성화된 원본을 찾았습니다."
-
-#. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:629
-#, c-format
-msgid "Finding debugging sources"
-msgstr "디버깅 원본 찾는 중"
-
-#. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:662
-#, c-format
-msgid "Found %i disabled debuginfo repos."
-msgstr "%i 개의 비활성화된 디버그 정보 저장소를 찾았습니다."
-
-#. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:669
-#, c-format
-msgid "Enabling debugging sources"
-msgstr "디버깅 원본 활성화 중"
-
-#. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:697
-#, c-format
-msgid "Enabled %i debugging sources."
-msgstr "%i 개의 디버깅 원본이 활성화 되었습니다."
-
-#. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:704
-#, c-format
-msgid "Finding debugging packages"
-msgstr "디버깅 패키지 찾는 중"
-
-#. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#, c-format
-msgid "Failed to find the package %s: %s"
-msgstr "패키지 %s을(를)찾는데 실패했습니다: %s"
-
-#. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:739
-#, c-format
-msgid "Failed to find the debuginfo package %s: %s"
-msgstr "디버그 정보 패키지 %s을(를) 찾는데 실패했습니다: %s"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
-#, c-format
-msgid "Found no packages to install."
-msgstr "설치할 패키지가 아무것도 없습니다."
-
-#. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#, c-format
-msgid "Found %i packages:"
-msgstr "%i개의 패키지를 찾았습니다:"
-
-#. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:797
-#, c-format
-msgid "Finding packages that depend on these packages"
-msgstr "이 패키지에 의존하는 패키지 찾는중"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:810
-#, c-format
-msgid "Could not find dependent packages: %s"
-msgstr "의존하는 패키지를 찾을 수 없음: %s"
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
-#, c-format
-msgid "Found %i extra packages."
-msgstr "%i개의 추가 패키지를 찾았습니다."
-
-#. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
-#, c-format
-msgid "No extra packages required."
-msgstr "추가 패키지가 필요하지 않습니다."
-
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list
-#. them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:839
-#, c-format
-msgid "Found %i packages to install:"
-msgstr "설치할 %i 개의 패키지를 찾았습니다:"
-
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the
-#. action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
-#, c-format
-msgid "Not installing packages in simulate mode"
-msgstr "시연 모드에서 설치하는 패키지가 없습니다"
-
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:864
-#: ../lib/packagekit-glib2/pk-console-shared.c:216
-#, c-format
-msgid "Installing packages"
-msgstr "패키지 설치 중"
-
-#. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:877
-#, c-format
-msgid "Could not install packages: %s"
-msgstr "패키지를 설치할 수 없습니다: %s"
-
-#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:909
-#, c-format
-msgid "Disabling sources previously enabled"
-msgstr "이전에 활성화된 원본 비활성화 중"
-
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
-#. error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:921
-#, c-format
-msgid "Could not disable the debugging sources: %s"
-msgstr "디버깅 원본을 비활성화 할 수 없습니다: %s"
-
-#. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:936
-#, c-format
-msgid "Disabled %i debugging sources."
-msgstr "%i개의 디버깅 원본을 비활성화했습니다."
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
-#: ../contrib/systemd-updates/pk-offline-update.c:158
-msgid "Installing Updates"
-msgstr "업데이트 설치중"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:192
-msgid "Rebooting after installing updates…"
-msgstr "업데이트 설치 후 재부팅중..."
-
-#. TRANSLATORS: we've finished doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:233
-msgid "Shutting down after installing updates…"
-msgstr "업데이트 설치 후 시스템 끄는 중..."
-
-#. TRANSLATORS: we've started doing offline updates
-#: ../contrib/systemd-updates/pk-offline-update.c:577
-msgid "Installing updates, this could take a while..."
-msgstr "업데이트 설치중입니다, 조금 시간이 걸릴 수 있습니다..."
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
@@ -1084,6 +883,11 @@ msgstr "패키지 제거 중"
 #: ../lib/packagekit-glib2/pk-enum.c:1224
 msgid "Downloading packages"
 msgstr "패키지 다운로드 중"
+
+#. TRANSLATORS: transaction state, installing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:216
+msgid "Installing packages"
+msgstr "패키지 설치 중"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: ../lib/packagekit-glib2/pk-console-shared.c:220
@@ -1827,58 +1631,63 @@ msgstr ""
 msgid "Command not found, valid commands are:"
 msgstr ""
 
-#. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-direct.c:382 ../src/pk-main.c:128
+#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#: ../src/pk-direct.c:404 ../src/pk-main.c:128
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "사용하기 위한 백엔드 (예: dummy) 패키지로 만드는 중"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:398
+#: ../src/pk-direct.c:420
 msgid "Refresh the cache"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:402
+#: ../src/pk-direct.c:424
 msgid "Refresh the cache (forced)"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:406
+#: ../src/pk-direct.c:428
 msgid "Search by names"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:410
+#: ../src/pk-direct.c:432
 msgid "Search by details"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:414
+#: ../src/pk-direct.c:436
 msgid "Search by files"
 msgstr ""
 
+#. TRANSLATORS: command description
+#: ../src/pk-direct.c:440
+msgid "Set repository options"
+msgstr ""
+
 #. TRANSLATORS: program name
-#: ../src/pk-direct.c:427
+#: ../src/pk-direct.c:453
 msgid "PackageKit"
 msgstr ""
 
 #. TRANSLATORS: the user didn't read the man page
-#: ../src/pk-direct.c:433
+#: ../src/pk-direct.c:459
 msgid "Failed to parse arguments"
 msgstr ""
 
 #. TRANSLATORS: probably not yet installed
-#: ../src/pk-direct.c:444
+#: ../src/pk-direct.c:470
 msgid "Failed to load the config file"
 msgstr ""
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: ../src/pk-direct.c:477
+#: ../src/pk-direct.c:503
 msgid "Failed to load the backend"
 msgstr ""
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: ../src/pk-direct.c:515
+#: ../src/pk-direct.c:541
 msgid "Failed to unload the backend"
 msgstr ""
 
@@ -1913,22 +1722,22 @@ msgid "PackageKit service"
 msgstr "PackageKit 서비스"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2708
+#: ../src/pk-transaction.c:2524
 msgid "The software is not from a trusted source."
 msgstr "신뢰할 수 있는 원본에서 프로그램을 가져오지 않았습니다"
 
-#: ../src/pk-transaction.c:2716
+#: ../src/pk-transaction.c:2532
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지를 갱신하지 마십시오"
 
-#: ../src/pk-transaction.c:2717
+#: ../src/pk-transaction.c:2533
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지들을 갱신하지 마십시오"
 
-#: ../src/pk-transaction.c:2727
+#: ../src/pk-transaction.c:2543
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단되기 전에는 이 패키지를 설치하지 "
 
-#: ../src/pk-transaction.c:2728
+#: ../src/pk-transaction.c:2544
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "안던하다고 판단되기 전에는 이 패키지들을 설치하지 마십시오"
