@@ -242,6 +242,10 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	hif_context_set_lock_dir (priv->context, lock_dir);
 	hif_context_set_rpm_verbosity (priv->context, "info");
 
+	/* do we keep downloaded packages */
+	ret = g_key_file_get_boolean (conf, "Daemon", "KeepCache", NULL);
+	hif_context_set_keep_cache (priv->context, ret);
+
 	/* if our cachedir is empty, copy over some default metadata */
 	cache_root = g_build_filename (destdir, "/var/cache/PackageKit", NULL);
 	cache_dir_fb = g_build_filename (destdir, "/usr/share/PackageKit/metadata", NULL);
