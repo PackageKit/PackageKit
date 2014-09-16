@@ -232,6 +232,7 @@ pk_get_distro_id_machine_type (void)
 gchar *
 pk_get_distro_id (void)
 {
+	const gchar *filename = "/etc/os-release";
 	gboolean ret;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *arch = NULL;
@@ -246,7 +247,9 @@ pk_get_distro_id (void)
 		return g_strdup ("selftest;11.91;i686");
 
 	/* load data */
-	if (!g_file_get_contents ("/etc/os-release", &contents, NULL, NULL))
+	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+		filename = "/usr/lib/os-release";
+	if (!g_file_get_contents (filename, &contents, NULL, NULL))
 		return NULL;
 
 	/* make a valid GKeyFile from the .ini data by prepending a header */
