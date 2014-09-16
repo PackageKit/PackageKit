@@ -125,15 +125,6 @@ Provides: PackageKit-docs = %{version}-%{release}
 %description glib-devel
 GLib headers and libraries for PackageKit.
 
-%package backend-devel
-Summary: Headers to compile out of tree PackageKit backends
-# explicit dep: packagekit-plugin.pc links with -lpackagekit-glib2
-# but doesn't refer to packagekit-glib2.pc
-Requires: %{name}-glib-devel%{?_isa} = %{version}-%{release}
-
-%description backend-devel
-Headers to compile out of tree PackageKit backends.
-
 %package browser-plugin
 Summary: Browser Plugin for PackageKit
 Requires: gtk2
