@@ -27,7 +27,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
  #include <systemd/sd-login.h>
 #endif
 
@@ -178,7 +178,7 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	return cmdline;
 }
 
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 /**
  * pk_dbus_get_session_systemd:
  **/
@@ -221,7 +221,7 @@ gchar *
 pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 {
 	gchar *session = NULL;
-#ifndef PK_BUILD_SYSTEMD
+#ifndef HAVE_SYSTEMD
 	_cleanup_error_free_ GError *error = NULL;
 #endif
 	guint pid;
@@ -251,7 +251,7 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	}
 
 	/* get session from systemd or ConsoleKit */
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	session = pk_dbus_get_session_systemd (pid);
 #else
 	/* get session from ConsoleKit */

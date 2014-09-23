@@ -25,7 +25,7 @@ systemdservice_in_files =				\
 	packagekit.service.in				\
 	packagekit-offline-update.service.in
 
-if PK_BUILD_SYSTEMD
+if HAVE_SYSTEMD
 systemdservicedir       = $(systemdsystemunitdir)
 systemdservice_DATA     = $(systemdservice_in_files:.service.in=.service)
 endif

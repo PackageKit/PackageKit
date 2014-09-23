@@ -242,14 +242,13 @@ dnl - Use systemd and logind rather than ConsoleKit
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and logind code]),
 	      enable_systemd=$enableval,enable_systemd=yes)
-AM_CONDITIONAL(PK_BUILD_SYSTEMD, test x$enable_systemd = xyes)
 if test x$enable_systemd = xyes; then
 	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login libsystemd-journal)
 	AC_ARG_WITH([systemdsystemunitdir],
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 		    [],
 		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
-	AC_DEFINE(PK_BUILD_SYSTEMD,1,[Build systemd code])
+	AC_DEFINE(HAVE_SYSTEMD,1,[Build systemd code])
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])

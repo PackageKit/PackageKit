@@ -95,7 +95,7 @@ struct PkEnginePrivate
 	guint			 owner_id;
 	GDBusNodeInfo		*introspection;
 	GDBusConnection		*connection;
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	GDBusProxy		*logind_proxy;
 	gint			 logind_fd;
 #endif
@@ -261,7 +261,7 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 static void
 pk_engine_inhibit (PkEngine *engine)
 {
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_variant_unref_ GVariant *res = NULL;
 
@@ -300,7 +300,7 @@ pk_engine_inhibit (PkEngine *engine)
 static void
 pk_engine_uninhibit (PkEngine *engine)
 {
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	if (engine->priv->logind_fd == 0) {
 		g_warning ("no fd to close");
 		return;
@@ -1611,7 +1611,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 	}
 }
 
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 /**
  * pk_engine_proxy_logind_cb:
  **/
@@ -1653,7 +1653,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	/* save copy for emitting signals */
 	engine->priv->connection = g_object_ref (connection);
 
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	/* connect to logind */
 	g_dbus_proxy_new (connection,
 			  G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
@@ -1817,7 +1817,7 @@ pk_engine_finalize (GObject *object)
 	if (engine->priv->connection != NULL)
 		g_object_unref (engine->priv->connection);
 
-#ifdef PK_BUILD_SYSTEMD
+#ifdef HAVE_SYSTEMD
 	/* uninhibit */
 	if (engine->priv->logind_fd != 0)
 		close (engine->priv->logind_fd);
