@@ -25,6 +25,7 @@ AM_CPPFLAGS =						\
 	$(GIO_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
+	$(SYSTEMD_CFLAGS)				\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
