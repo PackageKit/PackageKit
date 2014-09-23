@@ -407,7 +407,7 @@ AC_ARG_ENABLE(daemon-tests, AS_HELP_STRING([--enable-daemon-tests],
 	      [Test the daemon using the dummy backend]),
 	      enable_daemon_tests=$enableval,enable_daemon_tests=yes)
 if test x$enable_daemon_tests = xyes; then
-	AC_DEFINE(PK_ENABLE_DAEMON_TESTS,1,[Has offline updates])
+	AC_DEFINE(PK_ENABLE_DAEMON_TESTS,1,[Enable the daemon tests])
 fi
 
 # backends
