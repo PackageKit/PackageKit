@@ -45,7 +45,6 @@ pk_alpm_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError 
 			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", name,
 				     alpm_strerror (errno));
-			g_strfreev (package);
 			return FALSE;
 		}
 	}

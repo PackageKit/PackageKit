@@ -55,7 +55,6 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 			alpm_errno_t errno = ALPM_ERR_DB_NOT_FOUND;
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
-			g_strfreev (package);
 			return FALSE;
 		}
 
@@ -64,7 +63,6 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
-			g_strfreev (package);
 			return FALSE;
 		}
 	}

@@ -249,7 +249,7 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 static void
 pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_pkg_t *pkg, gint *result)
 {
-	gchar *output;
+	_cleanup_free_ gchar *output = NULL;
 
 	g_return_if_fail (pkg != NULL);
 	g_return_if_fail (result != NULL);
@@ -259,7 +259,6 @@ pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_pkg_t *pkg, gint *result)
 		output = g_strdup_printf ("%s: was not ignored\n",
 					  alpm_pkg_get_name (pkg));
 		pk_alpm_transaction_output (output);
-		g_free (output);
 
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		*result = 1;
@@ -285,7 +284,6 @@ pk_alpm_select_provider (const alpm_list_t *providers,
 				  alpm_pkg_get_name (providers->data),
 				  depend->name);
 	pk_alpm_transaction_output (output);
-	g_free (output);
 }
 
 static void
@@ -866,7 +864,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *data = NULL;
-	gchar *prefix;
+	_cleanup_free_ gchar *prefix = NULL;
 
 	if (alpm_trans_prepare (priv->alpm, &data) >= 0)
 		return TRUE;
@@ -891,9 +889,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 		alpm_list_free_inner (data, pk_alpm_fileconflict_free);
 		alpm_list_free (data);
 		break;
-
 	default:
-		prefix = NULL;
 		if (data != NULL)
 			g_warning ("unhandled error %d", alpm_errno (priv->alpm));
 		break;
@@ -903,7 +899,6 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 		alpm_errno_t errno = alpm_errno (priv->alpm);
 		g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", prefix,
 			     alpm_strerror (errno));
-		g_free (prefix);
 	} else {
 		alpm_errno_t errno = alpm_errno (priv->alpm);
 		g_set_error_literal (error, PK_ALPM_ERROR, errno,
@@ -976,7 +971,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *data = NULL;
-	gchar *prefix;
+	_cleanup_free_ gchar *prefix = NULL;
 
 	if (pk_backend_job_is_cancelled (job))
 		return TRUE;
@@ -998,9 +993,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 		prefix = pk_alpm_string_build_list (data);
 		alpm_list_free (data);
 		break;
-
 	default:
-		prefix = NULL;
 		if (data != NULL) {
 			g_warning ("unhandled error %d",
 				   alpm_errno (priv->alpm));
@@ -1012,7 +1005,6 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 		alpm_errno_t errno = alpm_errno (priv->alpm);
 		g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", prefix,
 			     alpm_strerror (errno));
-		g_free (prefix);
 	} else {
 		alpm_errno_t errno = alpm_errno (priv->alpm);
 		g_set_error_literal (error, PK_ALPM_ERROR, errno,

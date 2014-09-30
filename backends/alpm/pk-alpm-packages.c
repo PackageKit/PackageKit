@@ -67,7 +67,7 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	gchar **package;
+	_cleanup_strv_free_ gchar **package = NULL;
 	const gchar *repo_id;
 	alpm_db_t *db = NULL;
 	alpm_pkg_t *pkg;
@@ -111,7 +111,6 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 		g_set_error (error, PK_ALPM_ERROR, code, "%s: %s", package_id,
 			     alpm_strerror (code));
 	}
-	g_strfreev (package);
 	return pkg;
 }
 
