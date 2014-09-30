@@ -1009,6 +1009,7 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	GCancellable *cancellable;
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* cancel */
 	cancellable = pk_backend_job_get_cancellable (job);

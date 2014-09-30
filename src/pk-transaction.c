@@ -2685,6 +2685,10 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 {
 	g_debug ("CancelBg method called on %s", transaction->priv->tid);
 
+	/* transaction is already finished */
+	if (transaction->priv->state == PK_TRANSACTION_STATE_FINISHED)
+		return;
+
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
 					PK_ROLE_ENUM_CANCEL)) {
@@ -2728,6 +2732,15 @@ pk_transaction_cancel (PkTransaction *transaction,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	g_debug ("Cancel method called on %s", transaction->priv->tid);
+
+	/* transaction is already finished */
+	if (transaction->priv->state == PK_TRANSACTION_STATE_FINISHED) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_RUNNING,
+			     "Transaction is already finished");
+		goto out;
+	}
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
