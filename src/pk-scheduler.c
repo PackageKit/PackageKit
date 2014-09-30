@@ -537,7 +537,7 @@ pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
  **/
 static void
 pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
-					     PkScheduler *scheduler)
+				      PkScheduler *scheduler)
 {
 	PkSchedulerItem *item;
 	PkTransactionState state;

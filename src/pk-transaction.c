@@ -2802,9 +2802,8 @@ pk_transaction_cancel (PkTransaction *transaction,
 		ret = pk_transaction_obtain_authorization (transaction,
 							   PK_ROLE_ENUM_CANCEL,
 							   &error);
-		if (!ret) {
-				goto out;
-		}
+		if (!ret)
+			goto out;
 	}
 
 skip_uid:
