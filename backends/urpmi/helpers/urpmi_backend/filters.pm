@@ -86,14 +86,14 @@ sub filter_gui {
 
 sub filter_supported {
   my ($urpm, $pkg, $filter) = @_;
-  my $media = pkg2medium($pkg, $urpm);
-  return 0 unless defined($media);
+  my $medium = pkg2medium($pkg, $urpm);
+  return 0 unless defined($medium);
 
-  my $medianame = $media->{name};
-  # FIXME: matching against media name is certainly not optimal,
+  my $mediumname = $medium->{name};
+  # FIXME: matching against medium name is certainly not optimal,
   #        better heuristics needed...
-  #        could be blacklisting 'contrib' or better check for 'media_type=official'
-  my $supported = $medianame =~ /^(?:core|main)/i;
+  #        could be blacklisting 'contrib' or better check for 'medium_type=official'
+  my $supported = $mediumname =~ /^(?:core|main)/i;
 
   return 1 if $filter eq FILTER_SUPPORTED && $supported;
   return 1 if $filter eq FILTER_NOT_SUPPORTED && !$supported;
@@ -102,21 +102,21 @@ sub filter_supported {
 
 sub filter_free {
   my ($urpm, $pkg, $filter) = @_;
-  my $media = pkg2medium($pkg, $urpm);
-  return 0 unless defined($media);
+  my $medium = pkg2medium($pkg, $urpm);
+  return 0 unless defined($medium);
 
-  my $medianame = $media->{name};
+  my $mediumname = $medium->{name};
   my $free;
-  if ($media->{mediacfg}) {
-      my @media_types;
-      my ($distribconf, $media_path) = @{$media->{mediacfg}};
-      warn ">> (distribconf, media_path) = ($distribconf, $media_path)\n";
-      @media_types = split(':', $distribconf->getvalue($media_path, 'media_type')) if $distribconf;
-      $free = member('free', @media_types);
+  if ($medium->{mediacfg}) {
+      my @medium_types;
+      my ($distribconf, $medium_path) = @{$medium->{mediacfg}};
+      warn ">> (distribconf, medium_path) = ($distribconf, $medium_path)\n";
+      @medium_types = split(':', $distribconf->getvalue($medium_path, 'medium_type')) if $distribconf;
+      $free = member('free', @medium_types);
   } else {
-      # FIXME: matching against media name is certainly not optimal,
+      # FIXME: matching against medium name is certainly not optimal,
       #        better heuristics needed...
-      $free = $medianame !~ /non-free/i;
+      $free = $mediumname !~ /non-free/i;
   }
 
   return 1 if $filter eq FILTER_FREE && $free;
