@@ -52,6 +52,11 @@ sub filter {
         return 0 if !filter_free($urpm, $pkg, $filter);
       }
     }
+    elsif (member($filter, FILTER_DOWNLOADED, FILTER_NOT_DOWNLOADED)) {
+      if ($e_filters{FILTER_DOWNLOADED}) {
+        return 0 if !filter_downloaded($urpm, $pkg, $filter);
+      }
+    }
   }
   return 1;
 }
@@ -121,6 +126,20 @@ sub filter_free {
 
   return 1 if $filter eq FILTER_FREE && $free;
   return 1 if $filter eq FILTER_NOT_FREE && !$free;
+  return 0;
+}
+
+sub filter_downloaded {
+  my ($urpm, $pkg, $filter) = @_;
+  my $medium = pkg2medium($pkg, $urpm);
+  return 0 unless defined($medium);
+  my $proto = urpm::protocol_from_url($medium->{url});
+
+  # we have no cache:
+  my $downloaded = $proto eq 'file';
+
+  return 1 if $filter eq FILTER_DOWNLOADED && $downloaded;
+  return 1 if $filter eq FILTER_NOT_DOWNLOADED && !$downloaded;
   return 0;
 }
 

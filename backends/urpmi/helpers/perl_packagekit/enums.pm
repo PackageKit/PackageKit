@@ -33,6 +33,8 @@ our @EXPORT = qw(
   FILTER_SUPPORTED 
   FILTER_UNKNOWN 
   FILTER_VISIBLE
+  FILTER_DOWNLOADED,
+  FILTER_NOT_DOWNLOADED,
   
   GROUP_ACCESSIBILITY 
   GROUP_ACCESSORIES 
@@ -179,6 +181,8 @@ use constant {
   FILTER_SUPPORTED => "supported",
   FILTER_UNKNOWN => "unknown",
   FILTER_VISIBLE => "visible",
+  FILTER_DOWNLOADED => 'downloaded',
+  FILTER_NOT_DOWNLOADED => '~downloaded',
 
   GROUP_ACCESSIBILITY => "accessibility",
   GROUP_ACCESSORIES => "accessories",
