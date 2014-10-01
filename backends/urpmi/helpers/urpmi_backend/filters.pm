@@ -57,6 +57,11 @@ sub filter {
         return 0 if !filter_downloaded($urpm, $pkg, $filter);
       }
     }
+    elsif (member($filter, FILTER_APPLICATION, FILTER_NOT_APPLICATION)) {
+      if ($e_filters{FILTER_APPLICATION}) {
+        return 0 if !filter_application($urpm, $pkg, $filter);
+      }
+    }
   }
   return 1;
 }
@@ -140,6 +145,17 @@ sub filter_downloaded {
 
   return 1 if $filter eq FILTER_DOWNLOADED && $downloaded;
   return 1 if $filter eq FILTER_NOT_DOWNLOADED && !$downloaded;
+  return 0;
+}
+
+sub filter_application {
+  @gui_pkgs = map { chomp; $_ } cat_('/usr/share/rpmdrake/gui.lst') if !@gui_pkgs;
+  my ($urpm, $pkg, $filter) = @_;
+
+  my $application = member($pkg->name, @gui_pkgs);
+
+  return 1 if $filter eq FILTER_APPLICATION && $application;
+  return 1 if $filter eq FILTER_NOT_APPLICATION && !$application;
   return 0;
 }
 
