@@ -1638,6 +1638,8 @@ main (int argc, char *argv[])
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean only_download = FALSE;
+	gboolean allow_downgrade = FALSE;
+	gboolean allow_reinstall = FALSE;
 	guint cache_age = G_MAXUINT;
 	gint retval_copy = 0;
 	gboolean plain = FALSE;
@@ -1669,6 +1671,11 @@ main (int argc, char *argv[])
 		{ "only-download", 'd', 0, G_OPTION_ARG_NONE, &only_download,
 			/* command line argument, do we just download or apply changes */
 			_("Prepare the transaction by downloading pakages only"), NULL },
+		{ "allow-downgrade", 0, 0, G_OPTION_ARG_NONE, &allow_downgrade,
+			/* command line argument, do we allow package downgrades */
+			_("Allow packages to be downgraded during transaction"), NULL},
+		{ "allow-reinstall", 0, 0, G_OPTION_ARG_NONE, &allow_reinstall,
+		    _("Allow packages to be reinstalled during transaction"), NULL},
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
@@ -1766,6 +1773,8 @@ main (int argc, char *argv[])
 		      "simulate", !noninteractive && !only_download,
 		      "interactive", !noninteractive,
 		      "only-download", only_download,
+		      "allow-downgrade", allow_downgrade,
+		      "allow-reinstall", allow_reinstall,
 		      "cache-age", cache_age,
 		      "only-trusted", !allow_untrusted,
 		      NULL);
