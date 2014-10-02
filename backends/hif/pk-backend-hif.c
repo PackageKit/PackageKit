@@ -337,6 +337,14 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
+	case HIF_STATE_ACTION_REINSTALL:
+		if (pk_package_id_check (action_hint)) {
+			pk_backend_job_package (job,
+						PK_INFO_ENUM_REINSTALLING,
+						action_hint,
+						"");
+		}
+		break;
 	case HIF_STATE_ACTION_REMOVE:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
@@ -345,6 +353,7 @@ pk_backend_state_action_changed_cb (HifState *state,
 						"");
 		}
 		break;
+	case HIF_STATE_ACTION_DOWNGRADE:
 	case HIF_STATE_ACTION_UPDATE:
 		if (pk_package_id_check (action_hint)) {
 			pk_backend_job_package (job,
@@ -1710,23 +1719,26 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	}
 
 	/* ensure packages are not already installed */
-	for (i = 0; full_paths[i] != NULL; i++) {
-		pkg = hy_sack_add_cmdline_package (sack, full_paths[i]);
-		if (pkg == NULL) {
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_FILE_NOT_FOUND,
-						   "Failed to open %s",
-						   full_paths[i]);
-			return;
+	if (!pk_bitfield_contain (job_data->transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
+		for (i = 0; full_paths[i] != NULL; i++) {
+			pkg = hy_sack_add_cmdline_package (sack, full_paths[i]);
+			if (pkg == NULL) {
+				pk_backend_job_error_code (job,
+							   PK_ERROR_ENUM_FILE_NOT_FOUND,
+							   "Failed to open %s",
+							   full_paths[i]);
+				return;
+			}
+			pk_backend_job_details (job,
+						hif_package_get_id (pkg),
+						hy_package_get_summary (pkg),
+						hy_package_get_license (pkg),
+						PK_GROUP_ENUM_UNKNOWN,
+						hif_package_get_description (pkg),
+						hy_package_get_url (pkg),
+						(gulong) hy_package_get_size (pkg));
 		}
-		pk_backend_job_details (job,
-					hif_package_get_id (pkg),
-					hy_package_get_summary (pkg),
-					hy_package_get_license (pkg),
-					PK_GROUP_ENUM_UNKNOWN,
-					hif_package_get_description (pkg),
-					hy_package_get_url (pkg),
-					(gulong) hy_package_get_size (pkg));
 	}
 
 	/* done */
@@ -2193,6 +2205,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean ret = TRUE;
+	int flags = HIF_TRANSACTION_FLAG_NONE;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -2205,13 +2218,17 @@ pk_backend_transaction_run (PkBackendJob *job,
 	/* depsolve */
 	transaction = hif_context_get_transaction (priv->context);
 	if (pk_bitfield_contain (job_data->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
-		hif_transaction_set_flags (transaction,
-					   HIF_TRANSACTION_FLAG_ONLY_TRUSTED);
-	} else {
-		hif_transaction_set_flags (transaction,
-					   HIF_TRANSACTION_FLAG_NONE);
-	}
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED))
+		flags |= HIF_TRANSACTION_FLAG_ONLY_TRUSTED;
+	if (pk_bitfield_contain (job_data->transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL))
+		flags |= HIF_TRANSACTION_FLAG_ALLOW_REINSTALL;
+	if (pk_bitfield_contain (job_data->transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE))
+		flags |= HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE;
+
+	hif_transaction_set_flags (transaction, flags);
+
 	state_local = hif_state_get_child (state);
 	ret = hif_transaction_depsolve (transaction,
 					job_data->goal,
@@ -2666,6 +2683,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	gboolean ret;
 	gchar **package_ids;
 	guint i;
+	enum _hy_comparison_type_e *relations = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
 
@@ -2704,17 +2722,74 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		return;
 	}
 
+	relations = g_new0 (enum _hy_comparison_type_e, g_strv_length (package_ids));
+	/**
+	 * HY_EQ - the same version of package is installed -> reinstallation
+	 * HY_GT - higher version of package is installed   -> update
+	 * HY_LT - older version of package is installed    -> downgrade
+	 * 0     - package is not installed
+	 */
 	/* ensure packages are not already installed */
 	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id_name_arch (sack, package_ids[i]);
-		if (ret) {
+		HyQuery query = NULL;
+		HyPackage inst_pkg = NULL;
+		gchar **split = NULL;
+		HyPackage latest = NULL;
+		HyPackageList pkglist = NULL;
+		int pli;
+
+		split = pk_package_id_split (package_ids[i]);
+		query = hy_query_create (sack);
+		hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
+		hy_query_filter (query, HY_PKG_ARCH, HY_EQ, split[PK_PACKAGE_ID_ARCH]);
+		hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+		pkglist = hy_query_run (query);
+
+		for (pli = 0; pli < hy_packagelist_count (pkglist); ++pli) {
+			inst_pkg = hy_packagelist_get (pkglist, pli);
+			ret = hy_sack_evr_cmp (sack, split[PK_PACKAGE_ID_VERSION], hy_package_get_evr (inst_pkg));
+			if (relations[i] == 0 && ret > 0) {
+				relations[i] = HY_GT;
+			} else if (relations[i] != HY_EQ && ret < 0) {
+				relations[i] = HY_LT;
+				if (!latest || hy_package_evr_cmp (latest, inst_pkg) < 0)
+					latest = inst_pkg;
+			} else if (ret == 0) {
+				relations[i] = HY_EQ;
+				break;
+			}
+		}
+
+		if (relations[i] == HY_EQ &&
+		    !pk_bitfield_contain (job_data->transaction_flags,
+					  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
 			gchar *printable_tmp;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
-						   "%s is aleady installed",
+						   "%s is already installed",
 						   printable_tmp);
 			g_free (printable_tmp);
+			return;
+		}
+
+		if (relations[i] == HY_LT &&
+		    !pk_bitfield_contain (job_data->transaction_flags,
+					  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+						   "higher version \"%s\" of package %s.%s is already installed",
+						   hy_package_get_evr (latest), split[PK_PACKAGE_ID_NAME],
+						   split[PK_PACKAGE_ID_ARCH]);
+			return;
+		}
+
+		if (relations[i] && relations[i] != HY_EQ &&
+		    pk_bitfield_contain (job_data->transaction_flags,
+					 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_NOT_AUTHORIZED,
+						   "missing authorization to update or downgrage software");
 			return;
 		}
 	}
@@ -2749,7 +2824,14 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 			return;
 		}
 		hif_package_set_user_action (pkg, TRUE);
-		hy_goal_install (job_data->goal, pkg);
+		if (relations[i] == HY_LT) {
+			hy_goal_downgrade_to (job_data->goal, pkg);
+		} else {
+			if (relations[i] == HY_EQ) {
+				hif_package_set_action (pkg, HIF_STATE_ACTION_REINSTALL);
+			}
+			hy_goal_install (job_data->goal, pkg);
+		}
 	}
 
 	/* run transaction */
