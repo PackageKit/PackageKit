@@ -278,6 +278,12 @@ gboolean	 pk_task_get_interactive		(PkTask			*task);
 void		 pk_task_set_only_download		(PkTask			*task,
 							 gboolean		 only_download);
 gboolean	 pk_task_get_only_download		(PkTask			*task);
+void		 pk_task_set_allow_downgrade	(PkTask			*task,
+							 gboolean		 allow_downgrade);
+gboolean	 pk_task_get_allow_downgrade	(PkTask			*task);
+void		 pk_task_set_allow_reinstall	(PkTask			*task,
+							 gboolean		 allow_reinstall);
+gboolean	 pk_task_get_allow_reinstall	(PkTask			*task);
 void		 pk_task_set_only_trusted		(PkTask			*task,
 							 gboolean		 only_trusted);
 gboolean	 pk_task_get_only_trusted		(PkTask			*task);
