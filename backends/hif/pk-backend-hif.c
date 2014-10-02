@@ -141,10 +141,10 @@ hif_sack_cache_item_free (HifSackCacheItem *cache_item)
 }
 
 /**
- * pk_backend_context_invaliate_cb:
+ * pk_backend_context_invalidate_cb:
  */
 static void
-pk_backend_context_invaliate_cb (HifContext *context,
+pk_backend_context_invalidate_cb (HifContext *context,
 				 const gchar *message,
 				 PkBackend *backend)
 {
@@ -228,7 +228,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	/* set defaults */
 	priv->context = hif_context_new ();
 	g_signal_connect (priv->context, "invalidate",
-			  G_CALLBACK (pk_backend_context_invaliate_cb), backend);
+			  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
 	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
 	if (destdir == NULL)
 		destdir = g_strdup ("/");
