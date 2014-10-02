@@ -64,6 +64,43 @@
     <annotate key="org.freedesktop.policykit.imply">org.freedesktop.packagekit.package-install</annotate>
   </action>
 
+  <action id="org.freedesktop.packagekit.package-reinstall">
+    <!-- SECURITY
+          - Normal users require admin authentication to reinstall packages.
+          - Authorization to install packages does not imply permissions to
+            reinstall them and vice versa.
+          - If a package in question is not trusted, user's permission to install
+            untrusted package will be checked as well.
+     -->
+    <_description>Install already installed package again</_description>
+    <_message>Authentication is required to reinstall software</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.package-downgrade">
+    <!-- SECURITY
+          - Normal users require admin authentication to downgrade packages.
+          - User authorized to dowgrade signed packages is authorized to install
+            them as well.
+          - If a package in question is not trusted, user's permission to install
+            untrusted package will be checked as well.
+     -->
+    <_description>Install older version of installed package</_description>
+    <_message>Authentication is required to downgrade software</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.imply">org.freedesktop.packagekit.package-install</annotate>
+  </action>
+
   <action id="org.freedesktop.packagekit.system-trust-signing-key">
     <!-- SECURITY:
           - Normal users require admin authentication to add signing keys.
