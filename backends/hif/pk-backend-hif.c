@@ -269,8 +269,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	if (!ret)
 		g_error ("failed to setup context: %s", error->message);
 
-	/* used a cached list of sources */
-	priv->repos = hif_repos_new (priv->context);
+	/* use context's repository loaders */
+	priv->repos = hif_context_get_repos (priv->context);
 	priv->repos_timer = g_timer_new ();
 	g_signal_connect (priv->repos, "changed",
 			  G_CALLBACK (pk_backend_hif_repos_changed_cb), backend);
@@ -288,7 +288,6 @@ pk_backend_destroy (PkBackend *backend)
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
 	g_timer_destroy (priv->repos_timer);
-	g_object_unref (priv->repos);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
 	g_free (priv);
