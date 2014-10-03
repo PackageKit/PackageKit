@@ -18,10 +18,10 @@ cp /etc/yum.repos.d/fedora-updates-testing.repo ${PREFIX}/etc/yum.repos.d/
 [ -x /usr/bin/rpm ] && rpm --root=${PREFIX} --initdb
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data fedora enabled 1
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data updates enabled 1
+DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data updates-testing enabled 1
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data fedora-debuginfo enabled 0
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data updates-debuginfo enabled 0
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data updates-testing-debuginfo enabled 0
-DESTDIR=${PREFIX} /usr/libexec/packagekit-direct repo-set-data updates-testing enabled 0
 DESTDIR=${PREFIX} /usr/libexec/packagekit-direct refresh
 rm -rf ${PREFIX}/etc
 rm -rf ${PREFIX}/var/run
