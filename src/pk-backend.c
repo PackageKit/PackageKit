@@ -1013,6 +1013,8 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 
 	/* cancel */
 	cancellable = pk_backend_job_get_cancellable (job);
+	if (g_cancellable_is_cancelled (cancellable))
+		return;
 	g_cancellable_cancel (cancellable);
 
 	/* call into the backend */
