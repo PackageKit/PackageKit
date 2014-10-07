@@ -30,6 +30,7 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <gmodule.h>
+#include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
@@ -207,6 +208,8 @@ struct PkBackendPrivate
 	gpointer		 user_data;
 	GHashTable		*thread_hash;
 	GMutex			 thread_hash_mutex;
+	gboolean		 transaction_in_progress;
+	guint			 transaction_inhibit_end_idle_id;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -648,6 +651,76 @@ pk_backend_repo_list_changed (PkBackend *backend)
 }
 
 /**
+ * pk_backend_installed_db_changed:
+ *
+ * This method signals PackageKit to drop any internal caches that should be
+ * invalidated when something external changes the package database, e.g. a
+ * native command line package management tool.
+ *
+ * Typically, a backend would set up a file monitor and call this method when
+ * the package database file has changed. To avoid invalidating caches for
+ * transactions done by PackageKit itself, a backend would call
+ * pk_backend_transaction_inhibit_start() before each transaction and
+ * pk_backend_transaction_inhibit_end() after the transaction has finished.
+ **/
+void
+pk_backend_installed_db_changed (PkBackend *backend)
+{
+	_cleanup_error_free_ GError *error = NULL;
+
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->loaded);
+
+	if (!backend->priv->transaction_in_progress) {
+		g_debug ("invalidating offline updates");
+		if (!pk_offline_auth_invalidate (&error))
+			g_warning ("failed to invalidate: %s", error->message);
+	}
+}
+
+/**
+ * pk_backend_transaction_inhibit_start:
+ *
+ * Call this method before each transaction that touches the installed package
+ * database.
+ **/
+void
+pk_backend_transaction_inhibit_start (PkBackend *backend)
+{
+	backend->priv->transaction_in_progress = TRUE;
+}
+
+static gboolean
+transaction_inhibit_end_idle (gpointer user_data)
+{
+	PkBackend *backend = user_data;
+
+	backend->priv->transaction_in_progress = FALSE;
+	backend->priv->transaction_inhibit_end_idle_id = 0;
+
+	return G_SOURCE_REMOVE;
+}
+
+/**
+ * pk_backend_transaction_inhibit_end:
+ *
+ * Call this method after each transaction that touches the installed package
+ * database.
+ **/
+void
+pk_backend_transaction_inhibit_end (PkBackend *backend)
+{
+	if (backend->priv->transaction_inhibit_end_idle_id > 0)
+		g_source_remove (backend->priv->transaction_inhibit_end_idle_id);
+
+	/* delay for 3 seconds in order to cover the 2 second rate limit
+           timeout used by the gio file monitor */
+	backend->priv->transaction_inhibit_end_idle_id = g_timeout_add_seconds (3,
+	                                                                        transaction_inhibit_end_idle,
+	                                                                        backend);
+}
+
+/**
  * pk_backend_start_job:
  *
  * This is called just before the threaded transaction method, and in
@@ -985,6 +1058,8 @@ pk_backend_finalize (GObject *object)
 
 	if (backend->priv->monitor != NULL)
 		g_object_unref (backend->priv->monitor);
+	if (backend->priv->transaction_inhibit_end_idle_id > 0)
+		g_source_remove (backend->priv->transaction_inhibit_end_idle_id);
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
