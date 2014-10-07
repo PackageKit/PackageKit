@@ -642,7 +642,6 @@ echo "
         gobject-introspection:     ${found_introspection}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
-        systemd-updates:           ${build_systemd_updates}
         python3:                   ${enable_python3}
         systemd system unit dir:   ${with_systemdsystemunitdir}
         python package dir:        ${with_python_package_dir}
