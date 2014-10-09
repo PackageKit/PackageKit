@@ -22,12 +22,10 @@
  */
 
 #include <config.h>
-#include <locale.h>
+
 #include <glib/gstdio.h>
 #include <glib/gthread.h>
-#include <sys/utsname.h>
 #include <pk-backend.h>
-#include <pk-backend-spawn.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-alpm-config.h"
@@ -35,6 +33,7 @@
 #include "pk-alpm-error.h"
 #include "pk-alpm-groups.h"
 #include "pk-alpm-transaction.h"
+#include "pk-alpm-environment.h"
 
 const gchar *
 pk_backend_get_description (PkBackend *backend)
@@ -72,70 +71,6 @@ pk_alpm_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 	default:
 		g_warning ("%s", output);
 		break;
-	}
-}
-
-static void
-pk_alpm_configure_environment (PkBackendJob *job)
-{
-	struct utsname un;
-	gchar *value;
-
-	/* PATH might have been nuked by D-Bus */
-	g_setenv ("PATH", PK_BACKEND_DEFAULT_PATH, FALSE);
-
-	uname (&un);
-	value = g_strdup_printf ("%s/%s (%s %s) libalpm/%s", PACKAGE_TARNAME,
-				 PACKAGE_VERSION, un.sysname, un.machine,
-				 alpm_version ());
-	g_setenv ("HTTP_USER_AGENT", value, FALSE);
-	g_free (value);
-
-	value = pk_backend_job_get_locale (job);
-	if (value != NULL) {
-		setlocale (LC_ALL, value);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_proxy_http (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
-		g_setenv ("http_proxy", uri, TRUE);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_proxy_https (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
-		g_setenv ("https_proxy", uri, TRUE);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_proxy_ftp (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
-		g_setenv ("ftp_proxy", uri, TRUE);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_proxy_socks (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
-		g_setenv ("socks_proxy", uri, TRUE);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_no_proxy (job);
-	if (value != NULL) {
-		g_setenv ("no_proxy", value, TRUE);
-		g_free (value);
-	}
-
-	value = pk_backend_job_get_pac (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
-		g_setenv ("pac", uri, TRUE);
-		g_free (value);
 	}
 }
 
@@ -237,8 +172,9 @@ void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	if (!priv->env_initialized) {
-		pk_alpm_configure_environment (job);
-		priv->env_initialized = TRUE; //we only need to do it once
+	if (g_once_init_enter (&priv->environment_initialized))
+	{
+		pk_alpm_environment_initialize (job);
+		g_once_init_leave (&priv->environment_initialized, TRUE);
 	}
 }

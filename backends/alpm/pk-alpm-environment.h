@@ -1,8 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
- * Copyright (C) 2008-2010 Valeriy Lyasotskiy <onestep@ukr.net>
- * Copyright (C) 2010-2011 Jonathan Conder <jonno.conder@gmail.com>
+ * Copyright (C) 2014 Fabien Bourigault <bourigaultfabien@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -21,19 +19,4 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <alpm.h>
-#include <gio/gio.h>
-#include <pk-backend.h>
-
-typedef struct {
-	gsize		environment_initialized;
-	alpm_db_t	*localdb;
-	alpm_list_t	*syncfirsts;
-	alpm_list_t	*holdpkgs;
-	alpm_handle_t	*alpm;
-} PkBackendAlpmPrivate;
-
-void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,
-					 PkBackendJobThreadFunc func, gpointer data);
-
-gboolean	 pk_alpm_finish		(PkBackendJob *job, GError *error);
+void pk_alpm_environment_initialize (PkBackendJob *job);

@@ -28,6 +28,8 @@ libpk_backend_alpm_la_SOURCES =						\
 	pk-alpm-databases.c						\
 	pk-alpm-databases.h						\
 	pk-alpm-depends.c						\
+	pk-alpm-environment.c					\
+	pk-alpm-environment.h					\
 	pk-alpm-error.c							\
 	pk-alpm-error.h							\
 	pk-alpm-groups.c						\
