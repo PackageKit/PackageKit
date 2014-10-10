@@ -250,8 +250,9 @@ if test x$enable_systemd = xyes; then
 		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
 	AC_DEFINE(HAVE_SYSTEMD,1,[Build systemd code])
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+
+	AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 fi
-AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
 
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
