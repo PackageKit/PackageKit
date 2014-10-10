@@ -202,7 +202,7 @@ public:
 	bool zypp_signature_required (const string &file);
 	bool zypp_signature_required (const string &file, const string &id);
 
-	void update_sub_percentage (guint percentage) {
+	void update_sub_percentage (guint percentage, PkStatusEnum status) {
 		// Only emit a percentage if it's different from the last
 		// percentage we emitted and it's divisible by ten.  We
 		// don't want to overload dbus/GUI.  Also account for the
@@ -224,7 +224,7 @@ public:
 		}
 		
 		_sub_percentage = percentage;
-		pk_backend_job_set_item_progress(_job, _package_id, PK_STATUS_ENUM_UNKNOWN, _sub_percentage);
+		pk_backend_job_set_item_progress(_job, _package_id, status, _sub_percentage);
 	}
 	
 	void reset_sub_percentage ()
@@ -258,7 +258,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		// we need to have extra logic here as progress is reported twice
 		// and PackageKit does not like percentages going back
 		//MIL << value << " " << _package_id << std::endl;
-		update_sub_percentage (value);
+		update_sub_percentage (value, PK_STATUS_ENUM_INSTALL);
 		return true;
 	}
 
@@ -291,7 +291,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable) {
-		update_sub_percentage (value);
+		update_sub_percentage (value, PK_STATUS_ENUM_REMOVE);
 		return true;
 	}
 
@@ -319,7 +319,7 @@ struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::P
 	virtual bool progress (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::progress(), %s:%d\n\n", data.name().c_str(), (int)data.val());
-		update_sub_percentage ((int)data.val ());
+		update_sub_percentage ((int)data.val (), PK_STATUS_ENUM_UNKNOWN);
 		return true;
 	}
 
@@ -340,7 +340,7 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 	virtual bool progress (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoReportReceiver::progress(), %s:%d\n", data.name().c_str(), (int)data.val());
-		update_sub_percentage ((int)data.val ());
+		update_sub_percentage ((int)data.val (), PK_STATUS_ENUM_UNKNOWN);
 		return true;
 	}
 
@@ -372,7 +372,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
 		//MIL << resolvable << " " << value << " " << _package_id << std::endl;
-		update_sub_percentage (value);
+		update_sub_percentage (value, PK_STATUS_ENUM_DOWNLOAD);
 		//pk_backend_job_set_speed (_job, static_cast<guint>(dbps_current));
 		return true;
 	}
@@ -380,7 +380,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &konreason)
 	{
 		MIL << resolvable << " " << error << " " << _package_id << std::endl;
-		update_sub_percentage (100);
+		update_sub_percentage (100, PK_STATUS_ENUM_DOWNLOAD);
 		clear_package_id ();
 	}
 };
@@ -406,14 +406,14 @@ struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::Progr
         virtual bool progress (const zypp::ProgressData &progress)
         {
 		MIL << progress.val() << std::endl;
-                update_sub_percentage ((int)progress.val ());
+                update_sub_percentage ((int)progress.val (), PK_STATUS_ENUM_UNKNOWN);
 		return true;
         }
 
         virtual void finish (const zypp::ProgressData &progress)
         {
 		MIL << progress.val() << std::endl;
-                update_sub_percentage ((int)progress.val ());
+                update_sub_percentage ((int)progress.val (), PK_STATUS_ENUM_UNKNOWN);
         }
 };
 
