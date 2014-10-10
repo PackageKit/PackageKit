@@ -3318,7 +3318,6 @@ pk_backend_what_provides_decompose (PkBackendJob *job, gchar **values)
 	search = pk_ptr_array_to_strv (array);
 	for (i = 0; search[i] != NULL; i++)
 		g_debug ("Querying provide '%s'", search[i]);
-out:
 	return search;
 }
 
