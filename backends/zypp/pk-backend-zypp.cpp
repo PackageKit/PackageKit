@@ -1623,7 +1623,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 	if (repo_messages != NULL)
 		g_printf(repo_messages);
 
-        pk_backend_job_set_percentage (job, 100);
+	pk_backend_job_set_percentage (job, 100);
 	g_free (repo_messages);
 	return TRUE;
 }
