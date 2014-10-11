@@ -246,13 +246,12 @@ if test x$enable_systemd = xyes; then
 	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login libsystemd-journal)
 	AC_ARG_WITH([systemdsystemunitdir],
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
-		    [],
-		    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+		    [has_systemdsystemunitdir=$with_systemdsystemunitdir],
+		    [has_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
 	AC_DEFINE(HAVE_SYSTEMD,1,[Build systemd code])
-	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
-
-	AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir"])
+	AC_SUBST([systemdsystemunitdir], [$has_systemdsystemunitdir])
 fi
+AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$has_systemdsystemunitdir"])
 
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
@@ -644,7 +643,7 @@ echo "
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         python3:                   ${enable_python3}
-        systemd system unit dir:   ${with_systemdsystemunitdir}
+        systemd system unit dir:   ${has_systemdsystemunitdir}
         python package dir:        ${with_python_package_dir}
 
         Backends:
