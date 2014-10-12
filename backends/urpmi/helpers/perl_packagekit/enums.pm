@@ -185,8 +185,8 @@ use constant {
   FILTER_VISIBLE => "visible",
   FILTER_DOWNLOADED => 'downloaded',
   FILTER_NOT_DOWNLOADED => '~downloaded',
-  ILTER_APPLICATION => 'application',
-  ILTER_NOT_APPLICATION => '~application',
+  FILTER_APPLICATION => 'application',
+  FILTER_NOT_APPLICATION => '~application',
 
   GROUP_ACCESSIBILITY => "accessibility",
   GROUP_ACCESSORIES => "accessories",
