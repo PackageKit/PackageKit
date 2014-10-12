@@ -1,7 +1,5 @@
 %define alphatag                        #ALPHATAG#
 
-%{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
-
 Summary:   Package management service
 Name:      PackageKit
 Version:   #VERSION#
@@ -178,7 +176,6 @@ using PackageKit.
 %else
         --disable-bash-completion \
 %endif
-        --with-python-package-dir=%{python3_sitearch} \
         --disable-local \
         --disable-strict \
         --disable-silent-rules \
@@ -239,12 +236,10 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
-%dir %{python3_sitearch}/packagekit
 %dir %{_localstatedir}/cache/PackageKit
 %ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %dir %{_localstatedir}/cache/PackageKit/metadata
-%{python3_sitearch}/packagekit/*py*
 %if !0%{?rhel}
 %{_datadir}/bash-completion/completions/pkcon
 %endif
