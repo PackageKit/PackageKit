@@ -635,7 +635,7 @@ pk_backend_unload (PkBackend *backend)
 /**
  * pk_backend_repo_list_changed:
  **/
-gboolean
+void
 pk_backend_repo_list_changed (PkBackend *backend)
 {
 #ifdef PK_BUILD_DAEMON
@@ -647,7 +647,6 @@ pk_backend_repo_list_changed (PkBackend *backend)
 	notify = pk_notify_new ();
 	pk_notify_repo_list_changed (notify);
 #endif
-	return TRUE;
 }
 
 /**
