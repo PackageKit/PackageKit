@@ -214,18 +214,7 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 
 %find_lang %name
 
-%post
-%systemd_post packagekit-offline-update.service packagekit.service
-
 %post glib -p /sbin/ldconfig
-
-%preun
-%systemd_preun packagekit-offline-update.service packagekit.service
-
-%postun
-# Reload the systemd configuration but do _not_ restart the daemon. Killing the
-# update process while it's updating packages causes the transaction to fail.
-%systemd_postun packagekit-offline-update.service packagekit.service
 
 %postun glib -p /sbin/ldconfig
 
@@ -265,6 +254,7 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_datadir}/dbus-1/interfaces/*.xml
+%{_unitdir}/system-update.target.wants/packagekit-offline-update.service
 %{_unitdir}/packagekit-offline-update.service
 %{_unitdir}/packagekit.service
 %{_libexecdir}/pk-*offline-update
