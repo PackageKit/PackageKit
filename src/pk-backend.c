@@ -641,8 +641,8 @@ pk_backend_repo_list_changed (PkBackend *backend)
 #ifdef PK_BUILD_DAEMON
 	_cleanup_object_unref_ PkNotify *notify = NULL;
 
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->loaded, FALSE);
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->loaded);
 
 	notify = pk_notify_new ();
 	pk_notify_repo_list_changed (notify);
