@@ -1,3 +1,28 @@
+Version 1.0.1
+~~~~~~~~~~~~~
+Released: 2014-10-21
+
+Backends:
+ - alpm: Environment initialization refactoring (Fabien Bourigault)
+ - alpm: Fix a few potential double-frees (Richard Hughes)
+ - hif: Invalidate offline updates when the rpmdb changes (Kalev Lember)
+ - urpmi: Implement filter_application (Thierry Vignaud)
+ - urpmi: Implement filter_download (Thierry Vignaud)
+ - zypp: Be more specific with the progress status messages (Dominique Leuenberger)
+ - zypp: Ensure to reach 100% on complete cache_refresh (Dominique Leuenberger)
+ - zypp: Fix compiler warning (Dominique Leuenberger)
+
+New Features:
+ - Add a KeepCache config parameter (Richard Hughes)
+
+Bugfixes:
+ - Do not install the python helpers unless required (Richard Hughes)
+ - Don't assume systemd is found if --with-systemdsystemunitdir is passed (Matthias Klumpp)
+ - Fall back to /usr/lib/os-release if /etc/os-release does not exist (Richard Hughes)
+ - Fix compile when the systemd headers are not located in /usr/include (Richard Hughes)
+ - Never allow cancelling a transaction twice (Richard Hughes)
+ - Overwrite an existing link for packagekit-offline-update.service (Dominique Leuenberger)
+
 Version 1.0.0
 ~~~~~~~~~~~~~
 Released: 2014-09-12
