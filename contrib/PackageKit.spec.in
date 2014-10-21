@@ -32,7 +32,6 @@ BuildRequires: gtk2-devel
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
-BuildRequires: python3-devel
 BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
@@ -168,7 +167,6 @@ using PackageKit.
 %build
 %configure \
         --disable-static \
-        --enable-python3 \
 %if 0%{?rhel} == 0
         --enable-hif \
         --enable-introspection \
@@ -219,7 +217,6 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %postun glib -p /sbin/ldconfig
 
 %files -f %{name}.lang
-%defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
@@ -254,53 +251,44 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_datadir}/dbus-1/interfaces/*.xml
-%{_unitdir}/system-update.target.wants/packagekit-offline-update.service
 %{_unitdir}/packagekit-offline-update.service
 %{_unitdir}/packagekit.service
+%{_unitdir}/system-update.target.wants/
 %{_libexecdir}/pk-*offline-update
 %if 0%{?rhel} == 0
 %{_libdir}/packagekit-backend/libpk_backend_hif.so
 %endif
 
 %files cached-metadata
-%defattr(-,root,root,-)
-%{_datadir}/PackageKit/hawkey
-%{_datadir}/PackageKit/hawkey/*
-%{_datadir}/PackageKit/metadata/*
+%{_datadir}/PackageKit/hawkey/
+%{_datadir}/PackageKit/metadata/
 
 %files glib
-%defattr(-,root,root,-)
 %{_libdir}/*packagekit-glib2.so.*
 %{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
 
 %files cron
-%defattr(-,root,root,-)
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
 
 %files browser-plugin
-%defattr(-,root,root,-)
 %{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %files gstreamer-plugin
-%defattr(-,root,root,-)
 %{_libexecdir}/pk-gstreamer-install
 %{_libexecdir}/gst-install-plugins-helper
 
 %files gtk3-module
-%defattr(-,root,root,-)
 %{_libdir}/gtk-2.0/modules/*.so
 %{_libdir}/gtk-3.0/modules/*.so
 %{_libdir}/gnome-settings-daemon-3.0/gtk-modules/*.desktop
 
 %files command-not-found
-%defattr(-,root,root,-)
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
 %config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
 
 %files glib-devel
-%defattr(-,root,root,-)
 %{_libdir}/libpackagekit-glib2.so
 %{_libdir}/pkgconfig/packagekit-glib2.pc
 %dir %{_includedir}/PackageKit
