@@ -274,7 +274,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	}
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level) {
-		//g_debug ("InstallResolvableReportReceiver::problem()");
+		pk_backend_job_error_code (_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, description.c_str ());
 		return ABORT;
 	}
 
