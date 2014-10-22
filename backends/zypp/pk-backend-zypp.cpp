@@ -2247,7 +2247,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		if (isKind<Patch>(res)) {
 			Patch::constPtr patch = asKind<Patch>(res);
 			if (patch->category () == "recommended") {
-				infoEnum = PK_INFO_ENUM_IMPORTANT;
+				infoEnum = PK_INFO_ENUM_BUGFIX;
 			} else if (patch->category () == "optional") {
 				infoEnum = PK_INFO_ENUM_LOW;
 			} else if (patch->category () == "security") {
