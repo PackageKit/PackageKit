@@ -460,7 +460,7 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 if test x$enable_hif = xyes; then
-	PKG_CHECK_MODULES(HIF, libhif >= 0.1.4)
+	PKG_CHECK_MODULES(HIF, libhif >= 0.1.6)
 fi
 
 have_python_backend="no"
