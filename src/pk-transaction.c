@@ -2331,18 +2331,13 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 					      struct AuthorizeActionsData *data)
 {
 	const gchar *action_id = NULL;
-	PkTransaction *transaction = data->transaction;
-	PkRoleEnum role = data->role;
-	_cleanup_ptrarray_unref_ GPtrArray *actions = data->actions;
-	PkTransactionPrivate *priv = transaction->priv;
+	PkTransactionPrivate *priv = data->transaction->priv;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ PolkitAuthorizationResult *result = NULL;
-	g_assert (actions && actions->len > 0);
-
-	g_free (data);
+	g_assert (data->actions && data->actions->len > 0);
 
 	/* get the first action */
-	action_id = g_ptr_array_index (actions, 0);
+	action_id = g_ptr_array_index (data->actions, 0);
 
 	/* finish the call */
 	result = polkit_authority_check_authorization_finish (priv->authority, res, &error);
@@ -2351,26 +2346,27 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 	if (g_cancellable_is_cancelled (priv->cancellable)) {
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		priv->waiting_for_auth = FALSE;
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (data->transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
 						"The authentication was cancelled due to a timeout.");
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-		return;
+		pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
+		goto out;
 	}
 
 	/* failed, maybe polkit is messed up? */
 	if (result == NULL) {
-		gchar *message = NULL;
+		_cleanup_free_ gchar *message = NULL;
 		priv->waiting_for_auth = FALSE;
 		g_warning ("failed to check for auth: %s", error->message);
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
 		message = g_strdup_printf ("Failed to check for authentication: %s", error->message);
-		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, message);
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-		g_free (message);
-		return;
+		pk_transaction_error_code_emit (data->transaction,
+						PK_ERROR_ENUM_NOT_AUTHORIZED,
+					       	message);
+		pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
+		goto out;
 	}
 
 	/* did not auth */
@@ -2384,30 +2380,33 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 		} else {
 			priv->waiting_for_auth = FALSE;
 			/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
-			pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-			pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+			pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
+			pk_transaction_error_code_emit (data->transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
 							"Failed to obtain authentication.");
-			pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+			pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
 
 			syslog (LOG_AUTH | LOG_NOTICE,
 				"uid %i failed to obtain auth",
 				priv->uid);
-			return;
+			goto out;
 		}
 	}
 
-	if (actions->len <= 1) {
+	if (data->actions->len <= 1) {
 		/* authentication finished successfully */
 		priv->waiting_for_auth = FALSE;
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+		pk_transaction_set_state (data->transaction, PK_TRANSACTION_STATE_READY);
 		/* log success too */
 		syslog (LOG_AUTH | LOG_INFO, "uid %i obtained auth for %s",
 			   	priv->uid, action_id);
 	} else {
 		/* process the rest of actions */
-		g_ptr_array_remove_index (actions, 0);
-		pk_transaction_authorize_actions (transaction, role, actions);
+		g_ptr_array_remove_index (data->actions, 0);
+		pk_transaction_authorize_actions (data->transaction, data->role, data->actions);
 	}
+
+out:
+	g_free (data);
 }
 
 /**
@@ -2569,7 +2568,7 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 	     role == PK_ROLE_ENUM_UPDATE_PACKAGES) &&
 	    pk_bitfield_contain (transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
-		g_ptr_array_add (result, g_strdup("org.freedesktop.packagekit.package-downgrade"));
+		g_ptr_array_add (result, g_strdup ("org.freedesktop.packagekit.package-downgrade"));
 	} else if (!check_install_untrusted) {
 		switch (role) {
 		case PK_ROLE_ENUM_UPDATE_PACKAGES:
@@ -2606,7 +2605,7 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 			break;
 		}
 		if (policy != NULL)
-			g_ptr_array_add (result, g_strdup(policy));
+			g_ptr_array_add (result, g_strdup (policy));
 	}
 
 	return result;
@@ -2627,8 +2626,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 				     PkRoleEnum role,
 				     GError **error)
 {
-	gboolean ret;
-	GPtrArray *actions = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *actions = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 	_cleanup_free_ gchar *package_ids = NULL;
 	_cleanup_object_unref_ PolkitDetails *details = NULL;
@@ -2661,9 +2659,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	if (actions == NULL)
 		return FALSE;
 
-	ret = pk_transaction_authorize_actions (transaction, role, actions);
-	g_ptr_array_unref (actions);
-	return ret;
+	return pk_transaction_authorize_actions (transaction, role, actions);
 }
 
 /**
