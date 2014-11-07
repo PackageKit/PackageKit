@@ -53,6 +53,8 @@ struct _PkTaskPrivate
 	gboolean			 simulate;
 	gboolean			 only_download;
 	gboolean			 only_trusted;
+	gboolean			 allow_reinstall;
+	gboolean			 allow_downgrade;
 };
 
 enum {
@@ -60,6 +62,8 @@ enum {
 	PROP_SIMULATE,
 	PROP_ONLY_PREPARE,
 	PROP_ONLY_TRUSTED,
+	PROP_ALLOW_REINSTALL,
+	PROP_ALLOW_DOWNGRADE,
 	PROP_LAST
 };
 
@@ -74,6 +78,8 @@ typedef struct {
 	PkExitEnum			 exit_enum;
 	gboolean			 simulate;
 	gboolean			 only_download;
+	gboolean             allow_reinstall;
+	gboolean             allow_downgrade;
 	gboolean			 transaction_flags;
 	gchar				**package_ids;
 	gboolean			 allow_deps;
@@ -193,6 +199,14 @@ pk_task_do_async_action (PkTaskState *state)
 	if (state->task->priv->only_download) {
 		pk_bitfield_add (transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
+	}
+	if (state->task->priv->allow_reinstall) {
+		pk_bitfield_add (transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
+	}
+	if (state->task->priv->allow_downgrade) {
+		pk_bitfield_add (transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
 	}
 
 	/* do the correct action */
@@ -1052,6 +1066,14 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	if (task->priv->allow_reinstall) {
+		pk_bitfield_add(state->transaction_flags,
+			   	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
+	}
+	if (task->priv->allow_downgrade) {
+		pk_bitfield_add(state->transaction_flags,
+			   	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
+	}
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
@@ -1270,6 +1292,13 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	
+	if (state->task->priv->allow_downgrade)
+		pk_bitfield_add (state->transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
+	if (state->task->priv->allow_reinstall)
+		pk_bitfield_add (state->transaction_flags,
+				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
 	state->filters = filters;
 	state->packages = g_strdupv (packages);
 	state->request = pk_task_generate_request_id ();
@@ -2323,6 +2352,78 @@ pk_task_get_only_trusted (PkTask *task)
 }
 
 /**
+ * pk_task_set_allow_downgrade:
+ * @task: a valid #PkTask instance
+ * @allow_downgrade: %TRUE to allow packages to be downgraded.
+ *
+ * If package downgrades shall be allowed during transaction.
+ *
+ * Return value: %TRUE if we allow downgrades
+ *
+ * Since: 1.0.2
+ **/
+void
+pk_task_set_allow_downgrade (PkTask *task, gboolean allow_downgrade)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->allow_downgrade = allow_downgrade;
+	g_object_notify (G_OBJECT (task), "allow-downgrade");
+}
+
+/**
+ * pk_task_set_allow_downgrade:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we are allow packages to be downgraded.
+ *
+ * Return value: %TRUE if package downgrades are allowed
+ *
+ * Since: 1.0.2
+ **/
+gboolean
+pk_task_get_allow_downgrade (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->allow_downgrade;
+}
+
+/**
+ * pk_task_set_allow_reinstall:
+ * @task: a valid #PkTask instance
+ * @allow_downgrade: %TRUE to allow packages to be reinstalled.
+ *
+ * If package reinstallation shall be allowed during transaction.
+ *
+ * Return value: %TRUE if we allow reinstallations
+ *
+ * Since: 1.0.2
+ **/
+void
+pk_task_set_allow_reinstall (PkTask *task, gboolean allow_reinstall)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->allow_reinstall = allow_reinstall;
+	g_object_notify (G_OBJECT (task), "allow-reinstall");
+}
+
+/**
+ * pk_task_get_allow_reinstall:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we allow packages to be reinstalled.
+ *
+ * Return value: %TRUE if package downgrades are allowed
+ *
+ * Since: 1.0.2
+ **/
+gboolean
+pk_task_get_allow_reinstall (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->allow_reinstall;
+}
+
+/**
  * pk_task_get_property:
  **/
 static void
@@ -2340,6 +2441,12 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 		break;
 	case PROP_ONLY_TRUSTED:
 		g_value_set_boolean (value, priv->only_trusted);
+		break;
+	case PROP_ALLOW_REINSTALL:
+		g_value_set_boolean (value, priv->allow_reinstall);
+		break;
+	case PROP_ALLOW_DOWNGRADE:
+		g_value_set_boolean (value, priv->allow_downgrade);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2365,6 +2472,12 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 		break;
 	case PROP_ONLY_TRUSTED:
 		priv->only_trusted = g_value_get_boolean (value);
+		break;
+	case PROP_ALLOW_REINSTALL:
+		priv->allow_reinstall = g_value_get_boolean (value);
+		break;
+	case PROP_ALLOW_DOWNGRADE:
+		priv->allow_downgrade = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2413,6 +2526,27 @@ pk_task_class_init (PkTaskClass *klass)
 				      TRUE,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ONLY_TRUSTED, pspec);
+
+	/**
+	 * PkTask:allow-reinstall:
+	 *
+	 * Since: 1.0.2
+	 */
+	pspec = g_param_spec_boolean ("allow-reinstall", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ALLOW_REINSTALL, pspec);
+
+	/**
+	 * PkTask:allow-downgrade:
+	 *
+	 * Since: 1.0.2
+	 */
+	pspec = g_param_spec_boolean ("allow-downgrade", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ALLOW_DOWNGRADE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
 
@@ -2425,6 +2559,8 @@ pk_task_init (PkTask *task)
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->priv->array = g_ptr_array_new ();
 	task->priv->simulate = TRUE;
+	task->priv->allow_reinstall = FALSE;
+	task->priv->allow_downgrade = FALSE;
 }
 
 /**
