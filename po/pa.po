@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-12 13:06+0100\n"
-"PO-Revision-Date: 2014-09-12 12:06+0000\n"
+"POT-Creation-Date: 2014-11-10 17:11+0000\n"
+"PO-Revision-Date: 2014-11-10 17:11+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Panjabi (Punjabi) (http://www.transifex.com/projects/p/packagekit/language/pa/)\n"
 "MIME-Version: 1.0\n"
@@ -25,117 +25,94 @@ msgstr ""
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
-#: ../client/pk-console.c:171 ../client/pk-console.c:596
 msgid "Transaction"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
-#: ../client/pk-console.c:173
 msgid "System time"
 msgstr "ਸਿਸਟਮ ਸਮਾਂ"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:175
 msgid "Succeeded"
 msgstr "ਸਫ਼ਲ ਹੈ"
 
-#: ../client/pk-console.c:175
 msgid "True"
 msgstr "ਸਹੀ"
 
-#: ../client/pk-console.c:175
 msgid "False"
 msgstr "ਗਲਤ"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: ../client/pk-console.c:177
 msgid "Role"
 msgstr "ਰੋਲ"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:182
 msgid "Duration"
 msgstr "ਅੰਤਰਾਲ"
 
-#: ../client/pk-console.c:182
 msgid "(seconds)"
 msgstr "(ਸਕਿੰਟ)"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: ../client/pk-console.c:186
 msgid "Command line"
 msgstr "ਕਮਾਂਡ ਲਾਈਨ"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:188
 msgid "User ID"
 msgstr "ਯੂਜ਼ਰ ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:195
 msgid "Username"
 msgstr "ਯੂਜ਼ਰ ਨਾਂ"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:199
 msgid "Real name"
 msgstr "ਅਸਲੀ ਨਾਂ"
 
 #. TRANSLATORS: these are packages touched by the transaction
-#: ../client/pk-console.c:207
 msgid "Affected packages:"
 msgstr "ਪ੍ਰਭਾਵਿਤ ਪੈਕੇਜ:"
 
 #. TRANSLATORS: these are packages touched by the transaction
-#: ../client/pk-console.c:210
 msgid "Affected packages: None"
 msgstr "ਪ੍ਰਭਾਵਿਤ ਪੈਕੇਜ: ਕੋਈ ਨਹੀਂ"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:239
 msgid "Distribution"
 msgstr "ਡਿਸਟਰੀਬਿਊਸ਼ਨ"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:241
 msgid "Type"
 msgstr "ਟਾਈਪ"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:243 ../client/pk-console.c:279
 msgid "Summary"
 msgstr "ਸੰਖੇਪ"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:268
 msgid "Category"
 msgstr "ਕੈਟਾਗਰੀ"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:270
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:273
 msgid "Parent"
 msgstr "ਮੋਢੀ"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
-#: ../client/pk-console.c:276 ../client/pk-console.c:2278
 msgid "Name"
 msgstr "ਨਾਂ"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:282
 msgid "Icon"
 msgstr "ਆਈਕਾਨ"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:323
 msgid "Details about the update:"
 msgstr "ਅੱਪਡੇਟ ਬਾਰੇ ਵੇਰਵਾ:"
 
@@ -143,192 +120,155 @@ msgstr "ਅੱਪਡੇਟ ਬਾਰੇ ਵੇਰਵਾ:"
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: ../client/pk-console.c:329 ../client/pk-console.c:615
-#: ../lib/packagekit-glib2/pk-task-text.c:124
-#: ../lib/packagekit-glib2/pk-task-text.c:206
 msgid "Package"
 msgstr "ਪੈਕੇਜ"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
-#: ../client/pk-console.c:334
 msgid "Updates"
 msgstr "ਅੱਪਡੇਟ"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
-#: ../client/pk-console.c:341
 msgid "Obsoletes"
 msgstr "ਬਰਤਰਫ਼"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:347 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "ਵੇਂਡਰ"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:353
 msgid "Bugzilla"
 msgstr "ਬੱਗਜ਼ੀਲਾ"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:359
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
-#: ../client/pk-console.c:365
 msgid "Restart"
 msgstr "ਮੁੜ-ਚਾਲੂ"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
-#: ../client/pk-console.c:370
 msgid "Update text"
 msgstr "ਅੱਪਡੇਟ ਟੈਕਸਟ"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
-#: ../client/pk-console.c:375
 msgid "Changes"
 msgstr "ਬਦਲਾਅ"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
-#: ../client/pk-console.c:380
 msgid "State"
 msgstr "ਹਾਲਤ"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
-#: ../client/pk-console.c:385
 msgid "Issued"
 msgstr "ਜਾਰੀ ਕੀਤਾ"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:390 ../lib/packagekit-glib2/pk-enum.c:1073
 msgid "Updated"
 msgstr "ਅੱਪਡੇਟ ਕੀਤੇ"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:415
 msgid "Enabled"
 msgstr "ਚਾਲੂ ਹੈ"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:418
 msgid "Disabled"
 msgstr "ਬੰਦ ਹੈ"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:450
 msgid "System restart required by:"
 msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:453
 msgid "Session restart required:"
 msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
-#: ../client/pk-console.c:457
 msgid "System restart (security) required by:"
 msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ (ਸੁਰੱਖਿਆ) ਕਰਨ ਦੀ ਲੋੜ ਹੈ:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
-#: ../client/pk-console.c:461
 msgid "Session restart (security) required:"
 msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ (ਸੁਰੱਖਿਆ) ਕਰਨ ਦੀ ਲੋੜ:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:464
 msgid "Application restart required by:"
 msgstr "ਐਪਲੀਕੇਸ਼ਨ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:498
 msgid "Package description"
 msgstr "ਪੈਕੇਜ ਵੇਰਵਾ"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:521
 msgid "No files"
 msgstr "ਕੋਈ ਫਾਇਲ ਨਹੀਂ"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:526
 msgid "Package files"
 msgstr "ਪੈਕੇਜ ਫਾਇਲਾਂ"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: ../client/pk-console.c:631
 msgid "Percentage"
 msgstr "ਫੀਸਦੀ"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: ../client/pk-console.c:654
 msgid "Status"
 msgstr "ਹਾਲਤ"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:698
 msgid "Results:"
 msgstr "ਨਤੀਜਾ:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
-#: ../client/pk-console.c:706 ../client/pk-console.c:858
 msgid "Fatal error"
 msgstr "ਘਾਤਕ ਗਲਤੀ"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
-#: ../client/pk-console.c:723
 msgid "There are no packages to update."
 msgstr "ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਹੈ।"
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:727
-#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "The transaction failed"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਫੇਲ੍ਹ ਹੋਈ"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:756
 msgid "There are no updates available at this time."
 msgstr "ਇਸ ਸਮੇਂ ਕੋਈ ਅੱਪਡੇਟ ਉਪਲੱਬਧ ਨਹੀਂ ਹੈ।"
 
-#: ../client/pk-console.c:779
 msgid "There are no upgrades available at this time."
 msgstr "ਇਸ ਸਮੇਂ ਕੋਈ ਅੱਪਡੇਟ ਉਪਲੱਬਧ ਨਹੀਂ ਹੈ।"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:841
 msgid "Please restart the computer to complete the update."
 msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਕੰਪਿਊਟਰ ਮੁੜ-ਚਾਲੂ ਕਰੋ ਜੀ।"
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:844
 msgid "Please logout and login to complete the update."
 msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਲਾਗਆਉਟ ਕਰਕੇ ਲਾਗਇਨ ਕਰੋ ਜੀ।"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:847
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਕੰਪਿਊਟਰ ਮੁੜ-ਚਾਲੂ ਕਰੋ ਜੀ, ਕਿਉਂਕਿ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਹੋਏ ਹਨ।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:850
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
@@ -336,30 +276,25 @@ msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਲ�
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: ../client/pk-console.c:931
 msgid "More than one package matches:"
 msgstr "ਇੱਕ ਤੋਂ ਵੱਧ ਰਲਦੇ ਪੈਕੇਜ ਲੱਭੇ:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-console.c:943
 msgid "Please choose the correct package: "
 msgstr "ਠੀਕ ਪੈਕੇਜ ਚੁਣੋ ਜੀ:"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
-#: ../client/pk-console.c:983
 msgid "Package not found"
 msgstr "ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
 #. TRANSLATORS: we couldn't find anything
-#: ../client/pk-console.c:1001
 msgid "No packages were found"
 msgstr "ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
 #. * 'pkcon install-local dave.rpm'
-#: ../client/pk-console.c:1029
 #, c-format
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
@@ -368,27 +303,23 @@ msgstr "ਚਾਹੀਦਾ ਪੈਕੇਜ ਨਾਂ, ਅਸਲ 'ਚ ਫਾਇ�
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
-#: ../client/pk-console.c:1055
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
-#: ../client/pk-console.c:1086
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ਇਹ ਟੂਲ ਇੰਸਟਾਲ ਕੀਤੇ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
-#: ../client/pk-console.c:1118 ../client/pk-console.c:1152
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "ਇਹ ਟੂਲ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
-#: ../client/pk-console.c:1192
 msgid "No packages require updating to newer versions."
 msgstr "ਨਵੇਂ ਵਰਜਨ ਲਈ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਕਿਸੇ ਪੈਕੇਜ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।"
 
@@ -400,112 +331,97 @@ msgstr "ਨਵੇਂ ਵਰਜਨ ਲਈ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸ�
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
 #. * any software sources. The detailed error follows
-#: ../client/pk-console.c:1221 ../client/pk-console.c:1253
-#: ../client/pk-console.c:1285 ../client/pk-console.c:1343
-#: ../client/pk-console.c:1374
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "ਇਹ ਟੂਲ ਸਭ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: ../client/pk-console.c:1404
 msgid "The daemon crashed mid-transaction!"
 msgstr "ਡੈਮਨ ਅਧੂਰੀ ਟਰਾਂਸੈਕਸ਼ਨ ਕਰੈਸ਼ ਹੋ ਗਈ!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1432
 msgid "PackageKit Console Interface"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਕਨਸੋਲ ਇੰਟਰਫੇਸ"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1434
 msgid "Subcommands:"
 msgstr "ਸਬ-ਕਮਾਂਡ:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: ../client/pk-console.c:1521
 msgid "Failed to get the time since this action was last completed"
 msgstr "ਇਸ ਕਾਰਵਾਈ ਦੇ ਆਖਰੀ ਵਾਰ ਪੂਰੀ ਹੋਣ ਤੋਂ ਬਾਅਦ ਸਮਾਂ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: this is the time since this role was used
-#: ../client/pk-console.c:1525
 msgid "Time since"
 msgstr "ਸਮਾਂ"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
-#: ../client/pk-console.c:1548
 msgid "Prepared updates:"
 msgstr "ਤਿਆਰ ਕੀਤੇ ਅੱਪਡੇਟ:"
 
 #. TRANSLATORS: The network settings could not be sent
-#: ../client/pk-console.c:1623
 msgid "The proxy could not be set"
 msgstr "ਪਰਾਕਸੀ ਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1662 ../client/pk-monitor.c:327
 msgid "Show the program version and exit"
 msgstr "ਪਰੋਗਰਾਮ ਵਰਜਨ ਵੇਖੋ ਅਤੇ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1665
 msgid "Set the filter, e.g. installed"
 msgstr "ਫਿਲਟਰ ਸੈੱਟ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਇੰਸਟਾਲ"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1668
 msgid "Install the packages without asking for confirmation"
 msgstr "ਪੁਸ਼ਟੀ ਕੀਤੇ ਬਿਨਾਂ ਹੀ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰੋ"
 
 #. command line argument, do we just download or apply changes
-#: ../client/pk-console.c:1671
 msgid "Prepare the transaction by downloading pakages only"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਲਈ ਤਿਆਰੀ ਕੇਵਲ ਪੈਕੇਜ ਡਾਊਨਲੋਡ ਕਰਕੇ ਕਰੋ"
 
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr ""
+
+msgid "Allow packages to be reinstalled during transaction"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1674
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "ਕਮਾਂਡ ਨੂੰ ਵੇਹਲੀ ਨੈੱਟਵਰਕ ਬੈਂਡਵਿਥ ਦੌਰਾਨ ਚਲਾਓ ਅਤੇ ਘੱਟ ਊਰਜਾ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਵੀ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1677
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
 msgstr "ਐਨੀਮੇਟਡ ਵਿਡਜੈੱਟ ਵਰਤਣ ਦੀ ਬਜਾਏ, ਮਸ਼ੀਨ ਦੇ ਪੜ੍ਹਨ ਯੋਗ ਜਾਣਕਾਰੀ ਸਕਰੀਨ ਤੇ ਪਰਿੰਟ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1680
 msgid "The maximum metadata cache age. Use -1 for 'never'."
 msgstr "ਮੇਟਾਡਾਟਾ ਦੀ ਵੱਧ ਤੋਂ ਵੱਧ ਉਮਰ ਹੈ। 'ਕਦੇ ਨਹੀਂ never' ਲਈ -1 ਵਰਤੋਂ।"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1683
 msgid "Allow untrusted packages to be installed."
 msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1718
 msgid "Failed to parse command line"
 msgstr "ਕਮਾਂਡ ਲਾਈਨ ਪਾਰਸ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1728
 msgid "Failed to contact PackageKit"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਨਾਲ ਸੰਪਰਕ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: ../client/pk-console.c:1789
 msgid "The filter specified was invalid"
 msgstr "ਦਿੱਤਾ ਫਿਲਟਰ ਅਢੁੱਕਵਾਂ ਹੈ।"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
-#: ../client/pk-console.c:1815
 msgid "A search type is required, e.g. name"
 msgstr "ਖੋਜ ਕਿਸਮ ਚਾਹੀਦੀ ਹੈ, ਜਿਵੇਂ ਨਾਂ"
 
@@ -513,91 +429,73 @@ msgstr "ਖੋਜ ਕਿਸਮ ਚਾਹੀਦੀ ਹੈ, ਜਿਵੇਂ ਨਾ
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
-#: ../client/pk-console.c:1825 ../client/pk-console.c:1842
-#: ../client/pk-console.c:1859 ../client/pk-console.c:1876
 msgid "A search term is required"
 msgstr "ਖੋਜ ਸ਼ਬਦ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1902
 msgid "A package name to install is required"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: ../client/pk-console.c:1916
 msgid "A filename to install is required"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਇੱਕ ਫਾਇਲ ਨਾਂ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:1932
 msgid "A type, key_id and package_id are required"
 msgstr "ਟਾਈਪ, key_id ਜਾਂ package_id ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
-#: ../client/pk-console.c:1950
 msgid "A package name to remove is required"
 msgstr "ਹਟਾਉਣ ਵਾਸਤੇ ਪੈਕੇਜ ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
-#: ../client/pk-console.c:1963
 msgid "A destination directory and the package names to download are required"
 msgstr "ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਟਿਕਾਣਾ ਡਾਇਰੈਕਟਰੀ ਅਤੇ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
-#: ../client/pk-console.c:1973
 msgid "Directory not found"
 msgstr "ਡਾਇਰੈਕਟਰੀ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: ../client/pk-console.c:1988
 msgid "A licence identifier (eula-id) is required"
 msgstr "ਇੱਕ ਲਾਈਸੈਂਸ ਪਛਾਣਕਰਤਾ (eula-id) ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
-#: ../client/pk-console.c:2014
 msgid "A package name to resolve is required"
 msgstr "ਹੱਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
-#: ../client/pk-console.c:2031 ../client/pk-console.c:2048
 msgid "A repository name is required"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
-#: ../client/pk-console.c:2064
 msgid "A repo name, parameter and value are required"
 msgstr "ਰੈਪੋ ਨਾਂ, ਪੈਰਾਮੀਟਰ ਅਤੇ ਮੁੱਲ ਲੋੜੀਦਾ ਹੈ"
 
-#: ../client/pk-console.c:2081
 msgid "A repo id and autoremove required"
 msgstr "ਰੈਪੋ ਆਈਡੀ ਅਤੇ autoremove ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: ../client/pk-console.c:2108
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "ਕਾਰਵਾਈ ਜਿਵੇਂ ਕਿ 'update-packages'  ਚਾਹੀਦੀ ਹੈ"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: ../client/pk-console.c:2118
 msgid "A correct role is required"
 msgstr "ਠੀਕ ਰੋਲ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
-#: ../client/pk-console.c:2132 ../client/pk-console.c:2149
-#: ../client/pk-console.c:2161 ../client/pk-console.c:2191
-#: ../client/pk-console.c:2224
 msgid "A package name is required"
 msgstr "ਪੈਕੇਜ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
@@ -605,839 +503,673 @@ msgstr "ਪੈਕੇਜ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: ../client/pk-console.c:2175
 msgid "A package provide string is required"
 msgstr "ਪੈਕੇਜ ਦੇਣ ਵਾਲੀ ਸਤਰ ਲੋੜੀਦੀ ਹੈ"
 
-#: ../client/pk-console.c:2202 ../client/pk-console.c:2213
 msgid "A filename is required"
 msgstr "ਫਾਇਲ-ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: this is the description of the backend
-#: ../client/pk-console.c:2282
 msgid "Description"
 msgstr "ਵੇਰਵਾ"
 
 #. TRANSLATORS: this is the author of the backend
-#: ../client/pk-console.c:2286
 msgid "Author"
 msgstr "ਲੇਖਕ"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: ../client/pk-console.c:2356
 msgid "You need to specify a list file to create"
 msgstr "ਤੁਹਾਨੂੰ ਬਣਾਉਣ ਲਈ ਸੂਚੀ ਫਾਇਲ ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
-#: ../client/pk-console.c:2369
 #, c-format
 msgid "File already exists: %s"
 msgstr "ਫਾਇਲ ਪਹਿਲਾਂ ਹੀ ਮੌਜੂਦ ਹੈ: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
-#: ../client/pk-console.c:2387
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ਚੋਣ '%s' ਸਹਾਇਕ ਨਹੀਂ ਹੈ"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2397
 msgid "Command failed"
 msgstr "ਕਮਾਂਡ ਫੇਲ੍ਹ ਹੈ"
 
-#: ../client/pk-monitor.c:249
 msgid "Failed to get daemon state"
 msgstr "ਡੈਮਨ ਹਾਲਤ ਪਤਾ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ।"
 
-#: ../client/pk-monitor.c:307
 msgid "Failed to get properties"
 msgstr "ਵਿਸ਼ੇਸ਼ਤਾ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:346
 msgid "PackageKit Monitor"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਮਾਨੀਟਰ"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
-#: ../client/pk-offline-update.c:153
 msgid "Installing Updates"
 msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../client/pk-offline-update.c:187
 msgid "Rebooting after installing updates…"
 msgstr "...ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕਰਨ ਦੇ ਬਾਅਦ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: ../client/pk-offline-update.c:228
 msgid "Shutting down after installing updates…"
 msgstr "...ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕਰਨ ਦੇ ਬਾਅਦ ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: we've started doing offline updates
-#: ../client/pk-offline-update.c:425
 msgid "Installing updates, this could take a while..."
 msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ, ਇਸ ਨੂੰ ਕੁਝ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ..."
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:406
 msgid "Getting package information..."
 msgstr "ਪੈਕੇਜ ਜਾਣਕਾਰੀ ਲਈ ਜਾ ਰਹੀ ਹੈ..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:412
 #, c-format
 msgid "Run %s"
 msgstr "%s ਚਲਾਓ"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:418
 msgid "Installed version"
 msgstr "ਇੰਸਟਾਲ ਕੀਤੇ ਵਰਜਨ"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:426
 #, c-format
 msgid "Run version %s now"
 msgstr "ਵਰਜਨ %s ਹੁਣੇ ਚਲਾਓ"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:432
 msgid "Run now"
 msgstr "ਹੁਣੇ ਚਲਾਓ"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:438
 #, c-format
 msgid "Update to version %s"
 msgstr "ਵਰਜਨ %s ਲਈ ਅੱਪਡੇਟ ਕਰੋ"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:444
 #, c-format
 msgid "Install %s now"
 msgstr "%s ਹੁਣੇ ਇੰਸਟਾਲ ਕਰੋ"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:447
 msgid "Version"
 msgstr "ਵਰਜਨ"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:452
 msgid "No packages found for your system"
 msgstr "ਤੁਹਾਡੇ ਸਿਸਟਮ ਉੱਤੇ ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:457
 msgid "Installing..."
 msgstr "ਇੰਸਟਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:440
 msgid "Downloading details about the software sources."
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤਾਂ ਬਾਰੇ ਵੇਰਵਾ ਡਾਊਨਲੋਡ ਕਰ ਰਿਹਾ ਹੈ।"
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "ਫਾਇਲ-ਲਿਸਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ (ਇਹ ਪੂਰਾ ਹੋਣ ਲਈ ਕੁਝ ਸਮਾਂ ਲੈ ਸਕਦਾ ਹੈ)।"
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:448
 msgid "Waiting for package manager lock."
 msgstr "ਪੈਕੇਜ ਮੈਨੇਜਰ ਲਾਕ ਉਡੀਕਿਆ ਜਾ ਰਿਹਾ ਹੈ।"
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:452
 msgid "Loading list of packages."
 msgstr "ਪੈਕੇਜ ਲਿਸਟ ਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:517
 msgid "Failed to search for file"
 msgstr "ਫਾਇਲ ਲਈ ਖੋਜ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../contrib/command-not-found/pk-command-not-found.c:529
 msgid "Getting the list of files failed"
 msgstr "ਫਾਇਲਾਂ ਦੀ ਲਿਸਟ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:672
 msgid "Failed to launch:"
 msgstr "ਚਲਾਉਣ ਲਈ ਫੇਲ੍ਹ:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:694
 msgid "Failed to install packages"
 msgstr "ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਫੇਲ੍ਹ"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "command not found"
 msgstr "ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:802
 msgid "Similar command is:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਹੈ:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:815
 msgid "Run similar command:"
 msgstr "ਰਲਦੀ ਕਮਾਂਡ ਚਲਾਓ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:827
-#: ../contrib/command-not-found/pk-command-not-found.c:836
 msgid "Similar commands are:"
 msgstr "ਰਲਦੀਆਂ ਕਮਾਂਡਾਂ ਹਨ:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
 msgstr "ਚਲਾਉਣ ਲਈ ਕਮਾਂਡ ਦੀ ਚੋਣ ਕਰੋ ਜੀ"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:861
 msgid "The package providing this file is:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
-#: ../contrib/command-not-found/pk-command-not-found.c:868
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "ਕਮਾਂਡ '%2$s' ਦੇਣ ਲਈ ਪੈਕੇਜ '%1$s' ਇੰਸਟਾਲ ਕਰਨਾ ਹੈ?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:891
 msgid "Packages providing this file are:"
 msgstr "ਪੈਕੇਜ ਇਹ ਫਾਇਲ ਦਿੰਦਾ ਹੈ:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:901
 msgid "Suitable packages are:"
 msgstr "ਢੁੱਕਵੇਂ ਪੈਕੇਜ ਹਨ:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:909
 msgid "Please choose a package to install"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਚੁਣੋ ਜੀ"
 
-#: ../contrib/command-not-found/pk-command-not-found.c:911
 msgid "User aborted selection"
 msgstr "ਯੂਜ਼ਰ ਨੇ ਚੋਣ ਅਧੂਰੀ ਛੱਡੀ"
 
-#: ../lib/packagekit-glib2/pk-console-shared.c:67
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "੧ ਤੋਂ %i ਤੱਕ ਨੰਬਰ ਦਿਓ ਜੀ:"
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: ../lib/packagekit-glib2/pk-console-shared.c:184
 msgid "Unknown state"
 msgstr "ਅਣਜਾਣ ਹਾਲਤ"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: ../lib/packagekit-glib2/pk-console-shared.c:188
 msgid "Starting"
 msgstr "ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
-#: ../lib/packagekit-glib2/pk-console-shared.c:192
 msgid "Waiting in queue"
 msgstr "ਕਤਾਰ ਵਿੱਚ ਉਡੀਕ ਜਾਰੀ"
 
 #. TRANSLATORS: transaction state, just started
-#: ../lib/packagekit-glib2/pk-console-shared.c:196
 msgid "Running"
 msgstr "ਚੱਲ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: transaction state, is querying data
-#: ../lib/packagekit-glib2/pk-console-shared.c:200
 msgid "Querying"
 msgstr "ਕਿਊਰੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:204
 msgid "Getting information"
 msgstr "ਜਾਣਕਾਰੀ ਲਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, removing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:208
 msgid "Removing packages"
 msgstr "ਪੈਕੇਜ ਹਟਾਏ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:212
-#: ../lib/packagekit-glib2/pk-enum.c:1224
 msgid "Downloading packages"
 msgstr "ਪੈਕੇਜ ਡਾਊਨਲੋਡ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, installing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:216
 msgid "Installing packages"
 msgstr "ਪੈਕੇਜ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: ../lib/packagekit-glib2/pk-console-shared.c:220
 msgid "Refreshing software list"
 msgstr "ਸਾਫਟਵੇਅਰ ਲਿਸਟ ਤਾਜ਼ਾ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, installing updates
-#: ../lib/packagekit-glib2/pk-console-shared.c:224
 msgid "Installing updates"
 msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
-#: ../lib/packagekit-glib2/pk-console-shared.c:228
 msgid "Cleaning up packages"
 msgstr "ਪੈਕੇਜ ਸਾਫ਼ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:232
 msgid "Obsoleting packages"
 msgstr "ਪੈਕੇਜ ਬਰਤਰਫ਼ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: ../lib/packagekit-glib2/pk-console-shared.c:236
 msgid "Resolving dependencies"
 msgstr "ਨਿਰਭਰਤਾ ਹੱਲ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
-#: ../lib/packagekit-glib2/pk-console-shared.c:240
 msgid "Checking signatures"
 msgstr "ਦਸਤਖਤ ਚੈੱਕ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:244
 msgid "Testing changes"
 msgstr "ਬਦਲਾਅ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
-#: ../lib/packagekit-glib2/pk-console-shared.c:248
 msgid "Committing changes"
 msgstr "ਬਦਲਾਅ ਕਮਿਟ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:252
 msgid "Requesting data"
 msgstr "ਡਾਟਾ ਮੰਗਿਆ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:256
 msgid "Finished"
 msgstr "ਮੁਕੰਮਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:260
 msgid "Cancelling"
 msgstr "ਰੱਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:264
 msgid "Downloading repository information"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਜਾਣਕਾਰੀ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:268
 msgid "Downloading list of packages"
 msgstr "ਪੈਕੇਜ ਲਿਸਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:272
 msgid "Downloading file lists"
 msgstr "ਫਾਇਲ ਲਿਸਟਾਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:276
 msgid "Downloading lists of changes"
 msgstr "ਬਦਲਾਅ ਲਈ ਲਿਸਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:280
 msgid "Downloading groups"
 msgstr "ਗਰੁੱਡ ਡਾਊਨਲੋਡ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:284
 msgid "Downloading update information"
 msgstr "ਅੱਪਡੇਟ ਜਾਣਕਾਰੀ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:288
 msgid "Repackaging files"
 msgstr "ਫਾਇਲਾਂ ਮੁੜ-ਪੈਕ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:292
 msgid "Loading cache"
 msgstr "ਕੈਸ ਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:296
 msgid "Scanning applications"
 msgstr "ਐਪਲੀਕੇਸ਼ਨਾਂ ਸਕੈਨ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:300
 msgid "Generating package lists"
 msgstr "ਪੈਕੇਜ ਲਿਸਟ ਬਣਾਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:304
 msgid "Waiting for package manager lock"
 msgstr "ਪੈਕੇਜ ਮੈਨੇਜਰ ਲਾਕ ਦੀ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:308
 msgid "Waiting for authentication"
 msgstr "ਪ੍ਰਮਾਣਿਕਤਾ ਲਈ ਉਡੀਕ ਜਾਰੀ"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:312
 msgid "Updating running applications"
 msgstr "ਚੱਲਦੀ ਐਪਲੀਕੇਸ਼ਨ ਅੱਪਡੇਟ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:316
 msgid "Checking applications in use"
 msgstr "ਵਰਤੋਂ ਅਧੀਨ ਐਪਲੀਕੇਸ਼ਨਾਂ ਦੀ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
-#: ../lib/packagekit-glib2/pk-console-shared.c:320
 msgid "Checking libraries in use"
 msgstr "ਵਰਤੋਂ ਅਧੀਨ ਲਾਇਬਰੇਰੀਆਂ ਦੀ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:324
 msgid "Copying files"
 msgstr "ਫਾਇਲਾਂ ਕਾਪੀ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: turn on all debugging
-#: ../lib/packagekit-glib2/pk-debug.c:140
 msgid "Show debugging information for all files"
 msgstr "ਸਭ ਫਾਇਲਾਂ ਲਈ ਡੀਬੱਗ ਜਾਣਕਾਰੀ ਵੇਖੋ"
 
-#: ../lib/packagekit-glib2/pk-debug.c:208
 msgid "Debugging Options"
 msgstr "ਡੀਬੱਗਿੰਗ ਚੋਣਾਂ"
 
-#: ../lib/packagekit-glib2/pk-debug.c:208
 msgid "Show debugging options"
 msgstr "ਡੀਬੱਗਿੰਗ ਚੋਣਾਂ ਵੇਖੋ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:961
 msgid "Trivial"
 msgstr "ਛੋਟਾ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:965
 msgid "Normal"
 msgstr "ਸਧਾਰਨ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:969
 msgid "Important"
 msgstr "ਜ਼ਰੂਰੀ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:973
 msgid "Security"
 msgstr "ਸੁਰੱਖਿਆ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:977
 msgid "Bug fix "
 msgstr "ਬੱਗ ਫਿਕਸ "
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:981
 msgid "Enhancement"
 msgstr "ਸੋਧ"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-enum.c:985
 msgid "Blocked"
 msgstr "ਬਲਾਕ ਕੀਤੇ"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:990
-#: ../lib/packagekit-glib2/pk-enum.c:1077
 msgid "Installed"
 msgstr "ਇੰਸਟਾਲ ਕੀਤੇ"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-enum.c:995
 msgid "Available"
 msgstr "ਉਪਲੱਬਧ"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1020
 msgid "Downloading"
 msgstr "ਡਾਊਨਲੋਡ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1024
 msgid "Updating"
 msgstr "ਅੱਪਡੇਟ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1028
-#: ../lib/packagekit-glib2/pk-enum.c:1163
 msgid "Installing"
 msgstr "ਇੰਸਟਾਲ ਕਰਨਾ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1032
-#: ../lib/packagekit-glib2/pk-enum.c:1159
 msgid "Removing"
 msgstr "ਹਟਾਇਆ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1036
 msgid "Cleaning up"
 msgstr "ਸਾਫ਼ ਕਰਨਾ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1040
 msgid "Obsoleting"
 msgstr "ਬਰਤਰ਼ਫ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1044
 msgid "Reinstalling"
 msgstr "ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨਾ ਜਾਰੀ"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1069
 msgid "Downloaded"
 msgstr "ਡਾਊਨਲੋਡ ਕੀਤੇ"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1081
 msgid "Removed"
 msgstr "ਹਟਾਏ ਗਏ ਹਨ"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1085
 msgid "Cleaned up"
 msgstr "ਸਾਫ਼ ਕੀਤੇ"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1089
 msgid "Obsoleted"
 msgstr "ਬਰਤਰਫ਼ ਕੀਤੇ"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-enum.c:1093
 msgid "Reinstalled"
 msgstr "ਮੁੜ-ਇੰਸਟਾਲ ਕੀਤੇ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1118
 msgid "Unknown role type"
 msgstr "ਅਣਜਾਣ ਰੋਲ ਕਿਸਮ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1122
 msgid "Getting dependencies"
 msgstr "ਨਿਰਭਰਤਾ ਲਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1126
 msgid "Getting update details"
 msgstr "ਅੱਪਡੇਟ ਜਾਣਕਾਰੀ ਲਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1131
 msgid "Getting details"
 msgstr "ਵੇਰਵਾ ਲਿਆ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1135
 msgid "Getting requires"
 msgstr "ਲੋੜੀਦੇ ਪੈਕੇਜ ਲਏ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1139
 msgid "Getting updates"
 msgstr "ਅੱਪਡੇਟ ਲਏ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1143
 msgid "Searching by details"
 msgstr "ਵੇਰਵੇ ਮੁਤਾਬਕ ਖੋਜ ਜਾਰੀ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1147
 msgid "Searching by file"
 msgstr "ਫਾਇਲ ਮੁਤਾਬਕ ਖੋਜ ਜਾਰੀ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1151
 msgid "Searching groups"
 msgstr "ਗਰੁੱਪ ਮੁਤਾਬਕ ਖੋਜ ਜਾਰੀ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1155
 msgid "Searching by name"
 msgstr "ਨਾਂ ਮੁਤਾਬਕ ਖੋਜ ਜਾਰੀ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1167
 msgid "Installing files"
 msgstr "ਫਾਇਲਾਂ ਇੰਸਟਾਲ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1171
 msgid "Refreshing cache"
 msgstr "ਕੈਸ਼ ਮੁੜ-ਤਾਜ਼ਾ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1175
 msgid "Updating packages"
 msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1179
 msgid "Canceling"
 msgstr "ਰੱਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1183
 msgid "Getting repositories"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਲਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1187
 msgid "Enabling repository"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਚਾਲੂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1191
 msgid "Setting data"
 msgstr "ਡਾਟਾ ਸੈੱਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1195
 msgid "Removing repository"
 msgstr "ਰਿਪੋਰਜ਼ਟਰੀ ਹਟਾਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1199
 msgid "Resolving"
 msgstr "ਹੱਲ਼ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1204
 msgid "Getting file list"
 msgstr "ਫਾਇਲ ਲਿਸਟ ਲਈ ਜਾ ਰਹੀ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1208
 msgid "Getting provides"
 msgstr "ਦੇਣ ਵਾਲੇ ਪੈਕੇਜ ਲਏ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1212
 msgid "Installing signature"
 msgstr "ਦਸਤਖਤ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1216
 msgid "Getting packages"
 msgstr "ਪੈਕੇਜ ਲਏ ਜਾ ਰਹੇ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1220
 msgid "Accepting EULA"
 msgstr "EULA ਮਨਜ਼ੂਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1228
 msgid "Getting upgrades"
 msgstr "ਅੱਪਗਰੇਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1232
 msgid "Getting categories"
 msgstr "ਕੈਟਾਗਰੀਆਂ ਲਈਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-enum.c:1236
 msgid "Getting transactions"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨਾਂ ਲਈ ਜਾ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
-#: ../lib/packagekit-glib2/pk-task-text.c:67
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "ਕੀ ਤੁਸੀਂ ਨਾ-ਸਾਈਨ ਕੀਤੇ ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:72
 msgid "The unsigned software will not be installed."
 msgstr "ਨਾ-ਸਾਈਨ ਕੀਤੇ ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾਣਗੇ।"
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
-#: ../lib/packagekit-glib2/pk-task-text.c:121
 msgid "Software source signature required"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਦਸਤਖਤ ਲੋੜੀਂਦੇ"
 
 #. TRANSLATORS: the package repository name
-#: ../lib/packagekit-glib2/pk-task-text.c:127
 msgid "Software source name"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਨਾਂ"
 
 #. TRANSLATORS: the key URL
-#: ../lib/packagekit-glib2/pk-task-text.c:130
 msgid "Key URL"
 msgstr "ਕੁੰਜੀ URL"
 
 #. TRANSLATORS: the username of the key
-#: ../lib/packagekit-glib2/pk-task-text.c:133
 msgid "Key user"
 msgstr "ਕੁੰਜੀ ਯੂਜ਼ਰ"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
-#: ../lib/packagekit-glib2/pk-task-text.c:136
 msgid "Key ID"
 msgstr "ਕੁੰਜੀ ID"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
-#: ../lib/packagekit-glib2/pk-task-text.c:139
 msgid "Key fingerprint"
 msgstr "ਕੁੰਜੀ ਫਿੰਗਰਪਰਿੰਟ"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: ../lib/packagekit-glib2/pk-task-text.c:142
 msgid "Key Timestamp"
 msgstr "ਕੁੰਜੀ ਟਾਈਮ-ਸਟੈਂਪ"
 
 #. TRANSLATORS: ask the user if they want to import
-#: ../lib/packagekit-glib2/pk-task-text.c:155
 msgid "Do you accept this signature?"
 msgstr "ਕੀ ਤੁਸੀਂ ਇਹ ਦਸਤਖਤ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:160
 msgid "The signature was not accepted."
 msgstr "ਦਸਤਖਤ ਮਨਜ਼ੂਰ ਨਹੀਂ ਸਨ।"
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
-#: ../lib/packagekit-glib2/pk-task-text.c:203
 msgid "End user licence agreement required"
 msgstr "ਅੰਤਮ ਯੂਜ਼ਰ ਲਾਈਸੈਂਸ ਇਕਰਾਰਨਾਮਾ ਲੋੜੀਂਦਾ"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: ../lib/packagekit-glib2/pk-task-text.c:212
 msgid "Agreement"
 msgstr "ਇਕਰਾਰਨਾਮਾ"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: ../lib/packagekit-glib2/pk-task-text.c:221
 msgid "Do you accept this agreement?"
 msgstr "ਕੀ ਤੁਸੀਂ ਇਹ ਇਕਰਾਰਨਾਮਾ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:226
 msgid "The agreement was not accepted."
 msgstr "ਇਕਰਾਰਨਾਮਾ ਮਨਜ਼ੂਰ ਨਹੀਂ ਕੀਤਾ ਸੀ।"
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
-#: ../lib/packagekit-glib2/pk-task-text.c:265
 msgid "Media change required"
 msgstr "ਮੀਡਿਆ ਬਦਲਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: ../lib/packagekit-glib2/pk-task-text.c:268
 msgid "Media type"
 msgstr "ਮੀਡਿਆ ਕਿਸਮ"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: ../lib/packagekit-glib2/pk-task-text.c:271
 msgid "Media label"
 msgstr "ਮੀਡਿਆ ਲੇਬਲ"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "Text"
 msgstr "ਟੈਕਸਟ"
 
 #. TRANSLATORS: ask the user to insert the media
-#: ../lib/packagekit-glib2/pk-task-text.c:280
 msgid "Please insert the correct media"
 msgstr "ਠੀਕ ਮੀਡਿਆ ਚੁਣੋ ਜੀ"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: ../lib/packagekit-glib2/pk-task-text.c:285
 msgid "The correct media was not inserted."
 msgstr "ਠੀਕ ਮੀਡਿਆ ਨਹੀਂ ਪਾਇਆ।"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:300
 msgid "The following packages have to be removed:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਹਟਾਇਆ ਜਾਵੇਗਾ:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:305
 msgid "The following packages have to be installed:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਵੇਗਾ:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:310
 msgid "The following packages have to be updated:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾਵੇਗਾ:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:315
 msgid "The following packages have to be reinstalled:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਜਾਵੇਗਾ:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:320
 msgid "The following packages have to be downgraded:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਡਾਊਨਗਰੇਡ ਕੀਤਾ ਜਾਵੇਗਾ:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
-#: ../lib/packagekit-glib2/pk-task-text.c:325
 msgid "The following packages are untrusted:"
 msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹਨ:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:385
 msgid "Proceed with changes?"
 msgstr "ਬਦਲਾਅ ਜਾਰੀ ਰੱਖਣੇ ਹਨ?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:390
 msgid "The transaction did not proceed."
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਪੂਰੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।"
 
@@ -1445,11 +1177,9 @@ msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਪੂਰੀ ਨਹੀਂ ਕੀਤੀ �
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
 msgid "Cancel foreign task"
 msgstr "ਬਾਹਰੀ ਟਾਸਕ ਰੱਦ ਕਰੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ ਟਾਸਕ ਨੂੰ ਰੱਦ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
@@ -1459,11 +1189,9 @@ msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗ�
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Install signed package"
 msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to install software"
 msgstr "ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
@@ -1472,24 +1200,44 @@ msgstr "ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮ�
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:22
 msgid "Install untrusted local file"
 msgstr "ਅਣ-ਟਰੱਸਟ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:23
 msgid "Authentication is required to install untrusted software"
 msgstr "ਨਾ-ਭਰੋਸੇਯੋਗ ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr ""
+
+msgid "Authentication is required to reinstall software"
+msgstr ""
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr ""
+
+msgid "Authentication is required to downgrade software"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Trust a key used for signing software"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਾਈਨ ਕਰਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱਤੇ ਭਰੋਸੇ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
@@ -1500,11 +1248,9 @@ msgstr "ਸਾਫਟਵੇਅਰ ਦਸਤਖਤ ਕਰਨ ਲਈ ਵਰਤੀ �
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
 msgid "Accept EULA"
 msgstr "EULA ਮਨਜ਼ੂਰ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:39
 msgid "Authentication is required to accept a EULA"
 msgstr "EULA ਮਨਜ਼ੂਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
@@ -1516,11 +1262,9 @@ msgstr "EULA ਮਨਜ਼ੂਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦ
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:49
 msgid "Remove package"
 msgstr "ਪੈਕੇਜ ਹਟਾਓ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Authentication is required to remove software"
 msgstr "ਸਾਫਟਵੇਅਰ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
@@ -1530,11 +1274,9 @@ msgstr "ਸਾਫਟਵੇਅਰ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤ
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Update software"
 msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Authentication is required to update software"
 msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
@@ -1542,33 +1284,27 @@ msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪਰਮ�
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:65
 msgid "Change software source parameters"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Authentication is required to change software source parameters"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:71
 msgid "Refresh system sources"
 msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਕਰੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:72
 msgid "Authentication is required to refresh the system sources"
 msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Set network proxy"
 msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:78
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
@@ -1580,11 +1316,9 @@ msgstr "ਸਾਫਟਵੇਅਰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਨੈ�
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
 msgid "Reload a device"
 msgstr "ਜੰਤਰ ਮੁੜ-ਲੋਡ ਕਰੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:87
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "ਨਵੇਂ ਡਰਾਈਵਰ ਨਾਲ ਜੰਤਰ ਰੀਲੋਡ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
@@ -1592,153 +1326,122 @@ msgstr "ਨਵੇਂ ਡਰਾਈਵਰ ਨਾਲ ਜੰਤਰ ਰੀਲੋਡ �
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:93
 msgid "Repair System"
 msgstr "ਸਿਸਟਮ ਰਿਪੇਅਰ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Authentication is required to repair the installed software"
 msgstr "ਇੰਸਟਾਲ ਹੋਏ ਸਾਫਟਵੇਅਰ ਨੂੰ ਰਿਪੇਅਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
 #. early boot time without a password.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:99
 msgid "Trigger offline updates"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਬਦਲੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:100
 msgid "Authentication is required to trigger offline updates"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:105
 msgid "Clear offline update message"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰੋ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:106
 msgid "Authentication is required to clear the offline updates message"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. TRANSLATORS: this is a command alias
-#: ../src/pk-direct.c:109
 #, c-format
 msgid "Alias to %s"
 msgstr ""
 
-#: ../src/pk-direct.c:184
 msgid "Command not found, valid commands are:"
 msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
-#: ../src/pk-direct.c:404 ../src/pk-main.c:128
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ਵਰਤਣ ਲਈ ਪੈਕੇਜਿੰਗ ਬੈਕਐਂਡ, ਜਿਵੇਂ ਕਿ ਫ਼ਰਜ਼ੀ"
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:420
 msgid "Refresh the cache"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:424
 msgid "Refresh the cache (forced)"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:428
 msgid "Search by names"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:432
 msgid "Search by details"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:436
 msgid "Search by files"
 msgstr ""
 
 #. TRANSLATORS: command description
-#: ../src/pk-direct.c:440
 msgid "Set repository options"
 msgstr ""
 
 #. TRANSLATORS: program name
-#: ../src/pk-direct.c:453
 msgid "PackageKit"
 msgstr ""
 
 #. TRANSLATORS: the user didn't read the man page
-#: ../src/pk-direct.c:459
 msgid "Failed to parse arguments"
 msgstr ""
 
 #. TRANSLATORS: probably not yet installed
-#: ../src/pk-direct.c:470
 msgid "Failed to load the config file"
 msgstr ""
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: ../src/pk-direct.c:503
 msgid "Failed to load the backend"
 msgstr ""
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: ../src/pk-direct.c:541
 msgid "Failed to unload the backend"
 msgstr ""
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:131
 msgid "Disable the idle timer"
 msgstr "ਵੇਹਲਾ ਟਾਈਮਰ ਆਯੋਗ"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:134
 msgid "Show version and exit"
 msgstr "ਵਰਜਨ ਵੇਖਾ ਕੇ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:137
 msgid "Exit after a small delay"
 msgstr "ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:140
 msgid "Exit after the engine has loaded"
 msgstr "ਇੰਜਣ ਲੋਡ ਕਰਨ ਦੇ ਬਾਅਦ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: ../src/pk-main.c:143
 msgid "Don't clear environment on startup"
 msgstr "ਸ਼ੁਰੂ ਸਮੇਂ ਇੰਵਾਇਰਨਮੈਂਟ ਸਾਫ਼ ਨਾ ਕਰੋ"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:158
 msgid "PackageKit service"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਸਰਵਿਸ"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-transaction.c:2524
 msgid "The software is not from a trusted source."
 msgstr "ਸਾਫਟਵੇਅਰ ਇੱਕ ਭਰੋਸੇਯੋਗ ਸਰੋਤ ਤੋਂ ਨਹੀਂ ਹੈ।"
 
-#: ../src/pk-transaction.c:2532
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "ਇਸ ਪੈਕੇਜ ਨੂੰ ਅੱਪਡੇਟ ਨਾ ਕਰੋ, ਜਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਪਤਾ ਨਹੀਂ।"
 
-#: ../src/pk-transaction.c:2533
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "ਇਹਨਾਂ ਪੈਕੇਜਾਂ ਨੂੰ ਅੱਪਡੇਟ ਨਾ ਕਰੋ, ਜਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਪਤਾ ਨਹੀਂ।"
 
-#: ../src/pk-transaction.c:2543
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "ਇਸ ਪੈਕੇਜ ਨੂੰ ਇੰਸਟਾਲ ਨਾ ਕਰੋ, ਜਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਪਤਾ ਨਹੀਂ।"
 
-#: ../src/pk-transaction.c:2544
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "ਇਹਨਾਂ ਪੈਕੇਜਾਂ ਨੂੰ ਇੰਸਟਾਲ ਨਾ ਕਰੋ, ਜਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਪਤਾ ਨਹੀਂ।"

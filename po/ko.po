@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-21 13:26+0100\n"
-"PO-Revision-Date: 2014-10-12 05:27+0000\n"
-"Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
+"POT-Creation-Date: 2014-11-10 17:11+0000\n"
+"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Korean (http://www.transifex.com/projects/p/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -380,6 +380,13 @@ msgstr "확인 사항을 묻지 않고 패키지를 설치"
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading pakages only"
 msgstr "패키지 다운로드를 통해서만 트랜잭션을 준비"
+
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr ""
+
+msgid "Allow packages to be reinstalled during transaction"
+msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -1197,6 +1204,30 @@ msgstr "신뢰할 수 없는 로컬 파일 설치"
 
 msgid "Authentication is required to install untrusted software"
 msgstr "신뢰할 수 없는 프로그램을 설치하려면 인증이 필요합니다"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr ""
+
+msgid "Authentication is required to reinstall software"
+msgstr ""
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr ""
+
+msgid "Authentication is required to downgrade software"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
