@@ -2,7 +2,7 @@
 
 m4_define([pk_major_version], [1])
 m4_define([pk_minor_version], [0])
-m4_define([pk_micro_version], [2])
+m4_define([pk_micro_version], [3])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -53,7 +53,7 @@ AC_SUBST(PK_VERSION)
 #   fixed, change:
 #      REVISION += 1
 LT_CURRENT=18
-LT_REVISION=1
+LT_REVISION=2
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
