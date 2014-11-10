@@ -175,9 +175,7 @@ using PackageKit.
         --disable-bash-completion \
 %endif
         --disable-local \
-        --disable-strict \
-        --disable-silent-rules \
-        --disable-tests
+        --disable-silent-rules
 
 make %{?_smp_mflags} V=1
 
