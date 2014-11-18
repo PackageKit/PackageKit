@@ -41,6 +41,10 @@ sub perform_installation {
   $::test = delete $options{'only-download'} || delete $options{simulate};
   $urpm->{options}{downgrade} = delete $options{'allow-downgrade'};
   
+  if (my $res = delete $options{'allow-reinstall'}) {
+      $urpm->{options}{$_} = $res foreach qw(replacefiles replacepkgs);
+  }
+  
   # Here we lock urpmi & rpm databases
   # In third argument we can specified if the script must wait until urpmi or rpm
   # databases are locked
