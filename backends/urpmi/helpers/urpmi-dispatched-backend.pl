@@ -638,6 +638,7 @@ sub update_packages {
 
   my %requested;
 
+  # FIXME: ...
   my @depslist = @{$urpm->{depslist}};
   foreach my $depslistpkg (@depslist) {
     foreach my $name (@names) {
