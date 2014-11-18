@@ -50,6 +50,7 @@ foreach (<STDIN>) {
   print "finished\n";
 }
 
+# FIXME: stop passing a ref around
 sub dispatch_command {
   my ($urpm, $args) = @_;
 
