@@ -333,7 +333,6 @@ sub get_updates {
 sub install_packages {
   my ($urpm, $args) = @_;
 
-  my $only_trusted = $args->[0];
   my @packageidstab = split(/&/, $args->[1]);
   
   my @names;
@@ -349,7 +348,7 @@ sub install_packages {
     caseinsensitive => 0,
     all => 0);
   eval {
-    perform_installation($urpm, \%requested, only_trusted => $only_trusted);
+    perform_installation($urpm, \%requested, map { $_ => 1 } split(',', $args->[0]));
   };
   _finished();
 }
@@ -624,7 +623,6 @@ sub search_group {
 sub update_packages {
   my ($urpm, $args) = @_;
 
-  my $only_trusted = $args->[0];
   my @packageidstab = split(/&/, $args->[1]);
 
   my @names;
@@ -650,7 +648,7 @@ sub update_packages {
     tonext:
   }
   eval {
-    perform_installation($urpm, \%requested, only_trusted => $only_trusted);
+    perform_installation($urpm, \%requested, map { $_ => 1 } split(',', $args->[0]));
   };
   _finished();
 }
