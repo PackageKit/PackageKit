@@ -39,6 +39,7 @@ sub perform_installation {
   my $no_remove = 0;
 
   $::test = delete $options{'only-download'} || delete $options{simulate};
+  $urpm->{options}{downgrade} = delete $options{'allow-downgrade'};
   
   # Here we lock urpmi & rpm databases
   # In third argument we can specified if the script must wait until urpmi or rpm
