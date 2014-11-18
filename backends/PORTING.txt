@@ -70,7 +70,7 @@ Guide to porting backends from 0.7.x to 0.8.x
    *just* send the array of raw URLs.
 
  * Add calls to pk_backend_set_locked() to declare when your backend holds
-   write-lock on it's database. PackageKit will spawn multiple transactions
+   write-lock on its database. PackageKit will spawn multiple transactions
    which can read the database at any time. Not using this method will cause
    your backend to fail, as we then try to create multiple write transactions
    too.
