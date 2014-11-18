@@ -67,12 +67,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	g_debug ("backend: initialize");
 
-	/* BACKEND MAINTAINER: feel free to remove this when you've
-	 * added support for ONLY_DOWNLOAD as specified in backends/PORTING.txt
-	 * */
-	g_error ("Backend needs to be ported to 0.8.x -- "
-		 "see backends/PORTING.txt for details");
-
 	spawn = pk_backend_spawn_new (conf);
 	pk_backend_spawn_set_name (spawn, "urpmi");
 }
