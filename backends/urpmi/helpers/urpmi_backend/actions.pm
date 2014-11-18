@@ -38,6 +38,8 @@ sub perform_installation {
   my $restart;
   my $no_remove = 0;
 
+  $::test = delete $options{'only-download'} || delete $options{simulate};
+  
   # Here we lock urpmi & rpm databases
   # In third argument we can specified if the script must wait until urpmi or rpm
   # databases are locked
