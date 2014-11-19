@@ -680,11 +680,11 @@ sub what_provides {
   foreach (@packageidstab) {
     my @pkgid = split(/;/, $_);
     # skip if old standard
-    if (!any { /^gstreamer0.10\(/ } $pkgid[0]) {
+    if (!any { /^gstreamer1.0\(/ } $pkgid[0]) {
 	# new standard
 	my $namespace;
 	if ($providestype eq "codec") {
-	    $namespace = "gstreamer0.10";
+	    $namespace = "gstreamer1.0";
 	} elsif ($providestype ne "any") {
 	    $namespace = $providestype;
 	}
