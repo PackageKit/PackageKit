@@ -73,6 +73,8 @@ sub dispatch_command {
     get_update_detail($urpm, $args);
   } elsif ($command eq "get-updates") {
     get_updates($urpm, $args);
+  } elsif ($command eq "install-files") {
+    install_files($urpm, $args);
   } elsif ($command eq "install-packages") {
     install_packages($urpm, $args);
     urpm::media::configure($urpm);
@@ -329,6 +331,20 @@ sub get_updates {
                         INFO_NORMAL, get_package_id($_), $_->summary);
   }
   _finished();
+}
+
+sub install_files {
+  my ($urpm, $args) = @_;
+
+  my @files = split(/&/, $args->[1]);
+  
+  my @packages;
+  foreach (@files) {
+    my @f_id = split(/;/, $_);
+    push @packages, _urpmf($f_id[0]);
+  }
+  
+  install_packages($urpm, [ $args->[0], join(';', @packages) ]);
 }
 
 sub install_packages {
@@ -852,4 +868,43 @@ sub _get_newer_distrib {
       return $_;
     }
   }
+}
+
+# from urpmi/urpmf:
+sub _urpmf {
+  my ($urpm) = @_;
+  my ($callback, $expr, @packages);
+    foreach my $medium (urpm::media::non_ignored_media($urpm)) {
+	my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, 'files', $options{verbose} < 0);
+	if (!$xml_info_file) {
+	    my $hdlist = urpm::media::any_hdlist($urpm, $medium, $options{verbose} < 0) or 
+	      $urpm->{error}("no xml-info available for medium \"$medium->{name}\""), next;
+	    $urpm->{log}("getting information from $hdlist");
+	    $urpm->parse_hdlist($hdlist, callback => $callback);
+	    next;
+	}
+	require urpm::xml_info;
+	require urpm::xml_info_pkg;
+
+	$urpm->{log}("getting information from $xml_info_file");
+	    # special version for speed (3x faster), hopefully fully compatible
+	    my $code = sprintf(<<'EOF', $expr, $expr);
+	    my $F = urpm::xml_info::open_lzma($xml_info_file);
+	    my $fn;    
+	    local $_;
+	    while (<$F>) {
+		if (m!^<!) { 
+		    ($fn) = /fn="(.*)"/;
+		} elsif (%s || ($fn =~ %s)) {
+                  $fn or $urpm->{fatal}(1, "fast algorithm is broken, please report a bug");
+                  my $pkg = urpm::xml_info_pkg->new({ fn => $fn });
+		    push @packages, $pkg->name;		    
+		}
+	    }
+EOF
+	    $urpm->{debug} and $urpm->{debug}($code);
+	    eval $code;
+	    $@ and $urpm->{fatal}(1, $@);
+    }
+  @packages;
 }

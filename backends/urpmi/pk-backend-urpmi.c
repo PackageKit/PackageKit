@@ -157,7 +157,7 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
-		// PK_ROLE_ENUM_INSTALL_FILES,
+		PK_ROLE_ENUM_INSTALL_FILES,
 		// PK_ROLE_ENUM_INSTALL_SIGNATURE,
 		PK_ROLE_ENUM_REFRESH_CACHE,
 		PK_ROLE_ENUM_REMOVE_PACKAGES,
@@ -292,6 +292,27 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	pk_backend_job_set_locked (job, TRUE);
 	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 	pk_backend_job_set_locked (job, FALSE);
+}
+
+/**
+ * pk_backend_install_files:
+ */
+void
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar **full_paths)
+{
+	gchar *full_paths_temp;
+	gchar *transaction_flags_temp;
+
+	/* send the complete list as stdin */
+	full_paths_temp = g_strjoinv(PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_job_set_locked (job, TRUE);
+	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "install-files", transaction_flags_temp, full_paths_temp, NULL);
+	pk_backend_job_set_locked (job, FALSE);
+	g_free (full_paths_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
