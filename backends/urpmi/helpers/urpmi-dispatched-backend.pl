@@ -112,7 +112,7 @@ sub depends_on {
   
   my @filterstab = split(/;/, $args->[0]);
   my @packageidstab = split(/&/, $args->[1]);
-  #my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
+  #my $recursive_option = text2bool($args->[2]);
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -271,7 +271,7 @@ sub required_by {
   
   my @filterstab = split(/;/, $args->[0]);
   my @packageidstab = split(/&/, $args->[1]);
-  my $recursive_option = $args->[2] eq "yes" ? 1 : 0;
+  my $recursive_option = text2bool($args->[2]);
   
   my @pkgnames;
   foreach (@packageidstab) {
@@ -426,7 +426,7 @@ sub remove_packages {
 
   my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 
-  my $allowdeps_option = $args->[0] eq "yes" ? 1 : 0;
+  my $allowdeps_option = text2bool($args->[0]);
   my @packageidstab = split(/&/, $args->[1]);
 
   my @names = map { (split(/;/, $_))[0] } @packageidstab;
@@ -471,7 +471,7 @@ sub repo_enable {
   my ($urpm, $args) = @_;
 
   my $name = $args->[0];
-  my $enable = $args->[1] eq "yes" ? 1 : 0;
+  my $enable = text2bool($args->[1]);
 
   my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
   if (@media == 1) {
