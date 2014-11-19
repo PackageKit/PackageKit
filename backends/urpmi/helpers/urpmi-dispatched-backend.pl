@@ -427,7 +427,9 @@ sub remove_packages {
   my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 
   my $allowdeps_option = text2bool($args->[0]);
-  my @packageidstab = split(/&/, $args->[1]);
+  my $autoremove_option = text2bool($args->[1]);
+  my @trans_flags = split(',', $args->[2]);
+  my @packageidstab = split(/&/, $args->[3]);
 
   my @names = map { (split(/;/, $_))[0] } @packageidstab;
 

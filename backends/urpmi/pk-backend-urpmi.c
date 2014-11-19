@@ -324,11 +324,12 @@ void
 pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
-
+	gchar *transaction_flags_temp = pk_transaction_flag_bitfield_to_string(transaction_flags);
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "remove-packages", pk_backend_bool_to_string (allow_deps), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string(autoremove), transaction_flags_temp, package_ids_temp, NULL);
 	g_free (package_ids_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**
