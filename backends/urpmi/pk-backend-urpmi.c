@@ -174,7 +174,6 @@ pk_backend_get_roles (PkBackend *backend)
 		// PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 		// PK_ROLE_ENUM_GET_CATEGORIES,
 		// PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-		// PK_ROLE_ENUM_UPGRADE_SYSTEM
 		-1);
 
 	return roles;
