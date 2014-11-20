@@ -15,6 +15,8 @@ use Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
+  FILTER_ARCH
+  FILTER_NOT_ARCH
   FILTER_BASENAME 
   FILTER_DEVELOPMENT 
   FILTER_FREE 
@@ -165,6 +167,8 @@ our @EXPORT = qw(
   );
 
 use constant {
+  FILTER_ARCH => "arch",
+  FILTER_NOT_ARCH => "~arch",
   FILTER_BASENAME => "basename",
   FILTER_DEVELOPMENT => "devel",
   FILTER_FREE => "free",

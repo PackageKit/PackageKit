@@ -381,6 +381,9 @@ sub search_name {
   my $basename_option = FILTER_BASENAME;
   $basename_option = find { /$basename_option/ } @filterstab;
 
+  $urpm->{options}{'strict-arch'} = 1 if member(FILTER_ARCH, @filterstab);
+  $urpm->{options}{'strict-arch'} = 0 if member(FILTER_NOT_ARCH, @filterstab);
+
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
   
