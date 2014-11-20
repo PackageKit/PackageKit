@@ -285,7 +285,7 @@ sub required_by {
   my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
   foreach (@requires) {
-    if (filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+    if (filter($urpm, $_, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
       if (is_package_installed($_)) {
         any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
@@ -595,7 +595,7 @@ sub search_file {
 
   foreach (keys %requested) {
     my $p = $urpm->{depslist}[$_];
-    if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+    if (filter($urpm, $p, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1, FILTER_INSTALLED => 1 })) {
       if (is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
