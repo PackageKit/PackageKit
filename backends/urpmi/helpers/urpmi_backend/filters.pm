@@ -24,7 +24,7 @@ my @gui_pkgs = map { chomp; $_ } cat_('/usr/share/rpmdrake/gui.lst');
 sub filter {
   my ($urpm, $pkg, $filters, $enabled_filters) = @_;
 
-  my %e_filters = %$enabled_filters;
+  my %e_filters = map { $_ => 1 } @$enabled_filters;
 
   foreach my $filter (@$filters) {
     if (member($filter, FILTER_INSTALLED, FILTER_NOT_INSTALLED)) {
