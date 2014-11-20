@@ -223,7 +223,7 @@ sub perform_file_search {
         # Fix me : Replace with pk error enum.
         # $fn or $urpm->{fatal}("fast algorithm is broken, please report a bug");
         my $pkg = urpm::xml_info_pkg->new({ fn => $fn });
-        $result_hash{$pkg->name} = $pkg;
+        $result_hash{$pkg->name} = 1;
       }
     }
   }
