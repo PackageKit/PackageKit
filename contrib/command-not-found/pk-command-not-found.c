@@ -778,6 +778,8 @@ main (int argc, char *argv[])
 	len = strlen (argv[1]);
 	if (len < 1)
 		goto out;
+	if (argv[1][0] == '.')
+		goto out;
 
 	/* TRANSLATORS: the prefix of all the output telling the user
 	 * why it's not executing. NOTE: this is lowercase to mimic
