@@ -495,6 +495,8 @@ hif_utils_create_cache_key (HifSackAddFlags flags)
 			g_string_append (key, "updateinfo|");
 		if (flags & HIF_SACK_ADD_FLAG_REMOTE)
 			g_string_append (key, "remote|");
+		if (flags & HIF_SACK_ADD_FLAG_UNAVAILABLE)
+			g_string_append (key, "unavailable|");
 		g_string_truncate (key, key->len - 1);
 	}
 	return g_string_free (key, FALSE);
@@ -553,6 +555,18 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* only load updateinfo when required */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
 		flags |= HIF_SACK_ADD_FLAG_UPDATEINFO;
+
+	/* only use unavailble packages for queries */
+	switch (pk_backend_job_get_role (job)) {
+	case PK_ROLE_ENUM_SEARCH_NAME:
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+	case PK_ROLE_ENUM_SEARCH_FILE:
+	case PK_ROLE_ENUM_GET_DETAILS:
+		flags |= HIF_SACK_ADD_FLAG_UNAVAILABLE;
+		break;
+	default:
+		break;
+	}
 
 	/* media repos could disappear at any time */
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0 &&
@@ -1083,10 +1097,10 @@ pk_backend_source_filter (HifSource *src, PkBitfield filters)
 
 	/* installed and ~installed == enabled */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-	    !hif_source_get_enabled (src))
+	    hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
-	    hif_source_get_enabled (src))
+	    hif_source_get_enabled (src) != HIF_SOURCE_ENABLED_NONE)
 		return FALSE;
 
 	/* supported and ~supported == core */
@@ -1109,6 +1123,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 				 GVariant *params,
 				 gpointer user_data)
 {
+	gboolean enabled;
 	guint i;
 	HifSource *src;
 	PkBackend *backend = pk_backend_job_get_backend (job);
@@ -1145,10 +1160,10 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 		if (!pk_backend_source_filter (src, filters))
 			continue;
 		description = hif_source_get_description (src);
+		enabled = (hif_source_get_enabled (src) & HIF_SOURCE_ENABLED_PACKAGES) > 0;
 		pk_backend_job_repo_detail (job,
 					    hif_source_get_id (src),
-					    description,
-					    hif_source_get_enabled (src));
+					    description, enabled);
 	}
 }
 
@@ -1390,7 +1405,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	/* count the enabled sources */
 	for (i = 0; i < job_data->sources->len; i++) {
 		src = g_ptr_array_index (job_data->sources, i);
-		if (!hif_source_get_enabled (src))
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
 		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
 			continue;
@@ -1402,7 +1417,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	hif_state_set_number_steps (state_local, cnt);
 	for (i = 0; i < job_data->sources->len; i++) {
 		src = g_ptr_array_index (job_data->sources, i);
-		if (!hif_source_get_enabled (src))
+		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
 		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
 			continue;
