@@ -1409,6 +1409,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 			continue;
 		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
 			continue;
+		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_LOCAL)
+			continue;
 		cnt++;
 	}
 
@@ -1420,6 +1422,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
 		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_MEDIA)
+			continue;
+		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_LOCAL)
 			continue;
 
 		/* delete content even if up to date */
