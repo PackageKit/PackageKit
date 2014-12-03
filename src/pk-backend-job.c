@@ -1803,11 +1803,11 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 		return;
 
 	/* emit */
+	job->priv->allow_cancel = allow_cancel;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 				   GUINT_TO_POINTER (allow_cancel),
 				   NULL);
-	job->priv->allow_cancel = allow_cancel;
 }
 
 /**

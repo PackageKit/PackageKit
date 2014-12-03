@@ -166,6 +166,7 @@ typedef enum {
 
 enum {
 	SIGNAL_FINISHED,
+	SIGNAL_ALLOW_CANCEL_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -396,7 +397,8 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 
 	transaction->priv->allow_cancel = allow_cancel;
 
-	/* TODO: have master property on main interface */
+	/* have master property on main interface */
+	g_signal_emit (transaction, signals[SIGNAL_ALLOW_CANCEL_CHANGED], 0);
 
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
@@ -2112,7 +2114,7 @@ pk_transaction_run (PkTransaction *transaction)
 		 pk_role_enum_to_string (priv->role));
 
 	/* mark running */
-	priv->allow_cancel = FALSE;
+	pk_backend_job_set_allow_cancel (priv->job, TRUE);
 
 	/* reset after the pre-transaction checks */
 	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
@@ -3106,7 +3108,6 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
 		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
-		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		pk_transaction_release_tid (transaction);
@@ -3116,8 +3117,8 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	/* set the state, as cancelling might take a few seconds */
 	pk_backend_job_set_status (transaction->priv->job, PK_STATUS_ENUM_CANCEL);
 
-	/* we don't want to cancel twice */
-	pk_backend_job_set_allow_cancel (transaction->priv->job, FALSE);
+	/* release inhibitor */
+	pk_backend_job_set_allow_cancel (transaction->priv->job, TRUE);
 
 	/* we need ::finished to not return success or failed */
 	pk_backend_job_set_exit_code (transaction->priv->job, PK_EXIT_ENUM_CANCELLED_PRIORITY);
@@ -3206,7 +3207,6 @@ skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
 		pk_transaction_progress_changed_emit (transaction, 100, 0, 0);
-		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		pk_transaction_release_tid (transaction);
@@ -3219,8 +3219,8 @@ skip_uid:
 	/* set the state, as cancelling might take a few seconds */
 	pk_backend_job_set_status (transaction->priv->job, PK_STATUS_ENUM_CANCEL);
 
-	/* we don't want to cancel twice */
-	pk_backend_job_set_allow_cancel (transaction->priv->job, FALSE);
+	/* release inhibitor */
+	pk_backend_job_set_allow_cancel (transaction->priv->job, TRUE);
 
 	/* we need ::finished to not return success or failed */
 	pk_backend_job_set_exit_code (transaction->priv->job, PK_EXIT_ENUM_CANCELLED);
@@ -5608,6 +5608,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 
 	signals[SIGNAL_FINISHED] =
 		g_signal_new ("finished",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals[SIGNAL_ALLOW_CANCEL_CHANGED] =
+		g_signal_new ("allow-cancel-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);

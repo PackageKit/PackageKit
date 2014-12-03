@@ -158,6 +158,8 @@ pk_engine_reset_timer (PkEngine *engine)
 	g_timer_reset (engine->priv->timer);
 }
 
+static void pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited);
+
 /**
  * pk_engine_transaction_list_changed_cb:
  **/
@@ -165,13 +167,12 @@ static void
 pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engine)
 {
 	gchar **transaction_list;
-	gboolean locked;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* automatically locked if the transaction cannot be cancelled */
-	locked = pk_transaction_list_get_locked (tlist);
-	pk_engine_set_locked (engine, locked);
+	pk_engine_set_locked (engine, pk_transaction_list_get_locked (tlist));
+	pk_engine_set_inhibited (engine, pk_transaction_list_get_inhibited (tlist));
 
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 	g_dbus_connection_emit_signal (engine->priv->connection,
@@ -324,17 +325,26 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 		return;
 	engine->priv->locked = is_locked;
 
-	/* inhibit shutdown and suspend */
-	if (is_locked)
-		pk_engine_inhibit (engine);
-	else
-		pk_engine_uninhibit (engine);
-
 	/* emit */
 	pk_engine_emit_property_changed (engine,
 					 "Locked",
 					 g_variant_new_boolean (is_locked));
 	pk_engine_emit_changed (engine);
+}
+
+/**
+ * pk_engine_set_inhibited:
+ **/
+static void
+pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited)
+{
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* inhibit shutdown and suspend */
+	if (inhibited)
+		pk_engine_inhibit (engine);
+	else
+		pk_engine_uninhibit (engine);
 }
 
 /**

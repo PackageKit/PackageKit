@@ -100,6 +100,7 @@ typedef struct {
 	guint			 idle_id;
 	guint			 commit_id;
 	gulong			 finished_id;
+	gulong			 allow_cancel_id;
 	guint			 uid;
 	guint			 tries;
 	gboolean		 background;
@@ -197,6 +198,8 @@ pk_transaction_list_item_free (PkTransactionItem *item)
 	g_return_if_fail (item != NULL);
 	if (item->finished_id != 0)
 		g_signal_handler_disconnect (item->transaction, item->finished_id);
+	if (item->allow_cancel_id != 0)
+		g_signal_handler_disconnect (item->transaction, item->allow_cancel_id);
 	g_object_unref (item->transaction);
 	if (item->commit_id != 0)
 		g_source_remove (item->commit_id);
@@ -500,6 +503,17 @@ out:
 }
 
 /**
+ * pk_transaction_list_transaction_allow_cancel_cb:
+ **/
+static void
+pk_transaction_list_transaction_allow_cancel_cb (PkTransaction *transaction,
+					         PkTransactionList *tlist)
+{
+	/* we have changed something */
+	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
+}
+
+/**
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
@@ -643,6 +657,9 @@ pk_transaction_list_create (PkTransactionList *tlist,
 	item->finished_id =
 		g_signal_connect_after (item->transaction, "finished",
 					G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
+	item->allow_cancel_id =
+		g_signal_connect_after (item->transaction, "allow-cancel-changed",
+					G_CALLBACK (pk_transaction_list_transaction_allow_cancel_cb), tlist);
 
 	/* set plugins */
 	if (tlist->priv->plugins != NULL) {
@@ -742,6 +759,41 @@ pk_transaction_list_get_locked (PkTransactionList *tlist)
 		ret = pk_backend_job_get_locked (job);
 		if (ret)
 			goto out;
+	}
+
+out:
+	g_ptr_array_free (array, TRUE);
+	return ret;
+}
+
+/**
+ * pk_transaction_list_get_inhibited:
+ *
+ * Return value: %TRUE if any of the transactions in progress are
+ * locking a database or resource and cannot be cancelled.
+ **/
+gboolean
+pk_transaction_list_get_inhibited (PkTransactionList *tlist)
+{
+	PkBackendJob *job;
+	PkTransactionItem *item;
+	GPtrArray *array;
+	guint i;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+
+	/* check if any backend in running transaction is locked at time */
+	array = pk_transaction_list_get_active_transactions (tlist);
+	for (i = 0; i < array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		job = pk_transaction_get_backend_job (item->transaction);
+		if (job == NULL)
+			continue;
+		if (!pk_backend_job_get_allow_cancel (job)) {
+			ret = TRUE;
+			goto out;
+		}
 	}
 
 out:
