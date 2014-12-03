@@ -37,6 +37,7 @@
 
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <gio/gunixfdlist.h>
 #include <packagekit-glib2/pk-offline.h>
 #include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-version.h>
@@ -262,8 +263,15 @@ static void
 pk_engine_inhibit (PkEngine *engine)
 {
 #ifdef HAVE_SYSTEMD
+	const gint *fd_list;
+	gint fd_list_len = 0;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GUnixFDList *out_fd_list = NULL;
 	_cleanup_variant_unref_ GVariant *res = NULL;
+
+	/* already inhibited */
+	if (engine->priv->logind_fd != 0)
+		return;
 
 	/* not yet connected */
 	if (engine->priv->logind_proxy == NULL) {
@@ -272,25 +280,32 @@ pk_engine_inhibit (PkEngine *engine)
 	}
 
 	/* block shutdown and idle */
-	res = g_dbus_proxy_call_sync (engine->priv->logind_proxy,
-				      "Inhibit",
-				      g_variant_new ("(ssss)",
-						     "shutdown:idle",
-						     "Package Updater",
-						     "Package Update in Progress",
-						     "block"),
-				      G_DBUS_CALL_FLAGS_NONE,
-				      -1,
-				      NULL, /* GCancellable */
-				      &error);
+	res = g_dbus_proxy_call_with_unix_fd_list_sync (engine->priv->logind_proxy,
+							"Inhibit",
+							g_variant_new ("(ssss)",
+								       "shutdown:idle",
+								       "Package Updater",
+								       "Package Update in Progress",
+								       "block"),
+							G_DBUS_CALL_FLAGS_NONE,
+							-1,
+							NULL, /* fd_list */
+							&out_fd_list,
+							NULL, /* GCancellable */
+							&error);
 	if (res == NULL) {
 		g_warning ("Failed to Inhibit using logind: %s", error->message);
 		return;
 	}
 
 	/* keep fd as cookie */
-	g_variant_get (res, "(h)", &engine->priv->logind_fd);
-	g_debug ("got logind cookie %i", engine->priv->logind_fd);
+	fd_list = g_unix_fd_list_peek_fds (out_fd_list, &fd_list_len);
+	if (fd_list_len != 1) {
+		g_warning ("invalid response from logind");
+		return;
+	}
+	engine->priv->logind_fd = fd_list[0];
+	g_debug ("opened logind fd %i", engine->priv->logind_fd);
 #endif
 }
 
@@ -301,10 +316,9 @@ static void
 pk_engine_uninhibit (PkEngine *engine)
 {
 #ifdef HAVE_SYSTEMD
-	if (engine->priv->logind_fd == 0) {
-		g_warning ("no fd to close");
+	if (engine->priv->logind_fd == 0)
 		return;
-	}
+	g_debug ("closed logind fd %i", engine->priv->logind_fd);
 	close (engine->priv->logind_fd);
 	engine->priv->logind_fd = 0;
 #endif
