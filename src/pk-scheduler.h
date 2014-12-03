@@ -68,6 +68,7 @@ gchar		*pk_scheduler_get_state		(PkScheduler	*scheduler)
 						 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_scheduler_get_size		(PkScheduler	*scheduler);
 gboolean	 pk_scheduler_get_locked	(PkScheduler	*scheduler);
+gboolean	 pk_scheduler_get_inhibited	(PkScheduler	*scheduler);
 PkTransaction	*pk_scheduler_get_transaction	(PkScheduler	*scheduler,
 						 const gchar	*tid);
 void		 pk_scheduler_cancel_background	(PkScheduler	*scheduler);

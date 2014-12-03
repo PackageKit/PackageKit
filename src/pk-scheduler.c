@@ -105,6 +105,7 @@ typedef struct {
 	guint			 commit_id;
 	gulong			 finished_id;
 	gulong			 state_changed_id;
+	gulong			 allow_cancel_changed_id;
 	guint			 uid;
 	guint			 tries;
 } PkSchedulerItem;
@@ -202,6 +203,8 @@ pk_scheduler_item_free (PkSchedulerItem *item)
 		g_signal_handler_disconnect (item->transaction, item->finished_id);
 	if (item->state_changed_id != 0)
 		g_signal_handler_disconnect (item->transaction, item->state_changed_id);
+	if (item->allow_cancel_changed_id != 0)
+		g_signal_handler_disconnect (item->transaction, item->allow_cancel_changed_id);
 	g_object_unref (item->transaction);
 	if (item->commit_id != 0)
 		g_source_remove (item->commit_id);
@@ -514,6 +517,18 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 }
 
 /**
+ * pk_scheduler_transaction_allow_cancel_changed_cb:
+ **/
+static void
+pk_scheduler_transaction_allow_cancel_changed_cb (PkTransaction *transaction,
+					          gboolean allow_cancel,
+					          PkScheduler *scheduler)
+{
+	/* just proxy this back up */
+	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
+}
+
+/**
  * pk_scheduler_transaction_state_changed_cb:
  **/
 static void
@@ -678,6 +693,10 @@ pk_scheduler_create (PkScheduler *scheduler,
 		g_signal_connect_after (item->transaction, "state-changed",
 					G_CALLBACK (pk_scheduler_transaction_state_changed_cb),
 					scheduler);
+	item->allow_cancel_changed_id =
+		g_signal_connect_after (item->transaction, "allow-cancel-changed",
+					G_CALLBACK (pk_scheduler_transaction_allow_cancel_changed_cb),
+					scheduler);
 
 	/* set transaction state */
 	pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
@@ -736,7 +755,7 @@ pk_scheduler_create (PkScheduler *scheduler,
  * pk_scheduler_get_locked:
  *
  * Return value: %TRUE if any of the transactions in progress are
- * locking a database or resource and cannot be cancelled.
+ * locking the packaging system.
  **/
 gboolean
 pk_scheduler_get_locked (PkScheduler *scheduler)
@@ -748,19 +767,43 @@ pk_scheduler_get_locked (PkScheduler *scheduler)
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 
-	/* anything running? */
-	array = pk_scheduler_get_active_transactions (scheduler);
-	if (array->len == 0)
-		return FALSE;
-
 	/* check if any backend in running transaction is locked at time */
+	array = pk_scheduler_get_active_transactions (scheduler);
 	for (i = 0; i < array->len; i++) {
-		item = (PkSchedulerItem *) g_ptr_array_index (array, i);
-
+		item = g_ptr_array_index (array, i);
 		job = pk_transaction_get_backend_job (item->transaction);
 		if (job == NULL)
 			continue;
 		if (pk_backend_job_get_locked (job))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_scheduler_get_inhibited:
+ *
+ * Return value: %TRUE if any of the transactions in progress cannot be
+ * cancelled.
+ **/
+gboolean
+pk_scheduler_get_inhibited (PkScheduler *scheduler)
+{
+	PkBackendJob *job;
+	PkSchedulerItem *item;
+	guint i;
+	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+
+	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+
+	/* check if any backend in running transaction is locked at time */
+	array = pk_scheduler_get_active_transactions (scheduler);
+	for (i = 0; i < array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		job = pk_transaction_get_backend_job (item->transaction);
+		if (job == NULL)
+			continue;
+		if (!pk_backend_job_get_allow_cancel (job))
 			return TRUE;
 	}
 	return FALSE;

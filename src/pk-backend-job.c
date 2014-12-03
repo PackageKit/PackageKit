@@ -131,6 +131,7 @@ pk_backend_job_reset (PkBackendJob *job)
 	job->priv->finished = FALSE;
 	job->priv->has_sent_package = FALSE;
 	job->priv->set_error = FALSE;
+	job->priv->allow_cancel = TRUE;
 	job->priv->thread = NULL;
 	job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	job->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -1711,15 +1712,15 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (job->priv->allow_cancel == (gboolean) allow_cancel)
+	if (job->priv->allow_cancel == allow_cancel)
 		return;
 
 	/* emit */
+	job->priv->allow_cancel = allow_cancel;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 				   GUINT_TO_POINTER (allow_cancel),
 				   NULL);
-	job->priv->allow_cancel = allow_cancel;
 }
 
 /**
@@ -1813,8 +1814,8 @@ pk_backend_job_finished (PkBackendJob *job)
 		g_warning ("required status signals for %s!", role_text);
 	}
 
-	/* make any UI insensitive */
-	pk_backend_job_set_allow_cancel (job, FALSE);
+	/* drop any inhibits */
+	pk_backend_job_set_allow_cancel (job, TRUE);
 
 	/* mark as finished for the UI that might only be watching status */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_FINISHED);

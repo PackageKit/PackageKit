@@ -170,6 +170,7 @@ typedef enum {
 enum {
 	SIGNAL_FINISHED,
 	SIGNAL_STATE_CHANGED,
+	SIGNAL_ALLOW_CANCEL_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -384,7 +385,8 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 
 	transaction->priv->allow_cancel = allow_cancel;
 
-	/* TODO: have master property on main interface */
+	/* proxy this up so we can change the system inhibit */
+	g_signal_emit (transaction, signals[SIGNAL_ALLOW_CANCEL_CHANGED], 0, allow_cancel);
 
 	/* emit */
 	pk_transaction_emit_property_changed (transaction,
@@ -1101,10 +1103,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		pk_transaction_offline_finished (transaction);
 	}
 
-	/* if we did not send this, ensure the GUI has the right state */
-	if (transaction->priv->allow_cancel)
-		pk_transaction_allow_cancel_emit (transaction, FALSE);
-
 	/* we should get no more from the backend with this tid */
 	transaction->priv->finished = TRUE;
 
@@ -1795,9 +1793,6 @@ pk_transaction_run (PkTransaction *transaction)
 	g_debug ("setting role for %s to %s",
 		 priv->tid,
 		 pk_role_enum_to_string (priv->role));
-
-	/* mark running */
-	priv->allow_cancel = FALSE;
 
 	/* reset after the pre-transaction checks */
 	pk_backend_job_set_percentage (priv->job, PK_BACKEND_PERCENTAGE_INVALID);
@@ -5405,6 +5400,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_NONE, 0);
 	signals[SIGNAL_STATE_CHANGED] =
 		g_signal_new ("state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals[SIGNAL_ALLOW_CANCEL_CHANGED] =
+		g_signal_new ("allow-cancel-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);

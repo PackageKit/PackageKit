@@ -161,22 +161,39 @@ pk_engine_reset_timer (PkEngine *engine)
 	g_timer_reset (engine->priv->timer);
 }
 
+static void pk_engine_inhibit (PkEngine *engine);
+static void pk_engine_uninhibit (PkEngine *engine);
+
+/**
+ * pk_engine_set_inhibited:
+ **/
+static void
+pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited)
+{
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* inhibit shutdown and suspend */
+	if (inhibited)
+		pk_engine_inhibit (engine);
+	else
+		pk_engine_uninhibit (engine);
+}
+
 /**
  * pk_engine_scheduler_changed_cb:
  **/
 static void
-pk_engine_scheduler_changed_cb (PkScheduler *tlist, PkEngine *engine)
+pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 {
 	_cleanup_strv_free_ gchar **transaction_list = NULL;
-	gboolean locked;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* automatically locked if the transaction cannot be cancelled */
-	locked = pk_scheduler_get_locked (tlist);
-	pk_engine_set_locked (engine, locked);
+	pk_engine_set_locked (engine, pk_scheduler_get_locked (scheduler));
+	pk_engine_set_inhibited (engine, pk_scheduler_get_inhibited (scheduler));
 
-	transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
+	transaction_list = pk_scheduler_get_array (scheduler);
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -336,12 +353,6 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 	if (engine->priv->locked == is_locked)
 		return;
 	engine->priv->locked = is_locked;
-
-	/* inhibit shutdown and suspend */
-	if (is_locked)
-		pk_engine_inhibit (engine);
-	else
-		pk_engine_uninhibit (engine);
 
 	/* emit */
 	pk_engine_emit_property_changed (engine,
