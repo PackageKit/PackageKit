@@ -353,6 +353,17 @@ pk_backend_speed_changed_cb (HifState *state,
 }
 
 /**
+ * pk_backend_state_allow_cancel_changed_cb:
+ **/
+static void
+pk_backend_state_allow_cancel_changed_cb (HifState *state,
+					  gboolean allow_cancel,
+					  PkBackendJob *job)
+{
+	pk_backend_job_set_allow_cancel (job, allow_cancel);
+}
+
+/**
  * pk_backend_start_job:
  */
 void
@@ -372,6 +383,9 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  job);
 	g_signal_connect (job_data->state, "action-changed",
 			  G_CALLBACK (pk_backend_state_action_changed_cb),
+			  job);
+	g_signal_connect (job_data->state, "allow-cancel-changed",
+			  G_CALLBACK (pk_backend_state_allow_cancel_changed_cb),
 			  job);
 	g_signal_connect (job_data->state, "notify::speed",
 			  G_CALLBACK (pk_backend_speed_changed_cb),
