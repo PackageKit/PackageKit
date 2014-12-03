@@ -162,10 +162,10 @@ pk_engine_reset_timer (PkEngine *engine)
 }
 
 /**
- * pk_engine_transaction_list_changed_cb:
+ * pk_engine_scheduler_changed_cb:
  **/
 static void
-pk_engine_transaction_list_changed_cb (PkScheduler *tlist, PkEngine *engine)
+pk_engine_scheduler_changed_cb (PkScheduler *tlist, PkEngine *engine)
 {
 	_cleanup_strv_free_ gchar **transaction_list = NULL;
 	gboolean locked;
@@ -1875,7 +1875,7 @@ pk_engine_new (GKeyFile *conf)
 	pk_scheduler_set_backend (engine->priv->scheduler,
 				  engine->priv->backend);
 	g_signal_connect (engine->priv->scheduler, "changed",
-			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
+			  G_CALLBACK (pk_engine_scheduler_changed_cb), engine);
 	return PK_ENGINE (engine);
 }
 
