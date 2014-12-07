@@ -49,6 +49,7 @@
 #include "deb-file.h"
 
 #define RAMFS_MAGIC     0x858458f6
+#define APTCC_TMP_DIR   "/tmp/aptcc"
 
 AptIntf::AptIntf(PkBackendJob *job) :
     m_job(job),
@@ -791,7 +792,10 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     }
 
     // Create a random temp dir
-    char dirName[] = "/tmp/aptccXXXXXXXX";
+    if (!g_file_test(APTCC_TMP_DIR, G_FILE_TEST_IS_DIR))
+        g_mkdir(APTCC_TMP_DIR, 0700);
+    char dirName[] = APTCC_TMP_DIR "/XXXXXX";
+
     char *tempDir = mkdtemp(dirName);
     string filename = tempDir;
     filename.append("/");
@@ -2150,7 +2154,7 @@ void AptIntf::refreshCache()
 
     // missing repo gpg signature would appear here
     if (_error->PendingError() == false && _error->empty() == false) {
-        // TODO this shouldn't 
+        // TODO this shouldn't
         show_errors(m_job, PK_ERROR_ENUM_GPG_FAILURE);
     }
 }
@@ -2615,7 +2619,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         // Change the locale to not get libapt localization
         setlocale(LC_ALL, "C");
 
-        // Debconf handlying
+        // Debconf handling
         gchar *socket;
         if (socket = pk_backend_job_get_frontend_socket(m_job)) {
             setenv("DEBIAN_FRONTEND", "passthrough", 1);
