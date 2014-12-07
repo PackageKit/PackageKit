@@ -147,6 +147,12 @@ bool AptIntf::init()
         m_cache->Close();
     }
 
+    // Do not ask about config updates if we are not interactive
+    if (!pk_backend_job_get_interactive(m_job)) {
+        _config->Set("Dpkg::Options::", "--force-confdef");
+        _config->Set("Dpkg::Options::", "--force-confold");
+    }
+
     // Check if there are half-installed packages and if we can fix them
     return m_cache->CheckDeps(AllowBroken);
 }
