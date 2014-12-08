@@ -240,7 +240,7 @@ public:
      */
     bool getArchive(pkgAcquire *Owner, pkgCache::VerIterator const &Version,
                     std::string directory, std::string &StoreFilename);
-    
+
     AptCacheFile* aptCacheFile() const;
 
 private:
@@ -268,6 +268,7 @@ private:
     string     m_lastPackage;
     uint       m_lastSubProgress;
     bool       m_startCounting;
+    bool       m_interactive;
 
     // when the internal terminal timesout after no activity
     int m_terminalTimeout;
