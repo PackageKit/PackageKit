@@ -84,13 +84,15 @@ typedef enum {
 	COMPS_QUERY_GROUP
 } PkCompsQuery;
 
-static gchar *current_query_term = NULL;
-static gboolean query_match = FALSE;
-static GPtrArray *group_array = NULL;
-static GPtrArray *package_array = NULL;
-static GPtrArray *comps_array = NULL;
-static PkCompsState category_state;
-static PkCompsQuery comps_query;
+typedef struct {
+	gchar *current_query;
+	gboolean query_match;
+	GPtrArray *groups;
+	GPtrArray *packages;
+	GPtrArray *comps;
+	PkCompsState category_state;
+	PkCompsQuery query;
+} PkCompsData;
 
 static void
 pk_comps_start_element (GMarkupParseContext *context,
@@ -98,48 +100,50 @@ pk_comps_start_element (GMarkupParseContext *context,
 		const gchar        **attribute_names,
 		const gchar        **attribute_values,
 		gpointer             user_data,
-		GError             **error) {
+		GError             **error)
+{
 
 	const gchar* const * current_locale = g_get_language_names();
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	if (comps_query == COMPS_QUERY_CATEGORY) {
+	if (comps_data->query == COMPS_QUERY_CATEGORY) {
 		if (g_strcmp0 (element_name, "category") == 0)
-			category_state = COMPS_STATE_CATEGORY;
-		if (g_strcmp0 (element_name, "id") == 0  && category_state == COMPS_STATE_CATEGORY)
-			category_state = COMPS_STATE_CATEGORY_ID;
+			comps_data->category_state = COMPS_STATE_CATEGORY;
+		if (g_strcmp0 (element_name, "id") == 0  && comps_data->category_state == COMPS_STATE_CATEGORY)
+			comps_data->category_state = COMPS_STATE_CATEGORY_ID;
 		if (g_strcmp0 (element_name, "groupid") == 0)
-			category_state = COMPS_STATE_CATEGORY_GROUPID;
+			comps_data->category_state = COMPS_STATE_CATEGORY_GROUPID;
 		if (g_strcmp0 (element_name, "name") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "description") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "display_order") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "grouplist") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 	}
-	if (comps_query == COMPS_QUERY_GROUP) {
+	if (comps_data->query == COMPS_QUERY_GROUP) {
 		if (g_strcmp0 (element_name, "group") == 0)
-			category_state = COMPS_STATE_GROUP;
-		if (g_strcmp0 (element_name, "id") == 0  && category_state == COMPS_STATE_GROUP)
-			category_state = COMPS_STATE_GROUP_ID;
+			comps_data->category_state = COMPS_STATE_GROUP;
+		if (g_strcmp0 (element_name, "id") == 0  && comps_data->category_state == COMPS_STATE_GROUP)
+			comps_data->category_state = COMPS_STATE_GROUP_ID;
 		if (g_strcmp0 (element_name, "packagereq") == 0)
-			category_state = COMPS_STATE_GROUP_PKGREQ;
+			comps_data->category_state = COMPS_STATE_GROUP_PKGREQ;
 		if (g_strcmp0 (element_name, "name") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "description") == 0) {
 			if (g_strcmp0 (attribute_values[0], current_locale[0]) ==  0) {
-				category_state = COMPS_STATE_GROUP_DESCRIPTION;
+				comps_data->category_state = COMPS_STATE_GROUP_DESCRIPTION;
 			} else {
-				category_state = COMPS_STATE_IGNORE;
+				comps_data->category_state = COMPS_STATE_IGNORE;
 			}
 		}
 		if (g_strcmp0 (element_name, "default") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "uservisible") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 		if (g_strcmp0 (element_name, "packagelist") == 0)
-			category_state = COMPS_STATE_IGNORE;
+			comps_data->category_state = COMPS_STATE_IGNORE;
 	}
 
 }
@@ -151,23 +155,25 @@ pk_comps_element_text (GMarkupParseContext *context,
     gpointer             user_data,
     GError             **error)
 {
-	if (category_state == COMPS_STATE_CATEGORY_ID && g_strcmp0 (current_query_term, text) == 0)
-		query_match = TRUE;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	if (category_state == COMPS_STATE_GROUP_ID && g_strcmp0 (current_query_term, text) == 0)
-		query_match = TRUE;
+	if (comps_data->category_state == COMPS_STATE_CATEGORY_ID && g_strcmp0 (comps_data->current_query, text) == 0)
+		comps_data->query_match = TRUE;
 
-	if (query_match) {
-		if (category_state == COMPS_STATE_CATEGORY_GROUPID) {
+	if (comps_data->category_state == COMPS_STATE_GROUP_ID && g_strcmp0 (comps_data->current_query, text) == 0)
+		comps_data->query_match = TRUE;
+
+	if (comps_data->query_match) {
+		if (comps_data->category_state == COMPS_STATE_CATEGORY_GROUPID) {
 			g_debug ("Group: %s", text);
-			g_ptr_array_add (group_array, g_strdup(text));
+			g_ptr_array_add (comps_data->groups, g_strdup(text));
 		}
-		if (category_state == COMPS_STATE_GROUP_DESCRIPTION) {
+		if (comps_data->category_state == COMPS_STATE_GROUP_DESCRIPTION) {
 			g_debug  ("Description: %s\n", text);
 		}
-		if (category_state == COMPS_STATE_GROUP_PKGREQ) {
+		if (comps_data->category_state == COMPS_STATE_GROUP_PKGREQ) {
 			g_debug ("Package: %s", text);
-			g_ptr_array_add (package_array, g_strdup(text));
+			g_ptr_array_add (comps_data->packages, g_strdup(text));
 		}
 	}
 }
@@ -178,17 +184,19 @@ pk_comps_end_element (GMarkupParseContext *context,
     gpointer             user_data,
     GError             **error)
 {
-	if (query_match) {
-	if (g_strcmp0 (element_name, "groupid") == 0)
-		category_state = COMPS_STATE_IGNORE;
-	if (g_strcmp0 (element_name, "packagereq") == 0)
-		category_state = COMPS_STATE_IGNORE;
-	if (g_strcmp0 (element_name, "description") == 0)
-		category_state = COMPS_STATE_IGNORE;
-	if (g_strcmp0 (element_name, "category") == 0)
-		query_match = FALSE;
-	if (g_strcmp0 (element_name, "group") == 0)
-		query_match = FALSE;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
+
+	if (comps_data->query_match) {
+		if (g_strcmp0 (element_name, "groupid") == 0)
+			comps_data->category_state = COMPS_STATE_IGNORE;
+		if (g_strcmp0 (element_name, "packagereq") == 0)
+			comps_data->category_state = COMPS_STATE_IGNORE;
+		if (g_strcmp0 (element_name, "description") == 0)
+			comps_data->category_state = COMPS_STATE_IGNORE;
+		if (g_strcmp0 (element_name, "category") == 0)
+			comps_data->query_match = FALSE;
+		if (g_strcmp0 (element_name, "group") == 0)
+			comps_data->query_match = FALSE;
 	}
 }
 
@@ -1173,27 +1181,27 @@ pk_backend_search_files (PkBackend *backend,
  * pk_backend_comps_parser
  */
 static void
-pk_backend_comps_parser()
+pk_backend_comps_parser (gpointer user_data)
 {
 	guint i;
 	gchar *text;
 	gsize length;
 	GMarkupParseContext *context = NULL;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	category_state = COMPS_STATE_IGNORE;
+	comps_data->category_state = COMPS_STATE_IGNORE;
 
-	context = g_markup_parse_context_new (&parser, 0, NULL,	NULL);
+	context = g_markup_parse_context_new (&parser, 0, comps_data, NULL);
 
-	for (i = 0; i < comps_array->len; i++) {
-		g_debug ("Parsing comps file %s", g_ptr_array_index (comps_array, i));
-		if (g_file_get_contents  (g_ptr_array_index (comps_array, i), &text, &length, NULL) == FALSE) {
+	for (i = 0; i < comps_data->comps->len; i++) {
+		g_debug ("Comps file parsed: %s.", g_ptr_array_index (comps_data->comps, i));
+		if (g_file_get_contents  (g_ptr_array_index (comps_data->comps, i), &text, &length, NULL) == FALSE) {
 			g_debug ("Couldn't load XML");
 		} else if (g_markup_parse_context_parse (context, text, length, NULL) == FALSE) {
 			g_debug ("Parse failed");
 		}
 	}
 
-	cleanup_free (text);
 	g_markup_parse_context_free (context);
 }
 
@@ -1201,22 +1209,24 @@ pk_backend_comps_parser()
  * pk_backend_get_packages_from_group
  */
 static gchar **
-pk_backend_get_packages_from_group (gchar **groups)
+pk_backend_get_packages_from_group (gchar **groups,
+		gpointer user_data)
 {
 	guint i = 0;
 	gchar **packages = NULL;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	comps_query = COMPS_QUERY_GROUP;
+	comps_data->query = COMPS_QUERY_GROUP;
 
-	package_array = g_ptr_array_new_with_free_func (g_free);
+	comps_data->packages = g_ptr_array_new_with_free_func (g_free);
 
 	for (i = 0; i < g_strv_length (groups); i++) {
-		current_query_term = g_strdup (groups[i]);
-		pk_backend_comps_parser();
+		comps_data->current_query = g_strdup (groups[i]);
+		pk_backend_comps_parser (comps_data);
 	}
 
-	g_ptr_array_add (package_array, NULL);
-	packages = pk_ptr_array_to_strv (package_array);
+	g_ptr_array_add (comps_data->packages, NULL);
+	packages = pk_ptr_array_to_strv (comps_data->packages);
 	return packages;
 }
 
@@ -1224,19 +1234,21 @@ pk_backend_get_packages_from_group (gchar **groups)
  * pk_backend_get_groups_from_category
  */
 static gchar **
-pk_backend_get_groups_from_category (const gchar *category)
+pk_backend_get_groups_from_category (const gchar *category,
+		gpointer user_data)
 {
 	gchar **groups = NULL;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	comps_query = COMPS_QUERY_CATEGORY;
-	current_query_term = g_strdup (category);
+	comps_data->query = COMPS_QUERY_CATEGORY;
+	comps_data->current_query = g_strdup (category);
 
-	group_array = g_ptr_array_new_with_free_func (g_free);
+	comps_data->groups = g_ptr_array_new_with_free_func (g_free);
 
-	pk_backend_comps_parser();
+	pk_backend_comps_parser (comps_data);
 
-	g_ptr_array_add (group_array, NULL);
-	groups = pk_ptr_array_to_strv (group_array);
+	g_ptr_array_add (comps_data->groups, NULL);
+	groups = pk_ptr_array_to_strv (comps_data->groups);
 	return groups;
 }
 
@@ -1244,47 +1256,45 @@ pk_backend_get_groups_from_category (const gchar *category)
  * pk_backend_group_mapping:
  */
 static gchar **
-pk_backend_group_mapping (const gchar *group)
+pk_backend_group_mapping (const gchar *mappgroup,
+		gpointer user_data)
 {
 	guint i;
 	guint len;
 	gchar **category_groups = NULL;
-	gchar **groups = NULL;
-	GPtrArray *array = NULL;
+	PkCompsData *comps_data = (PkCompsData*) (user_data);
+	GPtrArray *groups =  g_ptr_array_new_with_free_func (g_free);
 
-	array = g_ptr_array_new_with_free_func (g_free);
-
-	if (g_strcmp0 (group, "internet") == 0) {
-		g_ptr_array_add (array, g_strdup ("graphical-internet"));
-		g_ptr_array_add (array, g_strdup ("text-internet"));
+	if (g_strcmp0 (mappgroup, "internet") == 0) {
+		g_ptr_array_add (groups, g_strdup ("graphical-internet"));
+		g_ptr_array_add (groups, g_strdup ("text-internet"));
 	}
-	else if (g_strcmp0 (group, "legacy") == 0)
-		g_ptr_array_add (array, g_strdup ("legacy-software-support"));
-	else if (g_strcmp0 (group, "publishing") == 0)
-		g_ptr_array_add (array, g_strdup ("authoring-and-publishing"));
-	else if (g_strcmp0 (group, "desktop-kde") == 0)
-		category_groups = pk_backend_get_groups_from_category ("kde-desktop-environment");
-	else if (g_strcmp0 (group, "desktop-gnome") == 0)
-		category_groups = pk_backend_get_groups_from_category ("gnome-desktop-environment");
-	else if (g_strcmp0 (group, "desktop-xfce") == 0)
-		category_groups = pk_backend_get_groups_from_category ("xfce-desktop-environment");
-	else if (g_strcmp0 (group, "desktop-other") == 0)
-		category_groups = pk_backend_get_groups_from_category ("lxde-desktop-environment");
-	else if (g_strcmp0 (group, "programming") == 0)
-		category_groups = pk_backend_get_groups_from_category ("development");
-	else if (g_strcmp0 (group, "servers") == 0)
-		category_groups = pk_backend_get_groups_from_category ("servers");
-	else if (g_strcmp0 (group, "system") == 0)
-		category_groups = pk_backend_get_groups_from_category ("base-system");
-	else g_ptr_array_add (array, g_strdup (group));
+	else if (g_strcmp0 (mappgroup, "legacy") == 0)
+		g_ptr_array_add (groups, g_strdup ("legacy-software-support"));
+	else if (g_strcmp0 (mappgroup, "publishing") == 0)
+		g_ptr_array_add (groups, g_strdup ("authoring-and-publishing"));
+	else if (g_strcmp0 (mappgroup, "desktop-kde") == 0)
+		category_groups = pk_backend_get_groups_from_category ("kde-desktop-environment", comps_data);
+	else if (g_strcmp0 (mappgroup, "desktop-gnome") == 0)
+		category_groups = pk_backend_get_groups_from_category ("gnome-desktop-environment", comps_data);
+	else if (g_strcmp0 (mappgroup, "desktop-xfce") == 0)
+		category_groups = pk_backend_get_groups_from_category ("xfce-desktop-environment", comps_data);
+	else if (g_strcmp0 (mappgroup, "desktop-other") == 0)
+		category_groups = pk_backend_get_groups_from_category ("lxde-desktop-environment", comps_data);
+	else if (g_strcmp0 (mappgroup, "programming") == 0)
+		category_groups = pk_backend_get_groups_from_category ("development", comps_data);
+	else if (g_strcmp0 (mappgroup, "servers") == 0)
+		category_groups = pk_backend_get_groups_from_category ("servers", comps_data);
+	else if (g_strcmp0 (mappgroup, "system") == 0)
+		category_groups = pk_backend_get_groups_from_category ("base-system", comps_data);
+	else g_ptr_array_add (groups, g_strdup (mappgroup));
 
 	if (category_groups != NULL) {
 		len = g_strv_length (category_groups);
 		for (i = 0; i < len; i++)
-			g_ptr_array_add (array, g_strdup  (category_groups[i]) );
+			g_ptr_array_add (groups, g_strdup  (category_groups[i]) );
 	}
-	groups = pk_ptr_array_to_strv (array);
-	return groups;
+	return pk_ptr_array_to_strv (groups);
 }
 
 /**
@@ -1296,7 +1306,7 @@ pk_backend_search_groups (PkBackend *backend,
 		PkBitfield filters,
 		gchar **values)
 {
-	gint i = 0;
+	guint i = 0;
 	gchar *package_name = NULL;
 	gchar *comps_name = NULL;
 	gchar **groups = NULL;
@@ -1309,11 +1319,17 @@ pk_backend_search_groups (PkBackend *backend,
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
+	PkCompsData *comps_data = g_new0 (PkCompsData, 1);
 	_cleanup_ptrarray_unref_ GPtrArray *sources = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 
+	if (g_strv_length (values) ==  0)
+		return;
+
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+	comps_data->comps = g_ptr_array_new_with_free_func (g_free);
 
 	/* get sack */
 	state_local = hif_state_get_child (job_data->state);
@@ -1323,10 +1339,6 @@ pk_backend_search_groups (PkBackend *backend,
 						  state_local,
 						  &error);
 	query = hy_query_create (sack);
-
-
-	if (g_strv_length (values) > 0)
-		groups = pk_backend_group_mapping (values[0]);
 
 	sources = hif_repos_get_sources (priv->repos, &error);
 
@@ -1346,24 +1358,23 @@ pk_backend_search_groups (PkBackend *backend,
 		return;
 	}
 
-	comps_array = g_ptr_array_new_with_free_func (g_free);
-
 	/* Create the comps_array to be parsed */
 	for (i = 0; i < sources->len; i++) {
 		src = g_ptr_array_index (sources, i);
 		comps_name = hif_source_get_filename_md (src, "group");
 		if (comps_name != NULL)
-			g_ptr_array_add (comps_array, g_strdup (comps_name));
+			g_ptr_array_add (comps_data->comps, g_strdup (comps_name));
 	}
 
-	packages = pk_backend_get_packages_from_group (groups);
+	groups = pk_backend_group_mapping (values[0], comps_data);
 
+	packages = pk_backend_get_packages_from_group (groups, comps_data);
 
 	hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const char**)packages);
 	plist = hy_query_run(query);
 	hy_query_free(query);
 
-	for (i = 0; i < hy_packagelist_count (plist); i++) {
+	for (i = 0; i < (guint) hy_packagelist_count (plist); i++) {
 		pkg = hy_packagelist_get_clone(plist, i);
 		package_name = g_strdup_printf ("%s;%s;%s;%s",
 				hy_package_get_name (pkg),
