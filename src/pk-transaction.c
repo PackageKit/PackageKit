@@ -2995,7 +2995,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 		directory = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit",
 					     "downloads", transaction->priv->tid, NULL);
 		/* rwxrwxr-x */
-		retval = g_mkdir (directory, 0775);
+		retval = g_mkdir_with_parents (directory, 0775);
 		if (retval != 0) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
