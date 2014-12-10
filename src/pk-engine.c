@@ -461,6 +461,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	guint size;
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
+	g_return_val_if_fail (pk_is_thread_default (), 0);
 
 	/* check for transactions running - a transaction that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
@@ -1035,6 +1036,8 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 {
 	PkEngine *engine = PK_ENGINE (user_data);
 
+	g_return_val_if_fail (pk_is_thread_default (), NULL);
+
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 
@@ -1276,6 +1279,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	_cleanup_strv_free_ gchar **array = NULL;
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
+	g_return_if_fail (pk_is_thread_default ());
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);

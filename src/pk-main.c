@@ -154,6 +154,9 @@ main (int argc, char *argv[])
 	g_type_init ();
 #endif
 
+	/* set the default thread explicitly */
+	pk_is_thread_default ();
+
 	/* TRANSLATORS: describing the service that is running */
 	context = g_option_context_new (_("PackageKit service"));
 	g_option_context_add_main_entries (context, options, NULL);

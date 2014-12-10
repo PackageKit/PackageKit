@@ -46,6 +46,10 @@ gchar		*pk_util_get_config_filename		(void);
 gboolean	 pk_util_set_auto_backend		(GKeyFile	*conf,
 							 GError		**error);
 
+#define pk_is_thread_default() pk_is_thread_default_real(G_STRLOC, G_STRFUNC)
+gboolean	 pk_is_thread_default_real		(const gchar *strloc,
+							 const gchar *strfunc);
+
 G_END_DECLS
 
 #endif /* __PK_SHARED_H */

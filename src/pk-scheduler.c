@@ -153,6 +153,7 @@ PkTransaction *
 pk_scheduler_get_transaction (PkScheduler *scheduler, const gchar *tid)
 {
 	PkSchedulerItem *item;
+	g_return_val_if_fail (pk_is_thread_default (), NULL);
 	item = pk_scheduler_get_from_tid (scheduler, tid);
 	if (item == NULL)
 		return NULL;
@@ -174,6 +175,7 @@ pk_scheduler_role_present (PkScheduler *scheduler, PkRoleEnum role)
 	PkSchedulerItem *item;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	/* check for existing transaction doing an update */
 	array = scheduler->priv->array;
@@ -249,6 +251,7 @@ pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	item = pk_scheduler_get_from_tid (scheduler, tid);
 	if (item == NULL) {
@@ -671,6 +674,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	/* already added? */
 	item = pk_scheduler_get_from_tid (scheduler, tid);
@@ -766,6 +770,7 @@ pk_scheduler_get_locked (PkScheduler *scheduler)
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	/* check if any backend in running transaction is locked at time */
 	array = pk_scheduler_get_active_transactions (scheduler);
@@ -795,6 +800,7 @@ pk_scheduler_get_inhibited (PkScheduler *scheduler)
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	/* check if any backend in running transaction is locked at time */
 	array = pk_scheduler_get_active_transactions (scheduler);
@@ -821,6 +827,7 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
 	PkTransactionState state;
 
 	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
+	g_return_if_fail (pk_is_thread_default ());
 
 	/* cancel all running background transactions */
 	array = scheduler->priv->array;
@@ -849,6 +856,7 @@ pk_scheduler_cancel_queued (PkScheduler *scheduler)
 	PkTransactionState state;
 
 	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
+	g_return_if_fail (pk_is_thread_default ());
 
 	/* clear any pending transactions */
 	array = scheduler->priv->array;
@@ -875,6 +883,7 @@ pk_scheduler_get_array (PkScheduler *scheduler)
 	_cleanup_ptrarray_unref_ GPtrArray *parray = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), NULL);
+	g_return_val_if_fail (pk_is_thread_default (), NULL);
 
 	/* use a temp array, as not all are in progress */
 	parray = g_ptr_array_new_with_free_func (g_free);
@@ -901,6 +910,7 @@ guint
 pk_scheduler_get_size (PkScheduler *scheduler)
 {
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), 0);
+	g_return_val_if_fail (pk_is_thread_default (), 0);
 	return scheduler->priv->array->len;
 }
 

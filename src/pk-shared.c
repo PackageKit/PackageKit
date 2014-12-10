@@ -39,6 +39,28 @@
 #endif
 
 /**
+ * pk_is_thread_default_real:
+ **/
+gboolean
+pk_is_thread_default_real (const gchar *strloc, const gchar *strfunc)
+{
+	static gpointer main_thread = NULL;
+
+	/* first run */
+	if (main_thread == NULL) {
+		main_thread = g_thread_self ();
+		return TRUE;
+	}
+
+	/* check we're on the main thread */
+	if (main_thread != g_thread_self ()) {
+		g_warning ("%s [%s] called from non-main thread", strfunc, strloc);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_directory_remove_contents:
  *
  * Does not remove the directory itself, only the contents.

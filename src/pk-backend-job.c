@@ -849,6 +849,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
 	g_return_val_if_fail (func != NULL, FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	if (job->priv->thread != NULL) {
 		g_warning ("already has thread");
@@ -1844,6 +1845,7 @@ pk_backend_job_finalize (GObject *object)
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_JOB (object));
+	g_return_if_fail (pk_is_thread_default ());
 	job = PK_BACKEND_JOB (object);
 
 	if (pk_backend_job_get_started (job)) {
