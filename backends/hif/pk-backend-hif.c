@@ -572,6 +572,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* only use unavailble packages for queries */
 	switch (pk_backend_job_get_role (job)) {
+	case PK_ROLE_ENUM_RESOLVE:
 	case PK_ROLE_ENUM_SEARCH_NAME:
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 	case PK_ROLE_ENUM_SEARCH_FILE:
