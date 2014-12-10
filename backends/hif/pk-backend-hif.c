@@ -1245,7 +1245,6 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 					   error->message);
 		goto out;
 	}
-#if HIF_CHECK_VERSION(0,1,4)
 	ret = hif_source_commit (src, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job,
@@ -1254,7 +1253,6 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 					   error->message);
 		goto out;
 	}
-#endif
 
 	/* nothing found */
 	pk_backend_job_set_percentage (job, 100);
