@@ -1359,7 +1359,7 @@ pk_backend_refresh_source (PkBackendJob *job,
 	if (!src_okay) {
 		state_local = hif_state_get_child (state);
 		ret = hif_source_update (src,
-					 HIF_SOURCE_UPDATE_FLAG_NONE,
+					 HIF_SOURCE_UPDATE_FLAG_IMPORT_PUBKEY,
 					 state_local,
 					 &error_local);
 		if (!ret) {
