@@ -210,6 +210,8 @@ struct PkBackendPrivate
 	GMutex			 thread_hash_mutex;
 	gboolean		 transaction_in_progress;
 	guint			 transaction_inhibit_end_idle_id;
+	guint			 repo_list_changed_id;
+	guint			 installed_db_changed_id;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -633,20 +635,58 @@ pk_backend_unload (PkBackend *backend)
 }
 
 /**
+ * pk_backend_repo_list_changed_cb:
+ **/
+static gboolean
+pk_backend_repo_list_changed_cb (gpointer user_data)
+{
+	PkBackend *backend = PK_BACKEND (user_data);
+#ifdef PK_BUILD_DAEMON
+	_cleanup_object_unref_ PkNotify *notify = NULL;
+	notify = pk_notify_new ();
+	pk_notify_repo_list_changed (notify);
+#endif
+	backend->priv->repo_list_changed_id = 0;
+	return FALSE;
+}
+
+/**
  * pk_backend_repo_list_changed:
+ *
+ * This function can be called on any thread.
  **/
 void
 pk_backend_repo_list_changed (PkBackend *backend)
 {
-#ifdef PK_BUILD_DAEMON
-	_cleanup_object_unref_ PkNotify *notify = NULL;
-
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->loaded);
 
-	notify = pk_notify_new ();
-	pk_notify_repo_list_changed (notify);
-#endif
+	/* already scheduled */
+	if (backend->priv->repo_list_changed_id != 0)
+		return;
+
+	/* idle add */
+	backend->priv->repo_list_changed_id =
+		g_idle_add (pk_backend_repo_list_changed_cb, backend);
+
+}
+
+/**
+ * pk_backend_installed_db_changed_cb:
+ **/
+static gboolean
+pk_backend_installed_db_changed_cb (gpointer user_data)
+{
+	PkBackend *backend = PK_BACKEND (user_data);
+	_cleanup_error_free_ GError *error = NULL;
+
+	if (!backend->priv->transaction_in_progress) {
+		g_debug ("invalidating offline updates");
+		if (!pk_offline_auth_invalidate (&error))
+			g_warning ("failed to invalidate: %s", error->message);
+	}
+	backend->priv->installed_db_changed_id = 0;
+	return FALSE;
 }
 
 /**
@@ -661,20 +701,22 @@ pk_backend_repo_list_changed (PkBackend *backend)
  * transactions done by PackageKit itself, a backend would call
  * pk_backend_transaction_inhibit_start() before each transaction and
  * pk_backend_transaction_inhibit_end() after the transaction has finished.
+ *
+ * This function can be called on any thread.
  **/
 void
 pk_backend_installed_db_changed (PkBackend *backend)
 {
-	_cleanup_error_free_ GError *error = NULL;
-
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->loaded);
 
-	if (!backend->priv->transaction_in_progress) {
-		g_debug ("invalidating offline updates");
-		if (!pk_offline_auth_invalidate (&error))
-			g_warning ("failed to invalidate: %s", error->message);
-	}
+	/* already scheduled */
+	if (backend->priv->installed_db_changed_id != 0)
+		return;
+
+	/* idle add */
+	backend->priv->installed_db_changed_id =
+		g_idle_add (pk_backend_installed_db_changed_cb, backend);
 }
 
 /**
