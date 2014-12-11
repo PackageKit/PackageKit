@@ -79,8 +79,6 @@ gboolean	 pk_backend_unload			(PkBackend	*backend)
 
 gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
 							 PkRoleEnum	 role);
-void		 pk_backend_implement			(PkBackend	*backend,
-							 PkRoleEnum	 role);
 gchar		*pk_backend_get_accepted_eula_string	(PkBackend	*backend);
 void		 pk_backend_repo_list_changed		(PkBackend      *backend);
 void		 pk_backend_installed_db_changed	(PkBackend      *backend);

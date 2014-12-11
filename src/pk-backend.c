@@ -434,17 +434,6 @@ pk_backend_is_implemented (PkBackend *backend, PkRoleEnum role)
 }
 
 /**
- * pk_backend_implement:
- **/
-void
-pk_backend_implement (PkBackend *backend, PkRoleEnum role)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (role != PK_ROLE_ENUM_UNKNOWN);
-	pk_bitfield_add (backend->priv->roles, role);
-}
-
-/**
  * pk_backend_build_library_path:
  **/
 static gchar *
