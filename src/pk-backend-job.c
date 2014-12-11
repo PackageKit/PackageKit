@@ -1912,6 +1912,8 @@ pk_backend_job_init (PkBackendJob *job)
 	job->priv->timer = g_timer_new ();
 	job->priv->cancellable = g_cancellable_new ();
 	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
+	job->priv->locale = g_strdup ("C");
+	job->priv->cache_age = G_MAXUINT;
 	pk_backend_job_reset (job);
 }
 

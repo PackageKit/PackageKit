@@ -1743,9 +1743,7 @@ pk_transaction_run (PkTransaction *transaction)
 	/* if we didn't set a locale for this transaction, we would reuse the
 	 * last set locale in the backend, or NULL if it was not ever set.
 	 * in this case use the C locale */
-	if (priv->locale == NULL)
-		pk_backend_job_set_locale (priv->job, "C");
-	else
+	if (priv->locale != NULL)
 		pk_backend_job_set_locale (priv->job, priv->locale);
 
 	/* set the frontend socket if it exists */
@@ -4859,7 +4857,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 	/* cache-age=<time-in-seconds> */
 	if (g_strcmp0 (key, "cache-age") == 0) {
 		if (!pk_strtouint (value, &priv->cache_age)) {
-			priv->cache_age = G_MAXUINT;
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
@@ -4867,7 +4864,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			return FALSE;
 		}
 		if (priv->cache_age == 0) {
-			priv->cache_age = G_MAXUINT;
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
