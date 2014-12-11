@@ -108,8 +108,6 @@ PkExitEnum	 pk_backend_job_get_exit_code		(PkBackendJob	*job);
 void		 pk_backend_job_set_exit_code		(PkBackendJob	*job,
 							 PkExitEnum	 exit);
 gboolean	 pk_backend_job_has_set_error_code	(PkBackendJob	*job);
-void		 pk_backend_job_not_implemented_yet	(PkBackendJob	*job,
-							 const gchar *method);
 guint		 pk_backend_job_get_runtime		(PkBackendJob	*job);
 gboolean	 pk_backend_job_get_is_finished		(PkBackendJob	*job);
 gboolean	 pk_backend_job_get_is_error_set	(PkBackendJob	*job);

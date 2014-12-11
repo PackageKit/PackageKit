@@ -1750,24 +1750,6 @@ pk_backend_job_get_allow_cancel (PkBackendJob *job)
 }
 
 /**
- * pk_backend_job_not_implemented_yet:
- **/
-void
-pk_backend_job_not_implemented_yet (PkBackendJob *job, const gchar *method)
-{
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (method != NULL);
-
-	pk_backend_job_error_code (job,
-				   PK_ERROR_ENUM_NOT_SUPPORTED,
-				   "the method '%s' is not implemented yet",
-				   method);
-
-	/* don't wait, do this now */
-	pk_backend_job_finished (job);
-}
-
-/**
  * pk_backend_job_set_exit_code:
  *
  * Should only be used internally, or from PkRunner when setting CANCELLED.
