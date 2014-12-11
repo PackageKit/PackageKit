@@ -84,6 +84,12 @@ void		 pk_backend_implement			(PkBackend	*backend,
 gchar		*pk_backend_get_accepted_eula_string	(PkBackend	*backend);
 void		 pk_backend_repo_list_changed		(PkBackend      *backend);
 void		 pk_backend_installed_db_changed	(PkBackend      *backend);
+
+
+gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
+gboolean	 pk_backend_updates_changed_delay	(PkBackend	*backend,
+							 guint		 timeout);
+
 void		 pk_backend_transaction_inhibit_start	(PkBackend      *backend);
 void		 pk_backend_transaction_inhibit_end	(PkBackend      *backend);
 const gchar	*pk_backend_bool_to_string		(gboolean	 value);

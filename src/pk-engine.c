@@ -48,7 +48,6 @@
 #include "pk-dbus.h"
 #include "pk-engine.h"
 #include "pk-network.h"
-#include "pk-notify.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -74,7 +73,6 @@ struct PkEnginePrivate
 	PkTransactionDb		*transaction_db;
 	PkBackend		*backend;
 	PkNetwork		*network;
-	PkNotify		*notify;
 	GKeyFile		*conf;
 	PkDbus			*dbus;
 	GFileMonitor		*monitor_conf;
@@ -361,14 +359,14 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 }
 
 /**
- * pk_engine_notify_repo_list_changed_cb:
+ * pk_engine_backend_repo_list_changed_cb:
  **/
 static void
-pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
+pk_engine_backend_repo_list_changed_cb (PkBackend *backend, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("emitting repo-list-changed");
+	g_debug ("emitting RepoListChanged");
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -379,14 +377,14 @@ pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
 }
 
 /**
- * pk_engine_notify_updates_changed_cb:
+ * pk_engine_backend_updates_changed_cb:
  **/
 static void
-pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
+pk_engine_backend_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("emitting updates-changed");
+	g_debug ("emitting UpdatesChanged");
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -421,7 +419,7 @@ pk_engine_state_changed_cb (gpointer data)
 		return TRUE;
 	}
 
-	pk_notify_updates_changed (engine->priv->notify);
+	pk_backend_updates_changed (engine->priv->backend);
 
 	/* reset, now valid */
 	engine->priv->timeout_priority_id = 0;
@@ -441,7 +439,7 @@ pk_engine_emit_restart_schedule (PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("emitting restart-schedule");
+	g_debug ("emitting RestartSchedule");
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -1782,13 +1780,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->timeout_priority_id = 0;
 	engine->priv->timeout_normal_id = 0;
 
-	/* add the interface */
-	engine->priv->notify = pk_notify_new ();
-	g_signal_connect (engine->priv->notify, "repo-list-changed",
-			  G_CALLBACK (pk_engine_notify_repo_list_changed_cb), engine);
-	g_signal_connect (engine->priv->notify, "updates-changed",
-			  G_CALLBACK (pk_engine_notify_updates_changed_cb), engine);
-
 	/* setup file watches */
 	pk_engine_setup_file_monitors (engine);
 
@@ -1864,7 +1855,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->network);
 	if (engine->priv->authority != NULL)
 		g_object_unref (engine->priv->authority);
-	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_key_file_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
@@ -1886,6 +1876,10 @@ pk_engine_new (GKeyFile *conf)
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->priv->conf = g_key_file_ref (conf);
 	engine->priv->backend = pk_backend_new (engine->priv->conf);
+	g_signal_connect (engine->priv->backend, "repo-list-changed",
+			  G_CALLBACK (pk_engine_backend_repo_list_changed_cb), engine);
+	g_signal_connect (engine->priv->backend, "updates-changed",
+			  G_CALLBACK (pk_engine_backend_updates_changed_cb), engine);
 	engine->priv->scheduler = pk_scheduler_new (engine->priv->conf);
 	pk_scheduler_set_backend (engine->priv->scheduler,
 				  engine->priv->backend);

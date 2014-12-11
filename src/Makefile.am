@@ -75,8 +75,6 @@ shared_SOURCES =					\
 	pk-network-stack-unix.h				\
 	pk-network-stack-nm.h				\
 	pk-network-stack-connman.h			\
-	pk-notify.c					\
-	pk-notify.h					\
 	pk-resources.c					\
 	pk-resources.h					\
 	pk-spawn.c					\

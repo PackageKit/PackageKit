@@ -41,7 +41,6 @@
 
 #ifdef PK_BUILD_DAEMON
   #include "pk-network.h"
-  #include "pk-notify.h"
 #endif
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -212,9 +211,18 @@ struct PkBackendPrivate
 	guint			 transaction_inhibit_end_idle_id;
 	guint			 repo_list_changed_id;
 	guint			 installed_db_changed_id;
+	guint			 updates_changed_id;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
+
+enum {
+	SIGNAL_REPO_LIST_CHANGED,
+	SIGNAL_UPDATES_CHANGED,
+	SIGNAL_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
 
 /**
  * pk_backend_get_groups:
@@ -647,11 +655,9 @@ static gboolean
 pk_backend_repo_list_changed_cb (gpointer user_data)
 {
 	PkBackend *backend = PK_BACKEND (user_data);
-#ifdef PK_BUILD_DAEMON
-	_cleanup_object_unref_ PkNotify *notify = NULL;
-	notify = pk_notify_new ();
-	pk_notify_repo_list_changed (notify);
-#endif
+
+	g_debug ("emitting repo-list-changed");
+	g_signal_emit (backend, signals [SIGNAL_REPO_LIST_CHANGED], 0);
 	backend->priv->repo_list_changed_id = 0;
 	return FALSE;
 }
@@ -675,6 +681,55 @@ pk_backend_repo_list_changed (PkBackend *backend)
 	backend->priv->repo_list_changed_id =
 		g_idle_add (pk_backend_repo_list_changed_cb, backend);
 
+}
+/**
+ * pk_backend_updates_changed:
+ **/
+gboolean
+pk_backend_updates_changed (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
+
+	g_debug ("emitting updates-changed");
+	g_signal_emit (backend, signals [SIGNAL_UPDATES_CHANGED], 0);
+	return TRUE;
+}
+
+/**
+ * pk_backend_finished_updates_changed_cb:
+ **/
+static gboolean
+pk_backend_finished_updates_changed_cb (gpointer data)
+{
+	PkBackend *backend = PK_BACKEND (data);
+	pk_backend_updates_changed (backend);
+	backend->priv->updates_changed_id = 0;
+	return FALSE;
+}
+
+/**
+ * pk_backend_updates_changed_delay:
+ *
+ * This function can be called on any thread.
+ **/
+gboolean
+pk_backend_updates_changed_delay (PkBackend *backend, guint timeout)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* check if we did this more than once */
+	if (backend->priv->updates_changed_id != 0)
+		return FALSE;
+
+	/* schedule */
+	backend->priv->updates_changed_id =
+		g_timeout_add (timeout,
+			       pk_backend_finished_updates_changed_cb,
+			       backend);
+	g_source_set_name_by_id (backend->priv->updates_changed_id,
+				 "[PkBackend] updates-changed");
+	return TRUE;
 }
 
 /**
@@ -1117,6 +1172,8 @@ pk_backend_finalize (GObject *object)
 		g_object_unref (backend->priv->monitor);
 	if (backend->priv->transaction_inhibit_end_idle_id > 0)
 		g_source_remove (backend->priv->transaction_inhibit_end_idle_id);
+	if (backend->priv->updates_changed_id != 0)
+		g_source_remove (backend->priv->updates_changed_id);
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
@@ -1130,6 +1187,18 @@ pk_backend_class_init (PkBackendClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_finalize;
+
+	signals [SIGNAL_REPO_LIST_CHANGED] =
+		g_signal_new ("repo-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals [SIGNAL_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 

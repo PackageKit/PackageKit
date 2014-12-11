@@ -30,7 +30,6 @@
 #include "pk-backend-spawn.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-notify.h"
 #include "pk-spawn.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"

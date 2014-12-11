@@ -51,7 +51,6 @@
 #include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-dbus.h"
-#include "pk-notify.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -97,7 +96,6 @@ struct PkTransactionPrivate
 	PkBackend		*backend;
 	PkBackendJob		*job;
 	GKeyFile		*conf;
-	PkNotify		*notify;
 	PkDbus			*dbus;
 	PolkitAuthority		*authority;
 	PolkitSubject		*subject;
@@ -302,8 +300,8 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* this needs to be done after a small delay */
-		pk_notify_wait_updates_changed (priv->notify,
-						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
+		pk_backend_updates_changed_delay (priv->backend,
+						  PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
 out:
 	return TRUE;
@@ -1153,7 +1151,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	if (transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_REMOVE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		pk_notify_repo_list_changed (transaction->priv->notify);
+		pk_backend_repo_list_changed (transaction->priv->backend);
 	}
 
 	/* only reset the time if we succeeded */
@@ -5385,7 +5383,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
-	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
@@ -5483,7 +5480,6 @@ pk_transaction_finalize (GObject *object)
 		g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->job);
 	g_object_unref (transaction->priv->transaction_db);
-	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->results);
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
