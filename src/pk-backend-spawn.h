@@ -65,7 +65,6 @@ gboolean	 pk_backend_spawn_set_name		(PkBackendSpawn	*backend_spawn,
 void		 pk_backend_spawn_set_allow_sigkill	(PkBackendSpawn	*backend_spawn,
 							 gboolean	 allow_sigkill);
 
-PkBackend	*pk_backend_spawn_get_backend		(PkBackendSpawn	*backend_spawn);
 gchar		*pk_backend_spawn_convert_uri		(const gchar	*proxy);
 gboolean	 pk_backend_spawn_inject_data		(PkBackendSpawn *backend_spawn,
 							 PkBackendJob	*job,

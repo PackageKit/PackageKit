@@ -73,16 +73,6 @@ struct PkBackendSpawnPrivate
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
 
 /**
- * pk_backend_spawn_get_backend:
- **/
-PkBackend *
-pk_backend_spawn_get_backend (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
-	return backend_spawn->priv->backend;
-}
-
-/**
  * pk_backend_spawn_set_filter_stdout:
  **/
 gboolean
