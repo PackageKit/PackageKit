@@ -132,7 +132,6 @@ pk_backend_job_reset (PkBackendJob *job)
 	job->priv->has_sent_package = FALSE;
 	job->priv->set_error = FALSE;
 	job->priv->allow_cancel = TRUE;
-	job->priv->thread = NULL;
 	job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	job->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	job->priv->status = PK_STATUS_ENUM_UNKNOWN;

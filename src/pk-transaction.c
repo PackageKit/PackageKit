@@ -92,11 +92,6 @@ struct PkTransactionPrivate
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
 	gboolean		 exclusive;
-	gboolean		 background;
-	gboolean		 interactive;
-	gchar			*locale;
-	gchar			*frontend_socket;
-	guint			 cache_age;
 	guint			 uid;
 	guint			 watch_id;
 	PkBackend		*backend;
@@ -279,7 +274,7 @@ gboolean
 pk_transaction_get_background (PkTransaction *transaction)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	return transaction->priv->background;
+	return pk_backend_job_get_background (transaction->priv->job);
 }
 
 /**
@@ -1192,10 +1187,11 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			time_ms);
 	}
 
+	/* this disconnects any pending signals */
+	pk_backend_job_reset (transaction->priv->job);
+
 	/* destroy the job */
 	pk_backend_stop_job (transaction->priv->backend, transaction->priv->job);
-	g_object_unref (transaction->priv->job);
-	transaction->priv->job = NULL;
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
@@ -1734,24 +1730,6 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (priv->tid != NULL, FALSE);
 	g_return_val_if_fail (transaction->priv->backend != NULL, FALSE);
-
-	/* create main job for transaction */
-	priv->job = pk_backend_job_new (transaction->priv->conf);
-	pk_backend_job_set_background (priv->job, priv->background);
-	pk_backend_job_set_interactive (priv->job, priv->interactive);
-
-	/* if we didn't set a locale for this transaction, we would reuse the
-	 * last set locale in the backend, or NULL if it was not ever set.
-	 * in this case use the C locale */
-	if (priv->locale != NULL)
-		pk_backend_job_set_locale (priv->job, priv->locale);
-
-	/* set the frontend socket if it exists */
-	pk_backend_job_set_frontend_socket (priv->job, priv->frontend_socket);
-
-	/* set the cache-age */
-	if (priv->cache_age > 0)
-		pk_backend_job_set_cache_age (priv->job, priv->cache_age);
 
 	/* we are no longer waiting, we are setting up */
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
@@ -4762,33 +4740,12 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* locale=en_GB.utf8 */
 	if (g_strcmp0 (key, "locale") == 0) {
-
-		/* already set */
-		if (priv->locale != NULL) {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				      "Already set locale to %s",
-				      priv->locale);
-			return FALSE;
-		}
-
-		/* success */
-		priv->locale = g_strdup (value);
+		pk_backend_job_set_locale (priv->job, value);
 		return TRUE;
 	}
 
 	/* frontend_socket=/tmp/socket.3456 */
 	if (g_strcmp0 (key, "frontend-socket") == 0) {
-
-		/* already set */
-		if (priv->frontend_socket != NULL) {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Already set frontend-socket to %s", priv->frontend_socket);
-			return FALSE;
-		}
 
 		/* nothing provided */
 		if (value == NULL || value[0] == '\0') {
@@ -4818,16 +4775,16 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		}
 
 		/* success */
-		priv->frontend_socket = g_strdup (value);
+		pk_backend_job_set_frontend_socket (priv->job, value);
 		return TRUE;
 	}
 
 	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
 		if (g_strcmp0 (value, "true") == 0) {
-			priv->background = TRUE;
+			pk_backend_job_set_background (priv->job, TRUE);
 		} else if (g_strcmp0 (value, "false") == 0) {
-			priv->background = FALSE;
+			pk_backend_job_set_background (priv->job, FALSE);
 		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
@@ -4841,9 +4798,9 @@ pk_transaction_set_hint (PkTransaction *transaction,
 	/* interactive=true */
 	if (g_strcmp0 (key, "interactive") == 0) {
 		if (g_strcmp0 (value, "true") == 0) {
-			priv->interactive = TRUE;
+			pk_backend_job_set_interactive (priv->job, TRUE);
 		} else if (g_strcmp0 (value, "false") == 0) {
-			priv->interactive = FALSE;
+			pk_backend_job_set_interactive (priv->job, FALSE);
 		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
@@ -4856,20 +4813,22 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* cache-age=<time-in-seconds> */
 	if (g_strcmp0 (key, "cache-age") == 0) {
-		if (!pk_strtouint (value, &priv->cache_age)) {
+		guint cache_age;
+		if (!pk_strtouint (value, &cache_age)) {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "cannot parse cache age value %s", value);
 			return FALSE;
 		}
-		if (priv->cache_age == 0) {
+		if (cache_age == 0) {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					     "cannot set a cache age of zero");
 			return FALSE;
 		}
+		pk_backend_job_set_cache_age (priv->job, cache_age);
 		return TRUE;
 	}
 
@@ -5499,8 +5458,6 @@ pk_transaction_finalize (GObject *object)
 	if (transaction->priv->watch_id > 0)
 		g_bus_unwatch_name (transaction->priv->watch_id);
 	g_free (transaction->priv->last_package_id);
-	g_free (transaction->priv->locale);
-	g_free (transaction->priv->frontend_socket);
 	g_free (transaction->priv->cached_package_id);
 	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);
@@ -5524,6 +5481,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->dbus);
 	if (transaction->priv->backend != NULL)
 		g_object_unref (transaction->priv->backend);
+	g_object_unref (transaction->priv->job);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->results);
@@ -5544,6 +5502,7 @@ pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 	PkTransaction *transaction;
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
 	transaction->priv->conf = g_key_file_ref (conf);
+	transaction->priv->job = pk_backend_job_new (conf);
 	transaction->priv->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }
