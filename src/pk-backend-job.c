@@ -657,6 +657,18 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 }
 
 /**
+ * pk_backend_job_vfunc_event_free:
+ **/
+static void
+pk_backend_job_vfunc_event_free (PkBackendJobVFuncHelper *helper)
+{
+	if (helper->destroy_func != NULL)
+		helper->destroy_func (helper->object);
+	g_object_unref (helper->job);
+	g_free (helper);
+}
+
+/**
  * pk_backend_job_call_vfunc_idle_cb:
  **/
 static gboolean
@@ -673,8 +685,6 @@ pk_backend_job_call_vfunc_idle_cb (gpointer user_data)
 		g_warning ("tried to do signal %s when no longer connected",
 			   pk_backend_job_signal_to_string (helper->signal_kind));
 	}
-	if (helper->destroy_func != NULL)
-		helper->destroy_func (helper->object);
 	return FALSE;
 }
 
@@ -693,25 +703,31 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 	PkBackendJobVFuncHelper *helper;
 	PkBackendJobVFuncItem *item;
 	guint priority = G_PRIORITY_DEFAULT_IDLE;
+	_cleanup_source_unref_ GSource *source = NULL;
 
 	/* call transaction vfunc if not disabled and set */
 	item = &job->priv->vfunc_items[signal_kind];
 	if (!item->enabled || item->vfunc == NULL)
 		return;
 
+	/* order this last if others are still pending */
 	if (signal_kind == PK_BACKEND_SIGNAL_FINISHED)
 		priority = G_PRIORITY_LOW;
 
-	/* emit idle, TODO: do we ever need to cancel this? */
+	/* emit idle */
 	helper = g_new0 (PkBackendJobVFuncHelper, 1);
-	helper->job = job;
+	helper->job = g_object_ref (job);
 	helper->signal_kind = signal_kind;
 	helper->object = object;
 	helper->destroy_func = destroy_func;
-	g_idle_add_full (priority,
-			 pk_backend_job_call_vfunc_idle_cb,
-			 helper,
-			 g_free);
+	source = g_idle_source_new ();
+	g_source_set_priority (source, priority);
+	g_source_set_callback (source,
+			       pk_backend_job_call_vfunc_idle_cb,
+			       helper,
+			       (GDestroyNotify) pk_backend_job_vfunc_event_free);
+	g_source_set_name (source, "[PkBackendJob] idle_event_cb");
+	g_source_attach (source, NULL);
 }
 
 /**
