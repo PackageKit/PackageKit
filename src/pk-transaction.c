@@ -2911,7 +2911,6 @@ skip_uid:
 						PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						msg);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
-		pk_transaction_dbus_return (context, NULL);
 		goto out;
 	}
 
