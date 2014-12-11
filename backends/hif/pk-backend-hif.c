@@ -169,7 +169,7 @@ pk_comps_element_text (GMarkupParseContext *context,
 			g_ptr_array_add (comps_data->groups, g_strdup(text));
 		}
 		if (comps_data->category_state == COMPS_STATE_GROUP_DESCRIPTION) {
-			g_debug  ("Description: %s\n", text);
+			g_debug ("Description: %s\n", text);
 		}
 		if (comps_data->category_state == COMPS_STATE_GROUP_PKGREQ) {
 			g_debug ("Package: %s", text);
@@ -1184,7 +1184,7 @@ static void
 pk_backend_comps_parser (gpointer user_data)
 {
 	guint i;
-	gchar *text;
+	_cleanup_free_ gchar *text = NULL;
 	gsize length;
 	GMarkupParseContext *context = NULL;
 	PkCompsData *comps_data = (PkCompsData*) (user_data);
@@ -1194,8 +1194,8 @@ pk_backend_comps_parser (gpointer user_data)
 	context = g_markup_parse_context_new (&parser, 0, comps_data, NULL);
 
 	for (i = 0; i < comps_data->comps->len; i++) {
-		g_debug ("Comps file parsed: %s.", g_ptr_array_index (comps_data->comps, i));
-		if (g_file_get_contents  (g_ptr_array_index (comps_data->comps, i), &text, &length, NULL) == FALSE) {
+		g_debug ("Comps file parsed: %s.", (char*) (g_ptr_array_index (comps_data->comps, i)));
+		if (g_file_get_contents (g_ptr_array_index (comps_data->comps, i), &text, &length, NULL) == FALSE) {
 			g_debug ("Couldn't load XML");
 		} else if (g_markup_parse_context_parse (context, text, length, NULL) == FALSE) {
 			g_debug ("Parse failed");
@@ -1213,11 +1213,9 @@ pk_backend_get_packages_from_group (gchar **groups,
 		gpointer user_data)
 {
 	guint i = 0;
-	gchar **packages = NULL;
 	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
 	comps_data->query = COMPS_QUERY_GROUP;
-
 	comps_data->packages = g_ptr_array_new_with_free_func (g_free);
 
 	for (i = 0; i < g_strv_length (groups); i++) {
@@ -1226,8 +1224,7 @@ pk_backend_get_packages_from_group (gchar **groups,
 	}
 
 	g_ptr_array_add (comps_data->packages, NULL);
-	packages = pk_ptr_array_to_strv (comps_data->packages);
-	return packages;
+	return pk_ptr_array_to_strv (comps_data->packages);
 }
 
 /**
@@ -1292,7 +1289,7 @@ pk_backend_group_mapping (const gchar *mappgroup,
 	if (category_groups != NULL) {
 		len = g_strv_length (category_groups);
 		for (i = 0; i < len; i++)
-			g_ptr_array_add (groups, g_strdup  (category_groups[i]) );
+			g_ptr_array_add (groups, g_strdup (category_groups[i]) );
 	}
 	return pk_ptr_array_to_strv (groups);
 }
@@ -1307,9 +1304,7 @@ pk_backend_search_groups (PkBackend *backend,
 		gchar **values)
 {
 	guint i = 0;
-	gchar *package_name = NULL;
-	gchar *comps_name = NULL;
-	gchar **groups = NULL;
+	const gchar *comps_name;
 	gchar **packages = NULL;
 	HyQuery query = NULL;
 	HySack sack = NULL;
@@ -1366,9 +1361,7 @@ pk_backend_search_groups (PkBackend *backend,
 			g_ptr_array_add (comps_data->comps, g_strdup (comps_name));
 	}
 
-	groups = pk_backend_group_mapping (values[0], comps_data);
-
-	packages = pk_backend_get_packages_from_group (groups, comps_data);
+	packages = pk_backend_get_packages_from_group (pk_backend_group_mapping (values[0], comps_data), comps_data);
 
 	hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const char**)packages);
 	plist = hy_query_run(query);
@@ -1376,14 +1369,13 @@ pk_backend_search_groups (PkBackend *backend,
 
 	for (i = 0; i < (guint) hy_packagelist_count (plist); i++) {
 		pkg = hy_packagelist_get_clone(plist, i);
-		package_name = g_strdup_printf ("%s;%s;%s;%s",
-				hy_package_get_name (pkg),
-				hy_package_get_version (pkg),
-				hy_package_get_arch (pkg),
-				hy_package_get_packager (pkg));
 		pk_backend_job_package (job, 
 				PK_INFO_ENUM_AVAILABLE,
-				package_name,
+				pk_package_id_build (
+					hy_package_get_name (pkg),
+					hy_package_get_version (pkg),
+					hy_package_get_arch (pkg),
+					hy_package_get_packager (pkg)),
 				hy_package_get_summary (pkg));
 	}
 	hy_packagelist_free(plist);
