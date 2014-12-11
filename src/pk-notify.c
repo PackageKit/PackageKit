@@ -33,6 +33,7 @@
 #include <glib.h>
 
 #include "pk-notify.h"
+#include "pk-shared.h"
 
 #define PK_NOTIFY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NOTIFY, PkNotifyPrivate))
 
@@ -60,6 +61,7 @@ gboolean
 pk_notify_repo_list_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	g_debug ("emitting repo-list-changed");
 	g_signal_emit (notify, signals [PK_NOTIFY_REPO_LIST_CHANGED], 0);
@@ -73,6 +75,7 @@ gboolean
 pk_notify_updates_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	g_debug ("emitting updates-changed");
 	g_signal_emit (notify, signals [PK_NOTIFY_UPDATES_CHANGED], 0);
