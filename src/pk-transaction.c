@@ -1186,7 +1186,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	}
 
 	/* this disconnects any pending signals */
-	pk_backend_job_reset (transaction->priv->job);
+	pk_backend_job_disconnect_vfuncs (transaction->priv->job);
 
 	/* destroy the job */
 	pk_backend_stop_job (transaction->priv->backend, transaction->priv->job);

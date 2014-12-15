@@ -883,7 +883,7 @@ pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
 		backend->priv->desc->job_start (backend, job);
 
 	/* bubble up */
-	pk_backend_job_reset (job);
+	pk_backend_job_disconnect_vfuncs (job);
 }
 
 /**
