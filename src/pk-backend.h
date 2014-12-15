@@ -119,8 +119,6 @@ void		 pk_backend_initialize			(GKeyFile		*conf,
 void		 pk_backend_destroy			(PkBackend	*backend);
 void		 pk_backend_start_job			(PkBackend	*backend,
 							 PkBackendJob	*job);
-void		 pk_backend_reset_job			(PkBackend	*backend,
-							 PkBackendJob	*job);
 void		 pk_backend_stop_job			(PkBackend	*backend,
 							 PkBackendJob	*job);
 void		 pk_backend_cancel			(PkBackend	*backend,

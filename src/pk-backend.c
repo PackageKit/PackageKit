@@ -863,30 +863,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * pk_backend_reset_job:
- **/
-void
-pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (pk_is_thread_default ());
-
-	if (!pk_backend_job_get_started (job)) {
-		g_warning ("trying to reset job, but never started it before");
-		return;
-	}
-
-	/* optional */
-	if (backend->priv->desc->job_stop != NULL)
-		backend->priv->desc->job_stop (backend, job);
-	if (backend->priv->desc->job_start != NULL)
-		backend->priv->desc->job_start (backend, job);
-
-	/* bubble up */
-	pk_backend_job_disconnect_vfuncs (job);
-}
-
-/**
  * pk_backend_stop_job:
  *
  * Always run for each transaction, *even* when the job_start()

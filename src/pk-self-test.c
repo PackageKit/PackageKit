@@ -276,9 +276,6 @@ pk_test_backend_func (void)
 	g_assert_cmpint (number_packages, ==, 1);
 
 	/* reset */
-	pk_backend_start_job (backend, job);
-	pk_backend_reset_job (backend, job);
-	pk_backend_stop_job (backend, job);
 	g_object_unref (job);
 	job = pk_backend_job_new (conf);
 	pk_backend_job_set_backend (job, backend);
@@ -293,33 +290,15 @@ pk_test_backend_func (void)
 	/* wait for Finished */
 	_g_test_loop_wait (10);
 
-	pk_backend_start_job (backend, job);
-	pk_backend_reset_job (backend, job);
+	/* reset */
+	g_object_unref (job);
+	job = pk_backend_job_new (conf);
+	pk_backend_job_set_backend (job, backend);
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
-	/* wait for finished */
-//	_g_test_loop_run_with_timeout (PK_BACKEND_FINISHED_ERROR_TIMEOUT + 400);
-
-	/* get allow cancel after reset */
-	pk_backend_reset_job (backend, job);
-	ret = pk_backend_job_get_allow_cancel (job);
-	g_assert (!ret);
-
-	/* set allow cancel TRUE */
-	pk_backend_job_set_allow_cancel (job, TRUE);
-
-	/* set allow cancel TRUE (repeat) */
-	pk_backend_job_set_allow_cancel (job, TRUE);
-
-	/* set allow cancel FALSE */
-	pk_backend_job_set_allow_cancel (job, FALSE);
-
-	/* set allow cancel FALSE (after reset) */
-	pk_backend_reset_job (backend, job);
-	pk_backend_job_set_allow_cancel (job, FALSE);
-
-	/* stop the job again */
-	pk_backend_stop_job (backend, job);
+	/* get exit code from error code */
+	g_assert_cmpint (pk_backend_job_get_exit_code (job), ==,
+		         PK_EXIT_ENUM_NEED_UNTRUSTED);
 }
 
 static guint _backend_spawn_number_packages = 0;
