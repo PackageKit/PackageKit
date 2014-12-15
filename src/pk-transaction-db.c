@@ -117,7 +117,7 @@ pk_transaction_db_add_transaction_cb (void *data,
 			ret = pk_strtouint (value, &temp);
 			if (ret)
 				g_object_set (item, "uid", temp, NULL);
-		} else if (g_strcmp0 (col, "duration") == 0) {
+		} else if (g_strcmp0 (col, "duration") == 0 && value != NULL) {
 			ret = pk_strtouint (value, &temp);
 			if (!ret) {
 				g_warning ("failed to parse duration: %s", value);
