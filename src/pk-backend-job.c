@@ -1709,12 +1709,6 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	/* have we already set an error? */
-	if (job->priv->set_error && allow_cancel) {
-		g_warning ("already set error: allow-cancel %i", allow_cancel);
-		return;
-	}
-
 	/* same as last state? */
 	if (job->priv->allow_cancel == allow_cancel)
 		return;
