@@ -953,6 +953,32 @@ pk_backend_is_online (PkBackend *backend)
 }
 
 /**
+ * pk_backend_convert_uri:
+ *
+ * Our proxy variable is typically 'username:password@server:port'
+ * but http_proxy expects 'http://username:password@server:port/'
+ **/
+gchar *
+pk_backend_convert_uri (const gchar *proxy)
+{
+	GString *string;
+	string = g_string_new (proxy);
+
+	/* if we didn't specify a prefix, add a default one */
+	if (!g_str_has_prefix (proxy, "http://") &&
+	    !g_str_has_prefix (proxy, "https://") &&
+	    !g_str_has_prefix (proxy, "ftp://")) {
+		g_string_prepend (string, "http://");
+	}
+
+	/* if we didn't specify a trailing slash, add one */
+	if (!g_str_has_suffix (proxy, "/"))
+		g_string_append_c (string, '/');
+
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_backend_get_name:
  **/
 const gchar *

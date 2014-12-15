@@ -46,7 +46,6 @@
 #define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <pk-backend-spawn.h>
 
 #include <zypp/Digest.h>
 #include <zypp/KeyRing.h>
@@ -3574,7 +3573,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* http_proxy */
 	proxy_http = pk_backend_job_get_proxy_http (job);
 	if (!pk_strzero (proxy_http)) {
-		uri = pk_backend_spawn_convert_uri (proxy_http);
+		uri = pk_backend_convert_uri (proxy_http);
 		g_setenv ("http_proxy", uri, TRUE);
 		g_free (uri);
 	}
@@ -3582,7 +3581,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* https_proxy */
 	proxy_https = pk_backend_job_get_proxy_https (job);
 	if (!pk_strzero (proxy_https)) {
-		uri = pk_backend_spawn_convert_uri (proxy_https);
+		uri = pk_backend_convert_uri (proxy_https);
 		g_setenv ("https_proxy", uri, TRUE);
 		g_free (uri);
 	}
@@ -3590,7 +3589,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* ftp_proxy */
 	proxy_ftp = pk_backend_job_get_proxy_ftp (job);
 	if (!pk_strzero (proxy_ftp)) {
-		uri = pk_backend_spawn_convert_uri (proxy_ftp);
+		uri = pk_backend_convert_uri (proxy_ftp);
 		g_setenv ("ftp_proxy", uri, TRUE);
 		g_free (uri);
 	}
@@ -3598,7 +3597,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* socks_proxy */
 	proxy_socks = pk_backend_job_get_proxy_socks (job);
 	if (!pk_strzero (proxy_socks)) {
-		uri = pk_backend_spawn_convert_uri (proxy_socks);
+		uri = pk_backend_convert_uri (proxy_socks);
 		g_setenv ("socks_proxy", uri, TRUE);
 		g_free (uri);
 	}
@@ -3612,7 +3611,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	/* pac */
 	pac = pk_backend_job_get_pac (job);
 	if (!pk_strzero (pac)) {
-		uri = pk_backend_spawn_convert_uri (pac);
+		uri = pk_backend_convert_uri (pac);
 		g_setenv ("pac", uri, TRUE);
 		g_free (uri);
 	}

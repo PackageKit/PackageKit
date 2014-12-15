@@ -441,17 +441,17 @@ pk_test_backend_spawn_func (void)
 	g_assert (!ret);
 
 	/* convert proxy uri (bare) */
-	uri = pk_backend_spawn_convert_uri ("username:password@server:port");
+	uri = pk_backend_convert_uri ("username:password@server:port");
 	g_assert_cmpstr (uri, ==, "http://username:password@server:port/");
 	g_free (uri);
 
 	/* convert proxy uri (full) */
-	uri = pk_backend_spawn_convert_uri ("http://username:password@server:port/");
+	uri = pk_backend_convert_uri ("http://username:password@server:port/");
 	g_assert_cmpstr (uri, ==, "http://username:password@server:port/");
 	g_free (uri);
 
 	/* convert proxy uri (partial) */
-	uri = pk_backend_spawn_convert_uri ("ftp://username:password@server:port");
+	uri = pk_backend_convert_uri ("ftp://username:password@server:port");
 	g_assert_cmpstr (uri, ==, "ftp://username:password@server:port/");
 	g_free (uri);
 

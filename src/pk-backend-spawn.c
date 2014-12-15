@@ -660,33 +660,6 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 }
 
 /**
- * pk_backend_spawn_convert_uri:
- *
- * Our proxy variable is typically 'username:password@server:port'
- * but http_proxy expects 'http://username:password@server:port/'
- **/
-gchar *
-pk_backend_spawn_convert_uri (const gchar *proxy)
-{
-	GString *string;
-	string = g_string_new (proxy);
-
-	/* if we didn't specify a prefix, add a default one */
-	if (!g_str_has_prefix (proxy, "http://") &&
-	    !g_str_has_prefix (proxy, "https://") &&
-	    !g_str_has_prefix (proxy, "ftp://")) {
-		g_string_prepend (string, "http://");
-	}
-
-	/* if we didn't specify a trailing slash, add one */
-	if (!g_str_has_suffix (proxy, "/")) {
-		g_string_append_c (string, '/');
-	}
-
-	return g_string_free (string, FALSE);
-}
-
-/**
  * pk_backend_spawn_get_envp:
  *
  * Return all the environment variables the script will need
@@ -745,42 +718,42 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* http_proxy */
 	proxy_http = pk_backend_job_get_proxy_http (priv->job);
 	if (!pk_strzero (proxy_http)) {
-		uri = pk_backend_spawn_convert_uri (proxy_http);
+		uri = pk_backend_convert_uri (proxy_http);
 		g_hash_table_replace (env_table, g_strdup ("http_proxy"), uri);
 	}
 
 	/* https_proxy */
 	proxy_https = pk_backend_job_get_proxy_https (priv->job);
 	if (!pk_strzero (proxy_https)) {
-		uri = pk_backend_spawn_convert_uri (proxy_https);
+		uri = pk_backend_convert_uri (proxy_https);
 		g_hash_table_replace (env_table, g_strdup ("https_proxy"), uri);
 	}
 
 	/* ftp_proxy */
 	proxy_ftp = pk_backend_job_get_proxy_ftp (priv->job);
 	if (!pk_strzero (proxy_ftp)) {
-		uri = pk_backend_spawn_convert_uri (proxy_ftp);
+		uri = pk_backend_convert_uri (proxy_ftp);
 		g_hash_table_replace (env_table, g_strdup ("ftp_proxy"), uri);
 	}
 
 	/* socks_proxy */
 	proxy_socks = pk_backend_job_get_proxy_socks (priv->job);
 	if (!pk_strzero (proxy_socks)) {
-		uri = pk_backend_spawn_convert_uri (proxy_socks);
+		uri = pk_backend_convert_uri (proxy_socks);
 		g_hash_table_replace (env_table, g_strdup ("socks_proxy"), uri);
 	}
 
 	/* no_proxy */
 	no_proxy = pk_backend_job_get_no_proxy (priv->job);
 	if (!pk_strzero (no_proxy)) {
-		uri = pk_backend_spawn_convert_uri (no_proxy);
+		uri = pk_backend_convert_uri (no_proxy);
 		g_hash_table_replace (env_table, g_strdup ("no_proxy"), uri);
 	}
 
 	/* pac */
 	pac = pk_backend_job_get_pac (priv->job);
 	if (!pk_strzero (pac)) {
-		uri = pk_backend_spawn_convert_uri (pac);
+		uri = pk_backend_convert_uri (pac);
 		g_hash_table_replace (env_table, g_strdup ("pac"), uri);
 	}
 

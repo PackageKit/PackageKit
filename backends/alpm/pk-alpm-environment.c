@@ -26,7 +26,6 @@
 
 #include <config.h>
 #include <pk-backend.h>
-#include <pk-backend-spawn.h>
 
 #include "pk-alpm-environment.h"
 
@@ -54,28 +53,28 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 
 	value = pk_backend_job_get_proxy_http (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
 		g_setenv ("http_proxy", uri, TRUE);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_https (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
 		g_setenv ("https_proxy", uri, TRUE);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_ftp (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
 		g_setenv ("ftp_proxy", uri, TRUE);
 		g_free (value);
 	}
 
 	value = pk_backend_job_get_proxy_socks (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
 		g_setenv ("socks_proxy", uri, TRUE);
 		g_free (value);
 	}
@@ -88,7 +87,7 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 
 	value = pk_backend_job_get_pac (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_spawn_convert_uri (value);
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
 		g_setenv ("pac", uri, TRUE);
 		g_free (value);
 	}
