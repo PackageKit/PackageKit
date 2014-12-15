@@ -201,20 +201,16 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),
 		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
-	PKG_CHECK_MODULES(NETWORK_MANAGER, NetworkManager >= $NETWORK_MANAGER_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
+	PKG_CHECK_MODULES(NETWORK_MANAGER, NetworkManager >= $NETWORK_MANAGER_REQUIRED, HAVE_NETWORKMANAGER="yes", HAVE_NETWORKMANAGER="no")
+	if test "x$HAVE_NETWORKMANAGER" = "xyes"; then
 		networking_apis="${networking_apis},NetworkManager"
-		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
+		AC_DEFINE(HAVE_NETWORKMANAGER, 1, [define if NetworkManager is installed])
 	else
 		if test x$enable_networkmanager = xyes; then
 			AC_MSG_ERROR([NetworkManager enabled but not found])
 		fi
 	fi
-else
-	PK_BUILD_NETWORKMANAGER=no
 fi
-
-AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default disabled)
@@ -222,20 +218,16 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(connman, AS_HELP_STRING([--enable-connman],[Enable ConnMan support]),
 	      enable_connman=$enableval, enable_connman=no)
 if test x$enable_connman != xno; then
-	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
-	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
+	PKG_CHECK_MODULES(CONNMAN, connman, HAVE_CONNMAN="yes", HAVE_CONNMAN="no")
+	if test "x$HAVE_CONNMAN" = "xyes"; then
 		networking_apis="${networking_apis},ConnMan"
-		AC_DEFINE(PK_BUILD_CONNMAN, 1, [define if Connection Manager is installed])
+		AC_DEFINE(HAVE_CONNMAN, 1, [define if Connection Manager is installed])
 	else
 		if test x$enable_connman = xyes; then
 			AC_MSG_ERROR([Connman enabled but not found])
 		fi
 	fi
-else
-	PK_BUILD_CONNMAN=no
 fi
-
-AM_CONDITIONAL(PK_BUILD_CONNMAN, test x$PK_BUILD_CONNMAN = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl - Use systemd and logind rather than ConsoleKit

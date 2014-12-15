@@ -69,12 +69,6 @@ shared_SOURCES =					\
 	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
-	pk-network-stack.h				\
-	pk-network-stack.c				\
-	pk-network-stack-unix.c				\
-	pk-network-stack-unix.h				\
-	pk-network-stack-nm.h				\
-	pk-network-stack-connman.h			\
 	pk-resources.c					\
 	pk-resources.h					\
 	pk-spawn.c					\
@@ -89,16 +83,6 @@ shared_SOURCES =					\
 	pk-scheduler.h					\
 	pk-transaction-db.c				\
 	pk-transaction-db.h
-
-if PK_BUILD_NETWORKMANAGER
-shared_SOURCES +=					\
-	pk-network-stack-nm.c
-endif
-
-if PK_BUILD_CONNMAN
-shared_SOURCES +=					\
-	pk-network-stack-connman.c
-endif
 
 libexec_PROGRAMS = packagekitd packagekit-direct
 
