@@ -176,14 +176,6 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
 }
 
 /**
- * pk_backend_reset_job:
- */
-void pk_backend_reset_job(PkBackend *backend, PkBackendJob *job)
-{
-    // To keep the cache alive we just need to be defined...
-}
-
-/**
  * pk_backend_stop_job:
  */
 void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)

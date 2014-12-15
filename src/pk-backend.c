@@ -70,8 +70,6 @@ typedef struct {
 	gboolean	(*supports_parallelization)	(PkBackend	*backend);
 	void		(*job_start)			(PkBackend	*backend,
 							 PkBackendJob	*job);
-	void		(*job_reset)			(PkBackend	*backend,
-							 PkBackendJob	*job);
 	void		(*job_stop)			(PkBackend	*backend,
 							 PkBackendJob	*job);
 	void		(*cancel)			(PkBackend	*backend,
@@ -569,7 +567,6 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
 		g_module_symbol (handle, "pk_backend_start_job", (gpointer *)&desc->job_start);
 		g_module_symbol (handle, "pk_backend_stop_job", (gpointer *)&desc->job_stop);
-		g_module_symbol (handle, "pk_backend_reset_job", (gpointer *)&desc->job_reset);
 		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
 		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
@@ -880,14 +877,10 @@ pk_backend_reset_job (PkBackend *backend, PkBackendJob *job)
 	}
 
 	/* optional */
-	if (backend->priv->desc->job_reset != NULL) {
-		backend->priv->desc->job_reset (backend, job);
-	} else {
-		if (backend->priv->desc->job_stop != NULL)
-			backend->priv->desc->job_stop (backend, job);
-		if (backend->priv->desc->job_start != NULL)
-			backend->priv->desc->job_start (backend, job);
-	}
+	if (backend->priv->desc->job_stop != NULL)
+		backend->priv->desc->job_stop (backend, job);
+	if (backend->priv->desc->job_start != NULL)
+		backend->priv->desc->job_start (backend, job);
 
 	/* bubble up */
 	pk_backend_job_reset (job);
