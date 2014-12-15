@@ -50,6 +50,8 @@ gboolean	 pk_util_set_auto_backend		(GKeyFile	*conf,
 gboolean	 pk_is_thread_default_real		(const gchar *strloc,
 							 const gchar *strfunc);
 
+gboolean	 pk_ioprio_set_idle			(GPid		 pid);
+
 G_END_DECLS
 
 #endif /* __PK_SHARED_H */

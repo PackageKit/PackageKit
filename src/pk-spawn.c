@@ -44,8 +44,6 @@
 #include "pk-spawn.h"
 #include "pk-shared.h"
 
-#include "pk-sysdep.h"
-
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))

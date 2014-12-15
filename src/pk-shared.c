@@ -30,9 +30,14 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <unistd.h>
 
 #include "pk-cleanup.h"
 #include "pk-shared.h"
+
+#ifdef linux
+  #include <sys/syscall.h>
+#endif
 
 #ifdef PK_BUILD_DAEMON
   #include "pk-resources.h"
@@ -353,4 +358,35 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 	tmp = g_ptr_array_index (array, 0);
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", tmp);
 	return TRUE;
+}
+
+/**
+ * pk_ioprio_set_idle:
+ *
+ * Set the IO priority to idle
+ **/
+gboolean
+pk_ioprio_set_idle (GPid pid)
+{
+#if defined(PK_BUILD_DAEMON) && defined(linux)
+	enum {
+		IOPRIO_CLASS_NONE,
+		IOPRIO_CLASS_RT,
+		IOPRIO_CLASS_BE,
+		IOPRIO_CLASS_IDLE
+	};
+
+	enum {
+		IOPRIO_WHO_PROCESS = 1,
+		IOPRIO_WHO_PGRP,
+		IOPRIO_WHO_USER
+	};
+	#define IOPRIO_CLASS_SHIFT	13
+	gint prio = 7;
+	gint class = IOPRIO_CLASS_IDLE << IOPRIO_CLASS_SHIFT;
+	/* FIXME: glibc should have this function */
+	return syscall (SYS_ioprio_set, IOPRIO_WHO_PROCESS, pid, prio | class) == 0;
+#else
+	return TRUE;
+#endif
 }

@@ -33,10 +33,6 @@
 #include "pk-backend-job.h"
 #include "pk-shared.h"
 
-#ifdef PK_BUILD_DAEMON
-  #include "pk-sysdep.h"
-#endif
-
 #define PK_BACKEND_JOB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_JOB, PkBackendJobPrivate))
 
 /**

@@ -73,8 +73,6 @@ shared_SOURCES =					\
 	pk-resources.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
-	pk-sysdep.h					\
-	pk-sysdep.c					\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-backend-spawn.h				\
