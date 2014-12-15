@@ -558,14 +558,11 @@ pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						   "The task was stopped successfully");
-			pk_backend_job_finished (job);
 			break;
 		}
 
-		if (job_data->progress_percentage == 100) {
-			pk_backend_job_finished (job);
+		if (job_data->progress_percentage == 100)
 			break;
-		}
 
 		if (job_data->progress_percentage == 30) {
 			pk_backend_job_set_allow_cancel (job, FALSE);
@@ -778,14 +775,11 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 						   "The task was stopped successfully");
-			pk_backend_job_finished (job);
 			break;
 		}
 
-		if (job_data->progress_percentage == 100) {
-			pk_backend_job_finished (job);
+		if (job_data->progress_percentage == 100)
 			break;
-		}
 
 		if (job_data->progress_percentage == 80)
 			pk_backend_job_set_allow_cancel (job, FALSE);

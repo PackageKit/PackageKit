@@ -139,7 +139,6 @@ pk_test_backend_func_true (PkBackendJob *job,
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
-	pk_backend_job_finished (job);
 }
 
 static void
@@ -147,7 +146,6 @@ pk_test_backend_func_immediate_false (PkBackendJob *job,
 				      GVariant *params,
 				      gpointer user_data)
 {
-	pk_backend_job_finished (job);
 }
 
 /**
