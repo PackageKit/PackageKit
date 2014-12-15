@@ -403,7 +403,6 @@ fi
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
-AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
 AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),enable_aptcc=$enableval,enable_aptcc=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(entropy, AS_HELP_STRING([--enable-entropy],[use the entropy backend]),enable_entropy=$enableval,enable_entropy=no)
@@ -418,7 +417,6 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ENTROPY, [test x$enable_entropy = xyes])
@@ -458,18 +456,6 @@ fi
 have_python_backend="no"
 if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o $enable_portage = xyes; then
 	have_python_backend="yes"
-fi
-if test x$enable_apt = xyes; then
-	have_python_backend="yes"
-	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
-	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
-		     AC_DEFINE(HAVE_PYTHON_META_RELEASE, 1,
-			       "Meta release is available"),
-		     AC_MSG_WARN([Distro upgrade notification not supported]))
-	PY_CHECK_MOD([softwareproperties.SoftwareProperties],,
-		     AC_DEFINE(HAVE_PYTHON_SOFTWARE_PROPERTIES, 1,
-			       "Python software properties is available"),
-		     AC_MSG_WARN([Repository handling not supported]))
 fi
 AM_CONDITIONAL(HAVE_PYTHON_BACKEND, test x$have_python_backend = xyes)
 
@@ -580,7 +566,6 @@ contrib/command-not-found/Makefile
 contrib/cron/Makefile
 backends/Makefile
 backends/alpm/Makefile
-backends/apt/Makefile
 backends/aptcc/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
@@ -647,7 +632,6 @@ echo "
 
         Backends:
         ALPM backend:              ${enable_alpm}
-        APT backend:               ${enable_apt}
         APTcc backend:             ${enable_aptcc}
         dummy backend:             ${enable_dummy}
         Entropy backend:           ${enable_entropy}
