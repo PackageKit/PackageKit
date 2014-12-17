@@ -28,6 +28,7 @@
 #include <glib/gstdio.h>
 #include <string.h>
 #include <libhif-private.h>
+#include <appstream-glib.h>
 
 #include <pk-backend.h>
 #include <pk-cleanup.h>
@@ -1326,6 +1327,9 @@ pk_backend_refresh_source (PkBackendJob *job,
 	gboolean src_okay;
 	HifState *state_local;
 	GError *error_local = NULL;
+	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
+	const gchar *tmp;
+	guint i;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -1374,6 +1378,24 @@ pk_backend_refresh_source (PkBackendJob *job,
 				g_propagate_error (error, error_local);
 				return FALSE;
 			}
+		}
+	}
+
+	/* copy the appstream files somewhere that the GUI will pick them up */
+	for (i = 0; as_basenames[i] != NULL; i++) {
+		tmp = hif_source_get_filename_md (src, as_basenames[i]);
+		if (tmp != NULL) {
+#if AS_CHECK_VERSION(0,3,4)
+			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
+							tmp,
+							hif_source_get_id (src),
+							NULL,
+							error)) {
+				return FALSE;
+			}
+#else
+			g_warning ("need to install AppStream metadata %s", tmp);
+#endif
 		}
 	}
 

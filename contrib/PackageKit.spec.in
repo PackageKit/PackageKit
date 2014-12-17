@@ -51,6 +51,7 @@ BuildRequires: bash-completion
 %if !0%{?rhel}
 BuildRequires: hawkey-devel >= 0.4.6
 BuildRequires: rpm-devel >= 4.11.0
+BuildRequires: libappstream-glib-devel
 BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
 BuildRequires: libhif-devel
