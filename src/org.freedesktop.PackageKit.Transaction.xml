@@ -804,14 +804,12 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              If the transaction is only allowed to install trusted packages.
-              Unsigned packages should not be installed if transaction_flags contains <doc:tt>ALLOW_UNTRUSTED</doc:tt>.
+              Unsigned packages will only be installed if the transaction_flags
+              contain <doc:tt>ALLOW_UNTRUSTED</doc:tt>.
             </doc:para>
             <doc:para>
               If this method is can only install trusted packages, and the packages are unsigned, then
               the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-              On recieving this error, the client may choose to retry with only_trusted <doc:tt>FALSE</doc:tt>
-              after gaining further authentication.
             </doc:para>
           </doc:summary>
         </doc:doc>
