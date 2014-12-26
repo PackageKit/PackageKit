@@ -247,25 +247,25 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 }
 
 static void
-pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_pkg_t *pkg, gint *result)
+pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_question_install_ignorepkg_t *q)
 {
 	_cleanup_free_ gchar *output = NULL;
 
-	g_return_if_fail (pkg != NULL);
-	g_return_if_fail (result != NULL);
+	g_return_if_fail (q != NULL);
+	g_return_if_fail (q->pkg != NULL);
 
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_INSTALL_PACKAGES:
 		output = g_strdup_printf ("%s: was not ignored\n",
-					  alpm_pkg_get_name (pkg));
+					  alpm_pkg_get_name (q->pkg));
 		pk_alpm_transaction_output (output);
 
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
-		*result = 1;
+		q->install = 1;
 		break;
 
 	default:
-		*result = 0;
+		q->install = 0;
 		break;
 	}
 }
@@ -287,40 +287,62 @@ pk_alpm_select_provider (const alpm_list_t *providers,
 }
 
 static void
-pk_alpm_transaction_conv_cb (alpm_question_t question, gpointer data1,
-				gpointer data2, gpointer data3, gint *result)
+pk_alpm_transaction_conv_cb (alpm_question_t *question)
 {
 	PkBackendJob* job;
 	g_assert (pkalpm_current_job);
 	job = pkalpm_current_job;
 
-	g_return_if_fail (result != NULL);
+	g_return_if_fail (question != NULL);
 
-	switch (question) {
+	switch (question->type) {
 	case ALPM_QUESTION_INSTALL_IGNOREPKG:
-		pk_alpm_install_ignorepkg (job, data1, result);
+		{
+			alpm_question_install_ignorepkg_t *q = &question->install_ignorepkg;
+			pk_alpm_install_ignorepkg (job, q);
+		}
 		break;
 	case ALPM_QUESTION_REPLACE_PKG:
+		{
+			alpm_question_replace_t *q = &question->replace;
+			g_debug ("safe question %d", question->type);
+			q->replace = 1;
+		}
+		break;
 	case ALPM_QUESTION_CONFLICT_PKG:
 	case ALPM_QUESTION_CORRUPTED_PKG:
-//	case ALPM_QUESTION_LOCAL_NEWER:
-		/* these actions are mostly harmless */
-		g_debug ("safe question %d", question);
-		*result = 1;
+		{
+			alpm_question_conflict_t *q = &question->conflict;
+			g_debug ("safe question %d", question->type);
+			q->remove = 1;
+		}
 		break;
+//	case ALPM_QUESTION_LOCAL_NEWER:
 	case ALPM_QUESTION_REMOVE_PKGS:
+		{
+			alpm_question_remove_pkgs_t *q = &question->remove_pkgs;
+			g_debug ("unsafe question %d", question->type);
+			q->skip = 0;
+		}
+		break;
 	/* TODO: handle keys better */
 	case ALPM_QUESTION_IMPORT_KEY:
-		g_debug ("unsafe question %d", question);
-		*result = 0;
+		{
+			alpm_question_import_key_t *q = &question->import_key;
+			g_debug ("unsafe question %d", question->type);
+			q->import = 0;
+		}
 		break;
 	case ALPM_QUESTION_SELECT_PROVIDER:
-		pk_alpm_select_provider (data1, data2);
-		*result = 0;
+		{
+			alpm_question_select_provider_t *q = &question->select_provider;
+			pk_alpm_select_provider (q->providers, q->depend);
+			q->use_index = 0;
+		}
 		break;
 
 	default:
-		g_warning ("unknown question %d", question);
+		g_warning ("unknown question %d", question->type);
 		break;
 	}
 }
@@ -575,7 +597,7 @@ pk_alpm_transaction_download (PkBackendJob *job)
 }
 
 static void
-pk_alpm_transaction_optdepend_required (PkBackendJob *job, alpm_pkg_t *pkg,
+pk_alpm_transaction_optdepend_removal (PkBackendJob *job, alpm_pkg_t *pkg,
 					   alpm_depend_t *optdepend)
 {
 	char *depend = NULL;
@@ -594,14 +616,14 @@ pk_alpm_transaction_optdepend_required (PkBackendJob *job, alpm_pkg_t *pkg,
 }
 
 static void
-pk_alpm_transaction_event_cb (alpm_event_t event, gpointer data, gpointer old)
+pk_alpm_transaction_event_cb (alpm_event_t *event)
 {
 	PkBackendJob* job;
 	job = pkalpm_current_job;
 	g_assert (job);
 
 	/* figure out backend status and process package changes */
-	switch (event) {
+	switch (event->type) {
 	case ALPM_EVENT_CHECKDEPS_START:
 	case ALPM_EVENT_RESOLVEDEPS_START:
 		pk_alpm_transaction_dep_resolve (job);
@@ -612,31 +634,45 @@ pk_alpm_transaction_event_cb (alpm_event_t event, gpointer data, gpointer old)
 	case ALPM_EVENT_DISKSPACE_START:
 		pk_alpm_transaction_test_commit (job);
 		break;
-	case ALPM_EVENT_ADD_START:
-		pk_alpm_transaction_add_start (job, data);
+	case ALPM_EVENT_PACKAGE_OPERATION_START:
+		{
+			alpm_event_package_operation_t *e = (alpm_event_package_operation_t *) event;
+			switch(e->operation) {
+				case ALPM_PACKAGE_INSTALL:
+					pk_alpm_transaction_add_start (job, e->newpkg);
+					break;
+				case ALPM_PACKAGE_REMOVE:
+					pk_alpm_transaction_remove_start (job, e->newpkg);
+					break;
+				case ALPM_PACKAGE_UPGRADE:
+				case ALPM_PACKAGE_DOWNGRADE:
+				case ALPM_PACKAGE_REINSTALL:
+					pk_alpm_transaction_upgrade_start (job, e->newpkg, e->oldpkg);
+					break;
+			}
+		}
 		break;
-	case ALPM_EVENT_ADD_DONE:
-		pk_alpm_transaction_add_done (job, data);
-		break;
-	case ALPM_EVENT_REMOVE_START:
-		pk_alpm_transaction_remove_start (job, data);
-		break;
-	case ALPM_EVENT_REMOVE_DONE:
-		pk_alpm_transaction_remove_done (job, data);
-		break;
-	case ALPM_EVENT_UPGRADE_START:
-	case ALPM_EVENT_DOWNGRADE_START:
-	case ALPM_EVENT_REINSTALL_START:
-		pk_alpm_transaction_upgrade_start (job, data, old);
-		break;
-	case ALPM_EVENT_UPGRADE_DONE:
-		pk_alpm_transaction_upgrade_done (job, data, old, 1);
-		break;
-	case ALPM_EVENT_DOWNGRADE_DONE:
-		pk_alpm_transaction_upgrade_done (job, data, old, -1);
-		break;
-	case ALPM_EVENT_REINSTALL_DONE:
-		pk_alpm_transaction_upgrade_done (job, data, old, 0);
+	case ALPM_EVENT_PACKAGE_OPERATION_DONE:
+		{
+			alpm_event_package_operation_t *e = (alpm_event_package_operation_t *) event;
+			switch(e->operation) {
+				case ALPM_PACKAGE_INSTALL:
+					pk_alpm_transaction_add_done (job, e->newpkg);
+					break;
+				case ALPM_PACKAGE_REMOVE:
+					pk_alpm_transaction_remove_done (job, e->newpkg);
+					break;
+				case ALPM_PACKAGE_UPGRADE:
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, 1);
+					break;
+				case ALPM_PACKAGE_DOWNGRADE:
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, -1);
+					break;
+				case ALPM_PACKAGE_REINSTALL:
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, 0);
+					break;
+			}
+		}
 		break;
 	case ALPM_EVENT_INTEGRITY_START:
 	case ALPM_EVENT_KEYRING_START:
@@ -650,14 +686,17 @@ pk_alpm_transaction_event_cb (alpm_event_t event, gpointer data, gpointer old)
 		pk_alpm_transaction_repackaging (job);
 		break;
 	case ALPM_EVENT_SCRIPTLET_INFO:
-		pk_alpm_transaction_output (data);
+		pk_alpm_transaction_output (((alpm_event_scriptlet_info_t *) event)->line);
 		break;
 	case ALPM_EVENT_RETRIEVE_START:
 		pk_alpm_transaction_download (job);
 		break;
-	case ALPM_EVENT_OPTDEP_REQUIRED:
+	case ALPM_EVENT_OPTDEP_REMOVAL:
 		/* TODO: remove if this results in notification spam */
-		pk_alpm_transaction_optdepend_required (job, data, old);
+		{
+			alpm_event_optdep_removal_t *e = (alpm_event_optdep_removal_t *) event;
+			pk_alpm_transaction_optdepend_removal (job, e->pkg, e->optdep);
+		}
 		break;
 	case ALPM_EVENT_CHECKDEPS_DONE:
 	case ALPM_EVENT_FILECONFLICTS_DONE:
@@ -678,7 +717,7 @@ pk_alpm_transaction_event_cb (alpm_event_t event, gpointer data, gpointer old)
 		break;
 
 	default:
-		g_debug ("unhandled event %d", event);
+		g_debug ("unhandled event %d", event->type);
 		break;
 	}
 }
