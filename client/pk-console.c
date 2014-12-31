@@ -501,8 +501,8 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	g_print ("  license:     %s\n", license);
 	g_print ("  group:       %s\n", pk_group_enum_to_string (group));
 	g_print ("  description: %s\n", description);
-	g_print ("  size:	%lu bytes\n", (long unsigned int) size);
-	g_print ("  url:	 %s\n", url);
+	g_print ("  size:        %lu bytes\n", (long unsigned int) size);
+	g_print ("  url:         %s\n", url);
 }
 
 /**
