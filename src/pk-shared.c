@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "pk-cleanup.h"
 #include "pk-shared.h"
@@ -389,4 +390,44 @@ pk_ioprio_set_idle (GPid pid)
 #else
 	return TRUE;
 #endif
+}
+
+/**
+ * pk_string_replace:
+ **/
+guint
+pk_string_replace (GString *string, const gchar *search, const gchar *replace)
+{
+	gchar *tmp;
+	guint count = 0;
+	guint replace_len;
+	guint search_len;
+
+	search_len = strlen (search);
+	replace_len = strlen (replace);
+
+	do {
+		tmp = g_strstr_len (string->str, -1, search);
+		if (tmp == NULL)
+			goto out;
+
+		/* reallocate the string if required */
+		if (search_len > replace_len) {
+			g_string_erase (string,
+					tmp - string->str,
+					search_len - replace_len);
+		}
+		if (search_len < replace_len) {
+			g_string_insert_len (string,
+					    tmp - string->str,
+					    search,
+					    replace_len - search_len);
+		}
+
+		/* just memcmp in the new string */
+		memcpy (tmp, replace, replace_len);
+		count++;
+	} while (TRUE);
+out:
+	return count;
 }

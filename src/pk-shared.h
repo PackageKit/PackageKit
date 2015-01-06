@@ -51,6 +51,9 @@ gboolean	 pk_is_thread_default_real		(const gchar *strloc,
 							 const gchar *strfunc);
 
 gboolean	 pk_ioprio_set_idle			(GPid		 pid);
+guint		 pk_string_replace			(GString	*string,
+							 const gchar	*search,
+							 const gchar	*replace);
 
 G_END_DECLS
 
