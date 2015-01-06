@@ -27,8 +27,14 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <string.h>
-#include <libhif-private.h>
+#include <libhif.h>
 #include <appstream-glib.h>
+
+/* allow compiling with older libhif versions */
+#if !HIF_CHECK_VERSION(0,2,0)
+#include <libhif-private.h>
+#define hif_error_set_from_hawkey(r,e)	hif_rc_to_gerror(r,e)
+#endif
 
 #include <pk-backend.h>
 #include <pk-cleanup.h>
@@ -637,7 +643,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	install_root = hif_utils_real_path (hif_context_get_install_root (priv->context));
 	sack = hy_sack_create (solv_dir, NULL, install_root, HY_MAKE_CACHE_DIR);
 	if (sack == NULL) {
-		ret = hif_rc_to_gerror (hy_get_errno (), error);
+		ret = hif_error_set_from_hawkey (hy_get_errno (), error);
 		g_prefix_error (error, "failed to create sack in %s for %s: ",
 				hif_context_get_solv_dir (priv->context),
 				hif_context_get_install_root (priv->context));
@@ -646,7 +652,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* add installed packages */
 	rc = hy_sack_load_system_repo (sack, NULL, HY_BUILD_CACHE);
-	ret = hif_rc_to_gerror (rc, error);
+	ret = hif_error_set_from_hawkey (rc, error);
 	if (!ret) {
 		g_prefix_error (error, "Failed to load system repo: ");
 		goto out;
