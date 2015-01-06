@@ -3309,6 +3309,18 @@ pk_backend_get_files (PkBackend *backend,
 }
 
 /**
+ * pk_backend_sanitize_description:
+ */
+static gchar *
+pk_backend_sanitize_description (const gchar *description)
+{
+	GString *str = g_string_new (description);
+	pk_string_replace (str, "\\r", "");
+	pk_string_replace (str, "\\n", "\n");
+	return g_string_free (str, FALSE);
+}
+
+/**
  * pk_backend_get_update_detail_thread:
  */
 static void
@@ -3371,9 +3383,11 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 
 	/* emit details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
+		const gchar *desc_raw;
 		_cleanup_ptrarray_unref_ GPtrArray *vendor_urls = NULL;
 		_cleanup_ptrarray_unref_ GPtrArray *bugzilla_urls = NULL;
 		_cleanup_ptrarray_unref_ GPtrArray *cve_urls = NULL;
+		_cleanup_free_ gchar *desc = NULL;
 
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
@@ -3416,6 +3430,10 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		g_ptr_array_add (bugzilla_urls, NULL);
 		g_ptr_array_add (cve_urls, NULL);
 
+		/* clean up formatting */
+		desc_raw = hy_advisory_get_description (advisory);
+		if (desc_raw != NULL)
+			desc = pk_backend_sanitize_description (desc_raw);
 		pk_backend_job_update_detail (job,
 					      package_ids[i],
 					      NULL,
@@ -3424,7 +3442,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 					      (gchar **) bugzilla_urls->pdata,
 					      (gchar **) cve_urls->pdata,
 					      PK_RESTART_ENUM_NONE, /* FIXME */
-					      hy_advisory_get_description (advisory),
+					      desc,
 					      NULL,
 					      PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
 					      NULL, /* issued */
