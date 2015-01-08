@@ -506,7 +506,7 @@ if test x$enable_aptcc = xyes; then
 fi
 
 if test x$enable_alpm = xyes; then
-	PKG_CHECK_MODULES(ALPM, libalpm >= 8.2.0)
+	PKG_CHECK_MODULES(ALPM, libalpm >= 9.0.0)
 fi
 
 if test x$enable_poldek = xyes; then
