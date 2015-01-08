@@ -29,16 +29,11 @@
  * versioning. A patch has been proposed, though:
  * https://lists.archlinux.org/pipermail/pacman-dev/2014-December/019759.html
  *
- * If ALPM_VERSION_NUMBER is *not* defined we test for
- * ALPM_EVENT_PACKAGE_OPERATION_START, which is libalpm >= 9.0.0 only and
- * define ALPM_VERSION_NUMBER on our own. */
+ * There's no usable define in alpm.h in libalpm up to and including 9.0.0.
+ * configure makes sure we have 9.0.0 at least, so define that. */
 
 #ifndef ALPM_VERSION_NUMBER
-#	ifndef ALPM_EVENT_PACKAGE_OPERATION_START
-#		define	ALPM_VERSION_NUMBER	0x080200
-#	else
-#		define	ALPM_VERSION_NUMBER	0x090000
-#	endif
+#	define	ALPM_VERSION_NUMBER	0x090000
 #endif
 
 typedef struct {
