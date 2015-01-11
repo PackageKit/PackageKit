@@ -153,16 +153,17 @@ pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filter
 
 	g_return_val_if_fail (name != NULL, FALSE);
 
-	skip_local = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
-	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
-
-	pkg = alpm_db_get_pkg (priv->localdb, name);
-	if (pkg != NULL) {
-		if (!skip_local) {
+	/* lookup into the local db */
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		pkg = alpm_db_get_pkg (priv->localdb, name);
+		if (pkg != NULL) {
 			pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_INSTALLED);
 			return TRUE;
 		}
-	} else if (!skip_remote) {
+	}
+
+	/* lookup into sync dbs*/
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
 		for (; i != NULL; i = i->next) {
 			pkg = alpm_db_get_pkg (i->data, name);
