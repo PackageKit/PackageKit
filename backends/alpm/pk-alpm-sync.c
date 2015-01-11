@@ -144,7 +144,13 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant* params, gpointe
 	if (pk_alpm_transaction_initialize (job, 0, NULL, &error) &&
 	    pk_alpm_transaction_sync_targets (job, package_ids, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
-		pk_alpm_transaction_commit (job, &error);
+
+		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
+			pk_alpm_transaction_packages (job);
+		}
+		else {/* real installation */
+			pk_alpm_transaction_commit (job, &error);
+		}
 	}
 
 	pk_alpm_transaction_end (job, (error == NULL) ? &error : NULL);
