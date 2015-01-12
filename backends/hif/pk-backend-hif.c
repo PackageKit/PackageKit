@@ -1238,7 +1238,6 @@ static gchar **
 pk_backend_get_groups_from_category (const gchar *category,
 		gpointer user_data)
 {
-	gchar **groups = NULL;
 	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
 	comps_data->query = COMPS_QUERY_CATEGORY;
@@ -1250,8 +1249,7 @@ pk_backend_get_groups_from_category (const gchar *category,
 	   return groups;
 
 	g_ptr_array_add (comps_data->groups, NULL);
-	groups = pk_ptr_array_to_strv (comps_data->groups);
-	return groups;
+	return pk_ptr_array_to_strv (comps_data->groups);
 }
 
 /**
