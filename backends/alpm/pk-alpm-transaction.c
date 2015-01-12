@@ -958,17 +958,17 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 	/* emit packages that would have been installed */
 	for (i = alpm_trans_get_add (priv->alpm); i != NULL; i = i->next) {
 		if (pk_backend_job_is_cancelled (job))
-			break; else {
-			const gchar *name = alpm_pkg_get_name (i->data);
+			break;
 
-			if (alpm_db_get_pkg (priv->localdb, name) != NULL) {
-				info = PK_INFO_ENUM_UPDATING;
-			} else {
-				info = PK_INFO_ENUM_INSTALLING;
-			}
+		const gchar *name = alpm_pkg_get_name (i->data);
 
-			pk_alpm_pkg_emit (job, i->data, info);
+		if (alpm_db_get_pkg (priv->localdb, name) != NULL) {
+			info = PK_INFO_ENUM_UPDATING;
+		} else {
+			info = PK_INFO_ENUM_INSTALLING;
 		}
+
+		pk_alpm_pkg_emit (job, i->data, info);
 	}
 
 	switch (pk_backend_job_get_role (job)) {
