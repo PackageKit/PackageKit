@@ -1381,7 +1381,7 @@ pk_backend_search_groups (PkBackend *backend,
 					hy_package_get_packager (pkg)),
 				hy_package_get_summary (pkg));
 	}
-	hy_packagelist_free(plist);
+	hy_packagelist_free (plist);
 	pk_backend_job_finished (job);
 }
 
