@@ -279,6 +279,60 @@ pk_direct_search_files (PkDirectPrivate *priv, gchar **values, GError **error)
 }
 
 /**
+ * pk_direct_install:
+ **/
+static gboolean
+pk_direct_install (PkDirectPrivate *priv, gchar **values, GError **error)
+{
+	if (g_strv_length (values) < 1) {
+		g_set_error_literal (error,
+				     PK_ERROR,
+				     PK_ERROR_INVALID_ARGUMENTS,
+				     "Not enough arguments, expected: <pkgid>");
+		return FALSE;
+	}
+	if (!pk_package_id_check (values[0])) {
+		g_set_error (error,
+			     PK_ERROR,
+			     PK_ERROR_INVALID_ARGUMENTS,
+			     "Not a package-id: %s", values[0]);
+		return FALSE;
+	}
+	pk_backend_start_job (priv->backend, priv->job);
+	pk_backend_install_packages (priv->backend, priv->job, 0, values);
+	g_main_loop_run (priv->loop);
+	pk_backend_stop_job (priv->backend, priv->job);
+	return TRUE;
+}
+
+/**
+ * pk_direct_remove:
+ **/
+static gboolean
+pk_direct_remove (PkDirectPrivate *priv, gchar **values, GError **error)
+{
+	if (g_strv_length (values) < 1) {
+		g_set_error_literal (error,
+				     PK_ERROR,
+				     PK_ERROR_INVALID_ARGUMENTS,
+				     "Not enough arguments, expected: <pkgid>");
+		return FALSE;
+	}
+	if (!pk_package_id_check (values[0])) {
+		g_set_error (error,
+			     PK_ERROR,
+			     PK_ERROR_INVALID_ARGUMENTS,
+			     "Not a package-id: %s", values[0]);
+		return FALSE;
+	}
+	pk_backend_start_job (priv->backend, priv->job);
+	pk_backend_remove_packages (priv->backend, priv->job, 0, values, FALSE, FALSE);
+	g_main_loop_run (priv->loop);
+	pk_backend_stop_job (priv->backend, priv->job);
+	return TRUE;
+}
+
+/**
  * pk_direct_repo_set_data:
  **/
 static gboolean
@@ -435,6 +489,14 @@ main (int argc, char *argv[])
 		       /* TRANSLATORS: command description */
 		       _("Search by files"),
 		       pk_direct_search_files);
+	pk_direct_add (priv->cmd_array, "install", "[PKGID]",
+		       /* TRANSLATORS: command description */
+		       _("Install package"),
+		       pk_direct_install);
+	pk_direct_add (priv->cmd_array, "remove", "[PKGID]",
+		       /* TRANSLATORS: command description */
+		       _("Remove package"),
+		       pk_direct_remove);
 	pk_direct_add (priv->cmd_array, "repo-set-data", "[REPO] [KEY] [VALUE]",
 		       /* TRANSLATORS: command description */
 		       _("Set repository options"),
