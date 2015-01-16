@@ -793,14 +793,11 @@ static gchar **
 pk_backend_what_provides_decompose (gchar **values, GError **error)
 {
 	guint i;
-	guint len;
-	gchar **search = NULL;
-	GPtrArray *array = NULL;
+	GPtrArray *array;
 
 	/* iter on each provide string, and wrap it with the fedora prefix */
-	len = g_strv_length (values);
-	array = g_ptr_array_new_with_free_func (g_free);
-	for (i = 0; i < len; i++) {
+	array = g_ptr_array_new ();
+	for (i = 0; values[i] != NULL; i++) {
 		g_ptr_array_add (array, g_strdup (values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
@@ -810,10 +807,8 @@ pk_backend_what_provides_decompose (gchar **values, GError **error)
 		g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
 	}
-	search = pk_ptr_array_to_strv (array);
-	for (i = 0; search[i] != NULL; i++)
-		g_debug ("Querying provide '%s'", search[i]);
-	return search;
+	g_ptr_array_add (array, NULL);
+	return (gchar **) g_ptr_array_free (array, FALSE);
 }
 
 /**
@@ -1863,7 +1858,6 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	/* ensure packages are not already installed */
 	for (i = 0; full_paths[i] != NULL; i++) {
 		pkg = hy_sack_add_cmdline_package (sack, full_paths[i]);
-		g_warning ("full_paths[i]=%s", full_paths[i]);
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_FILE_NOT_FOUND,
@@ -2164,23 +2158,41 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	/* emit what we're going to do */
 	db = hif_transaction_get_db (hif_context_get_transaction (priv->context));
 	hif_emit_package_array (job, PK_INFO_ENUM_UNTRUSTED, untrusted);
+
+	/* remove */
 	pkglist = hy_goal_list_erasures (job_data->goal);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_REMOVING, pkglist);
+	hy_packagelist_free (pkglist);
+
+	/* install */
 	pkglist = hy_goal_list_installs (job_data->goal);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_INSTALLING, pkglist);
+	hy_packagelist_free (pkglist);
+
+	/* obsolete */
 	pkglist = hy_goal_list_obsoleted (job_data->goal);
 	hif_emit_package_list (job, PK_INFO_ENUM_OBSOLETING, pkglist);
+	hy_packagelist_free (pkglist);
+
+	/* reinstall */
 	pkglist = hy_goal_list_reinstalls (job_data->goal);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_REINSTALLING, pkglist);
+	hy_packagelist_free (pkglist);
+
+	/* update */
 	pkglist = hy_goal_list_upgrades (job_data->goal);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_UPDATING, pkglist);
+	hy_packagelist_free (pkglist);
+
+	/* downgrade */
 	pkglist = hy_goal_list_downgrades (job_data->goal);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 	hif_emit_package_list (job, PK_INFO_ENUM_DOWNGRADING, pkglist);
+	hy_packagelist_free (pkglist);
 
 	/* done */
 	return hif_state_done (state, error);
@@ -2342,7 +2354,8 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	HifSource *src;
 	HifState *state_local;
 	HyPackage pkg;
-	HyPackageList pkglist;
+	HyPackageList pkglist = NULL;
+	HyPackageList pkglist_releases = NULL;
 	HyQuery query = NULL;
 	HyQuery query_release = NULL;
 	HySack sack = NULL;
@@ -2472,8 +2485,8 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	/* remove the repo-releases */
 	query_release = hy_query_create (sack);
 	hy_query_filter_in (query_release, HY_PKG_FILE, HY_EQ, (const gchar **) search);
-	pkglist = hy_query_run (query_release);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
+	pkglist_releases = hy_query_run (query_release);
+	FOR_PACKAGELIST(pkg, pkglist_releases, i) {
 		hif_db_ensure_origin_pkg (db, pkg);
 		g_debug ("removing %s as installed for repo",
 			 hy_package_get_name (pkg));
@@ -2501,6 +2514,10 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 		goto out;
 	}
 out:
+	if (pkglist != NULL)
+		hy_packagelist_free (pkglist);
+	if (pkglist_releases != NULL)
+		hy_packagelist_free (pkglist_releases);
 	if (query != NULL)
 		hy_query_free (query);
 	if (query_release != NULL)
@@ -2799,6 +2816,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		hy_query_filter (query, HY_PKG_ARCH, HY_EQ, split[PK_PACKAGE_ID_ARCH]);
 		hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 		pkglist = hy_query_run (query);
+		hy_query_free (query);
 
 		for (pli = 0; pli < hy_packagelist_count (pkglist); ++pli) {
 			inst_pkg = hy_packagelist_get (pkglist, pli);
@@ -2847,6 +2865,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 						   "missing authorization to update or downgrage software");
 			return;
 		}
+		hy_packagelist_free (pkglist);
 	}
 
 	/* done */
