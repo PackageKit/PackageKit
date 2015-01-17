@@ -69,6 +69,7 @@ typedef struct {
 
 typedef struct {
 	GPtrArray	*sources;
+	HifTransaction	*transaction;
 	HifState	*state;
 	PkBackend	*backend;
 	PkBitfield	 transaction_flags;
@@ -376,6 +377,7 @@ pk_backend_state_allow_cancel_changed_cb (HifState *state,
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendHifJobData *job_data;
 	job_data = g_new0 (PkBackendHifJobData, 1);
 	job_data->backend = backend;
@@ -398,6 +400,11 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
+	/* transaction */
+	job_data->transaction = hif_transaction_new (priv->context);
+	hif_transaction_set_sources (job_data->transaction,
+				     hif_context_get_sources (priv->context));
+
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
 	hif_state_set_enable_profile (job_data->state, TRUE);
@@ -419,6 +426,8 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		hif_state_release_locks (job_data->state);
 		g_object_unref (job_data->state);
 	}
+	if (job_data->transaction != NULL)
+		g_object_unref (job_data->transaction);
 	if (job_data->sources != NULL)
 		g_ptr_array_unref (job_data->sources);
 	if (job_data->goal != NULL)
@@ -839,12 +848,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	gchar **search_tmp;
 	HifDb *db;
 	HifState *state_local;
-	HifTransaction *transaction;
 	HyPackageList pkglist = NULL;
 	HyQuery query = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_strv_free_ gchar **search = NULL;
@@ -953,8 +960,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	}
 
 	/* set the src on each package */
-	transaction = hif_context_get_transaction (priv->context);
-	ret = hif_transaction_ensure_source_list (transaction, pkglist, &error);
+	ret = hif_transaction_ensure_source_list (job_data->transaction, pkglist, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
@@ -967,7 +973,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	}
 
 	/* set the origin on each package */
-	db = hif_transaction_get_db (hif_context_get_transaction (priv->context));
+	db = hif_transaction_get_db (job_data->transaction);
 	hif_db_ensure_origin_pkglist (db, pkglist);
 
 	/* done */
@@ -2126,7 +2132,6 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	HifDb *db;
 	HyPackageList pkglist;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean ret;
 	_cleanup_ptrarray_unref_ GPtrArray *untrusted = NULL;
 
@@ -2156,7 +2161,7 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 		return FALSE;
 
 	/* emit what we're going to do */
-	db = hif_transaction_get_db (hif_context_get_transaction (priv->context));
+	db = hif_transaction_get_db (job_data->transaction);
 	hif_emit_package_array (job, PK_INFO_ENUM_UNTRUSTED, untrusted);
 
 	/* remove */
@@ -2208,15 +2213,12 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 {
 	gboolean ret = TRUE;
 	HifState *state_local;
-	HifTransaction *transaction;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 
 	/* nothing to download */
-	transaction = hif_context_get_transaction (priv->context);
-	if (hif_transaction_get_remote_pkgs(transaction)->len == 0) {
+	if (hif_transaction_get_remote_pkgs (job_data->transaction)->len == 0) {
 		pk_backend_transaction_inhibit_start (job_data->backend);
-		ret = hif_transaction_commit (transaction,
+		ret = hif_transaction_commit (job_data->transaction,
 					      job_data->goal,
 					      state,
 					      error);
@@ -2234,7 +2236,7 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 
 	/* download */
 	state_local = hif_state_get_child (state);
-	ret = hif_transaction_download (transaction,
+	ret = hif_transaction_download (job_data->transaction,
 					state_local,
 					error);
 	if (!ret)
@@ -2247,7 +2249,7 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	/* run transaction */
 	state_local = hif_state_get_child (state);
 	pk_backend_transaction_inhibit_start (job_data->backend);
-	ret = hif_transaction_commit (transaction,
+	ret = hif_transaction_commit (job_data->transaction,
 				      job_data->goal,
 				      state_local,
 				      error);
@@ -2268,9 +2270,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 			    GError **error)
 {
 	HifState *state_local;
-	HifTransaction *transaction;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean ret = TRUE;
 	int flags = HIF_TRANSACTION_FLAG_NONE;
 
@@ -2283,7 +2283,6 @@ pk_backend_transaction_run (PkBackendJob *job,
 		return FALSE;
 
 	/* depsolve */
-	transaction = hif_context_get_transaction (priv->context);
 	if (pk_bitfield_contain (job_data->transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED))
 		flags |= HIF_TRANSACTION_FLAG_ONLY_TRUSTED;
@@ -2294,10 +2293,10 @@ pk_backend_transaction_run (PkBackendJob *job,
 				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE))
 		flags |= HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE;
 
-	hif_transaction_set_flags (transaction, flags);
+	hif_transaction_set_flags (job_data->transaction, flags);
 
 	state_local = hif_state_get_child (state);
-	ret = hif_transaction_depsolve (transaction,
+	ret = hif_transaction_depsolve (job_data->transaction,
 					job_data->goal,
 					state_local,
 					error);
@@ -2324,7 +2323,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (pk_bitfield_contain (job_data->transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		state_local = hif_state_get_child (state);
-		ret = hif_transaction_download (transaction,
+		ret = hif_transaction_download (job_data->transaction,
 						state_local,
 						error);
 		if (!ret)
@@ -2454,7 +2453,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	job_data->goal = hy_goal_create (sack);
 	query = hy_query_create (sack);
 	pkglist = hy_query_run (query);
-	db = hif_transaction_get_db (hif_context_get_transaction (priv->context));
+	db = hif_transaction_get_db (job_data->transaction);
 	FOR_PACKAGELIST(pkg, pkglist, i) {
 		hif_db_ensure_origin_pkg (db, pkg);
 		from_repo = hif_package_get_origin (pkg);
