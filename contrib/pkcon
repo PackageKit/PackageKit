@@ -49,6 +49,7 @@ __pkcon_commandlist="
     repo-set-data
     resolve
     search
+    quit
     update
     repair
     "

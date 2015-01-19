@@ -1500,6 +1500,7 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	g_string_append_printf (string, "  %s\n", "offline-trigger");
 	g_string_append_printf (string, "  %s\n", "offline-cancel");
 	g_string_append_printf (string, "  %s\n", "offline-status");
+	g_string_append_printf (string, "  %s\n", "quit");
 	return g_string_free (string, FALSE);
 }
 
@@ -2132,6 +2133,12 @@ main (int argc, char *argv[])
 							role,
 							ctx->cancellable,
 							pk_console_get_time_since_action_cb, ctx);
+
+	} else if (strcmp (mode, "quit") == 0) {
+		pk_control_suggest_daemon_quit (ctx->control,
+						ctx->cancellable,
+						NULL);
+		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "depends-on") == 0) {
 		if (value == NULL) {
