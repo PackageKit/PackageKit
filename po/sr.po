@@ -4,12 +4,13 @@
 # 
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Serbian (http://www.transifex.com/projects/p/packagekit/language/sr/)\n"
 "MIME-Version: 1.0\n"
@@ -22,7 +23,7 @@ msgstr ""
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr "Трансакција"
+msgstr "Извршење"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
@@ -31,7 +32,7 @@ msgstr "Системско време"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "Успела"
+msgstr "Успешно"
 
 msgid "True"
 msgstr "Тачно"
@@ -48,23 +49,23 @@ msgid "Duration"
 msgstr "Трајање"
 
 msgid "(seconds)"
-msgstr "(секунди)"
+msgstr "(секунде)"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
-msgstr "Командна линија"
+msgstr "Линија наредби"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "Кориснички ИБ"
+msgstr "ИБ корисника"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
-msgstr "Корисничко име"
+msgstr "Корисник"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
-msgstr "Стварно име"
+msgstr "Име и презиме"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -93,7 +94,7 @@ msgstr "Категорија"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "Идентификатор"
+msgstr "Одредник"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
@@ -106,18 +107,18 @@ msgstr "Назив"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "Икона"
+msgstr "Иконица"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "Више о надградњи:"
+msgstr "Појединости освежења:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Пакет"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -136,11 +137,11 @@ msgstr "Издавач"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr "Bugzilla"
+msgstr "Бубаждаја"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
-msgstr "CVE"
+msgstr "ЦВЕ"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
@@ -183,7 +184,7 @@ msgstr "Искључена"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "Поновно покретање система захтева пакет:"
+msgstr "Поновно покретање система захтева:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
@@ -201,7 +202,7 @@ msgstr "Неопходно је поновно покретање сесије (
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "Поновно покретање програма захтева пакет:"
+msgstr "Поновно покретање програма захтева:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -221,7 +222,7 @@ msgstr "Проценат"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr "Статус"
+msgstr "Стање"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
@@ -235,20 +236,20 @@ msgstr "Кобна грешка"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr ""
+msgstr "Нема пакета за освежавање."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "Трансакција није успела"
+msgstr "Извршење није успело"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
 msgstr "Тренутно нема доступних ажурирања."
 
 msgid "There are no upgrades available at this time."
-msgstr "Тренутно нема доступних надградњи."
+msgstr "Тренутно нема доступних надоградњи."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -273,7 +274,7 @@ msgstr "Неопходно је одјављивање и поновна при�
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "Постоји више пакета који одговарају упиту:"
+msgstr "Више пакета одговара упиту:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
@@ -282,11 +283,11 @@ msgstr "Изаберите жељени пакет: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Нисам пронашао пакет"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Нисам пронашао ниједан пакет"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -295,29 +296,29 @@ msgstr ""
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "Очекивано је име пакета, уствари је добијена датотека. Покушајте да употребите „pkcon install-local %s“ наместо."
+msgstr "Очекивах назив пакета, уствари добих датотеку. Покушајте да употребите „pkcon install-local %s“."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "Ова алатка није могла пронаћи никакве доступне пакете: %s"
+msgstr "Овај алат не може пронаћи никакве доступне пакете: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "Ова алатка није могла пронаћи инсталирани пакет: %s"
+msgstr "Овај алат не може пронаћи инсталирани пакет: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Ова алатка није могла пронаћи пакет: %s"
+msgstr "Овај алат не може пронаћи пакет: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Ниједан пакет не захтева доградњу на новије издање."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -329,7 +330,7 @@ msgstr ""
 #. * any software sources. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Ова алатка није пронашла све пакете: %s"
+msgstr "Овај алат није пронашао све пакете: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -338,7 +339,7 @@ msgstr "Услужни програм се изненада прекинуо!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "Текстуално сучеље програма ПакетКит"
+msgstr "Конзолно сучеље Пакетског прибора"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
@@ -347,101 +348,101 @@ msgstr "Наредбе:"
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "Датум последњег извршавања ове радње није пронађен"
+msgstr "Нисам успео да пронађем датум последњег извршавања ове радње"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Последње извршавање"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Припремљене доградње:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr "Прокси није могао да буде постављен"
+msgstr "Посредник не може бити подешен"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "Прикажи верзију програма и заврши рад"
+msgstr "Приказује издање програма и излази"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Намести филтер, нпр. инсталирани"
+msgstr "Подешава пропусника, нпр. инсталирани"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "Инсталирај пакете без питања за потврду"
+msgstr "Инсталира пакете без питања за потврду"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading pakages only"
-msgstr ""
+msgstr "Припрема извршење само преузимањем пакета"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Допушта разграђивање пакета за време извршења"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Допушта поновно инсталирање пакета за време извршења"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Изврши наредбу користећи неискоришћени мрежни опсег и такође трошећи мање енергије"
+msgstr "Извршава наредбу користећи неискоришћени мрежни опсег и такође трошећи мање енергије"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "Штампај излаз читљив машини на екрану, уместо употребе анимираних виџета"
+msgstr "Исписује машински читљив излаз на екрану, уместо употребе анимираних елемената"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
+msgstr "Највећа старост оставе метаподатака. Користите -1 за „никада“."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Допушта инсталацију неповерљивих пакета."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Нисам успео да обрадим линију наредби"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "Неуспешно контактирање ПакетКита."
+msgstr "Нисам успео да ступим у везу са Пакетским прибором"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "Наведени филтер није исправан"
+msgstr "Наведени пропусник није исправан"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "Морате навести врсту претраге, нпр. по имену"
+msgstr "Морате навести врсту претраге, нпр. по називу"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "Морате навести термин за претрагу"
+msgstr "Морате навести појам за претрагу"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "Неопходно је име пакета за инсталацију"
+msgstr "Потребан је назив пакета за инсталацију"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "Неопходно је име датотеке за инсталацију"
+msgstr "Потребан је назив датотеке за инсталацију"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Морате навести врсту, ИБ кључа и ИБ пакета (key_id и package_id)"
+msgstr "Морате навести врсту, иб_кључа и иб_пакета"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -452,77 +453,77 @@ msgstr "Морате навести назив пакета за уклањањ�
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Неопходни су одредишни директоријум и имена пакета за преузимање"
+msgstr "Неопходни су одредишни директоријум и називи пакета за преузимање"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "Директоријум није нађен"
+msgstr "Нисам пронашао директоријум"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "Морете навести идентификатор лиценце (eula-id)"
+msgstr "Морете навести одредник дозволе (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "Морате навести име пакета за разрешавање"
+msgstr "Морате навести назив пакета за разрешавање"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "Морате навести име ризнице"
+msgstr "Морате навести назив ризнице"
 
 msgid "A repo name, parameter and value are required"
-msgstr "Морате навести име, параметар и вредност ризнице"
+msgstr "Морате навести назив, параметар и вредност ризнице"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Морате навести иб ризнице и самостално уклањање"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Морате навести радњу, нпр. „update-packages“"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr "Морате навести важећу радњу"
+msgstr "Морате навести исправну радњу"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "Морате навести име пакета"
+msgstr "Морате навести назив пакета"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "Морате навести „provide“ низ (шта пакет пружа)"
+msgstr "Морате навести ниску „обезбеђује“"
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Морате навести назив датотеке"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Опис"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Аутор"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Морате навести датотеку списка за стварање"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Датотека већ постоји: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -535,71 +536,71 @@ msgid "Command failed"
 msgstr "Наредба није успела"
 
 msgid "Failed to get daemon state"
-msgstr "Неуспео покушај добављања стања демона"
+msgstr "Нисам успео да добавим стања демона"
 
 msgid "Failed to get properties"
-msgstr ""
+msgstr "Нисам успео да добавим својства"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "ПакетКит редар"
+msgstr "Надгледник Пакетског прибора"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
 msgid "Installing Updates"
-msgstr ""
+msgstr "Инсталирам ажурирања"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "Поново подижем систем након инсталирања ажурирања…"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Искључујем систем након инсталирања ажурирања…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Инсталирам ажурирања, ово би могло да потраје..."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
-msgstr "Добављам податке о пакету...."
+msgstr "Добављам податке о пакету..."
 
 #. TRANSLATORS: run an applicaiton
 #, c-format
 msgid "Run %s"
-msgstr "Покрени %s"
+msgstr "Покрени „%s“"
 
 #. TRANSLATORS: show the installed version of a package
 msgid "Installed version"
-msgstr "Инсталирана верзија"
+msgstr "Инсталирано издање"
 
 #. TRANSLATORS: run the application now
 #, c-format
 msgid "Run version %s now"
-msgstr "Покрени верзију %s сада"
+msgstr "Сада покрени издање „%s“"
 
 #. TRANSLATORS: run the application now
 msgid "Run now"
-msgstr "Покрени сада"
+msgstr "Сада покрени"
 
 #. TRANSLATORS: update to a new version of the package
 #, c-format
 msgid "Update to version %s"
-msgstr "Ажурирај на верзију %s"
+msgstr "Догради на издање %s"
 
 #. TRANSLATORS: To install a package
 #, c-format
 msgid "Install %s now"
-msgstr "Инсталирај %s сада"
+msgstr "Сада инсталирај „%s“"
 
 #. TRANSLATORS: the version of the package
 msgid "Version"
-msgstr "Верзија"
+msgstr "Издање"
 
 #. TRANSLATORS: noting found, so can't install
 msgid "No packages found for your system"
-msgstr "Није пронађен ниједан пакет за ваш систем"
+msgstr "Нисам пронашао пакете за ваш систем"
 
 #. TRANSLATORS: package is being installed
 msgid "Installing..."
@@ -607,15 +608,15 @@ msgstr "Инсталирам..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr "Преузимам детаље о изворима софтвера."
+msgstr "Преузимам појединости о изворима софтвера."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Преузимам спискове датотека (ово може да потраје док се не заврши)."
+msgstr "Преузимам спискове датотека (ово може мало да потраје)."
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Чекање на закључавање управника пакета."
+msgstr "Чекам да се закључава управник пакета."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
@@ -623,25 +624,25 @@ msgstr "Учитавам списак пакета."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "Датотека није пронађена"
+msgstr "Нисам успео да потражим датотеку"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "Нисам успео да добавим списак датотека"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "Неуспешно покретање:"
+msgstr "Нисам успео да покренем:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "Неуспешна инсталација пакета"
+msgstr "Нисам успео да инсталирам пакете"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr ""
+msgstr "нема такве наредбе"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -649,7 +650,7 @@ msgstr "Слична наредба је:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "Покрени сличну наредбу:"
+msgstr "Да покренем сличну наредбу:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
@@ -662,17 +663,17 @@ msgstr "Изаберите наредбу за покретање"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "Пакет који пружа ову датотеку је:"
+msgstr "Пакет који обезбеђује ову датотеку је:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Да инсталирам пакет „%s“ који пружа наредбу „%s“?"
+msgstr "Да инсталирам пакет „%s“ који обезбеђује наредбу „%s“?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "Пакети који пружају ову датотеку су:"
+msgstr "Пакети који обезбеђују ову датотеку су:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
@@ -684,11 +685,11 @@ msgid "Please choose a package to install"
 msgstr "Изаберите пакет за инсталацију"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "Корисник је прекинуо избор"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Унесите број између 1 и %i: "
+msgstr "Унесите број од 1 до %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
@@ -696,33 +697,33 @@ msgstr "Непознато стање"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "Покретање"
+msgstr "Почињем"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "Чекање у реду"
+msgstr "Чекам у реду"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr "Извршавање"
+msgstr "Извршавам"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr "Испитивање"
+msgstr "Пропитујем"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr "Добављање података"
+msgstr "Добављам податке"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "Уклањање пакета"
+msgstr "Уклањам пакете"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "Преузимање пакета"
+msgstr "Преузимам пакете"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
@@ -730,16 +731,16 @@ msgstr "Инсталирам пакете"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "Освежавање списка софтвера"
+msgstr "Освежавам списак софтвера"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr "Инсталирање ажурирања"
+msgstr "Инсталирам ажурирања"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "Чишћење пакета"
+msgstr "Чистим пакете"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
@@ -747,21 +748,21 @@ msgstr "Превазилазим пакете"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr "Разрешавање зависности"
+msgstr "Разрешавам зависности"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr "Провера потписа"
+msgstr "Проверавам потписе"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr "Испробавање промена"
+msgstr "Испробавам измене"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "Шаљем промене"
+msgstr "Шаљем измене"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
@@ -769,11 +770,11 @@ msgstr "Захтевам податке"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr "Завршено"
+msgstr "Завршио сам"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr "Отказивање"
+msgstr "Отказујем"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
@@ -781,49 +782,49 @@ msgstr "Преузимам податке о ризници"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "Преузимање списка пакета"
+msgstr "Преузимам списак пакета"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr "Преузимање спискова датотека"
+msgstr "Преузимам спискове датотека"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "Преузимање спискова промена"
+msgstr "Преузимам спискове измена"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr "Преузимање група"
+msgstr "Преузимам групе"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "Преузимање података о ажурирању"
+msgstr "Преузимам податке о ажурирању"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "Препакивање датотека"
+msgstr "Препакујем датотеке"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "Учитавање кеша"
+msgstr "Учитавам оставу"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "Претражујем програме"
+msgstr "Прегледам програме"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "Прављење спискова пакета"
+msgstr "Стварам спискове пакета"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "Чекање на закључавање управника пакета"
+msgstr "Чекам да се закључа управник пакета"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "Чекање на аутентификацију"
+msgstr "Чекам на потврђивање идентитета"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
@@ -842,21 +843,21 @@ msgstr "Проверавам библиотеке у употреби"
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr "Умножавање датотека"
+msgstr "Умножавам датотеке"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "Прикажи информације о отклону грешака за све датотеке"
+msgstr "Прикажи податке прочишћавања за све датотеке"
 
 msgid "Debugging Options"
-msgstr "Опције за отклон грешака"
+msgstr "Могућности прочишћавања"
 
 msgid "Show debugging options"
-msgstr "Прикажи опције за отклон грешака"
+msgstr "Прикажи опције прочишћавања"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr "Тривијално"
+msgstr "Безначајно"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
@@ -872,7 +873,7 @@ msgstr "Безбедносно"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
-msgstr "Исправка грешке"
+msgstr "Исправка грешке "
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -891,35 +892,39 @@ msgstr "Инсталиран"
 msgid "Available"
 msgstr "Доступан"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "Преузимање"
+msgstr "Преузимам"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "Ажурирање"
+msgstr "Ажурирам"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "Инсталација"
+msgstr "Инсталирам"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "Уклањање"
+msgstr "Уклањам"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "Чишћење"
+msgstr "Чистим"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "Превазилажење"
+msgstr "Превазилазим"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Поновна инсталација"
+msgstr "Поново инсталирам"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
@@ -947,15 +952,15 @@ msgstr "Непозната врста радње"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr "Добављање зависности"
+msgstr "Добављам зависности"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "Добављање детаља о ажурирању"
+msgstr "Добављам појединости о ажурирању"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "Добављање детаља"
+msgstr "Добављам појединости"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
@@ -967,19 +972,19 @@ msgstr "Добављам ажурирања"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "Претражујем по детаљима"
+msgstr "Тражим по појединостима"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "Претражујем по датотекама"
+msgstr "Тражим по датотекама"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "Претражујем по групама"
+msgstr "Тражим по групама"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "Претражујем по имену"
+msgstr "Тражим по називу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
@@ -987,67 +992,67 @@ msgstr "Инсталирам датотеке"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Освежавам кеш"
+msgstr "Освежавам оставу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "Ажурирање пакета"
+msgstr "Ажурирам пакете"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
-msgstr "Отказивање"
+msgstr "Отказујем"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "Добављање ризница"
+msgstr "Добављам ризнице"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Enabling repository"
-msgstr "Укључивање ризнице"
+msgstr "Укључујем ризнице"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "Постављање података"
+msgstr "Подешавам податке"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "Уклањам ризнице"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr "Разрешавање"
+msgstr "Решавам"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "Добављање списка датотека"
+msgstr "Добављам списак датотека"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Добављање пружања"
+msgstr "Добављам обезбеђивања"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr "Инсталирање потписа"
+msgstr "Инсталирам потпис"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "Добављање пакета"
+msgstr "Добављам пакете"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr "Прихватање лиценце"
+msgstr "Прихватам дозволу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "Добављање надградњи"
+msgstr "Добављам ажурирања"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "Добављање категорија"
+msgstr "Добављам категорије"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "Добављање трансакција"
+msgstr "Добављам извршења"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1065,11 +1070,11 @@ msgstr "Неопходан је потпис извора софтвера"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "Име извора софтвера"
+msgstr "Назив извора софтвера"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr "УРЛ кључа"
+msgstr "Адреса кључа"
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
@@ -1098,7 +1103,7 @@ msgstr "Овај потпис није прихваћен."
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "Неопходан је Лиценци споразум са крајњим корисником"
+msgstr "Потребно је да крајњи корисник прихвати дозволу"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
@@ -1122,7 +1127,7 @@ msgstr "Врста медијума"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr "Ознака медијума"
+msgstr "Натпис медијума"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
@@ -1130,44 +1135,44 @@ msgstr "Текст"
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "Уметните тачан медијум"
+msgstr "Уметните одговарајући медијум"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr "Није уметнут тачан медијум."
+msgstr "Нисте уметнули одговарајући медијум."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "Следећи пакети ће бити уклоњени:"
+msgstr "Следећи пакети биће уклоњени:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "Следећи пакети морају бити инсталирани:"
+msgstr "Следећи пакети биће инсталирани:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "Следећи пакети морају бити ажурирани:"
+msgstr "Следећи пакети биће ажурирани:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "Следећи пакети морају бити поново инсталирани:"
+msgstr "Следећи пакети биће поново инсталирани:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "Следећи пакети морају бити уназађени:"
+msgstr "Следећи пакети биће разграђени:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr ""
+msgstr "Следећи пакети су неповерљиви:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "Наставити са променама?"
+msgstr "Да наставим са изменама?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "Трансакција није настављена."
+msgstr "Извршавање није настављено."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1178,7 +1183,7 @@ msgstr "Откажи страни посао"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Неопходна је аутентификација за отказивање посла којег нисте ви покренули"
+msgstr "Потребно је потврђивање идентитета за отказивање посла који нисте ви покренули"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1189,7 +1194,7 @@ msgid "Install signed package"
 msgstr "Инсталирај потписани пакет"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за инсталирање софтвера"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1197,10 +1202,10 @@ msgstr ""
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "Инсталирај неповерљиву локалну датотеку"
+msgstr "Инсталирај неповерљиву месну датотеку"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за неповерљивог софтвера"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1209,10 +1214,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Поново инсталирај већ инсталирани пакет"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за поновно инсталирање софтвера"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1221,10 +1226,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Инсталирај старије издање инсталираног пакета"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за разграђивање софтвера"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1232,12 +1237,12 @@ msgstr ""
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Веруј кључу коришћеном за потписивање софтвера"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за сматрање кључа коришћеног за потписивање софтвера као поверљивим"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1245,10 +1250,10 @@ msgstr ""
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "Прихвати лиценцу"
+msgstr "Прихвати договор о коришћењу"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Неопходна је аутентификација за прихватање лиценце"
+msgstr "Потребно је потврђивање идентитета за прихватање договора о коришћењу"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1258,11 +1263,12 @@ msgstr "Неопходна је аутентификација за прихва
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Уклони пакет"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за уклањање софтвера"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1271,10 +1277,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Ажурирај софтвер"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за ажурирање софтвера"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1284,7 +1290,7 @@ msgid "Change software source parameters"
 msgstr "Измени параметре извора софтвера"
 
 msgid "Authentication is required to change software source parameters"
-msgstr "Неопходна је аутентификација за измену параметара извора софтвера"
+msgstr "Потребно је потврђивање идентитета за измену параметара извора софтвера"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1293,7 +1299,7 @@ msgid "Refresh system sources"
 msgstr "Освежи системске ризнице"
 
 msgid "Authentication is required to refresh the system sources"
-msgstr "Неопходна је аутентификација за освежавање системских ризница"
+msgstr "Потребно је потврђивање идентитета за освежавање системских ризница"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1304,7 +1310,7 @@ msgstr "Постави мрежног посредника"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за подешавање мрежног посредника коришћеног за преузимање софтвера"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1316,43 +1322,43 @@ msgid "Reload a device"
 msgstr "Поново учитај уређај"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Неопходна је аутентификација за поновно учитавање уређаја са новим управљачким програмом"
+msgstr "Потребно је потврђивање идентитета за поновно учитавање уређаја са новим управљачким програмом"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr ""
+msgstr "Поправи систем"
 
 msgid "Authentication is required to repair the installed software"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за поправку инсталираног софтвера"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
 #. early boot time without a password.
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Окини ванмрежна ажурирања"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за окидање ванмрежних ажурирања"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Очисти поруку ванмрежног ажурирања"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
+msgstr "Потребно је потврђивање идентитета за чишћење поруке ванмрежних ажурирања"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Други назив за „%s“"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Нема такве наредбе, исправне наредбе су:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1360,84 +1366,88 @@ msgstr "Позадински систем у употреби, нпр. „dummy�
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Освежава оставу"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Освежава оставу (присилно)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Тражи по називу"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Тражи по појединостима"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
+msgstr "Тражи по датотекама"
+
+#. TRANSLATORS: command description
+msgid "Install package"
 msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Подешава могућности ризнице"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "Пакетски прибор"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Нисам успео да обрадим аргументе"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Нисам успео да учитам датотеку подешавања"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Нисам успео да учитам позадинца"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Нисам успео да распустим позадинца"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "Онемогући мерач чекања"
+msgstr "Искључује мерач мировања"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "Прикажи верзију и заврши рад"
+msgstr "Приказује издање и излази"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "Изађи после кратке задршке"
+msgstr "Излази након кратког застоја"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "Заврши рад након што се учита позадински систем"
+msgstr "Излази након учитавања погона"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Не чисти окружење при покретању"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr "Сервис ПакетКита"
+msgstr "Услуга Пакетског прибора"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "Овај софтвер није од поверљивог извора."
+msgstr "Овај софтвер није са поверљивог извора."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Немојте ажурирати овај пакет осим ако нисте сигурни да је то безбедно."
+msgstr "Немојте ажурирати овај пакет осим ако нисте сигурни да је безбедно."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Немојте ажурирати ове пакете осим ако нисте сигурни да је то безбедно."
+msgstr "Немојте ажурирати ове пакете осим ако нисте сигурни да је безбедно."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Немојте инсталирати овај пакет осим ако нисте сигурни да је то безбедно."
+msgstr "Немојте инсталирати овај пакет осим ако нисте сигурни да је безбедно."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Немојте инсталирати ове пакете осим ако нисте сигурни да је то безбедно."
+msgstr "Немојте инсталирати ове пакете осим ако нисте сигурни да је безбедно."

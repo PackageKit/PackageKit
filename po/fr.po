@@ -6,15 +6,15 @@
 # Claude Paroz <claude@2xlibre.net>, 2008,2013
 # Claude Paroz <claude@2xlibre.net>, 2011
 # troubi51 <corentin.perard@gmail.com>, 2009
-# dominique bribanick <chepioq@gmail.com>, 2013
+# dominique bribanick <chepioq@gmail.com>, 2013-2014
 # Richard Hughes <richard@hughsie.com>, 2011
-# mrtomlinux <thomas.canniot@mrtomlinux.org>, 2009
+# mrtomlinux <thomas.canniot@laposte.net>, 2009
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/packagekit/language/fr/)\n"
 "MIME-Version: 1.0\n"
@@ -512,11 +512,11 @@ msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Auteur"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -896,6 +896,10 @@ msgstr "Installé"
 msgid "Available"
 msgstr "Disponible"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Téléchargement"
@@ -1263,6 +1267,7 @@ msgstr "Authentification requise pour accepter une licence"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Supprimer un paquet"
 
@@ -1384,12 +1389,16 @@ msgid "Search by files"
 msgstr ""
 
 #. TRANSLATORS: command description
+msgid "Install package"
+msgstr ""
+
+#. TRANSLATORS: command description
 msgid "Set repository options"
 msgstr ""
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"

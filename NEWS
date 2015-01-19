@@ -1,3 +1,55 @@
+Version 1.0.4
+~~~~~~~~~~~~~
+Released: 2015-01-19
+
+Libraries:
+ - Add PK_INFO_ENUM_UNAVAILABLE (Richard Hughes)
+
+Backends:
+ - alpm: Clean logic in pk_alpm_transaction_packages (Fabien Bourigault)
+ - alpm: Fix bad logic in pk_backend_resolve_name (Fabien Bourigault)
+ - alpm: Fix SIGSEV when asking for package files (Fabien Bourigault)
+ - alpm: Honor simulation when installing packages (Fabien Bourigault)
+ - alpm: Pacman 4.2 support (Christian Hesse, piernov)
+ - aptcc: Always respect the noninteractive flag (Matthias Klumpp)
+ - aptcc: Don't ask about config changes if we are not interactive (Matthias Klumpp)
+ - aptcc: Use subdirectory in /tmp to store temporary data (Matthias Klumpp)
+ - apt: Remove unmaitained backend (Richard Hughes)
+ - dummy: Fix make check by not calling pk_backend_job_finished() in the threaded code (Richard Hughes)
+ - hif: Automatically import metadata public keys when safe to do so (Richard Hughes)
+ - hif: Automatically install AppStream metadata (Richard Hughes)
+ - hif: Fix compile with newer versions of libhif (Richard Hughes)
+ - hif: Fix several small memory leaks (Richard Hughes)
+ - hif: Look for unavailable packages during resolve (Richard Hughes)
+ - hif: Move hif_source_is_supported() here (Colin Walters)
+ - hif: Proxy the allow-cancel state from the state to the job (Richard Hughes)
+ - hif: Return 'unavailable' packages for metadata-only repos (Richard Hughes)
+ - hif: Support HIF_SOURCE_KIND_LOCAL (Richard Hughes)
+ - hif: Use a thread-local HifTransaction to avoid db3 index corruption (Richard Hughes)
+ - urpmi: Actually implement only_download & simulate (Thierry Vignaud)
+ - urpmi: Add myself as maintainer (Thierry Vignaud)
+ - urpmi: Add support for 'allow_downgrade' (Thierry Vignaud)
+ - urpmi: Add support for allow-reinstall (Thierry Vignaud)
+ - urpmi: Consider gstreamer1.0 those days (Thierry Vignaud)
+ - urpmi: Do pass new removepackages args (Thierry Vignaud)
+ - urpmi: Lock write transactions (Thierry Vignaud)
+
+New Features:
+ - Add 'quit' command to pkcon (Richard Hughes)
+ - Add the install and remove commands to the packagekit-direct test tool (Richard Hughes)
+
+Bugfixes:
+ - Actually inhibit logind when the transaction can't be cancelled (Richard Hughes)
+ - Allow pk_backend_job_set_allow_cancel() after ErrorCode has been set (Richard Hughes)
+ - Do not attempt to run command-not-found for anything prefixed with '.' (Richard Hughes)
+ - Don't use PkBackendSpawn helpers in compiled backends (Richard Hughes)
+ - Fix a hard-to-debug crash when cancelling a task that has never been run (Richard Hughes)
+ - Make pk_backend_job_call_vfunc() threadsafe (Richard Hughes)
+ - Make pk_backend_repo_list_changed() threadsafe (Richard Hughes)
+ - Make the network detection code simpler (Richard Hughes)
+ - Really remove the timer GSource when quitting the daemon (Matthias Klumpp)
+ - Recreate the download location if it does not already exist (Richard Hughes)
+
 Version 1.0.3
 ~~~~~~~~~~~~~
 Released: 2014-11-10

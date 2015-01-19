@@ -4,14 +4,15 @@
 # 
 # Translators:
 # Muhammet Kara <muhammetk@gmail.com>, 2014
+# Muhammet Kara <muhammetk@gmail.com>, 2014
 # Necdet Yücel <necdetyucel@gmail.com>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Turkish (http://www.transifex.com/projects/p/packagekit/language/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -24,7 +25,7 @@ msgstr ""
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr ""
+msgstr "İşlem"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
@@ -129,7 +130,7 @@ msgstr "Güncellemeler"
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr ""
+msgstr "Geçersiz kılıyor"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -167,7 +168,7 @@ msgstr "Durum"
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 msgid "Issued"
-msgstr ""
+msgstr "Veriliş"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
@@ -194,16 +195,16 @@ msgstr "Oturumun yeniden başlatılması gerekiyor:"
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr ""
+msgstr "Sistemin yeniden başlatılması (güvenlik için) gerekiyor:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr ""
+msgstr "Oturumun yeniden başlatılması (güvenlik için) gerekiyor:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Uygulamanın yeniden başlatılması gerekiyor:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -243,14 +244,14 @@ msgstr "Güncellenecek paket yok."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr ""
+msgstr "İletim başarısız oldu"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
 msgstr "Şu an için güncelleme yok."
 
 msgid "There are no upgrades available at this time."
-msgstr ""
+msgstr "Şimdilik güncelleme yok."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -264,22 +265,22 @@ msgstr "Lütfen güncelleme işlemini tamamlamak için oturumu kapatıp yeniden 
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr ""
+msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen bilgisayarınızı yeniden başlatın."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr ""
+msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen çıkış yapın ve tekrar oturum açın."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr ""
+msgstr "Birden fazla paket eşleşiyor:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr ""
+msgstr "Lütfen doğru paketi seçin: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -297,29 +298,29 @@ msgstr "Hiçbir paket bulunamadı"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr ""
+msgstr "Paket adı bekleniyordu, dosya alındı. Bunun yerine 'pkcon install-local %s' kullanmayı deneyin."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr ""
+msgstr "Bu araç kullanılabilir hiç paket bulamadı: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr ""
+msgstr "Bu araç kurulu paketi bulamadı: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr ""
+msgstr "Bu araç paketi bulamadı: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Daha yeni bir sürüme yükseltilmesi gereken paket yok."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -331,12 +332,12 @@ msgstr ""
 #. * any software sources. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr ""
+msgstr "Bu araç paketleri bulamadı: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr ""
+msgstr "Uygulama iletimin ortasında çöktü!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -344,16 +345,16 @@ msgstr "PackageKit Konsol Arayüzü"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr ""
+msgstr "Alt komutlar:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
+msgstr "Bu eylemin en son tamamlandığı tarih bulunamadı"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Zaman"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -370,44 +371,44 @@ msgstr "Uygulama versiyonunu göster ve çık"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr ""
+msgstr "Filtreyi ayarlayın; örneğin kurulu gibi"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr ""
+msgstr "Paketleri onaylama sormadan kur"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading pakages only"
-msgstr ""
+msgstr "İşlemi sadece paketleri indirmeye hazırla"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "İşlem sırasında paketlerin alt sürümlere geçirilmesine izin ver"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "İşlem sırasında paketlerin yeniden kurulmasına izin ver"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
+msgstr "Komutu ağ kullanılmadığında çalıştır ve daha az güç harca"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr ""
+msgstr "Ekrana canlandırmalı parçacıklar yerine makine okuyabilir bir çıktı yazdır"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
+msgstr "Üst verinin ön bellekte en fazla tutulma zamanı. 'Asla' için -1 kullanın."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Güvenilmeyen paketlerin kurulmasına izin ver."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Komut satırı ayrıştırılamadı"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
@@ -421,7 +422,7 @@ msgstr "Belirtilen filtre geçersiz"
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr ""
+msgstr "Bir arama türü gerekli; isim gibi"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -443,18 +444,18 @@ msgstr "Kurulum için bir dosya adı girmelisiniz"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr ""
+msgstr "Bir tür, key_id ve package_id gerekiyor"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr ""
+msgstr "Kaldırılacak paketin ismi gerekiyor"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr ""
+msgstr "Hedef dizini ve indirilecek paket isimleri gerekiyor"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -464,12 +465,12 @@ msgstr "Dizin bulunamadı"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr ""
+msgstr "Bir lisans belirleyici (eula kimliği) gerekiyor"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr ""
+msgstr "Çözümlenecek bir paket adı gerekiyor"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
@@ -477,20 +478,20 @@ msgid "A repository name is required"
 msgstr "Bir depo adı gerekli"
 
 msgid "A repo name, parameter and value are required"
-msgstr ""
+msgstr "Bir depo adı, parametre ve değer gerekiyor"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Bir depo kimliği ve otomatik kaldırma gerekiyor"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "'update-packages' gibi bir eylem gerekiyor"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr ""
+msgstr "Bir doğru rol gerekiyor"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -502,10 +503,10 @@ msgstr "Bir paket adı gerekli"
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr ""
+msgstr "Paket sağlayan karakter dizisi gerekiyor"
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Bir dosya adı gerekiyor"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
@@ -513,11 +514,11 @@ msgstr "Açıklama"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Yazar"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Oluşturulması için bir liste dosyası belirtmelisiniz"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -530,21 +531,21 @@ msgstr "Böyle bir dosya zaten var: %s"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr ""
+msgstr "'%s' seçeneği desteklenmiyor"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr ""
+msgstr "Komut başarısız"
 
 msgid "Failed to get daemon state"
-msgstr ""
+msgstr "Sürecin durumu alınamadı"
 
 msgid "Failed to get properties"
-msgstr ""
+msgstr "Özellikler alınamadı"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr ""
+msgstr "PackageKit İzleyici"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
@@ -557,15 +558,15 @@ msgstr "Güncellemeler kuruldu, bilgisayar yeniden başlatılıyor..."
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Güncellemeler kurulduktan sonra kapatılıyor…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Güncellemeler kuruluyor, biraz vakit alabilir..."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
-msgstr ""
+msgstr "Paket bilgileri alınıyor..."
 
 #. TRANSLATORS: run an applicaiton
 #, c-format
@@ -601,7 +602,7 @@ msgstr "Sürüm"
 
 #. TRANSLATORS: noting found, so can't install
 msgid "No packages found for your system"
-msgstr ""
+msgstr "Sisteminiz için paket bulunamadı"
 
 #. TRANSLATORS: package is being installed
 msgid "Installing..."
@@ -609,485 +610,489 @@ msgstr "Kuruluyor..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr ""
+msgstr "Yazılım kaynakları hakkında ayrıntılar indiriliyor."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "Dosya listesi indiriliyor (tamamlanması biraz vakit alabilir)."
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr ""
+msgstr "Paket yöneticisinin kilitlenmesi bekleniyor."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr ""
+msgstr "Paketlerin listesi yükleniyor."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr ""
+msgstr "Dosya araması başarısız"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "Dosya listesi alınması başarısız"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr ""
+msgstr "Başlatılamadı:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr ""
+msgstr "Paketler kurulamadı"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr ""
+msgstr "komut bulunamadı"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr ""
+msgstr "Benzer komut:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr ""
+msgstr "Benzer komutu çalıştır:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr ""
+msgstr "Benzer komutlar:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "Lütfen çalıştırılacak bir komut seçin"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr ""
+msgstr "Bu dosyayı içeren paket:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
+msgstr "'%s' paketi '%s' komutunu sağlaması için kurulsun mu?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr ""
+msgstr "Bu dosyayı içeren paketler:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr ""
+msgstr "Uygun paketler:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr ""
+msgstr "Lütfen kurulması için bir paket seçin"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "Kullanıcı seçimi iptal etti"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr ""
+msgstr "Lütfen 1 ile %i arasında bir sayı girin: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
-msgstr ""
+msgstr "Bilinmeyen durum"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr ""
+msgstr "Başlatılıyor"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr ""
+msgstr "Kuyrukta bekliyor"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr ""
+msgstr "Çalıştırılıyor"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr ""
+msgstr "Sorgulanıyor"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr ""
+msgstr "Bilgi alınıyor"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr ""
+msgstr "Paketler kaldırılıyor"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr ""
+msgstr "Paketler indiriliyor"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr ""
+msgstr "Paketler kuruluyor"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr ""
+msgstr "Yazılım listesi yenileniyor"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr ""
+msgstr "Güncellemeler kuruluyor"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "Paketler temizleniyor"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr ""
+msgstr "Paketler gereksiz olarak işaretleniyor"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr ""
+msgstr "Bağımlılıklar çözülüyor"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr ""
+msgstr "İmzalar kontrol ediliyor"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr ""
+msgstr "Değişiklikler sınanıyor"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr ""
+msgstr "Değişiklikler gönderiliyor"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr ""
+msgstr "Veri isteniyor"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr ""
+msgstr "Tamamlandı"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr ""
+msgstr "İptal ediliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr ""
+msgstr "Paket depo bilgisi indiriliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr ""
+msgstr "Paket listesi indiriliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr ""
+msgstr "Dosya listesi indiriliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr ""
+msgstr "Değişikliklerin listeleri indiriliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr ""
+msgstr "Gruplar indiriliyor"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr ""
+msgstr "Güncelleme bilgisi indiriliyor"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr ""
+msgstr "Dosyalar yeniden paketleniyor"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr ""
+msgstr "Önbellek yükleniyor"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr ""
+msgstr "Uygulamalar taranıyor"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr ""
+msgstr "Paket listesi oluşturuluyor"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr ""
+msgstr "Paket yöneticisi kilidi bekleniyor"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr ""
+msgstr "Kimlik doğrulaması için bekleniyor"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr ""
+msgstr "Çalışan uygulamalar güncelleniyor"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr ""
+msgstr "Kullanımdaki uygulamalar kontrol ediliyor"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr ""
+msgstr "Kullanımdaki kitaplıklar kontrol ediliyor"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr ""
+msgstr "Dosyalar kopyalanıyor"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr ""
+msgstr "Tüm dosyalar için hata ayıklama bilgisini göster"
 
 msgid "Debugging Options"
-msgstr ""
+msgstr "Hata Ayıklama Seçenekleri"
 
 msgid "Show debugging options"
-msgstr ""
+msgstr "Hata ayıklama seçeneklerini göster"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr ""
+msgstr "Önemsiz"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr ""
+msgstr "Önemli"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr ""
+msgstr "Güvenlik"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
-msgstr ""
+msgstr "Hata düzeltmesi "
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr ""
+msgstr "İyileştirme"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr ""
+msgstr "Engelli"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr ""
+msgstr "Kurulu"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
+msgstr "Kullanılabilir"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
 msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr ""
+msgstr "İndiriliyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr ""
+msgstr "Güncelleniyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr ""
+msgstr "Kuruluyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr ""
+msgstr "Kaldırılıyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr ""
+msgstr "Temizleniyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr ""
+msgstr "Geçersiz kılınıyor"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr ""
+msgstr "Yeniden Kuruluyor"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr ""
+msgstr "İndirildi"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr ""
+msgstr "Kaldırıldı"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr ""
+msgstr "Temizlendi"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr ""
+msgstr "Gereksiz Olarak İşaretlendi"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr ""
+msgstr "Yeniden Kuruldu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr ""
+msgstr "Bilinmeyen rol türü"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr ""
+msgstr "Bağımlılıklar alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr ""
+msgstr "Güncelleme ayrıntıları alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr ""
+msgstr "Ayrıntılar alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr ""
+msgstr "Gereksinimleri alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr ""
+msgstr "Güncellemeler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr ""
+msgstr "Ayrıntılara göre aranıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr ""
+msgstr "Dosyaya göre aranıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr ""
+msgstr "Gruplar aranıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr ""
+msgstr "İsme göre aranıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr ""
+msgstr "Dosyalar yükleniyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr ""
+msgstr "Ön bellek tazeleniyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr ""
+msgstr "Paketler güncelleniyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
-msgstr ""
+msgstr "İptal ediliyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr ""
+msgstr "Depolar alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Enabling repository"
-msgstr ""
+msgstr "Depo etkinleştiriliyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr ""
+msgstr "Veri ayarlanıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "Depo kaldırılıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr ""
+msgstr "Çözümleniyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr ""
+msgstr "Dosya listesi alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr ""
+msgstr "Gereklilikler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr ""
+msgstr "İmza yükleniyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr ""
+msgstr "Paketler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr ""
+msgstr "EULA kabul ediliyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr ""
+msgstr "Yükseltmeler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr ""
+msgstr "Kategoriler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr ""
+msgstr "İşlemler alınıyor"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr ""
+msgstr "İmzalanmamış yazılımların yüklenmesine izin veriyor musunuz?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr ""
+msgstr "İmzalanmamış yazılımlar kurulmayacak."
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr ""
+msgstr "Yazılım kaynak imzası gerekiyor"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr ""
+msgstr "Yazılım kaynağı ismi"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr ""
+msgstr "Anahtar Adresi"
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
-msgstr ""
+msgstr "Anahtar kullanıcısı"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr ""
+msgstr "Anahtar Kimliği"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr ""
+msgstr "Anahtar parmakizi"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
-msgstr ""
+msgstr "Anahtar Zaman Damgası"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
@@ -1100,87 +1105,87 @@ msgstr "İmza kabul edilmedi."
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr ""
+msgstr "Son kullanıcı sözleşmesini kabul etmeniz gerekiyor"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr ""
+msgstr "Anlaşma"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr ""
+msgstr "Bu anlaşmayı kabul ediyor musunuz?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
-msgstr ""
+msgstr "Anlaşma kabul edilmedi."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr ""
+msgstr "Ortamı değiştirmeniz gerekiyor"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr ""
+msgstr "Ortam türü"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr ""
+msgstr "Ortam etiketi"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
-msgstr ""
+msgstr "Metin"
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr ""
+msgstr "Lütfen doğru ortamı yerleştirin"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr ""
+msgstr "Doğru ortam takılmadı."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr ""
+msgstr "Aşağıdaki paketler sistemden kaldırılmalıdır:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr ""
+msgstr "Aşağıdaki paketler kurulmalıdır:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr ""
+msgstr "Aşağıdaki paketler yükseltilmelidir:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr ""
+msgstr "Aşağıdaki paketler yeniden kurulmalıdır:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr ""
+msgstr "Aşağıdaki paketlerin eski sürümleri kurulmalıdır:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr ""
+msgstr "Aşağıdaki paketlere güvenilmiyor:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr ""
+msgstr "Değişiklikler uygulansın mı?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr ""
+msgstr "İşlem devam etmedi."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr ""
+msgstr "Harici görevi iptal et"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
+msgstr "Sizin tarafınızdan başlatılmayan bir görevi iptal etmek kimlik doğrulama gerektirir"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1188,10 +1193,10 @@ msgstr ""
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr ""
+msgstr "İmzalı paketi yükle"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Yazılım yüklemek için kimlik doğrulama gerekiyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1199,10 +1204,10 @@ msgstr ""
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr ""
+msgstr "Güvenilmeyen yerel dosyayı kur"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Güvenilmeyen yazılım kurmak için kimlik doğrulama gerekiyor"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1211,10 +1216,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Zaten kurulu paketi yeniden kur"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Yazılımları yeniden kurmak için kimlik doğrulama gerekiyor"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1223,10 +1228,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Kurulu paketin eski sürümünü kur"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Yazılımları eski sürümlerine düşürmek kimlik doğrulama gerektiriyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1234,12 +1239,12 @@ msgstr ""
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Yazılım imzalamak için kullanılan anahtara güven"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Yazılım imzalamak için kullanılan anahtarı güvenilir kabul etmek kimlik doğrulama gerektiriyor"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1247,10 +1252,10 @@ msgstr ""
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr ""
+msgstr "Son kullanıcı lisans sözleşmesini kabul et"
 
 msgid "Authentication is required to accept a EULA"
-msgstr ""
+msgstr "Son kullanıcı lisans sözleşmesini kabul etmek kimlik doğrulama gerektiriyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1260,11 +1265,12 @@ msgstr ""
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
-msgstr ""
+msgstr "Paket kaldır"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Yazılım kaldırmak kimlik doğrulama gerektiriyor"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1273,40 +1279,40 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Yazılım güncelle"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Yazılım güncellemek için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software source parameters"
-msgstr ""
+msgstr "Yazılım kaynağı parametrelerini değiştirin"
 
 msgid "Authentication is required to change software source parameters"
-msgstr ""
+msgstr "Yazılım kaynağı parametrelerini değiştirmek için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system sources"
-msgstr ""
+msgstr "Sistem kaynaklarını tazele"
 
 msgid "Authentication is required to refresh the system sources"
-msgstr ""
+msgstr "Sistem kaynaklarını tazelemek için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr ""
+msgstr "Vekil sunucuyu ayarla"
 
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Yazılım indirmek için vekil sunucuyu ayarlamak için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1315,114 +1321,118 @@ msgstr ""
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr ""
+msgstr "Bir aygıtı yeniden yükle"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr ""
+msgstr "Bir aygıtı yenib ri sürücüyle yeniden yüklemek için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr ""
+msgstr "Sistemi Onar"
 
 msgid "Authentication is required to repair the installed software"
-msgstr ""
+msgstr "Kurulu yazılımı onarmak için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
 #. early boot time without a password.
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Çevrim dışı güncellemeleri tetikle"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Çevrim dışı güncellemeleri tetiklemek için kimlik kanıtlaması gereklidir"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Çevrim dışı güncelleme iletilerini temizle"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
+msgstr "Çevrim dışı güncelleme iletilerini temizlemek için kimlik kanıtlaması gereklidir"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "%s için takma ad"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Komut bulunamadı, geçerli komutlar şunlardır:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr ""
+msgstr "Kullanmak için arkaucu paketlemek"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Önbelleği tazele"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Önbelleği tazele (zorla)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "İsme göre ara"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Ayrıntılara göre ara"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
+msgstr "Dosyalara göre ara"
+
+#. TRANSLATORS: command description
+msgid "Install package"
 msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Depo seçeneklerini ayarla"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Argüman ayrıştırması başarısız"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Yapılandırma dosyası yüklenemedi"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Art alanda çalışan uygulama yüklenemedi"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Art alanda çalışan uygulamanın yüklemesi kaldırılamadı"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr ""
+msgstr "Boştaki zamanlayıcıyı kapat"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr ""
+msgstr "Sürümü göster ve çık"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr ""
+msgstr "Küçük bir gecikme sonrasında çık"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr ""
+msgstr "Motor yüklendikten sonra çık"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Açılışta ortamı temizleme"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
@@ -1430,16 +1440,16 @@ msgstr "PackageKit servisi"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "Bu yazılım güvenilir bir kaynaktan gelmiyor."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Eğer bunu yapmanın güvenli olduğundan emin değilseniz, bu paketi güncellemeyin."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Eğer bunu yapmanın güvenli olduğundan emin değilseniz, bu paketleri güncellemeyin."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Eğer bunu yapmanın güvenli olduğundan emin değilseniz, bu paketi kurmayın."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Eğer bunu yapmanın güvenli olduğundan emin değilseniz, bu paketleri kurmayın."

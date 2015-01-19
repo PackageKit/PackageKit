@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Slovenian (http://www.transifex.com/projects/p/packagekit/language/sl/)\n"
 "MIME-Version: 1.0\n"
@@ -892,6 +892,10 @@ msgstr "Nameščen"
 msgid "Available"
 msgstr "Na voljo"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Prejemanje"
@@ -1259,6 +1263,7 @@ msgstr "Zahtevana je overitev za sprejemanje dovoljenja uporabe"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Odstrani paket"
 
@@ -1377,6 +1382,10 @@ msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Search by files"
+msgstr ""
+
+#. TRANSLATORS: command description
+msgid "Install package"
 msgstr ""
 
 #. TRANSLATORS: command description

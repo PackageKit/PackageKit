@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Kazakh (http://www.transifex.com/projects/p/packagekit/language/kk/)\n"
 "MIME-Version: 1.0\n"
@@ -132,15 +132,15 @@ msgstr "Ескіртеді"
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 msgid "Vendor"
-msgstr ""
+msgstr "Өндіруші"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr ""
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
-msgstr ""
+msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
@@ -187,61 +187,61 @@ msgstr "Жүйенің қайта жүктелуін талап ететін:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr ""
+msgstr "Сессияны қайта іске қосу керек:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr ""
+msgstr "Жүйені қайта іске қосуды (қауіпсіздік) талап ететін:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr ""
+msgstr "Жүйені қайта іске қосу (қауіпсіздік) керек:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Қолданбаны қайта іске қосуды талап ететін:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr ""
+msgstr "Десте анықтамасы"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
-msgstr ""
+msgstr "Файлдары жоқ"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr ""
+msgstr "Десте файлдары"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
-msgstr ""
+msgstr "Пайыздық шамасы"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr ""
+msgstr "Қалып-күй"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr ""
+msgstr "Нәтижелер:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr ""
+msgstr "Қатаң қате"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr ""
+msgstr "Жаңарту үшін дестелер жоқ."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr ""
+msgstr "Транзакция сәтсіз аяқталды"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -273,20 +273,20 @@ msgstr ""
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr ""
+msgstr "Бірден көп десте сәйкес келеді:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr ""
+msgstr "Керек дестені таңдаңыз:"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Десте табылмады"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Бірде-бір десте табылмады"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -338,7 +338,7 @@ msgstr ""
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr ""
+msgstr "PackageKit консольік интерфейсі"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
@@ -360,11 +360,11 @@ msgstr ""
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr ""
+msgstr "Проксиді орнату мүмкін ем ес"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr ""
+msgstr "Бағдарлама нұсқасын шығару және шығу"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
@@ -405,38 +405,38 @@ msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Командалық жолды талдау сәтсіз"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr ""
+msgstr "PackageKit-пен байланысу сәтсіз"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "Көрсетілген сүзгі қате"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr ""
+msgstr "Іздеу түрі керек, мысалы, десте аты"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr ""
+msgstr "Іздеу үшін сөз керек"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr ""
+msgstr "Орнату үшін дестенің аты керек"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr ""
+msgstr "Орнату үшін файл аты керек"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -457,7 +457,7 @@ msgstr ""
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr ""
+msgstr "Бума табылмады"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -472,7 +472,7 @@ msgstr ""
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr ""
+msgstr "Репозиторий атауы керек"
 
 msgid "A repo name, parameter and value are required"
 msgstr ""
@@ -493,7 +493,7 @@ msgstr ""
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr ""
+msgstr "Десте аты керек"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
@@ -503,15 +503,15 @@ msgid "A package provide string is required"
 msgstr ""
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Файл аты керек"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Сипаттамасы"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Авторы"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -522,32 +522,32 @@ msgstr ""
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Файл бар болып тұр: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr ""
+msgstr "'%s' опциясына қолдау жоқ"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr ""
+msgstr "Команда сәтсіз аяқталды"
 
 msgid "Failed to get daemon state"
-msgstr ""
+msgstr "Қызмет күйін алу сәтсіз"
 
 msgid "Failed to get properties"
-msgstr ""
+msgstr "Қасиеттерін алу сәтсіз"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr ""
+msgstr "PackageKit бақылаушысы"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
 msgid "Installing Updates"
-msgstr ""
+msgstr "Жаңартуларды орнату"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
@@ -568,11 +568,11 @@ msgstr ""
 #. TRANSLATORS: run an applicaiton
 #, c-format
 msgid "Run %s"
-msgstr ""
+msgstr "%s жөнелту"
 
 #. TRANSLATORS: show the installed version of a package
 msgid "Installed version"
-msgstr ""
+msgstr "Орнатылған нұсқасы"
 
 #. TRANSLATORS: run the application now
 #, c-format
@@ -581,7 +581,7 @@ msgstr ""
 
 #. TRANSLATORS: run the application now
 msgid "Run now"
-msgstr ""
+msgstr "Қазір жөнелту"
 
 #. TRANSLATORS: update to a new version of the package
 #, c-format
@@ -595,7 +595,7 @@ msgstr ""
 
 #. TRANSLATORS: the version of the package
 msgid "Version"
-msgstr ""
+msgstr "Нұсқасы"
 
 #. TRANSLATORS: noting found, so can't install
 msgid "No packages found for your system"
@@ -603,7 +603,7 @@ msgstr ""
 
 #. TRANSLATORS: package is being installed
 msgid "Installing..."
-msgstr ""
+msgstr "Орнатылуда..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -635,26 +635,26 @@ msgstr ""
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr ""
+msgstr "Дестелерді орнату сәтсіз аяқталды"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr ""
+msgstr "команда табылмады"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr ""
+msgstr "Ұқсас команда:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr ""
+msgstr "Ұқсас команданы орындау:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr ""
+msgstr "Ұқсас командалар:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
@@ -717,29 +717,29 @@ msgstr ""
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr ""
+msgstr "Дестелер өшірілуде"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr ""
+msgstr "Дестелер жүктеліп алынуда"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr ""
+msgstr "Дестелер орнатылуда"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr ""
+msgstr "БҚ тізімі жаңартылуда"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr ""
+msgstr "Жаңартулар орнатылуда"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "Дестелер тазартылуда"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
@@ -769,11 +769,11 @@ msgstr ""
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr ""
+msgstr "Аяқталған"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr ""
+msgstr "Бас тартылуда"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
@@ -860,35 +860,39 @@ msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr ""
+msgstr "Қалыпты"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr ""
+msgstr "Маңызды"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr ""
+msgstr "Қауіпсіздік"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
-msgstr ""
+msgstr "Ақаулықты жөндеу"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr ""
+msgstr "Жақсарту"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr ""
+msgstr "Блокталған"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr ""
+msgstr "Орнатылған"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
+msgstr "Қолжетерлік"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
 msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
@@ -1102,15 +1106,15 @@ msgstr ""
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr ""
+msgstr "Келісім"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr ""
+msgstr "Бұл келісім шартты қабылдайсыз ба?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
-msgstr ""
+msgstr "Келісім шарт қабылданбады."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
@@ -1138,28 +1142,28 @@ msgstr ""
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr ""
+msgstr "Келесі дестелер өшірілуі керек:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr ""
+msgstr "Келесі дестелер орнатылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr ""
+msgstr "Келесі дестелер жаңартылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr ""
+msgstr "Келесі дестелер қайта орнатылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr ""
+msgstr "Келесі дестелердің нұсқалары төмендетілуі керек:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr ""
+msgstr "Келесі дестелер сенімсіз:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
@@ -1258,6 +1262,7 @@ msgstr ""
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr ""
 
@@ -1360,39 +1365,43 @@ msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Кэшті жаңарту"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Кэшті жаңарту (мәжбүрлі)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Аттары бойынша іздеу"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Сипаттамасы бойынша іздеу"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
+msgstr "Файлдар бойынша іздеу"
+
+#. TRANSLATORS: command description
+msgid "Install package"
 msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Репозиторий опцияларын орнату"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Аргументтерді талдау қатесі"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Баптаулар файлын жүктеу қатесі"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
@@ -1408,7 +1417,7 @@ msgstr ""
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr ""
+msgstr "Нұсқа ақпаратын шығарып, жұмысты аяқтау"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
@@ -1424,7 +1433,7 @@ msgstr ""
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr ""
+msgstr "PackageKit қызметі"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."

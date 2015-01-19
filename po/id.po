@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/projects/p/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
@@ -383,10 +383,10 @@ msgstr "Persiapkan transaksi dengan hanya mengunduh paket"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Izinkan paket dituruntingkatkan selama transaksi "
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Izinkan paket dipasang ulang selama transaksi"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -894,6 +894,10 @@ msgstr "Terpasang"
 msgid "Available"
 msgstr "Tersedia"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Mengunduh"
@@ -1212,10 +1216,10 @@ msgstr "Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Pasang lagi paket yang telah terpasang"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Otentikasi diperlukan untuk memasang ulang perangkat lunak"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1224,10 +1228,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Pasang versi yang lebih lama dari paket yang terpasang"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Otentikasi diperlukan untuk menuruntingkatkan perangkat lunak"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1261,6 +1265,7 @@ msgstr "Perlu otentikasi untuk menyetujui suatu EULA"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Hapus paket"
 
@@ -1382,8 +1387,12 @@ msgid "Search by files"
 msgstr "Cari menurut berkas"
 
 #. TRANSLATORS: command description
-msgid "Set repository options"
+msgid "Install package"
 msgstr ""
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Tata opsi repositori"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"

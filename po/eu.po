@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# assar <asiersar@yahoo.com>, 2013-2014
+# assar <asiersar@yahoo.com>, 2013-2015
 # assar <asiersar@yahoo.com>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Basque (http://www.transifex.com/projects/p/packagekit/language/eu/)\n"
 "MIME-Version: 1.0\n"
@@ -382,10 +382,10 @@ msgstr "Prestatu transakzioa paketeak deskargatuz soilik"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -399,11 +399,11 @@ msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabi
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Metadata-katxearen adin maximoa. Erabili -1 'inoiz ez' adierazteko."
+msgstr "Metadata-cachearen adin maximoa. Erabili -1 'inoiz ez' adierazteko."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Onartu fidagarriak ez diren paketeak instalatzea transakzioan zehar"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -557,7 +557,7 @@ msgstr "Berrabiarazten eguneraketak instalatu ondoren..."
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Itzaltzen eguneraketak instalatu ondoren..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates, this could take a while..."
@@ -807,7 +807,7 @@ msgstr "Fitxategiak berriro paketatzen"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "Katxea kargatzen"
+msgstr "Cachea kargatzen"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -892,6 +892,10 @@ msgstr "Instalatua"
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Eskuragarri"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -989,7 +993,7 @@ msgstr "Fitxategiak instalatzen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Katxea freskatzen"
+msgstr "Cachea freskatzen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
@@ -1202,7 +1206,7 @@ msgid "Install untrusted local file"
 msgstr "Instalatu fidagarria ez den fitxategi lokala"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Autentifikazioa behar da fidagarria ez den softwarea instalatzeko"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1211,10 +1215,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Instalatu berriro lehendik instalatuta dagoen paketea"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Autentifikazioa behar da softwarea berrinstalatzeko"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1223,10 +1227,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Instalatu lehendik instalatuta dagoen paketearen bertsio zaharragoa"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Autentifikazioa behar da softwarearen bertsio zaharrak instalatzeko"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1260,11 +1264,12 @@ msgstr "Autentifikazioa behar da EULA bat onartzeko"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Kendu paketea"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Autentifikazioa behar da softwarea kentzeko"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1306,7 +1311,7 @@ msgstr "Ezarri sarearen proxy-a"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Autentifikazioa behar da softwarea deskargatzeko erabiliko den sare-proxya ezartzeko"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1354,7 +1359,7 @@ msgid "Alias to %s"
 msgstr ""
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Komandoa ez da aurkitu, baliozko komandoak honakoak dira:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1362,47 +1367,51 @@ msgstr "Erabiliko den paketatze-motorra, adib. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Freskatu cachea"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Freskatu cachea (behartua)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Bilatu izenen arabera"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Bilatu xehetasunen arabera"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
+msgstr "Bilatu fitxategien arabera"
+
+#. TRANSLATORS: command description
+msgid "Install package"
 msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Ezarri biltegi-aukerak"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Argumentuen analisiak huts egin du"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Konfigurazio-fitxategia kargatzeak huts egin du"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Atzealdekoa kargatzeak huts egin du"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Atzealdekoa deskargatzeak huts egin du"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"

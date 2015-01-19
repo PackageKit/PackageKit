@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: German (http://www.transifex.com/projects/p/packagekit/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -349,7 +349,7 @@ msgstr "Dieses Werkzeug konnte nicht alle Pakete finden: %s"
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Der Dämon stürzte während der Transaktion ab!"
+msgstr "Der Daemon stürzte während der Transaktion ab!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -391,14 +391,14 @@ msgstr "Die Pakete ohne erneute Nachfrage installieren"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading pakages only"
-msgstr "Die Transaktion nur durch herunterladen der Pakete vorbereiten"
+msgstr "Die Transaktion nur durch Herunterladen der Pakete vorbereiten"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Die Herunterstufung von Paketen während der Transaktion erlauben"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Die erneute Installation von Paketen während der Transaktion erlauben"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -416,7 +416,7 @@ msgstr "Das Höchstalter des Metadaten-Zwischenspeichers. Verwenden Sie -1 für 
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Installation von nicht vertrauenswürdigen Paketen erlauben."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -838,7 +838,7 @@ msgstr "Warten auf Sperre des Paketmanagers"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "Warten auf Legitimierung"
+msgstr "Warten auf Legitimation"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
@@ -905,6 +905,10 @@ msgstr "Installiert"
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Verfügbar"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1182,7 +1186,7 @@ msgstr "Mit Änderungen fortfahren?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "Die Transaktion wurde nicht weitergeführt"
+msgstr "Die Transaktion wurde nicht weitergeführt."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1204,7 +1208,7 @@ msgid "Install signed package"
 msgstr "Signierte Pakete installieren"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Legitimation ist zur Installation von Software erforderlich"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1215,7 +1219,7 @@ msgid "Install untrusted local file"
 msgstr "Nicht vertrauenswürdige lokale Datei installieren"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Legitimation ist zum Installieren von nicht vertrauenswürdiger Software erforderlich"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1224,10 +1228,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Bereits installiertes Paket erneut installieren"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Legitimation ist zum erneuten Installieren der Software erforderlich"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1236,10 +1240,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Ältere Version eines installieren Paketes installieren"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Legitimation ist zur Herunterstufung von Software erforderlich"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1273,11 +1277,12 @@ msgstr "Legitimation ist zum Annehmen der EULA erforderlich"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Paket entfernen"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Legitimation ist zum Entfernen von Software erforderlich"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1289,7 +1294,7 @@ msgid "Update software"
 msgstr "Software aktualisieren"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Legitimation ist zum Aktualisieren von Software erforderlich"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1331,7 +1336,7 @@ msgid "Reload a device"
 msgstr "Ein Gerät neu laden"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Legitimation ist erforderlich, um das Gerät mit einem neuen Treiber zu laden"
+msgstr "Legitimation ist zum Laden des Geräts mit einem neuen Treiber erforderlich"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1341,7 +1346,7 @@ msgid "Repair System"
 msgstr "System reparieren"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Legitimierung ist erforderlich, um die installierte Software zu reparieren"
+msgstr "Legitimation ist zum Reparieren der installierten Software erforderlich"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1350,7 +1355,7 @@ msgid "Trigger offline updates"
 msgstr "Offline-Aktualisierungen anstoßen"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Eine Legitimierung ist zum Anstoßen von Offline-Aktualisierungen notwendig"
+msgstr "Legitimation ist zum Anstoßen von Offline-Aktualisierungen erforderlich"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -1359,12 +1364,12 @@ msgid "Clear offline update message"
 msgstr "Nachricht für Offline-Aktualisierungen löschen"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Eine Legitimierung ist zum Löschen der Nachricht für Offline-Aktualisierungen notwendig"
+msgstr "Legitimation ist zum Löschen der Nachricht für Offline-Aktualisierungen notwendig"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias zu %s"
 
 msgid "Command not found, valid commands are:"
 msgstr "Befehl nicht gefunden, gültige Befehle sind:"
@@ -1392,6 +1397,10 @@ msgstr "Suche nach Details"
 #. TRANSLATORS: command description
 msgid "Search by files"
 msgstr "Suche nach Dateien"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

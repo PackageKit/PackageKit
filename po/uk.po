@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/packagekit/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -381,10 +381,10 @@ msgstr "Приготуватися до операції, лише отрима�
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Дозволити під час виконання дії знижувати версії пакунків"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Дозволити під час виконання дії повторне встановлення пакунків"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -892,6 +892,10 @@ msgstr "Встановлене"
 msgid "Available"
 msgstr "Доступний"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Звантаження"
@@ -1210,10 +1214,10 @@ msgstr "Для встановлення програмного забезпеч�
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Встановлення вже встановленого пакунка"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Для повторного встановлення програмного забезпечення слід пройти розпізнавання"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1222,10 +1226,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Встановлення старішої версії встановленого пакунка"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Для встановлення старішої версії встановленого пакунка слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1259,6 +1263,7 @@ msgstr "Для підтвердження EULA слід виконати роз�
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "Вилучення пакунка"
 
@@ -1378,6 +1383,10 @@ msgstr "Шукати за подробицями"
 #. TRANSLATORS: command description
 msgid "Search by files"
 msgstr "Шукати за файлами"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

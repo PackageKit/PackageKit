@@ -8,12 +8,13 @@
 # Tommy He <lovenemesis@gmail.com>, 2011, 2012
 # Michael Jay Tong <michaeljayt@gmail.com>, 2014
 # Richard Hughes <richard@hughsie.com>, 2011
+# Wylmer Wang <wantinghard@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-10 17:11+0000\n"
-"PO-Revision-Date: 2014-11-10 17:11+0000\n"
+"POT-Creation-Date: 2015-01-19 16:28+0000\n"
+"PO-Revision-Date: 2015-01-19 16:28+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/projects/p/packagekit/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -384,10 +385,10 @@ msgstr "仅准备下载软件包事务"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "允许事务进行中下载软件包"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "允许事务进行中重新安装软件包"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -895,6 +896,10 @@ msgstr "已安装"
 msgid "Available"
 msgstr "可用"
 
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr ""
+
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "正在下载"
@@ -1262,6 +1267,7 @@ msgstr "接受最终用户许可协议（EULA）需要认证"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. TRANSLATORS: command description
 msgid "Remove package"
 msgstr "删除软件包"
 
@@ -1381,6 +1387,10 @@ msgstr "按详细信息搜索"
 #. TRANSLATORS: command description
 msgid "Search by files"
 msgstr "按文件搜索"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
