@@ -84,16 +84,16 @@ pk_transaction_db_add_transaction_cb (void *data,
 	gchar *col;
 	gchar *value;
 	guint temp;
-	gboolean ret;
 
 	item = pk_transaction_past_new ();
 	for (i = 0; i < argc; i++) {
 		col = col_name[i];
 		value = argv[i];
 		if (g_strcmp0 (col, "succeeded") == 0) {
-			ret = pk_strtouint (value, &temp);
-			if (!ret)
+			if (!pk_strtouint (value, &temp)) {
 				g_warning ("failed to parse succeeded: %s", value);
+				continue;
+			}
 			if (temp == 1)
 				g_object_set (item, "succeeded", TRUE, NULL);
 			else
@@ -114,18 +114,11 @@ pk_transaction_db_add_transaction_cb (void *data,
 			if (value != NULL)
 				g_object_set (item, "data", value, NULL);
 		} else if (g_strcmp0 (col, "uid") == 0) {
-			ret = pk_strtouint (value, &temp);
-			if (ret)
+			if (pk_strtouint (value, &temp))
 				g_object_set (item, "uid", temp, NULL);
-		} else if (g_strcmp0 (col, "duration") == 0 && value != NULL) {
-			ret = pk_strtouint (value, &temp);
-			if (!ret) {
-				g_warning ("failed to parse duration: %s", value);
-			} else if (temp > 60 * 60 * 12 * 1000) {
-				g_warning ("insane duration: %i", temp);
-			} else {
+		} else if (g_strcmp0 (col, "duration") == 0) {
+			if (pk_strtouint (value, &temp))
 				g_object_set (item, "duration", temp, NULL);
-			}
 		} else {
 			g_warning ("%s = %s", col, value);
 		}
