@@ -35,8 +35,12 @@ git add *.po
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 1.0.5"
-git tag -s -f -m "Release 1.0.5" PACKAGEKIT_1_0_5
+# MAKE SURE THESE ARE CORRECT
+export release_version="1.0.5"
+export release_tag="PACKAGEKIT_1_0_5"
+
+git commit -a -m "Release ${release_version}"
+git tag -s -f -m "Release ${release_version}" "${release_tag}"
 <gpg password>
 git push --tags
 git push
@@ -45,9 +49,14 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
 5. run 'make distcheck'
 
+5a. Generate the additon verification metadata
+
+sha1sum PackageKit-${release_version}.tar.xz > PackageKit-${release_version}.tar.xz.sha1
+gpg -b -a PackageKit-${release_version}.tar.xz
+
 6. Upload tarball to:
 
-scp *.tar.* hughsient@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
+scp PackageKit-${release_version}.tar.* hughsient@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
 
 7. Do post release version bump in configure.ac
 
