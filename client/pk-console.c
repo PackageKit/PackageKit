@@ -1671,7 +1671,7 @@ main (int argc, char *argv[])
 			_("Install the packages without asking for confirmation"), NULL },
 		{ "only-download", 'd', 0, G_OPTION_ARG_NONE, &only_download,
 			/* command line argument, do we just download or apply changes */
-			_("Prepare the transaction by downloading pakages only"), NULL },
+			_("Prepare the transaction by downloading packages only"), NULL },
 		{ "allow-downgrade", 0, 0, G_OPTION_ARG_NONE, &allow_downgrade,
 			/* command line argument, do we allow package downgrades */
 			_("Allow packages to be downgraded during transaction"), NULL},
