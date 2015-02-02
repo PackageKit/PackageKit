@@ -259,6 +259,76 @@ out:
 	return suffix;
 }
 
+static gboolean
+pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, guint timestamp, GError **error)
+{
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
+
+	/* get proxy */
+	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					       NULL,
+					       "org.freedesktop.PackageKit",
+					       "/org/freedesktop/PackageKit",
+					       "org.freedesktop.PackageKit.Modify2",
+					       NULL,
+					       error);
+	if (proxy != NULL) {
+		/* invoke the method */
+		value = g_dbus_proxy_call_sync (proxy,
+						"InstallGStreamerResources",
+						g_variant_new ("(^a&sssu)",
+							       resources,
+							       "hide-finished",
+							       desktop_id,
+							       timestamp),
+						G_DBUS_CALL_FLAGS_NONE,
+						60 * 60 * 1000, /* 1 hour */
+						NULL,
+						error);
+		if (value != NULL)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static gboolean
+pk_gst_dbus_install_resources_compat (gchar **resources, gint xid, GError **error)
+{
+	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_variant_unref_ GVariant *value = NULL;
+
+	/* get proxy */
+	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					       NULL,
+					       "org.freedesktop.PackageKit",
+					       "/org/freedesktop/PackageKit",
+					       "org.freedesktop.PackageKit.Modify",
+					       NULL,
+					       error);
+	if (proxy != NULL) {
+		/* invoke the method */
+		value = g_dbus_proxy_call_sync (proxy,
+						"InstallGStreamerResources",
+						g_variant_new ("(u^a&ss)",
+							       xid,
+							       resources,
+							       "hide-finished"),
+						G_DBUS_CALL_FLAGS_NONE,
+						60 * 60 * 1000, /* 1 hour */
+						NULL,
+						error);
+		if (value != NULL)
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 /**
  * main:
@@ -269,18 +339,21 @@ main (int argc, gchar **argv)
 	GOptionContext *context;
 	guint i;
 	guint len;
+	gboolean ret;
 	gchar **codecs = NULL;
 	gint xid = 0;
+	guint timestamp = 0;
 	const gchar *suffix;
 	gchar *resource;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
+	_cleanup_free_ gchar *desktop_id = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 	_cleanup_strv_free_ gchar **resources = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
+		{ "desktop-id", '\0', 0, G_OPTION_ARG_STRING, &desktop_id, "The desktop ID of the calling application", NULL },
+		{ "timestamp", '\0', 0, G_OPTION_ARG_INT, &timestamp, "The timestamp of the user interaction that triggered this call", NULL },
 		{ G_OPTION_REMAINING, '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &codecs, "GStreamer install infos", NULL },
 		{ NULL }
 	};
@@ -307,22 +380,7 @@ main (int argc, gchar **argv)
 
 	/* this is our parent window */
 	g_message ("PackageKit: xid = %i", xid);
-
-	/* get proxy */
-	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-					       NULL,
-					       "org.freedesktop.PackageKit",
-					       "/org/freedesktop/PackageKit",
-					       "org.freedesktop.PackageKit.Modify",
-					       NULL,
-					       &error);
-	if (proxy == NULL) {
-		g_warning ("Cannot connect to PackageKit session service: %s",
-			   error->message);
-		return GST_INSTALL_PLUGINS_ERROR;
-	}
+	g_message ("PackageKit: desktop_id = %s", desktop_id);
 
 	/* use a ()(64bit) suffix for 64 bit */
 	suffix = pk_gst_get_arch_suffix ();
@@ -384,18 +442,15 @@ main (int argc, gchar **argv)
 	/* convert to a GStrv */
 	resources = pk_ptr_array_to_strv (array);
 
-	/* invoke the method */
-	value = g_dbus_proxy_call_sync (proxy,
-					"InstallGStreamerResources",
-					g_variant_new ("(u^a&ss)",
-						       xid,
-						       resources,
-						       "hide-finished"),
-					G_DBUS_CALL_FLAGS_NONE,
-					60 * 60 * 1000, /* 1 hour */
-					NULL,
-					&error);
-	if (value == NULL) {
+	/* first try the new interface */
+	ret = pk_gst_dbus_install_resources (resources, desktop_id, timestamp, &error);
+	if (g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD)) {
+		/* ... and if that fails, fall back to the compat interface */
+		g_clear_error (&error);
+		g_message ("PackageKit: falling back to compat dbus interface");
+		ret = pk_gst_dbus_install_resources_compat (resources, xid, &error);
+	}
+	if (!ret) {
 		/* use the error string to return a good GStreamer exit code */
 		g_message ("PackageKit: Did not install codec: %s", error->message);
 		if (g_strrstr (error->message, "did not agree to search") != NULL)
