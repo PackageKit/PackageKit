@@ -642,7 +642,7 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 					pk_alpm_transaction_add_start (job, e->newpkg);
 					break;
 				case ALPM_PACKAGE_REMOVE:
-					pk_alpm_transaction_remove_start (job, e->newpkg);
+					pk_alpm_transaction_remove_start (job, e->oldpkg);
 					break;
 				case ALPM_PACKAGE_UPGRADE:
 				case ALPM_PACKAGE_DOWNGRADE:
@@ -660,7 +660,7 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 					pk_alpm_transaction_add_done (job, e->newpkg);
 					break;
 				case ALPM_PACKAGE_REMOVE:
-					pk_alpm_transaction_remove_done (job, e->newpkg);
+					pk_alpm_transaction_remove_done (job, e->oldpkg);
 					break;
 				case ALPM_PACKAGE_UPGRADE:
 					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, 1);
