@@ -279,6 +279,14 @@ manpage.1: manpage.xml
         <term>--allow-untrusted</term>
         <listitem><para>Allow untrusted packages to be installed.</para></listitem>
       </varlistentry>
+      <varlistentry>
+        <term>--allow-downgrade</term>
+        <listitem><para>Allow packages to be downgraded during transaction.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--allow-reinstall</term>
+        <listitem><para>Allow packages to be reinstalled during transaction.</para></listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>

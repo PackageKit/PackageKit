@@ -13,9 +13,11 @@ endif
 
 if HAVE_XSLTPROC
 pkcon.1: pkcon.xml
+	$(AM_V_GEN)					\
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 
 pkmon.1: pkmon.xml
+	$(AM_V_GEN)					\
 	xsltproc http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $? &> /dev/null
 endif
 
