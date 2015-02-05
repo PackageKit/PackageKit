@@ -92,7 +92,12 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	if (pk_alpm_transaction_initialize (job, 0, 0, &error) &&
 	    pk_alpm_transaction_add_targets (job, full_paths, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
-		pk_alpm_transaction_commit (job, &error);
+		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
+			pk_alpm_transaction_packages (job);
+		}
+		else {
+			pk_alpm_transaction_commit (job, &error);
+		}
 	}
 out:
 	pk_alpm_transaction_end (job, (error == NULL) ? &error : NULL);
