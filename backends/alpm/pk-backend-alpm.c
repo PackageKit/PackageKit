@@ -97,6 +97,42 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 	return TRUE;
 }
 
+/**
+ * pk_backend_context_invalidate_cb:
+ */
+static void
+pk_backend_context_invalidate_cb (GFileMonitor *monitor, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
+{
+	pk_backend_installed_db_changed (backend);
+}
+
+static void
+pk_alpm_destroy_monitor (PkBackend *backend)
+{
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	g_object_unref (priv->monitor);
+}
+
+static gboolean
+pk_alpm_initialize_monitor (PkBackend *backend, GError **error)
+{
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+
+	_cleanup_free_ gchar * path = NULL;
+	_cleanup_object_unref_ GFile *directory = NULL;
+
+	path = g_strconcat (alpm_option_get_dbpath (priv->alpm) ,"/local", NULL);
+	directory = g_file_new_for_path (path);
+
+	priv->monitor = g_file_monitor_directory (directory, 0, NULL, error);
+	if (priv->monitor == NULL)
+		return FALSE;
+
+	g_signal_connect (priv->monitor, "changed",
+		G_CALLBACK (pk_backend_context_invalidate_cb), backend);
+	return TRUE;
+}
+
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -113,6 +149,9 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 		g_error ("Failed to initialize databases: %s", error->message);
 	if (!pk_alpm_groups_initialize (backend, &error))
 		g_error ("Failed to initialize groups: %s", error->message);
+
+	if (!pk_alpm_initialize_monitor (backend, &error))
+		g_error ("Failed to initialize monitor: %s", error->message);
 }
 
 void
@@ -121,6 +160,7 @@ pk_backend_destroy (PkBackend *backend)
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	pk_alpm_groups_destroy (backend);
 	pk_alpm_destroy_databases (backend);
+	pk_alpm_destroy_monitor (backend);
 
 	if (priv->alpm != NULL) {
 		if (alpm_trans_get_flags (priv->alpm) < 0)

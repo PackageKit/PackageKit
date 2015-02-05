@@ -47,6 +47,7 @@ typedef struct {
 	alpm_list_t	*syncfirsts;
 	alpm_list_t	*holdpkgs;
 	alpm_handle_t	*alpm;
+	GFileMonitor    *monitor;
 } PkBackendAlpmPrivate;
 
 void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,

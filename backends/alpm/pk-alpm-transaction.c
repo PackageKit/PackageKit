@@ -1011,6 +1011,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *data = NULL;
 	_cleanup_free_ gchar *prefix = NULL;
+	gint commit_result;
 
 	if (pk_backend_job_is_cancelled (job))
 		return TRUE;
@@ -1018,7 +1019,10 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 	pk_backend_job_set_allow_cancel (job, FALSE);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_RUNNING);
 
-	if (alpm_trans_commit (priv->alpm, &data) >= 0)
+	pk_backend_transaction_inhibit_start (backend);
+	commit_result = alpm_trans_commit (priv->alpm, &data);
+	pk_backend_transaction_inhibit_end (backend);
+	if (commit_result >= 0)
 		return TRUE;
 
 	switch (alpm_errno (priv->alpm)) {
