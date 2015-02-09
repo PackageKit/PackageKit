@@ -1,3 +1,18 @@
+Version 1.0.5
+~~~~~~~~~~~~~
+Released: 2015-02-09
+
+Backends:
+ - alpm: Fix bad event usage when removing package (Fabien Bourigault)
+ - alpm: Honor simulate flag while removing packages (Fabien Bourigault)
+ - alpm: Honor simulate on pk_backend_install_files (Fabien Bourigault)
+ - alpm: Inhibit cache invalidation while commiting transaction (Fabien Bourigault)
+ - alpm: Track local db changes and invalidate cache (Fabien Bourigault)
+ - hif: Adapt to the new Hawkey API (Richard Hughes)
+
+Bugfixes:
+ - Add missing --allow-downgrade and --allow-reinstall to the man page (Richard Hughes)
+
 Version 1.0.4
 ~~~~~~~~~~~~~
 Released: 2015-01-19
