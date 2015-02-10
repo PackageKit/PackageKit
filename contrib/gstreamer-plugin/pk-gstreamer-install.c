@@ -260,7 +260,7 @@ out:
 }
 
 static gboolean
-pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, guint timestamp, GError **error)
+pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, guint timestamp, const gchar *interaction, GError **error)
 {
 	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
 	_cleanup_variant_unref_ GVariant *value = NULL;
@@ -281,7 +281,7 @@ pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, guint
 						"InstallGStreamerResources",
 						g_variant_new ("(^a&sssu)",
 							       resources,
-							       "hide-finished",
+							       interaction,
 							       desktop_id,
 							       timestamp),
 						G_DBUS_CALL_FLAGS_NONE,
@@ -347,6 +347,7 @@ main (int argc, gchar **argv)
 	gchar *resource;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *desktop_id = NULL;
+	_cleanup_free_ gchar *interaction = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 	_cleanup_strv_free_ gchar **resources = NULL;
 
@@ -354,6 +355,7 @@ main (int argc, gchar **argv)
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
 		{ "desktop-id", '\0', 0, G_OPTION_ARG_STRING, &desktop_id, "The desktop ID of the calling application", NULL },
 		{ "timestamp", '\0', 0, G_OPTION_ARG_INT, &timestamp, "The timestamp of the user interaction that triggered this call", NULL },
+		{ "interaction", '\0', 0, G_OPTION_ARG_STRING, &interaction, "Interaction mode specifying which UI elements should be shown", NULL },
 		{ G_OPTION_REMAINING, '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &codecs, "GStreamer install infos", NULL },
 		{ NULL }
 	};
@@ -443,7 +445,7 @@ main (int argc, gchar **argv)
 	resources = pk_ptr_array_to_strv (array);
 
 	/* first try the new interface */
-	ret = pk_gst_dbus_install_resources (resources, desktop_id, timestamp, &error);
+	ret = pk_gst_dbus_install_resources (resources, desktop_id, timestamp, interaction, &error);
 	if (g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD)) {
 		/* ... and if that fails, fall back to the compat interface */
 		g_clear_error (&error);
