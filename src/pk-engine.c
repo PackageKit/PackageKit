@@ -1636,6 +1636,27 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 						      helper);
 		return;
 	}
+	if (g_strcmp0 (method_name, "GetPrepared") == 0) {
+		_cleanup_strv_free_ gchar **package_ids = NULL;
+		GVariant *value = NULL;
+
+		package_ids = pk_offline_get_prepared_ids (&error);
+		if (package_ids == NULL && error->code != PK_OFFLINE_ERROR_NO_DATA) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		if (package_ids != NULL) {
+			value = g_variant_new ("(^as)", package_ids);
+		} else {
+			value = g_variant_new ("(as)");
+		}
+		g_dbus_method_invocation_return_value (invocation, value);
+		return;
+	}
 }
 
 #ifdef HAVE_SYSTEMD
