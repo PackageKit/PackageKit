@@ -259,6 +259,21 @@ out:
 	return suffix;
 }
 
+static GVariant *
+make_platform_data (const gchar *startup_id)
+{
+	GVariantBuilder builder;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+
+	if (startup_id && g_utf8_validate (startup_id, -1, NULL)) {
+		g_variant_builder_add (&builder, "{sv}",
+		                       "desktop-startup-id", g_variant_new_string (startup_id));
+	}
+
+	return g_variant_builder_end (&builder);
+}
+
 static gboolean
 pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const gchar *startup_id, const gchar *interaction, GError **error)
 {
@@ -279,11 +294,11 @@ pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const
 		/* invoke the method */
 		value = g_dbus_proxy_call_sync (proxy,
 						"InstallGStreamerResources",
-						g_variant_new ("(^a&ssss)",
+						g_variant_new ("(^a&sss@a{sv})",
 							       resources,
 							       interaction,
 							       desktop_id,
-							       startup_id),
+							       make_platform_data (startup_id)),
 						G_DBUS_CALL_FLAGS_NONE,
 						60 * 60 * 1000, /* 1 hour */
 						NULL,
