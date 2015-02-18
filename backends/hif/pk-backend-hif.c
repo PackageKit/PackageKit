@@ -1246,7 +1246,7 @@ pk_backend_get_groups_from_category (const gchar *category,
 	comps_data->groups = g_ptr_array_new_with_free_func (g_free);
 
 	if (pk_backend_comps_parser (comps_data) == FALSE);
-	   return groups;
+	   return comps_data->groups;
 
 	g_ptr_array_add (comps_data->groups, NULL);
 	return pk_ptr_array_to_strv (comps_data->groups);
