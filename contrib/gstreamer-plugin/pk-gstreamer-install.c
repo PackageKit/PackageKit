@@ -296,8 +296,8 @@ pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const
 						"InstallGStreamerResources",
 						g_variant_new ("(^a&sss@a{sv})",
 							       resources,
-							       interaction,
-							       desktop_id,
+							       interaction ? interaction : "",
+							       desktop_id ? desktop_id : "",
 							       make_platform_data (startup_id)),
 						G_DBUS_CALL_FLAGS_NONE,
 						60 * 60 * 1000, /* 1 hour */
