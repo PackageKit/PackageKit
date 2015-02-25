@@ -2984,6 +2984,10 @@ class PackageKitCallback(RPMBaseCallback):
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
 
+        # for really old versions of rpm
+        if te_total <= 0:
+            return
+
         if str(package) != str(self.curpkg):
             self.curpkg = package
             try:
