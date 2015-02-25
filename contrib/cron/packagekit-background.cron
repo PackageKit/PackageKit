@@ -36,12 +36,15 @@ fi
 
 # this is when seomthing useful was done
 if [ $PKCON_RETVAL -ne 5 ]; then
-	# send email
-	if [ -n "$MAILTO" ]; then
-		mail -s "System updates available: $SYSTEMNAME" $MAILTO < $PKTMP
-	else
-		# default behavior is to use cron's internal mailing of output from cron-script
-		cat $PKTMP
+	# we actually have something to report
+	if [ -s $PKTMP ]; then
+		# send email
+		if [ -n "$MAILTO" ]; then
+			mail -s "System updates available: $SYSTEMNAME" $MAILTO < $PKTMP
+		else
+			# default behavior is to use cron's internal mailing of output from cron-script
+			cat $PKTMP
+		fi
 	fi
 fi
 
