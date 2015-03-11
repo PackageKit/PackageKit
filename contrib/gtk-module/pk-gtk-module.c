@@ -28,36 +28,25 @@
 #include <pango/pangofc-fontmap.h>
 #include <pango/pangocairo.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkx.h>
 #include <gio/gio.h>
 
 #include "src/pk-cleanup.h"
 
-/**
- * Try guessing the XID of the toplevel window that triggered us
- **/
-
-static void
-toplevels_foreach_cb (GtkWindow *window,
-		      GtkWindow **active)
+static gchar *
+pk_guess_application_id (void)
 {
-	if (gtk_window_has_toplevel_focus (window))
-		*active = window;
-}
+	GApplication *app;
+	const gchar *app_id;
 
-static guint
-guess_xid (void)
-{
-	guint xid = 0;
-	GtkWindow *active = NULL;
+	app = g_application_get_default ();
+	if (app == NULL)
+		return NULL;
 
-	g_list_foreach (gtk_window_list_toplevels (),
-			(GFunc) toplevels_foreach_cb, &active);
+	app_id = g_application_get_application_id (app);
+	if (app_id == NULL)
+		return NULL;
 
-	if (active != NULL)
-		xid = GDK_WINDOW_XID (gtk_widget_get_window (GTK_WIDGET(active)));
-
-	return xid;
+	return g_strconcat (app_id, ".desktop", NULL);
 }
 
 /**
@@ -81,12 +70,20 @@ pk_install_fonts_method_finished_cb (GObject *source_object,
 	/* XXX Make gtk/pango reload fonts? */
 }
 
+static GVariant *
+pk_make_platform_data (void)
+{
+	GVariantBuilder builder;
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+	return g_variant_builder_end (&builder);
+}
+
 static GPtrArray *tags;
 
 static gboolean
 pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 {
-	guint xid;
+	_cleanup_free_ gchar *application_id = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
 	_cleanup_strv_free_ gchar **font_tags = NULL;
@@ -98,8 +95,7 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	font_tags = (gchar **) g_ptr_array_free (tags, FALSE);
 	tags = NULL;
 
-	/* try to get the window XID */
-	xid = guess_xid ();
+	application_id = pk_guess_application_id ();
 
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
@@ -108,7 +104,7 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 					       NULL,
 					       "org.freedesktop.PackageKit",
 					       "/org/freedesktop/PackageKit",
-					       "org.freedesktop.PackageKit.Modify",
+					       "org.freedesktop.PackageKit.Modify2",
 					       NULL,
 					       &error);
 	if (proxy == NULL) {
@@ -119,10 +115,11 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	/* invoke the method */
 	g_dbus_proxy_call (proxy,
 			   "InstallFontconfigResources",
-			   g_variant_new ("(u^a&ss)",
-					  xid,
+			   g_variant_new ("(^a&sss@a{sv})",
 					  font_tags,
-					  "hide-finished"),
+					  "hide-finished",
+					   application_id ? application_id : "",
+					   pk_make_platform_data ()),
 			   G_DBUS_CALL_FLAGS_NONE,
 			   60 * 60 * 1000, /* 1 hour */
 			   NULL,
@@ -143,6 +140,7 @@ queue_install_fonts_tag (const char *tag)
 		g_source_set_name_by_id (idle_id, "[PkGtkModule] install fonts");
 	}
 
+	g_debug ("Queue install of: %s", tag);
 	g_ptr_array_add (tags, (gpointer) g_strdup (tag));
 }
 
