@@ -2090,7 +2090,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sou
 					 HIF_PACKAGE_INFO_DOWNGRADE,
 					 HIF_PACKAGE_INFO_UPDATE,
 					 -1);
-	array = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) hy_package_free);
 	for (i = 0; i < install->len; i++) {
 		pkg = g_ptr_array_index (install, i);
 
@@ -2098,7 +2098,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sou
 		 * untrusted repo */
 		if (g_strcmp0 (hy_package_get_reponame (pkg),
 			       HY_CMDLINE_REPO_NAME) == 0) {
-			g_ptr_array_add (array, pkg);
+			g_ptr_array_add (array, hy_package_link (pkg));
 			continue;
 		}
 
@@ -2115,7 +2115,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sou
 
 		/* repo has no gpg key */
 		if (!hif_source_get_gpgcheck (src))
-			g_ptr_array_add (array, pkg);
+			g_ptr_array_add (array, hy_package_link (pkg));
 	}
 out:
 	if (array != NULL && !ret) {
