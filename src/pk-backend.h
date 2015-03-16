@@ -90,6 +90,7 @@ gboolean	 pk_backend_updates_changed_delay	(PkBackend	*backend,
 
 void		 pk_backend_transaction_inhibit_start	(PkBackend      *backend);
 void		 pk_backend_transaction_inhibit_end	(PkBackend      *backend);
+gboolean	 pk_backend_is_transaction_inhibited    (PkBackend      *backend);
 const gchar	*pk_backend_bool_to_string		(gboolean	 value);
 gboolean	 pk_backend_is_online			(PkBackend	*backend);
 gchar		*pk_backend_convert_uri			(const gchar	*proxy);
