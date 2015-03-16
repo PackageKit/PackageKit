@@ -796,7 +796,7 @@ pk_alpm_siglevel_cross (alpm_siglevel_t base, const alpm_list_t *list, GError **
 }
 
 static gboolean
-pk_alpm_config_configure_repos (PkAlpmConfig *config,
+pk_alpm_config_configure_repos (PkBackend *backend, PkAlpmConfig *config,
 				   alpm_handle_t *handle, GError **error)
 {
 	alpm_siglevel_t base, local, remote;
@@ -834,7 +834,7 @@ pk_alpm_config_configure_repos (PkAlpmConfig *config,
 		level = pk_alpm_siglevel_parse (base, repo->siglevels, error);
 		if (level == ALPM_SIG_USE_DEFAULT)
 			return FALSE;
-		pk_alpm_add_database (repo->name, repo->servers, level);
+		pk_alpm_add_database (backend, repo->name, repo->servers, level);
 	}
 
 	return TRUE;
@@ -936,7 +936,7 @@ out:
 }
 
 static alpm_handle_t *
-pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
+pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError **error)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (config->backend);
 	alpm_handle_t *handle;
@@ -984,7 +984,7 @@ pk_alpm_config_configure_alpm (PkAlpmConfig *config, GError **error)
 	alpm_option_set_noupgrades (handle, config->noupgrades);
 	config->noupgrades = NULL;
 
-	pk_alpm_config_configure_repos (config, handle, error);
+	pk_alpm_config_configure_repos (backend, config, handle, error);
 
 	return handle;
 }
@@ -1003,7 +1003,7 @@ pk_alpm_configure (PkBackend *backend, const gchar *filename, GError **error)
 	pk_alpm_config_enter_section (config, "options");
 
 	if (pk_alpm_config_parse (config, filename, NULL, &e))
-		handle = pk_alpm_config_configure_alpm (config, &e);
+		handle = pk_alpm_config_configure_alpm (backend, config, &e);
 
 	pk_alpm_config_free (config);
 	if (e != NULL) {

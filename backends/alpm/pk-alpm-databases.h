@@ -24,7 +24,8 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-void		 pk_alpm_add_database			(const gchar *name,
+void		 pk_alpm_add_database			(PkBackend *backend,
+					                 const gchar *name,
 							 alpm_list_t *servers,
 							 alpm_siglevel_t level);
 

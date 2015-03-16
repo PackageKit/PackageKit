@@ -33,8 +33,6 @@ typedef struct
 	alpm_siglevel_t level;
 } PkBackendRepo;
 
-static alpm_list_t *configured = NULL;
-
 static GHashTable *
 pk_alpm_disabled_repos_new (GError **error)
 {
@@ -125,7 +123,7 @@ pk_alpm_disabled_repos_configure (PkBackend *backend, GHashTable *table, gboolea
 		return FALSE;
 	}
 
-	for (i = configured; i != NULL; i = i->next) {
+	for (i = priv->configured_repos; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
 		alpm_siglevel_t level = repo->level;
 		alpm_db_t *db;
@@ -154,9 +152,10 @@ pk_alpm_disabled_repos_configure (PkBackend *backend, GHashTable *table, gboolea
 }
 
 void
-pk_alpm_add_database (const gchar *name, alpm_list_t *servers,
+pk_alpm_add_database (PkBackend *backend, const gchar *name, alpm_list_t *servers,
 			 alpm_siglevel_t level)
 {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendRepo *repo = g_new (PkBackendRepo, 1);
 
 	g_return_if_fail (name != NULL);
@@ -165,7 +164,7 @@ pk_alpm_add_database (const gchar *name, alpm_list_t *servers,
 	repo->servers = alpm_list_strdup (servers);
 	repo->level = level;
 
-	configured = alpm_list_add (configured, repo);
+	priv->configured_repos = alpm_list_add (priv->configured_repos, repo);
 }
 
 gboolean
@@ -205,13 +204,13 @@ pk_alpm_destroy_databases (PkBackend *backend)
 	if (priv->disabled_repos != NULL)
 		pk_alpm_disabled_repos_free (priv->disabled_repos);
 
-	for (i = configured; i != NULL; i = i->next) {
+	for (i = priv->configured_repos; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
 		g_free (repo->name);
 		FREELIST (repo->servers);
 		g_free (repo);
 	}
-	alpm_list_free (configured);
+	alpm_list_free (priv->configured_repos);
 }
 
 static gboolean
