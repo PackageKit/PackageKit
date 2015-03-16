@@ -33,7 +33,6 @@ typedef struct
 	alpm_siglevel_t level;
 } PkBackendRepo;
 
-static GHashTable *disabled = NULL;
 static alpm_list_t *configured = NULL;
 
 static GHashTable *
@@ -172,23 +171,26 @@ pk_alpm_add_database (const gchar *name, alpm_list_t *servers,
 gboolean
 pk_alpm_disable_signatures (PkBackend *backend, GError **error)
 {
-	return pk_alpm_disabled_repos_configure (backend, disabled, FALSE, error);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	return pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, FALSE, error);
 }
 
 gboolean
 pk_alpm_enable_signatures (PkBackend *backend, GError **error)
 {
-	return pk_alpm_disabled_repos_configure (backend, disabled, TRUE, error);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	return pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, error);
 }
 
 gboolean
 pk_alpm_initialize_databases (PkBackend *backend, GError **error)
 {
-	disabled = pk_alpm_disabled_repos_new (error);
-	if (disabled == NULL)
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	priv->disabled_repos = pk_alpm_disabled_repos_new (error);
+	if (priv->disabled_repos == NULL)
 		return FALSE;
 
-	if (!pk_alpm_disabled_repos_configure (backend, disabled, TRUE, error))
+	if (!pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, error))
 		return FALSE;
 
 	return TRUE;
@@ -197,10 +199,11 @@ pk_alpm_initialize_databases (PkBackend *backend, GError **error)
 void
 pk_alpm_destroy_databases (PkBackend *backend)
 {
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *i;
 
-	if (disabled != NULL)
-		pk_alpm_disabled_repos_free (disabled);
+	if (priv->disabled_repos != NULL)
+		pk_alpm_disabled_repos_free (priv->disabled_repos);
 
 	for (i = configured; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
@@ -229,7 +232,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer d
 	GHashTableIter iter;
 	gpointer key, value;
 
-	g_return_if_fail (disabled != NULL);
+	g_return_if_fail (priv->disabled_repos != NULL);
 
 	/* emit enabled repos */
 	for (i = alpm_get_syncdbs (priv->alpm); i != NULL; i = i->next) {
@@ -241,7 +244,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer d
 	}
 
 	/* emit disabled repos */
-	g_hash_table_iter_init (&iter, disabled);
+	g_hash_table_iter_init (&iter, priv->disabled_repos);
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		const gchar *repo = (const gchar *) key;
 		if (pk_backend_job_is_cancelled (job))
@@ -264,15 +267,16 @@ pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer dat
 	const gchar *repo;
 	gboolean enabled;
 	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	_cleanup_error_free_ GError *error = NULL;
 
-	g_return_if_fail (disabled != NULL);
+	g_return_if_fail (priv->disabled_repos != NULL);
 
 	g_variant_get (params, "(&sb)", &repo, &enabled);
 
-	if (g_hash_table_remove (disabled, repo)) {
+	if (g_hash_table_remove (priv->disabled_repos, repo)) {
 		/* reload configuration to preserve ordering */
-		if (pk_alpm_disabled_repos_configure (backend, disabled, TRUE, &error)) {
+		if (pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, &error)) {
 			pk_backend_repo_list_changed (backend);
 		}
 	} else {
@@ -311,7 +315,7 @@ pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params, gpointer da
 					     "[%s]: %s", repo,
 					     alpm_strerror (errno));
 			} else {
-				g_hash_table_insert (disabled, g_strdup (repo),
+				g_hash_table_insert (priv->disabled_repos, g_strdup (repo),
 						     GINT_TO_POINTER (1));
 			}
 			break;
