@@ -50,6 +50,7 @@ typedef struct {
 	GFileMonitor    *monitor;
 	GHashTable      *disabled_repos; /* list of disabled repos */
 	alpm_list_t     *configured_repos; /* list of configured repos */
+	gboolean	localdb_changed;
 } PkBackendAlpmPrivate;
 
 void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,
