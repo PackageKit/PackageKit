@@ -165,10 +165,12 @@ pk_comps_element_text (GMarkupParseContext *context,
 {
 	PkCompsData *comps_data = (PkCompsData*) (user_data);
 
-	if (comps_data->category_state == COMPS_STATE_CATEGORY_ID && g_strcmp0 (comps_data->current_query, text) == 0)
+	if (comps_data->category_state == COMPS_STATE_CATEGORY_ID &&
+	    g_strcmp0 (comps_data->current_query, text) == 0)
 		comps_data->query_match = TRUE;
 
-	if (comps_data->category_state == COMPS_STATE_GROUP_ID && g_strcmp0 (comps_data->current_query, text) == 0)
+	if (comps_data->category_state == COMPS_STATE_GROUP_ID &&
+	    g_strcmp0 (comps_data->current_query, text) == 0)
 		comps_data->query_match = TRUE;
 
 	if (comps_data->query_match) {
@@ -177,7 +179,7 @@ pk_comps_element_text (GMarkupParseContext *context,
 			g_ptr_array_add (comps_data->groups, g_strdup(text));
 		}
 		if (comps_data->category_state == COMPS_STATE_GROUP_DESCRIPTION) {
-			g_debug ("Description: %s\n", text);
+			g_debug ("Description: %s", text);
 		}
 		if (comps_data->category_state == COMPS_STATE_GROUP_PKGREQ) {
 			g_debug ("Package: %s", text);
@@ -1236,10 +1238,10 @@ pk_backend_comps_parser (gpointer user_data)
 
 	for (i = 0; i < comps_data->comps->len; i++) {
 		g_debug ("Comps file parsed: %s.", (char*) (g_ptr_array_index (comps_data->comps, i)));
-		if (g_file_get_contents (g_ptr_array_index (comps_data->comps, i), &text, &length, NULL) == FALSE) {
+		if (!g_file_get_contents (g_ptr_array_index (comps_data->comps, i), &text, &length, NULL)) {
 			g_debug ("Couldn't load XML");
 			return FALSE;
-		} else if (g_markup_parse_context_parse (context, text, length, NULL) == FALSE) {
+		} else if (!g_markup_parse_context_parse (context, text, length, NULL)) {
 			g_debug ("Parse failed");
 			return FALSE;
 		}
@@ -1264,7 +1266,7 @@ pk_backend_get_packages_from_group (gchar **groups,
 
 	for (i = 0; i < g_strv_length (groups); i++) {
 		comps_data->current_query = g_strdup (groups[i]);
-		if (pk_backend_comps_parser (comps_data) == FALSE)
+		if (!pk_backend_comps_parser (comps_data))
 			g_debug ("Group %s not available !", groups[i]);
 	}
 
@@ -1286,7 +1288,7 @@ pk_backend_get_groups_from_category (const gchar *category,
 
 	comps_data->groups = g_ptr_array_new_with_free_func (g_free);
 
-	if (pk_backend_comps_parser (comps_data) == FALSE);
+	if (!pk_backend_comps_parser (comps_data));
 	   return comps_data->groups;
 
 	g_ptr_array_add (comps_data->groups, NULL);
