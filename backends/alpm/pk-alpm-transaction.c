@@ -957,10 +957,11 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 
 	/* emit packages that would have been installed */
 	for (i = alpm_trans_get_add (priv->alpm); i != NULL; i = i->next) {
+		const gchar *name;
 		if (pk_backend_job_is_cancelled (job))
 			break;
 
-		const gchar *name = alpm_pkg_get_name (i->data);
+		name = alpm_pkg_get_name (i->data);
 
 		if (alpm_db_get_pkg (priv->localdb, name) != NULL) {
 			info = PK_INFO_ENUM_UPDATING;

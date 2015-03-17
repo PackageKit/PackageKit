@@ -103,7 +103,10 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 static void
 pk_backend_context_invalidate_cb (GFileMonitor *monitor, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
 {
-	pk_backend_installed_db_changed (backend);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	if (!pk_backend_is_transaction_inhibited (backend)) {
+		priv->localdb_changed = TRUE;
+	}
 }
 
 static void
@@ -152,6 +155,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	if (!pk_alpm_initialize_monitor (backend, &error))
 		g_error ("Failed to initialize monitor: %s", error->message);
+
+	priv->localdb_changed = FALSE;
 }
 
 void
@@ -193,7 +198,15 @@ pk_backend_get_mime_types (PkBackend *backend)
 void
 pk_alpm_run (PkBackendJob *job, PkStatusEnum status, PkBackendJobThreadFunc func, gpointer data)
 {
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	g_return_if_fail (func != NULL);
+
+	if (priv->localdb_changed) {
+		pk_backend_destroy (backend);
+		pk_backend_initialize (NULL, backend);
+		pk_backend_installed_db_changed (backend);
+	}
 
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_set_status (job, status);
