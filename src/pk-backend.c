@@ -809,6 +809,15 @@ pk_backend_transaction_inhibit_end (PkBackend *backend)
 }
 
 /**
+ * pk_backend_is_transaction_inhibited:
+ **/
+gboolean
+pk_backend_is_transaction_inhibited (PkBackend *backend)
+{
+	return backend->priv->transaction_in_progress;
+}
+
+/**
  * pk_backend_start_job:
  *
  * This is called just before the threaded transaction method, and in
