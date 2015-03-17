@@ -149,8 +149,6 @@ pk_backend_resolve_name (PkBackendJob *job, const gchar *name, PkBitfield filter
 	alpm_pkg_t *pkg;
 	int code;
 
-	gboolean skip_local, skip_remote;
-
 	g_return_val_if_fail (name != NULL, FALSE);
 
 	/* lookup into the local db */
