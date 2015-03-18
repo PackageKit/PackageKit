@@ -240,7 +240,7 @@ pk_offline_get_action (GError **error)
 	/* is the trigger set? */
 	if (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS) ||
 	    !g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS))
-		return PK_OFFLINE_ACTION_UNSET;
+		return PK_OFFLINE_ACTION_REBOOT;
 
 	/* read data file */
 	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME,
