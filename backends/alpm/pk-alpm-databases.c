@@ -33,88 +33,11 @@ typedef struct
 	alpm_siglevel_t level;
 } PkBackendRepo;
 
-static GHashTable *
-pk_alpm_disabled_repos_new (GError **error)
-{
-	GHashTable *table;
-	GError *e = NULL;
-	_cleanup_object_unref_ GDataInputStream *input = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
-	_cleanup_object_unref_ GFileInputStream *is = NULL;
-
-	g_debug ("reading disabled repos from %s", PK_BACKEND_REPO_FILE);
-	file = g_file_new_for_path (PK_BACKEND_REPO_FILE);
-	is = g_file_read (file, NULL, &e);
-	if (is == NULL) {
-		g_propagate_error (error, e);
-		return NULL;
-	}
-
-	table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	input = g_data_input_stream_new (G_INPUT_STREAM (is));
-
-	/* read disabled repos line by line, ignoring comments */
-	while (TRUE) {
-		gchar *line;
-
-		line = g_data_input_stream_read_line (input, NULL, NULL, &e);
-		if (line == NULL)
-			break;
-		g_strstrip (line);
-		if (*line == '\0' || *line == '#') {
-			g_free (line);
-			continue;
-		}
-
-		g_hash_table_insert (table, line, GINT_TO_POINTER (1));
-	}
-
-	if (e != NULL) {
-		g_hash_table_unref (table);
-		g_propagate_error (error, e);
-		return NULL;
-	}
-	return table;
-}
-
-static void
-pk_alpm_disabled_repos_free (GHashTable *table)
-{
-	GHashTableIter iter;
-	_cleanup_object_unref_ GDataOutputStream *output = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
-	_cleanup_object_unref_ GFileOutputStream *os = NULL;
-
-	const gchar *line;
-
-	g_return_if_fail (table != NULL);
-
-	g_debug ("storing disabled repos in %s", PK_BACKEND_REPO_FILE);
-	file = g_file_new_for_path (PK_BACKEND_REPO_FILE);
-	os = g_file_replace (file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL);
-	if (os == NULL) {
-		g_hash_table_unref (table);
-		return;
-	}
-
-	g_hash_table_iter_init (&iter, table);
-	output = g_data_output_stream_new (G_OUTPUT_STREAM (os));
-
-	/* write all disabled repos line by line */
-	while (g_hash_table_iter_next (&iter, (gpointer *) &line, NULL) &&
-	       g_data_output_stream_put_string (output, line, NULL, NULL) &&
-	       g_data_output_stream_put_byte (output, '\n', NULL, NULL));
-
-	g_hash_table_unref (table);
-}
-
 static gboolean
-pk_alpm_disabled_repos_configure (PkBackend *backend, GHashTable *table, gboolean only_trusted, GError **error)
+pk_alpm_disabled_repos_configure (PkBackend *backend, gboolean only_trusted, GError **error)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
-
-	g_return_val_if_fail (table != NULL, FALSE);
 
 	if (alpm_unregister_all_syncdbs (priv->alpm) < 0) {
 		alpm_errno_t errno = alpm_errno (priv->alpm);
@@ -128,10 +51,7 @@ pk_alpm_disabled_repos_configure (PkBackend *backend, GHashTable *table, gboolea
 		alpm_siglevel_t level = repo->level;
 		alpm_db_t *db;
 
-		if (g_hash_table_lookup (table, repo->name) != NULL) {
-			/* repo is disabled */
-			continue;
-		} else if (!only_trusted) {
+		if (!only_trusted) {
 			level &= ~ALPM_SIG_PACKAGE;
 			level &= ~ALPM_SIG_DATABASE;
 			level &= ~ALPM_SIG_USE_DEFAULT;
@@ -170,26 +90,19 @@ pk_alpm_add_database (PkBackend *backend, const gchar *name, alpm_list_t *server
 gboolean
 pk_alpm_disable_signatures (PkBackend *backend, GError **error)
 {
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	return pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, FALSE, error);
+	return pk_alpm_disabled_repos_configure (backend, FALSE, error);
 }
 
 gboolean
 pk_alpm_enable_signatures (PkBackend *backend, GError **error)
 {
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	return pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, error);
+	return pk_alpm_disabled_repos_configure (backend, TRUE, error);
 }
 
 gboolean
 pk_alpm_initialize_databases (PkBackend *backend, GError **error)
 {
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	priv->disabled_repos = pk_alpm_disabled_repos_new (error);
-	if (priv->disabled_repos == NULL)
-		return FALSE;
-
-	if (!pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, error))
+	if (!pk_alpm_disabled_repos_configure (backend, TRUE, error))
 		return FALSE;
 
 	return TRUE;
@@ -200,9 +113,6 @@ pk_alpm_destroy_databases (PkBackend *backend)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *i;
-
-	if (priv->disabled_repos != NULL)
-		pk_alpm_disabled_repos_free (priv->disabled_repos);
 
 	for (i = priv->configured_repos; i != NULL; i = i->next) {
 		PkBackendRepo *repo = (PkBackendRepo *) i->data;
@@ -228,10 +138,6 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer d
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
-	GHashTableIter iter;
-	gpointer key, value;
-
-	g_return_if_fail (priv->disabled_repos != NULL);
 
 	/* emit enabled repos */
 	for (i = alpm_get_syncdbs (priv->alpm); i != NULL; i = i->next) {
@@ -241,15 +147,6 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer d
 			return;
 		pk_backend_repo_info (job, repo, TRUE);
 	}
-
-	/* emit disabled repos */
-	g_hash_table_iter_init (&iter, priv->disabled_repos);
-	while (g_hash_table_iter_next (&iter, &key, &value)) {
-		const gchar *repo = (const gchar *) key;
-		if (pk_backend_job_is_cancelled (job))
-			return;
-		pk_backend_repo_info (job, repo, FALSE);
-	}
 }
 
 void
@@ -258,96 +155,4 @@ pk_backend_get_repo_list (PkBackend *self,
 			  PkBitfield filters)
 {
 	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_repo_list_thread, NULL);
-}
-
-static void
-pk_backend_repo_enable_thread (PkBackendJob *job, GVariant *params, gpointer data)
-{
-	const gchar *repo;
-	gboolean enabled;
-	PkBackend *backend = pk_backend_job_get_backend (job);
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	_cleanup_error_free_ GError *error = NULL;
-
-	g_return_if_fail (priv->disabled_repos != NULL);
-
-	g_variant_get (params, "(&sb)", &repo, &enabled);
-
-	if (g_hash_table_remove (priv->disabled_repos, repo)) {
-		/* reload configuration to preserve ordering */
-		if (pk_alpm_disabled_repos_configure (backend, priv->disabled_repos, TRUE, &error)) {
-			pk_backend_repo_list_changed (backend);
-		}
-	} else {
-		int code = ALPM_ERR_DB_NOT_NULL;
-		g_set_error (&error, PK_ALPM_ERROR, code, "[%s]: %s",
-			     repo, alpm_strerror (code));
-	}
-
-	if (error != NULL)
-		pk_alpm_error_emit (job, error);
-}
-
-static void
-pk_backend_repo_disable_thread (PkBackendJob *job, GVariant *params, gpointer data)
-{
-	PkBackend *backend = pk_backend_job_get_backend (job);
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	const alpm_list_t *i;
-	const gchar *repo;
-	gboolean enabled;
-	_cleanup_error_free_ GError *error = NULL;
-
-	g_variant_get (params, "(&sb)", &repo, &enabled);
-
-	g_return_if_fail (!enabled);
-	g_return_if_fail (repo != NULL);
-
-	for (i = alpm_get_syncdbs (priv->alpm); i != NULL; i = i->next) {
-		alpm_db_t *db = (alpm_db_t *) i->data;
-		const gchar *name = alpm_db_get_name (db);
-
-		if (g_strcmp0 (repo, name) == 0) {
-			if (alpm_db_unregister (db) < 0) {
-				alpm_errno_t errno = alpm_errno (priv->alpm);
-				g_set_error (&error, PK_ALPM_ERROR, errno,
-					     "[%s]: %s", repo,
-					     alpm_strerror (errno));
-			} else {
-				g_hash_table_insert (priv->disabled_repos, g_strdup (repo),
-						     GINT_TO_POINTER (1));
-			}
-			break;
-		}
-	}
-
-	if (i == NULL) {
-		int code = ALPM_ERR_DB_NULL;
-		g_set_error (&error, PK_ALPM_ERROR, code, "[%s]: %s", repo,
-			     alpm_strerror (code));
-	}
-
-	if (error != NULL)
-		pk_alpm_error_emit (job, error);
-}
-
-void
-pk_backend_repo_enable (PkBackend *self,
-			PkBackendJob *job,
-			const gchar    *repo_id,
-			gboolean    enabled)
-{
-	g_return_if_fail (repo_id != NULL);
-
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-
-	if (enabled) {
-		pk_backend_job_thread_create (job,
-					      pk_backend_repo_enable_thread,
-					      NULL, NULL);
-	} else {
-		pk_backend_job_thread_create (job,
-					      pk_backend_repo_disable_thread,
-					      NULL, NULL);
-	}
 }

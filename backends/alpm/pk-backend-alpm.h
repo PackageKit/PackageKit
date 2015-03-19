@@ -48,7 +48,6 @@ typedef struct {
 	alpm_list_t	*holdpkgs;
 	alpm_handle_t	*alpm;
 	GFileMonitor    *monitor;
-	GHashTable      *disabled_repos; /* list of disabled repos */
 	alpm_list_t     *configured_repos; /* list of configured repos */
 	gboolean	localdb_changed;
 } PkBackendAlpmPrivate;
