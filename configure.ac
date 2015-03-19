@@ -507,6 +507,17 @@ fi
 
 if test x$enable_alpm = xyes; then
 	PKG_CHECK_MODULES(ALPM, libalpm >= 8.2.0)
+
+	# libalpm up to and including version 9.0.0 (pacman 4.2.0) lack proper
+	# versioning. A patch has been proposed, though:
+	# https://lists.archlinux.org/pipermail/pacman-dev/2014-December/019759.html
+
+	PKG_CHECK_EXISTS(libalpm >= 9.0.0, [ HAVE_ALPM_VERSION_9="yes" ], [ HAVE_ALPM_VERSION_9="no" ])
+	if test "x$HAVE_ALPM_VERSION_9" = "xyes"; then
+		AC_DEFINE(ALPM_VERSION_NUMBER, 0x090000, [libalpm version number])
+	else
+		AC_DEFINE(ALPM_VERSION_NUMBER, 0x080200, [libalpm version number])
+	fi
 fi
 
 if test x$enable_poldek = xyes; then
