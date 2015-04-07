@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Serbian (http://www.transifex.com/projects/p/packagekit/language/sr/)\n"
 "MIME-Version: 1.0\n"
@@ -376,8 +376,8 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Инсталира пакете без питања за потврду"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Припрема извршење само преузимањем пакета"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -894,7 +894,7 @@ msgstr "Доступан"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Недоступан"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1386,7 +1386,7 @@ msgstr "Тражи по датотекама"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Инсталира пакет"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

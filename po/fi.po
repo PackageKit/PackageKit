@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013
+# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Ville-Pekka Vainio <vpvainio@iki.fi>, 2011
 # Ville Skyttä <ville.skytta@iki.fi>, 2011
@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/projects/p/packagekit/language/fi/)\n"
 "MIME-Version: 1.0\n"
@@ -285,11 +285,11 @@ msgstr "Valitse oikea paketti:"
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Pakettia ei löytynyt"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Paketteja ei löytynyt"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -378,7 +378,7 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Asenna paketit kysymättä vahvistusta"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
+msgid "Prepare the transaction by downloading packages only"
 msgstr ""
 
 #. command line argument, do we allow package downgrades
@@ -506,15 +506,15 @@ msgid "A package provide string is required"
 msgstr "Paketin tarjoaja-merkkijono on annettava"
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Tiedostonimi vaaditaan"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Kuvaus"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Tekijä"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -558,11 +558,11 @@ msgstr "Käynnistetään uudelleen päivitysten asennuksen jälkeen…"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Sammutetaan päivitysten asennuksen jälkeen…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates, this could take a while..."
-msgstr ""
+msgstr "Asennetaan päivityksiä, tämä saattaa kestää hetken.."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
@@ -896,7 +896,7 @@ msgstr "Saatavilla"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Ei saatavilla"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1196,7 +1196,7 @@ msgid "Install signed package"
 msgstr "Asenna allekirjoitettu paketti"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Ohjelmistojen asennus vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1216,10 +1216,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Asenna aiemmin asennettu paketti uudelleen"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Ohjelmistojen asennus uudelleen vaatii tunnistautumisen"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1228,7 +1228,7 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Asenna vanhempi versio asennetusta paketista"
 
 msgid "Authentication is required to downgrade software"
 msgstr ""
@@ -1270,7 +1270,7 @@ msgid "Remove package"
 msgstr "Poista paketti"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Ohjelmistojen poistaminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1279,10 +1279,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Päivitä ohjelmisto"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Ohjelmistojen päivittäminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1312,7 +1312,7 @@ msgstr "Aseta välipalvelin"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Verkon välityspalvelimen asettaminen ohjelmistojen latausta varten vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1360,7 +1360,7 @@ msgid "Alias to %s"
 msgstr ""
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Komentoa ei löytynyt. Kelvolliset komennot ovat:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1368,11 +1368,11 @@ msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Päivitä välimuisti"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Päivitä välimuisti (pakotettu)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
@@ -1388,7 +1388,7 @@ msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Asenna paketti"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
@@ -1396,7 +1396,7 @@ msgstr ""
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
@@ -1404,7 +1404,7 @@ msgstr ""
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Asetustiedoston lataaminen epäonnistui"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"

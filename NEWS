@@ -1,3 +1,28 @@
+Version 1.0.6
+~~~~~~~~~~~~~
+Released: 2015-04-07
+
+Backends:
+ - alpm: do not mix declarations and code (which ISO C90 forbids) (Christian Hesse)
+ - alpm: move configured global field into backend priv (Fabien Bourigault)
+ - alpm: move disabled global field into backend priv (Fabien Bourigault)
+ - alpm: reinitialize libalpm when localdb changed (Fabien Bourigault)
+ - alpm: remove RepoEnable (Fabien Bourigault)
+ - alpm: remove no longer used disabled repos logic (Fabien Bourigault)
+ - alpm: remove unused variable (Christian Hesse)
+ - hif: Fix use-after-free during untrusted repo check (Kalev Lember)
+
+New Features:
+ - Add dbus method for returning prepared packages (petervo)
+ - Add pk_backend_is_transaction_inhibited (Fabien Bourigault)
+ - gstreamer plugin: Add support for v2 of the PK session service interface (Kalev Lember)
+
+Bugfixes:
+ - Don't recursive lock the debug mutex when using --verbose without a tty (Richard Hughes)
+ - Make "reboot" the default action for no action file (Stephen Gallagher)
+ - gstreamer plugin: Adapt to gstreamer missing plugin changes (Kalev Lember)
+ - gstreamer plugin: Avoid criticals when some of the parameters are NULL (Kalev Lember)
+
 Version 1.0.5
 ~~~~~~~~~~~~~
 Released: 2015-02-09

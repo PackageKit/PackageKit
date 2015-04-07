@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Andi Chandler <andi@gowling.com>, 2014
+# Andi Chandler <andi@gowling.com>, 2014-2015
 # Bruce Cowan <bruce@bcowan.me.uk>, 2012-2013
 # Chris  Leonard <cjl@laptop.org>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/packagekit/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
@@ -379,15 +379,15 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Install the packages without asking for confirmation"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Prepare the transaction by downloading pakages only"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Allow packages to be downgraded during transaction"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Allow packages to be reinstalled during transaction"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -405,7 +405,7 @@ msgstr "The maximum metadata cache age. Use -1 for 'never'."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Allow untrusted packages to be installed."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -897,7 +897,7 @@ msgstr "Available"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Unavailable"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1217,10 +1217,10 @@ msgstr "Authentication is required to install untrusted software"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Install already installed package again"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Authentication is required to reinstall software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1229,10 +1229,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Install older version of installed package"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Authentication is required to downgrade software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1358,10 +1358,10 @@ msgstr "Authentication is required to clear the offline updates message"
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias to %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Command not found, valid commands are:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1369,51 +1369,51 @@ msgstr "Packaging backend to use, e.g. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Refresh the cache"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Refresh the cache (forced)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Search by names"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Search by details"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Search by files"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Install package"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Set repository options"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Failed to parse arguments"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Failed to load the config file"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Failed to load the backend"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Failed to unload the backend"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"

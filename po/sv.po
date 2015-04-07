@@ -4,14 +4,15 @@
 # 
 # Translators:
 # Anders Jonsson <transifex@norsjovallen.se>, 2014
-# Daniel Nylander <po@danielnylander.se>, 2008, 2009, 2010, 2011
+# Daniel Nylander <po@danielnylander.se>, 2008-2011
 # Richard Hughes <richard@hughsie.com>, 2011
+# sebras <sebras@gmail.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/packagekit/language/sv/)\n"
 "MIME-Version: 1.0\n"
@@ -58,7 +59,7 @@ msgstr "Kommandorad"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "Användar-id"
+msgstr "Användar-ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
@@ -297,7 +298,7 @@ msgstr ""
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "Förväntade paketnamn men fick fil. Prova att använda \"pkcon install-local %s\" istället."
+msgstr "Förväntade paketnamn men fick fil. Prova att använda ”pkcon install-local %s” istället."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -340,7 +341,7 @@ msgstr "Bakgrundsprocessen kraschade mitt under transaktionen!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "Konsollgränssnitt för PackageKit"
+msgstr "Konsolgränssnitt för PackageKit"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
@@ -377,7 +378,7 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Installera paketen utan att fråga efter bekräftelse"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
+msgid "Prepare the transaction by downloading packages only"
 msgstr ""
 
 #. command line argument, do we allow package downgrades
@@ -399,7 +400,7 @@ msgstr "Skriv ut maskinläsbart utdata på skärmen istället för att använda 
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maximal ålder för metadata-cache. Använd -1 för \"never\"."
+msgstr "Maximal ålder för metadata-cache. Använd -1 för ”never”."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -530,7 +531,7 @@ msgstr ""
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "Flaggan \"%s\" stöds inte"
+msgstr "Flaggan ”%s” stöds inte"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
@@ -565,7 +566,7 @@ msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
-msgstr "Hämtar paketinformation..."
+msgstr "Hämtar paketinformation…"
 
 #. TRANSLATORS: run an applicaiton
 #, c-format
@@ -605,7 +606,7 @@ msgstr "Inga paket hittades för ditt system"
 
 #. TRANSLATORS: package is being installed
 msgid "Installing..."
-msgstr "Installerar..."
+msgstr "Installerar…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -651,7 +652,7 @@ msgstr "Liknande kommando är:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "Kör liknande kommando:"
+msgstr "Kör liknande command:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
@@ -670,7 +671,7 @@ msgstr "Paketet som tillhandahåller denna fil är:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installera paketet \"%s\" för att tillhandahålla kommandot \"%s\"?"
+msgstr "Installera paketet ”%s” för att tillhandahålla kommandot ”%s”?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
@@ -874,7 +875,7 @@ msgstr "Säkerhet"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
-msgstr "Felrättning"
+msgstr "Felrättning "
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -891,7 +892,7 @@ msgstr "Installerade"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "Tillgänglig"
+msgstr "Tillgängligt"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
@@ -903,12 +904,12 @@ msgstr "Hämtar"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "Uppdaterade"
+msgstr "Uppdaterar"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "Installerade"
+msgstr "Installerar"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
@@ -921,31 +922,31 @@ msgstr "Rensar upp"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "Föråldrade"
+msgstr "Föråldrar"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Installerade om"
+msgstr "Installerar om"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "Hämtade"
+msgstr "Hämtat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "Borttagen"
+msgstr "Borttaget"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "Upprensad"
+msgstr "Upprensat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "Föråldrade"
+msgstr "Föråldrat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "Installerade om"
+msgstr "Ominstallerat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -973,31 +974,31 @@ msgstr "Hämtar uppdateringar"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "Sökning efter detaljer"
+msgstr "Söker efter detaljer"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "Sökning efter fil"
+msgstr "Söker efter fil"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "Sökning i grupper"
+msgstr "Söker bland grupper"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "Sökning efter namn"
+msgstr "Söker efter namn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "Installerade filer"
+msgstr "Installerar filer"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Uppdatering av cache"
+msgstr "Uppdaterar cache"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "Uppdaterade paket"
+msgstr "Uppdaterar paket"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
@@ -1005,15 +1006,15 @@ msgstr "Avbryter"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "Hämtade förråd"
+msgstr "Hämtar förråd"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Enabling repository"
-msgstr "Aktivering av förråd"
+msgstr "Aktiverar förråd"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "Inställning av data"
+msgstr "Ställer in data"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
@@ -1025,35 +1026,35 @@ msgstr "Löser"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "Hämtning av fillista"
+msgstr "Hämtar fillista"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Hämtning av tillhandahåller"
+msgstr "Hämtar tillhandahållningar"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr "Installerade signatur"
+msgstr "Installerar signatur"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "Hämtning av paket"
+msgstr "Hämtar paket"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr "Accepterade slutanvändaravtal"
+msgstr "Accepterar slutanvändaravtal"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "Hämtning av uppgraderingar"
+msgstr "Hämtar uppgraderingar"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "Hämtning av kategorier"
+msgstr "Hämtar kategorier"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "Hämtning av transaktioner"
+msgstr "Hämtar transaktioner"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1083,7 +1084,7 @@ msgstr "Nyckelns användare"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr "Nyckelns id"
+msgstr "Nyckel-ID"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
@@ -1330,10 +1331,10 @@ msgstr "Autentisering krävs för att uppdatera enheten med en ny drivrutin"
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr ""
+msgstr "Reparera systemet"
 
 msgid "Authentication is required to repair the installed software"
-msgstr ""
+msgstr "Autentisering krävs för att reparera den installerade programvaran"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1431,7 +1432,7 @@ msgstr "Avsluta efter att motorn har lästs in"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Rensa inte miljön vid start"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"

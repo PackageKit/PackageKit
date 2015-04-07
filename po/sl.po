@@ -4,13 +4,13 @@
 # 
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2014
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Slovenian (http://www.transifex.com/projects/p/packagekit/language/sl/)\n"
 "MIME-Version: 1.0\n"
@@ -376,15 +376,15 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Namesti vse pakete brez spraševanja za potrditev"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Pripravi transakcijo zgolj s prenosom paketov"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Dovoli nadomestitev paketov s starejšimi med transakcijo"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Dovoli ponovno namestitev paketov med transakcijo"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -402,7 +402,7 @@ msgstr "Največja starost predpomnilnika metapodakov. Uporabite -1 za 'nikoli'."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Dovoli namestitev paketov, nevrednih zaupanja."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -894,7 +894,7 @@ msgstr "Na voljo"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Ni na voljo"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1214,10 +1214,10 @@ msgstr "Za namestitev programja, ki ni zaupanja vredno, je obvezna overitev"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Znova namesti že nameščene pakete"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Za ponovno namestitev programa je potrebna overovitev"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1226,10 +1226,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Namesti starejšo različico nameščenega paketa"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Za namestitev starejše različice je potrebna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1355,10 +1355,10 @@ msgstr "Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potre
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Vzdevek za %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Ukaza ni mogoče najti, veljavni ukazi so:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1366,51 +1366,51 @@ msgstr "Zaledje pakiranja za uporabo, na primer preizkusno"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Osveži predpomnilnik"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Osveži predpomnilnik (vsiljeno)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Iskanje po imenih"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Iskanje po podrobnostih"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Iskanje po datotekah"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Namesti paket"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Določite možnosti skladišča"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Razčlenjevanje parametrov je spodletelo"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Datoteke prilagoditev ni mogoče naložiti"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Nalaganje zaledja je spodletelo"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Odlaganje zaledja je spodletelo"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"

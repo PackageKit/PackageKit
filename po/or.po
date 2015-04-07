@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Oriya (http://www.transifex.com/projects/p/packagekit/language/or/)\n"
 "MIME-Version: 1.0\n"
@@ -376,7 +376,7 @@ msgid "Install the packages without asking for confirmation"
 msgstr "ନିଶ୍ଚିତକରଣ ବିନା ପ୍ୟାକେଟଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
+msgid "Prepare the transaction by downloading packages only"
 msgstr ""
 
 #. command line argument, do we allow package downgrades

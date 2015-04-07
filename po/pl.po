@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Piotr Drąg <piotrdrag@gmail.com>, 2011-2014
+# Piotr Drąg <piotrdrag@gmail.com>, 2011-2015
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/packagekit/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -376,8 +376,8 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Instaluje pakiety bez prośby o potwierdzenie"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Przygotowuje transakcję przez pobranie pakietów"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -861,7 +861,7 @@ msgstr "Drobna"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "Normalna"
+msgstr "Zwykła"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
@@ -894,7 +894,7 @@ msgstr "Dostępna"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Niedostępna"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1386,7 +1386,7 @@ msgstr "Wyszukuje według plików"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Instalacja pakietu"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Alexey Kostyuk <unitoff@gmail.com>, 2009
+# Dimitriy Ryazantcev <DJm00n@mail.ru>, 2015
 # Ivan Ignatyev <ivan.ignatyev@auditory.ru>, 2008, 2009
 # Misha Shnurapet <shnurapet@fedoraproject.org>, 2011-2012
 # Misha Shnurapet <zayzayats@yandex.ru>, 2010
@@ -17,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Russian (http://www.transifex.com/projects/p/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -384,8 +385,8 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Установить пакеты без запроса подтверждения"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Подготовиться к операции, только загрузив пакеты"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -902,7 +903,7 @@ msgstr "Доступный"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Недоступно"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1394,7 +1395,7 @@ msgstr "Поиск по именам файлов"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Установить пакет"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

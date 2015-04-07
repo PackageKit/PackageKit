@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Cheng-Chia Tseng <pswo10680@gmail.com>, 2011-2014
+# Cheng-Chia Tseng <pswo10680@gmail.com>, 2011-2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Terry Chuang <tchuang@redhat.com>, 2008-2009
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/packagekit/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
@@ -78,7 +78,7 @@ msgstr "受影響的軟體包：無"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
-msgstr "發行版"
+msgstr "散布版"
 
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
@@ -275,7 +275,7 @@ msgstr "因為重大安全性更新已安裝，請登出並再次登入來完成
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "超過一個符合的軟體包："
+msgstr "符合的軟體包不只一個："
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
@@ -374,11 +374,11 @@ msgstr "設定過濾條件，例如：installed"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "安裝軟體包而不要詢問是否確認"
+msgstr "安裝軟體包而不必要求確認"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "僅下載軟體包來為處理事項做準備"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -403,7 +403,7 @@ msgstr "最大的中介資料快取時限。使用 -1 代表「永遠」。"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "允許安裝未信任的軟體包。"
+msgstr "允許安裝未受信任的軟體包。"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -469,7 +469,7 @@ msgstr "需要指定一個授權合約的辨識符號 (eula-id)"
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "需要指定想解析軟體包的名稱"
+msgstr "需要指定欲解析軟體包的名稱"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
@@ -637,7 +637,7 @@ msgstr "啟動失敗："
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "安裝軟體包失敗"
+msgstr "軟體包安裝失敗"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
@@ -679,7 +679,7 @@ msgstr "提供此檔案的軟體包有："
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr "合適的軟體包有："
+msgstr "適合的軟體包有："
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
@@ -816,7 +816,7 @@ msgstr "正在掃描應用程式"
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "正在產生軟體包清單"
+msgstr "正在生成軟體包清單"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
@@ -895,7 +895,7 @@ msgstr "可用"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "不可用"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1144,23 +1144,23 @@ msgstr "沒有插入正確媒體。"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "下列軟體包必須被移除掉："
+msgstr "下列軟體包必須移除："
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "下列軟體包要被安裝："
+msgstr "下列軟體包必須安裝："
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "下列軟體包要被更新："
+msgstr "下列軟體包必須更新："
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "下列軟體包要被重新安裝："
+msgstr "下列軟體包必須重新安裝："
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "下列軟體包要被降級："
+msgstr "下列軟體包必須降級："
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1227,7 +1227,7 @@ msgstr "必須先通過身份核對才能重新安裝軟體"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "安裝舊版的已安裝軟體包"
+msgstr "安裝已安裝軟體包的舊版"
 
 msgid "Authentication is required to downgrade software"
 msgstr "必須先通過身份核對才能降級軟體"
@@ -1387,7 +1387,7 @@ msgstr "依據檔案搜尋"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "安裝軟體包"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

@@ -4,13 +4,13 @@
 # 
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2014
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/packagekit/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -376,8 +376,8 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Встановити пакунки без запиту щодо підтвердження"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Приготуватися до операції, лише отримати пакунки"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -894,7 +894,7 @@ msgstr "Доступний"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Недоступний"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1386,7 +1386,7 @@ msgstr "Шукати за файлами"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Встановити пакунок"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

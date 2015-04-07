@@ -8,7 +8,7 @@
 # Christian <Christian.Kirbach@googlemail.com>, 2009,2011
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008
 # Daniel Winzen <d@winzen4.de>, 2012-2013
-# Ettore Atalan <atalanttore@googlemail.com>, 2014
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015
 # Fabian Affolter <fab@fedoraproject.org>, 2008-2009
 # hpeters <hpeters@redhat.com>, 2009
 # Holger Wansing <linux@wansing-online.de>, 2006
@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: German (http://www.transifex.com/projects/p/packagekit/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -390,8 +390,8 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Die Pakete ohne erneute Nachfrage installieren"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Die Transaktion nur durch Herunterladen der Pakete vorbereiten"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -908,7 +908,7 @@ msgstr "Verfügbar"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Nicht verfügbar"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1400,7 +1400,7 @@ msgstr "Suche nach Dateien"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Paket installieren"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

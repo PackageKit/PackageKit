@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# helix84 <helix84@centrum.sk>, 2014
+# helix84 <helix84@centrum.sk>, 2014-2015
 # helix84 <helix84@centrum.sk>, 2011
 # helix84 <helix84@centrum.sk>, 2010, 2011, 2012
 # Lubomir Kundrak <lkundrak@redhat.com>, 2008
@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-19 16:28+0000\n"
-"PO-Revision-Date: 2015-01-19 16:28+0000\n"
+"POT-Creation-Date: 2015-04-07 12:24+0100\n"
+"PO-Revision-Date: 2015-04-07 11:24+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/projects/p/packagekit/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -380,15 +380,15 @@ msgid "Install the packages without asking for confirmation"
 msgstr "Inštalovať balíky bez potvrdzovania"
 
 #. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading pakages only"
-msgstr "Pripraviť transakciu iba stiahnutím balíkov"
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Povoliť zníženie verzie balíka počas transakcie"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Povoliť reinštaláciu balíka počas transakcie"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -406,7 +406,7 @@ msgstr "Maximálny vek metadát vo vyrovnávacej pamäti. -1 znamená nepoužív
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Povoliť inštaláciu nedôveryhocných balíkov."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -898,7 +898,7 @@ msgstr "Dostupné"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Nedostupné"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1218,10 +1218,10 @@ msgstr "Inštalácia nedôveryhodného softvéru vyžaduje overenie totožnosti"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Znovu nainštalovať už nainštalovaný balík"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Na reinštalácia softvéru je potrebné overenie totožnosti"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1230,10 +1230,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Nainštalovať staršiu verziu už nainštalovaného balíka"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Na zníženie verzie softvéru je potrebné overenie totožnosti"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1359,10 +1359,10 @@ msgstr "Vyčistenie správy o aktualizáciách offline vyžaduje overenie totož
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias pre %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Príkaz nebol nájdený. Platné príkazy sú:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1370,51 +1370,51 @@ msgstr "Rozhranie balíkového systému, ktoré sa má použiť, napríklad „d
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Obnoviť vyrovnávaciu pamäť"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Obnoviť vyrovnávaciu pamäť (vynútiť)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Hľadať podľa názvu"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Hľadať podľa popisu"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Hľadať podľa súborov"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Nainštalovať balík"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Nastaviť možnosti zdroja softvéru"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Nepodarilo sa spracovať argumenty"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Nepodarilo sa načítať konfiguračný súbor"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Nepodarilo sa načítať backend"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Nepodarilo sa odobrať backend"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
