@@ -97,7 +97,7 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		} else {
 			g_print ("***\n%s\t%s\t%s\n***\n", str_time, log_domain, message);
 		}
-		return;
+		goto out;
 	}
 
 	/* time in green */
@@ -123,7 +123,7 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		/* debug in blue */
 		g_print ("%c[%dm%s\n%c[%dm", 0x1B, CONSOLE_BLUE, message, 0x1B, CONSOLE_RESET);
 	}
-
+out:
 	/* unlock */
 	g_mutex_unlock (&mutex);
 }
