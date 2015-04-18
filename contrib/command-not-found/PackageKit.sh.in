@@ -31,3 +31,8 @@ command_not_found_handle () {
 	return $retval
 }
 
+if [ -n "$ZSH_VERSION" ]; then
+	command_not_found_handler () {
+		command_not_found_handle "$@"
+	}
+fi
