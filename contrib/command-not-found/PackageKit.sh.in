@@ -24,10 +24,16 @@ command_not_found_handle () {
 		@LIBEXECDIR@/pk-command-not-found "$@"
 		retval=$?
 	else
-		echo "bash: $1: command not found"
+		local shell=`basename "$SHELL"`
+		echo "$shell: $1: command not found"
 	fi
 
 	# return success or failure
 	return $retval
 }
 
+if [ -n "$ZSH_VERSION" ]; then
+	command_not_found_handler () {
+		command_not_found_handle "$@"
+	}
+fi

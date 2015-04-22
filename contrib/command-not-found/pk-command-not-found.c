@@ -738,6 +738,9 @@ main (int argc, char *argv[])
 	const gchar *possible;
 	gchar **parts;
 	guint retval = EXIT_COMMAND_NOT_FOUND;
+	const gchar *shell = "bash";
+	const gchar *env_shell;
+	_cleanup_free_ gchar *shell_to_free = NULL;
 	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
 	_cleanup_strv_free_ gchar **package_ids = NULL;
 
@@ -781,10 +784,14 @@ main (int argc, char *argv[])
 	if (argv[1][0] == '.')
 		goto out;
 
+	env_shell = g_getenv ("SHELL");
+	if (env_shell != NULL)
+		shell = shell_to_free = g_path_get_basename (env_shell);
+
 	/* TRANSLATORS: the prefix of all the output telling the user
 	 * why it's not executing. NOTE: this is lowercase to mimic
 	 * the style of bash itself -- apologies */
-	g_printerr ("bash: %s: %s...\n", argv[1], _("command not found"));
+	g_printerr ("%s: %s: %s...\n", shell, argv[1], _("command not found"));
 
 	/* user is not allowing CNF to do anything useful */
 	if (!config->software_source_search &&
