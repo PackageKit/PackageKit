@@ -22,36 +22,33 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import os
+import re
+import signal
+import sys
 import traceback
-
-
-# packagekit imports
-from packagekit.enums import *
-
-from packagekit.backend import PackageKitBaseBackend, \
-    get_package_id, split_package_id
-from packagekit.progress import *
-from packagekit.package import PackagekitPackage
-
-# portage imports
-import portage
-import portage.versions
-import portage.dep
-import _emerge.actions
-import _emerge.stdout_spinner
-import _emerge.create_depgraph_params
-import _emerge.AtomArg
-from portage.exception import InvalidAtom
+from itertools import izip
 
 # layman imports
-import layman.db
 import layman.config
-
-# misc imports
-import sys
-import signal
-import re
-from itertools import izip
+import layman.db
+# packagekit imports
+from packagekit.backend import (
+    PackageKitBaseBackend,
+    get_package_id,
+    split_package_id,
+)
+from packagekit.enums import *
+from packagekit.package import PackagekitPackage
+from packagekit.progress import *
+# portage imports
+import _emerge.AtomArg
+import _emerge.actions
+import _emerge.create_depgraph_params
+import _emerge.stdout_spinner
+import portage
+import portage.dep
+import portage.versions
+from portage.exception import InvalidAtom
 
 # NOTES:
 #
