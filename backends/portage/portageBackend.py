@@ -28,9 +28,10 @@ import sys
 import traceback
 from itertools import izip
 
-# layman imports
+# layman imports (>=2)
 import layman.config
 import layman.db
+import layman.remotedb
 # packagekit imports
 from packagekit.backend import (
     PackageKitBaseBackend,
@@ -1050,17 +1051,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        # get installed and available dbs
-        if hasattr(layman.config, "Config"):
-            installed_layman_db = layman.db.DB(layman.config.Config())
-        else:
-            installed_layman_db = layman.db.DB(layman.config.BareConfig())
-
-        if hasattr(layman.config, "Config"):
-            available_layman_db = layman.db.RemoteDB(layman.config.Config())
-        else:
-            available_layman_db = layman.db.RemoteDB(layman.config.BareConfig())
-
+        conf = layman.config.BareConfig()
+        conf.set_option('quiet', True)
+        installed_layman_db = layman.db.DB(conf)
+        available_layman_db = layman.remotedb.RemoteDB(conf)
 
         # 'gentoo' is a dummy repo
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
@@ -1386,15 +1380,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         myopts = {'--quiet': True}
 
-        # get installed and available dbs
-        if hasattr(layman.config, "Config"):
-            layman_opts = {"quiet": True}
-            installed_layman_db = layman.db.DB(layman.config.Config())
-        else:
-            layman_opts = {}
-            conf = layman.config.BareConfig()
-            conf.set_option("quiet", True)
-            installed_layman_db = layman.db.DB(conf)
+        conf = layman.config.BareConfig()
+        conf.set_option('quiet', True)
+        installed_layman_db = layman.db.DB(conf)
 
         if force:
             timestamp_path = os.path.join(
@@ -1404,8 +1392,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         try:
             self._block_output()
-            for o in installed_layman_db.overlays.keys():
-                installed_layman_db.sync(o, **layman_opts)
+            for overlay in installed_layman_db.overlays.keys():
+                installed_layman_db.sync(overlay)
             _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
                     self.pvar.mtimedb, myopts, "")
         except:
@@ -1541,9 +1529,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         "gentoo repository can't be disabled")
             return
 
-        # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
-        available_layman_db = layman.db.RemoteDB(layman.config.Config())
+        conf = layman.config.BareConfig()
+        conf.set_option('quiet', True)
+        installed_layman_db = layman.db.DB(conf)
+        available_layman_db = layman.remotedb.RemoteDB(conf)
 
         # check now for repoid so we don't have to do it after
         if not repoid in available_layman_db.overlays.keys():
@@ -1567,8 +1556,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             try:
                 # TODO: clean the trick to prevent outputs from layman
                 self._block_output()
-                installed_layman_db.add(available_layman_db.select(repoid),
-                        quiet=True)
+                installed_layman_db.add(available_layman_db.select(repoid))
                 self._unblock_output()
             except Exception, e:
                 self._unblock_output()
