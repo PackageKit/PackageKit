@@ -191,10 +191,10 @@ class PortageBridge():
         self.settings.backup_changes("ACCEPT_PROPERTIES")
 
         # do not log with mod_echo (cleanly prevent some outputs)
-        def filter_echo(x): return x != 'echo'
-        elogs = self.settings["PORTAGE_ELOG_SYSTEM"].split()
-        elogs = filter(filter_echo, elogs)
-        self.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        self.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join([
+            elog for elog in self.settings["PORTAGE_ELOG_SYSTEM"].split()
+            if elog != 'echo'
+        ])
         self.settings.backup_changes("PORTAGE_ELOG_SYSTEM")
 
         # finally, regenerate settings and lock them again
@@ -237,9 +237,7 @@ class PackageKitPortageMixin(object):
         return TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags
 
     def _is_repo_enabled(self, layman_db, repo_name):
-        if repo_name in layman_db.overlays.keys():
-            return True
-        return False
+        return repo_name in layman_db.overlays.keys()
 
     def _get_search_list(self, keys_list):
         '''
@@ -334,18 +332,10 @@ class PackageKitPortageMixin(object):
         return InternalPackageSet
 
     def _is_installed(self, cpv):
-        if self.pvar.vardb.cpv_exists(cpv):
-            return True
-        return False
+        return self.pvar.vardb.cpv_exists(cpv)
 
     def _is_cpv_valid(self, cpv):
-        if self._is_installed(cpv):
-            # actually if is_installed return True that means cpv is in db
-            return True
-        elif self.pvar.portdb.cpv_exists(cpv):
-            return True
-
-        return False
+        return any([self._is_installed(cpv), self.pvar.portdb.cpv_exists(cpv)])
 
     def _get_real_license_str(self, cpv, metadata):
         # use conditionals info (w/ USE) in LICENSE and remove ||
@@ -354,9 +344,7 @@ class PackageKitPortageMixin(object):
             portage.dep.paren_reduce(metadata["LICENSE"]),
             uselist=ebuild_settings.get("USE", "").split())))
         license.discard('||')
-        license = ' '.join(license)
-
-        return license
+        return ' '.join(license)
 
     def _signal_config_update(self):
         result = list(portage.util.find_updated_config_files(
@@ -472,10 +460,7 @@ class PackageKitPortageMixin(object):
                 vartree=self.pvar.vardb)
 
         contents = db.getcontents()
-        if not contents:
-            return []
-
-        return db.getcontents().keys()
+        return contents.keys() if contents else []
 
     def _cmp_cpv(self, cpv1, cpv2):
         '''
@@ -535,10 +520,7 @@ class PackageKitPortageMixin(object):
         size = 0
         if self._is_installed(cpv):
             size = self._get_metadata(cpv, ["SIZE"])[0]
-            if size == '':
-                size = 0
-            else:
-                size = int(size)
+            size = int(size) if size else 0
         else:
             self
             metadata = self._get_metadata(cpv, ["IUSE", "SLOT"], in_dict=True)
@@ -553,8 +535,7 @@ class PackageKitPortageMixin(object):
 
             fetch_file = self.pvar.portdb.getfetchsizes(package[2],
                     package.use.enabled)
-            for f in fetch_file:
-                size += fetch_file[f]
+            size = sum(fetch_file)
 
         return size
 
@@ -670,14 +651,12 @@ class PackageKitPortageMixin(object):
         if FILTER_INSTALLED in filters:
             cpv_list = self.pvar.vardb.match(cp)
         elif FILTER_NOT_INSTALLED in filters:
-            for cpv in self.pvar.portdb.match(cp):
-                if not self._is_installed(cpv):
-                    cpv_list.append(cpv)
+            cpv_list = [cpv for cpv in self.pvar.portdb.match(cp)
+                        if not self._is_installed(cpv)]
         else:
             cpv_list = self.pvar.vardb.match(cp)
-            for cpv in self.pvar.portdb.match(cp):
-                if cpv not in cpv_list:
-                    cpv_list.append(cpv)
+            cpv_list.extend(self.pvar.portdb.match(cp))
+            cpv_list = set(cpv_list)
 
         # free filter
         cpv_list = self._filter_free(cpv_list, filters)
@@ -714,22 +693,18 @@ class PackageKitPortageMixin(object):
         pkg_keywords, repo, slot = self._get_metadata(cpv,
                 ["KEYWORDS", "repository", "SLOT"])
 
-        pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.pvar.settings["ACCEPT_KEYWORDS"].split()
-        keywords = []
-
-        for x in sys_keywords:
-            if x in pkg_keywords:
-                keywords.append(x)
+        # filter accepted keywords
+        keywords = list(set(pkg_keywords.split()).intersection(
+            set(self.pvar.settings["ACCEPT_KEYWORDS"].split())
+        ))
 
         # if no keywords, check in package.keywords
         if not keywords:
             key_dict = self.pvar.settings.pkeywordsdict.get(
                     portage.dep.dep_getkey(cpv))
             if key_dict:
-                for _, keys in key_dict.iteritems():
-                    for x in keys:
-                        keywords.append(x)
+                for keys in key_dict.values():
+                    keyword.extend(keys)
 
         if not keywords:
             keywords.append("no keywords")
@@ -942,9 +917,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # now we can change cpv_list to a real cpv list
         tmp_list = cpv_list[:]
-        cpv_list = []
-        for x in tmp_list:
-            cpv_list.append(x[2])
+        cpv_list = [x[2] for x in tmp_list]
         del tmp_list
 
         # free filter
@@ -1100,12 +1073,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             cpv_input.append(cpv)
 
-        packages_list = self._get_required_packages(cpv_input, recursive)
-
         # now we can populate cpv_list
-        cpv_list = []
-        for p in packages_list:
-            cpv_list.append(p.cpv)
+        packages_list = self._get_required_packages(cpv_input, recursive)
+        cpv_list = [package.cpv for package in packages_list]
         del packages_list
 
         # free filter
@@ -1535,7 +1505,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         available_layman_db = layman.remotedb.RemoteDB(conf)
 
         # check now for repoid so we don't have to do it after
-        if not repoid in available_layman_db.overlays.keys():
+        if repoid not in available_layman_db.overlays.keys():
             self.error(ERROR_REPO_NOT_FOUND,
                     "Repository %s was not found" % repoid)
             return
