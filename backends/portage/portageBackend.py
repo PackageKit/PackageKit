@@ -497,19 +497,15 @@ class PackageKitPortageMixin(object):
         If in_dict is True, metadata is returned in a dict object.
         If add_cache_keys is True, cached keys are added to keys in parameter.
         '''
-        if self._is_installed(cpv):
-            aux_get = self.pvar.vardb.aux_get
-            if add_cache_keys:
-                keys.extend(list(self.pvar.vardb._aux_cache_keys))
-        else:
-            aux_get = self.pvar.portdb.aux_get
-            if add_cache_keys:
-                keys.extend(list(self.pvar.portdb._aux_cache_keys))
+        db = self.pvar.vardb if self._is_installed(cpv) else self.pvar.portdb
+
+        if add_cache_keys:
+            keys.extend(list(db._aux_cache_keys))
 
         if in_dict:
-            return dict(izip(keys, aux_get(cpv, keys)))
+            return dict(izip(keys, db.aux_get(cpv, keys)))
         else:
-            return aux_get(cpv, keys)
+            return db.aux_get(cpv, keys)
 
     def _get_size(self, cpv):
         '''
