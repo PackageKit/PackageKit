@@ -938,7 +938,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 continue
 
             metadata = self._get_metadata(
-                cpv, ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT"],
+                cpv, ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT",
+                      "EAPI", "KEYWORDS"],
                 in_dict=True
             )
 
@@ -1599,7 +1600,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 match = True
                 metadata = self._get_metadata(
                     cpv, ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE",
-                          "repository", "SLOT"], in_dict=True
+                          "repository", "SLOT", "EAPI", "KEYWORDS"],
+                    in_dict=True
                 )
                 # update LICENSE to correspond to system settings
                 metadata["LICENSE"] = self._get_real_license_str(cpv, metadata)
