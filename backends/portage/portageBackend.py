@@ -50,6 +50,7 @@ import _emerge.stdout_spinner
 import portage
 import portage.dep
 import portage.versions
+from portage._sets.base import InternalPackageSet
 from portage.exception import InvalidAtom
 
 # NOTES:
@@ -318,13 +319,6 @@ class PackageKitPortageMixin(object):
         settings = portage.config(clone=self.pvar.settings)
         settings.setcpv(cpv, mydb=metadata)
         return settings
-
-    def _get_internal_package_set_class(self):
-        try:
-            from portage._sets.base import InternalPackageSet
-        except ImportError:
-            from portage.sets.base import InternalPackageSet
-        return InternalPackageSet
 
     def _is_installed(self, cpv):
         return self.pvar.vardb.cpv_exists(cpv)
@@ -1158,10 +1152,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cpv_downgra = {}
 
         # get system and world packages
-        for s in ["system", "world"]:
-            sets = self._get_internal_package_set_class()(
-                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms(s)
-            )
+        for pkg_set in ["system", "world"]:
+            sets = InternalPackageSet(initial_atoms=self.pvar.root_config
+                                      .setconfig.getSetAtoms(pkg_set))
             for atom in sets:
                 update_candidates.append(atom.cp)
 
@@ -1225,10 +1218,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 cpv_downgra[cp] = dict_down
 
         # get security updates
-        for atom in self._get_internal_package_set_class(
-            initial_atoms=self.pvar.root_config.setconfig
-                .getSetAtoms("security")
-        ):
+        for atom in InternalPackageSet(initial_atoms=self.pvar.root_config
+                                       .setconfig.getSetAtoms("security")):
             # send update message and remove atom from cpv_updates
             if atom.cp in cpv_updates:
                 slot = self._get_metadata(atom.cpv, ["SLOT"])[0]
@@ -1402,9 +1393,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         system_packages = []
 
         # get system packages
-        sets = self._get_internal_package_set_class()(
-            initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
-        for atom in sets:
+        for atom in InternalPackageSet(initial_atoms=self.pvar.root_config
+                                       .setconfig.getSetAtoms("system")):
             system_packages.append(atom.cp)
 
         # create cpv_list
