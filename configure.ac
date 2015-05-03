@@ -454,7 +454,7 @@ if test x$enable_hif = xyes; then
 fi
 
 have_python_backend="no"
-if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o $enable_portage = xyes; then
+if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o x$enable_portage = xyes; then
 	have_python_backend="yes"
 fi
 AM_CONDITIONAL(HAVE_PYTHON_BACKEND, test x$have_python_backend = xyes)
