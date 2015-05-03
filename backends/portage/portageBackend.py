@@ -26,6 +26,7 @@ import re
 import signal
 import sys
 import traceback
+from collections import defaultdict
 from itertools import izip
 
 # layman imports (>=2)
@@ -540,14 +541,11 @@ class PackageKitPortageMixin(object):
         return size
 
     def _get_cpv_slotted(self, cpv_list):
-        cpv_dict = {}
+        cpv_dict = defaultdict(list)
 
         for cpv in cpv_list:
             slot = self._get_metadata(cpv, ["SLOT"])[0]
-            if slot not in cpv_dict:
-                cpv_dict[slot] = [cpv]
-            else:
-                cpv_dict[slot].append(cpv)
+            cpv_dict[slot].append(cpv)
 
         return cpv_dict
 
