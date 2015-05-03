@@ -175,21 +175,24 @@ class PortageBridge():
         self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
         self.root_config = self.trees[self.settings['ROOT']]['root_config']
 
-        # doing all the changes to settings
+        self.apply_settings({
+            # we don't want interactive ebuilds
+            'ACCEPT_PROPERTIES': '-interactive',
+            # do not log with mod_echo (cleanly prevent some outputs)
+            'PORTAGE_ELOG_SYSTEM': ' '.join([
+                elog for elog in self.settings["PORTAGE_ELOG_SYSTEM"].split()
+                if elog != 'echo'
+            ]),
+        })
+
+    def apply_settings(self, mapping):
+        """Set portage settings."""
         self.settings.unlock()
 
-        # we don't want interactive ebuilds
-        self.settings["ACCEPT_PROPERTIES"] = "-interactive"
-        self.settings.backup_changes("ACCEPT_PROPERTIES")
+        for key, value in mapping.items():
+            self.settings[key] = value
+            self.settings.backup_changes(key)
 
-        # do not log with mod_echo (cleanly prevent some outputs)
-        self.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join([
-            elog for elog in self.settings["PORTAGE_ELOG_SYSTEM"].split()
-            if elog != 'echo'
-        ])
-        self.settings.backup_changes("PORTAGE_ELOG_SYSTEM")
-
-        # finally, regenerate settings and lock them again
         self.settings.regenerate()
         self.settings.lock()
 
@@ -560,17 +563,9 @@ class PackageKitPortageMixin(object):
                 licenses = "* -" + free_licenses
             backup_license = self.pvar.settings["ACCEPT_LICENSE"]
 
-            self.pvar.settings.unlock()
-            self.pvar.settings["ACCEPT_LICENSE"] = licenses
-            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
-            self.pvar.settings.regenerate()
-
+            self.pvar.apply_settings({'ACCEPT_LICENSE': licences})
             cpv_list = filter(_has_validLicense, cpv_list)
-
-            self.pvar.settings["ACCEPT_LICENSE"] = backup_license
-            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
-            self.pvar.settings.regenerate()
-            self.pvar.settings.lock()
+            self.pvar.apply_settings({'ACCEPT_LICENSE': backup_licence})
 
         return cpv_list
 
