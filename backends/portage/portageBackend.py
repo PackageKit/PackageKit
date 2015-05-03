@@ -1016,10 +1016,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.percentage(100)
 
     def get_repo_list(self, filters):
-        # NOTES:
-        # use layman API
-        # returns only official and supported repositories
-        # and creates a dummy repo for portage tree
+        """ Get list of repository.
+
+        Get the list of repository tagged as official and supported by current
+        setup of layman.
+
+        Adds a dummy entry for gentoo-x86 official tree even though it appears
+        in layman's listing nowadays.
+        """
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
@@ -1033,11 +1037,13 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
 
         if FILTER_NOT_DEVELOPMENT not in filters:
-            for o in available_layman_db.overlays.keys():
-                if available_layman_db.overlays[o].is_official() \
-                        and available_layman_db.overlays[o].is_supported():
-                    self.repo_detail(o, o,
-                            self._is_repo_enabled(installed_layman_db, o))
+            for repo_name, overlay in available_layman_db.overlays.items():
+                if overlay.is_official() and overlay.is_supported():
+                    self.repo_detail(
+                        repo_name,
+                        overlay.name,
+                        self._is_repo_enabled(installed_layman_db, repo_name)
+                    )
 
     def required_by(self, filters, pkgs, recursive):
         # TODO: manage non-installed package
