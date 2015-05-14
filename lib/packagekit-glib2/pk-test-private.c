@@ -652,7 +652,7 @@ pk_test_offline_func (void)
 	/* test no action set */
 	action = pk_offline_get_action (&error);
 	g_assert_no_error (error);
-	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_UNSET);
 
 	/* try to trigger without the fake updates set */
 	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
