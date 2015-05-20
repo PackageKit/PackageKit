@@ -158,7 +158,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	PkBitfield flags;
 	gboolean only_trusted;
 	const alpm_list_t *i;
-	alpm_list_t *asdeps = NULL;
+	alpm_list_t *asdeps = NULL, *asexplicit = NULL;
 	alpm_transflag_t alpm_flags = 0;
 	const gchar** package_ids;
 	_cleanup_error_free_ GError *error = NULL;
@@ -193,6 +193,9 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 				if (pk_alpm_replaces_dependencies (job, pkg))
 					asdeps = alpm_list_add (asdeps, g_strdup (name));
+
+				if (alpm_pkg_get_reason (pkg) == ALPM_PKG_REASON_EXPLICIT)
+					asexplicit = alpm_list_add (asexplicit, g_strdup (name));
 			}
 
 			pk_alpm_transaction_commit (job, &error);
@@ -201,6 +204,12 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				const gchar *name = (const gchar *) i->data;
 				alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
 				alpm_pkg_set_reason (pkg, ALPM_PKG_REASON_DEPEND);
+			}
+
+			for (i = asexplicit; i != NULL; i = i->next) {
+				const gchar *name = (const gchar *) i->data;
+				alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
+				alpm_pkg_set_reason (pkg, ALPM_PKG_REASON_EXPLICIT);
 			}
 		}
 	}
@@ -216,6 +225,8 @@ out:
 
 	alpm_list_free_inner (asdeps, g_free);
 	alpm_list_free (asdeps);
+	alpm_list_free_inner (asexplicit, g_free);
+	alpm_list_free (asexplicit);
 
 	pk_alpm_finish (job, error);
 }
