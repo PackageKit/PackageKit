@@ -47,7 +47,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            The backend name, e.g. <doc:tt>"hif"</doc:tt>.
+            The backend name, e.g. <doc:tt>"dnf"</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>

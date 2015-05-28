@@ -413,6 +413,7 @@ AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backen
 AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
 AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]),enable_katja=$enableval,enable_katja=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
+AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -427,6 +428,7 @@ AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
 dnl ---------------------------------------------------------------------------
@@ -449,12 +451,25 @@ fi
 AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
+dnl ---------------------------------------------------------------------------
+dnl - Compile time default choice of backend
+dnl ---------------------------------------------------------------------------
+AC_ARG_WITH([default_backend],
+	    AS_HELP_STRING([--with-default-backend=<option>],
+			   [Default backend to use
+                           auto,alpm,apt,aptcc,conary,dummy,entropy,hif,opkg,pisi,portage,ports,katja,smart,urpmi,yum,zypp (auto)]))
+if test x$with_default_backend = x; then
+	with_default_backend=auto
+fi
+AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
+AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
+
 if test x$enable_hif = xyes; then
 	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.1.7)
 fi
 
 have_python_backend="no"
-if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o $enable_portage = xyes; then
+if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o x$enable_portage = xyes -o x$enable_yum = xyes; then
 	have_python_backend="yes"
 fi
 AM_CONDITIONAL(HAVE_PYTHON_BACKEND, test x$have_python_backend = xyes)
@@ -562,6 +577,7 @@ contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
+contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 backends/Makefile
@@ -577,6 +593,7 @@ backends/urpmi/Makefile
 backends/urpmi/helpers/Makefile
 backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
+backends/yum/Makefile
 backends/pisi/Makefile
 backends/poldek/Makefile
 backends/portage/Makefile
@@ -642,5 +659,6 @@ echo "
         Ports backend:             ${enable_ports}
         Katja backend:             ${enable_katja}
         URPMI backend:             ${enable_urpmi}
+        YUM backend:               ${enable_yum}
         Zypp backend:              ${enable_zypp}
 "

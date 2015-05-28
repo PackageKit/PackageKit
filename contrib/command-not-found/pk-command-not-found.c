@@ -254,13 +254,13 @@ pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
 	g_hash_table_insert (hash, (gpointer) "format", (gpointer) "fdisk");
 	g_hash_table_insert (hash, (gpointer) "prtvtoc", (gpointer) "fdisk");
 	g_hash_table_insert (hash, (gpointer) "installboot", (gpointer) "mkbootdisk");
-	g_hash_table_insert (hash, (gpointer) "installpatch", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "patchaddpkgadd", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "pkgchk", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "pkginfo", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "pkgrm", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "prodreg", (gpointer) "dnf");
-	g_hash_table_insert (hash, (gpointer) "showrev", (gpointer) "dnf");
+	g_hash_table_insert (hash, (gpointer) "installpatch", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "patchaddpkgadd", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkgchk", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkginfo", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "pkgrm", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "prodreg", (gpointer) "yum");
+	g_hash_table_insert (hash, (gpointer) "showrev", (gpointer) "yum");
 	g_hash_table_insert (hash, (gpointer) "isainfo", (gpointer) "uname");
 	g_hash_table_insert (hash, (gpointer) "luxadm", (gpointer) "systool");
 	g_hash_table_insert (hash, (gpointer) "mkfile", (gpointer) "touch");
@@ -725,6 +725,40 @@ pk_cnf_sigint_handler (int sig)
 }
 
 /**
+ * pk_cnf_is_backend_fast_enough_to_do_search:
+**/
+static gboolean
+pk_cnf_is_backend_fast_enough_to_do_search (void)
+{
+	gboolean ret = FALSE;
+	gchar *backend;
+	GError *error = NULL;
+	PkControl *control = NULL;
+
+	/* Initialize PkControl */
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, cancellable, &error);
+	if (!ret) {
+		/* failed to contact the daemon */
+		g_error_free (error);
+		goto out;
+	}
+
+	/* Find backend name */
+	g_object_get (control, "backend-name", &backend, NULL);
+
+	/* Current list of too slow backends */
+	if (g_strcmp0 (backend, "yum") == 0) {
+		ret = FALSE;
+		goto out;
+	}
+out:
+	if (control != NULL)
+		g_object_unref(control);
+	return ret;
+}
+
+/**
  * main:
  **/
 int
@@ -858,7 +892,8 @@ main (int argc, char *argv[])
 		goto out;
 
 	/* only search using PackageKit if configured to do so */
-	} else if (config->software_source_search) {
+	} else if (config->software_source_search &&
+		   pk_cnf_is_backend_fast_enough_to_do_search ()) {
 		package_ids = pk_cnf_find_available (argv[1], config->max_search_time);
 		if (package_ids == NULL)
 			goto out;

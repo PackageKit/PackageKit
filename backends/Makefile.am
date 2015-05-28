@@ -28,6 +28,10 @@ if BACKEND_TYPE_URPMI
 SUBDIRS += urpmi
 endif
 
+if BACKEND_TYPE_YUM
+SUBDIRS += yum
+endif
+
 if BACKEND_TYPE_PISI
 SUBDIRS += pisi
 endif
