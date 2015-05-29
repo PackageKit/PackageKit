@@ -617,19 +617,23 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* do we have anything in the cache */
 	cache_key = hif_utils_create_cache_key (flags);
-	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0)
+	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0) {
+		g_mutex_lock (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
-	if (cache_item != NULL && cache_item->sack != NULL) {
-		if (cache_item->valid) {
-			ret = TRUE;
-			g_debug ("using cached sack %s", cache_key);
-			sack = cache_item->sack;
-			goto out;
-		} else {
-			/* we have to do this now rather than rely on the
-			 * callback of the hash table */
-			g_hash_table_remove (priv->sack_cache, cache_key);
+		if (cache_item != NULL && cache_item->sack != NULL) {
+			if (cache_item->valid) {
+				ret = TRUE;
+				g_debug ("using cached sack %s", cache_key);
+				sack = cache_item->sack;
+				g_mutex_unlock (&priv->sack_mutex);
+				goto out;
+			} else {
+				/* we have to do this now rather than rely on the
+				 * callback of the hash table */
+				g_hash_table_remove (priv->sack_cache, cache_key);
+			}
 		}
+		g_mutex_unlock (&priv->sack_mutex);
 	}
 
 	/* update status */
