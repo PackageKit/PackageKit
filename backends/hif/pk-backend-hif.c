@@ -856,6 +856,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	gchar **search_tmp;
 	HifDb *db;
 	HifState *state_local;
+	HyPackageList installs = NULL;
 	HyPackageList pkglist = NULL;
 	HyQuery query = NULL;
 	HySack sack = NULL;
@@ -959,7 +960,18 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
 		}
+		/* get packages marked for upgrade */
 		pkglist = hy_goal_list_upgrades (job_data->goal);
+		/* add any packages marked for install */
+		installs = hy_goal_list_installs (job_data->goal);
+		if (installs != NULL) {
+			guint i;
+			HyPackage pkg;
+
+			FOR_PACKAGELIST(pkg, installs, i) {
+				hy_packagelist_push (pkglist, hy_package_link (pkg));
+			}
+		}
 		break;
 	default:
 		g_assert_not_reached ();
@@ -1021,6 +1033,8 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 out:
+	if (installs != NULL)
+		hy_packagelist_free (installs);
 	if (pkglist != NULL)
 		hy_packagelist_free (pkglist);
 	if (query != NULL)
@@ -2550,32 +2564,6 @@ pk_backend_repo_remove (PkBackend *backend,
 }
 
 /**
- * hif_is_installed_package_id_name:
- */
-static gboolean
-hif_is_installed_package_id_name (HySack sack, const gchar *package_id)
-{
-	gboolean ret;
-	HyPackageList pkglist = NULL;
-	HyQuery query = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
-
-	/* run query */
-	query = hy_query_create (sack);
-	split = pk_package_id_split (package_id);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	pkglist = hy_query_run (query);
-
-	/* any matches? */
-	ret = hy_packagelist_count (pkglist) > 0;
-
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-	return ret;
-}
-
-/**
  * hif_is_installed_package_id_name_arch:
  */
 static gboolean
@@ -3082,8 +3070,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   8, /* add repos */
-				   1, /* check installed */
+				   9, /* add repos */
 				   1, /* find packages */
 				   90, /* run transaction */
 				   -1);
@@ -3106,26 +3093,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
 	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
 
-	/* done */
-	if (!hif_state_done (job_data->state, &error)) {
-		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		return;
-	}
-
-	/* ensure packages are not already installed */
-	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id_name (sack, package_ids[i]);
-		if (!ret) {
-			gchar *printable_tmp;
-			printable_tmp = pk_package_id_to_printable (package_ids[i]);
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
-						   "cannot update: %s is not already installed",
-						   printable_tmp);
-			g_free (printable_tmp);
-			return;
-		}
-	}
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
