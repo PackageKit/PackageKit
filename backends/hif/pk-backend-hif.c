@@ -860,6 +860,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HyQuery query = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_strv_free_ gchar **search = NULL;
@@ -947,6 +948,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
+		/* set up the sack for packages that should only ever be installed, never updated */
+		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
+		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
+
 		job_data->goal = hy_goal_create (sack);
 		hy_goal_upgrade_all (job_data->goal);
 		ret = hif_goal_depsolve (job_data->goal, &error);
