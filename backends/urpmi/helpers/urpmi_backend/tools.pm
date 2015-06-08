@@ -87,7 +87,7 @@ sub find_installed_fullname {
 
 sub is_package_installed {
     my ($pkg) = @_;
-    return URPM::DB::open()->is_package_installed($pkg);
+    return URPM::is_package_installed(URPM::DB::open(), $pkg);
 }
 
 sub is_mageia() {
