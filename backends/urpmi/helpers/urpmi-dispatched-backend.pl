@@ -201,10 +201,8 @@ sub get_distro_upgrades() {
 
   my @distribs;
   open(my $distrib_file, $distribfile_path);
-  local $_;
-  while (<$distrib_file>) {
-    my %distrib = _parse_line($_);
-    push(@distribs, \%distrib);
+  foreach (<$distrib_file>) {
+    push @distribs, { _parse_line($_) };
   }
   close($distrib_file);
 
