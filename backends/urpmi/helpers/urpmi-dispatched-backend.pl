@@ -72,7 +72,7 @@ sub dispatch_command {
   } elsif ($command eq "get-details") {
     get_details($urpm, $args);
   } elsif ($command eq "get-distro-upgrades") {
-    get_distro_upgrades();
+    get_distro_upgrades($urpm);
   } elsif ($command eq "get-files") {
     get_files($urpm, $args);
   } elsif ($command eq "get-packages") {
@@ -185,7 +185,8 @@ sub get_details {
   _finished();
 }
 
-sub get_distro_upgrades() {
+sub get_distro_upgrades {
+  my ($urpm) = @_;
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
   open(my $product_file, "/etc/product.id");
