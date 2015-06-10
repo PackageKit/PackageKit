@@ -24,6 +24,7 @@ BEGIN {
 use URPM;
 use urpm;
 use urpm::media;
+use urpm::mirrors;
 use urpm::args;
 use urpm::select;
 
@@ -189,18 +190,8 @@ sub get_distro_upgrades {
   my ($urpm) = @_;
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
-  open(my $product_file, "/etc/product.id");
-
-  my %product_id;
-  %product_id = _parse_line(<$product_file>);
-  close($product_file);
-
-  my (undef, $distribfile_path) = tempfile("packagekit_urpmi_XXXXXX", UNLINK => 1);
-  _download_distrib_file($distribfile_path, \%product_id);
-
-  -f $distribfile_path or goto finished;
-
-  my @distribs = map { +{ _parse_line($_) } } cat_($distribfile_path);
+  my %product_id = %{ urpm::mirrors::parse_LDAP_namespace_structure(cat_('/etc/product.id')) };
+  my @distribs = urpm::mirrors::_mirrors_filtered($urpm, urpm::mirrors::_mageia_mirrorlist(\%product_id));
 
   my ($distrib) = grep { $_->{version} == $product_id{version} } @distribs;
 
@@ -211,7 +202,6 @@ sub get_distro_upgrades {
   $newer_version or goto finished;
   pk_print_distro_upgrade(PK_DISTRO_UPGRADE_ENUM_STABLE, join(" ", "Mageia", $product_id{product}, $newer_version->{version}), "");
 
-  unlink($distribfile_path);
   finished:
   _finished();
 }
@@ -828,21 +818,6 @@ sub _parse_line {
     $hash{$variable} = $value;
   }
   return %hash;
-}
-
-sub _download_distrib_file {
-  my ($outfile, $product_id) = @_;
-  
-  -x "/usr/bin/wget" or die "wget is missing\n";
-  
-  my $api_url = sprintf("http://mirrors.mageia.org/api/mageia.%s.%s.list",
-                  lc($product_id->{release}),
-                  lc($product_id->{arch}));
-  
-  my $wget_command = sprintf("/usr/bin/wget --quiet --output-document %s %s |", $outfile, $api_url);
-  
-  my $_wget_pid = open(my $wget, $wget_command);
-  close($wget);
 }
 
 sub _get_newer_distrib {
