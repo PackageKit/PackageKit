@@ -199,12 +199,7 @@ sub get_distro_upgrades() {
 
   -f $distribfile_path or goto finished;
 
-  my @distribs;
-  open(my $distrib_file, $distribfile_path);
-  foreach (<$distrib_file>) {
-    push @distribs, { _parse_line($_) };
-  }
-  close($distrib_file);
+  my @distribs = map { +{ _parse_line($_) } } cat_($distribfile_path);
 
   my ($distrib) = grep { $_->{version} == $product_id{version} } @distribs;
 
