@@ -186,6 +186,7 @@ sub get_details {
   _finished();
 }
 
+# FIXME: just reuse mgaonline code
 sub get_distro_upgrades {
   my ($urpm) = @_;
   pk_print_status(PK_STATUS_ENUM_QUERY);
