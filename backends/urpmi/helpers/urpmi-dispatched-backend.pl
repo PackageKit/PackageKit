@@ -805,12 +805,7 @@ sub _print_package_update_details {
   $requested{$pkg->id} = 1;
   my $state = {};
   my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested);
-  my @to_remove;
-  if (is_mageia()) {
-      @to_remove = urpm::select::removed_packages($state);
-  } else {
-      @to_remove = urpm::select::removed_packages($urpm, $state);
-  }
+  my @to_remove = urpm::select::removed_packages($state);
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
   @to_install = grep { $_->arch ne 'src' } @to_install;
   my $updates_descr = urpm::get_updates_description($urpm);
