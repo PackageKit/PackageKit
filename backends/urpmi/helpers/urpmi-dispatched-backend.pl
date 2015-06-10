@@ -42,12 +42,24 @@ my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 dispatch_command($urpm, \@ARGV);
 print "finished\n";
+set_idle_timeout();
 
 foreach (<STDIN>) {
+  # Disable timeout:
+  alarm(0);
+
   chomp($_);
   my @args = split(/\t/, $_);
   dispatch_command($urpm, \@args);
   print "finished\n";
+  set_idle_timeout();
+}
+
+sub set_idle_timeout() {
+  # exit if no job for 5mn:
+  my $min = 5;
+  $SIG{ALRM} = sub { die "No job for $min minutes" };
+  alarm($min*60);
 }
 
 # FIXME: stop passing a ref around
