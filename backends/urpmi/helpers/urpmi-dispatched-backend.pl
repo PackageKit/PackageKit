@@ -208,12 +208,7 @@ sub get_distro_upgrades() {
   }
   close($distrib_file);
 
-  my $distrib;
-  foreach (@distribs) {
-    if ($_->{version} == $product_id{version}) {
-      $distrib = $_;
-    }
-  }
+  my ($distrib) = grep { $_->{version} == $product_id{version} } @distribs;
 
   $distrib or goto finished;
   @distribs = sort { $b->{release_date} <=> $a->{release_date} } @distribs;
@@ -816,11 +811,7 @@ sub _print_package_update_details {
     $desc =~ s/\n/;/g;
   }
   
-  my @to_upgrade_pkids;
-  foreach (@to_install) {
-    my $pkid = get_installed_fullname_pkid($_);
-    push @to_upgrade_pkids, $pkid if $pkid;
-  }
+  my @to_upgrade_pkids = map { get_installed_fullname_pkid($_) || () } @to_install;
   
   pk_print_update_detail(get_package_id($pkg),
     join("&", @to_upgrade_pkids),
@@ -866,18 +857,10 @@ sub _download_distrib_file {
 
 sub _get_newer_distrib {
   my ($installed_version, $distrib_list) = @_;
-  my $installed_distrib;
-  foreach (@$distrib_list) {
-    if ($_->{version} == $installed_version) {
-      $installed_distrib = $_;
-    }
-  }
+  my ($installed_distrib) = grep { $_->{version} == $installed_version } @$distrib_list;
   $installed_distrib or return;
-  foreach (@$distrib_list) {
-    if ($installed_distrib->{release_date} < $_->{release_date}) {
-      return $_;
-    }
-  }
+  my ($new_distrib) = grep { $installed_distrib->{release_date} < $_->{release_date} } @$distrib_list;
+  return $new_distrib;
 }
 
 # from urpmi/urpmf:
