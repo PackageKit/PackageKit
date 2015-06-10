@@ -838,11 +838,7 @@ sub _download_distrib_file {
                   lc($product_id->{release}),
                   lc($product_id->{arch}));
   
-  my $wget_command = join(" ", 
-                          "/usr/bin/wget",
-                          "--quiet",
-                          "--output-document", $outfile,
-                          $api_url);
+  my $wget_command = sprintf("/usr/bin/wget --quiet --output-document %s %s", $outfile, $api_url);
   
   my $_wget_pid = open(my $wget, "$wget_command |");
   close($wget);
