@@ -35,7 +35,7 @@ sub open_rpm_db() {
 sub fast_open_urpmi_db() {
     my $urpm = urpm->new;
     $urpm->get_global_options;
-    urpm::media::read_config($urpm);
+    urpm::media::read_config($urpm, 0);
     $urpm;
 }
 
