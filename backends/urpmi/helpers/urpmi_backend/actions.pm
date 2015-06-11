@@ -145,7 +145,7 @@ sub perform_installation {
   };
 
   # Now, the script will call the urpmi main loop to make installation
-  my $exit_code = urpm::main_loop::run($urpm, $state, undef, \@ask_unselect, {
+  urpm::main_loop::run($urpm, $state, undef, \@ask_unselect, {
    inst => $callback_inst,
       trans => $callback_inst,
       trans_log => sub {
