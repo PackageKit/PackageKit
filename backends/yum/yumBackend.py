@@ -295,6 +295,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param summary: The summary of the package
         @param license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
@@ -2521,6 +2522,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             grp = self._is_meta_package(package_id)
             if grp:
                 package_id = "%s;;;meta" % grp.groupid
+                summary = grp.nameByLang(self.lang)
                 desc = grp.descriptionByLang(self.lang)
                 desc = desc.replace('\n\n', ';')
                 desc = desc.replace('\n', ' ')
@@ -2529,7 +2531,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 size = 0
                 for pkg in pkgs:
                     size = size + pkg.size
-                self.details(package_id, "", group, desc, "", size)
+                self.details(package_id, summary, "", group, desc, "", size)
 
             else:
                 try:
