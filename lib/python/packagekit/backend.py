@@ -229,6 +229,7 @@ class PackageKitBaseBackend:
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param summary: The package summary
         @param package_license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
