@@ -1634,7 +1634,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     @sharedreslock
-    def remove_packages(self, allowdep, autoremove, package_ids):
+    def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         return self._remove_packages(allowdep, autoremove, package_ids)
 
     def _remove_packages(self, allowdep, autoremove, pk_pkgs, simulate = False):
@@ -1745,6 +1745,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     just_id = True)
                 pkg_ids |= repo_db.searchHomepage(key, just_id = True)
                 pkg_ids |= repo_db.searchLicense(key, just_id = True)
+                if not pkg_ids:
+                    pkg_ids = repo_db.searchPackages(key, just_id = True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
