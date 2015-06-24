@@ -439,7 +439,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def remove_packages(self, transaction_flags, allowdep, autoremove, package_ids):
+    def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
