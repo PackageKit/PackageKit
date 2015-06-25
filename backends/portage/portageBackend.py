@@ -68,10 +68,14 @@ from portage.exception import InvalidAtom
 # protection against signal when installing/removing
 
 # Map Gentoo categories to the PackageKit group name space
+
+
 class PortagePackageGroups(dict):
+
     """
     Portage Package categories group representation
     """
+
     def __init__(self):
         dict.__init__(self)
 
@@ -154,6 +158,7 @@ class PortagePackageGroups(dict):
 
 
 class PortageBridge():
+
     '''
     Bridge to portage/emerge settings and variabales to help using them
     and be sure they are always up-to-date.
@@ -266,8 +271,8 @@ class PackageKitPortageMixin(object):
             longdescs = doc.getElementsByTagName("longdescription")
             for longdesc in longdescs:
                 data[longdesc.getAttribute("lang").strip()] = \
-                    ' '.join([x.strip() for x in \
-                        longdesc.firstChild.data.strip().split("\n")])
+                    ' '.join([x.strip() for x in
+                              longdesc.firstChild.data.strip().split("\n")])
 
         # Only return in plain English since Portage doesn't support i18n/l10n
         return data.get('en', "No description")
@@ -343,13 +348,13 @@ class PackageKitPortageMixin(object):
             self.pvar.settings['ROOT'],
             self.pvar.settings.get('CONFIG_PROTECT', '').split()))
 
-        if result:
-            self.message(
-                MESSAGE_CONFIG_FILES_CHANGED,
-                "Some configuration files need updating."
-                ";You should use Gentoo's tools to update them (dispatch-conf)"
-                ";If you can't do that, ask your system administrator."
-            )
+        # if result:
+        #    self.message(
+        #        MESSAGE_CONFIG_FILES_CHANGED,
+        #        "Some configuration files need updating."
+        #        ";You should use Gentoo's tools to update them (dispatch-conf)"
+        #        ";If you can't do that, ask your system administrator."
+        #    )
 
     def _get_restricted_fetch_files(self, cpv, metadata):
         '''
@@ -546,7 +551,8 @@ class PackageKitPortageMixin(object):
             return cpv_list
 
         def _has_validLicense(cpv):
-            metadata = self._get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
+            metadata = self._get_metadata(
+                cpv, ["LICENSE", "USE", "SLOT"], True)
             return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in filters or FILTER_NOT_FREE in filters:
@@ -693,8 +699,8 @@ class PackageKitPortageMixin(object):
 
         if not keywords:
             keywords.append("no keywords")
-            self.message(MESSAGE_UNKNOWN,
-                         "No keywords have been found for %s" % cpv)
+            # self.message(MESSAGE_UNKNOWN,
+            #             "No keywords have been found for %s" % cpv)
 
         # don't want to see -r0
         if rev != "r0":
@@ -762,7 +768,8 @@ class PackageKitPortageMixin(object):
                             packages_list.append(n)
 
         # remove cpv_input that may be added to the list
-        def filter_cpv_input(x): return x.cpv not in cpv_input
+        def filter_cpv_input(x):
+            return x.cpv not in cpv_input
         return filter(filter_cpv_input, packages_list)
 
 
@@ -824,7 +831,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             else:
                 icon = "image-missing"
 
-            cat_id = name # same thing
+            cat_id = name  # same thing
             self.category("", cat_id, name, summary, icon)
 
     def depends_on(self, filters, pkgs, recursive):
@@ -886,13 +893,15 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         for n in \
                                 depgraph._dynamic_config.digraph.child_nodes(r):
                             for c in \
-                                depgraph._dynamic_config.digraph.child_nodes(n):
+                                    depgraph._dynamic_config.digraph.child_nodes(n):
                                 cpv_list.append(c)
 
         def _filter_uninstall(cpv):
             return cpv[3] != 'uninstall'
+
         def _filter_installed(cpv):
             return cpv[0] == 'installed'
+
         def _filter_not_installed(cpv):
             return cpv[0] != 'installed'
 
@@ -954,7 +963,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             )
 
             pkg_processed += 100.0
-            self.percentage(int(pkg_processed/nb_pkg))
+            self.percentage(int(pkg_processed / nb_pkg))
 
         self.percentage(100)
 
@@ -983,7 +992,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             self.files(pkg, ';'.join(sorted(self._get_file_list(cpv))))
 
             pkg_processed += 100.0
-            self.percentage(int(pkg_processed/nb_pkg))
+            self.percentage(int(pkg_processed / nb_pkg))
 
         self.percentage(100)
 
@@ -1004,7 +1013,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     continue
 
             cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(int(cp_processed / nb_cp))
 
         self.percentage(100)
 
@@ -1106,9 +1115,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             cpv = self._id_to_cpv(pkg)
 
-            if not self.pvar.portdb.cpv_exists(cpv):
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
-                             "could not find %s" % pkg)
+            # if not self.pvar.portdb.cpv_exists(cpv):
+            #    self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
+            #                 "could not find %s" % pkg)
 
             for cpv in self.pvar.vardb.match(portage.versions.pkgsplit(cpv)[0]):
                 updates.append(cpv)
@@ -1176,7 +1185,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             for s in slots:
                 cpv_list_updates = []
-                cpv_inst = cpv_dict_inst[s][0] # only one install per slot
+                cpv_inst = cpv_dict_inst[s][0]  # only one install per slot
 
                 # the slot can be outdated (not in the tree)
                 if s not in cpv_dict_avai:
@@ -1188,17 +1197,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in tmp_list_avai:
                     if self._cmp_cpv(cpv_inst, cpv) == -1:
                         cpv_list_updates.append(cpv)
-                    else: # because the list is sorted
+                    else:  # because the list is sorted
                         break
 
                 # no update for this slot
                 if len(cpv_list_updates) == 0:
                     if [cpv_inst] == self.pvar.portdb.visible([cpv_inst]):
-                        break # really no update
+                        break  # really no update
                     else:
                         # that's actually a downgrade or even worst
                         if len(tmp_list_avai) == 0:
-                            break # this package is not known in the tree...
+                            break  # this package is not known in the tree...
                         else:
                             dict_down[s] = [tmp_list_avai.pop()]
 
@@ -1231,7 +1240,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                             # cpv is a security update and removed from list
                             cpv_updates[atom.cp][slot].remove(cpv)
                             self._package(cpv, INFO_SECURITY)
-            else: # update also non-world and non-system packages if security
+            else:  # update also non-world and non-system packages if security
                 self._package(atom.cpv, INFO_SECURITY)
 
         # downgrades
@@ -1340,9 +1349,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # show elog messages and clean
         portage.elog.remove_listener(self._elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
+        # for msg in self._elog_messages:
+        # XXX: Message are removed so we will remove this
+        #        self.message(MESSAGE_UNKNOWN, msg)
         self._elog_messages = []
 
         self._signal_config_update()
@@ -1379,14 +1388,16 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             self._unblock_output()
 
     def remove_packages(self, transaction_flags, pkgs, allowdep, autoremove):
-        return self._remove_packages(allowdep, autoremove, pkgs)
+        return self._remove_packages(transaction_flags, pkgs, allowdep, autoremove)
 
-    def _remove_packages(self, allowdep, autoremove, pkgs, simulate=False):
+    def _remove_packages(self, transaction_flags, pkgs, allowdep, autoremove):
         # TODO: every to-be-removed pkg should emit self.package()
         #       see around _emerge.Scheduler.Scheduler
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
+
+        simulate = self._is_simulate(transaction_flags)
 
         cpv_list = []
         packages = []
@@ -1425,9 +1436,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             cpv_list.append(cpv)
 
         # backend do not implement autoremove
-        if autoremove:
-            self.message(MESSAGE_AUTOREMOVE_IGNORED,
-                         "Portage backend do not implement autoremove option")
+        # if autoremove:
+        #    self.message(MESSAGE_AUTOREMOVE_IGNORED,
+        #                 "Portage backend do not implement autoremove option")
 
         # get packages needing candidates for removal
         required_packages = self._get_required_packages(cpv_list,
@@ -1497,9 +1508,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # show elog messages and clean
         portage.elog.remove_listener(self._elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
+        # for msg in self._elog_messages:
+        #     XXX: Message no loger exists so we will remove this
+        #     self.message(MESSAGE_UNKNOWN, msg)
         self._elog_messages = []
 
     def repo_enable(self, repoid, enable):
@@ -1533,7 +1544,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 installed_layman_db.delete(installed_layman_db.select(repoid))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to disable repository "+repoid+" : "+str(e))
+                           "Failed to disable repository " + repoid + " : " + str(e))
                 return
 
         # enabling (adding) a db
@@ -1547,7 +1558,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             except Exception, e:
                 self._unblock_output()
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to enable repository "+repoid+" : "+str(e))
+                           "Failed to enable repository " + repoid + " : " + str(e))
                 return
 
     def resolve(self, filters, pkgs):
@@ -1573,7 +1584,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     self._package(cpv)
 
             cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(int(cp_processed / nb_cp))
 
         self.percentage(100)
 
@@ -1624,7 +1635,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._package(cpv)
 
             cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(int(cp_processed / nb_cp))
 
         self.percentage(100)
 
@@ -1668,7 +1679,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         break
 
             count += 1
-            self.percentage(float(count)/values_len)
+            self.percentage(float(count) / values_len)
 
         self.percentage(100)
 
@@ -1689,7 +1700,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         self._package(cpv)
 
             cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(int(cp_processed / nb_cp))
 
         self.percentage(100)
 
@@ -1746,7 +1757,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     self._package(cpv)
 
             cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(int(cp_processed / nb_cp))
 
         self.percentage(100)
 
@@ -1837,9 +1848,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # show elog messages and clean
         portage.elog.remove_listener(self._elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
+        # for msg in self._elog_messages:
+        #    self.message(MESSAGE_UNKNOWN, msg)
         self._elog_messages = []
 
         self._signal_config_update()
