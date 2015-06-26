@@ -2463,6 +2463,7 @@ pk_control_finalize (GObject *object)
 	g_strfreev (priv->mime_types);
 	g_free (priv->distro_id);
 	g_ptr_array_unref (priv->calls);
+	g_object_unref (priv->cancellable);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
 }
