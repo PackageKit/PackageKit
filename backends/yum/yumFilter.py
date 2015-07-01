@@ -94,11 +94,20 @@ class YumFilter(PackagekitFilter):
         '''
         Only return the newest package for each name.arch
         '''
+        # installed packages
+        installed = []
+        for pkg, state in pkglist:
+            if self._pkg_is_installed(pkg):
+                installed.append((pkg, state))
+
+        # newest from the repos
         newest = {}
         for pkg, state in pkglist:
+            if self._pkg_is_installed(pkg):
+                continue
+
             # only key on name and not arch
-            inst = self._pkg_is_installed(pkg)
-            key = (pkg.name, pkg.arch, inst)
+            key = (pkg.name, pkg.arch)
 
             # we've already come across this package
             if key in newest:
@@ -116,7 +125,8 @@ class YumFilter(PackagekitFilter):
                 del newest[key]
 
             newest[key] = (pkg, state)
-        return newest.values()
+
+        return installed + newest.values()
 
     def _do_application_filtering(self, pkglist):
         '''
