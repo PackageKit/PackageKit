@@ -886,36 +886,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._show_package_list(package_list)
 
     def _get_provides_query(self, provides_type, value):
-        # gets a list of provides
 
         # old standard
         if value.startswith("gstreamer0.10(") or value.startswith("gstreamer1("):
             return [ value ]
 
-        # new standard
-        if provides_type == PROVIDES_CODEC:
-            return [ "gstreamer0.10(%s)" % value ]
-        if provides_type == PROVIDES_FONT:
-            return [ "font(%s)" % value ]
-        if provides_type == PROVIDES_MIMETYPE:
-            return [ "mimehandler(%s)" % value ]
-        if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
-            return [ "postscriptdriver(%s)" % value ]
-        if provides_type == PROVIDES_PLASMA_SERVICE:
-            # We need to allow the Plasma version to be specified.
-            if value.startswith("plasma"):
-                return [ value ]
-            # For compatibility, we default to plasma4.
-            return [ "plasma4(%s)" % value ]
-        if provides_type == PROVIDES_ANY:
-            provides = []
-            provides.append(self._get_provides_query(PROVIDES_CODEC, value)[0])
-            provides.append(self._get_provides_query(PROVIDES_FONT, value)[0])
-            provides.append(self._get_provides_query(PROVIDES_MIMETYPE, value)[0])
-            provides.append(self._get_provides_query(PROVIDES_POSTSCRIPT_DRIVER, value)[0])
-            provides.append(self._get_provides_query(PROVIDES_PLASMA_SERVICE, value)[0])
-            provides.append(value)
-            return provides
+        # gets a list of provides
+        provides = []
+        provides.append("gstreamer0.10(%s)" % value)
+        provides.append("gstreamer1(%s)" % value)
+        provides.append("font(%s)" % value)
+        provides.append("mimehandler(%s)" % value)
+        provides.append("postscriptdriver(%s)" % value)
+        provides.append("plasma4(%s)" % value)
+        provides.append(value)
+        return provides
 
         # not supported
         raise PkError(ERROR_NOT_SUPPORTED, "this backend does not support '%s' provides" % provides_type)
