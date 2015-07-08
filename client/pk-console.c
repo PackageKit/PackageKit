@@ -1724,7 +1724,7 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to parse command line"), error->message);
-		ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
+		retval_copy = PK_EXIT_CODE_SYNTAX_INVALID;
 		goto out_last;
 	}
 
@@ -1754,13 +1754,13 @@ main (int argc, char *argv[])
 
 	if (program_version) {
 		g_print (VERSION "\n");
-		goto out_last;
+		goto out;
 	}
 
 	if (argc < 2) {
 		g_print ("%s", options_help);
 		ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-		goto out_last;
+		goto out;
 	}
 
 	/* watch when the daemon aborts */
@@ -2422,7 +2422,8 @@ out:
 		retval_copy = ctx->retval;
 		g_object_unref (ctx->progressbar);
 		g_object_unref (ctx->control);
-		g_object_unref (ctx->task);
+		if (ctx->task != NULL)
+			g_object_unref (ctx->task);
 		g_object_unref (ctx->cancellable);
 		if (ctx->defered_status_id > 0)
 			g_source_remove (ctx->defered_status_id);
