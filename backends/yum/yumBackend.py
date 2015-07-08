@@ -3290,7 +3290,7 @@ class PackageKitCallback(RPMBaseCallback):
             except exceptions.IOError, e:
                 self.base.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except exceptions.KeyError, e:
-                self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
+                self.base.message('backend-error', "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 
         # set item percentage
         if package and te_total > 0:
@@ -3349,7 +3349,7 @@ class ProcessTransPackageKitCallback:
             self.base.allow_cancel(False)
             self.base.percentage(pct_start)
         else:
-            self.base.message(MESSAGE_BACKEND_ERROR, "unhandled transaction state: %s" % state)
+            self.base.message('backend-error', "unhandled transaction state: %s" % state)
 
 class DepSolveCallback(object):
 
