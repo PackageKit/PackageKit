@@ -2875,7 +2875,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 desc = desc.replace("\t", " ")
 
             # add link to bohdi if available
-            if notice['from'].find('updates@fedoraproject.org') != -1:
+            if notice['from'] and notice['from'].find('updates@fedoraproject.org') != -1:
                 if notice['update_id']:
                     releasever = self.yumbase.conf.yumvar['releasever']
                     href = "https://admin.fedoraproject.org/updates/F%s/%s" % (releasever, notice['update_id'])
