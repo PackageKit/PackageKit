@@ -1,3 +1,34 @@
+Version 1.0.7
+~~~~~~~~~~~~~
+Released: 2015-07-13
+
+Backends:
+ - alpm: Set install reason to explicitly installed (Christian Hesse)
+ - entropy: Fixed remove_package and search_details (skullbocks)
+ - entropy: Removed messages and fixing remove function (skullbocks)
+ - hif: Add missing locking when accessing sack cache (Kalev Lember)
+ - hif: Improve depsolving for parallel kernel installs (Kalev Lember)
+ - hif: Include any packages marked for installation when doing upgrades (Kalev Lember)
+ - portage: Removed messages and fixing remove function (skullbocks)
+ - python/backend: Fixing parameter order (skullbocks)
+ - urpm: Properly use is_package_installed() (Thierry Vignaud)
+ - yum: Fix backtrace when getting the update details (Richard Hughes)
+ - yum: Fix up two almost impossible-to-hit python warnings (Richard Hughes)
+ - yum: Forward port to the new WhatProvides API (Richard Hughes)
+ - yum: Return installed packages first with NEWEST filter (Kalev Lember)
+ - yum: Update comps groups code for internal Details API change (Kalev Lember)
+
+New Features:
+ - Define command_not_found_handler for zsh (Will Thompson)
+
+Bugfixes:
+ - Correct punctuation while applying offline updates (Matthew Miller)
+ - Don't run if bash command completion is being run (Ville Skyttä)
+ - Fix Details() from spawned backends (Richard Hughes)
+ - Port GTK+ module to org.freedesktop.PackageKit.Modify2 (Matthias Clasen)
+ - Return the correct error for syntax errors in pkcon (Richard Hughes)
+ - Return the correct error if nothing was done for repo-enable (Richard Hughes)
+
 Version 1.0.6
 ~~~~~~~~~~~~~
 Released: 2015-04-07

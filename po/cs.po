@@ -5,17 +5,19 @@
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
 # fri, 2011
+# Jozef Mlích <xmlich02@stud.fit.vutbr.cz>, 2015
 # Marek Černocký <marek@manet.cz>, 2013-2014
+# Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Vojtech Smejkal <smejkalv@gmail.com>, 2008
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-07 12:24+0100\n"
-"PO-Revision-Date: 2015-04-07 11:24+0000\n"
+"POT-Creation-Date: 2015-07-13 12:37+0100\n"
+"PO-Revision-Date: 2015-07-13 11:37+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Czech (http://www.transifex.com/projects/p/packagekit/language/cs/)\n"
+"Language-Team: Czech (http://www.transifex.com/p/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -286,11 +288,11 @@ msgstr "Vyberte, prosím, správný balíček: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Balíček nebyl nalezen"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Balíček nebyl nalezen"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -360,7 +362,7 @@ msgstr ""
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Připravené aktualizace:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
@@ -405,7 +407,7 @@ msgstr "Největší stáří mezipaměti metadat. Použijte -1 pro „nikdy“."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Povolit instalaci nedůvěryhodných balíčků."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -507,15 +509,15 @@ msgid "A package provide string is required"
 msgstr "Je požadován řetězec k poskytnutí balíčku"
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Je požadováno jméno souboru"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Popis"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -562,7 +564,7 @@ msgid "Shutting down after installing updates…"
 msgstr ""
 
 #. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates, this could take a while..."
+msgid "Installing updates; this could take a while..."
 msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
@@ -645,7 +647,7 @@ msgstr "Nepodařilo se nainstalovat balíčky"
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "Příkaz nebyl nenalezen."
+msgstr "Příkaz nenalezen."
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -897,7 +899,7 @@ msgstr "Dostupné"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Není k dispozici"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1019,7 +1021,7 @@ msgstr "Nastavují se data"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "Odebírá se repozitář"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
@@ -1197,7 +1199,7 @@ msgid "Install signed package"
 msgstr "Nainstalovat podepsaný balíček"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Pro instalaci software je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1208,7 +1210,7 @@ msgid "Install untrusted local file"
 msgstr "Nainstalovat místní nedůvěryhodný soubor"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Pro instalaci nedůvěryhodného software je vyžadováno ověření"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1220,7 +1222,7 @@ msgid "Install already installed package again"
 msgstr ""
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Reinstalace vyžaduje ověření"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1229,7 +1231,7 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Nainstalovat starší verzi instalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
 msgstr ""
@@ -1240,7 +1242,7 @@ msgstr ""
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Důvěřovat klíči použitému pro podepsání software"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
@@ -1271,7 +1273,7 @@ msgid "Remove package"
 msgstr "Odebrat balíček"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Pro odebrání software je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1280,10 +1282,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Akutalizace software"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Pro aktualizaci software je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1358,54 +1360,54 @@ msgstr "Pro vymazání zprávy o aktualizaci bez připojení je vyžadováno ov�
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias pro %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Příkaz nebyl nalezen, platné příkazy jsou:"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Balíčkovací systém, který se má použít, např. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Aktualizovat mezipaměť"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Aktualizovat mezipaměť (vynutit)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Hledat podle jmen"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Hledat podle podrobností"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Hledat podle souborů"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Nainstalovat balíček"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Nastavit možnosti repozitáře"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Selhalo zpracování parametrů"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Nepodařilo se načíst soubor s nastavením"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"

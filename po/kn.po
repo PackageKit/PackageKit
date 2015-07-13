@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-07 12:24+0100\n"
-"PO-Revision-Date: 2015-04-07 11:24+0000\n"
+"POT-Creation-Date: 2015-07-13 12:37+0100\n"
+"PO-Revision-Date: 2015-07-13 11:37+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Kannada (http://www.transifex.com/projects/p/packagekit/language/kn/)\n"
+"Language-Team: Kannada (http://www.transifex.com/p/packagekit/language/kn/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -559,7 +559,7 @@ msgid "Shutting down after installing updates…"
 msgstr ""
 
 #. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates, this could take a while..."
+msgid "Installing updates; this could take a while..."
 msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
@@ -1360,7 +1360,7 @@ msgstr ""
 msgid "Command not found, valid commands are:"
 msgstr ""
 
-#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ಬಳಸಬೇಕಿರುವ ಪ್ಯಾಕೇಜಿಂಗ್ ಬ್ಯಾಕೇಂಡ್, ಉದಾ. dummy"
 

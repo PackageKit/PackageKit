@@ -3,8 +3,8 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Rajesh Ranjan <rajesh672@gmail.com>, 2009
-# Richard Hughes <richard@hughsie.com>, 2011
+# Cédric Valmary <cvalmary@yahoo.fr>, 2015
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -12,132 +12,132 @@ msgstr ""
 "POT-Creation-Date: 2015-07-13 12:37+0100\n"
 "PO-Revision-Date: 2015-07-13 11:37+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Hindi (http://www.transifex.com/p/packagekit/language/hi/)\n"
+"Language-Team: Occitan (post 1500) (http://www.transifex.com/p/packagekit/language/oc/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: hi\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: oc\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr "लेनदेन"
+msgstr "Transaccion"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
 msgid "System time"
-msgstr "सिस्टम समय"
+msgstr "Ora del sistèma"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "सफल"
+msgstr "Capitat"
 
 msgid "True"
-msgstr "सही"
+msgstr "Verai"
 
 msgid "False"
-msgstr "गलत"
+msgstr "Fals"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
-msgstr "भूमिका"
+msgstr "Ròtle"
 
 #. TRANSLATORS: this is The duration of the transaction
 msgid "Duration"
-msgstr "अवधि"
+msgstr "Durada"
 
 msgid "(seconds)"
-msgstr "(सेकेंड)"
+msgstr "(segondas)"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
-msgstr "कमांड लाइन"
+msgstr "Linha de comanda"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "उपयोक्ता ID"
+msgstr "Identificant d'utilizaire"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
-msgstr "उपयोक्ता नाम"
+msgstr "Nom d'utilizaire"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
-msgstr "वास्तविक नाम"
+msgstr "Nom vertadièr"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
-msgstr "प्रभावित संकुल:"
+msgstr "Paquets concernits :"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "प्रभावित संकुल: कुछ नहीं"
+msgstr "Paquets concernits : pas cap"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
-msgstr "वितरण"
+msgstr "Distribucion"
 
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
-msgstr "क़िस्म"
+msgstr "Tipe"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 msgid "Summary"
-msgstr "सारांश"
+msgstr "Resumit"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
-msgstr "श्रेणी"
+msgstr "Categoria"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "ID"
+msgstr "Identificant (ID)"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "पैरेंट"
+msgstr "Parent"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
 msgid "Name"
-msgstr "नाम"
+msgstr "Nom"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "प्रतीक"
+msgstr "Icòna"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "अद्यतन के बारे में विवरण:"
+msgstr "Informacions complementàrias a prepaus de la mesa a jorn :"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "संकुल"
+msgstr "Paquetatge"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 msgid "Updates"
-msgstr "अद्यतन"
+msgstr "Mesas a jorn"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "पुराना"
+msgstr "Despassats"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 msgid "Vendor"
-msgstr "विक्रेता"
+msgstr "Vendeire"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr "बगजिला"
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
@@ -146,92 +146,92 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "फिर से  चालू करें"
+msgstr "Tornar aviar"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr "पाठ अद्यतन करें"
+msgstr ""
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
-msgstr "परिवर्तन"
+msgstr "Cambiaments"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
 msgid "State"
-msgstr "स्थिति"
+msgstr "Estat"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 msgid "Issued"
-msgstr "निर्गत"
+msgstr "Publicat"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Updated"
-msgstr "अद्यतन किया गया"
+msgstr "Mes a jorn"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "सक्षम"
+msgstr "Activat"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "अक्षम"
+msgstr "Desactivat"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "तंत्र पुनःप्रारंभ इनके द्वारा जरूरी:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "सत्र पुनःप्रारंभ जरूरी:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "तंत्र पुनःप्रारंभ (सुरक्षा) इनके द्वारा जरूरी:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "तंत्र पुनःप्रारंभ (सुरक्षा) जरूरी:"
+msgstr ""
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "अनुप्रयोग पुनःप्रारंभ इसके द्वारा जरूरी:"
+msgstr ""
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr "संकुल विवरण"
+msgstr "Descripcion del paquet"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
-msgstr "कोई फ़ाइल नहीं"
+msgstr "Pas cap de fichièrs"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr "संकुल फ़ाइल"
+msgstr "Fichièrs del paquet"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
-msgstr "प्रतिशत"
+msgstr "Percentatge"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr "स्थिति"
+msgstr "Estat"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr "परिणाम:"
+msgstr "Resultats :"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr "गंभीर त्रुटि"
+msgstr "Error fatala"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -242,43 +242,43 @@ msgstr ""
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "लेनदेन विफल"
+msgstr ""
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "इस समय कोई अद्यतन उपलब्ध नहीं है."
+msgstr ""
 
 msgid "There are no upgrades available at this time."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "कृपया अद्यतन पूरी करने के लिए कंप्यूटर पुनःप्रारंभ करें."
+msgstr "Reamodatz l'ordenador per acabar la mesa a jorn."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "कृपया अद्यतन पूरा करने के लिए लॉगआउट और लॉगिन करें"
+msgstr "Reconnectatz per acabar la mesa a jorn."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "कृपया अद्यतन पूरी करने के लिए कंप्यूटर पुनःप्रारंभ करें क्योंकि कोई महत्वपूर्ण सुरक्षा अद्यतन को संस्थापित किया जाना है."
+msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr "कृपया अद्यतन पूरी करने के लिए लॉगआउट व लॉगिन होएँ क्योंकि किसी महत्वपूर्ण सुरक्षा अद्यतन को संस्थापित किया जाना है."
+msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "एक से अधिक संकुल मेल खाता है:"
+msgstr "I a mantun paquet correspondent :"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "कृपया सही संकुल चुनें: "
+msgstr "Causissètz lo paquet corrècte : "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -302,19 +302,19 @@ msgstr ""
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "यह औजार किसी उपलब्ध संकुल को नहीं ढूँढ़ सका: %s"
+msgstr ""
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "यह औजार संस्थापित संकुल को नहीं ढूँढ सका: %s"
+msgstr ""
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "यह औजार संकुल को नहीं ढूँढ़ सका: %s"
+msgstr ""
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
@@ -330,25 +330,25 @@ msgstr ""
 #. * any software sources. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "यह औजार संकुल को नहीं ढ़ूँढ़ सका: %s"
+msgstr ""
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "यह डेमॉन मध्य विनिमय में क्रैश कर गया!"
+msgstr "Lo demòni a fracassat en cors de transaccion."
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "पैकेजकिट कंसोल अंतरफलक"
+msgstr "Interfàcia PackageKit en consòla"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr "उपकमांड:"
+msgstr "Soscomandas :"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "समय पाने में विफल क्योंकि यह काम अंतिम में पूरा किया गया था"
+msgstr ""
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
@@ -361,19 +361,19 @@ msgstr ""
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr ""
+msgstr "Impossible de definir lo servidor mandatari"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "प्रोग्राम संस्करण दिखाएँ और बाहर निकलें"
+msgstr "Aficha la version del programa e quita"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "फ़िल्टर सेट करें, उदा. संस्थापित"
+msgstr "Szlecciona lo filtre, per ex. : installat"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "संपुष्टि के लिए संकुलों को बिना पूछे संस्थापित करें"
+msgstr ""
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
@@ -388,13 +388,13 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "निष्क्रिय संजाल बैंडबिड्थ और कम बिजली के प्रयोग से कमांड चलाएँ"
+msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "मशीन द्वारा पठनीय आउटपुट रूप में स्क्रीन पर छापें, बजाय चलंत छवि के प्रयोग के"
+msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
@@ -406,77 +406,77 @@ msgstr ""
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Impossible d'analisar la linha de comanda"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit से संपर्क करने में विफल"
+msgstr "Impossible de contactar PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "निर्दिष्ट फिल्टर अवैध था"
+msgstr "Lo filtre indicat èra invalid"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "खोज प्रकार जरूरी है, उदा. name"
+msgstr ""
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "खोज पद जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "संस्थापित करने के लिए संकुल नाम जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "संस्थापित करने के लिए फाइलनाम जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "प्रकार, key_id और package_id जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr "हटाने के लिए संकुल नाम जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "गंतव्य निर्देशिका और फिर डाउनलोड करने के लिए संकुल नाम जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "निर्देशिका नहीं मिला"
+msgstr "Impossible de trobar lo repertòri"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "लाइसेंस पहचानकर्ता (eula-id) जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "हल किया पैकेज नाम जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "रिपाजिटरी नाम जरूरी है"
+msgstr "Vos cal indicar un nom de depaus"
 
 msgid "A repo name, parameter and value are required"
-msgstr "रेपो नाम, पैरामीटर और मान जरूरी है"
+msgstr ""
 
 msgid "A repo id and autoremove required"
 msgstr ""
@@ -489,19 +489,19 @@ msgstr ""
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr "सही भूमिका जरूरी है"
+msgstr ""
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "संकुल नाम जरूरी है"
+msgstr "Vos cal indicar un nom de paquet"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "संकुल प्रदत्त स्ट्रिंग जरूरी है"
+msgstr ""
 
 msgid "A filename is required"
 msgstr ""
@@ -516,34 +516,34 @@ msgstr ""
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Vos cal especificar un fichièr de lista de crear"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Lo fichièr existís ja : %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "विकल्प '%s' समर्थित नहीं है"
+msgstr "L'opcion « %s » es pas presa en carga"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "कमांड असफल"
+msgstr "La comanda a fracassat"
 
 msgid "Failed to get daemon state"
-msgstr "डेमॉन स्थिति पाने में विफल."
+msgstr ""
 
 msgid "Failed to get properties"
 msgstr ""
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "PackageKit मानिटर"
+msgstr "Contrarotlador PackageKit"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
@@ -564,67 +564,67 @@ msgstr ""
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
-msgstr "संकुल सूचना पा रहा है..."
+msgstr "Obtencion de las informacions suls paquets..."
 
 #. TRANSLATORS: run an applicaiton
 #, c-format
 msgid "Run %s"
-msgstr "%s चलाएँ"
+msgstr "Executar %s"
 
 #. TRANSLATORS: show the installed version of a package
 msgid "Installed version"
-msgstr "संस्थापित संस्करण"
+msgstr "Version installada"
 
 #. TRANSLATORS: run the application now
 #, c-format
 msgid "Run version %s now"
-msgstr "अब %s संस्करण चलाएँ"
+msgstr "Executar la version %s ara"
 
 #. TRANSLATORS: run the application now
 msgid "Run now"
-msgstr "अभी चलाएँ"
+msgstr "Executar ara"
 
 #. TRANSLATORS: update to a new version of the package
 #, c-format
 msgid "Update to version %s"
-msgstr "संस्करण %s में अद्यतन करें"
+msgstr "Metre a jorn cap a la version %s"
 
 #. TRANSLATORS: To install a package
 #, c-format
 msgid "Install %s now"
-msgstr "अब %s को संस्थापित करें"
+msgstr "Installar %s ara"
 
 #. TRANSLATORS: the version of the package
 msgid "Version"
-msgstr "संस्करण"
+msgstr "Version"
 
 #. TRANSLATORS: noting found, so can't install
 msgid "No packages found for your system"
-msgstr "आपके तंत्र के लिए कोई संकुल नहीं पाया गया"
+msgstr "Cap de paquet pas trobat per vòstre sistèma"
 
 #. TRANSLATORS: package is being installed
 msgid "Installing..."
-msgstr "संस्थापित कर रहा है..."
+msgstr "Installacion..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr "सॉफ़्टवेयर स्रोत के बारे में विवरण डाउनलोज कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "फ़ाइललिस्ट डाउनलोड कर रहा है (यह पूरा होने में कुछ समय ले सकता है)."
+msgstr ""
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "संकुल प्रबंधक लॉक के लिए प्रतीक्षारत."
+msgstr ""
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "संकुल सूची डाउनलोड कर रहा है."
+msgstr ""
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "फाइल के लिए खोजने में विफल"
+msgstr ""
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
@@ -632,11 +632,11 @@ msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "लॉन्च करने में विफल:"
+msgstr ""
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "संकुलों को संस्थापित नहीं करने में विफल"
+msgstr ""
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
@@ -646,251 +646,251 @@ msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr "उसी तरह का कमांड है:"
+msgstr ""
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "समान कमांड चलाएँ:"
+msgstr ""
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr "समान कमांड हैं:"
+msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "चलाने के लिए कमांड चुनें"
+msgstr ""
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "इस फ़ाइल को देने वाला संकुल:"
+msgstr ""
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "संकुल '%s' को '%s' कमांड को देने के लिए संस्थापित करें?"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "इस फ़ाइल को देने वाला संकुल:"
+msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr "उपयुक्त संकुल हैं:"
+msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "संस्थापित करने के लिए कोई संकुल चुनें"
+msgstr ""
 
 msgid "User aborted selection"
 msgstr ""
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "1 से %i तक की संख्या कृपया दाखिल करें: "
+msgstr "Picatz un nombre entre 1 e %i : "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
-msgstr "अज्ञात स्थिति"
+msgstr ""
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "आरंभ कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "कतार में प्रतीक्षा"
+msgstr ""
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr "चल रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr "प्रश्न कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr "सूचना पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "संकुल हटा रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "संकुल डाउनलोड कर रहा है"
+msgstr "Telecargament dels paquets"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr "संकुल अधिष्ठापित कर रहा है"
+msgstr "Installacion dels paquets"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "सॉफ़्टवेयर सूची ताज़ा कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr "अद्यतन संस्थापित कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "संकुल साफ कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "संकुल को पुराना कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr "निर्भरता हल कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr "हस्ताक्षर जाँच रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr "परिवर्तन जाँच रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "परिवर्तन सौंप रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr "आंकड़ा के लिए निवेदन कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr "समाप्त"
+msgstr ""
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr "रद्द कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "रिपोजिटरी सूचना डाउनलोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "संकुल सूची डाउनलोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr "फ़ाइल सूची डाउनलोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "परिवर्तन सूची डाउनलोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr "समूह डाउनलोड किया जा रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "अद्यतन सूचना डाउनलोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "फ़ाइल पुनर्संकुलित कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "कैशे लोड कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "अनुप्रयोग स्कैन कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "संकुल सूची बना रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "संकुल प्रबंधक लॉक के लिए प्रतीक्षारत"
+msgstr ""
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "सत्यापन के लिए प्रतीक्षारत"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr "कार्यशील अनुप्रयोग अद्यतन रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr "प्रयोग में अनुप्रयोगों को जाँच रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr "प्रयोग में लाइब्रेरी जाँच रहा है"
+msgstr ""
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr "फ़ाइल की नक़ल ले रहा है"
+msgstr ""
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "डिबगिंग सूचना सभी फ़ाइलों के लिए दिखाएँ"
+msgstr ""
 
 msgid "Debugging Options"
-msgstr "डिबगिंग विकल्प"
+msgstr ""
 
 msgid "Show debugging options"
-msgstr "डिबगिंग विकल्प दिखाएँ"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr "बेकार"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "सामान्य"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr "महत्वपूर्ण"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr "सुरक्षा"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
-msgstr "बग फिक्स"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr "संवर्द्धन"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "रोका गया"
+msgstr ""
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "संस्थापित"
+msgstr ""
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "उपलब्ध"
+msgstr ""
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
@@ -898,121 +898,121 @@ msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "डाउनलोड किया जा रहा है"
+msgstr "Telecargament"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "अद्यतन कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "संस्थापित किया जा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "संकुल हटा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "साफ कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "पुराना"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "फिर संस्थापित कर रहा है..."
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "डाउनलोडेड"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "मिटाया"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "साफ किया गया"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "पुराना"
+msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "फिर संस्थापित"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr "अज्ञात भूमिका प्रकार"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr "निर्भरता पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "अद्यतन विवरण पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "विवरण पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "जरूरी सूची पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr "अद्यतन पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "विवरण से खोजें"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "फ़ाइल खोज रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "समूह खोज रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "नाम से खोजें"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "फ़ाइल संस्थापित कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "कैश ताज़ा कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "संकुल अद्यतन कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
-msgstr "रद्द कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "रिपोजिटरी पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Enabling repository"
-msgstr "रिपोजिटरी सक्रिय कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "आंकड़ा सेट कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
@@ -1020,146 +1020,146 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr "हल कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "फ़ाइल सूची पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "प्रदान पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr "हस्ताक्षर संस्थापित कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "संकुल पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr "EULA स्वीकार कर रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "उन्नयन पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "श्रेणियाँ पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "लेनदेन पा रहा है"
+msgstr ""
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "क्या आप अहस्ताक्षरित सॉफ़्टवेयर के संस्थापन की अनुमति देते हैं?"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "अहस्ताक्षरित सॉफ़्टवेयर संस्थापित नहीं किया जाएगा."
+msgstr ""
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "सॉफ़्टवेयर स्रोत हस्ताक्षर जरूरी"
+msgstr ""
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "सॉफ़्टवेयर स्रोत नाम"
+msgstr ""
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr "मुख्य URL"
+msgstr ""
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
-msgstr "मुख्य उपयोक्ता"
+msgstr ""
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr "कुंजी आईडी"
+msgstr ""
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr "कुंजी फिंगरप्रिंट"
+msgstr ""
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
-msgstr "कुंजी टाइमस्टैंप"
+msgstr ""
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr "क्या आप यह हस्ताक्षर स्वीकार करते हैं?"
+msgstr "Acceptatz aquesta signatura ?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
-msgstr "हस्ताक्षर स्वीकार नहीं किया गया था."
+msgstr "La signatura es pas estada acceptada."
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "अंत्य उपयोक्ता लाइसेंस मसौदा जरूरी"
+msgstr ""
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr "मसौदा"
+msgstr ""
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "क्या आप इस मसौदे को स्वीकार करते हैं?"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
-msgstr "हस्ताक्षर स्वीकार नहीं किया गया था."
+msgstr ""
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr "मीडिया परिवर्तन जरूरी"
+msgstr ""
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr "मीडिया प्रकार"
+msgstr ""
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr "मीडिया स्तर"
+msgstr ""
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
-msgstr "पाठ"
+msgstr ""
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "कृपया सही मीडिया डालें"
+msgstr ""
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr "सही मीडिया नहीं डाला गया था."
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "निम्नलिखित संकुल को हटाया जाने वाला है:"
+msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "निम्नलिखित संकुल को संस्थापित किया जाने वाला है:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "निम्नलिखित संकुल को अद्यतन किया जाना है:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "निम्नलिखित संकुल को फिर संस्थापित किया जाने वाला है:"
+msgstr ""
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "निम्नलिखित संकुल को फिर पदावनत किया जाने वाला है:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1168,22 +1168,22 @@ msgstr ""
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "परिवर्तन के साथ आगे बढ़ें?"
+msgstr ""
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "लेनदेन नहीं आगे बढ़ा."
+msgstr ""
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr "बाहरी कार्य रद्द करें"
+msgstr ""
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "कोई कार्य अस्वीकार करने के लिए प्रमाणीकरण जरूरी है जो आपके द्वारा आरंभ नहीं किया गया है"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1191,7 +1191,7 @@ msgstr "कोई कार्य अस्वीकार करने के �
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr "हस्ताक्षरित संकुल संस्थापित करें"
+msgstr ""
 
 msgid "Authentication is required to install software"
 msgstr ""
@@ -1202,7 +1202,7 @@ msgstr ""
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "अविश्वसनीय स्थानीय फाइल संस्थापित करें"
+msgstr "Installar un fichièr local pas signat"
 
 msgid "Authentication is required to install untrusted software"
 msgstr ""
@@ -1250,10 +1250,10 @@ msgstr ""
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "EULA स्वीकारें"
+msgstr "Acceptar la licéncia del logicial"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "EULA स्वीकार करने के लिए प्रमाणीकरण जरूरी है"
+msgstr "Autentificacion requesida per acceptar una licéncia"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1265,7 +1265,7 @@ msgstr "EULA स्वीकार करने के लिए प्रमा
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "संकुल हटाएँ"
+msgstr "Suprimir un paquet"
 
 msgid "Authentication is required to remove software"
 msgstr ""
@@ -1287,25 +1287,25 @@ msgstr ""
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software source parameters"
-msgstr "सॉफ़्टवेयर स्रोत पैरामीटर बदलें"
+msgstr "Modificar los paramètres dels depausses"
 
 msgid "Authentication is required to change software source parameters"
-msgstr "सॉफ़्टवेयर स्रोत पैरामीटर बदलने के लिए प्रमाणीकरण जरूरी है"
+msgstr "Autentificacion requesida per cambiar los paramètres dels depausses"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system sources"
-msgstr "तंत्र स्रोत ताज़ा करें"
+msgstr "Refrescar la lista dels paquets"
 
 msgid "Authentication is required to refresh the system sources"
-msgstr "तंत्र स्रोत ताज़ा करने के लिए प्रमाणीकरण जरूरी है"
+msgstr "Autentificacion requesida per metre a jorn la lista dels paquets"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "संजाल प्रॉक्सी सेट करें"
+msgstr "Configurar lo proxy de ret"
 
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
@@ -1319,10 +1319,10 @@ msgstr ""
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr "युक्ति फिर लोड करें"
+msgstr ""
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "नए ड्राइवर से युक्ति ताज़ा करने के लिए प्रमाणीकरण जरूरी है"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1362,7 +1362,7 @@ msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "प्रयोग के लिए बैकेंड को पैकेजिंग, उदा. dummy"
+msgstr "Motor del gestionari de paquets, per ex. : dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
@@ -1414,19 +1414,19 @@ msgstr ""
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "निष्क्रिय टाइमर निष्क्रिय करें"
+msgstr "Desactiva la minutariá d'inactivitat"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "संस्करण दिखाएँ और बाहर निकलें"
+msgstr "Aficha la version e quita"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "कुछ देर के बाद बाहर निकलें"
+msgstr "Quita aprèp un momenton"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "इंजन लोड होने के बाद बाहर निकलें"
+msgstr "Quita immediatament aprèp cargament del gestionari"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
@@ -1434,20 +1434,20 @@ msgstr ""
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr "PackageKit सेवा"
+msgstr "Servici PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "यह सॉफ्टवेयर भरोसेमंद स्रोत से नहीं है."
+msgstr ""
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "इस संकुल को अद्यतन मत करें जब तक वाकई ऐसा करने के लिए सुरक्षित है."
+msgstr ""
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "इस संकुलों को अद्यतन मत करें जब तक वाकई ऐसा करने के लिए सुरक्षित है."
+msgstr ""
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "इस संकुल संस्थापित मत करें जब तक वाकई ऐसा करने के लिए सुरक्षित है."
+msgstr ""
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "इन संकुलों को अद्यतन मत करें जब तक वाकई ऐसा करने के लिए सुरक्षित है."
+msgstr ""
