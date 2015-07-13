@@ -704,7 +704,14 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		/* TRANSLATORS: we failed to get any results, which is pretty
 		 * fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
-		ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
+		switch (error->code - 0xff) {
+		case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
+			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
+			break;
+		default:
+			ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
+			break;
+		}
 		goto out;
 	}
 
