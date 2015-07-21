@@ -183,7 +183,7 @@ pk_offline_update_progress_cb (PkProgress *progress,
 /**
  * pk_offline_update_reboot:
  **/
-static void
+static int
 pk_offline_update_reboot (void)
 {
 	g_autoptr(GError) error = NULL;
@@ -200,7 +200,7 @@ pk_offline_update_reboot (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to get system bus connection: %s",
 				  error->message);
-		return;
+		return EXIT_FAILURE;
 	}
 	val = g_dbus_connection_call_sync (connection,
 					   "org.freedesktop.systemd1",
@@ -217,14 +217,16 @@ pk_offline_update_reboot (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to reboot: %s",
 				  error->message);
-		return;
+		return EXIT_FAILURE;
 	}
+
+	return EXIT_SUCCESS;
 }
 
 /**
  * pk_offline_update_power_off:
  **/
-static void
+static int
 pk_offline_update_power_off (void)
 {
 	g_autoptr(GError) error = NULL;
@@ -241,7 +243,7 @@ pk_offline_update_power_off (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to get system bus connection: %s",
 				  error->message);
-		return;
+		return EXIT_FAILURE;
 	}
 	val = g_dbus_connection_call_sync (connection,
 					   "org.freedesktop.systemd1",
@@ -258,8 +260,10 @@ pk_offline_update_power_off (void)
 		sd_journal_print (LOG_WARNING,
 				  "Failed to power off: %s",
 				  error->message);
-		return;
+		return EXIT_FAILURE;
 	}
+
+	return EXIT_SUCCESS;
 }
 
 /**
@@ -540,10 +544,16 @@ out:
 		g_timeout_add_seconds (10, pk_offline_update_loop_quit_cb, loop);
 		g_main_loop_run (loop);
 	}
+
 	/* we have to manually either restart or shutdown */
 	if (action == PK_OFFLINE_ACTION_REBOOT)
-		pk_offline_update_reboot ();
+		retval = pk_offline_update_reboot ();
 	else if (action == PK_OFFLINE_ACTION_POWER_OFF)
-		pk_offline_update_power_off ();
+		retval = pk_offline_update_power_off ();
+
+	/* We must return success if we queued the shutdown or reboot
+	 * request, so the failure action specified by the unit is not
+	 * triggered. If we failed to enqueue, return failure which
+	 * will cause systemd to trigger the failure action. */
 	return retval;
 }
