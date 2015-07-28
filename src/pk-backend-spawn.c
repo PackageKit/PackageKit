@@ -782,6 +782,12 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	ret = pk_backend_job_get_interactive (priv->job);
 	g_hash_table_replace (env_table, g_strdup ("INTERACTIVE"), g_strdup (ret ? "TRUE" : "FALSE"));
 
+	/* UID */
+	ret = pk_backend_job_get_interactive (priv->job);
+	g_hash_table_replace (env_table,
+			      g_strdup ("UID"),
+			      g_strdup_printf ("%u", pk_backend_job_get_uid (priv->job)));
+
 	/* CACHE_AGE */
 	cache_age = pk_backend_job_get_cache_age (priv->job);
 	if (cache_age == G_MAXUINT) {

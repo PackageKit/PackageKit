@@ -2299,6 +2299,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.percentage(100)
             return
 
+        # this is set to the calling using to avoid reading /proc/self/loginuid
+        # and always returning '0' for the pacakgekitd user.
+        #
+        # Yes, it's global. No, I don't think that's a wise design choice.
+        _cached_getloginuid = self.uid
+
         try:
             rpmDisplay = PackageKitCallback(self)
             callback = ProcessTransPackageKitCallback(self)
@@ -2338,6 +2344,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+        # do a mostly pointless verification just to write the yumdb entries
+        self.yumbase.verifyTransaction()
 
     def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         '''

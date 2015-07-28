@@ -62,6 +62,7 @@ class PackageKitBaseBackend:
         self._locked = False
         self.lang = "C"
         self.has_network = False
+        self.uid = 0
         self.background = False
         self.interactive = False
         self.cache_age = 0
@@ -79,6 +80,12 @@ class PackageKitBaseBackend:
                 self.has_network = True
         except KeyError as e:
             print("Error: No NETWORK envp")
+
+        # try to get UID of running user
+        try:
+            self.uid = int(os.environ['UID'])
+        except KeyError as e:
+            print("Error: No UID envp")
 
         # try to get BACKGROUND state
         try:
