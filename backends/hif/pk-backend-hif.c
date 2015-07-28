@@ -404,6 +404,8 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	job_data->transaction = hif_transaction_new (priv->context);
 	hif_transaction_set_sources (job_data->transaction,
 				     hif_context_get_sources (priv->context));
+	hif_transaction_set_uid (job_data->transaction,
+				 pk_backend_job_get_uid (job));
 
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
