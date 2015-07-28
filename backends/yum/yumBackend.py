@@ -2008,79 +2008,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # process these first
         tempdir = tempfile.mkdtemp()
-        inst_packs = []
 
         for inst_file in inst_files:
             if inst_file.endswith('.rpm'):
                 continue
-            elif inst_file.endswith('.servicepack'):
-                inst_packs.append(inst_file)
             else:
                 self.error(ERROR_INVALID_PACKAGE_FILE, 'Only rpm files and packs are supported', exit=False)
                 return
-
-        # decompress and add the contents of any .servicepack files
-        for inst_pack in inst_packs:
-            inst_files.remove(inst_pack)
-            pack = tarfile.TarFile(name = inst_pack, mode = "r")
-            members = pack.getnames()
-            for mem in members:
-                pack.extract(mem, path = tempdir)
-            files = os.listdir(tempdir)
-
-            # find the metadata file
-            packtype = 'unknown'
-            for fn in files:
-                if fn == "metadata.conf":
-                    config = ConfigParser.ConfigParser()
-                    config.read(os.path.join(tempdir, fn))
-                    if config.has_option('PackageKit Service Pack', 'type'):
-                        packtype = config.get('PackageKit Service Pack', 'type')
-                    break
-
-            # we only support update and install
-            if packtype != 'install' and packtype != 'update':
-                self.error(ERROR_INVALID_PACKAGE_FILE, 'no support for type %s' % packtype, exit=False)
-                return
-
-            # add the file if it's an install, or update if installed
-            for fn in files:
-                if fn.endswith('.rpm'):
-                    inst_file = os.path.join(tempdir, fn)
-                    try:
-                        # read the file
-                        pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-                        pkgs_local = self.yumbase.rpmdb.searchNevra(name=pkg.name)
-                    except yum.Errors.MiscError:
-                        self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
-                    except yum.Errors.YumBaseError, e:
-                        self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
-                    except exceptions.IOError, e:
-                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
-                    except:
-                        self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
-                    else:
-                        # trying to install package that already exists
-                        if len(pkgs_local) == 1 and pkgs_local[0].EVR == pkg.EVR:
-                            self.message('PACKAGE_ALREADY_INSTALLED', '%s is already installed and the latest version' % pkg.name)
-
-                        # trying to install package older than already exists
-                        elif len(pkgs_local) == 1 and pkgs_local[0].EVR > pkg.EVR:
-                            self.message('PACKAGE_ALREADY_INSTALLED', 'a newer version of %s is already installed' % pkg.name)
-
-                        # only update if installed
-                        elif packtype == 'update':
-                            if len(pkgs_local) > 0:
-                                inst_files.append(inst_file)
-
-                        # only install if we passed the checks above
-                        elif packtype == 'install':
-                            inst_files.append(inst_file)
-
-        if len(inst_files) == 0:
-            # More than one pkg to be installed, all of them already installed
-            self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED,
-                       'All of the specified packages have already been installed')
 
         self._set_only_trusted(TRANSACTION_FLAG_ONLY_TRUSTED in transaction_flags or TRANSACTION_FLAG_SIMULATE in transaction_flags)
 
