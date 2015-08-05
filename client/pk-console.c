@@ -1282,6 +1282,16 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_strv_free_ gchar **package_ids = NULL;
 
+	/* local file */
+	if (g_file_test (packages[0], G_FILE_TEST_EXISTS)) {
+		pk_client_get_details_local_async (PK_CLIENT (ctx->task),
+						   packages,
+						   ctx->cancellable,
+						   pk_console_progress_cb, ctx,
+						   pk_console_finished_cb, ctx);
+		return TRUE;
+	}
+
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
 		g_set_error (error,

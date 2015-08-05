@@ -467,6 +467,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def get_details_local(self, files):
+        '''
+        Implement the {backend}-get-details-local functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def get_files(self, package_ids):
         '''
         Implement the {backend}-get-files functionality
@@ -580,6 +587,10 @@ class PackageKitBaseBackend:
         elif cmd == 'get-details':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)
             self.get_details(package_ids)
+            self.finished()
+        elif cmd == 'get-details-local':
+            files = args[0].split(PACKAGE_IDS_DELIM)
+            self.get_details_local(files)
             self.finished()
         elif cmd == 'get-files':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)

@@ -2476,7 +2476,32 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.message('COULD_NOT_FIND_PACKAGE', 'Package %s was not found' % _format_package_id(package_id))
                     continue
 
-    def _show_details_pkg(self, pkg):
+    def get_details_local(self, files):
+        '''
+        Print a detailed details for a given file
+        '''
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+        for f in files:
+            try:
+                pkg = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=f)
+            except PkError, e:
+                if e.code == ERROR_PACKAGE_NOT_FOUND:
+                    self.message('COULD_NOT_FIND_PACKAGE', e.details)
+                    continue
+                self.error(e.code, e.details, exit=True)
+                return
+            if pkg:
+                self._show_details_pkg(pkg, False)
+
+    def _show_details_pkg(self, pkg, verify_local=True):
 
         pkgver = _get_package_ver(pkg)
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
@@ -2494,7 +2519,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # if we are remote and in the cache, our size is zero
         size = pkg.size
-        if not pkg.repo.id.startswith('installed') and pkg.verifyLocalPkg():
+        if verify_local and not pkg.repo.id.startswith('installed') and pkg.verifyLocalPkg():
             size = 0
 
         group = self.comps.get_group(pkg.name)

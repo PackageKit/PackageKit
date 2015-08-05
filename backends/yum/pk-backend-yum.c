@@ -355,6 +355,7 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_CANCEL,
 		PK_ROLE_ENUM_DEPENDS_ON,
 		PK_ROLE_ENUM_GET_DETAILS,
+		PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 		PK_ROLE_ENUM_GET_FILES,
 		PK_ROLE_ENUM_REQUIRED_BY,
 		PK_ROLE_ENUM_GET_PACKAGES,
@@ -447,6 +448,20 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (priv->spawn, job, "yumBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **filenames)
+{
+	_cleanup_free_ gchar *tmp = NULL;
+	tmp = pk_package_ids_to_string (filenames);
+	pk_backend_spawn_helper (priv->spawn, job,
+				 "yumBackend.py",
+				 "get-details-local",
+				 tmp, NULL);
 }
 
 /**
