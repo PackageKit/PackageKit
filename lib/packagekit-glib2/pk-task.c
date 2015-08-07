@@ -1256,7 +1256,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * pk_task_resolve_async:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
- * @packages: package names to find
+ * @packages: (array zero-terminated=1): package names to find
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
