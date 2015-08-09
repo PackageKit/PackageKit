@@ -80,7 +80,7 @@ pk_item_progress_get_percentage (PkItemProgress *item_progress)
 }
 
 /**
- * pk_item_progress_get_property:
+ * pk_item_progress_get_package_id:
  **/
 const gchar *
 pk_item_progress_get_package_id (PkItemProgress *item_progress)

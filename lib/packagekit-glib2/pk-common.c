@@ -178,12 +178,12 @@ out:
 
 /**
  * pk_ptr_array_to_strv:
- * @array: the GPtrArray of strings
+ * @array: (element-type utf8): the GPtrArray of strings
  *
  * Form a composite string array of strings.
  * The data in the GPtrArray is copied.
  *
- * Return value: (transfer full): the string array, or %NULL if invalid
+ * Return value: (transfer full) (array zero-terminated=1): the string array, or %NULL if invalid
  *
  * Since: 0.5.2
  **/

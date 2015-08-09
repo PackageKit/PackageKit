@@ -210,6 +210,7 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 	/**
 	 * PkTransactionList::added:
 	 * @tlist: the #PkTransactionList instance that emitted the signal
+	 * @tid: the transaction id
 	 *
 	 * The ::added signal is emitted when a tid has been added to the transaction list
 	 **/
@@ -223,6 +224,7 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 	/**
 	 * PkTransactionList::removed:
 	 * @tlist: the #PkTransactionList instance that emitted the signal
+	 * @tid: the transaction id
 	 *
 	 * The ::removed signal is emitted when a tid has been removed from the transaction list
 	 **/

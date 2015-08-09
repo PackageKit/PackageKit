@@ -2371,7 +2371,7 @@ pk_task_set_allow_downgrade (PkTask *task, gboolean allow_downgrade)
 }
 
 /**
- * pk_task_set_allow_downgrade:
+ * pk_task_get_allow_downgrade:
  * @task: a valid #PkTask instance
  *
  * Gets if we are allow packages to be downgraded.
@@ -2390,7 +2390,7 @@ pk_task_get_allow_downgrade (PkTask *task)
 /**
  * pk_task_set_allow_reinstall:
  * @task: a valid #PkTask instance
- * @allow_downgrade: %TRUE to allow packages to be reinstalled.
+ * @allow_reinstall: %TRUE to allow packages to be reinstalled.
  *
  * If package reinstallation shall be allowed during transaction.
  *
