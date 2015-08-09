@@ -26,6 +26,9 @@ AM_SILENT_RULES([yes])
 
 GOBJECT_INTROSPECTION_CHECK([0.9.9])
 
+# Vala bindings
+VAPIGEN_CHECK([0.16])
+
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
 PK_MICRO_VERSION=pk_micro_version
