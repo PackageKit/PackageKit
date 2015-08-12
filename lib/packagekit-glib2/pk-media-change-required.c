@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-media-change-required.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_media_change_required_finalize	(GObject     *object);
 
@@ -72,7 +73,7 @@ pk_media_change_required_get_property (GObject *object, guint prop_id, GValue *v
 
 	switch (prop_id) {
 	case PROP_MEDIA_TYPE:
-		g_value_set_uint (value, priv->media_type);
+		g_value_set_enum (value, priv->media_type);
 		break;
 	case PROP_MEDIA_ID:
 		g_value_set_string (value, priv->media_id);
@@ -97,7 +98,7 @@ pk_media_change_required_set_property (GObject *object, guint prop_id, const GVa
 
 	switch (prop_id) {
 	case PROP_MEDIA_TYPE:
-		priv->media_type = g_value_get_uint (value);
+		priv->media_type = g_value_get_enum (value);
 		break;
 	case PROP_MEDIA_ID:
 		g_free (priv->media_id);
@@ -130,8 +131,8 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("media-type", NULL, NULL,
-				   0, G_MAXUINT, PK_MEDIA_TYPE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("media-type", NULL, NULL,
+				   PK_TYPE_MEDIA_TYPE_ENUM, PK_MEDIA_TYPE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_MEDIA_TYPE, pspec);
 

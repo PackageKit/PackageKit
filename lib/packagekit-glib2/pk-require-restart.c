@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-require-restart.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_require_restart_finalize	(GObject     *object);
 
@@ -70,7 +71,7 @@ pk_require_restart_get_property (GObject *object, guint prop_id, GValue *value, 
 
 	switch (prop_id) {
 	case PROP_RESTART:
-		g_value_set_uint (value, priv->restart);
+		g_value_set_enum (value, priv->restart);
 		break;
 	case PROP_PACKAGE_ID:
 		g_value_set_string (value, priv->package_id);
@@ -92,7 +93,7 @@ pk_require_restart_set_property (GObject *object, guint prop_id, const GValue *v
 
 	switch (prop_id) {
 	case PROP_RESTART:
-		priv->restart = g_value_get_uint (value);
+		priv->restart = g_value_get_enum (value);
 		break;
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
@@ -121,8 +122,8 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("restart", NULL, NULL,
-				   0, G_MAXUINT, PK_RESTART_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("restart", NULL, NULL,
+				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_RESTART, pspec);
 

@@ -33,6 +33,7 @@
 
 #include <packagekit-glib2/pk-source.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_source_finalize	(GObject     *object);
 
@@ -69,7 +70,7 @@ pk_source_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 
 	switch (prop_id) {
 	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
+		g_value_set_enum (value, priv->role);
 		break;
 	case PROP_TRANSACTION_ID:
 		g_value_set_string (value, priv->transaction_id);
@@ -91,7 +92,7 @@ pk_source_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 
 	switch (prop_id) {
 	case PROP_ROLE:
-		priv->role = g_value_get_uint (value);
+		priv->role = g_value_get_enum (value);
 		break;
 	case PROP_TRANSACTION_ID:
 		g_free (priv->transaction_id);
@@ -120,8 +121,8 @@ pk_source_class_init (PkSourceClass *klass)
 	 *
 	 * Since: 0.6.0
 	 */
-	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, G_MAXUINT, PK_ROLE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("role", NULL, NULL,
+				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 

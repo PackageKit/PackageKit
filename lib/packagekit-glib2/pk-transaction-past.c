@@ -35,6 +35,7 @@
 #include <packagekit-glib2/pk-transaction-past.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_transaction_past_finalize	(GObject     *object);
 
@@ -273,7 +274,7 @@ pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value,
 		g_value_set_boolean (value, priv->succeeded);
 		break;
 	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
+		g_value_set_enum (value, priv->role);
 		break;
 	case PROP_DURATION:
 		g_value_set_uint (value, priv->duration);
@@ -315,7 +316,7 @@ pk_transaction_past_set_property (GObject *object, guint prop_id, const GValue *
 		priv->succeeded = g_value_get_boolean (value);
 		break;
 	case PROP_ROLE:
-		priv->role = g_value_get_uint (value);
+		priv->role = g_value_get_enum (value);
 		break;
 	case PROP_DURATION:
 		priv->duration = g_value_get_uint (value);
@@ -384,8 +385,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, G_MAXUINT, PK_ROLE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("role", NULL, NULL,
+				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 

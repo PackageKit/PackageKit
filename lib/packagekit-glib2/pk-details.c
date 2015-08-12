@@ -33,6 +33,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-details.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_details_finalize	(GObject     *object);
 
@@ -204,7 +205,7 @@ pk_details_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		g_value_set_string (value, priv->license);
 		break;
 	case PROP_GROUP:
-		g_value_set_uint (value, priv->group);
+		g_value_set_enum (value, priv->group);
 		break;
 	case PROP_DESCRIPTION:
 		g_value_set_string (value, priv->description);
@@ -243,7 +244,7 @@ pk_details_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		priv->license = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_GROUP:
-		priv->group = g_value_get_uint (value);
+		priv->group = g_value_get_enum (value);
 		break;
 	case PROP_DESCRIPTION:
 		g_free (priv->description);
@@ -303,8 +304,8 @@ pk_details_class_init (PkDetailsClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("group", NULL, NULL,
-				   0, G_MAXUINT, PK_GROUP_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("group", NULL, NULL,
+				   PK_TYPE_GROUP_ENUM, PK_GROUP_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_GROUP, pspec);
 
