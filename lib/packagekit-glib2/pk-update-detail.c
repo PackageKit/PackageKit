@@ -33,6 +33,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-update-detail.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_update_detail_finalize	(GObject     *object);
 
@@ -310,7 +311,7 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 		g_value_set_boxed (value, priv->cve_urls);
 		break;
 	case PROP_RESTART:
-		g_value_set_uint (value, priv->restart);
+		g_value_set_enum (value, priv->restart);
 		break;
 	case PROP_UPDATE_TEXT:
 		g_value_set_string (value, priv->update_text);
@@ -319,7 +320,7 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 		g_value_set_string (value, priv->changelog);
 		break;
 	case PROP_STATE:
-		g_value_set_uint (value, priv->state);
+		g_value_set_enum (value, priv->state);
 		break;
 	case PROP_ISSUED:
 		g_value_set_string (value, priv->issued);
@@ -368,7 +369,7 @@ pk_update_detail_set_property (GObject *object, guint prop_id, const GValue *val
 		priv->cve_urls = g_strdupv (g_value_get_boxed (value));
 		break;
 	case PROP_RESTART:
-		priv->restart = g_value_get_uint (value);
+		priv->restart = g_value_get_enum (value);
 		break;
 	case PROP_UPDATE_TEXT:
 		g_free (priv->update_text);
@@ -379,7 +380,7 @@ pk_update_detail_set_property (GObject *object, guint prop_id, const GValue *val
 		priv->changelog = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_STATE:
-		priv->state = g_value_get_uint (value);
+		priv->state = g_value_get_enum (value);
 		break;
 	case PROP_ISSUED:
 		g_free (priv->issued);
@@ -472,8 +473,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("restart", NULL, NULL,
-				   0, G_MAXUINT, PK_RESTART_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("restart", NULL, NULL,
+				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_RESTART, pspec);
 
@@ -502,8 +503,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("state", NULL, NULL,
-				   0, G_MAXUINT, PK_UPDATE_STATE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("state", NULL, NULL,
+				   PK_TYPE_UPDATE_STATE_ENUM, PK_UPDATE_STATE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 

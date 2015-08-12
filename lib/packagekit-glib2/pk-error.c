@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-error.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_error_finalize	(GObject     *object);
 
@@ -70,7 +71,7 @@ pk_error_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 
 	switch (prop_id) {
 	case PROP_CODE:
-		g_value_set_uint (value, priv->code);
+		g_value_set_enum (value, priv->code);
 		break;
 	case PROP_DETAILS:
 		g_value_set_string (value, priv->details);
@@ -92,7 +93,7 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 
 	switch (prop_id) {
 	case PROP_CODE:
-		priv->code = g_value_get_uint (value);
+		priv->code = g_value_get_enum (value);
 		break;
 	case PROP_DETAILS:
 		g_free (priv->details);
@@ -145,8 +146,8 @@ pk_error_class_init (PkErrorClass *klass)
 	 *
 	 * Since: 0.5.5
 	 */
-	pspec = g_param_spec_uint ("code", NULL, NULL,
-				   0, G_MAXUINT, PK_ERROR_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("code", NULL, NULL,
+				   PK_TYPE_ERROR_ENUM, PK_ERROR_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_CODE, pspec);
 

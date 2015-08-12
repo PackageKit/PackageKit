@@ -35,6 +35,7 @@
 
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_results_finalize	(GObject     *object);
 
@@ -820,8 +821,8 @@ pk_results_class_init (PkResultsClass *klass)
 	 *
 	 * Since: 0.5.2
 	 */
-	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("role", NULL, NULL,
+				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 

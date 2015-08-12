@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-repo-signature-required.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_repo_signature_required_finalize	(GObject     *object);
 
@@ -103,7 +104,7 @@ pk_repo_signature_required_get_property (GObject *object, guint prop_id, GValue 
 		g_value_set_string (value, priv->key_timestamp);
 		break;
 	case PROP_TYPE:
-		g_value_set_uint (value, priv->type);
+		g_value_set_enum (value, priv->type);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -150,7 +151,7 @@ pk_repo_signature_required_set_property (GObject *object, guint prop_id, const G
 		priv->key_timestamp = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_TYPE:
-		priv->type = g_value_get_uint (value);
+		priv->type = g_value_get_enum (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -245,8 +246,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("type", NULL, NULL,
-				   0, G_MAXUINT, PK_SIGTYPE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("type", NULL, NULL,
+				   PK_TYPE_SIG_TYPE_ENUM, PK_SIGTYPE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_TYPE, pspec);
 
