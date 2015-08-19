@@ -1,3 +1,26 @@
+Version 1.0.8
+~~~~~~~~~~~~~
+Released: 2015-08-19
+
+Backends:
+ - hif: Record the UID of the session user in the yumdb (Richard Hughes)
+ - urpmi: Add support for FILTER_ARCH (Thierry Vignaud)
+ - urpmi: Enable newer filters by default (Thierry Vignaud)
+ - urpmi: Implement install_files (Thierry Vignaud)
+ - urpmi: Other distros have synced their urpm API with mga (Thierry Vignaud)
+ - urpmi: Support the NOT filter variants too (Thierry Vignaud)
+ - yum: Add support for GetDetailsLocal (Richard Hughes)
+ - yum: Record the UID of the session user in the yumdb (Richard Hughes)
+
+New Features:
+ - Generate Vala bindings (Robert Ancell)
+
+Bugfixes:
+ - Correctly register enum properties (Robert Ancell)
+ - Exit quietly if we didn't prepare the offline update (Will Woods)
+ - Fix various docstring errors in the library (Robert Ancell)
+ - Look for libsystemd now that journal/login are merged (Matthias Klumpp)
+
 Version 1.0.7
 ~~~~~~~~~~~~~
 Released: 2015-07-13

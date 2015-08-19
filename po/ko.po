@@ -11,10 +11,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Korean (http://www.transifex.com/p/packagekit/language/ko/)\n"
+"POT-Creation-Date: 2015-08-19 15:19+0100\n"
+"PO-Revision-Date: 2015-07-27 19:56+0000\n"
+"Last-Translator: Shinjo Park <kde@peremen.name>\n"
+"Language-Team: Korean (http://www.transifex.com/freedesktop/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -562,7 +562,7 @@ msgstr "업데이트 설치 후 시스템 끄는 중..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "업데이트 설치 중, 시간이 걸릴 수 있습니다..."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
