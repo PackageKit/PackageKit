@@ -234,7 +234,8 @@ EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
 	pk-version.h.in						\
 	pk-enum-types.h.template				\
-	pk-enum-types.c.template
+	pk-enum-types.c.template				\
+	PackageKitGlib-1.0.metadata
 
 BUILT_SOURCES = 						\
 	pk-enum-types.h						\
