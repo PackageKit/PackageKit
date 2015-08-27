@@ -90,7 +90,7 @@ pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 
 	switch (prop_id) {
 	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
+		g_value_set_enum (value, priv->role);
 		break;
 	case PROP_TRANSACTION_FLAGS:
 		g_value_set_uint64 (value, priv->transaction_flags);
@@ -118,7 +118,7 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 
 	switch (prop_id) {
 	case PROP_ROLE:
-		priv->role = g_value_get_uint (value);
+		priv->role = g_value_get_enum (value);
 		break;
 	case PROP_TRANSACTION_FLAGS:
 		priv->transaction_flags = g_value_get_uint64 (value);
