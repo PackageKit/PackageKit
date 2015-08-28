@@ -890,7 +890,9 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                         GTimeVal dateTime = {0, 0};
                         gchar *date;
                         date = g_match_info_fetch_named(match_info, "date");
-                        g_warn_if_fail(RFC1123StrToTime(date, dateTime.tv_sec));
+                        time_t time;
+                        g_warn_if_fail(RFC1123StrToTime(date, time));
+                        dateTime.tv_sec = time;
                         g_free(date);
 
                         issued = g_time_val_to_iso8601(&dateTime);
