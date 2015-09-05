@@ -295,6 +295,7 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 %{_datadir}/gtk-doc/html/PackageKit
+%{_datadir}/vala/vapi/packagekit-glib2.vapi
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
