@@ -334,14 +334,14 @@ class PackageKitPortageMixin(object):
     def _get_real_license_str(self, cpv, metadata):
         # use conditionals info (w/ USE) in LICENSE and remove ||
         ebuild_settings = self._get_ebuild_settings(cpv, metadata)
-        license = set(portage.flatten(
+        license_ = set(portage.flatten(
             portage.dep.use_reduce(
                 portage.dep.paren_reduce(metadata["LICENSE"]),
                 uselist=ebuild_settings.get("USE", "").split()
             )
         ))
-        license.discard('||')
-        return ' '.join(license)
+        license_.discard('||')
+        return ' '.join(license_)
 
     def _signal_config_update(self):
         result = list(portage.util.find_updated_config_files(
