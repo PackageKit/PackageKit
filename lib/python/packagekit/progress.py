@@ -34,24 +34,22 @@ class PackagekitProgress(Iterable):
     from packagekit import PackagekitProgress
 
     steps = [10, 30, 50, 70] # Milestones in %
-    progress = PackagekitProgress()
-    progress.set_steps(steps)
-    for milestone in range(len(steps)):
+    progress = PackagekitProgress(steps)
+    for milestone in progress:
         # do the action is this step
         for i in range(100):
             # do some action
-            print "progress : %s " % progress.percent
-        progress.step() # step to next milestone
-
+            print "progress : %s " % milestone
     '''
 
     #TODO: Add support for elapsed/remaining time
 
-    def __init__(self):
+    def __init__(self, steps=None):
         super(PackagekitProgress, self).__init__()
-        self.percent = 0
-        self.steps = []
-        self.current_step = 0
+        if not steps:
+            self.reset()
+        else:
+            self.set_steps(steps)
 
     def set_steps(self, steps):
         '''
