@@ -554,6 +554,7 @@ class PackageKitPortageMixin(object):
             return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in filters or FILTER_NOT_FREE in filters:
+            licenses = ""
             free_licenses = "@FSF-APPROVED"
             if FILTER_FREE in filters:
                 licenses = "-* " + free_licenses
