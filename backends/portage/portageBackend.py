@@ -40,6 +40,7 @@ from packagekit.backend import (
     split_package_id,
 )
 from packagekit.enums import *
+from packagekit.progress import PackagekitProgress
 # portage imports
 import _emerge.AtomArg
 import _emerge.actions
@@ -66,6 +67,11 @@ from portage.exception import InvalidAtom
 # protection against signal when installing/removing
 
 # Map Gentoo categories to the PackageKit group name space
+
+
+def compute_equal_steps(iterable):
+    return [idx * (100.0 / len(iterable)) / 100.0
+            for idx, _ in enumerate(iterable, start=1)]
 
 
 class PortagePackageGroups(dict):
@@ -932,10 +938,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(pkgs))
+        self.percentage(progress.percent)
 
         for pkg in pkgs:
             cpv = self._id_to_cpv(pkg)
@@ -961,18 +967,18 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._get_size(cpv)
             )
 
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed / nb_pkg))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
     def get_files(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(pkgs))
+        self.percentage(progress.percent)
 
         for pkg in pkgs:
             cpv = self._id_to_cpv(pkg)
@@ -990,19 +996,20 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             self.files(pkg, ';'.join(sorted(self._get_file_list(cpv))))
 
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed / nb_pkg))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         for cp in self._get_all_cp(filters):
             for cpv in self._get_all_cpv(cp, filters):
@@ -1011,8 +1018,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 except InvalidAtom:
                     continue
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
@@ -1565,11 +1572,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def resolve(self, filters, pkgs):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         reg_expr = []
         for pkg in pkgs:
@@ -1584,8 +1591,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
@@ -1593,12 +1600,13 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # NOTES: very bad performance
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
         search_list = self._get_search_list(keys)
+
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         for cp in cp_list:
             # unfortunatelly, everything is related to cpv, not cp
@@ -1635,8 +1643,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             for cpv in cpv_list:
                 self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
@@ -1647,7 +1655,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - newest: as only installed, by himself
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         if FILTER_NOT_INSTALLED in filters:
             self.error(ERROR_CANNOT_GET_FILELIST,
@@ -1655,9 +1662,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             return
 
         cpv_list = self.pvar.vardb.cpv_all()
-        nb_cpv = 0.0
-        cpv_processed = 0.0
         is_full_path = True
+
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cpv_list))
+        self.percentage(progress.percent)
 
         count = 0
         values_len = len(values)
@@ -1679,8 +1688,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         self._package(cpv)
                         break
 
-            count += 1
-            self.percentage(float(count) / values_len)
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
@@ -1688,11 +1697,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # TODO: filter unknown groups before searching ? (optimization)
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         for cp in cp_list:
             for group in groups:
@@ -1700,8 +1710,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     for cpv in self._get_all_cpv(cp, filters):
                         self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
@@ -1711,7 +1721,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # keys contain more than one category name, no results can be found
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         categories = []
         for k in keys_list[:]:
@@ -1736,8 +1745,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             search_list.append(re.compile(k, re.IGNORECASE))
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+
+        progress = PackagekitProgress()
+        progress.set_steps(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         for cp in cp_list:
             if category_filter:
@@ -1757,8 +1768,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            progress.step()
+            self.percentage(progress.percent)
 
         self.percentage(100)
 
