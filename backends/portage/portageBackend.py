@@ -40,8 +40,6 @@ from packagekit.backend import (
     split_package_id,
 )
 from packagekit.enums import *
-from packagekit.package import PackagekitPackage
-from packagekit.progress import *
 # portage imports
 import _emerge.AtomArg
 import _emerge.actions
