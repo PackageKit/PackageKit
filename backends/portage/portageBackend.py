@@ -560,11 +560,11 @@ class PackageKitPortageMixin(object):
                 licenses = "-* " + free_licenses
             elif FILTER_NOT_FREE in filters:
                 licenses = "* -" + free_licenses
-            backup_license = self.pvar.settings["ACCEPT_LICENSE"]
+            backup_licenses = self.pvar.settings["ACCEPT_LICENSE"]
 
             self.pvar.apply_settings({'ACCEPT_LICENSE': licences})
             cpv_list = filter(_has_validLicense, cpv_list)
-            self.pvar.apply_settings({'ACCEPT_LICENSE': backup_licence})
+            self.pvar.apply_settings({'ACCEPT_LICENSE': backup_licenses})
 
         return cpv_list
 
