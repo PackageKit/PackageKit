@@ -27,7 +27,10 @@ import signal
 import sys
 import traceback
 from collections import defaultdict
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip
 
 # layman imports (>=2)
 import layman.config
@@ -939,11 +942,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(pkgs))
+        progress = PackagekitProgress(compute_equal_steps(pkgs))
         self.percentage(progress.percent)
 
-        for pkg in pkgs:
+        for percentage, pkg in izip(progress, pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
@@ -967,8 +969,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._get_size(cpv)
             )
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -976,11 +977,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(pkgs))
+        progress = PackagekitProgress(compute_equal_steps(pkgs))
         self.percentage(progress.percent)
 
-        for pkg in pkgs:
+        for percentage, pkg in izip(progress, pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
@@ -996,8 +996,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             self.files(pkg, ';'.join(sorted(self._get_file_list(cpv))))
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1007,19 +1006,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         cp_list = self._get_all_cp(filters)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cp_list))
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
         self.percentage(progress.percent)
 
-        for cp in self._get_all_cp(filters):
+        for percentage, cp in izip(progress, self._get_all_cp(filters)):
             for cpv in self._get_all_cpv(cp, filters):
                 try:
                     self._package(cpv)
                 except InvalidAtom:
                     continue
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1574,8 +1571,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
 
         cp_list = self._get_all_cp(filters)
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cp_list))
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
         self.percentage(progress.percent)
 
         reg_expr = []
@@ -1586,13 +1582,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # specifications says "be case sensitive"
         s = re.compile(reg_expr)
 
-        for cp in cp_list:
+        for percentage, cp in izip(progress, cp_list):
             if s.match(cp):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1604,11 +1599,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cp_list = self._get_all_cp(filters)
         search_list = self._get_search_list(keys)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cp_list))
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
         self.percentage(progress.percent)
 
-        for cp in cp_list:
+        for percentage, cp in izip(progress, cp_list):
             # unfortunatelly, everything is related to cpv, not cp
             # can't filter cp
             cpv_list = []
@@ -1643,8 +1637,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             for cpv in cpv_list:
                 self._package(cpv)
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1664,13 +1657,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cpv_list = self.pvar.vardb.cpv_all()
         is_full_path = True
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cpv_list))
-        self.percentage(progress.percent)
+        progress = PackagekitProgress(compute_equal_steps(values))
+        self.percentage(progress.percentage)
 
-        count = 0
-        values_len = len(values)
-        for key in values:
+        for percentage, key in izip(progress, values):
 
             if key[0] != "/":
                 is_full_path = False
@@ -1688,8 +1678,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         self._package(cpv)
                         break
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1700,18 +1689,16 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         cp_list = self._get_all_cp(filters)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cp_list))
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
         self.percentage(progress.percent)
 
-        for cp in cp_list:
+        for percentage, cp in izip(progress, cp_list):
             for group in groups:
                 if self._get_pk_group(cp) == group:
                     for cpv in self._get_all_cpv(cp, filters):
                         self._package(cpv)
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1746,11 +1733,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         cp_list = self._get_all_cp(filters)
 
-        progress = PackagekitProgress()
-        progress.set_steps(compute_equal_steps(cp_list))
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
         self.percentage(progress.percent)
 
-        for cp in cp_list:
+        for percentage, cp in izip(progress, cp_list):
             if category_filter:
                 cat, pkg_name = portage.versions.catsplit(cp)
                 if cat != category_filter:
@@ -1768,8 +1754,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            progress.step()
-            self.percentage(progress.percent)
+            self.percentage(percentage)
 
         self.percentage(100)
 
