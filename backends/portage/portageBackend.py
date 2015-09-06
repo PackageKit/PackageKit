@@ -1542,9 +1542,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         if not enable and self._is_repo_enabled(installed_layman_db, repoid):
             try:
                 installed_layman_db.delete(installed_layman_db.select(repoid))
-            except Exception, e:
+            except Exception as exc:
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to disable repository " + repoid + " : " + str(e))
+                           "Failed to disable repository %s: %s" %
+                           (repoid, str(exc)))
                 return
 
         # enabling (adding) a db
@@ -1555,10 +1556,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._block_output()
                 installed_layman_db.add(available_layman_db.select(repoid))
                 self._unblock_output()
-            except Exception, e:
+            except Exception as exc:
                 self._unblock_output()
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to enable repository " + repoid + " : " + str(e))
+                           "Failed to enable repository %s: %s" %
+                           (repoid, str(exc)))
                 return
 
     def resolve(self, filters, pkgs):
