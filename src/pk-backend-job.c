@@ -86,7 +86,6 @@ struct PkBackendJobPrivate
 	gchar			*proxy_https;
 	gchar			*proxy_socks;
 	gpointer		 user_data;
-	GThread			*thread;
 	guint64			 download_size_remaining;
 	guint			 cache_age;
 	guint			 download_files;
@@ -824,10 +823,6 @@ pk_backend_job_thread_setup (gpointer thread_data)
 	}
 #endif
 
-	/* unref the thread here as it holds a reference itself and we do
-	 * not need to join() this at any stage */
-	g_thread_unref (helper->job->priv->thread);
-
 	/* destroy helper */
 	g_object_unref (helper->job);
 	if (helper->destroy_func != NULL)
@@ -854,11 +849,6 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	g_return_val_if_fail (func != NULL, FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
-	if (job->priv->thread != NULL) {
-		g_warning ("already has thread");
-		return FALSE;
-	}
-
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendJobThreadHelper, 1);
 	helper->job = g_object_ref (job);
@@ -866,14 +856,11 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	helper->func = func;
 	helper->user_data = user_data;
 
-	/* create a thread */
-	job->priv->thread = g_thread_new ("PK-Backend",
-					  pk_backend_job_thread_setup,
-					  helper);
-	if (job->priv->thread == NULL) {
-		g_warning ("failed to create thread");
-		return FALSE;
-	}
+	/* create a thread and unref it immediately as we do not need to join()
+	 * this at any stage */
+	g_thread_unref (g_thread_new ("PK-Backend",
+	                              pk_backend_job_thread_setup,
+	                              helper));
 	return TRUE;
 }
 
