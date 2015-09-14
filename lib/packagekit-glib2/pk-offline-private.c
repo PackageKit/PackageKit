@@ -240,7 +240,7 @@ pk_offline_auth_trigger (PkOfflineAction action, GError **error)
 		return FALSE;
 
 	/* create symlink for the systemd-system-update-generator */
-	rc = symlink ("/var/cache", PK_OFFLINE_TRIGGER_FILENAME);
+	rc = symlink ("/var/cache/PackageKit", PK_OFFLINE_TRIGGER_FILENAME);
 	if (rc < 0) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,

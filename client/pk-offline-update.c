@@ -366,6 +366,8 @@ int
 main (int argc, char *argv[])
 {
 	PkOfflineAction action = PK_OFFLINE_ACTION_UNKNOWN;
+	gchar buf[1024];
+	gssize len;
 	gint retval;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
@@ -387,11 +389,15 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* check if we prepared this update; exit quietly if not */
-	if (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS) ||
-	    !g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS)) {
-		g_print ("no update found\n");
-		sd_journal_print (LOG_INFO, "no update found");
+	/* verify this is pointing to our cache */
+	len = readlink (PK_OFFLINE_TRIGGER_FILENAME, buf, sizeof(buf) - 1);
+	if (len == -1) {
+		sd_journal_print (LOG_INFO, "no trigger, exiting");
+		retval = EXIT_SUCCESS;
+		goto out;
+	}
+	if (g_strcmp0 (buf, "/var/cache/PackageKit") != 0) {
+		sd_journal_print (LOG_INFO, "another framework set up the trigger");
 		retval = EXIT_SUCCESS;
 		goto out;
 	}
