@@ -1,3 +1,19 @@
+Version 1.0.9
+~~~~~~~~~~~~~
+Released: 2015-09-15
+
+Backends:
+ - aptcc: Don't assume time_t is same as long (Adam Borowski)
+
+New Features:
+ - Support g_autoptr() for all packagekit-glib2 object types (Kalev Lember)
+
+Bugfixes:
+ - Check the offline action trigger before performing the update (Richard Hughes)
+ - Fix two critical warnings (Richard Hughes)
+ - Sdd PackageKitGlib-1.0.metadata to release tarball (Christian Hesse)
+ - Fix a race with the backend job thread creation (Kalev Lember)
+
 Version 1.0.8
 ~~~~~~~~~~~~~
 Released: 2015-08-19
