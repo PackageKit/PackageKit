@@ -395,7 +395,8 @@ main (int argc, char *argv[])
 		retval = EXIT_SUCCESS;
 		goto out;
 	}
-	if (g_strcmp0 (link, "/var/cache/PackageKit") != 0) {
+	if (g_strcmp0 (link, "/var/cache/PackageKit") != 0 &&
+	    g_strcmp0 (link, "/var/cache") != 0) {
 		sd_journal_print (LOG_INFO, "another framework set up the trigger");
 		retval = EXIT_SUCCESS;
 		goto out;
