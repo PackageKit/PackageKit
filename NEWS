@@ -1,3 +1,11 @@
+Version 1.0.10
+~~~~~~~~~~~~~~
+Released: 2015-09-21
+
+Bugfixes:
+ - Process the offline update triggered by older PK versions (Kalev Lember)
+ - Use Glib for reading symlink to prevent crash with some compilers (Kalev Lember)
+
 Version 1.0.9
 ~~~~~~~~~~~~~
 Released: 2015-09-15
