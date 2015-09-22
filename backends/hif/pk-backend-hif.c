@@ -379,6 +379,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendHifJobData *job_data;
+	gchar *value;
 	job_data = g_new0 (PkBackendHifJobData, 1);
 	job_data->backend = backend;
 	pk_backend_job_set_user_data (job, job_data);
@@ -399,6 +400,13 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	g_signal_connect (job_data->state, "notify::speed",
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
+
+	value = pk_backend_job_get_proxy_http (job);
+	if (value != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+		hif_context_set_http_proxy (priv->context, uri);
+		g_free (value);
+	}
 
 	/* transaction */
 	job_data->transaction = hif_transaction_new (priv->context);
