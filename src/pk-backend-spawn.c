@@ -683,13 +683,13 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	gboolean keep_environment;
 	_cleanup_free_ gchar *eulas = NULL;
-	_cleanup_free_ gchar *locale = NULL;
-	_cleanup_free_ gchar *no_proxy = NULL;
-	_cleanup_free_ gchar *pac = NULL;
-	_cleanup_free_ gchar *proxy_ftp = NULL;
-	_cleanup_free_ gchar *proxy_http = NULL;
-	_cleanup_free_ gchar *proxy_https = NULL;
-	_cleanup_free_ gchar *proxy_socks = NULL;
+	const gchar *locale = NULL;
+	const gchar *no_proxy = NULL;
+	const gchar *pac = NULL;
+	const gchar *proxy_ftp = NULL;
+	const gchar *proxy_http = NULL;
+	const gchar *proxy_https = NULL;
+	const gchar *proxy_socks = NULL;
 	_cleanup_free_ gchar *transaction_id = NULL;
 	_cleanup_hashtable_unref_ GHashTable *env_table = NULL;
 

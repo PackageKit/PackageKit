@@ -258,11 +258,11 @@ pk_backend_job_set_proxy (PkBackendJob	*job,
  *
  * Return value: proxy string in the form username:password@server:port
  **/
-gchar *
+const gchar *
 pk_backend_job_get_proxy_http (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->proxy_http);
+	return job->priv->proxy_http;
 }
 
 /**
@@ -270,11 +270,11 @@ pk_backend_job_get_proxy_http (PkBackendJob *job)
  *
  * Return value: proxy string in the form username:password@server:port
  **/
-gchar *
+const gchar *
 pk_backend_job_get_proxy_https (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->proxy_https);
+	return job->priv->proxy_https;
 }
 
 /**
@@ -282,11 +282,11 @@ pk_backend_job_get_proxy_https (PkBackendJob *job)
  *
  * Return value: proxy string in the form username:password@server:port
  **/
-gchar *
+const gchar *
 pk_backend_job_get_proxy_ftp (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->proxy_ftp);
+	return job->priv->proxy_ftp;
 }
 
 /**
@@ -294,11 +294,11 @@ pk_backend_job_get_proxy_ftp (PkBackendJob *job)
  *
  * Return value: proxy string in the form username:password@server:port
  **/
-gchar *
+const gchar *
 pk_backend_job_get_proxy_socks (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->proxy_socks);
+	return job->priv->proxy_socks;
 }
 
 /**
@@ -306,11 +306,11 @@ pk_backend_job_get_proxy_socks (PkBackendJob *job)
  *
  * Return value: comma seporated value of proxy exlude string
  **/
-gchar *
+const gchar *
 pk_backend_job_get_no_proxy (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->no_proxy);
+	return job->priv->no_proxy;
 }
 
 /**
@@ -318,11 +318,11 @@ pk_backend_job_get_no_proxy (PkBackendJob *job)
  *
  * Return value: proxy PAC filename
  **/
-gchar *
+const gchar *
 pk_backend_job_get_pac (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->pac);
+	return job->priv->pac;
 }
 
 /**
@@ -379,11 +379,11 @@ pk_backend_job_get_uid (PkBackendJob *job)
  *
  * Return value: session locale, e.g. en_GB
  **/
-gchar *
+const gchar *
 pk_backend_job_get_locale (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->locale);
+	return job->priv->locale;
 }
 
 /**
@@ -430,11 +430,11 @@ pk_backend_job_set_parameters (PkBackendJob *job, GVariant *params)
  *
  * Return value: session frontend_socket, e.g. /tmp/socket.345
  **/
-gchar *
+const gchar *
 pk_backend_job_get_frontend_socket (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return g_strdup (job->priv->frontend_socket);
+	return job->priv->frontend_socket;
 }
 
 /**

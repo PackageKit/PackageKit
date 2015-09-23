@@ -3556,14 +3556,14 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-	gchar *locale;
-	gchar *proxy_http;
-	gchar *proxy_https;
-	gchar *proxy_ftp;
-	gchar *uri;
-	gchar *proxy_socks;
-	gchar *no_proxy;
-	gchar *pac;
+	const gchar *locale;
+	const gchar *proxy_http;
+	const gchar *proxy_https;
+	const gchar *proxy_ftp;
+	const gchar *uri;
+	const gchar *proxy_socks;
+	const gchar *no_proxy;
+	const gchar *pac;
 
 	locale = pk_backend_job_get_locale(job);
 	if (!pk_strzero (locale)) {
@@ -3615,14 +3615,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 		g_setenv ("pac", uri, TRUE);
 		g_free (uri);
 	}
-
-	g_free (locale);
-	g_free (proxy_http);
-	g_free (proxy_https);
-	g_free (proxy_ftp);
-	g_free (proxy_socks);
-	g_free (no_proxy);
-	g_free (pac);
 }
 
 /**

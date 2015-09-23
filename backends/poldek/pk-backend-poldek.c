@@ -315,7 +315,7 @@ static struct pkguinf*
 pkg_uinf_i18n (PkBackendJob *job, struct pkg *pkg)
 {
 	struct pkguinf *pkgu = NULL;
-	gchar *lang = NULL;
+	const gchar *lang = NULL;
 
 	lang = pk_backend_job_get_locale (job);
 
@@ -327,8 +327,6 @@ pkg_uinf_i18n (PkBackendJob *job, struct pkg *pkg)
 	} else {
 		pkgu = pkg_uinf (pkg);
 	}
-
-	g_free (lang);
 
 	return pkgu;
 }
