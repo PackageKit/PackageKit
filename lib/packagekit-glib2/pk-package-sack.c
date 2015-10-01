@@ -357,7 +357,7 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 }
 
 /**
- * pk_package_sack_add_packages_from_file:
+ * pk_package_sack_to_file:
  * @sack: a valid #PkPackageSack instance
  * @file: a valid package-list file
  * @error: a %GError to put the error code and message in, or %NULL

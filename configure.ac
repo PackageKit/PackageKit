@@ -2,7 +2,7 @@
 
 m4_define([pk_major_version], [1])
 m4_define([pk_minor_version], [0])
-m4_define([pk_micro_version], [7])
+m4_define([pk_micro_version], [10])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -25,6 +25,9 @@ AM_MAINTAINER_MODE([enable])
 AM_SILENT_RULES([yes])
 
 GOBJECT_INTROSPECTION_CHECK([0.9.9])
+
+# Vala bindings
+VAPIGEN_CHECK([0.16])
 
 PK_MAJOR_VERSION=pk_major_version
 PK_MINOR_VERSION=pk_minor_version
@@ -235,7 +238,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and logind code]),
 	      enable_systemd=$enableval,enable_systemd=yes)
 if test x$enable_systemd = xyes; then
-	PKG_CHECK_MODULES(SYSTEMD, libsystemd-login libsystemd-journal)
+	PKG_CHECK_MODULES(SYSTEMD, libsystemd)
 	AC_ARG_WITH([systemdsystemunitdir],
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 		    [has_systemdsystemunitdir=$with_systemdsystemunitdir],
@@ -413,6 +416,7 @@ AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backen
 AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
 AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]),enable_katja=$enableval,enable_katja=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
+AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -427,6 +431,7 @@ AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
 dnl ---------------------------------------------------------------------------
@@ -454,7 +459,7 @@ if test x$enable_hif = xyes; then
 fi
 
 have_python_backend="no"
-if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o x$enable_portage = xyes; then
+if test x$enable_entropy = xyes -o x$enable_pisi = xyes -o x$enable_portage = xyes -o x$enable_yum = xyes; then
 	have_python_backend="yes"
 fi
 AM_CONDITIONAL(HAVE_PYTHON_BACKEND, test x$have_python_backend = xyes)
@@ -562,6 +567,7 @@ contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
+contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 backends/Makefile
@@ -577,6 +583,7 @@ backends/urpmi/Makefile
 backends/urpmi/helpers/Makefile
 backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
+backends/yum/Makefile
 backends/pisi/Makefile
 backends/poldek/Makefile
 backends/portage/Makefile
@@ -642,5 +649,6 @@ echo "
         Ports backend:             ${enable_ports}
         Katja backend:             ${enable_katja}
         URPMI backend:             ${enable_urpmi}
+        YUM backend:               ${enable_yum}
         Zypp backend:              ${enable_zypp}
 "

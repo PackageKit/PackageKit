@@ -1,3 +1,81 @@
+Version 1.0.10
+~~~~~~~~~~~~~~
+Released: 2015-09-21
+
+Bugfixes:
+ - Process the offline update triggered by older PK versions (Kalev Lember)
+ - Use Glib for reading symlink to prevent crash with some compilers (Kalev Lember)
+
+Version 1.0.9
+~~~~~~~~~~~~~
+Released: 2015-09-15
+
+Backends:
+ - aptcc: Don't assume time_t is same as long (Adam Borowski)
+
+New Features:
+ - Support g_autoptr() for all packagekit-glib2 object types (Kalev Lember)
+
+Bugfixes:
+ - Check the offline action trigger before performing the update (Richard Hughes)
+ - Fix two critical warnings (Richard Hughes)
+ - Sdd PackageKitGlib-1.0.metadata to release tarball (Christian Hesse)
+ - Fix a race with the backend job thread creation (Kalev Lember)
+
+Version 1.0.8
+~~~~~~~~~~~~~
+Released: 2015-08-19
+
+Backends:
+ - hif: Record the UID of the session user in the yumdb (Richard Hughes)
+ - urpmi: Add support for FILTER_ARCH (Thierry Vignaud)
+ - urpmi: Enable newer filters by default (Thierry Vignaud)
+ - urpmi: Implement install_files (Thierry Vignaud)
+ - urpmi: Other distros have synced their urpm API with mga (Thierry Vignaud)
+ - urpmi: Support the NOT filter variants too (Thierry Vignaud)
+ - yum: Add support for GetDetailsLocal (Richard Hughes)
+ - yum: Record the UID of the session user in the yumdb (Richard Hughes)
+
+New Features:
+ - Generate Vala bindings (Robert Ancell)
+
+Bugfixes:
+ - Correctly register enum properties (Robert Ancell)
+ - Exit quietly if we didn't prepare the offline update (Will Woods)
+ - Fix various docstring errors in the library (Robert Ancell)
+ - Look for libsystemd now that journal/login are merged (Matthias Klumpp)
+
+Version 1.0.7
+~~~~~~~~~~~~~
+Released: 2015-07-13
+
+Backends:
+ - alpm: Set install reason to explicitly installed (Christian Hesse)
+ - entropy: Fixed remove_package and search_details (skullbocks)
+ - entropy: Removed messages and fixing remove function (skullbocks)
+ - hif: Add missing locking when accessing sack cache (Kalev Lember)
+ - hif: Improve depsolving for parallel kernel installs (Kalev Lember)
+ - hif: Include any packages marked for installation when doing upgrades (Kalev Lember)
+ - portage: Removed messages and fixing remove function (skullbocks)
+ - python/backend: Fixing parameter order (skullbocks)
+ - urpm: Properly use is_package_installed() (Thierry Vignaud)
+ - yum: Fix backtrace when getting the update details (Richard Hughes)
+ - yum: Fix up two almost impossible-to-hit python warnings (Richard Hughes)
+ - yum: Forward port to the new WhatProvides API (Richard Hughes)
+ - yum: Return installed packages first with NEWEST filter (Kalev Lember)
+ - yum: Update comps groups code for internal Details API change (Kalev Lember)
+
+New Features:
+ - Define command_not_found_handler for zsh (Will Thompson)
+
+Bugfixes:
+ - Correct punctuation while applying offline updates (Matthew Miller)
+ - Don't run if bash command completion is being run (Ville Skyttä)
+ - Fix Details() from spawned backends (Richard Hughes)
+ - Port GTK+ module to org.freedesktop.PackageKit.Modify2 (Matthias Clasen)
+ - Return the correct error for syntax errors in pkcon (Richard Hughes)
+ - Return the correct error if nothing was done for repo-enable (Richard Hughes)
+
 Version 1.0.6
 ~~~~~~~~~~~~~
 Released: 2015-04-07

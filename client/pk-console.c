@@ -704,7 +704,14 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		/* TRANSLATORS: we failed to get any results, which is pretty
 		 * fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
-		ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
+		switch (error->code - 0xff) {
+		case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
+			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
+			break;
+		default:
+			ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
+			break;
+		}
 		goto out;
 	}
 
@@ -1275,6 +1282,16 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_strv_free_ gchar **package_ids = NULL;
 
+	/* local file */
+	if (g_file_test (packages[0], G_FILE_TEST_EXISTS)) {
+		pk_client_get_details_local_async (PK_CLIENT (ctx->task),
+						   packages,
+						   ctx->cancellable,
+						   pk_console_progress_cb, ctx,
+						   pk_console_finished_cb, ctx);
+		return TRUE;
+	}
+
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
 		g_set_error (error,
@@ -1724,7 +1741,7 @@ main (int argc, char *argv[])
 	if (!ret) {
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to parse command line"), error->message);
-		ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
+		retval_copy = PK_EXIT_CODE_SYNTAX_INVALID;
 		goto out_last;
 	}
 
@@ -1754,13 +1771,13 @@ main (int argc, char *argv[])
 
 	if (program_version) {
 		g_print (VERSION "\n");
-		goto out_last;
+		goto out;
 	}
 
 	if (argc < 2) {
 		g_print ("%s", options_help);
 		ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-		goto out_last;
+		goto out;
 	}
 
 	/* watch when the daemon aborts */
@@ -2422,7 +2439,8 @@ out:
 		retval_copy = ctx->retval;
 		g_object_unref (ctx->progressbar);
 		g_object_unref (ctx->control);
-		g_object_unref (ctx->task);
+		if (ctx->task != NULL)
+			g_object_unref (ctx->task);
 		g_object_unref (ctx->cancellable);
 		if (ctx->defered_status_id > 0)
 			g_source_remove (ctx->defered_status_id);

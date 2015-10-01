@@ -28,11 +28,20 @@ our @EXPORT = qw(fast_open_urpmi_db open_urpmi_db open_rpm_db);
 # Note that most part of this perl module
 # is extracted from Rpmdrake
 
+sub open_rpm_db() {
+  URPM::DB::open() or die "Couldn't open RPM DB";
+}
+
 sub fast_open_urpmi_db() {
     my $urpm = urpm->new;
     $urpm->get_global_options;
-    urpm::media::read_config($urpm);
+    urpm::media::read_config($urpm, 0);
     $urpm;
+}
+
+sub get_inactive_backport_media {
+    my ($urpm) = @_;
+    map { $_->{name} } grep { $_->{ignore} && $_->{name} =~ /backport/i } @{$urpm->{media}};
 }
 
 sub open_urpmi_db {
@@ -46,14 +55,5 @@ sub open_urpmi_db {
     urpm::select::set_priority_upgrade_option($urpm, (ref $previous ? join(',', @$previous) : ()));
     urpm::media::configure($urpm, media => $media, if_($searchmedia, searchmedia => $searchmedia), %urpmi_options);
     $urpm;
-}
-
-sub get_inactive_backport_media {
-    my ($urpm) = @_;
-    map { $_->{name} } grep { $_->{ignore} && $_->{name} =~ /backport/i } @{$urpm->{media}};
-}
-
-sub open_rpm_db() {
-  URPM::DB::open() or die "Couldn't open RPM DB";
 }
 

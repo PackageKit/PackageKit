@@ -123,7 +123,7 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
-		  /* TRANSLATORS: a backend is the system package tool, e.g. hif, apt */
+		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
 		  /* TRANSLATORS: if we should not monitor how long we are inactive for */

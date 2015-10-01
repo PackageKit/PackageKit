@@ -1256,7 +1256,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * pk_task_resolve_async:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
- * @packages: package names to find
+ * @packages: (array zero-terminated=1): package names to find
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -2371,7 +2371,7 @@ pk_task_set_allow_downgrade (PkTask *task, gboolean allow_downgrade)
 }
 
 /**
- * pk_task_set_allow_downgrade:
+ * pk_task_get_allow_downgrade:
  * @task: a valid #PkTask instance
  *
  * Gets if we are allow packages to be downgraded.
@@ -2390,7 +2390,7 @@ pk_task_get_allow_downgrade (PkTask *task)
 /**
  * pk_task_set_allow_reinstall:
  * @task: a valid #PkTask instance
- * @allow_downgrade: %TRUE to allow packages to be reinstalled.
+ * @allow_reinstall: %TRUE to allow packages to be reinstalled.
  *
  * If package reinstallation shall be allowed during transaction.
  *

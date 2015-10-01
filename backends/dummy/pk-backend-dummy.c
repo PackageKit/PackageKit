@@ -994,7 +994,7 @@ static void
 pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	guint i;
-	gchar *locale;
+	const gchar *locale;
 	PkRoleEnum role;
 	gchar **search;
 	PkBitfield filters;
@@ -1315,7 +1315,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	PkRoleEnum role;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *frontend_socket = NULL;
+	const gchar *frontend_socket = NULL;
 	_cleanup_object_unref_ GSocketAddress *address = NULL;
 
 	/* FIXME: support only_trusted */

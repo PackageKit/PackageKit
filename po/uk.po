@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-07 12:24+0100\n"
-"PO-Revision-Date: 2015-04-07 11:24+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Ukrainian (http://www.transifex.com/projects/p/packagekit/language/uk/)\n"
+"POT-Creation-Date: 2015-08-19 15:19+0100\n"
+"PO-Revision-Date: 2015-07-13 11:41+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"Language-Team: Ukrainian (http://www.transifex.com/freedesktop/packagekit/language/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -377,7 +377,7 @@ msgstr "Встановити пакунки без запиту щодо під�
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Приготуватися до операції, лише отримати пакунки"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -559,7 +559,7 @@ msgid "Shutting down after installing updates…"
 msgstr "Вимикаємо систему після встановлення оновлень…"
 
 #. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates, this could take a while..."
+msgid "Installing updates; this could take a while..."
 msgstr "Зачекайте, встановлюємо оновлення…"
 
 #. TRANSLATORS: when we are getting data from the daemon
@@ -1360,7 +1360,7 @@ msgstr "Замінник %s"
 msgid "Command not found, valid commands are:"
 msgstr "Такої команди не знайдено, коректні команди:"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. hif, apt
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Інструмент роботи з пакунками, наприклад, dummy"
 

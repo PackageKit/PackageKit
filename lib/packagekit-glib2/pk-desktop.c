@@ -58,7 +58,7 @@ static gpointer pk_desktop_object = NULL;
  * Return all desktop files owned by a package, regardless if they are shown
  * in the main menu or not.
  *
- * Return value: (transfer container): string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer container) (element-type utf8): string array of results, free with g_ptr_array_unref()
  *
  * NOTE: This method is unused and will be removed next time the library
  * soname changes!
@@ -81,7 +81,7 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GErr
  * Return all desktop files owned by a package that would be shown in a menu,
  * i.e are an application
  *
- * Return value: (transfer container): string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer container) (element-type utf8): string array of results, free with g_ptr_array_unref()
  *
  * NOTE: This method is unused and will be removed next time the library
  * soname changes!

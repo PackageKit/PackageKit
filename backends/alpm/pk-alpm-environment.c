@@ -33,6 +33,7 @@ void
 pk_alpm_environment_initialize (PkBackendJob *job)
 {
 	struct utsname un;
+	const gchar *tmp;
 	gchar *value;
 
 	/* PATH might have been nuked by D-Bus */
@@ -45,51 +46,43 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 	g_setenv ("HTTP_USER_AGENT", value, FALSE);
 	g_free (value);
 
-	value = pk_backend_job_get_locale (job);
-	if (value != NULL) {
-		setlocale (LC_ALL, value);
-		g_free (value);
-	}
+	tmp = pk_backend_job_get_locale (job);
+	if (tmp != NULL)
+		setlocale (LC_ALL, tmp);
 
-	value = pk_backend_job_get_proxy_http (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+	tmp = pk_backend_job_get_proxy_http (job);
+	if (tmp != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("http_proxy", uri, TRUE);
-		g_free (value);
 	}
 
-	value = pk_backend_job_get_proxy_https (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+	tmp = pk_backend_job_get_proxy_https (job);
+	if (tmp != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("https_proxy", uri, TRUE);
-		g_free (value);
 	}
 
-	value = pk_backend_job_get_proxy_ftp (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+	tmp = pk_backend_job_get_proxy_ftp (job);
+	if (tmp != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("ftp_proxy", uri, TRUE);
-		g_free (value);
 	}
 
-	value = pk_backend_job_get_proxy_socks (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+	tmp = pk_backend_job_get_proxy_socks (job);
+	if (tmp != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("socks_proxy", uri, TRUE);
-		g_free (value);
 	}
 
-	value = pk_backend_job_get_no_proxy (job);
-	if (value != NULL) {
-		g_setenv ("no_proxy", value, TRUE);
-		g_free (value);
+	tmp = pk_backend_job_get_no_proxy (job);
+	if (tmp != NULL) {
+		g_setenv ("no_proxy", tmp, TRUE);
 	}
 
-	value = pk_backend_job_get_pac (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+	tmp = pk_backend_job_get_pac (job);
+	if (tmp != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("pac", uri, TRUE);
-		g_free (value);
 	}
 }
 

@@ -24,6 +24,7 @@ BEGIN {
 use URPM;
 use urpm;
 use urpm::media;
+use urpm::mirrors;
 use urpm::args;
 use urpm::select;
 
@@ -42,12 +43,24 @@ my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 dispatch_command($urpm, \@ARGV);
 print "finished\n";
+set_idle_timeout();
 
 foreach (<STDIN>) {
+  # Disable timeout:
+  alarm(0);
+
   chomp($_);
   my @args = split(/\t/, $_);
   dispatch_command($urpm, \@args);
   print "finished\n";
+  set_idle_timeout();
+}
+
+sub set_idle_timeout() {
+  # exit if no job for 5mn:
+  my $min = 5;
+  $SIG{ALRM} = sub { die "No job for $min minutes" };
+  alarm($min*60);
 }
 
 # FIXME: stop passing a ref around
@@ -60,7 +73,7 @@ sub dispatch_command {
   } elsif ($command eq "get-details") {
     get_details($urpm, $args);
   } elsif ($command eq "get-distro-upgrades") {
-    get_distro_upgrades();
+    get_distro_upgrades($urpm);
   } elsif ($command eq "get-files") {
     get_files($urpm, $args);
   } elsif ($command eq "get-packages") {
@@ -73,6 +86,8 @@ sub dispatch_command {
     get_update_detail($urpm, $args);
   } elsif ($command eq "get-updates") {
     get_updates($urpm, $args);
+  } elsif ($command eq "install-files") {
+    install_files($urpm, $args);
   } elsif ($command eq "install-packages") {
     install_packages($urpm, $args);
     urpm::media::configure($urpm);
@@ -171,35 +186,15 @@ sub get_details {
   _finished();
 }
 
-sub get_distro_upgrades() {
+# FIXME: just reuse mgaonline code
+sub get_distro_upgrades {
+  my ($urpm) = @_;
   pk_print_status(PK_STATUS_ENUM_QUERY);
 
-  open(my $product_file, "/etc/product.id");
+  my %product_id = %{ urpm::mirrors::parse_LDAP_namespace_structure(cat_('/etc/product.id')) };
+  my @distribs = urpm::mirrors::_mirrors_filtered($urpm, urpm::mirrors::_mageia_mirrorlist(\%product_id));
 
-  my %product_id;
-  %product_id = _parse_line(<$product_file>);
-  close($product_file);
-
-  my (undef, $distribfile_path) = tempfile("packagekit_urpmi_XXXXXX", UNLINK => 1);
-  _download_distrib_file($distribfile_path, \%product_id);
-
-  -f $distribfile_path or goto finished;
-
-  my @distribs;
-  open(my $distrib_file, $distribfile_path);
-  local $_;
-  while (<$distrib_file>) {
-    my %distrib = _parse_line($_);
-    push(@distribs, \%distrib);
-  }
-  close($distrib_file);
-
-  my $distrib;
-  foreach (@distribs) {
-    if ($_->{version} == $product_id{version}) {
-      $distrib = $_;
-    }
-  }
+  my ($distrib) = grep { $_->{version} == $product_id{version} } @distribs;
 
   $distrib or goto finished;
   @distribs = sort { $b->{release_date} <=> $a->{release_date} } @distribs;
@@ -208,7 +203,6 @@ sub get_distro_upgrades() {
   $newer_version or goto finished;
   pk_print_distro_upgrade(PK_DISTRO_UPGRADE_ENUM_STABLE, join(" ", "Mageia", $product_id{product}, $newer_version->{version}), "");
 
-  unlink($distribfile_path);
   finished:
   _finished();
 }
@@ -238,7 +232,7 @@ sub get_packages {
   if (!any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filterstab, [])) {
           pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       });
@@ -248,7 +242,7 @@ sub get_packages {
   if (!any { /^${\FILTER_INSTALLED}$/ } @filterstab) {
     foreach my $pkg (@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filterstab, [])) {
           pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
         }
       }  
@@ -283,7 +277,7 @@ sub required_by {
   my @requires = perform_requires_search($urpm, \@pkgnames, $recursive_option);
   
   foreach (@requires) {
-    if (filter($urpm, $_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+    if (filter($urpm, $_, \@filterstab, [])) {
       if (is_package_installed($_)) {
         any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
@@ -331,6 +325,20 @@ sub get_updates {
   _finished();
 }
 
+sub install_files {
+  my ($urpm, $args) = @_;
+
+  my @files = split(/&/, $args->[1]);
+  
+  my @packages;
+  foreach (@files) {
+    my @f_id = split(/;/, $_);
+    push @packages, _urpmf($f_id[0]);
+  }
+  
+  install_packages($urpm, [ $args->[0], join(';', @packages) ]);
+}
+
 sub install_packages {
   my ($urpm, $args) = @_;
 
@@ -365,6 +373,9 @@ sub search_name {
   my $basename_option = FILTER_BASENAME;
   $basename_option = find { /$basename_option/ } @filterstab;
 
+  $urpm->{options}{'strict-arch'} = 1 if member(FILTER_ARCH, @filterstab);
+  $urpm->{options}{'strict-arch'} = 0 if member(FILTER_NOT_ARCH, @filterstab);
+
   my $db = open_rpm_db();
   $urpm->compute_installed_flags($db);
   
@@ -372,7 +383,7 @@ sub search_name {
   if (!any { /^${\FILTER_NOT_INSTALLED}$/ } @filterstab) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filterstab, [])) {
           if (!$basename_option && $pkg->name =~ /$search_term/
             || $pkg->name =~ /^$search_term$/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -387,7 +398,7 @@ sub search_name {
     and return;
   
   foreach my $pkg (@{$urpm->{depslist}}) {
-    if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+    if ($pkg->flag_upgrade && filter($urpm, $pkg, \@filterstab, [])) {
       if (!$basename_option && $pkg->name =~ /$search_term/
         || $pkg->name =~ /^$search_term$/) {
         pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
@@ -514,7 +525,7 @@ sub resolve {
     $_ && $pkg or next;
 
     # We exit the script if found package does not match with specified filters
-    filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 }) or next;
+    filter($urpm, $pkg, \@filters, []) or next;
 
     if (is_package_installed($pkg)) {
       any { /^${\FILTER_NOT_INSTALLED}$/ } @filters and next;
@@ -541,7 +552,7 @@ sub search_details {
   if (!any { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filters, [])) {
           if ($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -552,7 +563,7 @@ sub search_details {
   if (!any { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg (@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filters, [])) {
           if ($pkg->name =~ /$search_term/ || $pkg->summary =~ /$search_term/ || $pkg->url =~ /$search_term/) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -576,7 +587,7 @@ sub search_file {
 
   foreach (keys %requested) {
     my $p = $urpm->{depslist}[$_];
-    if (filter($urpm, $p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+    if (filter($urpm, $p, \@filters, [ FILTER_INSTALLED ])) {
       if (is_package_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
@@ -601,7 +612,7 @@ sub search_group {
   if (!any { /^${\FILTER_NOT_INSTALLED}$/ } @filters) {
     $db->traverse(sub {
         my ($pkg) = @_;
-        if (filter($urpm, $pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filters, [])) {
           if (package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_INSTALLED, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -612,7 +623,7 @@ sub search_group {
   if (!any { /^${\FILTER_INSTALLED}$/ } @filters) {
     foreach my $pkg (@{$urpm->{depslist}}) {
       if ($pkg->flag_upgrade) {
-        if (filter($urpm, $pkg, \@filters, { FILTER_DEVELOPMENT => 1, FILTER_GUI => 1, FILTER_SUPPORTED => 1, FILTER_FREE => 1 })) {
+        if (filter($urpm, $pkg, \@filters, [])) {
           if (package_belongs_to_pk_group($pkg, $pk_group)) {
             pk_print_package(INFO_AVAILABLE, get_package_id($pkg), ensure_utf8($pkg->summary));
           }
@@ -774,12 +785,7 @@ sub _print_package_update_details {
   $requested{$pkg->id} = 1;
   my $state = {};
   my $restart = urpm::select::resolve_dependencies($urpm, $state, \%requested);
-  my @to_remove;
-  if (is_mageia()) {
-      @to_remove = urpm::select::removed_packages($state);
-  } else {
-      @to_remove = urpm::select::removed_packages($urpm, $state);
-  }
+  my @to_remove = urpm::select::removed_packages($state);
   my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selected}}]; 
   @to_install = grep { $_->arch ne 'src' } @to_install;
   my $updates_descr = urpm::get_updates_description($urpm);
@@ -790,11 +796,7 @@ sub _print_package_update_details {
     $desc =~ s/\n/;/g;
   }
   
-  my @to_upgrade_pkids;
-  foreach (@to_install) {
-    my $pkid = get_installed_fullname_pkid($_);
-    push @to_upgrade_pkids, $pkid if $pkid;
-  }
+  my @to_upgrade_pkids = map { get_installed_fullname_pkid($_) || () } @to_install;
   
   pk_print_update_detail(get_package_id($pkg),
     join("&", @to_upgrade_pkids),
@@ -819,37 +821,49 @@ sub _parse_line {
   return %hash;
 }
 
-sub _download_distrib_file {
-  my ($outfile, $product_id) = @_;
-  
-  -x "/usr/bin/wget" or die "wget is missing\n";
-  
-  my $api_url = sprintf("http://mirrors.mageia.org/api/mageia.%s.%s.list",
-                  lc($product_id->{release}),
-                  lc($product_id->{arch}));
-  
-  my $wget_command = join(" ", 
-                          "/usr/bin/wget",
-                          "--quiet",
-                          "--output-document", $outfile,
-                          $api_url);
-  
-  my $_wget_pid = open(my $wget, "$wget_command |");
-  close($wget);
-}
-
 sub _get_newer_distrib {
   my ($installed_version, $distrib_list) = @_;
-  my $installed_distrib;
-  foreach (@$distrib_list) {
-    if ($_->{version} == $installed_version) {
-      $installed_distrib = $_;
-    }
-  }
+  my ($installed_distrib) = grep { $_->{version} == $installed_version } @$distrib_list;
   $installed_distrib or return;
-  foreach (@$distrib_list) {
-    if ($installed_distrib->{release_date} < $_->{release_date}) {
-      return $_;
+  my ($new_distrib) = grep { $installed_distrib->{release_date} < $_->{release_date} } @$distrib_list;
+  return $new_distrib;
+}
+
+# from urpmi/urpmf:
+sub _urpmf {
+  my ($urpm) = @_;
+  my ($callback, $expr, @packages);
+    foreach my $medium (urpm::media::non_ignored_media($urpm)) {
+	my $xml_info_file = urpm::media::any_xml_info($urpm, $medium, 'files', $options{verbose} < 0);
+	if (!$xml_info_file) {
+	    my $hdlist = urpm::media::any_hdlist($urpm, $medium, $options{verbose} < 0) or 
+	      $urpm->{error}("no xml-info available for medium \"$medium->{name}\""), next;
+	    $urpm->{log}("getting information from $hdlist");
+	    $urpm->parse_hdlist($hdlist, callback => $callback);
+	    next;
+	}
+	require urpm::xml_info;
+	require urpm::xml_info_pkg;
+
+	$urpm->{log}("getting information from $xml_info_file");
+	    # special version for speed (3x faster), hopefully fully compatible
+	    my $code = sprintf(<<'EOF', $expr, $expr);
+	    my $F = urpm::xml_info::open_lzma($xml_info_file);
+	    my $fn;    
+	    local $_;
+	    while (<$F>) {
+		if (m!^<!) { 
+		    ($fn) = /fn="(.*)"/;
+		} elsif (%s || ($fn =~ %s)) {
+                  $fn or $urpm->{fatal}(1, "fast algorithm is broken, please report a bug");
+                  my $pkg = urpm::xml_info_pkg->new({ fn => $fn });
+		    push @packages, $pkg->name;		    
+		}
+	    }
+EOF
+	    $urpm->{debug} and $urpm->{debug}($code);
+	    eval $code;
+	    $@ and $urpm->{fatal}(1, $@);
     }
-  }
+  @packages;
 }

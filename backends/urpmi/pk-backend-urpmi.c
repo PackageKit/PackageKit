@@ -127,57 +127,24 @@ PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_APPLICATION,
+		PK_FILTER_ENUM_ARCH,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_DOWNLOADED,
+		PK_FILTER_ENUM_FREE,
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_DEVELOPMENT,
-		PK_FILTER_ENUM_SUPPORTED,
-		PK_FILTER_ENUM_FREE,
-		PK_FILTER_ENUM_DOWNLOADED,
-		PK_FILTER_ENUM_NOT_DOWNLOADED,
-		PK_FILTER_ENUM_APPLICATION,
 		PK_FILTER_ENUM_NOT_APPLICATION,
+		PK_FILTER_ENUM_NOT_ARCH,
+		PK_FILTER_ENUM_NOT_DEVELOPMENT,
+		PK_FILTER_ENUM_NOT_DOWNLOADED,
+		PK_FILTER_ENUM_NOT_FREE,
+		PK_FILTER_ENUM_NOT_GUI,
+		PK_FILTER_ENUM_NOT_SUPPORTED,
+		PK_FILTER_ENUM_SUPPORTED,
 		-1);
 }
 
-/**
- * pk_backend_get_roles:
- */
-PkBitfield
-pk_backend_get_roles (PkBackend *backend)
-{
-	PkBitfield roles;
-	roles = pk_bitfield_from_enums (
-		PK_ROLE_ENUM_CANCEL,
-		PK_ROLE_ENUM_DEPENDS_ON,
-		PK_ROLE_ENUM_GET_DETAILS,
-		PK_ROLE_ENUM_GET_FILES,
-		PK_ROLE_ENUM_REQUIRED_BY,
-		PK_ROLE_ENUM_GET_PACKAGES,
-		PK_ROLE_ENUM_WHAT_PROVIDES,
-		PK_ROLE_ENUM_GET_UPDATES,
-		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
-		PK_ROLE_ENUM_INSTALL_PACKAGES,
-		// PK_ROLE_ENUM_INSTALL_FILES,
-		// PK_ROLE_ENUM_INSTALL_SIGNATURE,
-		PK_ROLE_ENUM_REFRESH_CACHE,
-		PK_ROLE_ENUM_REMOVE_PACKAGES,
-		PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
-		PK_ROLE_ENUM_RESOLVE,
-		PK_ROLE_ENUM_SEARCH_DETAILS,
-		PK_ROLE_ENUM_SEARCH_FILE,
-		PK_ROLE_ENUM_SEARCH_GROUP,
-		PK_ROLE_ENUM_SEARCH_NAME,
-		PK_ROLE_ENUM_UPDATE_PACKAGES,
-		PK_ROLE_ENUM_GET_REPO_LIST,
-		PK_ROLE_ENUM_REPO_ENABLE,
-		// PK_ROLE_ENUM_ACCEPT_EULA,
-		// PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
-		// PK_ROLE_ENUM_GET_CATEGORIES,
-		// PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-		-1);
-
-	return roles;
-}
 /**
  * pk_backend_get_mime_types:
  */
@@ -292,6 +259,27 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	pk_backend_job_set_locked (job, TRUE);
 	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 	pk_backend_job_set_locked (job, FALSE);
+}
+
+/**
+ * pk_backend_install_files:
+ */
+void
+pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar **full_paths)
+{
+	gchar *full_paths_temp;
+	gchar *transaction_flags_temp;
+
+	/* send the complete list as stdin */
+	full_paths_temp = g_strjoinv(PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	pk_backend_job_set_locked (job, TRUE);
+	pk_backend_spawn_helper (spawn, job, "urpmi-dispatched-backend.pl", "install-files", transaction_flags_temp, full_paths_temp, NULL);
+	pk_backend_job_set_locked (job, FALSE);
+	g_free (full_paths_temp);
+	g_free (transaction_flags_temp);
 }
 
 /**

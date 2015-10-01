@@ -368,6 +368,7 @@ main (int argc, char *argv[])
 	PkOfflineAction action = PK_OFFLINE_ACTION_UNKNOWN;
 	gint retval;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_free_ gchar *link = NULL;
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
 	_cleanup_object_unref_ GFile *file = NULL;
 	_cleanup_object_unref_ PkProgressBar *progressbar = NULL;
@@ -384,6 +385,20 @@ main (int argc, char *argv[])
 		retval = EXIT_FAILURE;
 		g_print ("This program can only be used using root\n");
 		sd_journal_print (LOG_WARNING, "not called with the root user");
+		goto out;
+	}
+
+	/* verify this is pointing to our cache */
+	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	if (link == NULL) {
+		sd_journal_print (LOG_INFO, "no trigger, exiting");
+		retval = EXIT_SUCCESS;
+		goto out;
+	}
+	if (g_strcmp0 (link, "/var/cache/PackageKit") != 0 &&
+	    g_strcmp0 (link, "/var/cache") != 0) {
+		sd_journal_print (LOG_INFO, "another framework set up the trigger");
+		retval = EXIT_SUCCESS;
 		goto out;
 	}
 
@@ -422,7 +437,7 @@ main (int argc, char *argv[])
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
 	/* TRANSLATORS: we've started doing offline updates */
-	pk_offline_update_set_plymouth_msg (_("Installing updates, this could take a while..."));
+	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
 	pk_offline_update_write_dummy_results (package_ids);
 	results = pk_client_update_packages (PK_CLIENT (task),
 					     0,

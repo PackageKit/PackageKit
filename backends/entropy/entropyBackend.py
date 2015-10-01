@@ -71,6 +71,7 @@ def sharedreslock(method):
 
     return wrapped
 
+
 def exclusivereslock(method):
     """
     Entropy Resources Lock decorator for exclusive mode.
@@ -82,12 +83,14 @@ def exclusivereslock(method):
 
     return wrapped
 
+
 def sharedinstlock(method):
     """
     Decorator that acquires the Installed Packages Repository lock in
     shared mode and calls the wrapped function with an extra argument
     (the Installed Packages Repository object instance).
     """
+
     def wrapped(self, *args, **kwargs):
         inst_repo = self._entropy.installed_repository()
         with inst_repo.shared():
@@ -102,6 +105,7 @@ def exclusiveinstlock(method):
     exclusive mode and calls the wrapped function with an extra
     argument (the Installed Packages Repository object instance).
     """
+
     def wrapped(self, *args, **kwargs):
         inst_repo = self._entropy.installed_repository()
         with inst_repo.exclusive():
@@ -125,7 +129,7 @@ class PackageKitEntropyMixin(object):
         """
         Prepare percentage value used to feed self.percentage()
         """
-        percent = int((float(count)/max_count)*100)
+        percent = int((float(count) / max_count) * 100)
         if percent > 100:
             return 100
         return percent
@@ -143,8 +147,8 @@ class PackageKitEntropyMixin(object):
                     my_args.append(arg)
 
             self._entropy_log.write("%s: %s" % (source,
-                ' '.join([const_convert_to_unicode(x) for x in my_args]),)
-            )
+                                                ' '.join([const_convert_to_unicode(x) for x in my_args]),)
+                                    )
 
     def _encode_string_list(self, values):
         # values is a list of unencoded strings, we need UTF-8 strings here
@@ -180,11 +184,11 @@ class PackageKitEntropyMixin(object):
         repo_name = self._get_repo_name(c_repo)
         if repo_name is None:
             self.error(ERROR_PACKAGE_ID_INVALID,
-                "Invalid metadata passed")
+                       "Invalid metadata passed")
 
         # if installed, repo should be 'installed', packagekit rule
         cl_repo_name = etpConst.get(
-            'clientdbid', # forward compatibility
+            'clientdbid',  # forward compatibility
             getattr(InstalledPackagesRepository, "NAME", None))
         if repo_name == cl_repo_name:
             repo_name = "installed"
@@ -205,13 +209,13 @@ class PackageKitEntropyMixin(object):
         split_data = split_package_id(pkit_id)
         if len(split_data) < 4:
             self.error(ERROR_PACKAGE_ID_INVALID,
-                "The package id %s does not contain 4 fields" % pkit_id)
+                       "The package id %s does not contain 4 fields" % pkit_id)
             return
         pkg_key, pkg_ver, cur_arch, repo_name = split_data
 
         self._log_message(__name__,
-            "_id_to_etp: extracted: %s | %s | %s | %s" % (
-                pkg_key, pkg_ver, cur_arch, repo_name,))
+                          "_id_to_etp: extracted: %s | %s | %s | %s" % (
+                              pkg_key, pkg_ver, cur_arch, repo_name,))
         pkg_ver, pkg_slot = pkg_ver.rsplit(":", 1)
 
         if repo_name == "installed":
@@ -224,7 +228,7 @@ class PackageKitEntropyMixin(object):
         pkg_id, pkg_rc = c_repo.atomMatch(atom)
         if pkg_rc != 0:
             self.error(ERROR_PACKAGE_ID_INVALID,
-                "Package not found in repository")
+                       "Package not found in repository")
             return
 
         return pkg_id, c_repo
@@ -233,9 +237,9 @@ class PackageKitEntropyMixin(object):
         """
         Return PackageKit group belonging to given Entropy package category.
         """
-        group_data = [key for key, data in \
-            self._entropy.get_package_groups().items() \
-                if category in data['categories']]
+        group_data = [key for key, data in
+                      self._entropy.get_package_groups().items()
+                      if category in data['categories']]
         try:
             generic_group_name = group_data.pop(0)
         except IndexError:
@@ -291,7 +295,7 @@ class PackageKitEntropyMixin(object):
         extra_downloads = c_repo.retrieveExtraDownload(pkg_id)
         for extra_download in extra_downloads:
             if (not debug) and (extra_download['type'] == "debug") and \
-                (c_repo is not self._entropy.installed_repository()):
+                    (c_repo is not self._entropy.installed_repository()):
                 continue
             if c_repo is self._entropy.installed_repository():
                 size += extra_download['disksize']
@@ -307,8 +311,8 @@ class PackageKitEntropyMixin(object):
         """
         lambda_sort = lambda x: x[2].retrieveAtom(x[1])
 
-        for repo, pkg_id, c_repo, pkg_type in sorted(pkgs, key = lambda_sort):
-            self._package((pkg_id, c_repo), info = pkg_type)
+        for repo, pkg_id, c_repo, pkg_type in sorted(pkgs, key=lambda_sort):
+            self._package((pkg_id, c_repo), info=pkg_type)
 
     def _pk_filter_pkgs(self, pkgs, filters):
         """
@@ -321,12 +325,12 @@ class PackageKitEntropyMixin(object):
         elif FILTER_NOT_INSTALLED in filters:
             pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
         if FILTER_FREE in filters:
-            pkgs = set([x for x in pkgs if \
-                self._entropy.is_entropy_package_free(x[1], x[0])])
+            pkgs = set([x for x in pkgs if
+                        self._entropy.is_entropy_package_free(x[1], x[0])])
 
         return pkgs
 
-    def _pk_add_pkg_type(self, pkgs, important_check = False):
+    def _pk_add_pkg_type(self, pkgs, important_check=False):
         """
         Expand list of pkg tuples by adding PackageKit package type to it.
         """
@@ -338,7 +342,7 @@ class PackageKitEntropyMixin(object):
             pkg_type = None
             if important_check:
                 sys_pkg = self._entropy.validate_package_removal(pkg_id,
-                    repo_id = repo)
+                                                                 repo_id=repo)
                 if sys_pkg:
                     pkg_type = INFO_IMPORTANT
                 else:
@@ -363,14 +367,14 @@ class PackageKitEntropyMixin(object):
             return
         if repoid not in excluded_repos:
             self.error(ERROR_REPO_NOT_FOUND,
-                    "Repository %s was not found" % (repoid,))
+                       "Repository %s was not found" % (repoid,))
             return
 
         try:
             self._entropy.enable_repository(repoid)
         except Exception as err:
             self.error(ERROR_INTERNAL_ERROR,
-                "Failed to enable repository %s: %s" % (repoid, err,))
+                       "Failed to enable repository %s: %s" % (repoid, err,))
             return
 
     def _repo_disable(self, repoid):
@@ -383,19 +387,19 @@ class PackageKitEntropyMixin(object):
             return
         if repoid not in available_repos:
             self.error(ERROR_REPO_NOT_FOUND,
-                    "Repository %s was not found" % (repoid,))
+                       "Repository %s was not found" % (repoid,))
             return
 
         if repoid == default_repo:
             self.error(ERROR_CANNOT_DISABLE_REPOSITORY,
-                "%s repository can't be disabled" % (repoid,))
+                       "%s repository can't be disabled" % (repoid,))
             return
 
         try:
             self._entropy.disable_repository(repoid)
         except Exception as err:
             self.error(ERROR_INTERNAL_ERROR,
-                "Failed to enable repository %s: %s" % (repoid, err,))
+                       "Failed to enable repository %s: %s" % (repoid, err,))
             return
 
     def _get_repo_name(self, repo_db):
@@ -467,7 +471,7 @@ class PackageKitEntropyMixin(object):
         return cat_desc
 
     def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove,
-        simulate = False):
+                                 simulate=False):
         """
         Execute effective removal (including dep calculation).
 
@@ -494,8 +498,9 @@ class PackageKitEntropyMixin(object):
 
         # backend do not implement autoremove
         if autoremove:
-            self.message(MESSAGE_AUTOREMOVE_IGNORED,
-                "Entropy backend devs refused to implement this feature")
+            self._log_message(__name__,
+                              "autoremove: Entropy backend devs" +
+                              "refused to implement this feature")
 
         self.percentage(0)
         self.status(STATUS_DEP_RESOLVE)
@@ -504,13 +509,13 @@ class PackageKitEntropyMixin(object):
         for pkg_id, c_repo, pk_pkg in pkgs:
             if c_repo is not self._entropy.installed_repository():
                 self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Cannot remove a package coming from a repository: %s" % (
-                        pk_pkg,))
+                           "Cannot remove a package coming from a repository: %s" % (
+                               pk_pkg,))
                 return
 
         match_map = dict((
-            (pkg_id, (pkg_id, c_repo, pk_pkg)) \
-                for pkg_id, c_repo, pk_pkg in pkgs))
+            (pkg_id, (pkg_id, c_repo, pk_pkg))
+            for pkg_id, c_repo, pk_pkg in pkgs))
         matches = [pkg_id for pkg_id, c_repo, pk_pkg in pkgs]
 
         # calculate deps
@@ -520,8 +525,8 @@ class PackageKitEntropyMixin(object):
             c_repo = self._entropy.installed_repository()
             vpkgs = getattr(err, 'value', set())
             vit_pkgs = ', '.join(sorted(
-                    [c_repo.retrieveAtom(x[0]) for x in vpkgs],
-                key = lambda x: c_repo.retrieveAtom(x)))
+                [c_repo.retrieveAtom(x[0]) for x in vpkgs],
+                key=lambda x: c_repo.retrieveAtom(x)))
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "Could not perform remove operation, "
                        "these packages are vital: %s" % (vit_pkgs,))
@@ -553,8 +558,8 @@ class PackageKitEntropyMixin(object):
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
             self._log_message(__name__,
-                "_execute_etp_pkgs_remove: done %s/100" % (
-                    percent,))
+                              "_execute_etp_pkgs_remove: done %s/100" % (
+                                  percent,))
 
             self.percentage(percent)
             map_item = match_map.get(pkg_id)
@@ -589,11 +594,11 @@ class PackageKitEntropyMixin(object):
         """
         Execute effective packages download.
         """
-        self._execute_etp_pkgs_install(pkgs, False, only_fetch = True,
-            fetch_path = directory, calculate_deps = False)
+        self._execute_etp_pkgs_install(pkgs, False, only_fetch=True,
+                                       fetch_path=directory, calculate_deps=False)
 
-    def _execute_etp_pkgs_install(self, pkgs, only_trusted, only_fetch = False,
-        fetch_path = None, calculate_deps = True, simulate = False):
+    def _execute_etp_pkgs_install(self, pkgs, only_trusted, only_fetch=False,
+                                  fetch_path=None, calculate_deps=True, simulate=False):
         """
         Execute effective install (including dep calculation).
 
@@ -623,11 +628,11 @@ class PackageKitEntropyMixin(object):
                 sha1, sha256, sha512, gpg = c_repo.retrieveSignatures(pkg_id)
                 if gpg is None:
                     self.error(ERROR_MISSING_GPG_SIGNATURE,
-                        "Package %s is not GPG signed" % (pk_pkg,))
+                               "Package %s is not GPG signed" % (pk_pkg,))
                     return
 
-        matches = [(pkg_id, self._get_repo_name(c_repo),) for \
-            pkg_id, c_repo, pk_pkg in pkgs]
+        matches = [(pkg_id, self._get_repo_name(c_repo),) for
+                   pkg_id, c_repo, pk_pkg in pkgs]
 
         # calculate deps
         if calculate_deps:
@@ -650,8 +655,8 @@ class PackageKitEntropyMixin(object):
                             raise DependenciesCollision(run_queue)
                 except DependenciesNotFound as exc:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,
-                        "Cannot find the following dependencies: %s" % (
-                        ', '.join(sorted(exc.value)),))
+                               "Cannot find the following dependencies: %s" % (
+                                   ', '.join(sorted(exc.value)),))
                     return
                 except DependenciesCollision:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -685,13 +690,13 @@ class PackageKitEntropyMixin(object):
                     pk_pkg = self._etp_to_id((pkg_id, pkg_c_repo))
                     license_agreement = pkg_c_repo.retrieveLicenseText(eula_id)
                     self.eula_required(eula_id, pk_pkg, vendor_name,
-                        license_agreement)
+                                       license_agreement)
 
         if licenses:
             # bye bye, user will have to accept it and get here again
             self.error(EXIT_EULA_REQUIRED,
-                "Following EULAs are not accepted: %s" % (
-                    ' '.join(licenses.keys()),))
+                       "Following EULAs are not accepted: %s" % (
+                           ' '.join(licenses.keys()),))
             return
 
         # used in case of errors
@@ -700,7 +705,7 @@ class PackageKitEntropyMixin(object):
             for pkg_id, repo_id in run_queue:
                 pkg_c_repo = self._entropy.open_repository(repo_id)
                 match_map[(pkg_id, repo_id,)] = (pkg_id, pkg_c_repo,
-                    self._etp_to_id((pkg_id, pkg_c_repo)),)
+                                                 self._etp_to_id((pkg_id, pkg_c_repo)),)
 
         # fetch pkgs
         max_count = len(run_queue)
@@ -740,14 +745,14 @@ class PackageKitEntropyMixin(object):
             package = self._action_factory.get(
                 self._action_factory.FETCH_ACTION,
                 match,
-                opts = metaopts)
+                opts=metaopts)
             x_rc = package.start()
             package_path = package.package_path()
             package.finalize()
 
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
-                    "Cannot download package: %s" % (pk_pkg,))
+                           "Cannot download package: %s" % (pk_pkg,))
                 return
 
             # emit the file we downloaded
@@ -789,7 +794,8 @@ class PackageKitEntropyMixin(object):
             }
             # setup install source
             if match in matches:
-                metaopts['install_source'] = etpConst['install_sources']['user']
+                metaopts['install_source'] = etpConst[
+                    'install_sources']['user']
             else:
                 metaopts['install_source'] = \
                     etpConst['install_sources']['automatic_dependency']
@@ -802,7 +808,7 @@ class PackageKitEntropyMixin(object):
 
             if x_rc != 0:
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
-                    "Cannot install package: %s" % (pk_pkg,))
+                           "Cannot install package: %s" % (pk_pkg,))
                 return
 
         self._config_files_message()
@@ -810,16 +816,18 @@ class PackageKitEntropyMixin(object):
 
 
 class PackageKitEntropyClient(Client):
+
     """ PackageKit Entropy Client subclass """
 
     _pk_progress = None
     _pk_message = None
+
     def init_singleton(self):
-        Client.init_singleton(self, url_fetcher = PkUrlFetcher)
+        Client.init_singleton(self, url_fetcher=PkUrlFetcher)
 
     @classmethod
-    def output(cls, text, header = "", footer = "", back = False,
-        importance = 0, level = "info", count = None, percent = False):
+    def output(cls, text, header="", footer="", back=False,
+               importance=0, level="info", count=None, percent=False):
         """
         Reimplemented from entropy.output.TextInterface.
         """
@@ -854,8 +862,8 @@ class PkUrlFetcher(UrlFetcher):
         UrlFetcher.__init__(self, *args, **kwargs)
 
     def handle_statistics(self, th_id, downloaded_size, total_size,
-            average, old_average, update_step, show_speed, data_transfer,
-            time_remaining, time_remaining_secs):
+                          average, old_average, update_step, show_speed, data_transfer,
+                          time_remaining, time_remaining_secs):
         self.__average = average
         self.__downloadedsize = downloaded_size
         self.__remotesize = total_size
@@ -868,7 +876,7 @@ class PkUrlFetcher(UrlFetcher):
         last_t = PkUrlFetcher._last_t
         if (time.time() - last_t) > 1:
             myavg = abs(int(round(float(self.__average), 1)))
-            cur_prog = int(float(self.__average)/100)
+            cur_prog = int(float(self.__average) / 100)
             PkUrlFetcher._pk_progress(cur_prog)
             PkUrlFetcher._last_t = time.time()
 
@@ -995,7 +1003,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             message = "Some configuration files need updating."
             message += ";You should use 'equo conf update' to update them"
             message += ";If you can't do that, ask your system administrator."
-            self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
+            self._log_message(__name__, message, decolorize(message))
 
     def _package(self, pkg_match, info=None):
 
@@ -1034,7 +1042,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
-            if pkg is None: # wtf!
+            if pkg is None:  # wtf!
                 self._log_message(__name__, "depends_on: cannot match %s" % (
                     pk_pkg,))
                 continue
@@ -1054,7 +1062,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         deep = False
         try:
             queue_obj = self._entropy.get_install_queue(matches,
-                empty, deep, recursive = recursive)
+                                                        empty, deep, recursive=recursive)
             if len(queue_obj) == 2:
                 # new api
                 install, removal = queue_obj
@@ -1067,20 +1075,20 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     raise DependenciesCollision(install)
         except DependenciesNotFound as exc:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Dependencies not found: %s" % (sorted(exc.value),))
+                       "Dependencies not found: %s" % (sorted(exc.value),))
             return
         except DependenciesCollision:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "Dependencies collisions, cannot continue")
+                       "Dependencies collisions, cannot continue")
             return
 
         # transform install into (repo, pkg_id, c_repo) list
-        install = [(y, x, self._entropy.open_repository(y),) for x, y in \
-            install]
+        install = [(y, x, self._entropy.open_repository(y),) for x, y in
+                   install]
         # transform remove the same way
         inst_pkg_r_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
-        removal = [(inst_pkg_r_id, x, self._entropy.installed_repository()) \
-            for x in removal]
+        removal = [(inst_pkg_r_id, x, self._entropy.installed_repository())
+                   for x in removal]
 
         pkgs = set(install + removal)
 
@@ -1118,7 +1126,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                    "Package %s was not found" % (pk_pkg,))
+                           "Package %s was not found" % (pk_pkg,))
                 continue
             pkg_id, c_repo = pkg
 
@@ -1128,11 +1136,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             description = c_repo.retrieveDescription(pkg_id)
             if (category is None) or (description is None):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                    "Package %s was not found in repository" % (pk_pkg,))
+                           "Package %s was not found in repository" % (pk_pkg,))
                 continue
 
             self.details(pk_pkg, '', lic, self._get_pk_group(category),
-                description, homepage, self._get_pkg_size(pkg))
+                         description, homepage, self._get_pkg_size(pkg))
 
         self.percentage(100)
 
@@ -1174,10 +1182,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 icon = const_convert_to_rawstring("image-missing")
 
             nothing = const_convert_to_rawstring("")
-            cat_id = name # same thing
+            cat_id = name  # same thing
 
             self._log_message(__name__, "get_categories: pushing",
-                nothing, cat_id, name, summary, icon)
+                              nothing, cat_id, name, summary, icon)
 
             self.category(nothing, cat_id, name, summary, icon)
 
@@ -1195,9 +1203,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
-            if pkg is None: # wtf!
+            if pkg is None:  # wtf!
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % (pk_pkg,))
+                           "Package %s was not found" % (pk_pkg,))
                 self._log_message(__name__, "get_files: cannot match %s" % (
                     pk_pkg,))
                 continue
@@ -1219,7 +1227,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 percent,))
 
             self.percentage(percent)
-            files = repo_db.retrieveContent(pkg_id, order_by = 'file')
+            files = repo_db.retrieveContent(pkg_id, order_by='file')
             files = ";".join(files)
             self.files(pk_pkg, files)
 
@@ -1282,8 +1290,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for repo_id in all_repos:
 
             repo_data = available_repos.get(repo_id,
-                excluded_repos.get(repo_id))
-            if repo_data is None: # wtf?
+                                            excluded_repos.get(repo_id))
+            if repo_data is None:  # wtf?
                 continue
 
             enabled = self._is_repository_enabled(repo_id)
@@ -1311,7 +1319,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
-            if pkg is None: # wtf!
+            if pkg is None:  # wtf!
                 self._log_message(__name__, "required_by: cannot match %s" % (
                     pk_pkg,))
                 continue
@@ -1331,13 +1339,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         empty = False
         deep = False
         reverse_deps = self._entropy.get_reverse_queue(matches,
-            deep = deep, recursive = recursive)
+                                                       deep=deep, recursive=recursive)
 
         self._log_message(__name__, "required_by: reverse_deps => %s" % (
             reverse_deps,))
 
-        pkgs = set([(y, x, self._entropy.open_repository(y),) for x, y in \
-            reverse_deps])
+        pkgs = set([(y, x, self._entropy.open_repository(y),) for x, y in
+                    reverse_deps])
 
         self._log_message(__name__, "required_by: matches %s" % (
             pkgs,))
@@ -1375,8 +1383,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             self.percentage(percent)
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
-                    "could not find %s" % (pk_pkg,))
+                self._log_message(__name__,
+                                  "could not find %s" % (pk_pkg,))
                 continue
             pkg_id, c_repo = pkg
             repo_name = self._get_repo_name(c_repo)
@@ -1384,11 +1392,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             updates = []
             keyslot = c_repo.retrieveKeySlotAggregated(pkg_id)
             matches, m_rc = self._entropy.atom_match(
-                keyslot, multi_match = True,
-                multi_repo = True)
+                keyslot, multi_match=True,
+                multi_repo=True)
             for m_pkg_id, m_repo_id in matches:
                 if (m_pkg_id, m_repo_id) == (pkg_id, repo_name):
-                    continue # fliter myself
+                    continue  # fliter myself
                 m_c_repo = self._entropy.open_repository(m_repo_id)
                 updates.append(self._etp_to_id((m_pkg_id, m_c_repo)))
 
@@ -1420,8 +1428,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 (pk_pkg, updates, obsoletes, vendor_url, bugzilla_url),))
 
             self.update_detail(pk_pkg, updates, obsoletes, vendor_url,
-                bugzilla_url, cve_url, "none", update_message, changelog,
-                state, issued, updated)
+                               bugzilla_url, cve_url, "none", update_message, changelog,
+                               state, issued, updated)
 
         self.percentage(100)
 
@@ -1454,7 +1462,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         except SystemDatabaseError as err:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                "System Repository error: %s" % (err,))
+                       "System Repository error: %s" % (err,))
             return
         self.percentage(100)
 
@@ -1474,7 +1482,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
-        pkgs = self._pk_add_pkg_type(pkgs, important_check = True)
+        pkgs = self._pk_add_pkg_type(pkgs, important_check=True)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
@@ -1487,7 +1495,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         simulate = self._is_simulate(transaction_flags)
 
         self._log_message(__name__, "install_files: got", only_trusted,
-            "and", inst_files, "and", simulate)
+                          "and", inst_files, "and", simulate)
 
         self.allow_cancel(True)
         self.status(STATUS_RUNNING)
@@ -1495,12 +1503,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for etp_file in inst_files:
             if not os.path.exists(etp_file):
                 self.error(ERROR_FILE_NOT_FOUND,
-                    "%s could not be found" % (etp_file,))
+                           "%s could not be found" % (etp_file,))
                 return
 
             if not entropy.tools.is_entropy_package_file(etp_file):
                 self.error(ERROR_INVALID_PACKAGE_FILE,
-                    "Only Entropy files are supported")
+                           "Only Entropy files are supported")
                 return
 
         pkg_ids = []
@@ -1513,7 +1521,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             if not atomsfound:
                 self.error(ERROR_INVALID_PACKAGE_FILE,
-                    "Error while trying to add %s repository" % (etp_file,))
+                           "Error while trying to add %s repository" % (etp_file,))
                 return
             for idpackage, repo_id in atomsfound:
                 pkg_ids.append((idpackage, repo_id))
@@ -1522,17 +1530,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         pkgs = []
         for pkg_id, repo_id in pkg_ids:
-            if pkg_id == -1: # wtf!?
+            if pkg_id == -1:  # wtf!?
                 self.error(ERROR_INVALID_PACKAGE_FILE,
-                    "Repo was added but package %s is not found" % (
-                        (pkg_id, repo_id),))
+                           "Repo was added but package %s is not found" % (
+                               (pkg_id, repo_id),))
                 return
             repo_db = self._entropy.open_repository(repo_id)
             pkg = (pkg_id, repo_db)
             pk_pkg = self._etp_to_id(pkg)
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
+        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate=simulate)
 
     @sharedreslock
     def install_packages(self, transaction_flags, pk_pkgs):
@@ -1542,7 +1550,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         only_download = self._is_only_download(transaction_flags)
 
         self._log_message(__name__, "install_packages: got", only_trusted,
-            "and", pk_pkgs, "and", simulate)
+                          "and", pk_pkgs, "and", simulate)
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1555,13 +1563,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pkg = self._id_to_etp(pk_pkg)
                 if pkg is None:
                     self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % (pk_pkg,))
+                               "Package %s was not found" % (pk_pkg,))
                     continue
                 pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
         self._execute_etp_pkgs_install(
-            pkgs, only_trusted, simulate = simulate,
-            only_fetch = only_download, calculate_deps = not only_download)
+            pkgs, only_trusted, simulate=simulate,
+            only_fetch=only_download, calculate_deps=not only_download)
 
     @sharedreslock
     def download_packages(self, directory, package_ids):
@@ -1580,7 +1588,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pkg = self._id_to_etp(pk_pkg)
                 if pkg is None:
                     self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % (pk_pkg,))
+                               "Package %s was not found" % (pk_pkg,))
                     continue
                 pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
@@ -1615,7 +1623,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         repo_identifiers = sorted(self._settings['repositories']['available'])
         try:
             repo_intf = self._entropy.Repositories(repo_identifiers,
-                force = force)
+                                                   force=force)
         except AttributeError:
             self.error(ERROR_REPO_CONFIGURATION_ERROR, traceback.format_exc())
         except Exception as err:
@@ -1628,19 +1636,19 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         if not ex_rc:
             self._etp_update_repository_stats(repo_identifiers)
         else:
-            self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
-                "Cannot update repositories!")
+            self._log_message(__name__, "Cannot update repositories!")
 
         self.percentage(100)
 
     @sharedreslock
-    def remove_packages(self, allowdep, autoremove, package_ids):
-        return self._remove_packages(allowdep, autoremove, package_ids)
+    def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
+        return self._remove_packages(transaction_flags, package_ids, allowdep, autoremove)
 
-    def _remove_packages(self, allowdep, autoremove, pk_pkgs, simulate = False):
+    def _remove_packages(self, transaction_flags, pk_pkgs, allowdep, autoremove):
 
         self._log_message(__name__, "remove_packages: got %s and %s and %s" % (
             allowdep, autoremove, pk_pkgs,))
+        simulate = self._is_simulate(transaction_flags)
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1653,12 +1661,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pkg = self._id_to_etp(pk_pkg)
                 if pkg is None:
                     self.error(ERROR_UPDATE_NOT_FOUND,
-                        "Package %s was not found" % (pk_pkg,))
+                               "Package %s was not found" % (pk_pkg,))
                     continue
                 pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
         self._execute_etp_pkgs_remove(pkgs, allowdep, autoremove,
-            simulate = simulate)
+                                      simulate=simulate)
 
     @exclusivereslock
     def repo_enable(self, repoid, enable):
@@ -1703,7 +1711,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.percentage(percent)
             for key in values:
-                pkg_ids, pkg_rc = repo_db.atomMatch(key, multiMatch = True)
+                pkg_ids, pkg_rc = repo_db.atomMatch(key, multiMatch=True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
@@ -1742,9 +1750,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             self.percentage(percent)
             for key in values:
                 pkg_ids = repo_db.searchDescription(key,
-                    just_id = True)
-                pkg_ids |= repo_db.searchHomepage(key, just_id = True)
-                pkg_ids |= repo_db.searchLicense(key, just_id = True)
+                                                    just_id=True)
+                pkg_ids |= repo_db.searchHomepage(key, just_id=True)
+                pkg_ids |= repo_db.searchLicense(key, just_id=True)
+                if not pkg_ids:
+                    pkg_ids = repo_db.searchPackages(key, just_id=True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
@@ -1791,19 +1801,19 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     key.replace("*", "%")
                     like = True
 
-                pkg_ids = repo_db.searchBelongs(key, like = like)
+                pkg_ids = repo_db.searchBelongs(key, like=like)
                 if not pkg_ids:
                     # try real path if possible
                     pkg_ids = repo_db.searchBelongs(os.path.realpath(key),
-                        like = like)
+                                                    like=like)
                 if not pkg_ids:
                     # try using reverse symlink mapping
                     for sym_dir in reverse_symlink_map:
                         if key.startswith(sym_dir):
                             for sym_child in reverse_symlink_map[sym_dir]:
-                                my_file = sym_child+key[len(sym_dir):]
+                                my_file = sym_child + key[len(sym_dir):]
                                 pkg_ids = repo_db.searchBelongs(my_file,
-                                    like = like)
+                                                                like=like)
                                 if pkg_ids:
                                     break
 
@@ -1864,12 +1874,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             if hasattr(repo_db, "listPackageIdsInCategory"):
                 if selected_categories:
-                    etp_cats = set((x for x in repo_all_cats \
-                         if x in selected_categories))
+                    etp_cats = set((x for x in repo_all_cats
+                                    if x in selected_categories))
                 else:
                     # get all etp categories excluding all_matched_categories
-                    etp_cats = set((x for x in repo_all_cats \
-                         if x not in all_matched_categories))
+                    etp_cats = set((x for x in repo_all_cats
+                                    if x not in all_matched_categories))
 
                 for category in etp_cats:
                     pkg_ids = repo_db.listPackageIdsInCategory(category)
@@ -1879,7 +1889,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 # backward compatibility
                 if selected_categories:
                     etp_cat_ids = set([cat_id for cat_id, cat_name in
-                        repo_all_cats if cat_name in selected_categories])
+                                       repo_all_cats if cat_name in selected_categories])
                 else:
                     # get all etp category ids excluding all_matched_categories
                     etp_cat_ids = set([cat_id for cat_id, cat_name in
@@ -1927,7 +1937,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.percentage(percent)
             for key in values:
-                pkg_ids = repo_db.searchPackages(key, just_id = True)
+                pkg_ids = repo_db.searchPackages(key, just_id=True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
@@ -1946,7 +1956,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         only_download = self._is_only_download(transaction_flags)
 
         self._log_message(__name__, "update_packages: got", only_trusted,
-            "and", pk_pkgs, "and", simulate)
+                          "and", pk_pkgs, "and", simulate)
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1959,13 +1969,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pkg = self._id_to_etp(pk_pkg)
                 if pkg is None:
                     self.error(ERROR_UPDATE_NOT_FOUND,
-                        "Package %s was not found" % (pk_pkg,))
+                               "Package %s was not found" % (pk_pkg,))
                     continue
                 pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
         self._execute_etp_pkgs_install(
-            pkgs, only_trusted, simulate = simulate,
-            only_fetch = only_download, calculate_deps = not only_download)
+            pkgs, only_trusted, simulate=simulate,
+            only_fetch=only_download, calculate_deps=not only_download)
 
     def _what_provides_mime(self, filters, values):
 
@@ -2002,7 +2012,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     @sharedreslock
     @sharedinstlock
     def what_provides(self, filters, provides_type, values):
-
         """
         PROVIDES_ANY = "any"
         # PROVIDES_CODEC = "codec"
@@ -2016,26 +2025,27 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         values = self._encode_string_list(values)
 
         self._log_message(__name__, "what_provides: got", filters,
-            "and", provides_type, "and", values)
+                          "and", provides_type, "and", values)
 
         if provides_type == PROVIDES_MIMETYPE:
             # search packages providing given mime-types
             return self._what_provides_mime(filters, values)
 
-        #elif provides_type == PROVIDES_HARDWARE_DRIVER:
-        #    # search packages providing given hardware driver
+        # elif provides_type == PROVIDES_HARDWARE_DRIVER:
+        # search packages providing given hardware driver
         #    pass
 
-        #elif provides_type == PROVIDES_FONT:
-        #    # search packages providing given system font
+        # elif provides_type == PROVIDES_FONT:
+        # search packages providing given system font
         #    pass
 
-        #elif provides_type == PROVIDES_CODEC:
+        # elif provides_type == PROVIDES_CODEC:
         #    pass
 
         else:
             self.error(ERROR_NOT_SUPPORTED,
                        "This function is not implemented in this backend")
+
 
 def main():
     backend = PackageKitEntropyBackend("")

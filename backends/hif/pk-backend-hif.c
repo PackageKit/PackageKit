@@ -379,6 +379,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendHifJobData *job_data;
+	const gchar *value;
 	job_data = g_new0 (PkBackendHifJobData, 1);
 	job_data->backend = backend;
 	pk_backend_job_set_user_data (job, job_data);
@@ -400,10 +401,19 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
+	/* set proxy */
+	value = pk_backend_job_get_proxy_http (job);
+	if (value != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+		hif_context_set_http_proxy (priv->context, uri);
+	}
+
 	/* transaction */
 	job_data->transaction = hif_transaction_new (priv->context);
 	hif_transaction_set_sources (job_data->transaction,
 				     hif_context_get_sources (priv->context));
+	hif_transaction_set_uid (job_data->transaction,
+				 pk_backend_job_get_uid (job));
 
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
@@ -617,19 +627,23 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* do we have anything in the cache */
 	cache_key = hif_utils_create_cache_key (flags);
-	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0)
+	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0) {
+		g_mutex_lock (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
-	if (cache_item != NULL && cache_item->sack != NULL) {
-		if (cache_item->valid) {
-			ret = TRUE;
-			g_debug ("using cached sack %s", cache_key);
-			sack = cache_item->sack;
-			goto out;
-		} else {
-			/* we have to do this now rather than rely on the
-			 * callback of the hash table */
-			g_hash_table_remove (priv->sack_cache, cache_key);
+		if (cache_item != NULL && cache_item->sack != NULL) {
+			if (cache_item->valid) {
+				ret = TRUE;
+				g_debug ("using cached sack %s", cache_key);
+				sack = cache_item->sack;
+				g_mutex_unlock (&priv->sack_mutex);
+				goto out;
+			} else {
+				/* we have to do this now rather than rely on the
+				 * callback of the hash table */
+				g_hash_table_remove (priv->sack_cache, cache_key);
+			}
 		}
+		g_mutex_unlock (&priv->sack_mutex);
 	}
 
 	/* update status */
@@ -852,10 +866,12 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	gchar **search_tmp;
 	HifDb *db;
 	HifState *state_local;
+	HyPackageList installs = NULL;
 	HyPackageList pkglist = NULL;
 	HyQuery query = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_strv_free_ gchar **search = NULL;
@@ -943,6 +959,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
+		/* set up the sack for packages that should only ever be installed, never updated */
+		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
+		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
+
 		job_data->goal = hy_goal_create (sack);
 		hy_goal_upgrade_all (job_data->goal);
 		ret = hif_goal_depsolve (job_data->goal, &error);
@@ -950,7 +970,18 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
 		}
+		/* get packages marked for upgrade */
 		pkglist = hy_goal_list_upgrades (job_data->goal);
+		/* add any packages marked for install */
+		installs = hy_goal_list_installs (job_data->goal);
+		if (installs != NULL) {
+			guint i;
+			HyPackage pkg;
+
+			FOR_PACKAGELIST(pkg, installs, i) {
+				hy_packagelist_push (pkglist, hy_package_link (pkg));
+			}
+		}
 		break;
 	default:
 		g_assert_not_reached ();
@@ -1012,6 +1043,8 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 out:
+	if (installs != NULL)
+		hy_packagelist_free (installs);
 	if (pkglist != NULL)
 		hy_packagelist_free (pkglist);
 	if (query != NULL)
@@ -1278,6 +1311,24 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 					   "%s", error->message);
 		goto out;
 	}
+
+	/* check this isn't a waste of time */
+	if (g_strcmp0 (parameter, "enabled") == 0) {
+		ret = (hif_source_get_enabled (src) & HIF_SOURCE_ENABLED_PACKAGES) > 0;
+		if (g_strcmp0 (value, "1") == 0 && ret) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+						   "repo already enabled");
+			goto out;
+		}
+		if (g_strcmp0 (value, "0") == 0 && !ret) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+						   "repo already disabled");
+			goto out;
+		}
+	}
+
 	ret = hif_source_set_data (src, parameter, value, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job,
@@ -2541,32 +2592,6 @@ pk_backend_repo_remove (PkBackend *backend,
 }
 
 /**
- * hif_is_installed_package_id_name:
- */
-static gboolean
-hif_is_installed_package_id_name (HySack sack, const gchar *package_id)
-{
-	gboolean ret;
-	HyPackageList pkglist = NULL;
-	HyQuery query = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
-
-	/* run query */
-	query = hy_query_create (sack);
-	split = pk_package_id_split (package_id);
-	hy_query_filter (query, HY_PKG_NAME, HY_EQ, split[PK_PACKAGE_ID_NAME]);
-	hy_query_filter (query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	pkglist = hy_query_run (query);
-
-	/* any matches? */
-	ret = hy_packagelist_count (pkglist) > 0;
-
-	hy_packagelist_free (pkglist);
-	hy_query_free (query);
-	return ret;
-}
-
-/**
  * hif_is_installed_package_id_name_arch:
  */
 static gboolean
@@ -3073,8 +3098,7 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
-				   8, /* add repos */
-				   1, /* check installed */
+				   9, /* add repos */
 				   1, /* find packages */
 				   90, /* run transaction */
 				   -1);
@@ -3097,26 +3121,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
 	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
 
-	/* done */
-	if (!hif_state_done (job_data->state, &error)) {
-		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		return;
-	}
-
-	/* ensure packages are not already installed */
-	for (i = 0; package_ids[i] != NULL; i++) {
-		ret = hif_is_installed_package_id_name (sack, package_ids[i]);
-		if (!ret) {
-			gchar *printable_tmp;
-			printable_tmp = pk_package_id_to_printable (package_ids[i]);
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
-						   "cannot update: %s is not already installed",
-						   printable_tmp);
-			g_free (printable_tmp);
-			return;
-		}
-	}
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);

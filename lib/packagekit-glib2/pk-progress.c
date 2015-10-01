@@ -393,7 +393,7 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 }
 
 /**
- * pk_progress_set_speed:
+ * pk_progress_set_download_size_remaining:
  *
  * Since: 0.8.0
  **/
@@ -545,7 +545,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	object_class->finalize = pk_progress_finalize;
 
 	/**
-	 * PkPackage:package-id:
+	 * PkProgress:package-id:
 	 *
 	 * Since: 0.5.2
 	 */
@@ -556,7 +556,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
-	 * PkPackage:transaction-id:
+	 * PkProgress:transaction-id:
 	 *
 	 * Since: 0.5.2
 	 */
@@ -577,7 +577,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
 
 	/**
-	 * PkPackage:allow-cancel:
+	 * PkProgress:allow-cancel:
 	 *
 	 * Since: 0.5.2
 	 */
@@ -607,7 +607,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
-	 * PkPackage:caller-active:
+	 * PkProgress:caller-active:
 	 *
 	 * Since: 0.5.2
 	 */

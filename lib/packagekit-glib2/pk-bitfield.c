@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-enum
+ * SECTION:pk-bitfield
  * @short_description: Functions for converting strings to enum and vice-versa
  *
  * This file contains functions to convert to and from enumerated types.

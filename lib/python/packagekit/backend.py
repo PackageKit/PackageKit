@@ -62,6 +62,7 @@ class PackageKitBaseBackend:
         self._locked = False
         self.lang = "C"
         self.has_network = False
+        self.uid = 0
         self.background = False
         self.interactive = False
         self.cache_age = 0
@@ -79,6 +80,12 @@ class PackageKitBaseBackend:
                 self.has_network = True
         except KeyError as e:
             print("Error: No NETWORK envp")
+
+        # try to get UID of running user
+        try:
+            self.uid = int(os.environ['UID'])
+        except KeyError as e:
+            print("Error: No UID envp")
 
         # try to get BACKGROUND state
         try:
@@ -229,6 +236,7 @@ class PackageKitBaseBackend:
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param summary: The package summary
         @param package_license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
@@ -438,7 +446,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def remove_packages(self, transaction_flags, allowdep, autoremove, package_ids):
+    def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
@@ -455,6 +463,13 @@ class PackageKitBaseBackend:
     def get_details(self, package_ids):
         '''
         Implement the {backend}-get-details functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
+    def get_details_local(self, files):
+        '''
+        Implement the {backend}-get-details-local functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
@@ -572,6 +587,10 @@ class PackageKitBaseBackend:
         elif cmd == 'get-details':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)
             self.get_details(package_ids)
+            self.finished()
+        elif cmd == 'get-details-local':
+            files = args[0].split(PACKAGE_IDS_DELIM)
+            self.get_details_local(files)
             self.finished()
         elif cmd == 'get-files':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)

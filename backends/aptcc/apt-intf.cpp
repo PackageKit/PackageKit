@@ -66,9 +66,9 @@ AptIntf::AptIntf(PkBackendJob *job) :
 
 bool AptIntf::init()
 {
-    gchar *locale;
-    gchar *http_proxy;
-    gchar *ftp_proxy;
+    const gchar *locale;
+    const gchar *http_proxy;
+    const gchar *ftp_proxy;
 
     m_isMultiArch = APT::Configuration::getArchitectures(false).size() > 1;
 
@@ -82,17 +82,14 @@ bool AptIntf::init()
         // 		_locale.erase(found);
         // 		_config->Set("APT::Acquire::Translation", _locale);
     }
-    g_free(locale);
 
     // set http proxy
     http_proxy = pk_backend_job_get_proxy_http(m_job);
     setenv("http_proxy", http_proxy, 1);
-    g_free(http_proxy);
 
     // set ftp proxy
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
     setenv("ftp_proxy", ftp_proxy, 1);
-    g_free(ftp_proxy);
 
     // Prepare for the restart thing
     if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
@@ -890,7 +887,9 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                         GTimeVal dateTime = {0, 0};
                         gchar *date;
                         date = g_match_info_fetch_named(match_info, "date");
-                        g_warn_if_fail(RFC1123StrToTime(date, dateTime.tv_sec));
+                        time_t time;
+                        g_warn_if_fail(RFC1123StrToTime(date, time));
+                        dateTime.tv_sec = time;
                         g_free(date);
 
                         issued = g_time_val_to_iso8601(&dateTime);

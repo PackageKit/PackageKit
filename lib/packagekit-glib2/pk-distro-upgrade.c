@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_distro_upgrade_finalize	(GObject     *object);
 
@@ -125,7 +126,7 @@ pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, G
 
 	switch (prop_id) {
 	case PROP_STATE:
-		g_value_set_uint (value, priv->state);
+		g_value_set_enum (value, priv->state);
 		break;
 	case PROP_NAME:
 		g_value_set_string (value, priv->name);
@@ -150,7 +151,7 @@ pk_distro_upgrade_set_property (GObject *object, guint prop_id, const GValue *va
 
 	switch (prop_id) {
 	case PROP_STATE:
-		priv->state = g_value_get_uint (value);
+		priv->state = g_value_get_enum (value);
 		break;
 	case PROP_NAME:
 		g_free (priv->name);
@@ -183,8 +184,8 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint ("state", NULL, NULL,
-				   0, G_MAXUINT, PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("state", NULL, NULL,
+				   PK_TYPE_DISTRO_UPGRADE_ENUM, PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 

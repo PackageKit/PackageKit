@@ -33,6 +33,7 @@ libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 
 HEADER_FILES =							\
 	packagekit.h						\
+	pk-autocleanups.h					\
 	pk-bitfield.h						\
 	pk-category.h						\
 	pk-client.h						\
@@ -234,7 +235,8 @@ EXTRA_DIST =							\
 	packagekit-glib2.pc.in					\
 	pk-version.h.in						\
 	pk-enum-types.h.template				\
-	pk-enum-types.c.template
+	pk-enum-types.c.template				\
+	PackageKitGlib-1.0.metadata
 
 BUILT_SOURCES = 						\
 	pk-enum-types.h						\
@@ -270,7 +272,22 @@ gir_DATA = $(INTROSPECTION_GIRS)
 typelibdir = $(libdir)/girepository-1.0
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-CLEANFILES += $(gir_DATA) $(typelib_DATA)
+if ENABLE_VAPIGEN
+include $(VAPIGEN_MAKEFILE)
+
+packagekit-glib2.vapi: PackageKitGlib-1.0.gir PackageKitGlib-1.0.metadata
+
+VAPIGEN_VAPIS = packagekit-glib2.vapi
+
+packagekit_glib2_vapi_DEPS = gio-2.0
+packagekit_glib2_vapi_METADATADIRS = $(srcdir)
+packagekit_glib2_vapi_FILES = PackageKitGlib-1.0.gir
+
+vapidir = $(datadir)/vala/vapi
+vapi_DATA = $(VAPIGEN_VAPIS)
+endif
+
+CLEANFILES += $(gir_DATA) $(typelib_DATA) $(VAPIGEN_VAPIS)
 endif
 
 clean-local:

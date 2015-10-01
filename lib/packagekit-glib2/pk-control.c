@@ -38,6 +38,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-version.h>
+#include <packagekit-glib2/pk-enum-types.h>
 
 static void     pk_control_finalize	(GObject     *object);
 
@@ -2106,7 +2107,7 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		g_value_set_boolean (value, priv->locked);
 		break;
 	case PROP_NETWORK_STATE:
-		g_value_set_uint (value, priv->network_state);
+		g_value_set_enum (value, priv->network_state);
 		break;
 	case PROP_DISTRO_ID:
 		g_value_set_string (value, priv->distro_id);
@@ -2271,8 +2272,8 @@ pk_control_class_init (PkControlClass *klass)
 	 *
 	 * Since: 0.5.3
 	 */
-	pspec = g_param_spec_uint ("network-state", NULL, NULL,
-				   0, G_MAXUINT, PK_NETWORK_ENUM_LAST,
+	pspec = g_param_spec_enum ("network-state", NULL, NULL,
+				   PK_TYPE_NETWORK_ENUM, PK_NETWORK_ENUM_LAST,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
 
@@ -2463,6 +2464,7 @@ pk_control_finalize (GObject *object)
 	g_strfreev (priv->mime_types);
 	g_free (priv->distro_id);
 	g_ptr_array_unref (priv->calls);
+	g_object_unref (priv->cancellable);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
 }

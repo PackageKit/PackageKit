@@ -131,8 +131,6 @@ GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
 GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
 GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
 GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
-G_DEPRECATED
-GPtrArray	*pk_results_get_message_array		(PkResults		*results);
 
 G_END_DECLS
 
