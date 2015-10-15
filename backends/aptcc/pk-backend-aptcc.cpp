@@ -255,7 +255,7 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
         }
     }
 
-    // It's faster to emmit the packages here than in the matching part
+    // It's faster to emit the packages here than in the matching part
     apt->emitPackages(output, filters);
 }
 
@@ -636,7 +636,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 
     PkgList pkgs = apt->resolvePackageIds(search);
 
-    // It's faster to emmit the packages here rather than in the matching part
+    // It's faster to emit the packages here rather than in the matching part
     apt->emitPackages(pkgs, filters);
 }
 
@@ -699,7 +699,7 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
         return;
     }
 
-    // It's faster to emmit the packages here rather than in the matching part
+    // It's faster to emit the packages here rather than in the matching part
     PkgList output;
     output = apt->getPackagesFromGroup(search);
     apt->emitPackages(output, filters);
@@ -752,7 +752,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     }
     g_free(search);
 
-    // It's faster to emmit the packages here than in the matching part
+    // It's faster to emit the packages here than in the matching part
     apt->emitPackages(output, filters);
 
     pk_backend_job_set_percentage(job, 100);
@@ -1133,7 +1133,7 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
     PkgList output;
     output = apt->getPackages();
 
-    // It's faster to emmit the packages rather here than in the matching part
+    // It's faster to emit the packages rather here than in the matching part
     apt->emitPackages(output, filters);
 }
 
