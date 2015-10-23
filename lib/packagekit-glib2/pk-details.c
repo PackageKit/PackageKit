@@ -175,7 +175,8 @@ pk_details_get_summary (PkDetails *details)
  * pk_details_get_size:
  * @details: a #PkDetails instance
  *
- * Gets the size for the details object.
+ * Gets the size for the details object: for installed packages it will return
+ * the installed size, for the rest the package size.
  *
  * Return value: string value
  *
