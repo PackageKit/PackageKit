@@ -770,11 +770,14 @@ pk_alpm_pkg_build_list (const alpm_list_t *i)
 		return NULL;
 	list = g_string_new ("");
 	for (; i != NULL; i = i->next) {
+		if (i->data == NULL)
+			continue;
 		g_string_append_printf (list, "%s, ",
 					alpm_pkg_get_name (i->data));
 	}
 
-	g_string_truncate (list, list->len - 2);
+	if (list->len > 2)
+		g_string_truncate (list, list->len - 2);
 	return g_string_free (list, FALSE);
 }
 
