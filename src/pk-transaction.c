@@ -128,6 +128,7 @@ struct PkTransactionPrivate
 	gchar			*cached_value;
 	gchar			*cached_directory;
 	gchar			*cached_cat_id;
+	PkUpgradeKindEnum	 cached_upgrade_kind;
 	GPtrArray		*supported_content_types;
 	guint			 registration_id;
 	GDBusConnection		*connection;
@@ -2017,6 +2018,12 @@ pk_transaction_run (PkTransaction *transaction)
 					priv->cached_repo_id,
 					priv->cached_autoremove);
 		break;
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+		pk_backend_upgrade_system (priv->backend,
+					   priv->job,
+					   priv->cached_value,
+					   priv->cached_upgrade_kind);
+		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		pk_backend_repair_system (priv->backend,
 					  priv->job,
@@ -2568,6 +2575,9 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 		case PK_ROLE_ENUM_CANCEL:
 			policy = "org.freedesktop.packagekit.cancel-foreign";
 			break;
+		case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+			policy = "org.freedesktop.packagekit.upgrade-system";
+			break;
 		case PK_ROLE_ENUM_REPAIR_SYSTEM:
 			policy = "org.freedesktop.packagekit.repair-system";
 			break;
@@ -2670,6 +2680,7 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPGRADE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
 		pk_transaction_make_exclusive (transaction);
 	}
@@ -5015,6 +5026,57 @@ out:
 }
 
 /**
+ * pk_transaction_upgrade_system:
+ **/
+static void
+pk_transaction_upgrade_system (PkTransaction *transaction,
+			       GVariant *params,
+			       GDBusMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error = NULL;
+	PkUpgradeKindEnum upgrade_kind;
+	const gchar *distro_id;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(&su)",
+		       &distro_id,
+		       &upgrade_kind);
+
+	g_debug ("UpgradeSystem method called: %s (%s)",
+		 distro_id, pk_upgrade_kind_enum_to_string (upgrade_kind));
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+					PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "UpgradeSystem not supported by backend");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_value = g_strdup (distro_id);
+	transaction->priv->cached_upgrade_kind = upgrade_kind;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction,
+						   PK_ROLE_ENUM_UPGRADE_SYSTEM,
+						   &error);
+	if (!ret) {
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+/**
  * pk_transaction_repair_system:
  **/
 static void
@@ -5265,6 +5327,10 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 	if (g_strcmp0 (method_name, "WhatProvides") == 0) {
 		pk_transaction_what_provides (transaction, parameters, invocation);
+		return;
+	}
+	if (g_strcmp0 (method_name, "UpgradeSystem") == 0) {
+		pk_transaction_upgrade_system (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "RepairSystem") == 0) {

@@ -82,6 +82,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL,			/* Since: 0.8.17 */
 	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_REPO_REMOVE,			/* Since: 0.9.1 */
+	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 1.0.10 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 

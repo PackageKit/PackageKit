@@ -239,6 +239,22 @@
     <annotate key="org.freedesktop.policykit.exec.path">/usr/sbin/pk-device-rebind</annotate>
   </action>
 
+  <action id="org.freedesktop.packagekit.upgrade-system">
+    <!-- SECURITY:
+          - Normal users require admin authentication to upgrade the disto as
+            this can make the system unbootable or stop other applications from
+            working.
+     -->
+    <_description>Upgrade System</_description>
+    <_message>Authentication is required to upgrade the operating system</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.repair-system">
     <!-- SECURITY:
           - Normal users require admin authentication to repair the system

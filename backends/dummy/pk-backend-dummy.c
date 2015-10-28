@@ -1614,6 +1614,63 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	pk_backend_job_finished (job);
 }
 
+static gboolean
+pk_backend_upgrade_system_timeout (gpointer data)
+{
+	PkBackendJob *job = (PkBackendJob *) data;
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+
+	if (job_data->progress_percentage == 100) {
+		pk_backend_job_finished (job);
+		return FALSE;
+	}
+	if (job_data->progress_percentage == 0) {
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO);
+	}
+	if (job_data->progress_percentage == 20) {
+		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					"The Linux kernel (the core of the Linux operating system)");
+	}
+	if (job_data->progress_percentage == 30) {
+		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+					"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					"An HTML widget for GTK+ 2.0");
+	}
+	if (job_data->progress_percentage == 40) {
+		pk_backend_job_set_allow_cancel (job, FALSE);
+		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+					"powertop;1.8-1.fc8;i386;fedora",
+					"Power consumption monitor");
+	}
+	if (job_data->progress_percentage == 60) {
+		pk_backend_job_set_allow_cancel (job, TRUE);
+		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					"The Linux kernel (the core of the Linux operating system)");
+	}
+	if (job_data->progress_percentage == 80) {
+		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
+					"powertop;1.8-1.fc8;i386;fedora",
+					"Power consumption monitor");
+	}
+	job_data->progress_percentage += 1;
+	pk_backend_job_set_percentage (job, job_data->progress_percentage);
+	return TRUE;
+}
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+{
+	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_job_set_allow_cancel (job, TRUE);
+	job_data->signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, job);
+}
+
 /**
  * pk_backend_repair_system:
  */

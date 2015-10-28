@@ -410,6 +410,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def upgrade_system(self, distro_id):
+        '''
+        Implement the {backend}-update-system functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -705,6 +712,9 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'get-categories':
             self.get_categories()
+            self.finished()
+        elif cmd == 'upgrade-system':
+            self.upgrade_system(args[0])
             self.finished()
         elif cmd == 'repair-system':
             self.repair_system(args[0])

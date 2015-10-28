@@ -261,6 +261,14 @@ PkResults	*pk_client_repo_remove			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults	*pk_client_upgrade_system		(PkClient		*client,
+							 const gchar		*distro_id,
+							 PkUpgradeKindEnum	 upgrade_kind,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
 PkResults	*pk_client_repair_system		(PkClient		*client,
 							 PkBitfield		 transaction_flags,
 							 GCancellable		*cancellable,

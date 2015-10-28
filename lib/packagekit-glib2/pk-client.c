@@ -119,6 +119,7 @@ typedef struct {
 	PkResults			*results;
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
+	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 refcount;
 	PkClientHelper			*client_helper;
 } PkClientState;
@@ -1824,6 +1825,16 @@ pk_client_set_hints_cb (GObject *source_object,
 						  state->transaction_flags,
 						  state->repo_id,
 						  state->autoremove),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
+		g_dbus_proxy_call (state->proxy, "UpgradeSystem",
+				   g_variant_new ("(su)",
+						  state->distro_id,
+						  state->upgrade_kind),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,
@@ -4239,6 +4250,80 @@ pk_client_repo_remove_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
+}
+
+/**
+ * pk_client_upgrade_system_async:
+ * @client: a valid #PkClient instance
+ * @distro_id: a distro ID such as "fedora-14"
+ * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * This transaction will update the distro to the next version, which may
+ * involve just downloading the installer and setting up the boot device,
+ * or may involve doing an on-line upgrade.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Since: 1.0.10
+ **/
+void
+pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
+				GCancellable *cancellable,
+				PkProgressCallback progress_callback, gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_upgrade_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
+	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
+	if (cancellable != NULL) {
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       state,
+							       NULL);
+	}
+	state->distro_id = g_strdup (distro_id);
+	state->upgrade_kind = upgrade_kind;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+
+	/* check not already cancelled */
+	if (cancellable != NULL &&
+	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* identify */
+	pk_client_set_role (state, state->role);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  state);
+out:
+	g_object_unref (res);
 }
 
 /**

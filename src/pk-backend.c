@@ -180,6 +180,10 @@ typedef struct {
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
 							 gchar		**values);
+	void		(*upgrade_system)		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*distro_id,
+							 PkUpgradeKindEnum upgrade_kind);
 	void		(*repair_system)		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 transaction_flags);
@@ -409,6 +413,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	if (desc->get_categories != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
+	if (desc->upgrade_system != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	if (desc->repair_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_bitfield_add (roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
@@ -569,6 +575,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_stop_job", (gpointer *)&desc->job_stop);
 		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
+		g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
 		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
 
 		/* get old static string data */
@@ -1835,6 +1842,25 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)",
 							   filters));
 	backend->priv->desc->get_packages (backend, job, filters);
+}
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+	pk_backend_job_set_parameters (job, g_variant_new ("(su)",
+							   distro_id,
+							   upgrade_kind));
+	backend->priv->desc->upgrade_system (backend, job, distro_id, upgrade_kind);
 }
 
 /**

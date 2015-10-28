@@ -138,6 +138,10 @@ manpage.1: manpage.xml
         about installed or available packages and updates.</para></listitem>
       </varlistentry>
       <varlistentry>
+        <term>upgrade-system <replaceable>DISTRIBUTION</replaceable> [minimal|default|complete]</term>
+        <listitem><para>Upgrade the system to the given distribution.</para></listitem>
+      </varlistentry>
+      <varlistentry>
         <term>get-updates</term>
         <listitem><para>List available updates.</para></listitem>
       </varlistentry>

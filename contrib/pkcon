@@ -51,6 +51,7 @@ __pkcon_commandlist="
     search
     quit
     update
+    upgrade-system
     repair
     "
 
