@@ -1,3 +1,5 @@
+bitfield_contain_priority skip=false
+bitfield_from_enums skip=false
 Client
         .accept_eula_async finish_name="pk_client_generic_finish"
         .adopt_async finish_name="pk_client_generic_finish"
