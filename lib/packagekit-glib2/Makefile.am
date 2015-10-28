@@ -275,13 +275,13 @@ typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 if ENABLE_VAPIGEN
 include $(VAPIGEN_MAKEFILE)
 
-packagekit-glib2.vapi: PackageKitGlib-1.0.gir PackageKitGlib-1.0.metadata
+packagekit-glib2.vapi: PackageKitGlib-1.0.gir PackageKitGlib-1.0-custom.vala PackageKitGlib-1.0.metadata
 
 VAPIGEN_VAPIS = packagekit-glib2.vapi
 
 packagekit_glib2_vapi_DEPS = gio-2.0
 packagekit_glib2_vapi_METADATADIRS = $(srcdir)
-packagekit_glib2_vapi_FILES = PackageKitGlib-1.0.gir
+packagekit_glib2_vapi_FILES = PackageKitGlib-1.0.gir PackageKitGlib-1.0-custom.vala
 
 vapidir = $(datadir)/vala/vapi
 vapi_DATA = $(VAPIGEN_VAPIS)
