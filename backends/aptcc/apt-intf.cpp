@@ -569,7 +569,7 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
     g_debug("RegStr: %s", libreg_str);
     regex_t libreg;
     if(regcomp(&libreg, libreg_str, 0) != 0) {
-        g_debug("Regex compilation error: ", libreg);
+        g_debug("Error compiling regular expression to match libraries.");
         return;
     }
 
@@ -1823,8 +1823,8 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 argv[3] = g_strdup(new_file.c_str());
                 argv[4] = NULL;
 
-                gchar *socket;
-                if ((m_interactive) && (socket = pk_backend_job_get_frontend_socket(m_job))) {
+                if (m_interactive) {
+                    const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
                     envp = (gchar **) g_malloc(3 * sizeof(gchar *));
                     envp[0] = g_strdup("DEBIAN_FRONTEND=passthrough");
                     envp[1] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
@@ -1835,7 +1835,6 @@ void AptIntf::updateInterface(int fd, int writeFd)
                     envp[0] = g_strdup("DEBIAN_FRONTEND=noninteractive");
                     envp[1] = NULL;
                 }
-                g_free(socket);
 
                 gboolean ret;
                 gint exitStatus;
@@ -2323,9 +2322,10 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     argv[3] = NULL;
 
     envp = (gchar **) g_malloc(4 * sizeof(gchar *));
-	envp[0] = g_strdup("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
-    gchar *socket;
-    if ((m_interactive) && (socket = pk_backend_job_get_frontend_socket(m_job))) {
+    envp[0] = g_strdup("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
+
+    if (m_interactive) {
+        const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
         envp[1] = g_strdup("DEBIAN_FRONTEND=passthrough");
         envp[2] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
         envp[3] = NULL;
@@ -2640,24 +2640,22 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         setlocale(LC_ALL, "C");
 
         // Debconf handling
-        gchar *socket;
-        if ((m_interactive) && (socket = pk_backend_job_get_frontend_socket(m_job))) {
+        if (m_interactive) {
+            const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
             setenv("DEBIAN_FRONTEND", "passthrough", 1);
             setenv("DEBCONF_PIPE", socket, 1);
         } else {
             // we don't have a socket set or are not interactive, let's fallback to noninteractive
             setenv("DEBIAN_FRONTEND", "noninteractive", 1);
         }
-        g_free(socket);
 
-        gchar *locale;
+        const gchar *locale;
         // Set the LANGUAGE so debconf messages get localization
         if (locale = pk_backend_job_get_locale(m_job)) {
             setenv("LANGUAGE", locale, 1);
             setenv("LANG", locale, 1);
             //setenv("LANG", "C", 1);
         }
-        g_free(locale);
 
         // Pass the write end of the pipe to the install function
         res = PM->DoInstallPostFork(readFromChildFD[1]);

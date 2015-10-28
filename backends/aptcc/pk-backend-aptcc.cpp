@@ -880,7 +880,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
                               autoremove);
     if (!ret) {
         // Print transaction errors
-        g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
+        g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
         return;
     }
 
@@ -1058,7 +1058,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                                                 false);
                         if (!ret) {
                             // Print transaction errors
-                            g_debug("AptIntf::runTransaction() failed: ", _error->PendingError());
+                            g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
                             return;
                         }
                     }
