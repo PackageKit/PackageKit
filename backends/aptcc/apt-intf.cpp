@@ -85,11 +85,13 @@ bool AptIntf::init()
 
     // set http proxy
     http_proxy = pk_backend_job_get_proxy_http(m_job);
-    setenv("http_proxy", http_proxy, 1);
+    if (http_proxy != NULL)
+        setenv("http_proxy", http_proxy, 1);
 
     // set ftp proxy
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
-    setenv("ftp_proxy", ftp_proxy, 1);
+    if (ftp_proxy != NULL)
+        setenv("ftp_proxy", ftp_proxy, 1);
 
     // Prepare for the restart thing
     if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
@@ -1823,8 +1825,8 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 argv[3] = g_strdup(new_file.c_str());
                 argv[4] = NULL;
 
-                if (m_interactive) {
-                    const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+                const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+                if ((m_interactive) && (socket != NULL)) {
                     envp = (gchar **) g_malloc(3 * sizeof(gchar *));
                     envp[0] = g_strdup("DEBIAN_FRONTEND=passthrough");
                     envp[1] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
@@ -2324,8 +2326,8 @@ bool AptIntf::installFile(const gchar *path, bool simulate)
     envp = (gchar **) g_malloc(4 * sizeof(gchar *));
     envp[0] = g_strdup("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
 
-    if (m_interactive) {
-        const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+    const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+    if ((m_interactive) && (socket != NULL)) {
         envp[1] = g_strdup("DEBIAN_FRONTEND=passthrough");
         envp[2] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
         envp[3] = NULL;
@@ -2640,8 +2642,8 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         setlocale(LC_ALL, "C");
 
         // Debconf handling
-        if (m_interactive) {
-            const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+        const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
+        if ((m_interactive) && (socket != NULL)) {
             setenv("DEBIAN_FRONTEND", "passthrough", 1);
             setenv("DEBCONF_PIPE", socket, 1);
         } else {
