@@ -264,7 +264,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
 			       "Cannot find boot partition");

@@ -182,6 +182,7 @@ typedef struct {
 							 gchar		**values);
 	void		(*upgrade_system)		(PkBackend	*backend,
 							 PkBackendJob	*job,
+							 PkBitfield	 transaction_flags,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
 	void		(*repair_system)		(PkBackend	*backend,
@@ -1848,7 +1849,11 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+pk_backend_upgrade_system (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   const gchar *distro_id,
+			   PkUpgradeKindEnum upgrade_kind)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
@@ -1857,10 +1862,16 @@ pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *d
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
-	pk_backend_job_set_parameters (job, g_variant_new ("(su)",
+	pk_backend_job_set_transaction_flags (job, transaction_flags);
+	pk_backend_job_set_parameters (job, g_variant_new ("(tsu)",
+							   transaction_flags,
 							   distro_id,
 							   upgrade_kind));
-	backend->priv->desc->upgrade_system (backend, job, distro_id, upgrade_kind);
+	backend->priv->desc->upgrade_system (backend,
+					     job,
+					     transaction_flags,
+					     distro_id,
+					     upgrade_kind);
 }
 
 /**

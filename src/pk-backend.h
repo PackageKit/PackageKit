@@ -232,6 +232,7 @@ void		 pk_backend_get_packages		(PkBackend	*backend,
 							 PkBitfield	 filters);
 void		 pk_backend_upgrade_system		(PkBackend	*backend,
 							 PkBackendJob	*job,
+							 PkBitfield	 transaction_flags,
 							 const gchar	*distro_id,
 							 PkUpgradeKindEnum upgrade_kind);
 void		 pk_backend_repair_system		(PkBackend	*backend,

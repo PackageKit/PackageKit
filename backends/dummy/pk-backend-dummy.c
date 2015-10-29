@@ -1619,6 +1619,19 @@ pk_backend_upgrade_system_timeout (gpointer data)
 {
 	PkBackendJob *job = (PkBackendJob *) data;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield transaction_flags;
+
+	transaction_flags = pk_backend_job_get_transaction_flags (job);
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
+					"gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+		pk_backend_job_package (job, PK_INFO_ENUM_REMOVING,
+					"gnome-software;2.18.2.fc24;i386;fedora", "Software center for GNOME");
+		pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
+					"lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
+		pk_backend_job_finished (job);
+		return FALSE;
+	}
 
 	if (job_data->progress_percentage == 100) {
 		pk_backend_job_finished (job);
@@ -1663,7 +1676,11 @@ pk_backend_upgrade_system_timeout (gpointer data)
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, PkBackendJob *job, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
+pk_backend_upgrade_system (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   const gchar *distro_id,
+			   PkUpgradeKindEnum upgrade_kind)
 {
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);

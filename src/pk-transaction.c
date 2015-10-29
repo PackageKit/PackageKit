@@ -2021,6 +2021,7 @@ pk_transaction_run (PkTransaction *transaction)
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		pk_backend_upgrade_system (priv->backend,
 					   priv->job,
+					   priv->cached_transaction_flags,
 					   priv->cached_value,
 					   priv->cached_upgrade_kind);
 		break;
