@@ -2303,7 +2303,9 @@ main (int argc, char *argv[])
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_upgrade_system_async (PK_CLIENT (ctx->task), value,
+		pk_client_upgrade_system_async (PK_CLIENT (ctx->task),
+						PK_TRANSACTION_FLAG_ENUM_NONE,
+						value,
 						pk_upgrade_kind_enum_from_string (details),
 						ctx->cancellable,
 						pk_console_progress_cb, ctx,

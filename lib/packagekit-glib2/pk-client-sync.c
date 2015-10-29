@@ -1754,7 +1754,8 @@ pk_client_repo_remove (PkClient *client,
  * Since: 1.0.10
  **/
 PkResults *
-pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
+pk_client_upgrade_system (PkClient *client, PkBitfield transaction_flags,
+			  const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
 			  GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
@@ -1773,7 +1774,7 @@ pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKin
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_upgrade_system_async (client, distro_id, upgrade_kind,
+	pk_client_upgrade_system_async (client, transaction_flags, distro_id, upgrade_kind,
 					cancellable, progress_callback, progress_user_data,
 					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
 

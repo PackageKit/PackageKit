@@ -371,6 +371,7 @@ void		 pk_client_repo_remove_async		(PkClient		*client,
 							 gpointer		 user_data);
 
 void		 pk_client_upgrade_system_async		(PkClient		*client,
+							 PkBitfield		 transaction_flags,
 							 const gchar		*distro_id,
 							 PkUpgradeKindEnum	 upgrade_kind,
 							 GCancellable		*cancellable,

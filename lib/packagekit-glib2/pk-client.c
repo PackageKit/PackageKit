@@ -1832,7 +1832,8 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state);
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		g_dbus_proxy_call (state->proxy, "UpgradeSystem",
-				   g_variant_new ("(su)",
+				   g_variant_new ("(tsu)",
+						  state->transaction_flags,
 						  state->distro_id,
 						  state->upgrade_kind),
 				   G_DBUS_CALL_FLAGS_NONE,
@@ -4255,6 +4256,7 @@ pk_client_repo_remove_async (PkClient *client,
 /**
  * pk_client_upgrade_system_async:
  * @client: a valid #PkClient instance
+ * @transaction_flags: a transaction type bitfield
  * @distro_id: a distro ID such as "fedora-14"
  * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
  * @cancellable: a #GCancellable or %NULL
@@ -4272,7 +4274,9 @@ pk_client_repo_remove_async (PkClient *client,
  * Since: 1.0.10
  **/
 void
-pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
+pk_client_upgrade_system_async (PkClient *client,
+				PkBitfield transaction_flags,
+				const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
 				GCancellable *cancellable,
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
@@ -4290,6 +4294,7 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgr
 	/* save state */
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
+	state->transaction_flags = transaction_flags;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
 	state->cancellable = g_cancellable_new ();

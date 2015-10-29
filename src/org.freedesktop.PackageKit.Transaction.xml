@@ -1511,6 +1511,16 @@
           </doc:para>
         </doc:description>
       </doc:doc>
+      <arg type="t" name="transaction_flags" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If this method is can only install trusted files, and the files are unsigned, then
+              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
       <arg type="s" name="distro_id" direction="in">
         <doc:doc>
           <doc:summary>

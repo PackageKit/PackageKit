@@ -5035,18 +5035,24 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
+	PkBitfield transaction_flags;
 	PkUpgradeKindEnum upgrade_kind;
 	const gchar *distro_id;
+	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_variant_get (params, "(&su)",
+	g_variant_get (params, "(t&su)",
+		       &transaction_flags,
 		       &distro_id,
 		       &upgrade_kind);
 
-	g_debug ("UpgradeSystem method called: %s (%s)",
-		 distro_id, pk_upgrade_kind_enum_to_string (upgrade_kind));
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	g_debug ("UpgradeSystem method called: %s: %s  (transaction_flags: %s)",
+		 distro_id,
+		 pk_upgrade_kind_enum_to_string (upgrade_kind),
+		 transaction_flags_temp);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend,
@@ -5060,6 +5066,7 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 	}
 
 	/* save so we can run later */
+	transaction->priv->cached_transaction_flags = transaction_flags;
 	transaction->priv->cached_value = g_strdup (distro_id);
 	transaction->priv->cached_upgrade_kind = upgrade_kind;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);

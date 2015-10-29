@@ -262,6 +262,7 @@ PkResults	*pk_client_repo_remove			(PkClient		*client,
 							 GError			**error);
 
 PkResults	*pk_client_upgrade_system		(PkClient		*client,
+							 PkBitfield		 transaction_flags,
 							 const gchar		*distro_id,
 							 PkUpgradeKindEnum	 upgrade_kind,
 							 GCancellable		*cancellable,
