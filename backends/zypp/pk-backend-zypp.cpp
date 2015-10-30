@@ -119,6 +119,13 @@ enum PkgSearchType {
 	SEARCH_TYPE_RESOLVE = 3
 };
 
+/** Details about the kind of content returned by zypp_get_patches. */
+enum class SelfUpdate {
+  kNo,				///< applicable patches (no ZYPP stack update)
+  kYes,				///< a ZYPP stack update (must be applied first)
+  kYesAndShaddowsSecurity	///< a ZYPP stack update is shadowing applicable security patches
+};
+
 /// \class PoolStatusSaver
 /// \brief Helper to restore the pool status after doing operations on it.
 ///
@@ -142,10 +149,6 @@ public:
  * FIXME
  */
 gchar * _repoName;
-/** Used to show/install only an update to ourself. This way if we find a critical bug
- * in the way we update packages we will install the fix before any other updates.
- */
-gboolean _updating_self = FALSE;
 
 /* We need to track the number of packages to download in global scope */
 guint _dl_count = 0;
@@ -1202,12 +1205,15 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 }
 
 /**
- * Returns a set of all patches the could be installed
+ * Returns a set of all patches the could be installed.
+ * An applicable ZYPP stack update will shadow all other updates (must be installed
+ * first). Check for shadowed security updates.
  */
-static void
+static SelfUpdate
 zypp_get_patches (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &patches)
 {
-	_updating_self = FALSE;
+	SelfUpdate detail = SelfUpdate::kNo;
+	bool sawSecurityPatch = false;
 	
 	zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 	zypp->resolver ()->resolvePool ();
@@ -1217,7 +1223,11 @@ zypp_get_patches (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &patches)
 		// check if the patch is needed and not set to taboo
 		if((*it)->isNeeded() && !((*it)->candidateObj ().isUnwanted())) {
 			Patch::constPtr patch = asKind<Patch>((*it)->candidateObj ().resolvable ());
-			if (_updating_self) {
+			if (!sawSecurityPatch && patch->isCategory(Patch::CAT_SECURITY)) {
+				sawSecurityPatch = true;
+			}
+
+			if (detail == SelfUpdate::kYes) {
 				if (patch->restartSuggested ())
 					patches.insert ((*it)->candidateObj ());
 			}
@@ -1225,28 +1235,33 @@ zypp_get_patches (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &patches)
 				patches.insert ((*it)->candidateObj ());
 
 			// check if the patch updates libzypp or packageKit and show only these
-			if (!_updating_self && patch->restartSuggested ()) {
-				_updating_self = TRUE;
+			if (patch->restartSuggested () && detail == SelfUpdate::kNo) {
+				detail = SelfUpdate::kYes;
 				patches.clear ();
 				patches.insert ((*it)->candidateObj ());
 			}
 		}
 
 	}
+
+	if (detail == SelfUpdate::kYes && sawSecurityPatch) {
+		detail = SelfUpdate::kYesAndShaddowsSecurity;
+	}
+	return detail;
 }
 
 /**
   * Return the best, most friendly selection of update patches and packages that
-  * we can find. Also manages _updating_self to prioritise critical infrastructure
+  * we can find. Also manages SelfUpdate to prioritise critical infrastructure
   * updates.
   */
-static void
+static SelfUpdate
 zypp_get_updates (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &candidates)
 {
 	typedef set<PoolItem>::iterator pi_it_t;
-	zypp_get_patches (job, zypp, candidates);
+	SelfUpdate detail = zypp_get_patches (job, zypp, candidates);
 
-	if (!_updating_self) {
+	if (detail == SelfUpdate::kNo) {
 		// exclude the patch-repository
 		string patchRepo;
 		if (!candidates.empty ()) {
@@ -1302,6 +1317,7 @@ zypp_get_updates (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &candidates)
 			candidates.insert (packages.begin (), packages.end ());
 		}
 	}
+	return detail;
 }
 
 /**
@@ -1725,7 +1741,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	zypp_logging ();
 
 	g_debug ("zypp_backend_initialize");
-	//_updating_self = FALSE;
 }
 
 /**
@@ -2233,7 +2248,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	pk_backend_job_set_percentage (job, 40);
 
 	set<PoolItem> candidates;
-	zypp_get_updates (job, zypp, candidates);
+	SelfUpdate detail = zypp_get_updates (job, zypp, candidates);
 
 	pk_backend_job_set_percentage (job, 80);
 
@@ -2243,7 +2258,9 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		// Emit the package
 		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
-		if (isKind<Patch>(res)) {
+		if (detail == SelfUpdate::kYesAndShaddowsSecurity) {
+			infoEnum = PK_INFO_ENUM_SECURITY;	// bsc#951592: raise priority if security patch is shadowed
+		} else if (isKind<Patch>(res)) {
 			Patch::constPtr patch = asKind<Patch>(res);
 			if (patch->category () == "recommended") {
 				infoEnum = PK_INFO_ENUM_BUGFIX;
