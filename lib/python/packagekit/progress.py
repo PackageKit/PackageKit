@@ -17,7 +17,13 @@
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
 
-class PackagekitProgress:
+try:
+    from collections import Iterable
+except ImportError:
+    from collections.abc import Iterable
+
+
+class PackagekitProgress(Iterable):
     '''
     Progress class there controls the total progress of a transaction
     the transaction is divided in n milestones. the class contains
@@ -28,23 +34,22 @@ class PackagekitProgress:
     from packagekit import PackagekitProgress
 
     steps = [10, 30, 50, 70] # Milestones in %
-    progress = PackagekitProgress()
-    progress.set_steps(steps)
-    for milestone in range(len(steps)):
+    progress = PackagekitProgress(steps)
+    for milestone in progress:
         # do the action is this step
         for i in range(100):
             # do some action
-            print "progress : %s " % progress.percent
-        progress.step() # step to next milestone
-
+            print "progress : %s " % milestone
     '''
 
     #TODO: Add support for elapsed/remaining time
 
-    def __init__(self):
-        self.percent = 0
-        self.steps = []
-        self.current_step = 0
+    def __init__(self, steps=None):
+        super(PackagekitProgress, self).__init__()
+        if not steps:
+            self.reset()
+        else:
+            self.set_steps(steps)
 
     def set_steps(self, steps):
         '''
@@ -68,7 +73,15 @@ class PackagekitProgress:
             self.current_step += 1
             self.percent = self.steps[self.current_step]
         else:
+            self.current_step = len(self.steps)
             self.percent = 100
+
+    def __iter__(self):
+        while self.current_step < len(self.steps):
+            yield self.percent
+            self.step()
+
+        raise StopIteration
 
     def _update_percent(self):
         '''

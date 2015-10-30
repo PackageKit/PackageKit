@@ -27,7 +27,10 @@ import signal
 import sys
 import traceback
 from collections import defaultdict
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip
 
 # layman imports (>=2)
 import layman.config
@@ -40,8 +43,7 @@ from packagekit.backend import (
     split_package_id,
 )
 from packagekit.enums import *
-from packagekit.package import PackagekitPackage
-from packagekit.progress import *
+from packagekit.progress import PackagekitProgress
 # portage imports
 import _emerge.AtomArg
 import _emerge.actions
@@ -68,6 +70,11 @@ from portage.exception import InvalidAtom
 # protection against signal when installing/removing
 
 # Map Gentoo categories to the PackageKit group name space
+
+
+def compute_equal_steps(iterable):
+    return [idx * (100.0 / len(iterable)) / 100.0
+            for idx, _ in enumerate(iterable, start=1)]
 
 
 class PortagePackageGroups(dict):
@@ -334,14 +341,14 @@ class PackageKitPortageMixin(object):
     def _get_real_license_str(self, cpv, metadata):
         # use conditionals info (w/ USE) in LICENSE and remove ||
         ebuild_settings = self._get_ebuild_settings(cpv, metadata)
-        license = set(portage.flatten(
+        license_ = set(portage.flatten(
             portage.dep.use_reduce(
                 portage.dep.paren_reduce(metadata["LICENSE"]),
                 uselist=ebuild_settings.get("USE", "").split()
             )
         ))
-        license.discard('||')
-        return ' '.join(license)
+        license_.discard('||')
+        return ' '.join(license_)
 
     def _signal_config_update(self):
         result = list(portage.util.find_updated_config_files(
@@ -556,16 +563,17 @@ class PackageKitPortageMixin(object):
             return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in filters or FILTER_NOT_FREE in filters:
+            licenses = ""
             free_licenses = "@FSF-APPROVED"
             if FILTER_FREE in filters:
                 licenses = "-* " + free_licenses
             elif FILTER_NOT_FREE in filters:
                 licenses = "* -" + free_licenses
-            backup_license = self.pvar.settings["ACCEPT_LICENSE"]
+            backup_licenses = self.pvar.settings["ACCEPT_LICENSE"]
 
             self.pvar.apply_settings({'ACCEPT_LICENSE': licences})
             cpv_list = filter(_has_validLicense, cpv_list)
-            self.pvar.apply_settings({'ACCEPT_LICENSE': backup_licence})
+            self.pvar.apply_settings({'ACCEPT_LICENSE': backup_licenses})
 
         return cpv_list
 
@@ -933,12 +941,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        progress = PackagekitProgress(compute_equal_steps(pkgs))
+        self.percentage(progress.percent)
 
-        for pkg in pkgs:
+        for percentage, pkg in izip(progress, pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
@@ -962,20 +969,18 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._get_size(cpv)
             )
 
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed / nb_pkg))
+            self.percentage(percentage)
 
         self.percentage(100)
 
     def get_files(self, pkgs):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        progress = PackagekitProgress(compute_equal_steps(pkgs))
+        self.percentage(progress.percent)
 
-        for pkg in pkgs:
+        for percentage, pkg in izip(progress, pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
@@ -991,29 +996,27 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             self.files(pkg, ';'.join(sorted(self._get_file_list(cpv))))
 
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed / nb_pkg))
+            self.percentage(percentage)
 
         self.percentage(100)
 
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
 
-        for cp in self._get_all_cp(filters):
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
+
+        for percentage, cp in izip(progress, self._get_all_cp(filters)):
             for cpv in self._get_all_cpv(cp, filters):
                 try:
                     self._package(cpv)
                 except InvalidAtom:
                     continue
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1542,9 +1545,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         if not enable and self._is_repo_enabled(installed_layman_db, repoid):
             try:
                 installed_layman_db.delete(installed_layman_db.select(repoid))
-            except Exception, e:
+            except Exception as exc:
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to disable repository " + repoid + " : " + str(e))
+                           "Failed to disable repository %s: %s" %
+                           (repoid, str(exc)))
                 return
 
         # enabling (adding) a db
@@ -1555,20 +1559,20 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._block_output()
                 installed_layman_db.add(available_layman_db.select(repoid))
                 self._unblock_output()
-            except Exception, e:
+            except Exception as exc:
                 self._unblock_output()
                 self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to enable repository " + repoid + " : " + str(e))
+                           "Failed to enable repository %s: %s" %
+                           (repoid, str(exc)))
                 return
 
     def resolve(self, filters, pkgs):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
 
         reg_expr = []
         for pkg in pkgs:
@@ -1578,13 +1582,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # specifications says "be case sensitive"
         s = re.compile(reg_expr)
 
-        for cp in cp_list:
+        for percentage, cp in izip(progress, cp_list):
             if s.match(cp):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1592,14 +1595,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # NOTES: very bad performance
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
         search_list = self._get_search_list(keys)
 
-        for cp in cp_list:
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
+
+        for percentage, cp in izip(progress, cp_list):
             # unfortunatelly, everything is related to cpv, not cp
             # can't filter cp
             cpv_list = []
@@ -1634,8 +1637,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             for cpv in cpv_list:
                 self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1646,7 +1648,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - newest: as only installed, by himself
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         if FILTER_NOT_INSTALLED in filters:
             self.error(ERROR_CANNOT_GET_FILELIST,
@@ -1654,13 +1655,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             return
 
         cpv_list = self.pvar.vardb.cpv_all()
-        nb_cpv = 0.0
-        cpv_processed = 0.0
         is_full_path = True
 
-        count = 0
-        values_len = len(values)
-        for key in values:
+        progress = PackagekitProgress(compute_equal_steps(values))
+        self.percentage(progress.percentage)
+
+        for percentage, key in izip(progress, values):
 
             if key[0] != "/":
                 is_full_path = False
@@ -1678,8 +1678,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         self._package(cpv)
                         break
 
-            count += 1
-            self.percentage(float(count) / values_len)
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1687,20 +1686,19 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # TODO: filter unknown groups before searching ? (optimization)
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
 
-        for cp in cp_list:
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
+
+        for percentage, cp in izip(progress, cp_list):
             for group in groups:
                 if self._get_pk_group(cp) == group:
                     for cpv in self._get_all_cpv(cp, filters):
                         self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            self.percentage(percentage)
 
         self.percentage(100)
 
@@ -1710,7 +1708,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # keys contain more than one category name, no results can be found
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        self.percentage(0)
 
         categories = []
         for k in keys_list[:]:
@@ -1735,10 +1732,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             search_list.append(re.compile(k, re.IGNORECASE))
 
         cp_list = self._get_all_cp(filters)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
 
-        for cp in cp_list:
+        progress = PackagekitProgress(compute_equal_steps(cp_list))
+        self.percentage(progress.percent)
+
+        for percentage, cp in izip(progress, cp_list):
             if category_filter:
                 cat, pkg_name = portage.versions.catsplit(cp)
                 if cat != category_filter:
@@ -1756,8 +1754,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed / nb_cp))
+            self.percentage(percentage)
 
         self.percentage(100)
 
