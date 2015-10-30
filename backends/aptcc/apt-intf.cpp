@@ -49,7 +49,6 @@
 #include "deb-file.h"
 
 #define RAMFS_MAGIC     0x858458f6
-#define APTCC_TMP_DIR   "/tmp/aptcc"
 
 AptIntf::AptIntf(PkBackendJob *job) :
     m_job(job),
@@ -181,6 +180,9 @@ AptIntf::~AptIntf()
         }
     }
 
+    if ((!m_tmpDir.empty()) && (g_file_test(m_tmpDir.c_str(), G_FILE_TEST_IS_DIR)))
+        rmdir(m_tmpDir.c_str());
+
     delete m_cache;
 }
 
@@ -199,6 +201,25 @@ void AptIntf::cancel()
 bool AptIntf::cancelled() const
 {
     return m_cancel;
+}
+
+string AptIntf::getTmpDir()
+{
+    // Create a random temp dir, if we don't have one already
+    if ((!m_tmpDir.empty()) && (g_file_test(m_tmpDir.c_str(), G_FILE_TEST_IS_DIR)))
+        return m_tmpDir;
+
+    gchar *tmpDir = g_strdup("/tmp/aptcc-XXXXXX");
+    if (g_mkdtemp(tmpDir) == NULL) {
+        g_warning("Unable to create temporary directory!");
+        g_free(tmpDir);
+        return string();
+    }
+
+    m_tmpDir = tmpDir;
+    g_free(tmpDir);
+
+    return m_tmpDir;
 }
 
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
@@ -800,13 +821,14 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
         srcpkg = rec.SourcePkg();
     }
 
-    // Create a random temp dir
-    if (!g_file_test(APTCC_TMP_DIR, G_FILE_TEST_IS_DIR))
-        g_mkdir(APTCC_TMP_DIR, 0700);
-    char dirName[] = APTCC_TMP_DIR "/XXXXXX";
+    string filename = getTmpDir();
+    if (filename.empty()) {
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_INTERNAL_ERROR,
+                                  "Unable to create temporary directory.");
+        return;
+    }
 
-    char *tempDir = mkdtemp(dirName);
-    string filename = tempDir;
     filename.append("/");
     filename.append(pkg.Name());
 
@@ -906,7 +928,6 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
             g_regex_unref(regexVer);
             g_regex_unref(regexDate);
             unlink(filename.c_str());
-            rmdir(tempDir);
         } else if (_error->PendingError()) {
             _error->PopMessage(changelog);
         }

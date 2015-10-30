@@ -247,6 +247,7 @@ private:
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
     bool isApplication(const pkgCache::VerIterator &verIter);
+    string getTmpDir();
 
     /**
      *  interprets dpkg status fd
@@ -269,6 +270,8 @@ private:
     uint       m_lastSubProgress;
     bool       m_startCounting;
     bool       m_interactive;
+
+    string     m_tmpDir;
 
     // when the internal terminal timesout after no activity
     int m_terminalTimeout;
