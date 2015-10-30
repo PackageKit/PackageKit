@@ -1512,11 +1512,13 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	guint cnt = 0;
 	guint i;
 	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_ptrarray_unref_ GPtrArray *refresh_sources = NULL;
 
 	/* set state */
 	hif_state_set_steps (job_data->state, NULL,
+			     1, /* count */
 			     95, /* download */
-			     5, /* rebuild SAT */
+			     4, /* rebuild SAT */
 			     -1);
 
 	g_variant_get (params, "(b)", &force);
@@ -1540,10 +1542,13 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		cnt++;
 	}
 
-	/* refresh each repo */
+	/* figure out which sources need refreshing */
+	refresh_sources = g_ptr_array_new ();
 	state_local = hif_state_get_child (job_data->state);
 	hif_state_set_number_steps (state_local, cnt);
 	for (i = 0; i < job_data->sources->len; i++) {
+		gboolean src_okay;
+
 		src = g_ptr_array_index (job_data->sources, i);
 		if (hif_source_get_enabled (src) == HIF_SOURCE_ENABLED_NONE)
 			continue;
@@ -1551,6 +1556,44 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 			continue;
 		if (hif_source_get_kind (src) == HIF_SOURCE_KIND_LOCAL)
 			continue;
+
+		/* is the source up to date? */
+		state_loop = hif_state_get_child (state_local);
+		src_okay = hif_source_check (src,
+					     pk_backend_job_get_cache_age (job),
+					     state_loop,
+					     NULL);
+		if (!src_okay || force)
+			g_ptr_array_add (refresh_sources,
+			                 g_ptr_array_index (job_data->sources, i));
+
+		/* done */
+		ret = hif_state_done (state_local, &error);
+		if (!ret) {
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+			return;
+		}
+	}
+
+	/* done */
+	ret = hif_state_done (job_data->state, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* is everything up to date? */
+	if (refresh_sources->len == 0) {
+		if (!hif_state_finished (job_data->state, &error))
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* refresh each repo */
+	state_local = hif_state_get_child (job_data->state);
+	hif_state_set_number_steps (state_local, refresh_sources->len);
+	for (i = 0; i < refresh_sources->len; i++) {
+		src = g_ptr_array_index (refresh_sources, i);
 
 		/* delete content even if up to date */
 		if (force) {
