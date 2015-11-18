@@ -21,9 +21,7 @@
 #include "acqpkitstatus.h"
 
 #include "apt-intf.h"
-#include "pkg_acqfile.h"
 
-#include <apt-pkg/acquire-item.h>
 #include <apt-pkg/acquire-worker.h>
 
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor

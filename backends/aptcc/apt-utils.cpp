@@ -20,8 +20,7 @@
 
 #include "apt-utils.h"
 
-#include "pkg_acqfile.h"
-
+#include <apt-pkg/acquire-item.h>
 #include <glib/gstdio.h>
 
 #include <fstream>
@@ -261,7 +260,7 @@ void getChangelogFile(const string &filename,
     string descr("Changelog for ");
     descr += name;
 
-    new pkgAcqFileSane(fetcher, uri, descr, name, filename);
+    new pkgAcqFile(fetcher, uri, HashStringList(), 0, descr, name, "", filename);
 
     ofstream out(filename.c_str());
     if (fetcher->Run() == pkgAcquire::Failed) {

@@ -5,7 +5,6 @@ AM_CPPFLAGS = \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
 libpk_backend_aptcc_la_SOURCES = PkgList.cpp \
-				 pkg_acqfile.cpp \
 				 acqpkitstatus.cpp \
 				 deb-file.cpp \
 				 matcher.cpp \
@@ -14,7 +13,7 @@ libpk_backend_aptcc_la_SOURCES = PkgList.cpp \
 				 apt-utils.cpp \
 				 apt-sourceslist.cpp \
 				 OpPackageKitProgress.cpp \
-                                 AptCacheFile.cpp \
+				 AptCacheFile.cpp \
 				 apt-intf.cpp \
 				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg -lapt-inst -lutil $(PK_PLUGIN_LIBS)
@@ -37,8 +36,7 @@ EXTRA_DIST = 20packagekit \
 	     apt-messages.h \
 	     acqpkitstatus.h \
 	     OpPackageKitProgress.h \
-             AptCacheFile.h \
-	     pkg_acqfile.h
+	     AptCacheFile.h
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc
 dist_helper_DATA =					\

@@ -22,11 +22,9 @@
 #ifndef APT_UTILS_H
 #define APT_UTILS_H
 
-#include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/acquire.h>
-
+#include <apt-pkg/pkgrecords.h>
 #include <glib.h>
-
 #include <pk-backend.h>
 
 #include "AptCacheFile.h"

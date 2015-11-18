@@ -480,24 +480,22 @@ if test x$enable_aptcc = xyes; then
 	AC_SUBST(APTCC_CFLAGS)
 	AC_SUBST(APTCC_LIBS)
 
-    AC_CHECK_LIB(apt-inst, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
-    AC_SUBST(APTCC_CFLAGS)
-    AC_SUBST(APTCC_LIBS)
+	AC_CHECK_LIB(apt-inst, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
+	AC_SUBST(APTCC_CFLAGS)
+	AC_SUBST(APTCC_LIBS)
 
 	PKG_CHECK_MODULES(GSTREAMER, gstreamer-1.0 gstreamer-base-1.0 gstreamer-plugins-base-1.0,,
 					[AC_MSG_ERROR([Can't find the gstreamer libraries -- please install libgstreamer-plugins-base1.0-dev])])
 	AC_SUBST(GSTREAMER_CFLAGS)
 	AC_SUBST(GSTREAMER_LIBS)
 
-	AC_MSG_CHECKING([whether apt includes the automatic dependency removal patch (required)])
-
-	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/depcache.h>]],
-					  [[extern pkgDepCache::ActionGroup d;]]),
+	AC_MSG_CHECKING([whether apt is at least at version 1.1])
+	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgsystem.h>]],
+					  [[_system->ArchitecturesSupported();]]),
 			  AC_MSG_RESULT([yes]),
-			  AC_MSG_FAILURE([need libapt-pkg 0.7 or later]))
+			  AC_MSG_FAILURE([need libapt-pkg 1.1 or later]))
 
 	AC_MSG_CHECKING([whether apt supports ddtp])
-
 	AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[#include <apt-pkg/pkgcache.h>]],
 					  [[pkgCache::DescIterator d;]]),
 			  AC_MSG_RESULT([yes])

@@ -22,6 +22,7 @@
 
 #include "deb-file.h"
 
+#include <glib.h>
 #include <apt-pkg/init.h>
 
 DebFile::DebFile(const string &filename) :
@@ -39,7 +40,11 @@ DebFile::DebFile(const string &filename) :
         m_isValid = true;
     }
 
-    m_controlData = m_extractor->Section;
+    if(!m_controlData.Scan(m_extractor->Control,m_extractor->Length+2)) {
+      g_warning("DebFile: Scan failed.");
+      m_isValid = false;
+      return;
+    }
 }
 
 bool DebFile::isValid() const

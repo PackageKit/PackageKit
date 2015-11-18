@@ -45,7 +45,6 @@
 #include "gstMatcher.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
-#include "pkg_acqfile.h"
 #include "deb-file.h"
 
 #define RAMFS_MAGIC     0x858458f6
