@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2014 Matthias Klumpp <mak@debian.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@
 
 #include "apt-utils.h"
 
+#include <apt-pkg/version.h>
 #include <apt-pkg/acquire-item.h>
 #include <glib/gstdio.h>
 
@@ -116,176 +118,121 @@ bool strIsPrefix(string const& s1, string const&s2)
     return true;
 }
 
-/*}}}*/
-// GetChangelogPath - return a path pointing to a changelog file or dir /*{{{*/
-// ---------------------------------------------------------------------
-/* This returns a "path" string for the changelog url construction.
- * Please note that its not complete, it either needs a "/changelog"
- * appended (for the packages.debian.org/changelogs site) or a
- * ".changelog" (for third party sites that store the changelog in the
- * pool/ next to the deb itself)
- * Example return: "main/a/apt/apt_0.8.8ubuntu3"
- */
-string GetChangelogPath(AptCacheFile &Cache,
-                        pkgCache::PkgIterator Pkg,
-                        pkgCache::VerIterator Ver)
+string fetchChangelogData(AptCacheFile &CacheFile,
+                           pkgAcquire &Fetcher,
+                           pkgCache::VerIterator Ver,
+                           pkgCache::VerIterator currver,
+                           string *update_text,
+                           string *updated,
+                           string *issued)
 {
-   string path;
+    string changelog;
 
-   pkgRecords Recs(Cache);
-   pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
-   string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
-   string ver = Ver.VerStr();
-   // if there is a source version it always wins
-   if (rec.SourceVer() != "")
-      ver = rec.SourceVer();
-   path = flNotFile(rec.FileName());
+    pkgAcqChangelog *c = new pkgAcqChangelog(&Fetcher, Ver);
 
-   if (strIsPrefix(path, "pool/")) {
-       // the returned string starts with pool/, remove it
-       path.erase (0, 5);
-   }
+    // try downloading it, if that fails, try third-party-changelogs location
+    // FIXME: Fetcher.Run() is "Continue" even if I get a 404?!?
+    Fetcher.Run();
 
-   path += srcpkg + "_" + StripEpoch(ver);
-   return path;
-}
+    // error
+    pkgRecords Recs(CacheFile);
+    pkgCache::PkgIterator Pkg = Ver.ParentPkg();
+    pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
+    string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
+    changelog = "Changelog for this version is not yet available";
 
-/*}}}*/
-// GuessThirdPartyChangelogUri - return url 			        /*{{{*/
-// ---------------------------------------------------------------------
-/* Contruct a changelog file path for third party sites that do not use
- * packages.debian.org/changelogs
- * This simply uses the ArchiveURI() of the source pkg and looks for
- * a .changelog file there, Example for "mediabuntu":
- * apt-get changelog mplayer-doc:
- *  http://packages.medibuntu.org/pool/non-free/m/mplayer/mplayer_1.0~rc4~try1.dsfg1-1ubuntu1+medibuntu1.changelog
- */
-bool GuessThirdPartyChangelogUri(AptCacheFile &Cache,
-                                 pkgCache::PkgIterator Pkg,
-                                 pkgCache::VerIterator Ver,
-                                 string &out_uri)
-{
-   // get the binary deb server path
-   pkgCache::VerFileIterator Vf = Ver.FileList();
-   if (Vf.end() == true)
-      return false;
-   pkgCache::PkgFileIterator F = Vf.File();
-   pkgIndexFile *index;
-   pkgSourceList *SrcList = Cache.GetSourceList();
-   if(SrcList->FindIndex(F, index) == false)
-      return false;
-
-   // get archive uri for the binary deb
-   string path_without_dot_changelog;
-   strprintf(path_without_dot_changelog, "%s/%s", "pool", GetChangelogPath(Cache, Pkg, Ver).c_str());
-   out_uri = index->ArchiveURI(path_without_dot_changelog + ".changelog");
-
-   // now strip away the filename and add srcpkg_srcver.changelog
-   return true;
-}
-
-bool downloadChangelog(AptCacheFile &CacheFile,
-                       pkgAcquire &Fetcher,
-                       pkgCache::VerIterator Ver,
-                       string targetfile)
-/* Download a changelog file for the given package version to
- * targetfile. This will first try the server from Apt::Changelogs::Server
- * (http://metadata.ftp-master.debian.org/changelogs by default) and if that gives
- * a 404 tries to get it from the archive directly (see
- * GuessThirdPartyChangelogUri for details how)
- */
-{
-   string path;
-   string descr;
-   string server;
-   string changelog_uri;
-   string origin;
-
-   if (!Ver.end()) {
-        pkgCache::VerFileIterator vf = Ver.FileList();
-        origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+    // return empty string if we don't have a file to read
+    if (!FileExists(c->DestFile)) {
+        return changelog;
     }
 
-   // data structures we need
-   pkgCache::PkgIterator Pkg = Ver.ParentPkg();
+    if (_error->PendingError()) {
+        return changelog;
+    }
 
-   // make the server root configurable
-   server = _config->Find("Apt::Changelogs::Server",
-                          "http://metadata.ftp-master.debian.org/changelogs");
-   path = GetChangelogPath(CacheFile, Pkg, Ver);
+    ifstream in(c->DestFile.c_str());
+    string line;
+    g_autoptr(GRegex) regexVer = NULL;
+    regexVer = g_regex_new("(?'source'.+) \\((?'version'.*)\\) "
+                           "(?'dist'.+); urgency=(?'urgency'.+)",
+                           G_REGEX_CASELESS,
+                           G_REGEX_MATCH_ANCHORED,
+                           0);
+    g_autoptr(GRegex) regexDate = NULL;
+    regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$",
+                            G_REGEX_CASELESS,
+                            G_REGEX_MATCH_ANCHORED,
+                            0);
 
-   if (origin.compare("Ubuntu") == 0)
-       strprintf(changelog_uri, "%s/%s/%s/changelog", server.c_str(), "pool", path.c_str());
-   else
-       strprintf(changelog_uri, "%s/%s_changelog", server.c_str(), path.c_str());
-
-   g_debug("Trying to fetch '%s'", changelog_uri.c_str());
-   strprintf(descr, "Changelog for %s", Pkg.Name());
-   // queue it
-   new pkgAcqFile(&Fetcher, changelog_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
-
-   // try downloading it, if that fails, try third-party-changelogs location
-   // FIXME: Fetcher.Run() is "Continue" even if I get a 404?!?
-   Fetcher.Run();
-   if (!FileExists(targetfile)) {
-        string third_party_uri;
-        if (GuessThirdPartyChangelogUri(CacheFile, Pkg, Ver, third_party_uri)) {
-            g_debug("Trying to fetch '%s'", third_party_uri.c_str());
-            strprintf(descr, "Changelog for %s", Pkg.Name());
-            new pkgAcqFile(&Fetcher, third_party_uri, "", 0, descr, Pkg.Name(), "ignored", targetfile);
-            Fetcher.Run();
+    changelog = "";
+    while (getline(in, line)) {
+        // we don't want the additional whitespace, because it can confuse
+        // some markdown parsers used by client tools
+        if (starts_with(line, "  "))
+            line.erase(0,1);
+        // no need to free str later, it is allocated in a static buffer
+        const char *str = utf8(line.c_str());
+        if (strcmp(str, "") == 0) {
+            changelog.append("\n");
+            continue;
+        } else {
+            changelog.append(str);
+            changelog.append("\n");
         }
-   }
 
-   if (FileExists(targetfile)) {
-        return true;
-   }
+        if (starts_with(str, srcpkg.c_str())) {
+            // Check to see if the the text isn't about the current package,
+            // otherwise add a == version ==
+            GMatchInfo *match_info;
+            if (g_regex_match(regexVer, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
+                gchar *version;
+                version = g_match_info_fetch_named(match_info, "version");
 
-   // error
-   pkgRecords Recs(CacheFile);
-   pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
-   string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
-   strprintf(descr, "Changelog for this version is not yet available");
-   return false;
-}
-
-void getChangelogFile(const string &filename,
-                      const string &name,
-                      const string &origin,
-                      const string &verstr,
-                      const string &srcPkg,
-                      const string &uri,
-                      pkgAcquire *fetcher)
-{
-    string descr("Changelog for ");
-    descr += name;
-
-    new pkgAcqFile(fetcher, uri, HashStringList(), 0, descr, name, "", filename);
-
-    ofstream out(filename.c_str());
-    if (fetcher->Run() == pkgAcquire::Failed) {
-        out << "Failed to download the list of changes. " << endl;
-        out << "Please check your Internet connection." << endl;
-        // FIXME: Need to dequeue the item
-    } else {
-        struct stat filestatus;
-        stat(filename.c_str(), &filestatus );
-
-        if (filestatus.st_size == 0) {
-            // FIXME: Use supportedOrigins
-            if (origin.compare("Ubuntu") == 0) {
-                out << "The list of changes is not available yet.\n" << endl;
-                out << "Please use http://launchpad.net/ubuntu/+source/"<< srcPkg <<
-                       "/" << verstr << "/+changelog" << endl;
-                out << "until the changes become available or try again later." << endl;
-            } else {
-                out << "This change is not coming from a source that supports changelogs.\n" << endl;
-                out << "Failed to fetch the changelog for " << name << endl;
-                out << "URI was: " << uri << endl;
+                // Compare if the current version is shown in the changelog, to not
+                // display old changelog information
+                if (_system != 0  &&
+                        _system->VS->DoCmpVersion(version, version + strlen(version),
+                                                  currver.VerStr(), currver.VerStr() + strlen(currver.VerStr())) <= 0) {
+                    g_free (version);
+                    break;
+                } else {
+                    if (!update_text->empty()) {
+                        update_text->append("\n\n");
+                    }
+                    update_text->append(" == ");
+                    update_text->append(version);
+                    update_text->append(" ==");
+                    g_free (version);
+                }
             }
+            g_match_info_free (match_info);
+        } else if (starts_with(str, " ")) {
+            // update descritption
+            update_text->append("\n");
+            update_text->append(str);
+        } else if (starts_with(str, " --")) {
+            // Parse the text to know when the update was issued,
+            // and when it got updated
+            GMatchInfo *match_info;
+            if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
+                GTimeVal dateTime = {0, 0};
+                gchar *date;
+                date = g_match_info_fetch_named(match_info, "date");
+                time_t time;
+                g_warn_if_fail(RFC1123StrToTime(date, time));
+                dateTime.tv_sec = time;
+                g_free(date);
+
+                *issued = g_time_val_to_iso8601(&dateTime);
+                if (updated->empty()) {
+                    *updated = g_time_val_to_iso8601(&dateTime);
+                }
+            }
+            g_match_info_free(match_info);
         }
     }
-    out.close();
+
+    return changelog;
 }
 
 GPtrArray* getCVEUrls(const string &changelog)
@@ -411,7 +358,7 @@ gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
 {
     gchar *package_id;
     pkgCache::VerFileIterator vf = ver.FileList();
- 
+
     string data;
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
     if (pkg->CurrentState == pkgCache::State::Installed &&

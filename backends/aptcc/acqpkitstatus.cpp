@@ -191,8 +191,8 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc & Itm, int status)
 {
     PkRoleEnum role = pk_backend_job_get_role(m_job);
-    if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-        // Ignore package update when refreshing the cache
+    if ((role == PK_ROLE_ENUM_REFRESH_CACHE) || (role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
+        // Ignore package update when refreshing the cache or fetching update details
         return;
     }
 

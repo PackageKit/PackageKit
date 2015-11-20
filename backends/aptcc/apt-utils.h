@@ -37,20 +37,15 @@ using namespace std;
 PkGroupEnum get_enum_group(string group);
 
 /**
-  * Return the changelog filename fetched
+  * Return the changelog and extract details about the changes.
   */
-void getChangelogFile(const string &filename,
-                      const string &name,
-                      const string &origin,
-                      const string &verstr,
-                      const string &srcPkg,
-                      const string &uri,
-                      pkgAcquire *fetcher);
-
-bool downloadChangelog(AptCacheFile &CacheFile,
-                       pkgAcquire &Fetcher, 
-                       pkgCache::VerIterator Ver,
-                       string targetfile);
+string fetchChangelogData(AptCacheFile &CacheFile,
+                           pkgAcquire &Fetcher,
+                           pkgCache::VerIterator Ver,
+                           pkgCache::VerIterator currver,
+                           string *update_text,
+                           string *updated,
+                           string *issued);
 
 /**
   * Returns a list of links pairs url;description for CVEs
