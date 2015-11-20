@@ -832,12 +832,12 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
         // fetch the changelog
         pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
         changelog = fetchChangelogData(*m_cache,
-                                         fetcher,
-					candver,
-					currver,
-					&update_text,
-					&updated,
-					&issued);
+                                       fetcher,
+                                       candver,
+                                       currver,
+                                       &update_text,
+                                       &updated,
+                                       &issued);
     }
 
     // Check if the update was updates since it was issued
@@ -876,19 +876,19 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     cve_urls = getCVEUrls(changelog);
 
     pk_backend_job_update_detail(m_job,
-                             package_id,
-                             updates,//const gchar *updates
-                             NULL,//const gchar *obsoletes
-                             NULL,//const gchar *vendor_url
-                             (gchar **) bugzilla_urls->pdata,// gchar **bugzilla_urls
-                             (gchar **) cve_urls->pdata,// gchar **cve_urls
-                             restart,//PkRestartEnum restart
-                             update_text.c_str(),//const gchar *update_text
-                             changelog.c_str(),//const gchar *changelog
-                             updateState,//PkUpdateStateEnum state
-                             issued.c_str(), //const gchar *issued_text
-                             updated.c_str() //const gchar *updated_text
-                             );
+                                 package_id,
+                                 updates,//const gchar *updates
+                                 NULL,//const gchar *obsoletes
+                                 NULL,//const gchar *vendor_url
+                                 (gchar **) bugzilla_urls->pdata,// gchar **bugzilla_urls
+                                 (gchar **) cve_urls->pdata,// gchar **cve_urls
+                                 restart,//PkRestartEnum restart
+                                 update_text.c_str(),//const gchar *update_text
+                                 changelog.c_str(),//const gchar *changelog
+                                 updateState,//PkUpdateStateEnum state
+                                 issued.c_str(), //const gchar *issued_text
+                                 updated.c_str() //const gchar *updated_text
+                                 );
 
     g_free(package_id);
     g_strfreev(updates);
@@ -1040,17 +1040,17 @@ PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
             continue;
         }
 
-//         cout << endl;
-//         cout << ver.ParentPkg().Name() << endl;
-//         cout << ver.VerStr() << endl;
-//         cout << vf.File().FileName() << endl;
-//         cout << vf.File().Origin() << endl;
-//         cout << vf.File().Component() << endl;
-//         cout << vf.File().Label() << endl;
-//         cout << vf.File().Codename() << endl;
-//         cout << vf.File().Site() << endl;
-//         cout << vf.File().Archive() << endl;
-//         cout << vf.File().IndexType() << endl;
+        //         cout << endl;
+        //         cout << ver.ParentPkg().Name() << endl;
+        //         cout << ver.VerStr() << endl;
+        //         cout << vf.File().FileName() << endl;
+        //         cout << vf.File().Origin() << endl;
+        //         cout << vf.File().Component() << endl;
+        //         cout << vf.File().Label() << endl;
+        //         cout << vf.File().Codename() << endl;
+        //         cout << vf.File().Site() << endl;
+        //         cout << vf.File().Archive() << endl;
+        //         cout << vf.File().IndexType() << endl;
 
         output.push_back(ver);
     }
@@ -1254,7 +1254,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
 
     // Resolve the package names now
     for (vector<string>::const_iterator it = packages.begin();
-        it != packages.end(); ++it) {
+         it != packages.end(); ++it) {
         if (m_cancel) {
             break;
         }
@@ -1387,11 +1387,11 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
         pkg = (*m_cache)->FindPkg("app-install-data");
         if (pkg->CurrentState != pkgCache::State::Installed) {
             pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_INTERNAL_ERROR,
-                                  "You need the app-install-data "
-                                  "package to be able to look for "
-                                  "applications that can handle "
-                                  "this kind of file");
+                                      PK_ERROR_ENUM_INTERNAL_ERROR,
+                                      "You need the app-install-data "
+                                      "package to be able to look for "
+                                      "applications that can handle "
+                                      "this kind of file");
         }
     }
 }
@@ -1649,7 +1649,7 @@ pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
     const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
     if (pkg.end() == true ||
-        (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+            (pkg.VersionList().end() && pkg.ProvidesList().end())) {
         return pkgCache::VerIterator();
     }
 
@@ -1800,14 +1800,14 @@ void AptIntf::updateInterface(int fd, int writeFd)
                     }
                 } else {
                     // either the user didn't choose an option or the front end failed'
-//                     pk_backend_job_message(m_job,
-//                                            PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
-//                                            "The configuration file '%s' "
-//                                            "(modified by you or a script) "
-//                                            "has a newer version '%s'.\n"
-//                                            "Please verify your changes and update it manually.",
-//                                            orig_file.c_str(),
-//                                            new_file.c_str());
+                    //                     pk_backend_job_message(m_job,
+                    //                                            PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+                    //                                            "The configuration file '%s' "
+                    //                                            "(modified by you or a script) "
+                    //                                            "has a newer version '%s'.\n"
+                    //                                            "Please verify your changes and update it manually.",
+                    //                                            orig_file.c_str(),
+                    //                                            new_file.c_str());
                     // fall back to keep the current config file
                     if (write(writeFd, "N\n", 2) != 2) {
                         // TODO we need a DPKG patch to use debconf
@@ -1939,7 +1939,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
                         emitPackage(ver, PK_INFO_ENUM_FINISHED);
-//                         emitPackageProgress(ver, m_lastSubProgress);
+                        //                         emitPackageProgress(ver, m_lastSubProgress);
                     }
                 } else {
                     cout << ">>>Unmaped value<<< :" << line << endl;
@@ -2476,7 +2476,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize) {
         struct statfs Stat;
         if (statfs(OutputDir.c_str(), &Stat) != 0 ||
-            unsigned(Stat.f_type) != RAMFS_MAGIC) {
+                unsigned(Stat.f_type) != RAMFS_MAGIC) {
             pk_backend_job_error_code(m_job,
                                       PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
                                       "You don't have enough free space in %s",

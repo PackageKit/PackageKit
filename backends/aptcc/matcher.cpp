@@ -63,6 +63,7 @@ bool Matcher::matches(const string &s)
             matchesCount++;
         }
     }
+
     return m_matches.size() == matchesCount;
 }
 
@@ -116,16 +117,6 @@ bool Matcher::parse_pattern(string::const_iterator &start,
             m_hasError = true;
             return false;
         }
-
-        // 		regex_t pattern_group;
-        // 		if (do_compile(subString, pattern_group, REG_ICASE|REG_EXTENDED)) {
-        // 			m_matches.push_back(pattern_group);
-        // 		} else {
-        // 			regfree(&pattern_group);
-        // 			m_error = string("Regex compilation error");
-        // 			m_hasError = true;
-        // 			return false;
-        // 		}
     }
 
     return true;

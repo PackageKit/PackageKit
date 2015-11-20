@@ -41,9 +41,9 @@ DebFile::DebFile(const string &filename) :
     }
 
     if(!m_controlData.Scan(m_extractor->Control,m_extractor->Length+2)) {
-      g_warning("DebFile: Scan failed.");
-      m_isValid = false;
-      return;
+        g_warning("DebFile: Scan failed.");
+        m_isValid = false;
+        return;
     }
 }
 

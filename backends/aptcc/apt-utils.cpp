@@ -119,12 +119,12 @@ bool strIsPrefix(string const& s1, string const&s2)
 }
 
 string fetchChangelogData(AptCacheFile &CacheFile,
-                           pkgAcquire &Fetcher,
-                           pkgCache::VerIterator Ver,
-                           pkgCache::VerIterator currver,
-                           string *update_text,
-                           string *updated,
-                           string *issued)
+                          pkgAcquire &Fetcher,
+                          pkgCache::VerIterator Ver,
+                          pkgCache::VerIterator currver,
+                          string *update_text,
+                          string *updated,
+                          string *issued)
 {
     string changelog;
 

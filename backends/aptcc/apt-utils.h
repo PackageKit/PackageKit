@@ -40,12 +40,12 @@ PkGroupEnum get_enum_group(string group);
   * Return the changelog and extract details about the changes.
   */
 string fetchChangelogData(AptCacheFile &CacheFile,
-                           pkgAcquire &Fetcher,
-                           pkgCache::VerIterator Ver,
-                           pkgCache::VerIterator currver,
-                           string *update_text,
-                           string *updated,
-                           string *issued);
+                          pkgAcquire &Fetcher,
+                          pkgCache::VerIterator Ver,
+                          pkgCache::VerIterator currver,
+                          string *update_text,
+                          string *updated,
+                          string *issued);
 
 /**
   * Returns a list of links pairs url;description for CVEs

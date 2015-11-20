@@ -43,7 +43,7 @@ bool show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
             // TODO this should emit the regular
             // PK_ERROR_ENUM_CANNOT_FETCH_SOURCES but do not fail the
             // last-time-update
-//             messages << "E: " << Err << endl;
+            //! messages << "E: " << Err << endl;
         } else {
             if (Type == true) {
                 errors << "E: " << Err << endl;

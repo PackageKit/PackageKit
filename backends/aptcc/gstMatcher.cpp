@@ -31,8 +31,8 @@ GstMatcher::GstMatcher(gchar **values)
     // gstreamer0.10(urisource-foobar)
     // gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
     const char *pkreg = "^gstreamer\\([0-9\\.]\\+\\)"
-            "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
-            "\\(([^\\(^\\)]*)\\)\\?";
+                        "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
+                        "\\(([^\\(^\\)]*)\\)\\?";
 
     regex_t pkre;
     if (regcomp(&pkre, pkreg, 0) != 0) {
@@ -75,10 +75,6 @@ GstMatcher::GstMatcher(gchar **values)
             } else if (type.compare("element") == 0) {
                 type = "Gstreamer-Elements: ";
             }
-            //             cout << version << endl;
-            //             cout << type << endl;
-            //             cout << data << endl;
-            //             cout << opt << endl;
 
             gchar *capsString;
             if (opt.empty()) {

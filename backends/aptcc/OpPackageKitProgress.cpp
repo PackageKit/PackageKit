@@ -1,5 +1,5 @@
 /* OpPackageKitProgress.cpp
- * 
+ *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
