@@ -1,4 +1,5 @@
-/*
+/* pk-backend-aptcc.cpp
+ *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2009-2012 Daniel Nicoletti <dantti12@gmail.com>
  *
@@ -29,7 +30,7 @@
 #include <apt-pkg/init.h>
 
 #include "apt-intf.h"
-#include "AptCacheFile.h"
+#include "apt-cache-file.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "apt-sourceslist.h"

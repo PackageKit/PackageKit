@@ -1,4 +1,4 @@
-/* gstMatcher.cpp - Match GStreamer packages
+/* gst-matcher.cpp - Match GStreamer packages
  *
  * Copyright (c) 2010 Daniel Nicoletti <dantti12@gmail.com>
  *
@@ -18,7 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gstMatcher.h"
+#include "gst-matcher.h"
 
 #include <regex.h>
 #include <gst/gst.h>
@@ -36,7 +36,7 @@ GstMatcher::GstMatcher(gchar **values)
 
     regex_t pkre;
     if (regcomp(&pkre, pkreg, 0) != 0) {
-        g_debug("Regex compilation error: ", pkreg);
+        g_debug("Regex compilation error: %s", pkreg);
         return;
     }
 

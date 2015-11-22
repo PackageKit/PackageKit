@@ -21,12 +21,11 @@
 #ifndef ACQ_PKIT_STATUS_H
 #define ACQ_PKIT_STATUS_H
 
+#include <set>
 #include <apt-pkg/acquire-item.h>
 #include <pk-backend.h>
 
-#include "PkgList.h"
-
-#include <set>
+#include "pkg-list.h"
 
 using std::set;
 

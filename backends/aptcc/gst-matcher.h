@@ -1,6 +1,6 @@
-/* OpPackageKitProgress.cpp
+/* gst-matcher.h - Match GStreamer package names
  *
- * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2010 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,32 +18,35 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "OpPackageKitProgress.h"
+#ifndef GST_MATCHER_H
+#define GST_MATCHER_H
 
-OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job) :
-    m_job(job)
+#include <glib.h>
+
+#include <vector>
+#include <string>
+
+using namespace std;
+
+typedef struct {
+    string   version;
+    string   type;
+    string   data;
+    string   opt;
+    void    *caps;
+} Match;
+
+class GstMatcher
 {
-    // Set PackageKit status
-    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_LOADING_CACHE);
-}
+public:
+    GstMatcher(gchar **values);
+    ~GstMatcher();
 
-OpPackageKitProgress::~OpPackageKitProgress()
-{
-    Done();
-}
+    bool matches(string record);
+    bool hasMatches() const;
 
-void OpPackageKitProgress::Done()
-{
-    pk_backend_job_set_percentage(m_job, 100);
-}
+private:
+    vector<Match> m_matches;
+};
 
-void OpPackageKitProgress::Update()
-{
-    if (CheckChange() == false) {
-        // No change has happened skip
-        return;
-    }
-
-    // Set the new percent
-    pk_backend_job_set_percentage(m_job, static_cast<unsigned int>(Percent));
-}
+#endif

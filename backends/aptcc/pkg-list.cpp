@@ -1,4 +1,4 @@
-/* PkgList.cpp
+/* pkg-list.cpp
  *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  *
@@ -18,7 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "PkgList.h"
+#include "pkg-list.h"
 
 #include <algorithm>
 

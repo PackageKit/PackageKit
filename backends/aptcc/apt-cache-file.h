@@ -1,4 +1,5 @@
-/*
+/* apt-cache-file.h
+ *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2012 Matthias Klumpp <matthias@tenstral.net>
  *
@@ -17,8 +18,8 @@
  * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#ifndef APTCACHEFILE_H
-#define APTCACHEFILE_H
+#ifndef APT_CACHE_FILE_H
+#define APT_CACHE_FILE_H
 
 #include <apt-pkg/cachefile.h>
 #include <pk-backend.h>
@@ -141,4 +142,22 @@ private:
     PkBackendJob *m_job;
 };
 
-#endif // APTCACHEFILE_H
+/**
+ * This class is maent to show Operation Progress using PackageKit
+ */
+class OpPackageKitProgress : public OpProgress
+{
+public:
+    OpPackageKitProgress(PkBackendJob *job);
+    virtual ~OpPackageKitProgress();
+
+    virtual void Done();
+
+protected:
+    virtual void Update();
+
+private:
+    PkBackendJob  *m_job;
+};
+
+#endif // APT_CACHE_FILE_H

@@ -1,4 +1,5 @@
-/*
+/* apt-cache-file.cpp
+ * 
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2012 Matthias Klumpp <matthias@tenstral.net>
  *
@@ -17,15 +18,15 @@
  * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#include "AptCacheFile.h"
+#include "apt-cache-file.h"
+
+#include <sstream>
+#include <cstdio>
+#include <apt-pkg/algorithms.h>
+#include <apt-pkg/progress.h>
 
 #include "apt-utils.h"
 #include "apt-messages.h"
-#include "OpPackageKitProgress.h"
-
-#include <apt-pkg/algorithms.h>
-#include <sstream>
-#include <cstdio>
 
 AptCacheFile::AptCacheFile(PkBackendJob *job) :
     m_packageRecords(0),
@@ -544,4 +545,32 @@ std::string AptCacheFile::debParser(std::string descr)
     }
 
     return descr;
+}
+
+OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job) :
+    m_job(job)
+{
+    // Set PackageKit status
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_LOADING_CACHE);
+}
+
+OpPackageKitProgress::~OpPackageKitProgress()
+{
+    Done();
+}
+
+void OpPackageKitProgress::Done()
+{
+    pk_backend_job_set_percentage(m_job, 100);
+}
+
+void OpPackageKitProgress::Update()
+{
+    if (CheckChange() == false) {
+        // No change has happened skip
+        return;
+    }
+
+    // Set the new percent
+    pk_backend_job_set_percentage(m_job, static_cast<unsigned int>(Percent));
 }

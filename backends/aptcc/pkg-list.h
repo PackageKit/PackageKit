@@ -1,4 +1,4 @@
-/* PkgList.h
+/* pkg-list.h
  *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  *

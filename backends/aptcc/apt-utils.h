@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* apt-utils.h
  *
  * Copyright (c) 2001, 2005 Daniel Burrows (aptitude)
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
@@ -27,7 +27,7 @@
 #include <glib.h>
 #include <pk-backend.h>
 
-#include "AptCacheFile.h"
+#include "apt-cache-file.h"
 
 using namespace std;
 

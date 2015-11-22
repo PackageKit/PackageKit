@@ -22,11 +22,10 @@
 
 #include "apt-messages.h"
 
-#include "apt-utils.h"
-
+#include <sstream>
 #include <apt-pkg/error.h>
 
-#include <sstream>
+#include "apt-utils.h"
 
 using namespace std;
 

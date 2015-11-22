@@ -1,19 +1,18 @@
 AM_CPPFLAGS = \
 	-DDATADIR=\"$(datadir)\"		\
-	-DG_LOG_DOMAIN=\"PackageKit-Aptcc\"
+	-DG_LOG_DOMAIN=\"PackageKit-APTcc\"
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
-libpk_backend_aptcc_la_SOURCES = PkgList.cpp \
+libpk_backend_aptcc_la_SOURCES = pkg-list.cpp \
 				 acqpkitstatus.cpp \
 				 deb-file.cpp \
 				 matcher.cpp \
-				 gstMatcher.cpp \
+				 gst-matcher.cpp \
 				 apt-messages.cpp \
 				 apt-utils.cpp \
 				 apt-sourceslist.cpp \
-				 OpPackageKitProgress.cpp \
-				 AptCacheFile.cpp \
+				 apt-cache-file.cpp \
 				 apt-intf.cpp \
 				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg -lapt-inst -lutil $(PK_PLUGIN_LIBS)
@@ -26,17 +25,16 @@ aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
 
 EXTRA_DIST = 20packagekit \
-	     PkgList.h \
+	     pkg-list.h \
 	     apt-intf.h \
 	     apt-utils.h \
 	     apt-sourceslist.h \
-	     gstMatcher.h \
+	     gst-matcher.h \
 	     matcher.h \
 	     deb-file.h \
 	     apt-messages.h \
 	     acqpkitstatus.h \
-	     OpPackageKitProgress.h \
-	     AptCacheFile.h
+	     apt-cache-file.h
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc
 dist_helper_DATA =					\

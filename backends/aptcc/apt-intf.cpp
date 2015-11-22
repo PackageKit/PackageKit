@@ -39,10 +39,10 @@
 #include <fstream>
 #include <dirent.h>
 
-#include "AptCacheFile.h"
+#include "apt-cache-file.h"
 #include "apt-utils.h"
 #include "matcher.h"
-#include "gstMatcher.h"
+#include "gst-matcher.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "deb-file.h"
@@ -179,9 +179,6 @@ AptIntf::~AptIntf()
         }
     }
 
-    if ((!m_tmpDir.empty()) && (g_file_test(m_tmpDir.c_str(), G_FILE_TEST_IS_DIR)))
-        rmdir(m_tmpDir.c_str());
-
     delete m_cache;
 }
 
@@ -200,25 +197,6 @@ void AptIntf::cancel()
 bool AptIntf::cancelled() const
 {
     return m_cancel;
-}
-
-string AptIntf::getTmpDir()
-{
-    // Create a random temp dir, if we don't have one already
-    if ((!m_tmpDir.empty()) && (g_file_test(m_tmpDir.c_str(), G_FILE_TEST_IS_DIR)))
-        return m_tmpDir;
-
-    gchar *tmpDir = g_strdup("/tmp/aptcc-XXXXXX");
-    if (g_mkdtemp(tmpDir) == NULL) {
-        g_warning("Unable to create temporary directory!");
-        g_free(tmpDir);
-        return string();
-    }
-
-    m_tmpDir = tmpDir;
-    g_free(tmpDir);
-
-    return m_tmpDir;
 }
 
 bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)

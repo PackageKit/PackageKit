@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* apt-utils.cpp
  *
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2014 Matthias Klumpp <mak@debian.org>
