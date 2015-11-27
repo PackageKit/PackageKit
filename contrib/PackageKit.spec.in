@@ -8,9 +8,6 @@ License:   GPLv2+ and LGPLv2+
 URL:       http://www.freedesktop.org/software/PackageKit/
 Source0:   http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
 
-# generated using contrib/generate-md-archive.sh in the PackageKit source tree
-Source1:   cached-metadata.tar
-
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: shared-mime-info
 Requires: comps-extras
@@ -54,7 +51,7 @@ BuildRequires: rpm-devel >= 4.11.0
 BuildRequires: libappstream-glib-devel
 BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
-BuildRequires: libhif-devel
+BuildRequires: libhif-devel >= 0.1.6
 %endif
 
 # functionality moved to udev itself
@@ -92,15 +89,6 @@ Provides: PackageKit-libs = %{version}-%{release}
 
 %description glib
 GLib libraries for accessing PackageKit.
-
-%package cached-metadata
-Summary: Cached metadata for PackageKit
-Requires: %{name}%{?_isa} = %{version}-%{release}
-
-%description cached-metadata
-Cached metadata allows application installers to start instantly on the
-LiveCD or installed system without downloading files from the internet or
-regenerating the SAT caches. It can safely removed if not required.
 
 %package cron
 Summary: Cron job and related utilities for PackageKit
@@ -205,10 +193,6 @@ pushd ${RPM_BUILD_ROOT}%{_datadir}/PackageKit > /dev/null
 ln -s ../pixmaps/comps icons
 popd > /dev/null
 
-# ship cached metadata on the LiveCD
-# http://blogs.gnome.org/hughsie/2014/08/29/putting-packagekit-metadata-on-the-fedora-livecd/
-tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
-
 %find_lang %name
 
 %post glib -p /sbin/ldconfig
@@ -216,7 +200,8 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %postun glib -p /sbin/ldconfig
 
 %files -f %{name}.lang
-%doc README AUTHORS NEWS COPYING
+%license COPYING
+%doc README AUTHORS NEWS
 %dir %{_datadir}/PackageKit
 %dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
@@ -257,10 +242,6 @@ tar -xf %{SOURCE1} --directory=$RPM_BUILD_ROOT
 %if 0%{?rhel} == 0
 %{_libdir}/packagekit-backend/libpk_backend_hif.so
 %endif
-
-%files cached-metadata
-%{_datadir}/PackageKit/hawkey/
-%{_datadir}/PackageKit/metadata/
 
 %files glib
 %{_libdir}/*packagekit-glib2.so.*
