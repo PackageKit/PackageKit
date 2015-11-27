@@ -73,7 +73,7 @@ from portage.exception import InvalidAtom
 
 
 def compute_equal_steps(iterable):
-    return [idx * (100.0 / len(iterable)) / 100.0
+    return [idx * (100.0 / len(iterable))
             for idx, _ in enumerate(iterable, start=1)]
 
 
@@ -1003,13 +1003,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
+        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-
         progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
 
-        for percentage, cp in izip(progress, self._get_all_cp(filters)):
+        for percentage, cp in izip(progress, cp_list):
             for cpv in self._get_all_cpv(cp, filters):
                 try:
                     self._package(cpv)
@@ -1658,7 +1657,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         is_full_path = True
 
         progress = PackagekitProgress(compute_equal_steps(values))
-        self.percentage(progress.percentage)
+        self.percentage(progress.percent)
 
         for percentage, key in izip(progress, values):
 
