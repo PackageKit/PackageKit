@@ -73,7 +73,7 @@ from portage.exception import InvalidAtom
 
 
 def compute_equal_steps(iterable):
-    return [idx * (100.0 / len(iterable)) / 100.0
+    return [idx * (100.0 / len(iterable))
             for idx, _ in enumerate(iterable, start=1)]
 
 
