@@ -1658,7 +1658,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         is_full_path = True
 
         progress = PackagekitProgress(compute_equal_steps(values))
-        self.percentage(progress.percentage)
+        self.percentage(progress.percent)
 
         for percentage, key in izip(progress, values):
 
