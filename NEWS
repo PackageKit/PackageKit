@@ -1,3 +1,55 @@
+Version 1.0.11
+~~~~~~~~~~~~~~
+Released: 2015-11-27
+
+Notes:
+ - By popular demand, reintroduce the UpgradeSystem method (Richard Hughes)
+
+Backends:
+ - aptcc: Compile with APT 1.1 (Matthias Klumpp)
+ - aptcc: Create really random temporary directories (Matthias Klumpp)
+ - aptcc: Ensure proxy and frontend-socket aren't used if they are NULL (Matthias Klumpp)
+ - aptcc: Fix comment spelling mistakes (Robert Ancell)
+ - aptcc: Fix formatting and kill some old cruft (Matthias Klumpp)
+ - aptcc: Fix several compiler warnings (Matthias Klumpp)
+ - aptcc: Make use of the new APT-internal method for fetching changelogs (Matthias Klumpp)
+ - aptcc: Remove dead code and make source filenames consistent (Matthias Klumpp)
+ - alpm: Make pk_alpm_pkg_build_list() more resiliant to failure (Richard Hughes)
+ - dummy: Implement simulating UpgradeSystem and respect the transaction flags (Richard Hughes)
+ - hif: Add support for HTTP proxy (Marek Marczykowski-Górecki)
+ - hif: Improve RefreshCache progress updates (Kalev Lember)
+ - portage: add helper to change portage settings (Gilles Dartiguelongue)
+ - portage: cosmetics (Gilles Dartiguelongue)
+ - portage: do not redefine builtin license (Gilles Dartiguelongue)
+ - portage: do not refetch package listing for no reason (Gilles Dartiguelongue)
+ - portage: drop unused imports (Gilles Dartiguelongue)
+ - portage: enhance get_repo_list function (Gilles Dartiguelongue)
+ - portage: fix a typo (Gilles Dartiguelongue)
+ - portage: fix a typo in restoring license settings (Gilles Dartiguelongue)
+ - portage: fix exception handling to be python2.7+ compatible (Gilles Dartiguelongue)
+ - portage: fix step percentage computation (Gilles Dartiguelongue)
+ - portage: fix typo python backend detection (Gilles Dartiguelongue)
+ - portage: initialize licenses variable (Gilles Dartiguelongue)
+ - portage: remove compatibility with older portage (Gilles Dartiguelongue)
+ - portage: remove useless instruction (Gilles Dartiguelongue)
+ - portage: retrieve EAPI and KEYWORDS before calling setcpv method (Gilles Dartiguelongue)
+ - portage: simplify _get_cpv_slotted with collections module (Gilles Dartiguelongue)
+ - portage: simplify _get_metadata (Gilles Dartiguelongue)
+ - portage: sort imports according to PEP8 (Gilles Dartiguelongue)
+ - portage: update layman API usage to >=2 (Gilles Dartiguelongue)
+ - portage: use PackageKitProgress to ease progress steps manipulations (Gilles Dartiguelongue)
+ - portage: use PackagekitProgress as an iterable (Gilles Dartiguelongue)
+ - portage: use python idioms (Gilles Dartiguelongue)
+ - python: make PackagekitProgress an Iterable (Gilles Dartiguelongue)
+ - python: set steps on PackagekitProgress instanciation (Gilles Dartiguelongue)
+ - zypp: Raise priority of ZYPP stack updates if a security patch is shadowed (bsc#951592) (Michael Andres)
+
+New Features:
+ - Allow the use of variadic functions in vala (Corentin Noël)
+
+Bugfixes:
+ - Make pk_details_get_size documentation more specific (Aleix Pol)
+
 Version 1.0.10
 ~~~~~~~~~~~~~~
 Released: 2015-09-21

@@ -5,16 +5,17 @@
 # Translators:
 # hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
 # Kiyoto Hashida <khashida@redhat.com>, 2009
+# Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Tomoyuki KATO <tomo@dream.daynight.jp>, 2011-2013
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Japanese (http://www.transifex.com/p/packagekit/language/ja/)\n"
+"Language-Team: Japanese (http://www.transifex.com/freedesktop/packagekit/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -285,11 +286,11 @@ msgstr "現在のパッケージを選択して下さい: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "パッケージが見つかりません"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "1つもパッケージが見つかりませんでした"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -506,11 +507,21 @@ msgid "A package provide string is required"
 msgstr "パッケージの提供する文字列が必要です"
 
 msgid "A filename is required"
+msgstr "ファイル名は必須です"
+
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "説明"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
@@ -896,7 +907,7 @@ msgstr "利用可能"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "利用不可"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1196,7 +1207,7 @@ msgid "Install signed package"
 msgstr "署名付きのパッケージをインストール"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "ソフトウェアをインストールするには認証が必要です"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1207,7 +1218,7 @@ msgid "Install untrusted local file"
 msgstr "信頼できないローカルファイルをインストール"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "信頼されていないソフトウェアをインストールするには認証が必要です"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1216,10 +1227,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "すでにインストール済みのパッケージを再インストール"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "ソフトウェアを再インストールするには認証が必要です"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1228,10 +1239,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "インストール済みパッケージの古いバージョンをインストール"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "ソフトウェアをダウングレードするには認証が必要です"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1270,7 +1281,7 @@ msgid "Remove package"
 msgstr "パッケージを削除"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "ソフトウェアを削除するには認証が必要です"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1279,10 +1290,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "ソフトウェアを更新"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "ソフトウェアを更新するには認証が必要です"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1327,6 +1338,16 @@ msgid "Authentication is required to reload the device with a new driver"
 msgstr "新規ドライバーでデバイスを再ロードするには認証が必要です"
 
 #. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
+
+#. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
@@ -1360,7 +1381,7 @@ msgid "Alias to %s"
 msgstr ""
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "コマンドが見つかりません、有効なコマンドは:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1368,11 +1389,11 @@ msgstr "使用するパッケージバックエンド、例、ダミー"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "キャッシュをリフレッシュ"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "キャッシュをリフレッシュ (強制)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
@@ -1388,7 +1409,7 @@ msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "パッケージをインストール"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
@@ -1396,7 +1417,7 @@ msgstr ""
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
@@ -1404,15 +1425,15 @@ msgstr ""
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "コンフィグファイルのロードに失敗しました"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "バックエンドのロードに失敗しました"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "バックエンドのアンロードの失敗しました"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"

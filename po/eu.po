@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-19 15:19+0100\n"
-"PO-Revision-Date: 2015-08-15 18:46+0000\n"
-"Last-Translator: assar <asier.sarasua@gmail.com>\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Basque (http://www.transifex.com/freedesktop/packagekit/language/eu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -507,6 +507,16 @@ msgstr "Pakete-eskaintzaren kate bat behar da"
 
 msgid "A filename is required"
 msgstr "Fitxategi-izena behar da"
+
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
+msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
@@ -1325,6 +1335,16 @@ msgstr "Birkargatu gailu bat"
 
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "Autentifikazioa behar da gailua kontrolagailu berri batekin birkargatzeko"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system

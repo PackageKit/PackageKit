@@ -3,7 +3,8 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Christopher Meng <cickumqt@gmail.com>, 2013
+# Boyuan Yang <073plan@gmail.com>, 2015
+# Christopher Meng <i@cicku.me>, 2013
 # Leah Liu <lliu@redhat.com>, 2009
 # Tommy He <lovenemesis@gmail.com>, 2011, 2012
 # Michael Jay Tong <michaeljayt@gmail.com>, 2014
@@ -13,10 +14,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/p/packagekit/language/zh_CN/)\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/freedesktop/packagekit/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -381,11 +382,11 @@ msgstr "不经询问确认就安装软件包"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "仅下载软件包以为事务做准备"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "允许事务进行中下载软件包"
+msgstr "允许事务进行中降级软件包"
 
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "允许事务进行中重新安装软件包"
@@ -510,6 +511,16 @@ msgstr "需要指定软件包提供描述"
 msgid "A filename is required"
 msgstr "需要指定文件名"
 
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
+msgstr ""
+
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "描述"
@@ -564,7 +575,7 @@ msgstr "安装更新后关机..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "正在安装更新；这可能需要一段时间……"
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
@@ -898,7 +909,7 @@ msgstr "可用"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "不可用"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1218,10 +1229,10 @@ msgstr "安装不受信任的软件需要认证"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "重新安装已安装的软件包"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "重新安装软件需要认证"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1230,10 +1241,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "安装已安装软件包的较旧版本"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "降级软件需要认证"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1329,6 +1340,16 @@ msgid "Authentication is required to reload the device with a new driver"
 msgstr "以新驱动重新装入设备需要认证"
 
 #. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
+
+#. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
@@ -1390,7 +1411,7 @@ msgstr "按文件搜索"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "安装软件包"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"

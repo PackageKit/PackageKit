@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Kannada (http://www.transifex.com/p/packagekit/language/kn/)\n"
+"Language-Team: Kannada (http://www.transifex.com/freedesktop/packagekit/language/kn/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -504,6 +504,16 @@ msgid "A package provide string is required"
 msgstr "ಪ್ಯಾಕೇಜನ್ನು ಒದಗಿಸುವ ವಾಕ್ಯದ ಅಗತ್ಯವಿದೆ"
 
 msgid "A filename is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
@@ -1323,6 +1333,16 @@ msgstr "ಒಂದು ಸಾಧನವನ್ನು ಮರಳಿ ಲೋಡ್ ಮ�
 
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "ಸಾಧನವನ್ನು ಒಂದು ಹೊಸ ಚಾಲಕದೊಂದಿಗೆ ಮರಳಿ ಲೋಡ್ ಮಾಡಲು ದೃಢೀಕರಣದ ಅಗತ್ಯವಿರುತ್ತದೆ"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system

@@ -6,14 +6,15 @@
 # Pau Iranzo <pau@somgnu.cat>, 2009
 # Pere Argelich <bakidok@gmail.com>, 2008
 # Richard Hughes <richard@hughsie.com>, 2011
+# Robert Antoni Buj i Gelonch <rbuj@fedoraproject.org>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Catalan (http://www.transifex.com/p/packagekit/language/ca/)\n"
+"Language-Team: Catalan (http://www.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -29,7 +30,7 @@ msgstr "Transacció"
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
 msgid "System time"
-msgstr "Temps del sistema"
+msgstr "Hora del sistema"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
@@ -58,7 +59,7 @@ msgstr "Línia d'ordres"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "ID d'usuari"
+msgstr "id. d'usuari"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
@@ -95,7 +96,7 @@ msgstr "Categoria"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "ID"
+msgstr "Id."
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
@@ -129,7 +130,7 @@ msgstr "Actualitzacions"
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "Obsolets"
+msgstr "Devalua"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -223,11 +224,11 @@ msgstr "Percentatge"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr ""
+msgstr "Estat"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr ""
+msgstr "Resultats:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
@@ -237,7 +238,7 @@ msgstr "Error greu"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr ""
+msgstr "No hi ha cap paquet a actualitzar."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -247,18 +248,18 @@ msgstr "La transacció ha fallat"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr ""
+msgstr "En aquest moment no hi ha disponible cap actualització."
 
 msgid "There are no upgrades available at this time."
-msgstr ""
+msgstr "En aquest moment no hi ha disponible cap actualització a nivell de llançament."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "Reinicieu l'ordinador per completar l'actualització."
+msgstr "Si us plau, reinicieu l'ordinador per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "Sortiu i torneu a entrar per completar l'actualització."
+msgstr "Si us plau, sortiu i torneu a entrar per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
@@ -284,11 +285,11 @@ msgstr "Escolliu el paquet correcte:"
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "No s'ha trobat el paquet"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "No s'han trobat els paquets"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -297,29 +298,29 @@ msgstr ""
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr ""
+msgstr "S'esverava el nom d'un paquet i es va obtenir el nom d'un fitxer. En lloc seu, proveu 'pkcon install-local %s'."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "No s'ha trobat cap paquet disponible: %s"
+msgstr "Aquesta eina no ha pogut trobar cap paquet disponible: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "No s'han trobat els paquets instal·lats: %s"
+msgstr "Aquesta eina no ha pogut trobar el paquet instal·lat: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "No s'ha trobat el paquet: %s"
+msgstr "Aquesta eina no ha pogut trobar el paquet: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "No hi ha cap paquet que requereixi l'actualització a versions més recents."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -331,7 +332,7 @@ msgstr ""
 #. * any software sources. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "No s'han trobat tots els paquets: %s"
+msgstr "Aquesta eina no ha pogut trobar tots els paquets: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -353,16 +354,16 @@ msgstr "No s'ha pogut obtenir l'hora des que aquesta acció es va completar per 
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Hora des de"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Actualitzacions preparades:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr ""
+msgstr "No s'ha pogut establir el servidor intermediari"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
@@ -370,58 +371,58 @@ msgstr "Mostra la versió de l'aplicació i surt"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Configura el filtre, p.e. instal·lats"
+msgstr "Configura el filtre, p. ex. instal·lats"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr ""
+msgstr "Instal·la els paquets sense demanar la confirmació"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Prepara la transacció amb només la baixada dels paquets"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Permet la reversió dels paquets durant la transacció"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Permet la reinstal·lació dels paquets durant la transacció"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
+msgstr "Executa l'ordre mitjançant l'amplada de banda inactiva de la xarxa i també amb menys energia"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr ""
+msgstr "Imprimeix per pantalla una sortida que pugui llegir la màquina, en lloc d'utilitzar els ginys animats"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
+msgstr "L'edat màxima de la memòria cau de les metadades. Utilitzeu -1 per «mai»."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Permet que s'instal·lin els paquets sense confiança."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "No s'ha pogut analitzar la línia d'ordres"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "S'ha produït un error en contactar amb el PackageKit"
+msgstr "No s'ha pogut contactar amb el PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "El filtre especificat era invàlid"
+msgstr "El filtre especificat no era vàlid"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "Es requreix un mot de cerca, p.e. nom"
+msgstr "Es requereix un mot de cerca, p. ex. nom"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -438,12 +439,12 @@ msgstr "Es requereix un nom de paquet per instal·lar"
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "Es requreix un nom de fitxer per instal·lar"
+msgstr "Es requereix un nom de fitxer per instal·lar"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Es requereixen un tipus, una clau_id i un paquet_id"
+msgstr "Es requereixen un tipus, un id_clau i un id_paquet"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -454,7 +455,7 @@ msgstr "Es requereix un nom de paquet per eliminar"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Us cal especificar el directori destí i els noms dels paquets per a la baixada"
+msgstr "Es requereix el directori de destinació i els noms dels paquets per a la baixada"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -464,7 +465,7 @@ msgstr "No s'ha trobat el directori"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "Es requreix un identificador de llicència (eula-id)"
+msgstr "Es requereix un identificador de llicència (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
@@ -474,18 +475,18 @@ msgstr "Es requereix un nom de paquet per resoldre"
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "Es requreix un nom del repositori"
+msgstr "Es requereix el nom d'un dipòsit"
 
 msgid "A repo name, parameter and value are required"
-msgstr "Es requreixen el nom o el paràmetre d'un repositori i el seu valor"
+msgstr "Es requereixen el nom o el paràmetre d'un dipòsit i el seu valor"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Es requereix un id. de dipòsit i l'autoeliminació"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Es requereix una acció, p. ex. «update-packages»"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -495,42 +496,52 @@ msgstr "Es requereix un rol correcte"
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "Es requreix un nom del paquet"
+msgstr "Es requereix un nom del paquet"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "Es requreix una cadena de proveïdor de paquet"
+msgstr "Es requereix una cadena de proveïdor de paquet"
 
 msgid "A filename is required"
+msgstr "Es requereix el nom d'un fitxer"
+
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Descripció"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Cal que especifiqueu un fitxer de llista a crear"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "El fitxer ja existeix: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "L'opció '%s' no està disponible"
+msgstr "L'opció «%s» no està disponible"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
@@ -540,7 +551,7 @@ msgid "Failed to get daemon state"
 msgstr "S'ha produït un error en obtenir l'estat del dimoni"
 
 msgid "Failed to get properties"
-msgstr ""
+msgstr "No s'han pogut obtenir les propietats"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
@@ -549,23 +560,23 @@ msgstr "Monitor de PackageKit"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
 msgid "Installing Updates"
-msgstr ""
+msgstr "Instal·lació de les actualitzacions"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "S'està reiniciant després d'instal·lar les actualitzacions..."
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "S'està apagant després d'instal·lar les actualitzacions..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "S'estan instal·lant les actualitzacions; això pot trigar una estona..."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
-msgstr "S'està obtenint informació dels paquets..."
+msgstr "S'està obtenint la informació dels paquets..."
 
 #. TRANSLATORS: run an applicaiton
 #, c-format
@@ -609,7 +620,7 @@ msgstr "S'està instal·lant..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr "S'estan baixant els detalls de les fonts de programari."
+msgstr "S'estan baixant els detalls quant als orígens del programari."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -629,7 +640,7 @@ msgstr "S'ha produït un error en cercar el fitxer"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "S'està obtenint la llista dels fitxers que han fallat"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
@@ -637,13 +648,13 @@ msgstr "S'ha produït un error en executar:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr ""
+msgstr "No s'han pogut instal·lar els paquets"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr ""
+msgstr "no s'ha trobat l'ordre"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -670,7 +681,7 @@ msgstr "El paquet que proveeix aquest fitxer és:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Voleu instal·lar el paquet '%s' per proveir l'ordre '%s'?"
+msgstr "Voleu instal·lar el paquet «%s» per proveir l'ordre «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
@@ -686,7 +697,7 @@ msgid "Please choose a package to install"
 msgstr "Seleccioneu el paquet a instal·lar"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "L'usuari ha avortat la selecció"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
@@ -719,7 +730,7 @@ msgstr "S'està obtenint informació"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "S'està suprimint els paquets"
+msgstr "S'estan eliminant els paquets"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
@@ -741,11 +752,11 @@ msgstr "S'estan instal·lant les actualitzacions"
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "S'està netejant els paquets"
+msgstr "S'està fent neteja dels paquets"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "S'està descartant els paquets vells"
+msgstr "S'estan devaluant els paquets"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
@@ -767,7 +778,7 @@ msgstr "S'estan aplicant els canvis"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr "S'està demanant les dades"
+msgstr "S'estan sol·licitant les dades"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
@@ -779,7 +790,7 @@ msgstr "S'està cancel·lant"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "S'està baixant la informació dels repositoris"
+msgstr "S'està baixant la informació dels dipòsits"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
@@ -803,7 +814,7 @@ msgstr "S'està baixant la informació d'actualitzacions"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "S'estan reempaquetant els fitxers"
+msgstr "S'estan tornant a empaquetar els fitxers"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
@@ -829,32 +840,32 @@ msgstr "S'està esperant a autenticar"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr "S'està actualitzant les aplicacions en execució"
+msgstr "S'estan actualitzant les aplicacions en execució"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr "S'està comprovant les aplicacions en ús"
+msgstr "S'estan comprovant les aplicacions en ús"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr "S'està comprovant les biblioteques en ús"
+msgstr "S'estan comprovant les biblioteques en ús"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr ""
+msgstr "S'estan copiant els fitxers"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr ""
+msgstr "Mostra la informació de depuració per a tots els fitxers"
 
 msgid "Debugging Options"
-msgstr ""
+msgstr "Opcions de depuració"
 
 msgid "Show debugging options"
-msgstr ""
+msgstr "Mostra les opcions de depuració"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
@@ -895,7 +906,7 @@ msgstr "Disponible"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "No disponible"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -913,7 +924,7 @@ msgstr "S'està instal·lant"
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "S'està suprimint"
+msgstr "S'està eliminant"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
@@ -921,7 +932,7 @@ msgstr "S'està netejant"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "S'està fent obsolet"
+msgstr "S'està devaluant"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
@@ -933,15 +944,15 @@ msgstr "Baixat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "Suprimit"
+msgstr "Eliminat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "Netejat"
+msgstr "Fes neteja"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "Obsolet"
+msgstr "Devaluat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
@@ -957,39 +968,39 @@ msgstr "S'estan obtenint les dependències"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "S'està obtenint els detalls de l'actualització"
+msgstr "S'estan obtenint els detalls de l'actualització"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "S'està obtenint els detalls"
+msgstr "S'estan obtenint els detalls"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "S'està obtenint els requeriments"
+msgstr "S'estan obtenint els requeriments"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr "S'està obtenint les actualitzacions"
+msgstr "S'estan obtenint les actualitzacions"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "S'està cercant pels detalls"
+msgstr "S'estan cercant als detalls"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "S'est cercant pels fitxers"
+msgstr "S'estan cercant als fitxers"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "S'està cercant els grups"
+msgstr "S'estan cercant els grups"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "S'està cercant pel nom"
+msgstr "S'està cercant als noms"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "S'està instal·lant els fitxers"
+msgstr "S'estan instal·lant els fitxers"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
@@ -997,7 +1008,7 @@ msgstr "S'està refrescant la memòria cau"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "S'està actualitzant els paquets"
+msgstr "S'estan actualitzant els paquets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
@@ -1005,19 +1016,19 @@ msgstr "S'està cancel·lant"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "S'està obtenint els repositoris"
+msgstr "S'estan obtenint els dipòsits"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Enabling repository"
-msgstr "S'està habilitant el repositori"
+msgstr "S'està habilitant el dipòsit"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "S'està establint les dades"
+msgstr "S'estan establint les dades"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "S'està eliminant el dipòsit"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
@@ -1029,7 +1040,7 @@ msgstr "S'està obtenint la llista de fitxers"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "S'està obtenint allò proporcionat"
+msgstr "S'està obtenint què proporciona"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
@@ -1037,7 +1048,7 @@ msgstr "S'està instal·lant la signatura"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "S'està obtenint els paquets"
+msgstr "S'estan obtenint els paquets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
@@ -1045,15 +1056,15 @@ msgstr "S'està acceptant l'EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "S'està obtenint les actualitzacions"
+msgstr "S'estan obtenint les actualitzacions"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "S'està obtenint les categories"
+msgstr "S'estan obtenint les categories"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "S'està obtenint les transaccions"
+msgstr "S'estan obtenint les transaccions"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1067,11 +1078,11 @@ msgstr "No s'instal·larà el programari no signat."
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "Cal la signatura de la font de programari"
+msgstr "Es requereix la signatura de l'origen del programari"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "Nom de la font de programari"
+msgstr "Nom de l'origen del programari"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
@@ -1104,7 +1115,7 @@ msgstr "No s'ha acceptat la firma."
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "Es requeriex l'acord de llicència d'usuari final"
+msgstr "Es requereix l'acord de llicència de l'usuari final"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
@@ -1144,7 +1155,7 @@ msgstr "No s'ha inserit el medi correcte."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "S'han de suprimir els següents paquets:"
+msgstr "S'han d'eliminar els següents paquets:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
@@ -1165,7 +1176,7 @@ msgstr "S'ha de desfer l'actualització dels següents paquets:"
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr ""
+msgstr "Els següents paquets no són de confiança:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
@@ -1184,7 +1195,7 @@ msgstr "Cancel·la tasca externa"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Cal autenticació per a cancel·lar una tasca que no vau començar"
+msgstr "Es requereix autenticació per cancel·lar una tasca que no la vàreu iniciar"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1195,7 +1206,7 @@ msgid "Install signed package"
 msgstr "Instal·la el paquet signat"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Es requereix autenticació per instal·lar programari"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1203,10 +1214,10 @@ msgstr ""
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "Instal·la el fitxer local no confiable"
+msgstr "Instal·la el fitxer local sense confiança"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Es requereix autenticació per instal·lar programari sense confiança"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1215,10 +1226,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Torna a instal·lar els paquets ja instal·lats"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Es requereix autenticació per reinstal·lar programari"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1227,10 +1238,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Instal·la una versió més antiga del paquet"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Es requereix autenticació per revertir el programari"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1238,12 +1249,12 @@ msgstr ""
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Confia en una clau que s'utilitzi per a la signatura de paquets"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Es requereix autenticació per tenir en consideració una clau utilitzada per signar els paquets com de confiança"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1254,7 +1265,7 @@ msgid "Accept EULA"
 msgstr "Accepta l'EULA"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Cal autenticació per a acceptar l'EULA"
+msgstr "Es requereix autenticació per a acceptar un EULA"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1266,10 +1277,10 @@ msgstr "Cal autenticació per a acceptar l'EULA"
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "Suprimeix el paquet"
+msgstr "Elimina el paquet"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Es requereix autenticació per eliminar programari"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1278,29 +1289,29 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Actualitza el programari"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Es requereix autenticació per actualitzar programari"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software source parameters"
-msgstr "Canvia els paràmetres de la font de programari"
+msgstr "Canvia els paràmetres dels orígens del programari"
 
 msgid "Authentication is required to change software source parameters"
-msgstr "Cal autenticació per canviar els paràmetres de la font del programari"
+msgstr "Es requereix autenticació per canviar els paràmetres de l'origen del programari"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system sources"
-msgstr "Actualitza les fonts del sistema"
+msgstr "Actualitza els orígens del sistema"
 
 msgid "Authentication is required to refresh the system sources"
-msgstr "Cal autenticació per a actualitzar les fonts del sistema"
+msgstr "Es requereix autenticació per actualitzar els orígens del sistema"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1311,7 +1322,7 @@ msgstr "Estableix el servidor intermediari"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Es requereix autenticació per establir el servidor intermediari de xarxa que s'utilitza per baixar el programari"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1323,99 +1334,109 @@ msgid "Reload a device"
 msgstr "Recarrega un dispositiu"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Cal autenticació per a recarregar el dispositiu amb un nou controlador"
+msgstr "Es requereix autenticació per tornar a carregar el dispositiu amb un nou controlador"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr ""
+msgstr "Repara el sistema"
 
 msgid "Authentication is required to repair the installed software"
-msgstr ""
+msgstr "Es requereix autenticació per reparar el programari instal·lat"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
 #. early boot time without a password.
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Dispara les actualitzacions sense connexió"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Es requereix autenticació per disparar les actualitzacions sense connexió"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Neteja els missatges de les actualitzacions sense connexió"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
+msgstr "Es requereix autenticació per netejar els missatges de les actualitzacions sense connexió"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Àlies per %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "No s'ha trobat l'ordre, les ordres vàlides són:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Administrador de paquets a usar, p.ex. dummy"
+msgstr "Programari específic d'empaquetament a utilitzar, p. ex. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Refresca la memòria cau"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Refresca la memòria cau (forçat)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Cerca per nom"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Cerca per detall"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Cerca per fitxer"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Instal·la el paquet"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Estableix les opcions del dipòsit"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "No s'han pogut analitzar els arguments"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "No s'ha pogut carregar el fitxer de configuració"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "No s'ha pogut carregar la capa d'accés a les dades"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "No s'ha pogut descarregar la capa d'accés a les dades"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "Inhabilita el temporitzador de repós"
+msgstr "Inhabilita el temporitzador de repòs"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
@@ -1423,7 +1444,7 @@ msgstr "Mostra la versió i surt"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "Surt després de un petit retràs"
+msgstr "Surt després d'un breu retard"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
@@ -1431,24 +1452,24 @@ msgstr "Surt després que el motor s'hagi carregat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "No netegis l'entorn en l'inici"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr "servei PackageKit"
+msgstr "Servei del PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "El programari no prové d'una font de confiança."
+msgstr "El programari no prové d'un origen de confiança."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Actualitzeu aquest paquet només si esteu segurs que cal fer-ho."
+msgstr "No actualitzeu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Actualitzeu aquests paquets només si esteu segurs que cal fer-ho."
+msgstr "No actualitzeu aquests paquets a menys que estigueu segur que és segur fer-ho."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Instal·leu aquest paquet només si esteu segurs que cal fer-ho."
+msgstr "No instal·leu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Instal·leu aquests paquets només si esteu segurs que cal fer-ho."
+msgstr "No instal·leu aquests paquets a menys que estigueu segur que és segur fer-ho."

@@ -3,18 +3,19 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Igor Pires Soares <igor@projetofedora.org>, 2008, 2009, 2010
+# Igor Pires Soares <igor@projetofedora.org>, 2008-2010
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2012-2014
 # Richard Hughes <richard@hughsie.com>, 2011
+# ufa <ufa@technotroll.org>, 2012
 # ufa <ufa@technotroll.org>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-13 12:37+0100\n"
-"PO-Revision-Date: 2015-07-13 11:37+0000\n"
+"POT-Creation-Date: 2015-11-27 14:52+0000\n"
+"PO-Revision-Date: 2015-11-27 14:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/p/packagekit/language/pt_BR/)\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/freedesktop/packagekit/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -186,7 +187,7 @@ msgstr "Desabilitado"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "O reinício do sistema é requerido por:"
+msgstr "O reinício do sistema é necessário para:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
@@ -195,7 +196,7 @@ msgstr "É necessário reiniciar a sessão:"
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "O reinício do sistema (por segurança) é requerido por:"
+msgstr "O reinício do sistema (por segurança) é necessário por:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
@@ -204,7 +205,7 @@ msgstr "É necessário reiniciar a sessão (por segurança):"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "O reinício do aplicativo é requerido por:"
+msgstr "O reinício do aplicativo é necessário para:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -238,7 +239,7 @@ msgstr "Erro fatal"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr "Não há pacotes a serem atualizados"
+msgstr "Não há pacotes a serem atualizados."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -251,7 +252,7 @@ msgid "There are no updates available at this time."
 msgstr "Não há atualizações disponíveis neste momento."
 
 msgid "There are no upgrades available at this time."
-msgstr "Não há atualizações no momento"
+msgstr "Não há atualizações no momento."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -379,14 +380,14 @@ msgstr "Instala os pacotes sem pedir confirmação"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Preparar a transação baixando pacotes apenas"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Permitir que pacotes ser desatualizados durante a transação"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Permitir que pacotes sejam reinstalados durante a transação"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -404,7 +405,7 @@ msgstr "Período máximo do cache de metadados. Use -1 para 'nunca'"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Permitir que pacotes não confiáveis ser instalado."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -508,6 +509,16 @@ msgstr "É necessário especificar o que o pacote fornece"
 msgid "A filename is required"
 msgstr "Um nome de arquivo é necessário"
 
+#. TRANSLATORS: The user did not
+#. * provide a distro name
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not
+#. * provide an upgrade type
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
+msgstr ""
+
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "Descrição"
@@ -562,7 +573,7 @@ msgstr "Desligando após instalar atualizações…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instalando atualizações; Isto pode demorar um pouco..."
 
 #. TRANSLATORS: when we are getting data from the daemon
 msgid "Getting package information..."
@@ -784,7 +795,7 @@ msgstr "Baixando informações do repositório"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "Baixando a lista de pacotes"
+msgstr "Baixando lista de pacotes"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -792,7 +803,7 @@ msgstr "Baixando listas de arquivos"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "Baixando a lista de alterações"
+msgstr "Baixando lista de alterações"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
@@ -800,7 +811,7 @@ msgstr "Baixando grupos"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "Baixando informações de atualização"
+msgstr "Baixando  informações de atualização"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
@@ -896,7 +907,7 @@ msgstr "Disponível"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Indisponível"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -1068,7 +1079,7 @@ msgstr "O pacote não assinado não será instalado."
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "A assinatura da fonte de programas é requerida"
+msgstr "A assinatura da fonte de programas é necessária"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
@@ -1216,10 +1227,10 @@ msgstr "Autenticação é necessária para instalar programas não confiáveis"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Instalar pacote já instalado novamente"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "A autenticação é necessário para reinstalar software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1228,10 +1239,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Instalar a versão mais antiga do pacote instalado"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "A autenticação é necessária para desatualizar o programa"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1327,6 +1338,16 @@ msgid "Authentication is required to reload the device with a new driver"
 msgstr "É necessário autenticar para recarregar o dispositivo com o novo driver"
 
 #. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr ""
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
+
+#. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
@@ -1357,10 +1378,10 @@ msgstr "Autenticação é necessária para limpar mensagens de atualização off
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias para %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Comando não encontrado, comandos válidos são:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1368,51 +1389,51 @@ msgstr "O backend de empacotamento a ser utilizado, p. ex.: dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Renovar o cache"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Renovar o cache (forçado)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Pesquisar por nomes"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Pesquisar por detalhes"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Pesquisar por arquivos"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Instalar pacote"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Definir opções do repositório"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Falha ao analisar argumetnos"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Falha ao carregar o arquivo de configuração"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Falha ao carregar o backend"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Falha ao descarregar o backend"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
