@@ -4281,9 +4281,9 @@ pk_client_upgrade_system_async (PkClient *client,
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	GSimpleAsyncResult *res;
 	PkClientState *state;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4315,8 +4315,7 @@ pk_client_upgrade_system_async (PkClient *client,
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 
 	/* identify */
@@ -4327,8 +4326,6 @@ pk_client_upgrade_system_async (PkClient *client,
 				  cancellable,
 				  (GAsyncReadyCallback) pk_client_get_tid_cb,
 				  state);
-out:
-	g_object_unref (res);
 }
 
 /**

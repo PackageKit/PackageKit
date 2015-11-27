@@ -5004,10 +5004,10 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error = NULL;
 	PkBitfield transaction_flags;
 	PkUpgradeKindEnum upgrade_kind;
 	const gchar *distro_id;
+	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
