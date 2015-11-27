@@ -1003,13 +1003,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def get_packages(self, filters):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
+        self.percentage(0)
 
         cp_list = self._get_all_cp(filters)
-
         progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
 
-        for percentage, cp in izip(progress, self._get_all_cp(filters)):
+        for percentage, cp in izip(progress, cp_list):
             for cpv in self._get_all_cpv(cp, filters):
                 try:
                     self._package(cpv)
