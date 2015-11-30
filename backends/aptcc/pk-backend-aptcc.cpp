@@ -492,8 +492,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
         AcqPackageKitStatus Stat(apt, job);
 
         // get a fetcher
-        pkgAcquire fetcher;
-        fetcher.Setup(&Stat);
+        pkgAcquire fetcher(&Stat);
         gchar *pi;
 
         // TODO this might be useful when the item is in the cache

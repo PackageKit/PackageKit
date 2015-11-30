@@ -24,9 +24,12 @@
 #include <cstdio>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/progress.h>
+#include <apt-pkg/upgrade.h>
 
 #include "apt-utils.h"
 #include "apt-messages.h"
+
+using namespace APT;
 
 AptCacheFile::AptCacheFile(PkBackendJob *job) :
     m_packageRecords(0),
@@ -113,7 +116,8 @@ bool AptCacheFile::CheckDeps(bool AllowBroken)
 
 bool AptCacheFile::DistUpgrade()
 {
-    return pkgDistUpgrade(*this);
+    OpPackageKitProgress progress(m_job);
+    return Upgrade::Upgrade(*this, Upgrade::ALLOW_EVERYTHING, &progress);
 }
 
 void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)

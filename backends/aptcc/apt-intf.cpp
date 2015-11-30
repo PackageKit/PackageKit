@@ -3,7 +3,7 @@
  * Copyright (c) 1999-2008 Daniel Burrows
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
  *               2009 Daniel Nicoletti <dantti12@gmail.com>
- *               2012 Matthias Klumpp <matthias@tenstral.net>
+ *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include <apt-pkg/error.h>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/pkgsystem.h>
-#include <apt-pkg/sptr.h>
 #include <apt-pkg/version.h>
 
 #include <sys/statvfs.h>
@@ -36,6 +35,8 @@
 #include <sys/fcntl.h>
 #include <pty.h>
 
+#include <iostream>
+#include <memory>
 #include <fstream>
 #include <dirent.h>
 
@@ -46,6 +47,8 @@
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
 #include "deb-file.h"
+
+using namespace APT;
 
 #define RAMFS_MAGIC     0x858458f6
 
@@ -73,7 +76,7 @@ bool AptIntf::init()
     // set locale
     if (locale = pk_backend_job_get_locale(m_job)) {
         setlocale(LC_ALL, locale);
-        // TODO why this cuts characthers on ui?
+        // TODO why this cuts characters on ui?
         // 		string _locale(locale);
         // 		size_t found;
         // 		found = _locale.find('.');
@@ -368,7 +371,7 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             }
 
             // Create the package manager and prepare to download
-            SPtr<pkgPackageManager> PM = _system->CreatePM(*m_cache);
+            std::unique_ptr<pkgPackageManager> PM (_system->CreatePM(*m_cache));
             if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
                     _error->PendingError() == true) {
                 return downloaded;
@@ -680,7 +683,7 @@ bool AptIntf::getArchive(pkgAcquire *Owner,
         }
 
         const string PkgFile = Parse.FileName();
-        const string MD5     = Parse.MD5Hash();
+        const HashStringList hashes = Parse.Hashes();
         if (PkgFile.empty() == true) {
             return _error->Error("The package index files are corrupted. No Filename: "
                                  "field for package %s.",
@@ -692,7 +695,7 @@ bool AptIntf::getArchive(pkgAcquire *Owner,
         // Create the item
         new pkgAcqFile(Owner,
                        Index->ArchiveURI(PkgFile),
-                       MD5,
+                       hashes,
                        Version->Size,
                        Index->ArchiveInfo(Version),
                        Version.ParentPkg().Name(),
@@ -805,7 +808,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
         // get a fetcher
         pkgAcquire fetcher;
-        fetcher.Setup(&Stat);
+        fetcher.SetLog(&Stat);
 
         // fetch the changelog
         pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
@@ -1017,18 +1020,6 @@ PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
         if (vf.File().Site() == NULL || rec->URI.find(vf.File().Site()) == std::string::npos) {
             continue;
         }
-
-        //         cout << endl;
-        //         cout << ver.ParentPkg().Name() << endl;
-        //         cout << ver.VerStr() << endl;
-        //         cout << vf.File().FileName() << endl;
-        //         cout << vf.File().Origin() << endl;
-        //         cout << vf.File().Component() << endl;
-        //         cout << vf.File().Label() << endl;
-        //         cout << vf.File().Codename() << endl;
-        //         cout << vf.File().Site() << endl;
-        //         cout << vf.File().Archive() << endl;
-        //         cout << vf.File().IndexType() << endl;
 
         output.push_back(ver);
     }
@@ -1484,7 +1475,7 @@ bool AptIntf::packageIsSupported(const pkgCache::VerIterator &verIter, string co
     // Get a fetcher
     AcqPackageKitStatus Stat(this, m_job);
     pkgAcquire fetcher;
-    fetcher.Setup(&Stat);
+    fetcher.SetLog(&Stat);
 
     PkBitfield flags = pk_backend_job_get_transaction_flags(m_job);
     bool trusted = checkTrusted(fetcher, flags);
@@ -2399,10 +2390,10 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     AcqPackageKitStatus Stat(this, m_job);
 
     // get a fetcher
-    pkgAcquire fetcher;
+    pkgAcquire fetcher(&Stat);
     if (!simulate) {
         // Only lock the archive directory if we will download
-        if (fetcher.Setup(&Stat, _config->FindDir("Dir::Cache::Archives")) == false) {
+        if (fetcher.GetLock(_config->FindDir("Dir::Cache::Archives")) == false) {
             return false;
         }
     }
@@ -2413,7 +2404,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     }
 
     // Create the package manager and prepare to download
-    SPtr<pkgPackageManager> PM = _system->CreatePM(*m_cache);
+    std::unique_ptr<pkgPackageManager> PM (_system->CreatePM(*m_cache));
     if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
             _error->PendingError() == true) {
         return false;
@@ -2566,7 +2557,9 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         }
 
         // Pass the write end of the pipe to the install function
-        res = PM->DoInstallPostFork(readFromChildFD[1]);
+        auto *progress = new Progress::PackageManagerProgressFd(readFromChildFD[1]);
+        res = PM->DoInstallPostFork(progress);
+	delete progress;
 
         // dump errors into cerr (pass it to the parent process)
         _error->DumpErrors();
