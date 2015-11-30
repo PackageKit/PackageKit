@@ -120,7 +120,7 @@ if test "$GCC" = "yes"; then
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-include-dirs"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wmissing-format-attribute"
 #	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wclobbered"
-#	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wempty-body"
+	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wempty-body"
 #	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wignored-qualifiers"
 	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wsign-compare"
 #	WARNINGFLAGS_CPP="$WARNINGFLAGS_CPP -Wtype-limits"
@@ -467,6 +467,9 @@ AM_CONDITIONAL(HAVE_PYTHON_BACKEND, test x$have_python_backend = xyes)
 if test x$enable_aptcc = xyes; then
 	dnl Use C++
 	AC_LANG([C++])
+
+	# Require C++11 support
+	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 
 	# check we have apt and gstreamer headers
 	save_CPPFLAGS="$CPPFLAGS"
