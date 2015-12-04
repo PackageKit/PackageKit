@@ -1183,7 +1183,11 @@ pk_engine_get_package_history (PkEngine *engine,
 		package_lines = g_strsplit (data, "\n", -1);
 		for (i = 0; package_lines[i] != NULL; i++) {
 			ret = pk_package_parse (package_tmp, package_lines[i], error);
-			g_assert (ret);
+			if (!ret) {
+				g_warning ("Failed to parse package: '%s'",
+					   package_lines[i]);
+				continue;
+			}
 
 			/* not the package we care about */
 			if (!pk_engine_package_name_in_strv (package_names, package_tmp))
