@@ -85,7 +85,7 @@ pkmon_LDFLAGS =						\
 pkmon_CFLAGS =						\
 	$(WARNINGFLAGS_C)
 
-if HAVE_SYSTEMD
+if ENABLE_OFFLINE_UPDATE
 
 libexec_PROGRAMS =					\
 	pk-offline-update
