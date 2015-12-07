@@ -249,6 +249,13 @@ fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$has_systemdsystemunitdir"])
 
 dnl ---------------------------------------------------------------------------
+dnl - Use systemd offline update
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(offline-update, AS_HELP_STRING([--enable-offline-update],[enable offline update via systemd]),
+	      enable_offline_update=$enableval,enable_offline_update=yes)
+AM_CONDITIONAL(ENABLE_OFFLINE_UPDATE, [test x$enable_systemd = xyes -a x$enable_offline_update = xyes])
+
+dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(man_pages, AS_HELP_STRING([--disable-man-pages],[Disable man pages generation]), enable_man_pages=$enableval)
@@ -626,6 +633,7 @@ echo "
         cppflags:                  ${CPPFLAGS}
         Able to run locally:       ${enable_local}
         Use systemd:               ${enable_systemd}
+        Enable offline update:     ${enable_offline_update}
         Networking stacks:         ${networking_apis}
         Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
