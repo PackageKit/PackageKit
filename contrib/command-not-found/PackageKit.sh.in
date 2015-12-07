@@ -26,17 +26,16 @@ command_not_found_handle () {
 	if [ $runcnf -eq 1 ]; then
 		@LIBEXECDIR@/pk-command-not-found "$@"
 		retval=$?
-	else
-		local shell=`basename "$SHELL"`
-		echo "$shell: $1: command not found"
+	elif [[ -n "${BASH_VERSION-}" ]]; then
+		printf >&2 'bash: %scommand not found\n' "${1:+$1: }"
 	fi
 
 	# return success or failure
 	return $retval
 }
 
-if [ -n "$ZSH_VERSION" ]; then
+if [[ -n "${ZSH_VERSION-}" ]]; then
 	command_not_found_handler () {
-		command_not_found_handle "$@"
+		command_not_found_handle "$@" && return 127
 	}
 fi
