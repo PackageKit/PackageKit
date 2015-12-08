@@ -327,10 +327,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
 
-		/* convert % else we try to format them */
-		g_strdelimit (text, "%", '$');
-
-		pk_backend_error_code (backend_spawn->priv->backend, error_enum, text);
+		pk_backend_error_code (backend_spawn->priv->backend, error_enum, "%s", text);
 		g_free (text);
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
