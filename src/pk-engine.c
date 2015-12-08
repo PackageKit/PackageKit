@@ -1656,7 +1656,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		if (package_ids != NULL) {
 			value = g_variant_new ("(^as)", package_ids);
 		} else {
-			value = g_variant_new ("(as)");
+			value = g_variant_new ("(as)", NULL);
 		}
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
