@@ -140,7 +140,7 @@ pk_cache_init (PkCache *cache)
 	cache->priv = PK_CACHE_GET_PRIVATE (cache);
 	cache->priv->updates_cache = NULL;
 	cache->priv->conf = pk_conf_new ();
-	cache->priv->use_update_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCache");
+	cache->priv->use_update_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCacheBROKEN");
 }
 
 /**

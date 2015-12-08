@@ -778,7 +778,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	     transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 
 		/* check updated packages file lists and running processes */
-		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcesses");
+		ret = pk_conf_get_bool (transaction->priv->conf, "UpdateCheckProcessesBROKEN");
 		if (ret) {
 			/* get results */
 			array = pk_results_get_package_array (transaction->priv->results);
@@ -822,7 +822,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 
 		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
+		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFilesBROKEN");
 		if (ret) {
 			/* get results */
 			array = pk_results_get_package_array (transaction->priv->results);
@@ -863,7 +863,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* look for library restarts */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {
-		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUseBROKEN");
 		if (ret) {
 			/* now emit what we found ealier */
 			pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra);
@@ -882,12 +882,12 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* generate the package list */
-		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageList");
+		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageListBROKEN");
 		if (ret)
 			pk_transaction_extra_update_package_list (transaction->priv->transaction_extra);
 
 		/* refresh the desktop icon cache */
-		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
+		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFilesBROKEN");
 		if (ret)
 			pk_transaction_extra_import_desktop_files (transaction->priv->transaction_extra);
 
@@ -1509,7 +1509,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	}
 
 	/* do we want to enable this codepath? */
-	ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+	ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUseBROKEN");
 	if (!ret) {
 		egg_warning ("not checking for library restarts");
 		goto out;
