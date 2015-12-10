@@ -605,7 +605,7 @@ pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
  *
  * Retrieves the proxy information from the database.
  *
- * Return value: %TRUE if we matched a proxy
+ * Return value: %TRUE on success.
  **/
 gboolean
 pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
@@ -639,12 +639,12 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 		goto out;
 	}
 
+	/* success, even if we got no data */
+	ret = TRUE;
+
 	/* nothing matched */
 	if (!item->set)
 		goto out;
-
-	/* success, even if we got no data */
-	ret = TRUE;
 
 	/* copy data */
 	if (proxy_http != NULL)
@@ -659,6 +659,7 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 		*no_proxy = g_strdup (item->no_proxy);
 	if (pac != NULL)
 		*pac = g_strdup (item->pac);
+
 out:
 	pk_transaction_db_proxy_item_free (item);
 	return ret;
