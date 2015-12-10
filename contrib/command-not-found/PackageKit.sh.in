@@ -17,14 +17,14 @@ command_not_found_handle () {
 	[[ ! -S /var/run/dbus/system_bus_socket ]] && runcnf=0
 
 	# don't run if packagekitd doesn't exist in the _system_ root
-	[[ ! -x @LIBEXECDIR@/packagekitd ]] && runcnf=0
+	[[ ! -x '@LIBEXECDIR@/packagekitd' ]] && runcnf=0
 
 	# don't run if bash command completion is being run
 	[[ -n ${COMP_CWORD-} ]] && runcnf=0
 
 	# run the command, or just print a warning
 	if [ $runcnf -eq 1 ]; then
-		@LIBEXECDIR@/pk-command-not-found "$@"
+		'@LIBEXECDIR@/pk-command-not-found' "$@"
 		retval=$?
 	elif [[ -n "${BASH_VERSION-}" ]]; then
 		printf >&2 'bash: %scommand not found\n' "${1:+$1: }"
