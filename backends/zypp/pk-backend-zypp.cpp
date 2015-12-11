@@ -3577,10 +3577,10 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	const gchar *proxy_http;
 	const gchar *proxy_https;
 	const gchar *proxy_ftp;
-	const gchar *uri;
 	const gchar *proxy_socks;
 	const gchar *no_proxy;
 	const gchar *pac;
+	gchar *uri;
 
 	locale = pk_backend_job_get_locale(job);
 	if (!pk_strzero (locale)) {
