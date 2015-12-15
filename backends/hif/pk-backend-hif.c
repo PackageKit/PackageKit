@@ -539,10 +539,13 @@ typedef enum {
  * hif_utils_create_cache_key:
  */
 static gchar *
-hif_utils_create_cache_key (HifSackAddFlags flags)
+hif_utils_create_cache_key (const gchar *release_ver, HifSackAddFlags flags)
 {
 	GString *key;
+
 	key = g_string_new ("HySack::");
+	g_string_append_printf (key, "release_ver[%s]::", release_ver);
+
 	if (flags == HIF_SACK_ADD_FLAG_NONE) {
 		g_string_append (key, "none");
 	} else {
@@ -644,7 +647,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* do we have anything in the cache */
-	cache_key = hif_utils_create_cache_key (flags);
+	cache_key = hif_utils_create_cache_key (hif_context_get_release_ver (job_data->context), flags);
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0) {
 		g_mutex_lock (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
