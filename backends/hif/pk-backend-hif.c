@@ -64,7 +64,6 @@ typedef struct {
 	HifContext	*context;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
-	HifRepos	*repos;
 	GTimer		*repos_timer;
 } PkBackendHifPrivate;
 
@@ -260,9 +259,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 		g_error ("failed to setup context: %s", error->message);
 
 	/* use context's repository loaders */
-	priv->repos = hif_context_get_repos (priv->context);
 	priv->repos_timer = g_timer_new ();
-	g_signal_connect (priv->repos, "changed",
+	g_signal_connect (hif_context_get_repos (priv->context), "changed",
 			  G_CALLBACK (pk_backend_hif_repos_changed_cb), backend);
 
 	lr_global_init ();
@@ -473,14 +471,12 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 static gboolean
 pk_backend_ensure_sources (PkBackendHifJobData *job_data, GError **error)
 {
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
-
 	/* already set */
 	if (job_data->sources != NULL)
 		return TRUE;
 
 	/* set the list of repos */
-	job_data->sources = hif_repos_get_sources (priv->repos, error);
+	job_data->sources = hif_repos_get_sources (hif_context_get_repos (job_data->context), error);
 	if (job_data->sources == NULL)
 		return FALSE;
 	return TRUE;
@@ -633,7 +629,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* media repos could disappear at any time */
 	if ((create_flags & HIF_CREATE_SACK_FLAG_USE_CACHE) > 0 &&
-	    hif_repos_has_removable (priv->repos) &&
+	    hif_repos_has_removable (hif_context_get_repos (job_data->context)) &&
 	    g_timer_elapsed (priv->repos_timer, NULL) > 1.0f) {
 		g_debug ("not reusing sack as media may have disappeared");
 		create_flags &= ~HIF_CREATE_SACK_FLAG_USE_CACHE;
@@ -1237,8 +1233,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	gboolean enabled;
 	guint i;
 	HifSource *src;
-	PkBackend *backend = pk_backend_job_get_backend (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
 	_cleanup_ptrarray_unref_ GPtrArray *sources = NULL;
 	_cleanup_error_free_ GError *error = NULL;
@@ -1247,7 +1242,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = hif_repos_get_sources (priv->repos, &error);
+	sources = hif_repos_get_sources (hif_context_get_repos (job_data->context), &error);
 	if (sources == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1303,7 +1298,6 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	gboolean ret = FALSE;
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	_cleanup_error_free_ GError *error = NULL;
 
 	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
@@ -1326,7 +1320,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	pk_backend_job_set_percentage (job, 0);
 
 	/* find the correct repo */
-	src = hif_repos_get_source_by_id (priv->repos, repo_id, &error);
+	src = hif_repos_get_source_by_id (hif_context_get_repos (job_data->context), repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -2032,7 +2026,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	HyPackage pkg;
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
@@ -2112,7 +2105,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		hif_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
-		src = hif_repos_get_source_by_id (priv->repos,
+		src = hif_repos_get_source_by_id (hif_context_get_repos (job_data->context),
 						  hy_package_get_reponame (pkg),
 						  &error);
 		if (src == NULL) {
@@ -2188,19 +2181,18 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
  * pk_backend_transaction_check_untrusted_repos:
  */
 static GPtrArray *
-pk_backend_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sources,
-					   HyGoal goal, GError **error)
+pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 {
 	gboolean ret = TRUE;
 	GPtrArray *array = NULL;
 	guint i;
 	HifSource *src;
 	HyPackage pkg;
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	_cleanup_ptrarray_unref_ GPtrArray *install = NULL;
 
 	/* find any packages in untrusted repos */
-	install = hif_goal_get_packages (goal,
+	install = hif_goal_get_packages (job_data->goal,
 					 HIF_PACKAGE_INFO_INSTALL,
 					 HIF_PACKAGE_INFO_REINSTALL,
 					 HIF_PACKAGE_INFO_DOWNGRADE,
@@ -2219,7 +2211,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackend *backend, GPtrArray *sou
 		}
 
 		/* find repo */
-		src = hif_repos_get_source_by_id (priv->repos,
+		src = hif_repos_get_source_by_id (hif_context_get_repos (job_data->context),
 						  hy_package_get_reponame (pkg),
 						  error);
 		if (src == NULL) {
@@ -2270,9 +2262,7 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 
 	/* mark any explicitly-untrusted packages so that the transaction skips
 	 * straight to only_trusted=FALSE after simulate */
-	untrusted = pk_backend_transaction_check_untrusted_repos (job_data->backend,
-							       job_data->sources,
-							       job_data->goal, error);
+	untrusted = pk_backend_transaction_check_untrusted_repos (job, error);
 	if (untrusted == NULL)
 		return FALSE;
 
@@ -2479,7 +2469,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	HyQuery query_release = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 	const gchar *from_repo;
 	const gchar *repo_filename;
@@ -2512,7 +2501,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_assert (ret);
 
 	/* find the repo-release package name for @repo_id */
-	src = hif_repos_get_source_by_id (priv->repos, repo_id, &error);
+	src = hif_repos_get_source_by_id (hif_context_get_repos (job_data->context), repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -2527,7 +2516,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	}
 
 	/* find all the .repo files the repo-release package installed */
-	sources = hif_repos_get_sources (priv->repos, &error);
+	sources = hif_repos_get_sources (hif_context_get_repos (job_data->context), &error);
 	search = g_new0 (gchar *, sources->len + 0);
 	removed_id = g_ptr_array_new_with_free_func (g_free);
 	repo_filename = hif_source_get_filename (src);
