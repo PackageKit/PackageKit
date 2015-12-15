@@ -70,6 +70,7 @@ typedef struct {
 
 typedef struct {
 	GPtrArray	*sources;
+	HifContext	*context;
 	HifTransaction	*transaction;
 	HifState	*state;
 	PkBackend	*backend;
@@ -399,6 +400,9 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	job_data->backend = backend;
 	pk_backend_job_set_user_data (job, job_data);
 
+	/* HifContext */
+	job_data->context = g_object_ref (priv->context);
+
 	/* HifState */
 	job_data->state = hif_state_new ();
 	hif_state_set_cancellable (job_data->state,
@@ -420,13 +424,13 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	value = pk_backend_job_get_proxy_http (job);
 	if (value != NULL) {
 		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
-		hif_context_set_http_proxy (priv->context, uri);
+		hif_context_set_http_proxy (job_data->context, uri);
 	}
 
 	/* transaction */
-	job_data->transaction = hif_transaction_new (priv->context);
+	job_data->transaction = hif_transaction_new (job_data->context);
 	hif_transaction_set_sources (job_data->transaction,
-				     hif_context_get_sources (priv->context));
+				     hif_context_get_sources (job_data->context));
 	hif_transaction_set_uid (job_data->transaction,
 				 pk_backend_job_get_uid (job));
 
@@ -453,6 +457,8 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	}
 	if (job_data->transaction != NULL)
 		g_object_unref (job_data->transaction);
+	if (job_data->context != NULL)
+		g_object_unref (job_data->context);
 	if (job_data->sources != NULL)
 		g_ptr_array_unref (job_data->sources);
 	if (job_data->goal != NULL)
@@ -598,6 +604,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	HifState *state_local;
 	HySack sack = NULL;
 	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	_cleanup_free_ gchar *cache_key = NULL;
 	_cleanup_free_ gchar *install_root = NULL;
@@ -677,8 +684,8 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* create empty sack */
-	solv_dir = hif_utils_real_path (hif_context_get_solv_dir (priv->context));
-	install_root = hif_utils_real_path (hif_context_get_install_root (priv->context));
+	solv_dir = hif_utils_real_path (hif_context_get_solv_dir (job_data->context));
+	install_root = hif_utils_real_path (hif_context_get_install_root (job_data->context));
 #if HY_VERSION_CHECK(0,5,3)
 	sack = hy_sack_create (solv_dir, NULL, install_root, NULL, HY_MAKE_CACHE_DIR);
 #else
@@ -687,8 +694,8 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	if (sack == NULL) {
 		ret = hif_error_set_from_hawkey (hy_get_errno (), error);
 		g_prefix_error (error, "failed to create sack in %s for %s: ",
-				hif_context_get_solv_dir (priv->context),
-				hif_context_get_install_root (priv->context));
+				hif_context_get_solv_dir (job_data->context),
+				hif_context_get_install_root (job_data->context));
 		goto out;
 	}
 
@@ -785,20 +792,20 @@ hif_utils_run_query_with_newest_filter (HySack sack, HyQuery query)
  * hif_utils_run_query_with_filters:
  */
 static HyPackageList
-hif_utils_run_query_with_filters (PkBackend *backend, HySack sack,
+hif_utils_run_query_with_filters (PkBackendJob *job, HySack sack,
 				  HyQuery query, PkBitfield filters)
 {
 	HyPackageList results;
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	const gchar *application_glob = "/usr/share/applications/*.desktop";
 
 	/* arch */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
 		hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
-				    hif_context_get_native_arches (priv->context));
+				    hif_context_get_native_arches (job_data->context));
 	} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH)) {
 		hy_query_filter_in (query, HY_PKG_ARCH, HY_NEQ,
-				    hif_context_get_native_arches (priv->context));
+				    hif_context_get_native_arches (job_data->context));
 	}
 
 	/* installed */
@@ -951,32 +958,32 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	query = hy_query_create (sack);
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_GET_PACKAGES:
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_EQ, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE:
 		hy_query_filter_in (query, HY_PKG_FILE, HY_EQ, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
 		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		hy_query_filter_provides_in (query, search);
-		pkglist = hif_utils_run_query_with_filters (job_data->backend, sack, query, filters);
+		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		/* set up the sack for packages that should only ever be installed, never updated */
-		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
-		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
+		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
+		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
 		hy_goal_upgrade_all (job_data->goal);
@@ -3139,7 +3146,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean ret;
 	gchar **package_ids;
@@ -3176,8 +3182,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	}
 
 	/* set up the sack for packages that should only ever be installed, never updated */
-	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (priv->context));
-	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (priv->context));
+	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
+	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
