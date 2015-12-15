@@ -162,6 +162,46 @@ pk_backend_context_invalidate_cb (HifContext *context,
 }
 
 /**
+ * pk_backend_setup_hif_context:
+ */
+static gboolean
+pk_backend_setup_hif_context (HifContext *context, GKeyFile *conf, const gchar *release_ver, GError **error)
+{
+	gboolean keep_cache;
+	_cleanup_free_ gchar *cache_dir = NULL;
+	_cleanup_free_ gchar *destdir = NULL;
+	_cleanup_free_ gchar *lock_dir = NULL;
+	_cleanup_free_ gchar *repo_dir = NULL;
+	_cleanup_free_ gchar *solv_dir = NULL;
+
+	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
+	if (destdir == NULL)
+		destdir = g_strdup ("/");
+	hif_context_set_install_root (context, destdir);
+	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "metadata", NULL);
+	hif_context_set_cache_dir (context, cache_dir);
+	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
+	hif_context_set_solv_dir (context, solv_dir);
+	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
+	hif_context_set_repo_dir (context, repo_dir);
+	lock_dir = g_build_filename (destdir, "/var/run", NULL);
+	hif_context_set_lock_dir (context, lock_dir);
+	hif_context_set_release_ver (context, release_ver);
+	hif_context_set_rpm_verbosity (context, "info");
+
+	/* use this initial data if repos are not present */
+	hif_context_set_vendor_cache_dir (context, "/usr/share/PackageKit/metadata");
+	hif_context_set_vendor_solv_dir (context, "/usr/share/PackageKit/hawkey");
+
+	/* do we keep downloaded packages */
+	keep_cache = g_key_file_get_boolean (conf, "Daemon", "KeepCache", NULL);
+	hif_context_set_keep_cache (context, keep_cache);
+
+	/* set up context */
+	return hif_context_setup (context, NULL, error);
+}
+
+/**
  * pk_backend_initialize:
  */
 void
@@ -170,11 +210,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	gboolean ret;
 	PkBackendHifPrivate *priv;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *cache_dir = NULL;
-	_cleanup_free_ gchar *destdir = NULL;
-	_cleanup_free_ gchar *lock_dir = NULL;
-	_cleanup_free_ gchar *repo_dir = NULL;
-	_cleanup_free_ gchar *solv_dir = NULL;
 	_cleanup_free_ gchar *release_ver = NULL;
 
 	/* use logging */
@@ -219,31 +254,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->context = hif_context_new ();
 	g_signal_connect (priv->context, "invalidate",
 			  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
-	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
-	if (destdir == NULL)
-		destdir = g_strdup ("/");
-	hif_context_set_install_root (priv->context, destdir);
-	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "metadata", NULL);
-	hif_context_set_cache_dir (priv->context, cache_dir);
-	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
-	hif_context_set_solv_dir (priv->context, solv_dir);
-	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
-	hif_context_set_repo_dir (priv->context, repo_dir);
-	lock_dir = g_build_filename (destdir, "/var/run", NULL);
-	hif_context_set_lock_dir (priv->context, lock_dir);
-	hif_context_set_release_ver (priv->context, release_ver);
-	hif_context_set_rpm_verbosity (priv->context, "info");
-
-	/* use this initial data if repos are not present */
-	hif_context_set_vendor_cache_dir (priv->context, "/usr/share/PackageKit/metadata");
-	hif_context_set_vendor_solv_dir (priv->context, "/usr/share/PackageKit/hawkey");
-
-	/* do we keep downloaded packages */
-	ret = g_key_file_get_boolean (conf, "Daemon", "KeepCache", NULL);
-	hif_context_set_keep_cache (priv->context, ret);
-
-	/* set up context */
-	ret = hif_context_setup (priv->context, NULL, &error);
+	ret = pk_backend_setup_hif_context (priv->context, conf, release_ver, &error);
 	if (!ret)
 		g_error ("failed to setup context: %s", error->message);
 
