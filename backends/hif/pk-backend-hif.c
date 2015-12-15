@@ -169,13 +169,10 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	gboolean ret;
 	PkBackendHifPrivate *priv;
 	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *cache_dir_fb = NULL;
 	_cleanup_free_ gchar *cache_dir = NULL;
-	_cleanup_free_ gchar *cache_root = NULL;
 	_cleanup_free_ gchar *destdir = NULL;
 	_cleanup_free_ gchar *lock_dir = NULL;
 	_cleanup_free_ gchar *repo_dir = NULL;
-	_cleanup_free_ gchar *solv_dir_fb = NULL;
 	_cleanup_free_ gchar *solv_dir = NULL;
 
 	/* use logging */
