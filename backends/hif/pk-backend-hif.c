@@ -385,6 +385,32 @@ pk_backend_state_allow_cancel_changed_cb (HifState *state,
 	pk_backend_job_set_allow_cancel (job, allow_cancel);
 }
 
+static void
+pk_backend_job_set_context (PkBackendJob *job, HifContext *context)
+{
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	const gchar *value;
+
+	/* HifContext */
+	g_clear_object (&job_data->context);
+	job_data->context = g_object_ref (context);
+
+	/* set proxy */
+	value = pk_backend_job_get_proxy_http (job);
+	if (value != NULL) {
+		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+		hif_context_set_http_proxy (job_data->context, uri);
+	}
+
+	/* transaction */
+	g_clear_object (&job_data->transaction);
+	job_data->transaction = hif_transaction_new (job_data->context);
+	hif_transaction_set_sources (job_data->transaction,
+				     hif_context_get_sources (job_data->context));
+	hif_transaction_set_uid (job_data->transaction,
+				 pk_backend_job_get_uid (job));
+}
+
 /**
  * pk_backend_start_job:
  */
@@ -393,13 +419,9 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendHifJobData *job_data;
-	const gchar *value;
 	job_data = g_new0 (PkBackendHifJobData, 1);
 	job_data->backend = backend;
 	pk_backend_job_set_user_data (job, job_data);
-
-	/* HifContext */
-	job_data->context = g_object_ref (priv->context);
 
 	/* HifState */
 	job_data->state = hif_state_new ();
@@ -418,19 +440,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
-	/* set proxy */
-	value = pk_backend_job_get_proxy_http (job);
-	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
-		hif_context_set_http_proxy (job_data->context, uri);
-	}
-
-	/* transaction */
-	job_data->transaction = hif_transaction_new (job_data->context);
-	hif_transaction_set_sources (job_data->transaction,
-				     hif_context_get_sources (job_data->context));
-	hif_transaction_set_uid (job_data->transaction,
-				 pk_backend_job_get_uid (job));
+	pk_backend_job_set_context (job, priv->context);
 
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
