@@ -382,7 +382,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	}
 
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		/* we 'fail' with success so the appication gets a
+		/* we 'fail' with success so the application gets a
 		 * chance to process the PackageKit-specific
 		 * ErrorCode enumerated value and detail. */
 		state->ret = TRUE;

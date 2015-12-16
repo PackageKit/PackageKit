@@ -30,10 +30,10 @@
 
 G_BEGIN_DECLS
 
-/* rationalle:
+/* rationale:
  *
  * '%': breaks printf
- * '|': used as the filename seporator
+ * '|': used as the filename separator
  * '~': conary
  * '@': conary
  *

@@ -383,7 +383,7 @@ pk_offline_get_action_monitor (GCancellable *cancellable, GError **error)
  * pk_offline_get_results_mtime:
  * @error: A #GError or %NULL
  *
- * Gets the motification time of the prepared transaction.
+ * Gets the modification time of the prepared transaction.
  *
  * Return value: a unix time, or 0 for error.
  *

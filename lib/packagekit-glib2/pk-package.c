@@ -380,7 +380,7 @@ pk_package_get_arch (PkPackage *package)
  *
  * Gets the package data, which is usually the repository ID that contains the
  * package. Special ID's include "installed" for installed packages, and "local"
- * for local packages that exist on disk but not in a repoitory.
+ * for local packages that exist on disk but not in a repository.
  *
  * Return value: the data, or %NULL if unset
  *
