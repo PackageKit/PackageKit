@@ -749,7 +749,7 @@ pk_test_transaction_func (void)
 	g_assert (transaction != NULL);
 
 	/* validate incorrect text */
-	ret = pk_transaction_strvalidate ("richard$hughes", &error);
+	ret = pk_transaction_strvalidate ("richard$\xffhughes", &error);
 	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
 	g_assert (!ret);
 	g_clear_error (&error);
@@ -1456,9 +1456,9 @@ main (int argc, char **argv)
 #endif
 
 	/* components */
+	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
-	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);

@@ -2152,35 +2152,6 @@ pk_transaction_finished_idle_cb (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_strvalidate_char:
- * @item: A single char to test
- *
- * Tests a char to see if it may be dangerous.
- *
- * Return value: %TRUE if the char is valid
- **/
-static gboolean
-pk_transaction_strvalidate_char (gchar item)
-{
-	switch (item) {
-	case '$':
-	case '`':
-	case '\'':
-	case '"':
-	case '^':
-	case '[':
-	case ']':
-	case '{':
-	case '}':
-	case '\\':
-	case '<':
-	case '>':
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * pk_transaction_strvalidate:
  * @text: The text to check for validity
  *
@@ -2191,7 +2162,6 @@ pk_transaction_strvalidate_char (gchar item)
 gboolean
 pk_transaction_strvalidate (const gchar *text, GError **error)
 {
-	guint i;
 	guint length;
 
 	/* maximum size is 1024 */
@@ -2202,14 +2172,13 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 		return FALSE;
 	}
 
-	for (i = 0; i < length; i++) {
-		if (pk_transaction_strvalidate_char (text[i]) == FALSE) {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon: char '%c' in text!", text[i]);
-			return FALSE;
-		}
+	/* just check for valid UTF-8 */
+	if (!g_utf8_validate (text, -1, NULL)) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid input passed to daemon: %s", text);
+		return FALSE;
 	}
 	return TRUE;
 }
