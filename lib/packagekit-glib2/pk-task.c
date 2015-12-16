@@ -339,8 +339,6 @@ static void
 pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
-	guint i;
-	guint length;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ PkPackageSack *sack = NULL;
 	_cleanup_object_unref_ PkPackageSack *untrusted_sack = NULL;
@@ -404,13 +402,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 
 	/* remove all the packages we want to ignore */
 	pk_package_sack_remove_by_filter (sack, pk_task_package_filter_cb, state);
-
-	/* remove all the original packages from the sack */
-	if (state->package_ids != NULL) {
-		length = g_strv_length (state->package_ids);
-		for (i = 0; i < length; i++)
-			pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
-	}
 
 	/* no results from simulate */
 	if (pk_package_sack_get_size (sack) == 0) {
