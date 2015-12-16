@@ -320,6 +320,11 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 		return _("The following packages have to be downgraded:");
 	}
 
+	if (info == PK_INFO_ENUM_OBSOLETING) {
+		/* TRANSLATORS: When processing, we might have to obsolete other dependencies */
+		return _("The following packages have to be obsoleted:");
+	}
+
 	if (info == PK_INFO_ENUM_UNTRUSTED) {
 		/* TRANSLATORS: When processing, untrusted and non-verified packages may be encountered */
 		return _("The following packages are untrusted:");
