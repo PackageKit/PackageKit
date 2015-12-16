@@ -42,7 +42,8 @@ libpk_backend_alpm_la_SOURCES =						\
 	pk-alpm-sync.c							\
 	pk-alpm-transaction.c						\
 	pk-alpm-transaction.h						\
-	pk-alpm-update.c
+	pk-alpm-update.c						\
+	pk-alpm-version.h.in
 libpk_backend_alpm_la_LIBADD = $(PK_PLUGIN_LIBS) $(ALPM_LIBS)
 libpk_backend_alpm_la_LDFLAGS = -module -avoid-version
 libpk_backend_alpm_la_CFLAGS =						\

@@ -475,6 +475,21 @@ fi
 
 if test x$enable_alpm = xyes; then
 	PKG_CHECK_MODULES(ALPM, libalpm >= 10.0.0)
+	libalpm_major_version=`$PKG_CONFIG --modversion libalpm | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+    	libalpm_minor_version=`$PKG_CONFIG --modversion libalpm | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+   	libalpm_micro_version=`$PKG_CONFIG --modversion libalpm | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+	libalpm_version=`printf "0x%02d%02d%02d" $libalpm_major_version $libalpm_minor_version $libalpm_micro_version`
+	LIBALPM_MAJOR_VERSION=$libalpm_major_version
+	LIBALPM_MINOR_VERSION=$libalpm_minor_version
+	LIBALPM_MICRO_VERSION=$libalpm_micro_version
+	LIBALPM_VERSION=$libalpm_version
+	AC_SUBST(LIBALPM_MAJOR_VERSION)
+	AC_SUBST(LIBALPM_MINOR_VERSION)
+	AC_SUBST(LIBALPM_MICRO_VERSION)
+	AC_SUBST(LIBALPM_VERSION)
 fi
 
 if test x$enable_poldek = xyes; then
@@ -534,6 +549,7 @@ contrib/command-not-found/Makefile
 contrib/cron/Makefile
 backends/Makefile
 backends/alpm/Makefile
+backends/alpm/pk-alpm-version.h
 backends/aptcc/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
