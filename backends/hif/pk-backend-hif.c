@@ -38,6 +38,7 @@
 
 #include <pk-backend.h>
 #include <pk-cleanup.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-debug.h>
 
 #include <hawkey/advisory.h>
@@ -174,6 +175,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	_cleanup_free_ gchar *lock_dir = NULL;
 	_cleanup_free_ gchar *repo_dir = NULL;
 	_cleanup_free_ gchar *solv_dir = NULL;
+	_cleanup_free_ gchar *release_ver = NULL;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -196,6 +198,10 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 		 LR_VERSION_MINOR,
 		 LR_VERSION_PATCH);
 
+	release_ver = pk_get_distro_version_id (&error);
+	if (release_ver == NULL)
+		g_error ("Failed to parse os-release: %s", error->message);
+
 	/* a cache of HySacks with the key being which sacks are loaded
 	 *
 	 * notes:
@@ -217,14 +223,15 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	if (destdir == NULL)
 		destdir = g_strdup ("/");
 	hif_context_set_install_root (priv->context, destdir);
-	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit/metadata", NULL);
+	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "metadata", NULL);
 	hif_context_set_cache_dir (priv->context, cache_dir);
-	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit/hawkey", NULL);
+	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
 	hif_context_set_solv_dir (priv->context, solv_dir);
 	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
 	hif_context_set_repo_dir (priv->context, repo_dir);
 	lock_dir = g_build_filename (destdir, "/var/run", NULL);
 	hif_context_set_lock_dir (priv->context, lock_dir);
+	hif_context_set_release_ver (priv->context, release_ver);
 	hif_context_set_rpm_verbosity (priv->context, "info");
 
 	/* use this initial data if repos are not present */
