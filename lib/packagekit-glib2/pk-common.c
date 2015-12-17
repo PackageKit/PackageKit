@@ -38,6 +38,7 @@
 
 #include <glib.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-enum.h>
 
 /**
@@ -293,4 +294,22 @@ pk_get_distro_id (void)
 
 	arch = pk_get_distro_id_machine_type ();
 	return g_strdup_printf ("%s;%s;%s", name, version, arch);
+}
+
+/**
+ * pk_get_distro_version_id:
+ *
+ * Return value: the distro version, e.g. "23", as specified by VERSION_ID in /etc/os-release
+ **/
+gchar *
+pk_get_distro_version_id (GError **error)
+{
+	gboolean ret;
+	gchar *version_id = NULL;
+
+	ret = pk_parse_os_release (NULL, &version_id, error);
+	if (!ret)
+		return NULL;
+
+	return version_id;
 }
