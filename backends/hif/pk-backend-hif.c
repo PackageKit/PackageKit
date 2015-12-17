@@ -61,6 +61,7 @@ typedef struct {
 } HifSackCacheItem;
 
 typedef struct {
+	GKeyFile	*conf;
 	HifContext	*context;
 	GHashTable	*sack_cache;	/* of HifSackCacheItem */
 	GMutex		 sack_mutex;
@@ -250,6 +251,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  g_free,
 						  (GDestroyNotify) hif_sack_cache_item_free);
 
+	priv->conf = g_key_file_ref (conf);
+
 	/* set defaults */
 	priv->context = hif_context_new ();
 	g_signal_connect (priv->context, "invalidate",
@@ -273,6 +276,8 @@ void
 pk_backend_destroy (PkBackend *backend)
 {
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
+	if (priv->conf != NULL)
+		g_key_file_unref (priv->conf);
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
 	g_timer_destroy (priv->repos_timer);
@@ -893,6 +898,7 @@ hif_package_get_advisory (HyPackage package)
 static void
 pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	const gchar *release_ver = NULL;
 	gboolean ret;
 	gchar **search_tmp;
 	HifDb *db;
@@ -923,6 +929,9 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	case PK_ROLE_ENUM_GET_PACKAGES:
 		g_variant_get (params, "(t)", &filters);
 		break;
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+		g_variant_get (params, "(t&su)", &filters, &release_ver, NULL);
+		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		g_variant_get (params, "(t^a&s)",
 			       &filters,
@@ -936,6 +945,20 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	default:
 		g_variant_get (params, "(t^as)", &filters, &search);
 		break;
+	}
+
+	/* create a new context for the passed in release ver */
+	if (release_ver != NULL) {
+		_cleanup_object_unref_ HifContext *context = NULL;
+
+		context = hif_context_new ();
+		ret = pk_backend_setup_hif_context (context, priv->conf, release_ver, &error);
+		if (!ret) {
+			g_debug ("failed to setup context: %s", error->message);
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+			goto out;
+		}
+		pk_backend_job_set_context (job, context);
 	}
 
 	/* set the list of repos */
@@ -990,12 +1013,16 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* set up the sack for packages that should only ever be installed, never updated */
 		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
 		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
-		hy_goal_upgrade_all (job_data->goal);
+		if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_UPGRADE_SYSTEM)
+			hy_goal_distupgrade_all (job_data->goal);
+		else
+			hy_goal_upgrade_all (job_data->goal);
 		ret = hif_goal_depsolve (job_data->goal, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -1160,6 +1187,19 @@ void
 pk_backend_get_updates (PkBackend *backend,
 			PkBackendJob *job,
 			PkBitfield filters)
+{
+	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend,
+                           PkBackendJob *job,
+                           PkBitfield transaction_flags,
+                           const gchar *distro_id,
+                           PkUpgradeKindEnum upgrade_kind)
 {
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
