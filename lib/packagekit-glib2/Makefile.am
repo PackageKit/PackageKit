@@ -172,8 +172,8 @@ libpackagekit_glib2_la_CFLAGS =					\
 
 noinst_LIBRARIES = libpackagekitprivate.a
 libpackagekitprivate_a_SOURCES =				\
-	packagekit-common-private.h				\
 	packagekit-private.h					\
+	pk-common-private.h					\
 	pk-console-shared.c					\
 	pk-console-shared.h					\
 	pk-progress-bar.c					\
