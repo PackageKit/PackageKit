@@ -91,34 +91,49 @@ typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 
 gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
 							 const gchar		*package_id);
+const gchar	*pk_progress_get_package_id		(PkProgress		*progress);
 gboolean	 pk_progress_set_item_progress		(PkProgress		*progress,
 							 PkItemProgress		*item_progress);
+PkItemProgress	*pk_progress_get_item_progress		(PkProgress		*progress);
 gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
 							 const gchar		*package_id);
+const gchar	*pk_progress_get_transaction_id		(PkProgress		*progress);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
 							 gint			 percentage);
+gint		 pk_progress_get_percentage		(PkProgress		*progress);
 gboolean	 pk_progress_set_status			(PkProgress		*progress,
 							 PkStatusEnum		 status);
+PkStatusEnum	 pk_progress_get_status			(PkProgress		*progress);
 gboolean	 pk_progress_set_role			(PkProgress		*progress,
 							 PkRoleEnum		 role);
+PkRoleEnum	 pk_progress_get_role			(PkProgress		*progress);
 gboolean	 pk_progress_set_allow_cancel		(PkProgress		*progress,
 							 gboolean		 allow_cancel);
+gboolean	 pk_progress_get_allow_cancel		(PkProgress		*progress);
 gboolean	 pk_progress_set_caller_active		(PkProgress		*progress,
 							 gboolean		 caller_active);
+gboolean	 pk_progress_get_caller_active		(PkProgress		*progress);
 gboolean	 pk_progress_set_elapsed_time		(PkProgress		*progress,
 							 guint			 elapsed_time);
+guint		 pk_progress_get_elapsed_time		(PkProgress		*progress);
 gboolean	 pk_progress_set_remaining_time		(PkProgress		*progress,
 							 guint			 remaining_time);
+guint		 pk_progress_get_remaining_time		(PkProgress		*progress);
 gboolean	 pk_progress_set_speed			(PkProgress		*progress,
 							 guint			 speed);
+guint		 pk_progress_get_speed			(PkProgress		*progress);
 gboolean	 pk_progress_set_download_size_remaining(PkProgress		*progress,
 							 guint64		 download_size_remaining);
+guint64	 pk_progress_get_download_size_remaining(PkProgress		*progress);
 gboolean	 pk_progress_set_transaction_flags	(PkProgress		*progress,
 							 guint64		 transaction_flags);
+guint64	 pk_progress_get_transaction_flags	(PkProgress		*progress);
 gboolean	 pk_progress_set_uid			(PkProgress		*progress,
 							 guint			 uid);
+guint		 pk_progress_get_uid			(PkProgress		*progress);
 gboolean	 pk_progress_set_package		(PkProgress		*progress,
 							 PkPackage		*package);
+PkPackage	*pk_progress_get_package		(PkProgress		*progress);
 
 G_END_DECLS
 
