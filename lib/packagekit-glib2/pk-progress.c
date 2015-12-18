@@ -651,9 +651,9 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.8.0
 	 */
-	pspec = g_param_spec_uint ("download-size-remaining", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+	pspec = g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
 
 	/**
