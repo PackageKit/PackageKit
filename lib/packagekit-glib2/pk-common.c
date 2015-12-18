@@ -226,7 +226,7 @@ pk_get_distro_id_machine_type (void)
 }
 
 /**
- * pk_get_distro_version_id:
+ * pk_parse_os_release:
  *
  * Internal helper to parse os-release
  **/
