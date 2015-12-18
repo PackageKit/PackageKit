@@ -176,7 +176,7 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
  * pk_progress_get_package_id:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 const gchar *
 pk_progress_get_package_id (PkProgress *progress)
@@ -215,7 +215,7 @@ pk_progress_set_item_progress (PkProgress *progress,
  *
  * Return value: (transfer none):
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 PkItemProgress *
 pk_progress_get_item_progress (PkProgress *progress)
@@ -251,7 +251,7 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
  * pk_progress_get_transaction_id:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 const gchar *
 pk_progress_get_transaction_id (PkProgress *progress)
@@ -286,7 +286,7 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
  * pk_progress_get_percentage:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 gint
 pk_progress_get_percentage (PkProgress *progress)
@@ -321,7 +321,7 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
  * pk_progress_get_status:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 PkStatusEnum
 pk_progress_get_status (PkProgress *progress)
@@ -361,7 +361,7 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
  * pk_progress_get_role:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 PkRoleEnum
 pk_progress_get_role (PkProgress *progress)
@@ -396,7 +396,7 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
  * pk_progress_get_allow_cancel:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 gboolean
 pk_progress_get_allow_cancel (PkProgress *progress)
@@ -431,7 +431,7 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
  * pk_progress_get_caller_active:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 gboolean
 pk_progress_get_caller_active (PkProgress *progress)
@@ -466,7 +466,7 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
  * pk_progress_get_elapsed_time:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint
 pk_progress_get_elapsed_time (PkProgress *progress)
@@ -501,7 +501,7 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
  * pk_progress_get_remaining_time:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint
 pk_progress_get_remaining_time (PkProgress *progress)
@@ -536,7 +536,7 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
  * pk_progress_get_speed:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint
 pk_progress_get_speed (PkProgress *progress)
@@ -571,7 +571,7 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
  * pk_progress_get_download_size_remaining:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint64
 pk_progress_get_download_size_remaining (PkProgress *progress)
@@ -606,7 +606,7 @@ pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_fla
  * pk_progress_get_transaction_flags:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint64
 pk_progress_get_transaction_flags (PkProgress *progress)
@@ -641,7 +641,7 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
  * pk_progress_get_uid:
  * @progress: a valid #PkProgress instance
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 guint
 pk_progress_get_uid (PkProgress *progress)
@@ -680,7 +680,7 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
  *
  * Return value: (transfer none):
  *
- * Since: 1.0.13
+ * Since: 1.0.12
  **/
 PkPackage *
 pk_progress_get_package (PkProgress *progress)
