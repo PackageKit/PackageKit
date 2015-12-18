@@ -173,6 +173,19 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 }
 
 /**
+ * pk_progress_get_package_id:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+const gchar *
+pk_progress_get_package_id (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
+	return progress->priv->package_id;
+}
+
+/**
  * pk_progress_set_item_progress:
  * @progress: a valid #PkProgress instance
  *
@@ -194,6 +207,21 @@ pk_progress_set_item_progress (PkProgress *progress,
 	progress->priv->item_progress = g_object_ref (item_progress);
 	g_object_notify (G_OBJECT(progress), "item-progress");
 	return TRUE;
+}
+
+/**
+ * pk_progress_get_item_progress:
+ * @progress: a valid #PkProgress instance
+ *
+ * Return value: (transfer none):
+ *
+ * Since: 1.0.12
+ **/
+PkItemProgress *
+pk_progress_get_item_progress (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
+	return progress->priv->item_progress;
 }
 
 /**
@@ -220,7 +248,21 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
 }
 
 /**
+ * pk_progress_get_transaction_id:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+const gchar *
+pk_progress_get_transaction_id (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
+	return progress->priv->transaction_id;
+}
+
+/**
  * pk_progress_set_percentage:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -241,7 +283,21 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
 }
 
 /**
+ * pk_progress_get_percentage:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+gint
+pk_progress_get_percentage (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), -1);
+	return progress->priv->percentage;
+}
+
+/**
  * pk_progress_set_status:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -262,7 +318,21 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 }
 
 /**
+ * pk_progress_get_status:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+PkStatusEnum
+pk_progress_get_status (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), PK_STATUS_ENUM_UNKNOWN);
+	return progress->priv->status;
+}
+
+/**
  * pk_progress_set_role:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -288,7 +358,21 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 }
 
 /**
+ * pk_progress_get_role:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+PkRoleEnum
+pk_progress_get_role (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), PK_ROLE_ENUM_UNKNOWN);
+	return progress->priv->role;
+}
+
+/**
  * pk_progress_set_allow_cancel:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -309,7 +393,21 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 }
 
 /**
+ * pk_progress_get_allow_cancel:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+gboolean
+pk_progress_get_allow_cancel (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+	return progress->priv->allow_cancel;
+}
+
+/**
  * pk_progress_set_caller_active:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -330,7 +428,21 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 }
 
 /**
+ * pk_progress_get_caller_active:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+gboolean
+pk_progress_get_caller_active (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+	return progress->priv->caller_active;
+}
+
+/**
  * pk_progress_set_elapsed_time:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -351,7 +463,21 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
 }
 
 /**
+ * pk_progress_get_elapsed_time:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint
+pk_progress_get_elapsed_time (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->elapsed_time;
+}
+
+/**
  * pk_progress_set_remaining_time:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -372,7 +498,21 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 }
 
 /**
+ * pk_progress_get_remaining_time:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint
+pk_progress_get_remaining_time (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->remaining_time;
+}
+
+/**
  * pk_progress_set_speed:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -393,7 +533,21 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 }
 
 /**
+ * pk_progress_get_speed:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint
+pk_progress_get_speed (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->speed;
+}
+
+/**
  * pk_progress_set_download_size_remaining:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.8.0
  **/
@@ -414,7 +568,21 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
 }
 
 /**
+ * pk_progress_get_download_size_remaining:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint64
+pk_progress_get_download_size_remaining (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->download_size_remaining;
+}
+
+/**
  * pk_progress_set_transaction_flags:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.8.8
  **/
@@ -435,7 +603,21 @@ pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_fla
 }
 
 /**
+ * pk_progress_get_transaction_flags:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint64
+pk_progress_get_transaction_flags (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->transaction_flags;
+}
+
+/**
  * pk_progress_set_uid:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -456,7 +638,21 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
 }
 
 /**
+ * pk_progress_get_uid:
+ * @progress: a valid #PkProgress instance
+ *
+ * Since: 1.0.12
+ **/
+guint
+pk_progress_get_uid (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
+	return progress->priv->uid;
+}
+
+/**
  * pk_progress_set_package:
+ * @progress: a valid #PkProgress instance
  *
  * Since: 0.5.2
  **/
@@ -476,6 +672,21 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
 	g_object_notify (G_OBJECT(progress), "package");
 
 	return TRUE;
+}
+
+/**
+ * pk_progress_get_package:
+ * @progress: a valid #PkProgress instance
+ *
+ * Return value: (transfer none):
+ *
+ * Since: 1.0.12
+ **/
+PkPackage *
+pk_progress_get_package (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
+	return progress->priv->package;
 }
 
 /**
@@ -687,7 +898,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	g_object_class_install_property (object_class, PROP_PACKAGE, pspec);
 
 	/**
-	 * PkProgress:item-progress-id:
+	 * PkProgress:item-progress:
 	 *
 	 * Since: 0.8.1
 	 */
