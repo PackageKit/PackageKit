@@ -898,7 +898,6 @@ hif_package_get_advisory (HyPackage package)
 static void
 pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	const gchar *release_ver = NULL;
 	gboolean ret;
 	gchar **search_tmp;
 	HifDb *db;
@@ -908,7 +907,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HyQuery query = NULL;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_strv_free_ gchar **search = NULL;
@@ -929,9 +927,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	case PK_ROLE_ENUM_GET_PACKAGES:
 		g_variant_get (params, "(t)", &filters);
 		break;
-	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
-		g_variant_get (params, "(t&su)", &filters, &release_ver, NULL);
-		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		g_variant_get (params, "(t^a&s)",
 			       &filters,
@@ -945,20 +940,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	default:
 		g_variant_get (params, "(t^as)", &filters, &search);
 		break;
-	}
-
-	/* create a new context for the passed in release ver */
-	if (release_ver != NULL) {
-		_cleanup_object_unref_ HifContext *context = NULL;
-
-		context = hif_context_new ();
-		ret = pk_backend_setup_hif_context (context, priv->conf, release_ver, &error);
-		if (!ret) {
-			g_debug ("failed to setup context: %s", error->message);
-			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			goto out;
-		}
-		pk_backend_job_set_context (job, context);
 	}
 
 	/* set the list of repos */
@@ -1013,16 +994,12 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = hif_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
-	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* set up the sack for packages that should only ever be installed, never updated */
 		hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
 		hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
-		if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_UPGRADE_SYSTEM)
-			hy_goal_distupgrade_all (job_data->goal);
-		else
-			hy_goal_upgrade_all (job_data->goal);
+		hy_goal_upgrade_all (job_data->goal);
 		ret = hif_goal_depsolve (job_data->goal, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -1187,19 +1164,6 @@ void
 pk_backend_get_updates (PkBackend *backend,
 			PkBackendJob *job,
 			PkBitfield filters)
-{
-	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
-}
-
-/**
- * pk_backend_upgrade_system:
- */
-void
-pk_backend_upgrade_system (PkBackend *backend,
-                           PkBackendJob *job,
-                           PkBitfield transaction_flags,
-                           const gchar *distro_id,
-                           PkUpgradeKindEnum upgrade_kind)
 {
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
@@ -3288,6 +3252,106 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job,
 			    PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
+}
+
+/**
+ * pk_backend_upgrade_system_thread:
+ */
+static void
+pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	HifState *state_local;
+	HySack sack = NULL;
+	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackendHifPrivate *priv = pk_backend_get_user_data (job_data->backend);
+	PkBitfield filters;
+	gboolean ret;
+	const gchar *release_ver = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+
+	/* get arguments */
+	g_variant_get (params, "(t&su)",
+	               &job_data->transaction_flags,
+	               &release_ver,
+	               NULL);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+
+	/* create a new context for the passed in release ver */
+	if (release_ver != NULL) {
+		_cleanup_object_unref_ HifContext *context = NULL;
+
+		context = hif_context_new ();
+		ret = pk_backend_setup_hif_context (context, priv->conf, release_ver, &error);
+		if (!ret) {
+			g_debug ("failed to setup context: %s", error->message);
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
+			return;
+		}
+		pk_backend_job_set_context (job, context);
+	}
+
+	/* set state */
+	ret = hif_state_set_steps (job_data->state, NULL,
+				   10, /* add repos */
+				   90, /* run transaction */
+				   -1);
+	g_assert (ret);
+
+	/* get sack */
+	filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
+	state_local = hif_state_get_child (job_data->state);
+	sack = hif_utils_create_sack_for_filters (job,
+						  filters,
+						  HIF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* set up the sack for packages that should only ever be installed, never updated */
+	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
+	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
+
+	/* done */
+	if (!hif_state_done (job_data->state, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* set up the distupgrade goal */
+	job_data->goal = hy_goal_create (sack);
+	hy_goal_distupgrade_all (job_data->goal);
+
+	/* run transaction */
+	state_local = hif_state_get_child (job_data->state);
+	ret = pk_backend_transaction_run (job, state_local, &error);
+	if (!ret) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* done */
+	if (!hif_state_done (job_data->state, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+}
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend,
+                           PkBackendJob *job,
+                           PkBitfield transaction_flags,
+                           const gchar *distro_id,
+                           PkUpgradeKindEnum upgrade_kind)
+{
+	pk_backend_job_thread_create (job, pk_backend_upgrade_system_thread, NULL, NULL);
 }
 
 /**
