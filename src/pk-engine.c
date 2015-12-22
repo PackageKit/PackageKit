@@ -1182,10 +1182,13 @@ pk_engine_get_package_history (PkEngine *engine,
 			continue;
 		package_lines = g_strsplit (data, "\n", -1);
 		for (i = 0; package_lines[i] != NULL; i++) {
-			ret = pk_package_parse (package_tmp, package_lines[i], error);
+			_cleanup_error_free_ GError *error_local = NULL;
+			ret = pk_package_parse (package_tmp,
+						package_lines[i],
+						&error_local);
 			if (!ret) {
-				g_warning ("Failed to parse package: '%s'",
-					   package_lines[i]);
+				g_warning ("Failed to parse package: '%s': %s",
+					   package_lines[i], error_local->message);
 				continue;
 			}
 
