@@ -5041,6 +5041,11 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 	transaction->priv->cached_upgrade_kind = upgrade_kind;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
+	/* this changed */
+	pk_transaction_emit_property_changed (transaction,
+					      "TransactionFlags",
+					      g_variant_new_uint64 (transaction_flags));
+
 	/* try to get authorization */
 	ret = pk_transaction_obtain_authorization (transaction,
 						   PK_ROLE_ENUM_UPGRADE_SYSTEM,
