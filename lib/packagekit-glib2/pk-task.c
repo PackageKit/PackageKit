@@ -78,8 +78,8 @@ typedef struct {
 	PkExitEnum			 exit_enum;
 	gboolean			 simulate;
 	gboolean			 only_download;
-	gboolean             allow_reinstall;
-	gboolean             allow_downgrade;
+	gboolean			 allow_reinstall;
+	gboolean			 allow_downgrade;
 	gboolean			 transaction_flags;
 	gchar				**package_ids;
 	gboolean			 allow_deps;
