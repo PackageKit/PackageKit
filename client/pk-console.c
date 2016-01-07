@@ -1209,6 +1209,21 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 }
 
 /**
+ * pk_console_upgrade_system:
+ **/
+static gboolean
+pk_console_upgrade_system (PkConsoleCtx *ctx, const gchar *distro_id, const gchar *upgrade_kind, GError **error)
+{
+	pk_task_upgrade_system_async (PK_TASK (ctx->task),
+				      distro_id,
+				      pk_upgrade_kind_enum_from_string (upgrade_kind),
+				      ctx->cancellable,
+				      pk_console_progress_cb, ctx,
+				      pk_console_finished_cb, ctx);
+	return TRUE;
+}
+
+/**
  * pk_console_required_by:
  **/
 static gboolean
@@ -2283,34 +2298,8 @@ main (int argc, char *argv[])
 					    pk_console_finished_cb, ctx);
 
 	} else if (strcmp (mode, "upgrade-system") == 0) {
-		if (value == NULL) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     /* TRANSLATORS: The user did not
-					      * provide a distro name */
-					     "%s", _("A distribution name is required"));
-			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		if (details == NULL) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     /* TRANSLATORS: The user did not
-					      * provide an upgrade type */
-					     _("An upgrade type is required, e.g. "
-					       "'minimal', 'default' or 'complete'"));
-			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		pk_client_upgrade_system_async (PK_CLIENT (ctx->task),
-						PK_TRANSACTION_FLAG_ENUM_NONE,
-						value,
-						pk_upgrade_kind_enum_from_string (details),
-						ctx->cancellable,
-						pk_console_progress_cb, ctx,
-						pk_console_finished_cb, ctx);
-
+		/* do the system upgrade */
+		run_mainloop = pk_console_upgrade_system (ctx, value, details, &error);
 	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_string (ctx->roles);
 		g_strdelimit (text, ";", '\n');
