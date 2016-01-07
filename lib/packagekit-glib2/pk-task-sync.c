@@ -1203,6 +1203,64 @@ pk_task_repo_enable_sync (PkTask *task, const gchar *repo_id, gboolean enabled, 
 }
 
 /**
+ * pk_task_upgrade_system_sync:
+ * @task: a valid #PkTask instance
+ * @distro_id: a distro ID such as "fedora-14"
+ * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * This transaction will update the distro to the next version, which may
+ * involve just downloading the installer and setting up the boot device,
+ * or may involve doing an on-line upgrade.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Return value: (transfer full): a %PkResults object, or NULL for error
+ *
+ * Since: 1.0.12
+ **/
+PkResults *
+pk_task_upgrade_system_sync (PkTask *task,
+                             const gchar *distro_id,
+                             PkUpgradeKindEnum upgrade_kind,
+                             GCancellable *cancellable,
+                             PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+{
+	PkTaskHelper helper;
+	PkResults *results;
+
+	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* create temp object */
+	memset (&helper, 0, sizeof (PkTaskHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
+
+	g_main_context_push_thread_default (helper.context);
+
+	/* run async method */
+	pk_task_upgrade_system_async (task, distro_id, upgrade_kind, cancellable, progress_callback, progress_user_data,
+				      (GAsyncReadyCallback) pk_task_generic_finish_sync, &helper);
+
+	g_main_loop_run (helper.loop);
+
+	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
+
+	/* free temp object */
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
+
+	return results;
+}
+
+/**
  * pk_task_repair_system_sync:
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL

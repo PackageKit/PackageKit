@@ -96,11 +96,13 @@ typedef struct {
 	gboolean			 force;
 	gboolean			 recursive;
 	gchar				*directory;
+	gchar				*distro_id;
 	gchar				**packages;
 	gchar				*repo_id;
 	gchar				*transaction_id;
 	gchar				**values;
 	PkBitfield			 filters;
+	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 retry_id;
 } PkTaskState;
 
@@ -172,6 +174,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	if (state->retry_id != 0)
 		g_source_remove (state->retry_id);
 	g_free (state->directory);
+	g_free (state->distro_id);
 	g_free (state->repo_id);
 	g_free (state->transaction_id);
 	g_strfreev (state->files);
@@ -304,6 +307,10 @@ pk_task_do_async_action (PkTaskState *state)
 		pk_client_repo_enable_async (PK_CLIENT(state->task), state->repo_id, state->enabled,
 					     state->cancellable, state->progress_callback, state->progress_user_data,
 					     (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
+		pk_client_upgrade_system_async (PK_CLIENT(state->task), transaction_flags, state->distro_id, state->upgrade_kind,
+						state->cancellable, state->progress_callback, state->progress_user_data,
+						(GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
 		pk_client_repair_system_async (PK_CLIENT(state->task), transaction_flags,
 					       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -475,6 +482,18 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 					       state->progress_user_data,
 					       (GAsyncReadyCallback) pk_task_simulate_ready_cb,
 					       state);
+	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
+		/* simulate upgrade system async */
+		g_debug ("doing upgrade system");
+		pk_client_upgrade_system_async (PK_CLIENT(state->task),
+						transaction_flags,
+						state->distro_id,
+						state->upgrade_kind,
+						state->cancellable,
+						state->progress_callback,
+						state->progress_user_data,
+						(GAsyncReadyCallback) pk_task_simulate_ready_cb,
+						state);
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
 		/* simulate repair system async */
 		g_debug ("doing repair system");
@@ -1116,6 +1135,67 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 		state->cancellable = g_object_ref (cancellable);
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->request = pk_task_generate_request_id ();
+
+	g_debug ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted install async */
+	if (task->priv->simulate && klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
+}
+
+/**
+ * pk_task_upgrade_system_async:
+ * @task: a valid #PkTask instance
+ * @distro_id: a distro ID such as "fedora-14"
+ * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * This transaction will update the distro to the next version, which may
+ * involve just downloading the installer and setting up the boot device,
+ * or may involve doing an on-line upgrade.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Since: 1.0.12
+ **/
+void
+pk_task_upgrade_system_async (PkTask *task,
+                              const gchar *distro_id,
+                              PkUpgradeKindEnum upgrade_kind,
+                              GCancellable *cancellable,
+                              PkProgressCallback progress_callback, gpointer progress_user_data,
+                              GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	PkTaskState *state;
+	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_upgrade_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
+	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->distro_id = g_strdup (distro_id);
+	state->upgrade_kind = upgrade_kind;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();

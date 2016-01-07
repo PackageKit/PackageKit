@@ -200,6 +200,14 @@ PkResults	*pk_task_repo_enable_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults	*pk_task_upgrade_system_sync		(PkTask			*task,
+							 const gchar		*distro_id,
+							 PkUpgradeKindEnum	 upgrade_kind,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GError			**error);
+
 PkResults	*pk_task_repair_system_sync		(PkTask			*task,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
