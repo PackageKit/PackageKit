@@ -31,6 +31,7 @@
 
 #include "pk-task-text.h"
 #include "pk-console-shared.h"
+#include "src/pk-cleanup.h"
 
 static void     pk_task_text_finalize	(GObject     *object);
 
@@ -334,6 +335,21 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 	return NULL;
 }
 
+static gint
+package_sort_func (gconstpointer a, gconstpointer b)
+{
+	const gchar *package_id1;
+	const gchar *package_id2;
+	_cleanup_strv_free_ gchar **split1 = NULL;
+	_cleanup_strv_free_ gchar **split2 = NULL;
+
+	package_id1 = pk_package_get_id (*(PkPackage **)a);
+	package_id2 = pk_package_get_id (*(PkPackage **)b);
+	split1 = pk_package_id_split (package_id1);
+	split2 = pk_package_id_split (package_id2);
+	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
+}
+
 /**
  * pk_task_text_simulate_question:
  **/
@@ -342,15 +358,16 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
-	const gchar *title;
 	gchar *printable;
 	PkInfoEnum info;
 	gchar *package_id;
 	gchar *summary;
+	GList *l;
 	PkPackage *package;
 	GPtrArray *array;
-	PkInfoEnum info_last = PK_INFO_ENUM_UNKNOWN;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
+	_cleanup_hashtable_unref_ GHashTable *table = NULL;
+	_cleanup_list_free_ GList *list = NULL;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
@@ -361,29 +378,57 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	/* get data */
 	array = pk_results_get_package_array (results);
 
-	/* print data */
+	/* put data in a hash table for easier sorting */
+	table = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+	                               NULL, (GDestroyNotify) g_ptr_array_unref);
 	for (i = 0; i < array->len; i++) {
+		_cleanup_array_unref_ GPtrArray *package_array = NULL;
+
 		package = g_ptr_array_index (array, i);
 		g_object_get (package,
 			      "info", &info,
-			      "package-id", &package_id,
-			      "summary", &summary,
 			      NULL);
+
+		if (g_hash_table_contains (table, GINT_TO_POINTER (info)))
+			package_array = g_ptr_array_ref (g_hash_table_lookup (table, GINT_TO_POINTER (info)));
+		else
+			package_array = g_ptr_array_new_with_free_func (g_object_unref);
+		g_ptr_array_add (package_array, g_object_ref (package));
+		g_hash_table_insert (table,
+		                     GINT_TO_POINTER (info),
+		                     g_ptr_array_ref (package_array));
+	}
+
+	/* go over the data we now have in a hash table */
+	list = g_hash_table_get_keys (table);
+	for (l = list; l != NULL; l = l->next) {
+		GPtrArray *package_array;
+		const gchar *title;
+
 		/* new header */
-		if (info != info_last) {
-			title = pk_task_text_simulate_question_type_to_string (info);
-			if (title == NULL) {
-				title = pk_info_enum_to_string (info);
-				g_warning ("cannot translate '%s', please report!", title);
-			}
-			g_print ("%s\n", title);
-			info_last = info;
+		info = GPOINTER_TO_INT (l->data);
+		title = pk_task_text_simulate_question_type_to_string (info);
+		if (title == NULL) {
+			title = pk_info_enum_to_string (info);
+			g_warning ("cannot translate '%s', please report!", title);
 		}
-		printable = pk_package_id_to_printable (package_id);
-		g_print (" %s\t%s\n", printable, summary);
-		g_free (printable);
-		g_free (package_id);
-		g_free (summary);
+		g_print ("%s\n", title);
+
+		/* sort the packages and print */
+		package_array = g_hash_table_lookup (table, l->data);
+		g_ptr_array_sort (package_array, package_sort_func);
+		for (i = 0; i < package_array->len; i++) {
+			package = g_ptr_array_index (package_array, i);
+			g_object_get (package,
+				      "package-id", &package_id,
+				      "summary", &summary,
+				      NULL);
+			printable = pk_package_id_to_printable (package_id);
+			g_print (" %s\t%s\n", printable, summary);
+			g_free (printable);
+			g_free (package_id);
+			g_free (summary);
+		}
 	}
 
 	/* TRANSLATORS: ask the user if the proposed changes are okay */
