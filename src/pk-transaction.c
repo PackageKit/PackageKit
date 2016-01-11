@@ -4827,7 +4827,7 @@ pk_transaction_set_hints (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint i;
-	const gchar **hints = NULL;
+	_cleanup_free_ gchar **hints = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_free_ gchar *dbg = NULL;
 

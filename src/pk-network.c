@@ -733,6 +733,8 @@ pk_network_finalize (GObject *object)
 		g_object_unref (network->priv->proxy_cm);
 	if (network->priv->proxy_nm != NULL)
 		g_object_unref (network->priv->proxy_nm);
+	if (network->priv->bus != NULL)
+		g_object_unref (network->priv->bus);
 	g_object_unref (network->priv->unix_monitor);
 
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);

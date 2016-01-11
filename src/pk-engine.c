@@ -1355,6 +1355,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "GetTransactionList") == 0) {
 		transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
 		value = g_variant_new ("(^a&o)", transaction_list);
+		g_free (transaction_list);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
 	}

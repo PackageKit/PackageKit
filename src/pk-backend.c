@@ -1168,6 +1168,7 @@ pk_backend_finalize (GObject *object)
 
 	g_mutex_clear (&backend->priv->thread_hash_mutex);
 	g_hash_table_unref (backend->priv->thread_hash);
+	g_free (backend->priv->desc);
 
 	if (backend->priv->monitor != NULL)
 		g_object_unref (backend->priv->monitor);
@@ -1177,6 +1178,7 @@ pk_backend_finalize (GObject *object)
 		g_source_remove (backend->priv->updates_changed_id);
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
+
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
 
