@@ -267,12 +267,14 @@ gboolean
 pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 {
 	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	data = g_strjoinv ("\n", package_ids);
-	return g_file_set_contents (PK_OFFLINE_PREPARED_FILENAME,
-				    data, -1, error);
+	data = g_strjoinv (",", package_ids);
+	keyfile = g_key_file_new ();
+	g_key_file_set_string (keyfile, "update", "prepared_ids", data);
+	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_FILENAME, error);
 }
 
 /**

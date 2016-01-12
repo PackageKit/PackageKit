@@ -309,8 +309,10 @@ pk_offline_get_prepared_sack (GError **error)
 gchar **
 pk_offline_get_prepared_ids (GError **error)
 {
+	gchar *prepared_ids;
 	_cleanup_error_free_ GError *error_local = NULL;
 	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
@@ -335,8 +337,18 @@ pk_offline_get_prepared_ids (GError **error)
 		return NULL;
 	}
 
+	keyfile = g_key_file_new ();
+	if (!g_key_file_load_from_data (keyfile, data, -1, G_KEY_FILE_NONE, &error_local)) {
+		/* fall back to previous plain text file format for backwards compatibility */
+		return g_strsplit (data, "\n", -1);
+	}
+
+	prepared_ids = g_key_file_get_string (keyfile, "update", "prepared_ids", error);
+	if (prepared_ids == NULL)
+		return NULL;
+
 	/* return raw package ids */
-	return g_strsplit (data, "\n", -1);
+	return g_strsplit (prepared_ids, ",", -1);
 }
 
 /**
