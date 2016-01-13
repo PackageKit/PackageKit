@@ -682,7 +682,8 @@ pk_test_offline_func (void)
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpstr (tmp, ==, "powertop;0.1.3;i386;fedora");
+	g_assert_cmpstr (tmp, ==, "[update]\n"
+	                          "prepared_ids=powertop;0.1.3;i386;fedora\n");
 	g_free (tmp);
 	sack = pk_offline_get_prepared_sack (&error);
 	g_assert_no_error (error);
