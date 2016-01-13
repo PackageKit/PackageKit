@@ -940,7 +940,7 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 
 	/* set up the prepared update monitor */
 	engine->priv->monitor_offline = pk_offline_get_prepared_monitor (NULL, &error);
-	if (engine->priv->introspection == NULL) {
+	if (engine->priv->monitor_offline == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
 			   PK_OFFLINE_PREPARED_FILENAME, error->message);
 		return;
