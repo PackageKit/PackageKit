@@ -359,6 +359,38 @@ pk_offline_update_get_action (void)
 	return action;
 }
 
+static gboolean
+pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **error)
+{
+	_cleanup_object_unref_ PkResults *results = NULL;
+	_cleanup_strv_free_ gchar **package_ids = NULL;
+
+	/* get the list of packages to update */
+	package_ids = pk_offline_get_prepared_ids (error);
+	if (package_ids == NULL) {
+		g_prefix_error (error, "failed to read %s: ", PK_OFFLINE_PREPARED_FILENAME);
+		return FALSE;
+	}
+
+	/* TRANSLATORS: we've started doing offline updates */
+	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
+	pk_offline_update_write_dummy_results (package_ids);
+	results = pk_client_update_packages (PK_CLIENT (task),
+	                                     0,
+	                                     package_ids,
+	                                     NULL, /* GCancellable */
+	                                     pk_offline_update_progress_cb,
+	                                     progressbar, /* user_data */
+	                                     error);
+	if (results == NULL) {
+		return FALSE;
+	}
+
+	pk_offline_update_write_results (results);
+
+	return TRUE;
+}
+
 /**
  * main:
  **/
@@ -372,9 +404,7 @@ main (int argc, char *argv[])
 	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
 	_cleanup_object_unref_ GFile *file = NULL;
 	_cleanup_object_unref_ PkProgressBar *progressbar = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
 	_cleanup_object_unref_ PkTask *task = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();
@@ -416,17 +446,6 @@ main (int argc, char *argv[])
 				NULL,
 				NULL);
 
-	/* get the list of packages to update */
-	package_ids = pk_offline_get_prepared_ids (&error);
-	if (package_ids == NULL) {
-		retval = EXIT_FAILURE;
-		sd_journal_print (LOG_WARNING,
-				  "failed to read %s: %s",
-				  PK_OFFLINE_PREPARED_FILENAME,
-				  error->message);
-		goto out;
-	}
-
 	/* use a progress bar when the user presses <esc> in plymouth */
 	progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (progressbar, 25);
@@ -436,17 +455,7 @@ main (int argc, char *argv[])
 	task = pk_task_new ();
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
-	/* TRANSLATORS: we've started doing offline updates */
-	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
-	pk_offline_update_write_dummy_results (package_ids);
-	results = pk_client_update_packages (PK_CLIENT (task),
-					     0,
-					     package_ids,
-					     NULL, /* GCancellable */
-					     pk_offline_update_progress_cb,
-					     progressbar, /* user_data */
-					     &error);
-	if (results == NULL) {
+	if (!pk_offline_update_do_update (task, progressbar, &error)) {
 		retval = EXIT_FAILURE;
 		pk_offline_update_write_error (error);
 		sd_journal_print (LOG_WARNING,
@@ -455,7 +464,6 @@ main (int argc, char *argv[])
 		goto out;
 	}
 	pk_progress_bar_end (progressbar);
-	pk_offline_update_write_results (results);
 
 	/* delete prepared-update file if it's not already been done by the
 	 * pk-plugin-systemd-update daemon plugin */
