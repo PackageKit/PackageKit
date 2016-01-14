@@ -81,6 +81,9 @@ gchar			*pk_offline_get_prepared_upgrade_version
 PkPackageSack		*pk_offline_get_prepared_sack	(GError			**error);
 GFileMonitor		*pk_offline_get_prepared_monitor(GCancellable		*cancellable,
 							 GError			**error);
+GFileMonitor		*pk_offline_get_prepared_upgrade_monitor
+							(GCancellable		*cancellable,
+							 GError			**error);
 GFileMonitor		*pk_offline_get_action_monitor	(GCancellable		*cancellable,
 							 GError			**error);
 PkResults		*pk_offline_get_results		(GError			**error);

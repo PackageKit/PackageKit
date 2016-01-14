@@ -522,6 +522,17 @@
     </property>
 
     <!--*********************************************************************-->
+    <property name="UpgradePrepared" type="b" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            If a system upgrade has been prepared and is ready to be triggered.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*********************************************************************-->
     <property name="TriggerAction" type="s" access="read">
       <doc:doc>
         <doc:description>
@@ -559,6 +570,27 @@
           <doc:summary>
             <doc:para>
               The action to take when finished applying updates, known values
+              are <doc:tt>power-off</doc:tt> and <doc:tt>reboot</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
+    <method name="TriggerUpgrade">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Triggers the offline system upgrade for next boot.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="action" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The action to take when finished installing the system upgrade, known values
               are <doc:tt>power-off</doc:tt> and <doc:tt>reboot</doc:tt>.
             </doc:para>
           </doc:summary>

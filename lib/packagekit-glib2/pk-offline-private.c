@@ -217,32 +217,20 @@ pk_offline_auth_invalidate (GError **error)
 	return TRUE;
 }
 
-/**
- * pk_offline_auth_trigger:
- * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
- * @error: A #GError or %NULL
- *
- * Triggers the offline update so that the next reboot will perform the
- * pending transaction.
- *
- * Return value: %TRUE for success, else %FALSE and @error set
- *
- * Since: 0.9.6
- **/
-gboolean
-pk_offline_auth_trigger (PkOfflineAction action, GError **error)
+static gboolean
+pk_offline_auth_trigger_prepared_file (PkOfflineAction action, const gchar *prepared_file, GError **error)
 {
 	gint rc;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the prepared update exists */
-	if (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS)) {
+	if (!g_file_test (prepared_file, G_FILE_TEST_EXISTS)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_NO_DATA,
 			     "Prepared update not found: %s",
-			     PK_OFFLINE_PREPARED_FILENAME);
+			     prepared_file);
 		return FALSE;
 	}
 
@@ -265,6 +253,42 @@ pk_offline_auth_trigger (PkOfflineAction action, GError **error)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+/**
+ * pk_offline_auth_trigger:
+ * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
+ * @error: A #GError or %NULL
+ *
+ * Triggers the offline update so that the next reboot will perform the
+ * pending transaction.
+ *
+ * Return value: %TRUE for success, else %FALSE and @error set
+ *
+ * Since: 0.9.6
+ **/
+gboolean
+pk_offline_auth_trigger (PkOfflineAction action, GError **error)
+{
+	return pk_offline_auth_trigger_prepared_file (action, PK_OFFLINE_PREPARED_FILENAME, error);
+}
+
+/**
+ * pk_offline_auth_trigger_upgrade:
+ * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
+ * @error: A #GError or %NULL
+ *
+ * Triggers the offline system upgrade so that the next reboot will perform the
+ * pending transaction.
+ *
+ * Return value: %TRUE for success, else %FALSE and @error set
+ *
+ * Since: 1.0.12
+ **/
+gboolean
+pk_offline_auth_trigger_upgrade (PkOfflineAction action, GError **error)
+{
+	return pk_offline_auth_trigger_prepared_file (action, PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error);
 }
 
 /**

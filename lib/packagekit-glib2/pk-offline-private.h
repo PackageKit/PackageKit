@@ -65,6 +65,9 @@ gboolean		 pk_offline_auth_cancel		(GError			**error);
 gboolean		 pk_offline_auth_clear_results	(GError			**error);
 gboolean		 pk_offline_auth_trigger	(PkOfflineAction	 action,
 							 GError			**error);
+gboolean		 pk_offline_auth_trigger_upgrade
+							(PkOfflineAction	 action,
+							 GError			**error);
 gboolean		 pk_offline_auth_set_prepared_ids(gchar			**package_ids,
 							 GError			**error);
 gboolean		 pk_offline_auth_set_prepared_upgrade_version

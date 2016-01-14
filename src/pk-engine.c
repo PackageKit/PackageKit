@@ -78,6 +78,7 @@ struct PkEnginePrivate
 	GFileMonitor		*monitor_conf;
 	GFileMonitor		*monitor_binary;
 	GFileMonitor		*monitor_offline;
+	GFileMonitor		*monitor_offline_upgrade;
 	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
@@ -880,6 +881,24 @@ pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
 }
 
 /**
+ * pk_engine_offline_upgrade_file_changed_cb:
+ **/
+static void
+pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
+                                           GFile *file, GFile *other_file,
+                                           GFileMonitorEvent event_type,
+                                           PkEngine *engine)
+{
+	gboolean ret;
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	ret = g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS);
+	pk_engine_emit_offline_property_changed (engine,
+						 "UpgradePrepared",
+						 g_variant_new_boolean (ret));
+}
+
+/**
  * pk_engine_network_state_changed_cb:
  **/
 static void
@@ -947,6 +966,16 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 	}
 	g_signal_connect (engine->priv->monitor_offline, "changed",
 			  G_CALLBACK (pk_engine_offline_file_changed_cb), engine);
+
+	/* set up the prepared system upgrade monitor */
+	engine->priv->monitor_offline_upgrade = pk_offline_get_prepared_upgrade_monitor (NULL, &error);
+	if (engine->priv->monitor_offline_upgrade == NULL) {
+		g_warning ("Failed to set watch on %s: %s",
+			   PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error->message);
+		return;
+	}
+	g_signal_connect (engine->priv->monitor_offline_upgrade, "changed",
+			  G_CALLBACK (pk_engine_offline_upgrade_file_changed_cb), engine);
 }
 
 /**
@@ -1011,6 +1040,13 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 	if (g_strcmp0 (property_name, "UpdatePrepared") == 0) {
 		gboolean ret;
 		ret = g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS);
+		return g_variant_new_boolean (ret);
+	}
+
+	/* stat the file */
+	if (g_strcmp0 (property_name, "UpgradePrepared") == 0) {
+		gboolean ret;
+		ret = g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS);
 		return g_variant_new_boolean (ret);
 	}
 
@@ -1879,6 +1915,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->monitor_conf);
 	g_object_unref (engine->priv->monitor_binary);
 	g_object_unref (engine->priv->monitor_offline);
+	g_object_unref (engine->priv->monitor_offline_upgrade);
 	g_object_unref (engine->priv->scheduler);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
