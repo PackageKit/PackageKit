@@ -179,7 +179,8 @@ gboolean
 pk_offline_auth_invalidate (GError **error)
 {
 	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+	_cleanup_object_unref_ GFile *file1 = NULL;
+	_cleanup_object_unref_ GFile *file2 = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -188,9 +189,9 @@ pk_offline_auth_invalidate (GError **error)
 		return FALSE;
 
 	/* delete the prepared file */
-	file = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
-	if (g_file_query_exists (file, NULL) &&
-	    !g_file_delete (file, NULL, &error_local)) {
+	file1 = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
+	if (g_file_query_exists (file1, NULL) &&
+	    !g_file_delete (file1, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -199,6 +200,20 @@ pk_offline_auth_invalidate (GError **error)
 			     error_local->message);
 		return FALSE;
 	}
+
+	/* delete the prepared system upgrade file */
+	file2 = g_file_new_for_path (PK_OFFLINE_PREPARED_UPGRADE_FILENAME);
+	if (g_file_query_exists (file2, NULL) &&
+	    !g_file_delete (file2, NULL, &error_local)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_FAILED,
+			     "Cannot delete %s: %s",
+			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			     error_local->message);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -275,6 +290,29 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 	keyfile = g_key_file_new ();
 	g_key_file_set_string (keyfile, "update", "prepared_ids", data);
 	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_FILENAME, error);
+}
+
+/**
+ * pk_offline_auth_set_prepared_upgrade_version:
+ * @release_ver: Distro version to upgrade to
+ * @error: A #GError or %NULL
+ *
+ * Saves the distro version to upgrade to a prepared transaction file.
+ *
+ * Return value: %TRUE for success, else %FALSE and @error set
+ *
+ * Since: 1.0.12
+ **/
+gboolean
+pk_offline_auth_set_prepared_upgrade_version (const gchar *release_ver, GError **error)
+{
+	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	keyfile = g_key_file_new ();
+	g_key_file_set_string (keyfile, "update", "releasever", release_ver);
+	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error);
 }
 
 /**

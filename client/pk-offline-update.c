@@ -298,7 +298,7 @@ pk_offline_update_write_results (PkResults *results)
  * bad happened.
  **/
 static void
-pk_offline_update_write_dummy_results (gchar **package_ids)
+pk_offline_update_write_dummy_results (void)
 {
 	_cleanup_error_free_ GError *error = NULL;
 	_cleanup_object_unref_ PkError *pk_error = NULL;
@@ -374,7 +374,7 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 
 	/* TRANSLATORS: we've started doing offline updates */
 	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
-	pk_offline_update_write_dummy_results (package_ids);
+	pk_offline_update_write_dummy_results ();
 	results = pk_client_update_packages (PK_CLIENT (task),
 	                                     0,
 	                                     package_ids,
@@ -382,6 +382,39 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 	                                     pk_offline_update_progress_cb,
 	                                     progressbar, /* user_data */
 	                                     error);
+	if (results == NULL) {
+		return FALSE;
+	}
+
+	pk_offline_update_write_results (results);
+
+	return TRUE;
+}
+
+static gboolean
+pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError **error)
+{
+	_cleanup_free_ gchar *version = NULL;
+	_cleanup_object_unref_ PkResults *results = NULL;
+
+	/* get the version to upgrade to */
+	version = pk_offline_get_prepared_upgrade_version (error);
+	if (version == NULL) {
+	        g_prefix_error (error, "failed to get prepared system upgrade version: ");
+	        return FALSE;
+	}
+
+	/* TRANSLATORS: we've started doing offline system upgrade */
+	pk_offline_update_set_plymouth_msg (_("Installing system upgrade; this could take a while..."));
+	pk_offline_update_write_dummy_results ();
+	results = pk_client_upgrade_system (PK_CLIENT (task),
+	                                    0,
+	                                    version,
+	                                    PK_UPGRADE_KIND_ENUM_DEFAULT,
+	                                    NULL, /* GCancellable */
+	                                    pk_offline_update_progress_cb,
+	                                    progressbar, /* user_data */
+	                                    error);
 	if (results == NULL) {
 		return FALSE;
 	}
@@ -425,7 +458,9 @@ main (int argc, char *argv[])
 		retval = EXIT_SUCCESS;
 		goto out;
 	}
-	if (g_strcmp0 (link, "/var/cache/PackageKit") != 0 &&
+	if (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) != 0 &&
+	    g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) != 0 &&
+	    g_strcmp0 (link, "/var/cache/PackageKit") != 0 &&
 	    g_strcmp0 (link, "/var/cache") != 0) {
 		sd_journal_print (LOG_INFO, "another framework set up the trigger");
 		retval = EXIT_SUCCESS;
@@ -451,22 +486,37 @@ main (int argc, char *argv[])
 	pk_progress_bar_set_size (progressbar, 25);
 	pk_progress_bar_set_padding (progressbar, 30);
 
-	/* just update the system */
 	task = pk_task_new ();
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
 	pk_offline_update_set_plymouth_mode ("updates");
-	if (!pk_offline_update_do_update (task, progressbar, &error)) {
-		retval = EXIT_FAILURE;
-		pk_offline_update_write_error (error);
-		sd_journal_print (LOG_WARNING,
-				  "failed to update system: %s",
-				  error->message);
-		goto out;
+
+	if (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0 &&
+	    g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
+		/* do system upgrade */
+		if (!pk_offline_update_do_upgrade (task, progressbar, &error)) {
+			retval = EXIT_FAILURE;
+			pk_offline_update_write_error (error);
+			sd_journal_print (LOG_WARNING,
+					  "failed to upgrade system: %s",
+					  error->message);
+			goto out;
+		}
+	} else {
+		/* just update the system */
+		if (!pk_offline_update_do_update (task, progressbar, &error)) {
+			retval = EXIT_FAILURE;
+			pk_offline_update_write_error (error);
+			sd_journal_print (LOG_WARNING,
+					  "failed to update system: %s",
+					  error->message);
+			goto out;
+		}
 	}
+
 	pk_progress_bar_end (progressbar);
 
-	/* delete prepared-update file if it's not already been done by the
-	 * pk-plugin-systemd-update daemon plugin */
+	/* delete prepared-update and prepared-upgrade files as they are
+	 * both now out of date */
 	if (!pk_offline_auth_invalidate (&error)) {
 		retval = EXIT_FAILURE;
 		sd_journal_print (LOG_WARNING,

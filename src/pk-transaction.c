@@ -1028,6 +1028,20 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 		return;
 	}
 
+	/* if we're doing UpgradeSystem[only-download] then update the
+	 * prepared-upgrade file */
+	transaction_flags = transaction->priv->cached_transaction_flags;
+	if (transaction->priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM &&
+	    pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		package_ids = transaction->priv->cached_package_ids;
+		if (!pk_offline_auth_set_prepared_upgrade_version (transaction->priv->cached_value, &error)) {
+			g_warning ("failed to write offline system upgrade version: %s",
+				   error->message);
+		}
+		return;
+	}
+
 	switch (transaction->priv->role) {
 	case PK_ROLE_ENUM_GET_UPDATES:
 		/* if we do get-updates and there's no updates then remove

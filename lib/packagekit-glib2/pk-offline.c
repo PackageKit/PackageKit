@@ -352,6 +352,54 @@ pk_offline_get_prepared_ids (GError **error)
 }
 
 /**
+ * pk_offline_get_prepared_upgrade_version:
+ * @error: A #GError or %NULL
+ *
+ * Gets the version of the prepared system upgrade in the prepared transaction.
+ *
+ * Return value: the version, or %NULL if unset, free with g_free()
+ *
+ * Since: 1.0.12
+ **/
+gchar *
+pk_offline_get_prepared_upgrade_version (GError **error)
+{
+	_cleanup_error_free_ GError *error_local = NULL;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* does exist? */
+	if (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_NO_DATA,
+			     "No offline system upgrades have been prepared");
+		return NULL;
+	}
+
+	/* read data file */
+	if (!g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+				  &data, NULL, &error_local)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_FAILED,
+			     "Failed to read %s: %s",
+			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			     error_local->message);
+		return NULL;
+	}
+
+	keyfile = g_key_file_new ();
+	if (!g_key_file_load_from_data (keyfile, data, -1, G_KEY_FILE_NONE, error)) {
+		return NULL;
+	}
+
+	return g_key_file_get_string (keyfile, "update", "releasever", error);
+}
+
+/**
  * pk_offline_get_prepared_monitor:
  * @cancellable: A #GCancellable or %NULL
  * @error: A #GError or %NULL
