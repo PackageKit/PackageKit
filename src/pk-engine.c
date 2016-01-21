@@ -117,14 +117,7 @@ gboolean pk_engine_filter_check (const gchar *filter, GError **error);
  * pk_engine_error_quark:
  * Return value: Our personal error quark.
  **/
-GQuark
-pk_engine_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("pk_engine_error");
-	return quark;
-}
+G_DEFINE_QUARK (pk-engine-error-quark, pk_engine_error)
 
 /**
  * pk_engine_error_get_type:

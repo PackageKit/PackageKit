@@ -39,14 +39,7 @@
  *
  * Since: 0.9.6
  **/
-GQuark
-pk_offline_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("pk_offline_error");
-	return quark;
-}
+G_DEFINE_QUARK (pk-offline-error-quark, pk_offline_error)
 
 /**
  * pk_offline_action_to_string:

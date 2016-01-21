@@ -160,8 +160,4 @@ pk_alpm_error_emit (PkBackendJob *job, GError *error)
 	pk_backend_job_error_code (job, code, "%s", error->message);
 }
 
-GQuark
-pk_alpm_error_quark (void)
-{
-	return g_quark_from_static_string ("alpm-error-quark");
-}
+G_DEFINE_QUARK (pk-alpm-error-quark, pk_alpm_error)

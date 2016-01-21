@@ -137,14 +137,7 @@ typedef struct {
  *
  * Since: 0.5.2
  **/
-GQuark
-pk_control_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("pk_control_error");
-	return quark;
-}
+G_DEFINE_QUARK (pk-control-error-quark, pk_control_error)
 
 /**
  * pk_control_fixup_dbus_error:

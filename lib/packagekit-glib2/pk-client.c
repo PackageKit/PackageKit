@@ -143,14 +143,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
  *
  * Since: 0.5.2
  **/
-GQuark
-pk_client_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("pk_client_error");
-	return quark;
-}
+G_DEFINE_QUARK (pk-client-error-quark, pk_client_error)
 
 /**
  * pk_client_get_property:
