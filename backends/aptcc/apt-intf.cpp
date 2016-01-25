@@ -2556,6 +2556,14 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
             //setenv("LANG", "C", 1);
         }
 
+        // apt will record this in its history.log
+        guint uid = pk_backend_job_get_uid(m_job);
+        if (uid > 0) {
+            gchar buf[16];
+            snprintf(buf, sizeof(buf), "%d", uid);
+            setenv("PACKAGEKIT_CALLER_UID", buf, 1);
+        }
+
         // Pass the write end of the pipe to the install function
         auto *progress = new Progress::PackageManagerProgressFd(readFromChildFD[1]);
         res = PM->DoInstallPostFork(progress);
