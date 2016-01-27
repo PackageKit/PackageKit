@@ -33,7 +33,6 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
 BuildRequires: libgudev1-devel
-BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer1-devel
 BuildRequires: gstreamer1-plugins-base-devel
@@ -60,6 +59,7 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
+Obsoletes: PackageKit-browser-plugin < %{version}-%{release}
 
 # No more zif, smart or yum in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
@@ -110,17 +110,6 @@ Provides: PackageKit-docs = %{version}-%{release}
 
 %description glib-devel
 GLib headers and libraries for PackageKit.
-
-%package browser-plugin
-Summary: Browser Plugin for PackageKit
-Requires: gtk2
-Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: mozilla-filesystem
-
-%description browser-plugin
-The PackageKit browser plugin allows web sites to offer the ability to
-users to install and update packages from configured repositories
-using PackageKit.
 
 %package gstreamer-plugin
 Summary: Install GStreamer codecs using PackageKit
@@ -250,9 +239,6 @@ popd > /dev/null
 %files cron
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
-
-%files browser-plugin
-%{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %files gstreamer-plugin
 %{_libexecdir}/pk-gstreamer-install

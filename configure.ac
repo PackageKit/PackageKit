@@ -314,51 +314,6 @@ if test x$enable_local = xyes; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Able to build browser plugin
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(browser_plugin, AS_HELP_STRING([--enable-browser-plugin],[Build browser plugin functionality]),
-	      enable_browser_plugin=$enableval,enable_browser_plugin=yes)
-if test x$enable_browser_plugin = xyes; then
-	PKG_CHECK_EXISTS([npapi-sdk], mozilla_plugin=npapi-sdk, mozilla_plugin=mozilla-plugin)
-	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
-			  $mozilla_plugin	\
-			  gio-unix-2.0		\
-			  nspr >= 4.8		\
-			  cairo			\
-			  pango			\
-			  gtk+-2.0 >= 2.14.0,
-			  build_browser_plugin=yes, build_browser_plugin=no)
-	if test $build_browser_plugin = "yes"; then
-
-		# check we have xulrunner headers
-		packagekit_save_CPPFLAGS="$CPPFLAGS"
-		packagekit_save_LDFLAGS="$LDFLAGS"
-		CPPFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_CFLAGS"
-		LDFLAGS="$CPPFLAGS $PK_BROWSER_PLUGIN_LIBS"
-		AC_CHECK_HEADER(npfunctions.h, have_xulrunner_npfunctions=yes, have_xulrunner_npfunctions=no)
-		CPPFLAGS="$packagekit_save_CPPFLAGS"
-		LDFLAGS="$packagekit_save_LDFLAGS"
-
-		# Are we specifying a different mozilla plugin directory?
-		AC_ARG_WITH(mozilla-plugin-dir, [AS_HELP_STRING([--with-mozilla-plugin-dir=<dir>],[where to put the mozilla plugin])])
-		if ! test -z "$with_mozilla_plugin_dir" ; then
-			MOZILLA_PLUGIN_DIR="$with_mozilla_plugin_dir"
-		else
-			MOZILLA_PLUGIN_DIR="$LIBDIR/mozilla/plugins"
-		fi
-		AC_SUBST(MOZILLA_PLUGIN_DIR)
-
-		# not got headers
-		if test $have_xulrunner_npfunctions = "no"; then
-			build_browser_plugin=no
-		fi
-	fi
-else
-	build_browser_plugin=no
-fi
-AM_CONDITIONAL(PK_BUILD_BROWSER_PLUGIN, test $build_browser_plugin = "yes")
-
-dnl ---------------------------------------------------------------------------
 dnl - Able to build gstreamer plugin
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Build gstreamer plugin functionality]),
@@ -571,7 +526,6 @@ docs/api/Makefile
 docs/api/dbus/Makefile
 docs/api/version.xml
 contrib/Makefile
-contrib/browser-plugin/Makefile
 contrib/gstreamer-plugin/Makefile
 contrib/gtk-module/Makefile
 contrib/gtk-module/gtk2/Makefile
@@ -635,7 +589,6 @@ echo "
         Use systemd:               ${enable_systemd}
         Enable offline update:     ${enable_offline_update}
         Networking stacks:         ${networking_apis}
-        Browser plugin:            ${build_browser_plugin}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module (GTK+3):      ${build_gtk_module}
         gobject-introspection:     ${found_introspection}

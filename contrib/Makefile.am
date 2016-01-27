@@ -4,10 +4,6 @@ if BACKEND_TYPE_YUM
 SUBDIRS += yum-packagekit
 endif
 
-if PK_BUILD_BROWSER_PLUGIN
-SUBDIRS += browser-plugin
-endif
-
 if PK_BUILD_GSTREAMER_PLUGIN
 SUBDIRS += gstreamer-plugin
 endif
