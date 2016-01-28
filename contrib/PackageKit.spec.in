@@ -215,7 +215,6 @@ popd > /dev/null
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_libexecdir}/packagekitd
-%{_libexecdir}/packagekit-direct
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %exclude %{_libdir}/libpackagekit*.so.*
