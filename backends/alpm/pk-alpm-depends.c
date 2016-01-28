@@ -132,7 +132,7 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	PkBitfield filters;
 	gboolean recursive;
 
@@ -162,7 +162,7 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 		depends = alpm_pkg_get_depends (i->data);
 		for (; depends != NULL; depends = depends->next) {
-			_cleanup_free_ gchar *depend = NULL;
+			g_autofree gchar *depend = NULL;
 
 			if (pk_backend_job_is_cancelled (job) || error != NULL)
 				break;
@@ -180,7 +180,7 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	gboolean recursive;
 	PkBitfield filters;
 

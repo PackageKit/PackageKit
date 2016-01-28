@@ -28,10 +28,6 @@
 
 #include "config.h"
 
-#include "src/pk-cleanup.h"
-
-#include "src/pk-cleanup.h"
-
 #include <glib.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-bitfield.h>
@@ -159,7 +155,7 @@ pk_role_bitfield_from_string (const gchar *roles)
 	guint length;
 	guint i;
 	PkRoleEnum role;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	split = g_strsplit (roles, ";", 0);
 	if (split == NULL) {
@@ -226,7 +222,7 @@ pk_group_bitfield_from_string (const gchar *groups)
 	guint length;
 	guint i;
 	PkGroupEnum group;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	split = g_strsplit (groups, ";", 0);
 	if (split == NULL) {
@@ -297,7 +293,7 @@ pk_filter_bitfield_from_string (const gchar *filters)
 	guint length;
 	guint i;
 	PkFilterEnum filter;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	split = g_strsplit (filters, ";", 0);
 	if (split == NULL) {
@@ -368,7 +364,7 @@ pk_transaction_flag_bitfield_from_string (const gchar *transaction_flags)
 	guint length;
 	guint i;
 	PkFilterEnum transaction_flag;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	split = g_strsplit (transaction_flags, ";", 0);
 	if (split == NULL) {

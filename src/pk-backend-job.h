@@ -74,6 +74,10 @@ typedef struct
 	GObjectClass	parent_class;
 } PkBackendJobClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkBackendJob, g_object_unref)
+#endif
+
 GType		 pk_backend_job_get_type		(void);
 PkBackendJob	*pk_backend_job_new			(GKeyFile		*conf);
 

@@ -43,6 +43,10 @@ typedef struct _PkRepoSignatureRequiredPrivate	PkRepoSignatureRequiredPrivate;
 typedef struct _PkRepoSignatureRequired		PkRepoSignatureRequired;
 typedef struct _PkRepoSignatureRequiredClass	PkRepoSignatureRequiredClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRepoSignatureRequired, g_object_unref)
+#endif
+
 struct _PkRepoSignatureRequired
 {
 	 PkSource			 parent;

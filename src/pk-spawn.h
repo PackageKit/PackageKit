@@ -48,6 +48,10 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSpawnClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkSpawn, g_object_unref)
+#endif
+
 /**
  * PkSpawnExitType:
  *

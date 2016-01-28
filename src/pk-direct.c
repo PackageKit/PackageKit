@@ -30,7 +30,6 @@
 #include <packagekit-glib2/pk-item-progress.h>
 #include <packagekit-glib2/pk-package.h>
 
-#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-shared.h"
 
@@ -91,7 +90,7 @@ pk_direct_add (GPtrArray *array,
 {
 	PkDirectItem *item;
 	guint i;
-	_cleanup_strv_free_ gchar **names = NULL;
+	g_auto(GStrv) names = NULL;
 
 	g_return_if_fail (name != NULL);
 	g_return_if_fail (description != NULL);
@@ -169,7 +168,7 @@ pk_direct_run (PkDirectPrivate *priv, const gchar *command, gchar **values, GErr
 {
 	PkDirectItem *item;
 	guint i;
-	_cleanup_string_free_ GString *string = NULL;
+	g_autoptr(GString) string = NULL;
 
 	/* find command */
 	for (i = 0; i < priv->cmd_array->len; i++) {
@@ -446,11 +445,11 @@ main (int argc, char *argv[])
 	const gchar *destdir;
 	gboolean ret = TRUE;
 	gint retval = EXIT_SUCCESS;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *backend_name = NULL;
-	_cleanup_free_ gchar *cmd_descriptions = NULL;
-	_cleanup_free_ gchar *conf_filename = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *backend_name = NULL;
+	g_autofree gchar *cmd_descriptions = NULL;
+	g_autofree gchar *conf_filename = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -588,7 +587,7 @@ main (int argc, char *argv[])
 	ret = pk_direct_run (priv, argv[1], (gchar**) &argv[2], &error);
 	if (!ret) {
 		if (g_error_matches (error, PK_ERROR, PK_ERROR_NO_SUCH_CMD)) {
-			_cleanup_free_ gchar *tmp = NULL;
+			g_autofree gchar *tmp = NULL;
 			tmp = g_option_context_get_help (priv->context, TRUE, NULL);
 			g_print ("%s", tmp);
 		} else {

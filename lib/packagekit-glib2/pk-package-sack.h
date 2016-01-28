@@ -46,6 +46,10 @@ typedef struct _PkPackageSack		PkPackageSack;
 typedef struct _PkPackageSackClass	PkPackageSackClass;
 typedef struct _PkPackageSackResults	PkPackageSackResults;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkPackageSack, g_object_unref)
+#endif
+
 struct _PkPackageSack
 {
 	 GObject		 parent;

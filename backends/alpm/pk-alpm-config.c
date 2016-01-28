@@ -456,7 +456,7 @@ pk_alpm_config_add_server (PkAlpmConfig *config,
 			      PkAlpmConfigSection *section,
 			      const gchar *address, GError **e)
 {
-	_cleanup_free_ gchar *url = NULL;
+	g_autofree gchar *url = NULL;
 
 	g_return_val_if_fail (config != NULL, FALSE);
 	g_return_val_if_fail (section != NULL, FALSE);
@@ -468,7 +468,7 @@ pk_alpm_config_add_server (PkAlpmConfig *config,
 		return FALSE;
 
 	if (config->arch != NULL) {
-		_cleanup_free_ gchar *temp = url;
+		g_autofree gchar *temp = url;
 		url = g_regex_replace_literal (config->xarch, temp, -1, 0,
 					       config->arch, 0, e);
 		if (url == NULL)
@@ -499,9 +499,9 @@ static gboolean
 pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
 			 PkAlpmConfigSection *section, GError **error)
 {
-	_cleanup_object_unref_ GFile *file = NULL;
-	_cleanup_object_unref_ GFileInputStream *is = NULL;
-	_cleanup_object_unref_ GDataInputStream *input = NULL;
+	g_autoptr(GFile) file = NULL;
+	g_autoptr(GFileInputStream) is = NULL;
+	g_autoptr(GDataInputStream) input = NULL;
 	gchar *key, *str, *line = NULL;
 	guint num = 1;
 	GError *e = NULL;
@@ -844,7 +844,7 @@ static gboolean
 pk_alpm_spawn (const gchar *command)
 {
 	int status;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_return_val_if_fail (command != NULL, FALSE);
 
@@ -872,12 +872,12 @@ pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
 {
 	GRegex *xo, *xi;
 	gint result = 0;
-	_cleanup_free_ gchar *basename = NULL;
-	_cleanup_free_ gchar *file = NULL;
-	_cleanup_free_ gchar *finalcmd = NULL;
-	_cleanup_free_ gchar *oldpwd = NULL;
-	_cleanup_free_ gchar *part = NULL;
-	_cleanup_free_ gchar *tempcmd = NULL;
+	g_autofree gchar *basename = NULL;
+	g_autofree gchar *file = NULL;
+	g_autofree gchar *finalcmd = NULL;
+	g_autofree gchar *oldpwd = NULL;
+	g_autofree gchar *part = NULL;
+	g_autofree gchar *tempcmd = NULL;
 
 	g_return_val_if_fail (url != NULL, -1);
 	g_return_val_if_fail (path != NULL, -1);

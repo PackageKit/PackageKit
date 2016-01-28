@@ -51,6 +51,10 @@ typedef struct
 	GObjectClass		 parent_class;
 } PkSchedulerClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkScheduler, g_object_unref)
+#endif
+
 GType		 pk_scheduler_get_type	  	(void);
 PkScheduler	*pk_scheduler_new		(GKeyFile	*conf);
 

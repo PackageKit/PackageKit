@@ -79,7 +79,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	gboolean only_trusted;
 	gchar** full_paths;
 	PkBitfield flags;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t^a&s)",
 				  &flags,

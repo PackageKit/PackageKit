@@ -81,7 +81,7 @@ pk_alpm_transaction_download_end (PkBackendJob *job)
 
 	/* tell DownloadPackages what files were downloaded */
 	if (dfiles != NULL) {
-		_cleanup_free_ gchar *package_id = pk_alpm_pkg_build_id (dpkg);
+		g_autofree gchar *package_id = pk_alpm_pkg_build_id (dpkg);
 		pk_backend_job_files (job, package_id, &dfiles->str);
 		g_string_free (dfiles, TRUE);
 	}
@@ -103,7 +103,7 @@ pk_alpm_transaction_download_start (PkBackendJob *job, const gchar *basename)
 	if (dpkg != NULL) {
 		if (pk_alpm_pkg_has_basename (backend, dpkg, basename)) {
 			if (dfiles != NULL) {
-				_cleanup_free_ gchar *path = NULL;
+				g_autofree gchar *path = NULL;
 				path = pk_alpm_resolve_path (job, basename);
 				g_string_append_printf (dfiles, ";%s", path);
 			}
@@ -130,7 +130,7 @@ pk_alpm_transaction_download_start (PkBackendJob *job, const gchar *basename)
 
 	/* start collecting files for the new package */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		_cleanup_free_ gchar *path = NULL;
+		g_autofree gchar *path = NULL;
 		path = pk_alpm_resolve_path (job, basename);
 		dfiles = g_string_new (path);
 	}
@@ -249,7 +249,7 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 static void
 pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_question_install_ignorepkg_t *q)
 {
-	_cleanup_free_ gchar *output = NULL;
+	g_autofree gchar *output = NULL;
 
 	g_return_if_fail (q != NULL);
 	g_return_if_fail (q->pkg != NULL);
@@ -274,7 +274,7 @@ static void
 pk_alpm_select_provider (const alpm_list_t *providers,
 			    alpm_depend_t *depend)
 {
-	_cleanup_free_ gchar *output = NULL;
+	g_autofree gchar *output = NULL;
 
 	g_return_if_fail (depend != NULL);
 	g_return_if_fail (providers != NULL);
@@ -430,7 +430,7 @@ pk_alpm_transaction_add_done (PkBackendJob *job, alpm_pkg_t *pkg)
 
 		for (i = optdepends; i != NULL; i = i->next) {
 			char *depend = alpm_dep_compute_string (i->data);
-			_cleanup_free_ gchar *output = g_strdup_printf ("%s\n", depend);
+			g_autofree gchar *output = g_strdup_printf ("%s\n", depend);
 			free (depend);
 			pk_alpm_transaction_output (output);
 		}
@@ -531,7 +531,7 @@ pk_alpm_transaction_process_new_optdepends (alpm_pkg_t *pkg, alpm_pkg_t *old)
 
 	for (i = optdepends; i != NULL; i = i->next) {
 		char *depend = alpm_dep_compute_string (i->data);
-		_cleanup_free_ gchar *output = g_strdup_printf ("%s\n", depend);
+		g_autofree gchar *output = g_strdup_printf ("%s\n", depend);
 		free (depend);
 		pk_alpm_transaction_output (output);
 	}
@@ -601,7 +601,7 @@ pk_alpm_transaction_optdepend_removal (PkBackendJob *job, alpm_pkg_t *pkg,
 					   alpm_depend_t *optdepend)
 {
 	char *depend = NULL;
-	_cleanup_free_ gchar *output = NULL;
+	g_autofree gchar *output = NULL;
 
 	g_return_if_fail (pkg != NULL);
 	g_return_if_fail (optdepend != NULL);
@@ -906,7 +906,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *data = NULL;
-	_cleanup_free_ gchar *prefix = NULL;
+	g_autofree gchar *prefix = NULL;
 
 	if (alpm_trans_prepare (priv->alpm, &data) >= 0)
 		return TRUE;
@@ -1014,7 +1014,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *data = NULL;
-	_cleanup_free_ gchar *prefix = NULL;
+	g_autofree gchar *prefix = NULL;
 	gint commit_result;
 
 	if (pk_backend_job_is_cancelled (job))

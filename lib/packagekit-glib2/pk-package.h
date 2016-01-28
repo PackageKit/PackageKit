@@ -45,6 +45,10 @@ typedef struct _PkPackagePrivate	PkPackagePrivate;
 typedef struct _PkPackage		PkPackage;
 typedef struct _PkPackageClass		PkPackageClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkPackage, g_object_unref)
+#endif
+
 struct _PkPackage
 {
 	 PkSource		 parent;

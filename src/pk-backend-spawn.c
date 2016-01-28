@@ -42,7 +42,6 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-spawn.h"
@@ -166,7 +165,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
-	_cleanup_strv_free_ gchar **sections = NULL;
+	g_auto(GStrv) sections = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -244,7 +243,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		pk_backend_spawn_start_kill_timer (backend_spawn);
 
 	} else if (g_strcmp0 (command, "files") == 0) {
-		_cleanup_strv_free_ gchar **tmp = NULL;
+		g_auto(GStrv) tmp = NULL;
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			return FALSE;
@@ -272,11 +271,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			return FALSE;
 		}
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
-		_cleanup_strv_free_ gchar **updates = NULL;
-		_cleanup_strv_free_ gchar **obsoletes = NULL;
-		_cleanup_strv_free_ gchar **vendor_urls = NULL;
-		_cleanup_strv_free_ gchar **bugzilla_urls = NULL;
-		_cleanup_strv_free_ gchar **cve_urls = NULL;
+		g_auto(GStrv) updates = NULL;
+		g_auto(GStrv) obsoletes = NULL;
+		g_auto(GStrv) vendor_urls = NULL;
+		g_auto(GStrv) bugzilla_urls = NULL;
+		g_auto(GStrv) cve_urls = NULL;
 		if (size != 13) {
 			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
 			return FALSE;
@@ -635,7 +634,7 @@ static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	ret = pk_backend_spawn_inject_data (backend_spawn,
 					    backend_spawn->priv->job,
 					    line,
@@ -682,7 +681,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gboolean ret;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	gboolean keep_environment;
-	_cleanup_free_ gchar *eulas = NULL;
+	g_autofree gchar *eulas = NULL;
 	const gchar *locale = NULL;
 	const gchar *no_proxy = NULL;
 	const gchar *pac = NULL;
@@ -690,8 +689,8 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	const gchar *proxy_http = NULL;
 	const gchar *proxy_https = NULL;
 	const gchar *proxy_socks = NULL;
-	_cleanup_free_ gchar *transaction_id = NULL;
-	_cleanup_hashtable_unref_ GHashTable *env_table = NULL;
+	g_autofree gchar *transaction_id = NULL;
+	g_autoptr(GHashTable) env_table = NULL;
 
 	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	keep_environment = g_key_file_get_boolean (backend_spawn->priv->conf,
@@ -702,9 +701,9 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 
 	/* copy environment if so specified (for debugging) */
 	if (keep_environment) {
-		_cleanup_strv_free_ gchar **environ = g_get_environ ();
+		g_auto(GStrv) environ = g_get_environ ();
 		for (env_item = environ; env_item && *env_item; env_item++) {
-			_cleanup_strv_free_ gchar **env_item_split = NULL;
+			g_auto(GStrv) env_item_split = NULL;
 			env_item_split = g_strsplit (*env_item, "=", 2);
 			if (env_item_split && (g_strv_length (env_item_split) == 2))
 				g_hash_table_replace (env_table, g_strdup (env_item_split[0]),
@@ -885,10 +884,10 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *filename = NULL;
-	_cleanup_strv_free_ gchar **argv = NULL;
-	_cleanup_strv_free_ gchar **envp = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *filename = NULL;
+	g_auto(GStrv) argv = NULL;
+	g_auto(GStrv) envp = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 

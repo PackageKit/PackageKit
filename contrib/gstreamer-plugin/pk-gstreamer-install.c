@@ -26,8 +26,6 @@
 #include <sys/utsname.h>
 #include <packagekit-glib2/packagekit.h>
 
-#include "src/pk-cleanup.h"
-
 typedef struct {
 	GstStructure	*structure;
 	gchar		*type_name;
@@ -51,10 +49,10 @@ pk_gst_parse_codec (const gchar *codec)
 {
 	GstStructure *s;
 	PkGstCodecInfo *info = NULL;
-	_cleanup_free_ gchar *caps = NULL;
-	_cleanup_free_ gchar *type_name = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
-	_cleanup_strv_free_ gchar **ss = NULL;
+	g_autofree gchar *caps = NULL;
+	g_autofree gchar *type_name = NULL;
+	g_auto(GStrv) split = NULL;
+	g_auto(GStrv) ss = NULL;
 
 	split = g_strsplit (codec, "|", -1);
 	if (split == NULL || g_strv_length (split) != 5) {
@@ -156,7 +154,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 	GString *string;
 	guint i, num_fields;
 	GList *l;
-	_cleanup_list_free_ GList *fields = NULL;
+	g_autoptr(GList) fields = NULL;
 
 	num_fields = gst_structure_n_fields (s);
 	fields = NULL;
@@ -277,8 +275,8 @@ make_platform_data (const gchar *startup_id)
 static gboolean
 pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const gchar *startup_id, const gchar *interaction, GError **error)
 {
-	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GDBusProxy) proxy = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
@@ -313,8 +311,8 @@ pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const
 static gboolean
 pk_gst_dbus_install_resources_compat (gchar **resources, gint xid, GError **error)
 {
-	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GDBusProxy) proxy = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
@@ -359,12 +357,12 @@ main (int argc, gchar **argv)
 	gint xid = 0;
 	const gchar *suffix;
 	gchar *resource;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *desktop_id = NULL;
-	_cleanup_free_ gchar *interaction = NULL;
-	_cleanup_free_ gchar *startup_id = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
-	_cleanup_strv_free_ gchar **resources = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *desktop_id = NULL;
+	g_autofree gchar *interaction = NULL;
+	g_autofree gchar *startup_id = NULL;
+	g_autoptr(GPtrArray) array = NULL;
+	g_auto(GStrv) resources = NULL;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -426,7 +424,7 @@ main (int argc, gchar **argv)
 
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
 		if (info->structure != NULL) {
-			_cleanup_free_ gchar *s = NULL;
+			g_autofree gchar *s = NULL;
 			s = pk_gst_structure_to_provide (info->structure);
 			type = g_strdup_printf ("gstreamer%s(%s-%s)%s%s",
 						gstreamer_version,

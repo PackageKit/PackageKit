@@ -1247,7 +1247,7 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 	gchar buffer[1024];
 	gint wrote = 0;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
@@ -1314,9 +1314,9 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	GSource *source;
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	PkRoleEnum role;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	const gchar *frontend_socket = NULL;
-	_cleanup_object_unref_ GSocketAddress *address = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
 
 	/* FIXME: support only_trusted */
 	role = pk_backend_job_get_role (job);

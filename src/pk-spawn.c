@@ -40,7 +40,6 @@
 
 #include <glib/gi18n.h>
 
-#include "pk-cleanup.h"
 #include "pk-spawn.h"
 #include "pk-shared.h"
 
@@ -116,7 +115,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	guint i;
 	guint size;
 	guint bytes_processed;
-	_cleanup_strv_free_ gchar **lines = NULL;
+	g_auto(GStrv) lines = NULL;
 
 	/* if nothing then don't emit */
 	if (pk_strzero (string->str))
@@ -393,7 +392,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 {
 	gint wrote;
 	gint length;
-	_cleanup_free_ gchar *buffer = NULL;
+	g_autofree gchar *buffer = NULL;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 
@@ -523,7 +522,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	guint len;
 	gint nice_value = 0;
 	gint rc;
-	_cleanup_error_free_ GError *error_local = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -558,7 +557,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 			g_debug ("not re-using instance due to policy");
 		} else {
 			/* join with tabs, as spaces could be in file name */
-			_cleanup_free_ gchar *command = g_strjoinv ("\t", &argv[1]);
+			g_autofree gchar *command = g_strjoinv ("\t", &argv[1]);
 
 			/* reuse instance */
 			g_debug ("reusing instance");

@@ -55,7 +55,6 @@ pk-resources.h: packagekit.gresource.xml
 		$(srcdir)/packagekit.gresource.xml
 
 shared_SOURCES =					\
-	pk-cleanup.h					\
 	pk-dbus.c					\
 	pk-dbus.h					\
 	pk-transaction.c				\
@@ -87,7 +86,6 @@ packagekit_direct_SOURCES =				\
 	pk-backend.h					\
 	pk-backend-job.c				\
 	pk-backend-job.h				\
-	pk-cleanup.h					\
 	pk-direct.c					\
 	pk-shared.c					\
 	pk-shared.h

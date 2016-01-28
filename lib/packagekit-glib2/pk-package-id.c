@@ -28,8 +28,6 @@
 
 #include <glib.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-package-id.h>
 
 /**
@@ -75,7 +73,7 @@ out:
 gboolean
 pk_package_id_check (const gchar *package_id)
 {
-	_cleanup_strv_free_ gchar **sections = NULL;
+	g_auto(GStrv) sections = NULL;
 	gboolean ret;
 
 	/* NULL check */
@@ -160,8 +158,8 @@ pk_package_id_equal_fuzzy_arch_section (const gchar *arch1, const gchar *arch2)
 gboolean
 pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_id2)
 {
-	_cleanup_strv_free_ gchar **sections1 = NULL;
-	_cleanup_strv_free_ gchar **sections2 = NULL;
+	g_auto(GStrv) sections1 = NULL;
+	g_auto(GStrv) sections2 = NULL;
 
 	sections1 = pk_package_id_split (package_id1);
 	sections2 = pk_package_id_split (package_id2);
@@ -185,7 +183,7 @@ pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_i
 gchar *
 pk_package_id_to_printable (const gchar *package_id)
 {
-	_cleanup_strv_free_  gchar **parts = NULL;
+	g_auto(GStrv) parts = NULL;
 	gchar *value = NULL;
 	GString *string = NULL;
 

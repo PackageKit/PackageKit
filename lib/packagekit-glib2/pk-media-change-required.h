@@ -43,6 +43,10 @@ typedef struct _PkMediaChangeRequiredPrivate	PkMediaChangeRequiredPrivate;
 typedef struct _PkMediaChangeRequired		PkMediaChangeRequired;
 typedef struct _PkMediaChangeRequiredClass	PkMediaChangeRequiredClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkMediaChangeRequired, g_object_unref)
+#endif
+
 struct _PkMediaChangeRequired
 {
 	 PkSource			 parent;

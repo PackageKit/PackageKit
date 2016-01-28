@@ -22,15 +22,13 @@
 #include <gio/gio.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "src/pk-cleanup.h"
-
 static gboolean
 pk_socket_example_accept_connection_cb (GSocket *socket, GIOCondition condition, gpointer user_data)
 {
 	gsize len;
 	gchar buffer[1024];
 	GMainLoop *loop = (GMainLoop *) user_data;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
@@ -61,10 +59,10 @@ main (void)
 	const gchar *buffer = "ping\n";
 	const gchar *socket_filename = "/tmp/pk-self-test.socket";
 	GSource *source;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
-	_cleanup_object_unref_ GSocketAddress *address = NULL;
-	_cleanup_object_unref_ GSocket *socket = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GMainLoop) loop = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
+	g_autoptr(GSocket) socket = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();

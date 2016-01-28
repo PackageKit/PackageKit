@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <pk-cleanup.h>
 
 #include <libhif.h>
 
@@ -97,8 +96,8 @@ hif_emit_package_list_filter (PkBackendJob *job,
 	HyPackage found;
 	HyPackage pkg;
 	guint i;
-	_cleanup_hashtable_unref_ GHashTable *hash_cost = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash_installed = NULL;
+	g_autoptr(GHashTable) hash_cost = NULL;
+	g_autoptr(GHashTable) hash_installed = NULL;
 
 	/* if a package exists in multiple repos, show the one with the lowest
 	 * cost of downloading */
@@ -227,7 +226,7 @@ hif_get_filter_for_ids (gchar **package_ids)
 	PkBitfield filters = 0;
 
 	for (i = 0; package_ids[i] != NULL && (!installed || !available); i++) {
-		_cleanup_strv_free_ gchar **split = pk_package_id_split (package_ids[i]);
+		g_auto(GStrv) split = pk_package_id_split (package_ids[i]);
 		if (g_strcmp0 (split[PK_PACKAGE_ID_DATA], "installed") == 0)
 			installed = TRUE;
 		else

@@ -46,6 +46,10 @@ typedef struct
 	GObjectClass		 parent_class;
 } PkProgressBarClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkProgressBar, g_object_unref)
+#endif
+
 GType		 pk_progress_bar_get_type		(void);
 PkProgressBar	*pk_progress_bar_new			(void);
 gboolean	 pk_progress_bar_set_size		(PkProgressBar	*progress_bar,

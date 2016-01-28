@@ -44,6 +44,10 @@ typedef struct _PkErrorPrivate	PkErrorPrivate;
 typedef struct _PkError		PkError;
 typedef struct _PkErrorClass	PkErrorClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkError, g_object_unref)
+#endif
+
 struct _PkError
 {
 	 PkSource		 parent;

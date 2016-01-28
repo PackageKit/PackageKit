@@ -25,7 +25,6 @@
 #include <glib-object.h>
 #include <glib/gstdio.h>
 
-#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-dbus.h"
@@ -165,9 +164,9 @@ pk_test_backend_func (void)
 	gboolean ret;
 	const gchar *filename;
 	GError *error = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
-	_cleanup_object_unref_ PkBackend *backend = NULL;
-	_cleanup_object_unref_ PkBackendJob *job = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkBackendJob) job = NULL;
 
 	/* get an backend */
 	conf = g_key_file_new ();
@@ -333,9 +332,9 @@ pk_test_backend_spawn_func (void)
 	gboolean ret;
 	gchar *uri;
 	GError *error = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
-	_cleanup_object_unref_ PkBackend *backend = NULL;
-	_cleanup_object_unref_ PkBackendJob *job = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkBackendJob) job = NULL;
 
 	/* get an backend_spawn */
 	conf = g_key_file_new ();
@@ -488,7 +487,7 @@ pk_test_backend_spawn_func (void)
 static void
 pk_test_dbus_func (void)
 {
-	_cleanup_object_unref_ PkDbus *dbus = NULL;
+	g_autoptr(PkDbus) dbus = NULL;
 
 	dbus = pk_dbus_new ();
 	g_assert (dbus != NULL);
@@ -531,7 +530,7 @@ cancel_cb (gpointer data)
 static void
 new_spawn_object (PkSpawn **pspawn)
 {
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
 	if (*pspawn != NULL)
 		g_object_unref (*pspawn);
 	conf = g_key_file_new ();
@@ -556,9 +555,9 @@ pk_test_spawn_func (void)
 {
 	GError *error = NULL;
 	gboolean ret;
-	_cleanup_object_unref_ PkSpawn *spawn = NULL;
-	_cleanup_strv_free_ gchar **argv = NULL;
-	_cleanup_strv_free_ gchar **envp = NULL;
+	g_autoptr(PkSpawn) spawn = NULL;
+	g_auto(GStrv) argv = NULL;
+	g_auto(GStrv) envp = NULL;
 
 	new_spawn_object (&spawn);
 
@@ -737,8 +736,8 @@ pk_test_transaction_func (void)
 	gboolean ret;
 	GError *error = NULL;
 	GDBusNodeInfo *introspection;
-	_cleanup_object_unref_ PkTransaction *transaction = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
+	g_autoptr(PkTransaction) transaction = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
 
 	introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml", NULL);
 	g_assert (introspection != NULL);
@@ -771,9 +770,9 @@ pk_test_transaction_db_func (void)
 	gboolean ret;
 	gdouble ms;
 	GError *error = NULL;
-	_cleanup_object_unref_ PkTransactionDb *db = NULL;
-	_cleanup_free_ gchar *proxy_http = NULL;
-	_cleanup_free_ gchar *proxy_ftp = NULL;
+	g_autoptr(PkTransactionDb) db = NULL;
+	g_autofree gchar *proxy_http = NULL;
+	g_autofree gchar *proxy_ftp = NULL;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -932,12 +931,12 @@ pk_test_scheduler_func (void)
 	gchar **array;
 	PkTransaction *transaction;
 	GError *error = NULL;
-	_cleanup_free_ gchar *tid_item1 = NULL;
-	_cleanup_free_ gchar *tid_item2 = NULL;
-	_cleanup_free_ gchar *tid_item3 = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
-	_cleanup_object_unref_ PkBackend *backend = NULL;
-	_cleanup_object_unref_ PkScheduler *tlist = NULL;
+	g_autofree gchar *tid_item1 = NULL;
+	g_autofree gchar *tid_item2 = NULL;
+	g_autofree gchar *tid_item3 = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1241,14 +1240,14 @@ pk_test_scheduler_parallel_func (void)
 	PkTransaction *transaction2;
 	PkTransaction *transaction3;
 	GError *error = NULL;
-	_cleanup_free_ gchar *tid_item1 = NULL;
-	_cleanup_free_ gchar *tid_item2 = NULL;
-	_cleanup_free_ gchar *tid_item3 = NULL;
-	_cleanup_free_ gchar *tid_item4 = NULL;
-	_cleanup_free_ gchar *tid_item5 = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *conf = NULL;
-	_cleanup_object_unref_ PkBackend *backend = NULL;
-	_cleanup_object_unref_ PkScheduler *tlist = NULL;
+	g_autofree gchar *tid_item1 = NULL;
+	g_autofree gchar *tid_item2 = NULL;
+	g_autofree gchar *tid_item3 = NULL;
+	g_autofree gchar *tid_item4 = NULL;
+	g_autofree gchar *tid_item5 = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
 
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);

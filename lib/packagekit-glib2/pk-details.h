@@ -44,6 +44,10 @@ typedef struct _PkDetailsPrivate	PkDetailsPrivate;
 typedef struct _PkDetails		PkDetails;
 typedef struct _PkDetailsClass		PkDetailsClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDetails, g_object_unref)
+#endif
+
 struct _PkDetails
 {
 	 PkSource		 parent;

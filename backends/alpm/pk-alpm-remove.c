@@ -37,7 +37,7 @@ pk_alpm_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError 
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
-		_cleanup_strv_free_ gchar **package = pk_package_id_split (*packages);
+		g_auto(GStrv) package = pk_package_id_split (*packages);
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
 		alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
@@ -79,7 +79,7 @@ static void
 pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	alpm_transflag_t flags = 0;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	gboolean allow_deps, autoremove;
 	gchar** package_ids;
 	PkBitfield transaction_flags;

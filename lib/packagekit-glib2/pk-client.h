@@ -78,6 +78,10 @@ typedef struct _PkClientPrivate		PkClientPrivate;
 typedef struct _PkClient		PkClient;
 typedef struct _PkClientClass		PkClientClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkClient, g_object_unref)
+#endif
+
 struct _PkClient
 {
 	 GObject		 parent;

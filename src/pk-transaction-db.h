@@ -47,6 +47,10 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionDbClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransactionDb, g_object_unref)
+#endif
+
 GType		 pk_transaction_db_get_type		(void);
 PkTransactionDb	*pk_transaction_db_new			(void);
 gboolean	 pk_transaction_db_load			(PkTransactionDb	*tdb,

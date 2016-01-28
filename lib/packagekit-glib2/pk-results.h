@@ -57,6 +57,10 @@ typedef struct _PkResultsPrivate	PkResultsPrivate;
 typedef struct _PkResults		PkResults;
 typedef struct _PkResultsClass		PkResultsClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkResults, g_object_unref)
+#endif
+
 struct _PkResults
 {
 	 GObject		 parent;

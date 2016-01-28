@@ -43,6 +43,10 @@ typedef struct _PkFilesPrivate	PkFilesPrivate;
 typedef struct _PkFiles		PkFiles;
 typedef struct _PkFilesClass	PkFilesClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkFiles, g_object_unref)
+#endif
+
 struct _PkFiles
 {
 	 PkSource		 parent;

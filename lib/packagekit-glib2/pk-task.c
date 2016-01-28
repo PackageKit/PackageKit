@@ -29,8 +29,6 @@
 
 #include <gio/gio.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -346,10 +344,10 @@ static void
 pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkPackageSack *sack = NULL;
-	_cleanup_object_unref_ PkPackageSack *untrusted_sack = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkPackageSack) sack = NULL;
+	g_autoptr(PkPackageSack) untrusted_sack = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -516,8 +514,8 @@ static void
 pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -540,7 +538,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		_cleanup_object_unref_ PkError *error_code = NULL;
+		g_autoptr(PkError) error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
 		g_set_error (&error,
@@ -562,10 +560,10 @@ pk_task_install_signatures (PkTaskState *state)
 {
 	PkRepoSignatureRequired *item;
 	PkSigTypeEnum type;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *key_id = NULL;
-	_cleanup_free_ gchar *package_id = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *key_id = NULL;
+	g_autofree gchar *package_id = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	/* get results */
 	array = pk_results_get_repo_signature_required_array (state->results);
@@ -608,8 +606,8 @@ static void
 pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -632,7 +630,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		_cleanup_object_unref_ PkError *error_code = NULL;
+		g_autoptr(PkError) error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
 		g_set_error (&error,
@@ -653,9 +651,9 @@ static void
 pk_task_accept_eulas (PkTaskState *state)
 {
 	PkEulaRequired *item;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *eula_id = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *eula_id = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
@@ -696,8 +694,8 @@ static void
 pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 {
 	PkTask *task = PK_TASK (source_object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -720,7 +718,7 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState 
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		_cleanup_object_unref_ PkError *error_code = NULL;
+		g_autoptr(PkError) error_code = NULL;
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
 		error = g_error_new (PK_CLIENT_ERROR,
@@ -804,7 +802,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 static gboolean
 pk_task_user_declined_idle_cb (PkTaskState *state)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* the introduction is finished */
 	if (state->simulate) {
@@ -870,8 +868,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	PkTask *task = PK_TASK (source_object);
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 	gboolean interactive;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* old results no longer valid */
 	if (state->results != NULL) {
@@ -1056,7 +1054,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_TASK (task));
@@ -1117,7 +1115,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1177,7 +1175,7 @@ pk_task_upgrade_system_async (PkTask *task,
                               GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1234,7 +1232,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1288,7 +1286,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
@@ -1344,7 +1342,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 		       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1402,7 +1400,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1453,7 +1451,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1504,7 +1502,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1555,7 +1553,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1605,7 +1603,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1654,7 +1652,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1704,7 +1702,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1754,7 +1752,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1805,7 +1803,7 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1856,7 +1854,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1907,7 +1905,7 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -1960,7 +1958,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2010,7 +2008,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2058,7 +2056,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2106,7 +2104,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2155,7 +2153,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2205,7 +2203,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkTaskState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -2258,7 +2256,7 @@ pk_task_repair_system_async (PkTask *task,
 {
 	PkTaskState *state;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);

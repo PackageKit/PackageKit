@@ -31,8 +31,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
-#include "src/pk-cleanup.h"
-
 #define PK_MAX_PATH_LEN 1023
 
 typedef enum {
@@ -222,7 +220,7 @@ static void
 pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
 {
 	const gchar *tmp;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	hash = g_hash_table_new (g_str_hash, g_str_equal);
 	g_hash_table_insert (hash, (gpointer) "smuser", (gpointer) "usermod");
@@ -351,8 +349,8 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	gchar buffer_bin[PK_MAX_PATH_LEN+1];
 	gchar buffer_sbin[PK_MAX_PATH_LEN+1];
 	gboolean ret;
-	_cleanup_ptrarray_unref_ GPtrArray *possible = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *unique = NULL;
+	g_autoptr(GPtrArray) possible = NULL;
+	g_autoptr(GPtrArray) unique = NULL;
 
 	array = g_ptr_array_new_with_free_func (g_free);
 	possible = g_ptr_array_new_with_free_func (g_free);
@@ -484,7 +482,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	gchar **package_ids = NULL;
 	const gchar *prefixes[] = {"/usr/bin", "/usr/sbin", "/bin", "/sbin", NULL};
 	gchar **values = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	GPtrArray *array = NULL;
 	guint i;
 	guint len;
@@ -578,7 +576,7 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 {
 	PkCnfPolicy policy;
 	gchar *policy_text;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* get from file */
 	policy_text = g_key_file_get_string (file, "CommandNotFound", key, &error);
@@ -601,7 +599,7 @@ pk_cnf_get_config (void)
 	GKeyFile *file;
 	gchar *path;
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	PkCnfPolicyConfig *config;
 
 	/* create */
@@ -658,9 +656,9 @@ static gint
 pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 {
 	gint exit_status = EXIT_FAILURE;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *args = NULL;
-	_cleanup_free_ gchar *cmd = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *args = NULL;
+	g_autofree gchar *cmd = NULL;
 
 	/* ensure program starts on a fresh line */
 	g_print ("\n");
@@ -680,10 +678,10 @@ pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 static gboolean
 pk_cnf_install_package_id (const gchar *package_id)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkError *error_code = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkError) error_code = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	/* do install */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -774,9 +772,9 @@ main (int argc, char *argv[])
 	guint retval = EXIT_COMMAND_NOT_FOUND;
 	const gchar *shell = "bash";
 	const gchar *env_shell;
-	_cleanup_free_ gchar *shell_to_free = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autofree gchar *shell_to_free = NULL;
+	g_autoptr(GPtrArray) array = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);

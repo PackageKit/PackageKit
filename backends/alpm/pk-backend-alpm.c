@@ -52,7 +52,7 @@ pk_backend_get_author (PkBackend *backend)
 static void
 pk_alpm_logcb (alpm_loglevel_t level, const gchar *format, va_list args)
 {
-	_cleanup_free_ gchar *output = NULL;
+	g_autofree gchar *output = NULL;
 
 	if (format == NULL || format[0] == '\0')
 		return;
@@ -121,8 +121,8 @@ pk_alpm_initialize_monitor (PkBackend *backend, GError **error)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 
-	_cleanup_free_ gchar * path = NULL;
-	_cleanup_object_unref_ GFile *directory = NULL;
+	g_autofree gchar * path = NULL;
+	g_autoptr(GFile) directory = NULL;
 
 	path = g_strconcat (alpm_option_get_dbpath (priv->alpm) ,"/local", NULL);
 	directory = g_file_new_for_path (path);
@@ -141,7 +141,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	PkBackendAlpmPrivate *priv;
 
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	priv = g_new0 (PkBackendAlpmPrivate, 1);
 	pk_backend_set_user_data (backend, priv);

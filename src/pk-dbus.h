@@ -46,6 +46,10 @@ typedef struct
 	GObjectClass		 parent_class;
 } PkDbusClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDbus, g_object_unref)
+#endif
+
 GType		 pk_dbus_get_type		(void);
 PkDbus		*pk_dbus_new			(void);
 

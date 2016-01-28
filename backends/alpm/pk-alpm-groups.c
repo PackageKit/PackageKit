@@ -33,9 +33,9 @@ static GHashTable *
 pk_alpm_group_map_new (GError **error)
 {
 	GHashTable *map;
-	_cleanup_object_unref_ GFile *file = NULL;
-	_cleanup_object_unref_ GFileInputStream *is = NULL;
-	_cleanup_object_unref_ GDataInputStream *input = NULL;
+	g_autoptr(GFile) file = NULL;
+	g_autoptr(GFileInputStream) is = NULL;
+	g_autoptr(GDataInputStream) input = NULL;
 
 	GError *e = NULL;
 

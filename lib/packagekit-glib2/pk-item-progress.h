@@ -44,6 +44,10 @@ typedef struct _PkItemProgressPrivate	PkItemProgressPrivate;
 typedef struct _PkItemProgress		PkItemProgress;
 typedef struct _PkItemProgressClass	PkItemProgressClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkItemProgress, g_object_unref)
+#endif
+
 struct _PkItemProgress
 {
 	 PkSource		 parent;

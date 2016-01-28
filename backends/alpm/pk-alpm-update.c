@@ -50,7 +50,7 @@ pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
 		alpm_pkg_t *replaces = alpm_db_get_pkg (priv->localdb, i->data);
 
 		if (replaces != NULL) {
-			_cleanup_free_ gchar *package = pk_alpm_pkg_build_id (replaces);
+			g_autofree gchar *package = pk_alpm_pkg_build_id (replaces);
 			if (string == NULL) {
 				string = g_string_new (package);
 			} else {
@@ -127,7 +127,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **packages;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	packages = (gchar**) p;
 
@@ -139,11 +139,11 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 		PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_STABLE;
 		alpm_time_t built, installed;
-		_cleanup_free_ gchar *upgrades = NULL;
-		_cleanup_free_ gchar *replaces = NULL;
-		_cleanup_strv_free_ gchar **urls = NULL;
-		_cleanup_free_ gchar *issued = NULL;
-		_cleanup_free_ gchar *updated = NULL;
+		g_autofree gchar *upgrades = NULL;
+		g_autofree gchar *replaces = NULL;
+		g_auto(GStrv) urls = NULL;
+		g_autofree gchar *issued = NULL;
+		g_autofree gchar *updated = NULL;
 
 		if (pk_backend_job_is_cancelled (job))
 			break;
@@ -215,7 +215,7 @@ pk_alpm_update_is_db_fresh (PkBackendJob *job, alpm_db_t *db)
 {
 	guint cache_age;
 	GStatBuf stat_buffer;
-	_cleanup_free_ gchar *timestamp_filename = NULL;
+	g_autofree gchar *timestamp_filename = NULL;
 
 	cache_age = pk_backend_job_get_cache_age (job);
 
@@ -233,7 +233,7 @@ pk_alpm_update_is_db_fresh (PkBackendJob *job, alpm_db_t *db)
 static gboolean
 pk_alpm_update_set_db_timestamp (alpm_db_t *db, GError **error)
 {
-	_cleanup_free_ gchar *timestamp_filename = NULL;
+	g_autofree gchar *timestamp_filename = NULL;
 	struct utimbuf times;
 
 	timestamp_filename = pk_alpm_update_get_db_timestamp_filename (db);
@@ -399,7 +399,7 @@ pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 static gboolean
 pk_alpm_update_is_pkg_downloaded (alpm_pkg_t *pkg)
 {
-	_cleanup_free_ gchar *filename = NULL;
+	g_autofree gchar *filename = NULL;
 
 	filename = g_strconcat ("/var/cache/pacman/pkg/",
 				alpm_pkg_get_name (pkg),
@@ -418,7 +418,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i, *syncdbs;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	PkBitfield filters = 0;
 
 	if (!pk_alpm_update_databases (job, 0, &error)) {
@@ -468,7 +468,7 @@ static void
 pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gint force;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_assert (job != NULL);
 

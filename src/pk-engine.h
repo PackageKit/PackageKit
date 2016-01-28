@@ -52,6 +52,10 @@ typedef struct
 	GObjectClass	parent_class;
 } PkEngineClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkEngine, g_object_unref)
+#endif
+
 typedef enum
 {
 	PK_ENGINE_ERROR_DENIED,

@@ -43,6 +43,10 @@ typedef struct _PkEulaRequiredPrivate	PkEulaRequiredPrivate;
 typedef struct _PkEulaRequired		PkEulaRequired;
 typedef struct _PkEulaRequiredClass	PkEulaRequiredClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkEulaRequired, g_object_unref)
+#endif
+
 struct _PkEulaRequired
 {
 	 PkSource		 parent;

@@ -126,7 +126,7 @@ pk_alpm_destroy_databases (PkBackend *backend)
 static gboolean
 pk_backend_repo_info (PkBackendJob *job, const gchar *repo, gboolean enabled)
 {
-	_cleanup_free_ gchar *description = NULL;
+	g_autofree gchar *description = NULL;
 	description = g_strdup_printf ("[%s]", repo);
 	pk_backend_job_repo_detail (job, repo, description, enabled);
 	return TRUE;

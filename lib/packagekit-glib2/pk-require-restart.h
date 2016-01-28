@@ -43,6 +43,10 @@ typedef struct _PkRequireRestartPrivate		PkRequireRestartPrivate;
 typedef struct _PkRequireRestart		PkRequireRestart;
 typedef struct _PkRequireRestartClass		PkRequireRestartClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRequireRestart, g_object_unref)
+#endif
+
 struct _PkRequireRestart
 {
 	 PkSource			 parent;

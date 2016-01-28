@@ -33,7 +33,6 @@ libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 
 HEADER_FILES =							\
 	packagekit.h						\
-	pk-autocleanups.h					\
 	pk-bitfield.h						\
 	pk-category.h						\
 	pk-client.h						\

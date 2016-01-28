@@ -36,8 +36,6 @@
 #include <locale.h>
 #include <stdlib.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-client-helper.h>
 #include <packagekit-glib2/pk-common.h>
@@ -212,7 +210,7 @@ static void
 pk_client_fixup_dbus_error (GError *error)
 {
 	const gchar *name_suffix = NULL;
-	_cleanup_free_ gchar *name = NULL;
+	g_autofree gchar *name = NULL;
 
 	g_return_if_fail (error != NULL);
 
@@ -309,7 +307,7 @@ pk_client_convert_real_paths (gchar **paths, GError **error)
 {
 	guint i;
 	guint len;
-	_cleanup_strv_free_ gchar **res = NULL;
+	g_auto(GStrv) res = NULL;
 
 	/* create output array */
 	len = g_strv_length (paths);
@@ -341,7 +339,7 @@ static gchar *
 pk_client_get_user_temp (const gchar *subfolder, GError **error)
 {
 	gchar *path = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+	g_autoptr(GFile) file = NULL;
 
 	/* build path in home folder */
 	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);
@@ -366,7 +364,7 @@ pk_client_get_user_temp (const gchar *subfolder, GError **error)
 static gboolean
 pk_client_is_file_native (const gchar *filename)
 {
-	_cleanup_object_unref_ GFile *source = NULL;
+	g_autoptr(GFile) source = NULL;
 
 	/* does gvfs think the file is on a remote filesystem? */
 	source = g_file_new_for_path (filename);
@@ -562,8 +560,8 @@ pk_client_cancel_cb (GObject *source_object,
 		     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
@@ -642,7 +640,7 @@ static void
 pk_client_state_finish (PkClientState *state, const GError *error)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error_local = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	/* force finished (if not already set) so clients can update the UI's */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
@@ -750,8 +748,8 @@ pk_client_signal_package (PkClientState *state,
 			  const gchar *summary)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkPackage *package = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkPackage) package = NULL;
 
 	/* create virtual package */
 	package = pk_package_new ();
@@ -812,7 +810,7 @@ static void
 pk_client_copy_finished_remove_old_files (PkClientState *state)
 {
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
@@ -841,8 +839,8 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 static void
 pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
 {
-	_cleanup_free_ gchar *path = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autofree gchar *path = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* debug */
 	path = g_file_get_path (file);
@@ -898,13 +896,13 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 static void
 pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, const gchar *source_file)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *basename = NULL;
-	_cleanup_free_ gchar *path = NULL;
-	_cleanup_object_unref_ GFile *destination = NULL;
-	_cleanup_object_unref_ GFile *source = NULL;
-	_cleanup_object_unref_ PkFiles *item = NULL;
-	_cleanup_strv_free_ gchar **files = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *basename = NULL;
+	g_autofree gchar *path = NULL;
+	g_autoptr(GFile) destination = NULL;
+	g_autoptr(GFile) source = NULL;
+	g_autoptr(PkFiles) item = NULL;
+	g_auto(GStrv) files = NULL;
 
 	/* generate the destination location */
 	basename = g_path_get_basename (source_file);
@@ -954,7 +952,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint len;
 	PkFiles *item;
 	gboolean ret;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
@@ -1001,8 +999,8 @@ pk_client_signal_finished (PkClientState *state,
 			   PkExitEnum exit_enum,
 			   guint runtime)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkError *error_code = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkError) error_code = NULL;
 
 	/* yay */
 	pk_results_set_exit_code (state->results, exit_enum);
@@ -1086,7 +1084,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		gchar *key;
 		GVariantIter *dictionary;
 		GVariant *value;
-		_cleanup_object_unref_ PkDetails *item = NULL;
+		g_autoptr(PkDetails) item = NULL;
 		item = pk_details_new ();
 
 		if (g_variant_is_of_type (parameters, G_VARIANT_TYPE ("(a{sv})"))) {
@@ -1125,7 +1123,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
-		_cleanup_object_unref_ PkUpdateDetail *item = NULL;
+		g_autoptr(PkUpdateDetail) item = NULL;
 		g_variant_get (parameters,
 			       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
 			       &tmp_str[0],
@@ -1161,7 +1159,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Transaction") == 0) {
-		_cleanup_object_unref_ PkTransactionPast *item = NULL;
+		g_autoptr(PkTransactionPast) item = NULL;
 		g_variant_get (parameters,
 			       "(&o&sbuu&su&s)",
 			       &tmp_str[0],
@@ -1189,7 +1187,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {
-		_cleanup_object_unref_ PkDistroUpgrade *item = NULL;
+		g_autoptr(PkDistroUpgrade) item = NULL;
 		g_variant_get (parameters,
 			       "(u&s&s)",
 			       &tmp_uint,
@@ -1207,7 +1205,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
-		_cleanup_object_unref_ PkRequireRestart *item = NULL;
+		g_autoptr(PkRequireRestart) item = NULL;
 		g_variant_get (parameters,
 			       "(u&s)",
 			       &tmp_uint,
@@ -1223,7 +1221,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Category") == 0) {
-		_cleanup_object_unref_ PkCategory *item = NULL;
+		g_autoptr(PkCategory) item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s&s)",
 			       &tmp_str[0],
@@ -1246,7 +1244,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "Files") == 0) {
 		gchar **files;
-		_cleanup_object_unref_ PkFiles *item = NULL;
+		g_autoptr(PkFiles) item = NULL;
 		g_variant_get (parameters,
 			       "(&s^a&s)",
 			       &tmp_str[0],
@@ -1262,7 +1260,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RepoSignatureRequired") == 0) {
-		_cleanup_object_unref_ PkRepoSignatureRequired *item = NULL;
+		g_autoptr(PkRepoSignatureRequired) item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s&s&s&su)",
 			       &tmp_str[0],
@@ -1290,7 +1288,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "EulaRequired") == 0) {
-		_cleanup_object_unref_ PkEulaRequired *item = NULL;
+		g_autoptr(PkEulaRequired) item = NULL;
 		g_variant_get (parameters,
 			       "(&s&s&s&s)",
 			       &tmp_str[0],
@@ -1310,7 +1308,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RepoDetail") == 0) {
-		_cleanup_object_unref_ PkRepoDetail *item = NULL;
+		g_autoptr(PkRepoDetail) item = NULL;
 		g_variant_get (parameters,
 			       "(&s&sb)",
 			       &tmp_str[0],
@@ -1328,7 +1326,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "ErrorCode") == 0) {
-		_cleanup_object_unref_ PkError *item = NULL;
+		g_autoptr(PkError) item = NULL;
 		g_variant_get (parameters,
 			       "(u&s)",
 			       &tmp_uint,
@@ -1344,7 +1342,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "MediaChangeRequired") == 0) {
-		_cleanup_object_unref_ PkMediaChangeRequired *item = NULL;
+		g_autoptr(PkMediaChangeRequired) item = NULL;
 		g_variant_get (parameters,
 			       "(u&s&s)",
 			       &tmp_uint,
@@ -1362,7 +1360,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
-		_cleanup_object_unref_ PkItemProgress *item = NULL;
+		g_autoptr(PkItemProgress) item = NULL;
 		g_variant_get (parameters,
 			       "(&suu)",
 			       &tmp_str[0],
@@ -1395,12 +1393,12 @@ static void
 pk_client_proxy_connect (PkClientState *state)
 {
 	guint i;
-	_cleanup_strv_free_ gchar **props = NULL;
+	g_auto(GStrv) props = NULL;
 
 	/* coldplug properties */
 	props = g_dbus_proxy_get_cached_property_names (state->proxy);
 	for (i = 0; props != NULL && props[i] != NULL; i++) {
-		_cleanup_variant_unref_ GVariant *value_tmp = NULL;
+		g_autoptr(GVariant) value_tmp = NULL;
 		value_tmp = g_dbus_proxy_get_cached_property (state->proxy,
 							      props[i]);
 		pk_client_set_property_value (state,
@@ -1427,8 +1425,8 @@ pk_client_method_cb (GObject *source_object,
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkClientState *state = (PkClientState *) user_data;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -1470,8 +1468,8 @@ pk_client_set_hints_cb (GObject *source_object,
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	PkClientState *state = (PkClientState *) user_data;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -1949,11 +1947,11 @@ static gchar *
 pk_client_create_helper_socket (PkClientState *state)
 {
 	gboolean ret = FALSE;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *socket_filename = NULL;
-	_cleanup_free_ gchar *socket_id = NULL;
-	_cleanup_strv_free_ gchar **argv = NULL;
-	_cleanup_strv_free_ gchar **envp = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *socket_filename = NULL;
+	g_autofree gchar *socket_id = NULL;
+	g_auto(GStrv) argv = NULL;
+	g_auto(GStrv) envp = NULL;
 
 	/* use the test socket */
 	if (g_getenv ("PK_SELF_TEST") != NULL) {
@@ -2001,8 +1999,8 @@ pk_client_get_proxy_cb (GObject *object,
 {
 	gchar *hint;
 	PkClientState *state = (PkClientState *) user_data;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL)
@@ -2069,7 +2067,7 @@ static void
 pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
 	PkControl *control = PK_CONTROL (object);
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	state->tid = pk_control_get_tid_finish (control, res, &error);
 	if (state->tid == NULL) {
@@ -2142,8 +2140,8 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2209,8 +2207,8 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2277,8 +2275,8 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2343,8 +2341,8 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2409,8 +2407,8 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2475,8 +2473,8 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2541,8 +2539,8 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2611,8 +2609,8 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2681,8 +2679,8 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2747,8 +2745,8 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2813,8 +2811,8 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2877,8 +2875,8 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2943,8 +2941,8 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3010,8 +3008,8 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3076,8 +3074,8 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3149,8 +3147,8 @@ pk_client_what_provides_async (PkClient *client,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3214,8 +3212,8 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 				     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3277,8 +3275,8 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3341,8 +3339,8 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3416,8 +3414,8 @@ pk_client_remove_packages_async (PkClient *client,
 				 gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3487,8 +3485,8 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3552,8 +3550,8 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 				  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3620,8 +3618,8 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3692,8 +3690,8 @@ pk_client_update_packages_async (PkClient *client,
 				 gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3744,7 +3742,7 @@ pk_client_update_packages_async (PkClient *client,
 static void
 pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* get the result */
 	if (!g_file_copy_finish (file, res, &error)) {
@@ -3771,8 +3769,8 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 	gchar *path;
 	gboolean ret;
 	guint i;
-	_cleanup_free_ gchar *user_temp = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autofree gchar *user_temp = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* get a temp dir accessible by the daemon */
 	user_temp = pk_client_get_user_temp ("native-cache", &error);
@@ -3792,9 +3790,9 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 		g_debug ("%s native=%i", state->files[i], ret);
 		if (!ret) {
 			/* generate the destination location */
-			_cleanup_free_ gchar *basename = NULL;
-			_cleanup_object_unref_ GFile *destination = NULL;
-			_cleanup_object_unref_ GFile *source = NULL;
+			g_autofree gchar *basename = NULL;
+			g_autoptr(GFile) destination = NULL;
+			g_autoptr(GFile) source = NULL;
 			basename = g_path_get_basename (state->files[i]);
 			path = g_build_filename (user_temp, basename, NULL);
 			g_debug ("copy from %s to %s", state->files[i], path);
@@ -3842,8 +3840,8 @@ pk_client_install_files_async (PkClient *client,
 	PkClientState *state;
 	gboolean ret;
 	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3929,8 +3927,8 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3993,8 +3991,8 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4058,8 +4056,8 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 			     gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4126,8 +4124,8 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 			       gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4200,8 +4198,8 @@ pk_client_repo_remove_async (PkClient *client,
 			     gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4275,8 +4273,8 @@ pk_client_upgrade_system_async (PkClient *client,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4350,8 +4348,8 @@ pk_client_repair_system_async (PkClient *client,
 			       gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4396,7 +4394,7 @@ pk_client_adopt_get_proxy_cb (GObject *object,
 			      GAsyncResult *res,
 			      gpointer user_data)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
@@ -4433,8 +4431,8 @@ pk_client_adopt_async (PkClient *client,
 		       gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -4577,7 +4575,7 @@ pk_client_get_progress_cb (GObject *source_object,
 			   GAsyncResult *res,
 			   gpointer user_data)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	PkClientState *state = (PkClientState *) user_data;
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
@@ -4613,8 +4611,8 @@ pk_client_get_progress_async (PkClient *client,
 			      gpointer user_data)
 {
 	PkClientState *state;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);

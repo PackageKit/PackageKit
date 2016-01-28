@@ -30,8 +30,6 @@
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 
-#include "src/pk-cleanup.h"
-
 static gchar *
 pk_guess_application_id (void)
 {
@@ -59,8 +57,8 @@ pk_install_fonts_method_finished_cb (GObject *source_object,
 				     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
@@ -83,10 +81,10 @@ static GPtrArray *tags;
 static gboolean
 pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 {
-	_cleanup_free_ gchar *application_id = NULL;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusProxy *proxy = NULL;
-	_cleanup_strv_free_ gchar **font_tags = NULL;
+	g_autofree gchar *application_id = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusProxy) proxy = NULL;
+	g_auto(GStrv) font_tags = NULL;
 
 	g_return_val_if_fail (tags->len > 0, FALSE);
 

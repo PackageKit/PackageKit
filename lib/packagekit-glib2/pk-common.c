@@ -34,8 +34,6 @@
 #include <string.h>
 #include <sys/utsname.h>
 
-#include "src/pk-cleanup.h"
-
 #include <glib.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-common-private.h>
@@ -235,9 +233,9 @@ pk_parse_os_release (gchar **id, gchar **version_id, GError **error)
 {
 	const gchar *filename = "/etc/os-release";
 	gboolean ret;
-	_cleanup_free_ gchar *contents = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
-	_cleanup_string_free_ GString *str = NULL;
+	g_autofree gchar *contents = NULL;
+	g_autoptr(GKeyFile) key_file = NULL;
+	g_autoptr(GString) str = NULL;
 
 	/* load data */
 	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -277,10 +275,10 @@ gchar *
 pk_get_distro_id (void)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *arch = NULL;
-	_cleanup_free_ gchar *name = NULL;
-	_cleanup_free_ gchar *version = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *arch = NULL;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
 
 	/* we don't want distro specific results in 'make check' */
 	if (g_getenv ("PK_SELF_TEST") != NULL)

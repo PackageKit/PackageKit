@@ -33,7 +33,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "pk-cleanup.h"
 #include "pk-shared.h"
 
 #ifdef linux
@@ -77,8 +76,8 @@ pk_directory_remove_contents (const gchar *directory)
 	gboolean ret = FALSE;
 	const gchar *filename;
 	gint retval;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_dir_close_ GDir *dir = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDir) dir = NULL;
 
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
@@ -89,7 +88,7 @@ pk_directory_remove_contents (const gchar *directory)
 
 	/* find each */
 	while ((filename = g_dir_read_name (dir))) {
-		_cleanup_free_ gchar *src = NULL;
+		g_autofree gchar *src = NULL;
 		src = g_build_filename (directory, filename, NULL);
 		ret = g_file_test (src, G_FILE_TEST_IS_DIR);
 		if (ret) {
@@ -118,8 +117,8 @@ GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
 #ifdef PK_BUILD_DAEMON
-	_cleanup_bytes_unref_ GBytes *data = NULL;
-	_cleanup_free_ gchar *path = NULL;
+	g_autoptr(GBytes) data = NULL;
+	g_autofree gchar *path = NULL;
 
 	/* lookup data */
 	path = g_build_filename ("/org/freedesktop/PackageKit", filename, NULL);
@@ -320,8 +319,8 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 {
 	const gchar *tmp;
 	gchar *name_tmp;
-	_cleanup_dir_close_ GDir *dir = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GDir) dir = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
 	if (dir == NULL)

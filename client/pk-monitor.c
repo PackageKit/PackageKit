@@ -27,8 +27,6 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/packagekit.h>
 
-#include "src/pk-cleanup.h"
-
 static PkClient *client = NULL;
 
 /**
@@ -89,8 +87,8 @@ static void
 pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *transaction_id)
 {
 	PkMediaTypeEnum type;
-	_cleanup_free_ gchar *id = NULL;
-	_cleanup_free_ gchar *text = NULL;
+	g_autofree gchar *id = NULL;
+	g_autofree gchar *text = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -110,12 +108,12 @@ static void
 pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
 	PkExitEnum exit_enum;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *transaction_id = NULL;
-	_cleanup_object_unref_ PkError *error_code = NULL;
-	_cleanup_object_unref_ PkProgress *progress = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *media_array = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *transaction_id = NULL;
+	g_autoptr(PkError) error_code = NULL;
+	g_autoptr(PkProgress) progress = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) media_array = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -162,12 +160,12 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	PkInfoEnum info;
 	guint percentage;
 	gboolean allow_cancel;
-	_cleanup_free_ gchar *package_id = NULL;
-	_cleanup_free_ gchar *package_id_tmp = NULL;
-	_cleanup_free_ gchar *summary = NULL;
-	_cleanup_free_ gchar *transaction_id = NULL;
-	_cleanup_object_unref_ PkItemProgress *item_progress = NULL;
-	_cleanup_object_unref_ PkPackage *package = NULL;
+	g_autofree gchar *package_id = NULL;
+	g_autofree gchar *package_id_tmp = NULL;
+	g_autofree gchar *summary = NULL;
+	g_autofree gchar *transaction_id = NULL;
+	g_autoptr(PkItemProgress) item_progress = NULL;
+	g_autoptr(PkPackage) package = NULL;
 
 	/* get data */
 	g_object_get (progress,
@@ -222,7 +220,7 @@ static void
 pk_monitor_list_print (PkTransactionList *tlist)
 {
 	guint i;
-	_cleanup_strv_free_ gchar **list = NULL;
+	g_auto(GStrv) list = NULL;
 
 	list = pk_transaction_list_get_ids (tlist);
 	g_print ("Transactions:\n");
@@ -240,8 +238,8 @@ pk_monitor_list_print (PkTransactionList *tlist)
 static void
 pk_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *state = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *state = NULL;
 
 	/* get the result */
 	state = pk_control_get_daemon_state_finish (control, res, &error);
@@ -302,7 +300,7 @@ pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *t
 static void
 pk_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	if (!pk_control_get_properties_finish (control, res, &error))
 		g_print ("%s: %s", _("Failed to get properties"), error->message);
 }
@@ -319,8 +317,8 @@ main (int argc, char *argv[])
 	gint retval = EXIT_SUCCESS;
 	gchar **transaction_ids;
 	guint i;
-	_cleanup_object_unref_ PkControl *control = NULL;
-	_cleanup_object_unref_ PkTransactionList *tlist = NULL;
+	g_autoptr(PkControl) control = NULL;
+	g_autoptr(PkTransactionList) tlist = NULL;
 
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,

@@ -35,7 +35,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-shared.h"
 
@@ -438,7 +437,7 @@ static gchar *
 pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
-	_cleanup_free_ gchar *filename = NULL;
+	g_autofree gchar *filename = NULL;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
@@ -485,8 +484,8 @@ pk_backend_load (PkBackend *backend, GError **error)
 	GModule *handle;
 	gboolean ret = FALSE;
 	gpointer func = NULL;
-	_cleanup_free_ gchar *backend_name = NULL;
-	_cleanup_free_ gchar *path = NULL;
+	g_autofree gchar *backend_name = NULL;
+	g_autofree gchar *path = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
@@ -726,7 +725,7 @@ static gboolean
 pk_backend_installed_db_changed_cb (gpointer user_data)
 {
 	PkBackend *backend = PK_BACKEND (user_data);
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	if (!backend->priv->transaction_in_progress) {
 		g_debug ("invalidating offline updates");
@@ -1031,7 +1030,7 @@ pk_backend_get_accepted_eula_string (PkBackend *backend)
 {
 	GString *string;
 	GList *l;
-	_cleanup_list_free_ GList *keys = NULL;
+	g_autoptr(GList) keys = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
@@ -1098,8 +1097,8 @@ pk_backend_watch_file (PkBackend *backend,
 		       PkBackendFileChanged func,
 		       gpointer data)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GFile) file = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);

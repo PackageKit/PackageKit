@@ -33,8 +33,6 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-package-sack.h>
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-common.h>
@@ -263,7 +261,7 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack,
 				   const gchar *package_id,
 				   GError **error)
 {
-	_cleanup_object_unref_ PkPackage *package = NULL;
+	g_autoptr(PkPackage) package = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -288,9 +286,9 @@ pk_package_sack_add_packages_from_line (PkPackageSack *sack,
 					GError **error)
 {
 	PkInfoEnum info;
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ PkPackage *package = NULL;
-	_cleanup_strv_free_ gchar **pdata = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(PkPackage) package = NULL;
+	g_auto(GStrv) pdata = NULL;
 
 	package = pk_package_new ();
 	pdata = g_strsplit (package_str, "\t", -1);
@@ -330,8 +328,8 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 					GError **error)
 {
 	GError *error_local = NULL;
-	_cleanup_object_unref_ GFileInputStream *is = NULL;
-	_cleanup_object_unref_ GDataInputStream *input = NULL;
+	g_autoptr(GFileInputStream) is = NULL;
+	g_autoptr(GDataInputStream) input = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 
@@ -374,7 +372,7 @@ pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
 	gboolean ret;
 	guint i;
 	PkPackage *pkg;
-	_cleanup_string_free_ GString *string = NULL;
+	g_autoptr(GString) string = NULL;
 
 	string = g_string_new ("");
 	for (i = 0; i < sack->priv->array->len; i++) {
@@ -539,7 +537,7 @@ pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_
 {
 	PkPackage *pkg_tmp;
 	guint i;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
@@ -568,8 +566,8 @@ pk_package_sack_sort_compare_name_func (PkPackage **a, PkPackage **b)
 {
 	const gchar *package_id1;
 	const gchar *package_id2;
-	_cleanup_strv_free_ gchar **split1 = NULL;
-	_cleanup_strv_free_ gchar **split2 = NULL;
+	g_auto(GStrv) split1 = NULL;
+	g_auto(GStrv) split2 = NULL;
 
 	package_id1 = pk_package_get_id (*a);
 	package_id2 = pk_package_get_id (*b);
@@ -745,9 +743,9 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	guint i;
 	PkPackage *package;
 	const gchar *package_id;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) packages = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -810,8 +808,8 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 				     GAsyncReadyCallback callback, gpointer user_data)
 {
 	PkPackageSackState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
@@ -875,9 +873,9 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	PkDetails *item;
 	guint i;
 	PkPackage *package;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *details = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) details = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -897,7 +895,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 
 	/* set data on each item */
 	for (i = 0; i < details->len; i++) {
-		_cleanup_free_ gchar *package_id = NULL;
+		g_autofree gchar *package_id = NULL;
 		item = g_ptr_array_index (details, i);
 		g_object_get (item,
 			      "package-id", &package_id,
@@ -945,8 +943,8 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 				   GAsyncReadyCallback callback, gpointer user_data)
 {
 	PkPackageSackState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
@@ -980,9 +978,9 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	PkUpdateDetail *item;
 	guint i;
 	PkPackage *package;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *update_details = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) update_details = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -1004,16 +1002,16 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	for (i = 0; i < update_details->len; i++) {
 		PkRestartEnum restart;
 		PkUpdateStateEnum state_enum;
-		_cleanup_free_ gchar *changelog = NULL;
-		_cleanup_free_ gchar *issued = NULL;
-		_cleanup_free_ gchar *obsoletes = NULL;
-		_cleanup_free_ gchar *package_id = NULL;
-		_cleanup_free_ gchar *updated = NULL;
-		_cleanup_free_ gchar *updates = NULL;
-		_cleanup_free_ gchar *update_text = NULL;
-		_cleanup_strv_free_ gchar **bugzilla_urls = NULL;
-		_cleanup_strv_free_ gchar **cve_urls = NULL;
-		_cleanup_strv_free_ gchar **vendor_urls = NULL;
+		g_autofree gchar *changelog = NULL;
+		g_autofree gchar *issued = NULL;
+		g_autofree gchar *obsoletes = NULL;
+		g_autofree gchar *package_id = NULL;
+		g_autofree gchar *updated = NULL;
+		g_autofree gchar *updates = NULL;
+		g_autofree gchar *update_text = NULL;
+		g_auto(GStrv) bugzilla_urls = NULL;
+		g_auto(GStrv) cve_urls = NULL;
+		g_auto(GStrv) vendor_urls = NULL;
 
 		item = g_ptr_array_index (update_details, i);
 		g_object_get (item,
@@ -1081,8 +1079,8 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 					 GAsyncReadyCallback callback, gpointer user_data)
 {
 	PkPackageSackState *state;
-	_cleanup_object_unref_ GSimpleAsyncResult *res = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);

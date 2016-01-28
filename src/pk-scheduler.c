@@ -62,7 +62,6 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-common.h>
 
-#include "pk-cleanup.h"
 #include "pk-shared.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -369,7 +368,7 @@ pk_scheduler_get_exclusive_running (PkScheduler *scheduler)
 	PkSchedulerItem *item = NULL;
 	guint exclusive_running = 0;
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 
@@ -401,7 +400,7 @@ pk_scheduler_get_background_running (PkScheduler *scheduler)
 {
 	PkSchedulerItem *item = NULL;
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 
@@ -767,7 +766,7 @@ pk_scheduler_get_locked (PkScheduler *scheduler)
 	PkBackendJob *job;
 	PkSchedulerItem *item;
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
@@ -797,7 +796,7 @@ pk_scheduler_get_inhibited (PkScheduler *scheduler)
 	PkBackendJob *job;
 	PkSchedulerItem *item;
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
@@ -880,7 +879,7 @@ pk_scheduler_get_array (PkScheduler *scheduler)
 	guint length;
 	PkSchedulerItem *item;
 	PkTransactionState state;
-	_cleanup_ptrarray_unref_ GPtrArray *parray = NULL;
+	g_autoptr(GPtrArray) parray = NULL;
 
 	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), NULL);
 	g_return_val_if_fail (pk_is_thread_default (), NULL);
@@ -968,7 +967,7 @@ out:
 static void
 pk_scheduler_print (PkScheduler *scheduler)
 {
-	_cleanup_free_ gchar *state = NULL;
+	g_autofree gchar *state = NULL;
 	state = pk_scheduler_get_state (scheduler);
 	g_debug ("%s", state);
 }

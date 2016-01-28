@@ -21,8 +21,6 @@
 
 #include "config.h"
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
@@ -117,8 +115,8 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 	const gchar *package_id;
 	PkPackage *package;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
-	_cleanup_object_unref_ PkPackageSack *sack = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(PkPackageSack) sack = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
@@ -129,7 +127,7 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 	/* print data */
 	array = pk_package_sack_get_array (sack);
 	for (i = 0; i < array->len; i++) {
-		_cleanup_free_ gchar *printable = NULL;
+		g_autofree gchar *printable = NULL;
 		package = g_ptr_array_index (array, i);
 		package_id = pk_package_get_id (package);
 		printable = pk_package_id_to_printable (package_id);

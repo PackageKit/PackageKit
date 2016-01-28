@@ -44,6 +44,10 @@ typedef struct _PkTransactionPastPrivate	PkTransactionPastPrivate;
 typedef struct _PkTransactionPast		PkTransactionPast;
 typedef struct _PkTransactionPastClass		PkTransactionPastClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransactionPast, g_object_unref)
+#endif
+
 struct _PkTransactionPast
 {
 	 PkSource			 parent;

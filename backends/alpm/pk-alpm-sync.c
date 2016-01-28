@@ -39,7 +39,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 	g_return_val_if_fail (packages != NULL, FALSE);
 
 	for (; *packages != NULL; ++packages) {
-		_cleanup_strv_free_ gchar **package = pk_package_id_split (*packages);
+		g_auto(GStrv) package = pk_package_id_split (*packages);
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
@@ -79,7 +79,7 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 	const gchar *directory;
 	const gchar **package_ids;
 	alpm_transflag_t flags = 0;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(^a&ss)",
 				  &package_ids,
@@ -161,7 +161,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	alpm_list_t *asdeps = NULL, *asexplicit = NULL;
 	alpm_transflag_t alpm_flags = 0;
 	const gchar** package_ids;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t^a&s)", &flags, &package_ids);
 	only_trusted = pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);

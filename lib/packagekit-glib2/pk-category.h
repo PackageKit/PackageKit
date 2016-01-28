@@ -43,6 +43,10 @@ typedef struct _PkCategoryPrivate	PkCategoryPrivate;
 typedef struct _PkCategory		PkCategory;
 typedef struct _PkCategoryClass		PkCategoryClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkCategory, g_object_unref)
+#endif
+
 struct _PkCategory
 {
 	 PkSource		 parent;

@@ -23,8 +23,6 @@
 
 #include <glib-object.h>
 
-#include "src/pk-cleanup.h"
-
 #include "pk-common.h"
 #include "pk-debug.h"
 #include "pk-enum.h"
@@ -610,12 +608,12 @@ pk_test_offline_func (void)
 	guint64 mtime;
 	PkOfflineAction action;
 	PkPackage *pkg;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GFileMonitor *monitor = NULL;
-	_cleanup_object_unref_ PkError *pk_error = NULL;
-	_cleanup_object_unref_ PkPackageSack *sack = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GFileMonitor) monitor = NULL;
+	g_autoptr(PkError) pk_error = NULL;
+	g_autoptr(PkPackageSack) sack = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) packages = NULL;
 	const gchar *results_failed =
 			"[PackageKit Offline Update Results]\n"
 			"Success=false\n"

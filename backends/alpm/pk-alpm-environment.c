@@ -52,25 +52,25 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 
 	tmp = pk_backend_job_get_proxy_http (job);
 	if (tmp != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("http_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_https (job);
 	if (tmp != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("https_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_ftp (job);
 	if (tmp != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("ftp_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_socks (job);
 	if (tmp != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("socks_proxy", uri, TRUE);
 	}
 
@@ -81,7 +81,7 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 
 	tmp = pk_backend_job_get_pac (job);
 	if (tmp != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("pac", uri, TRUE);
 	}
 }

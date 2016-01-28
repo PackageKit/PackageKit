@@ -31,8 +31,6 @@
 
 #include "pk-task-text.h"
 #include "pk-console-shared.h"
-#include "src/pk-cleanup.h"
-
 static void     pk_task_text_finalize	(GObject     *object);
 
 #define PK_TASK_TEXT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_TEXT, PkTaskTextPrivate))
@@ -340,8 +338,8 @@ package_sort_func (gconstpointer a, gconstpointer b)
 {
 	const gchar *package_id1;
 	const gchar *package_id2;
-	_cleanup_strv_free_ gchar **split1 = NULL;
-	_cleanup_strv_free_ gchar **split2 = NULL;
+	g_auto(GStrv) split1 = NULL;
+	g_auto(GStrv) split2 = NULL;
 
 	package_id1 = pk_package_get_id (*(PkPackage **)a);
 	package_id2 = pk_package_get_id (*(PkPackage **)b);
@@ -366,8 +364,8 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	PkPackage *package;
 	GPtrArray *array;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
-	_cleanup_hashtable_unref_ GHashTable *table = NULL;
-	_cleanup_list_free_ GList *list = NULL;
+	g_autoptr(GHashTable) table = NULL;
+	g_autoptr(GList) list = NULL;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
@@ -382,7 +380,7 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	table = g_hash_table_new_full (g_direct_hash, g_direct_equal,
 	                               NULL, (GDestroyNotify) g_ptr_array_unref);
 	for (i = 0; i < array->len; i++) {
-		_cleanup_array_unref_ GPtrArray *package_array = NULL;
+		g_autoptr(GPtrArray) package_array = NULL;
 
 		package = g_ptr_array_index (array, i);
 		g_object_get (package,

@@ -44,6 +44,10 @@ typedef struct _PkDistroUpgradePrivate	PkDistroUpgradePrivate;
 typedef struct _PkDistroUpgrade		PkDistroUpgrade;
 typedef struct _PkDistroUpgradeClass	PkDistroUpgradeClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDistroUpgrade, g_object_unref)
+#endif
+
 struct _PkDistroUpgrade
 {
 	 PkSource		 parent;

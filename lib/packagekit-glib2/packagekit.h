@@ -65,8 +65,6 @@
 #include <packagekit-glib2/pk-debug.h>
 #endif
 
-#include <packagekit-glib2/pk-autocleanups.h>
-
 #undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_H__ */

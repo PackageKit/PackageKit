@@ -59,6 +59,10 @@ typedef struct _PkDesktopPrivate	PkDesktopPrivate;
 typedef struct _PkDesktop		PkDesktop;
 typedef struct _PkDesktopClass		PkDesktopClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDesktop, g_object_unref)
+#endif
+
 struct _PkDesktop
 {
 	GObject			 parent;

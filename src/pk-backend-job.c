@@ -28,7 +28,6 @@
 
 #include <packagekit-glib2/pk-results.h>
 
-#include "pk-cleanup.h"
 #include "pk-backend.h"
 #include "pk-backend-job.h"
 #include "pk-shared.h"
@@ -689,7 +688,7 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 	PkBackendJobVFuncHelper *helper;
 	PkBackendJobVFuncItem *item;
 	guint priority = G_PRIORITY_DEFAULT_IDLE;
-	_cleanup_source_unref_ GSource *source = NULL;
+	g_autoptr(GSource) source = NULL;
 
 	/* call transaction vfunc if not disabled and set */
 	item = &job->priv->vfunc_items[signal_kind];
@@ -1070,8 +1069,8 @@ pk_backend_job_package (PkBackendJob *job,
 			const gchar *summary)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkPackage *item = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkPackage) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (package_id != NULL);
@@ -1147,7 +1146,7 @@ pk_backend_job_update_detail (PkBackendJob *job,
 			      const gchar *updated_text)
 {
 	GTimeVal timeval;
-	_cleanup_object_unref_ PkUpdateDetail *item = NULL;
+	g_autoptr(PkUpdateDetail) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (package_id != NULL);
@@ -1206,7 +1205,7 @@ pk_backend_job_require_restart (PkBackendJob *job,
 				PkRestartEnum restart,
 				const gchar *package_id)
 {
-	_cleanup_object_unref_ PkRequireRestart *item = NULL;
+	g_autoptr(PkRequireRestart) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
@@ -1249,7 +1248,7 @@ pk_backend_job_details (PkBackendJob *job,
 			const gchar *url,
 			gulong size)
 {
-	_cleanup_object_unref_ PkDetails *item = NULL;
+	g_autoptr(PkDetails) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (package_id != NULL);
@@ -1289,7 +1288,7 @@ pk_backend_job_files (PkBackendJob *job,
 		      const gchar *package_id,
 		      gchar **files)
 {
-	_cleanup_object_unref_ PkFiles *item = NULL;
+	g_autoptr(PkFiles) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (files != NULL);
@@ -1334,7 +1333,7 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 			       const gchar *name,
 			       const gchar *summary)
 {
-	_cleanup_object_unref_ PkDistroUpgrade *item = NULL;
+	g_autoptr(PkDistroUpgrade) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (state != PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
@@ -1376,7 +1375,7 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 					const gchar *key_timestamp,
 					PkSigTypeEnum type)
 {
-	_cleanup_object_unref_ PkRepoSignatureRequired *item = NULL;
+	g_autoptr(PkRepoSignatureRequired) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (repository_name != NULL);
@@ -1426,7 +1425,7 @@ pk_backend_job_eula_required (PkBackendJob *job,
 			      const gchar *vendor_name,
 			      const gchar *license_agreement)
 {
-	_cleanup_object_unref_ PkEulaRequired *item = NULL;
+	g_autoptr(PkEulaRequired) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (eula_id != NULL);
@@ -1474,7 +1473,7 @@ pk_backend_job_media_change_required (PkBackendJob *job,
 				      const gchar *media_id,
 				      const gchar *media_text)
 {
-	_cleanup_object_unref_ PkMediaChangeRequired *item = NULL;
+	g_autoptr(PkMediaChangeRequired) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (media_id != NULL);
@@ -1510,7 +1509,7 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 			    const gchar *description,
 			    gboolean enabled)
 {
-	_cleanup_object_unref_ PkRepoDetail *item = NULL;
+	g_autoptr(PkRepoDetail) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (repo_id != NULL);
@@ -1547,7 +1546,7 @@ pk_backend_job_category (PkBackendJob *job,
 			 const gchar *summary,
 			 const gchar *icon)
 {
-	_cleanup_object_unref_ PkCategory *item = NULL;
+	g_autoptr(PkCategory) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (cat_id != NULL);
@@ -1606,8 +1605,8 @@ pk_backend_job_error_code (PkBackendJob *job,
 {
 	va_list args;
 	gboolean need_untrusted;
-	_cleanup_free_ gchar *buffer = NULL;
-	_cleanup_object_unref_ PkError *error = NULL;
+	g_autofree gchar *buffer = NULL;
+	g_autoptr(PkError) error = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 

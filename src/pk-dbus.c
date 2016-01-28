@@ -31,7 +31,6 @@
  #include <systemd/sd-login.h>
 #endif
 
-#include "pk-cleanup.h"
 #include "pk-dbus.h"
 
 #define PK_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DBUS, PkDbusPrivate))
@@ -61,8 +60,8 @@ guint
 pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 {
 	guint uid = G_MAXUINT;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
@@ -102,8 +101,8 @@ static guint
 pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 {
 	guint pid = G_MAXUINT;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
@@ -151,8 +150,8 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	gboolean ret;
 	gchar *cmdline = NULL;
 	guint pid;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *filename = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *filename = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
@@ -222,10 +221,10 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 {
 	gchar *session = NULL;
 #ifndef HAVE_SYSTEMD
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 #endif
 	guint pid;
-	_cleanup_variant_unref_ GVariant *value = NULL;
+	g_autoptr(GVariant) value = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
@@ -316,7 +315,7 @@ pk_dbus_class_init (PkDbusClass *klass)
 static void
 pk_dbus_init (PkDbus *dbus)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 
 	/* use the bus to get the uid */

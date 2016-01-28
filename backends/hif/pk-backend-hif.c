@@ -36,8 +36,11 @@
 #define hif_error_set_from_hawkey(r,e)	hif_rc_to_gerror(r,e)
 #endif
 
+#ifndef glib_autoptr_cleanup_HifContext
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(HifContext, g_object_unref)
+#endif
+
 #include <pk-backend.h>
-#include <pk-cleanup.h>
 #include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-debug.h>
 
@@ -169,11 +172,11 @@ static gboolean
 pk_backend_setup_hif_context (HifContext *context, GKeyFile *conf, const gchar *release_ver, GError **error)
 {
 	gboolean keep_cache;
-	_cleanup_free_ gchar *cache_dir = NULL;
-	_cleanup_free_ gchar *destdir = NULL;
-	_cleanup_free_ gchar *lock_dir = NULL;
-	_cleanup_free_ gchar *repo_dir = NULL;
-	_cleanup_free_ gchar *solv_dir = NULL;
+	g_autofree gchar *cache_dir = NULL;
+	g_autofree gchar *destdir = NULL;
+	g_autofree gchar *lock_dir = NULL;
+	g_autofree gchar *repo_dir = NULL;
+	g_autofree gchar *solv_dir = NULL;
 
 	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
 	if (destdir == NULL)
@@ -210,8 +213,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	gboolean ret;
 	PkBackendHifPrivate *priv;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *release_ver = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *release_ver = NULL;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -403,7 +406,7 @@ pk_backend_job_set_context (PkBackendJob *job, HifContext *context)
 	/* set proxy */
 	value = pk_backend_job_get_proxy_http (job);
 	if (value != NULL) {
-		_cleanup_free_ gchar *uri = pk_backend_convert_uri (value);
+		g_autofree gchar *uri = pk_backend_convert_uri (value);
 		hif_context_set_http_proxy (job_data->context, uri);
 	}
 
@@ -620,9 +623,9 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackendHifPrivate *priv = pk_backend_get_user_data (backend);
-	_cleanup_free_ gchar *cache_key = NULL;
-	_cleanup_free_ gchar *install_root = NULL;
-	_cleanup_free_ gchar *solv_dir = NULL;
+	g_autofree gchar *cache_key = NULL;
+	g_autofree gchar *install_root = NULL;
+	g_autofree gchar *solv_dir = NULL;
 
 	/* don't add if we're going to filter out anyway */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
@@ -908,8 +911,8 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters = 0;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_strv_free_ gchar **search = NULL;
+	g_autoptr(GError) error = NULL;
+	g_auto(GStrv) search = NULL;
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -1252,8 +1255,8 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_ptrarray_unref_ GPtrArray *sources = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GPtrArray) sources = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t)", &filters);
 
@@ -1278,7 +1281,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 
 	/* emit each repo */
 	for (i = 0; i < sources->len; i++) {
-		_cleanup_free_ gchar *description = NULL;
+		g_autofree gchar *description = NULL;
 		src = g_ptr_array_index (sources, i);
 		if (!pk_backend_source_filter (src, filters))
 			continue;
@@ -1315,7 +1318,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	gboolean ret = FALSE;
 	HifSource *src;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
 
@@ -1544,8 +1547,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	gboolean ret;
 	guint cnt = 0;
 	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *refresh_sources = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) refresh_sources = NULL;
 
 	/* set state */
 	hif_state_set_steps (job_data->state, NULL,
@@ -1716,7 +1719,7 @@ hif_utils_find_package_ids (HySack sack, gchar **package_ids, GError **error)
 				      g_free, (GDestroyNotify) hy_package_free);
 	query = hy_query_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
-		_cleanup_strv_free_ gchar **split = NULL;
+		g_auto(GStrv) split = NULL;
 		hy_query_clear (query);
 		split = pk_package_id_split (package_ids[i]);
 		reponame = split[PK_PACKAGE_ID_DATA];
@@ -1782,8 +1785,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	g_variant_get (params, "(^a&s)", &package_ids);
 
@@ -1872,7 +1875,7 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(^a&s)", &full_paths);
 
@@ -1959,7 +1962,7 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	HyStringArray files_array;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(^a&s)", &full_paths);
 
@@ -2044,9 +2047,9 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *files = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
+	g_autoptr(GPtrArray) files = NULL;
 
 	g_variant_get (params, "(^a&ss)",
 		       &package_ids,
@@ -2206,7 +2209,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 	HifSource *src;
 	HyPackage pkg;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
-	_cleanup_ptrarray_unref_ GPtrArray *install = NULL;
+	g_autoptr(GPtrArray) install = NULL;
 
 	/* find any packages in untrusted repos */
 	install = hif_goal_get_packages (job_data->goal,
@@ -2262,7 +2265,7 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	HyPackageList pkglist;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret;
-	_cleanup_ptrarray_unref_ GPtrArray *untrusted = NULL;
+	g_autoptr(GPtrArray) untrusted = NULL;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -2497,10 +2500,10 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	guint cnt = 0;
 	guint i;
 	guint j;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *removed_id = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *sources = NULL;
-	_cleanup_strv_free_ gchar **search = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) removed_id = NULL;
+	g_autoptr(GPtrArray) sources = NULL;
+	g_auto(GStrv) search = NULL;
 
 	g_variant_get (params, "(t&sb)",
 		       &job_data->transaction_flags,
@@ -2671,7 +2674,7 @@ hif_is_installed_package_id_name_arch (HySack sack, const gchar *package_id)
 	gboolean ret;
 	HyPackageList pkglist = NULL;
 	HyQuery query = NULL;
-	_cleanup_strv_free_ gchar **split = NULL;
+	g_auto(GStrv) split = NULL;
 
 	/* run query */
 	query = hy_query_create (sack);
@@ -2708,8 +2711,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	gboolean ret;
 	gchar **package_ids;
 	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	g_variant_get (params, "(t^a&sbb)",
 		       &job_data->transaction_flags,
@@ -2769,7 +2772,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	for (i = 0; package_ids[i] != NULL; i++) {
 		ret = hif_is_installed_package_id_name_arch (sack, package_ids[i]);
 		if (!ret) {
-			_cleanup_free_ gchar *printable_tmp = NULL;
+			g_autofree gchar *printable_tmp = NULL;
 			printable_tmp = pk_package_id_to_printable (package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
@@ -2855,8 +2858,8 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	gchar **package_ids;
 	guint i;
 	enum _hy_comparison_type_e *relations = NULL;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3047,9 +3050,9 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	gboolean ret;
 	gchar **full_paths;
 	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *array = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
+	g_autoptr(GPtrArray) array = NULL;
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3156,8 +3159,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	gboolean ret;
 	gchar **package_ids;
 	guint i;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3267,7 +3270,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	PkBitfield filters;
 	gboolean ret;
 	const gchar *release_ver = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* get arguments */
 	g_variant_get (params, "(t&su)",
@@ -3280,7 +3283,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	/* create a new context for the passed in release ver */
 	if (release_ver != NULL) {
-		_cleanup_object_unref_ HifContext *context = NULL;
+		g_autoptr(HifContext) context = NULL;
 
 		context = hif_context_new ();
 		ret = pk_backend_setup_hif_context (context, priv->conf, release_ver, &error);
@@ -3411,8 +3414,8 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	HyStringArray files_array;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3468,7 +3471,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 		/* sort and list according to name */
 		files_array = hy_package_get_files (pkg);
 		if (FALSE) {
-			_cleanup_ptrarray_unref_ GPtrArray *files = NULL;
+			g_autoptr(GPtrArray) files = NULL;
 			files = g_ptr_array_new ();
 			for (j = 0; files_array[j] != NULL; j++)
 				g_ptr_array_add (files, files_array[j]);
@@ -3521,8 +3524,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_hashtable_unref_ GHashTable *hash = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
 
 	/* set state */
 	ret = hif_state_set_steps (job_data->state, NULL,
@@ -3567,9 +3570,9 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 
 	/* emit details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
-		_cleanup_ptrarray_unref_ GPtrArray *vendor_urls = NULL;
-		_cleanup_ptrarray_unref_ GPtrArray *bugzilla_urls = NULL;
-		_cleanup_ptrarray_unref_ GPtrArray *cve_urls = NULL;
+		g_autoptr(GPtrArray) vendor_urls = NULL;
+		g_autoptr(GPtrArray) bugzilla_urls = NULL;
+		g_autoptr(GPtrArray) cve_urls = NULL;
 
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
@@ -3654,8 +3657,8 @@ pk_backend_get_update_detail (PkBackend *backend,
 static gboolean
 pk_backend_repair_remove_rpm_index (const gchar *index_fn, GError **error)
 {
-	_cleanup_free_ gchar *path = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+	g_autofree gchar *path = NULL;
+	g_autoptr(GFile) file = NULL;
 
 	path = g_build_filename ("/var/lib/rpm", index_fn, NULL);
 	g_debug ("deleting %s", path);
@@ -3672,8 +3675,8 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 	PkBitfield transaction_flags;
 	const gchar *tmp;
 	gboolean ret;
-	_cleanup_dir_close_ GDir *dir = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GDir) dir = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* don't do anything when simulating */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);

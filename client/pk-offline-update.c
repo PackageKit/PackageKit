@@ -31,16 +31,14 @@
 #include <unistd.h>
 #include <systemd/sd-journal.h>
 
-#include "src/pk-cleanup.h"
-
 /**
  * pk_offline_update_set_plymouth_msg:
  **/
 static void
 pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *cmdline = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
@@ -61,8 +59,8 @@ pk_offline_update_set_plymouth_msg (const gchar *msg)
 static void
 pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *cmdline = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
@@ -83,8 +81,8 @@ pk_offline_update_set_plymouth_mode (const gchar *mode)
 static void
 pk_offline_update_set_plymouth_percentage (guint percentage)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *cmdline = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
@@ -110,8 +108,8 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	PkProgressBar *progressbar = PK_PROGRESS_BAR (user_data);
 	PkStatusEnum status;
 	gint percentage;
-	_cleanup_free_ gchar *msg = NULL;
-	_cleanup_object_unref_ PkPackage *pkg = NULL;
+	g_autofree gchar *msg = NULL;
+	g_autoptr(PkPackage) pkg = NULL;
 
 	switch (type) {
 	case PK_PROGRESS_TYPE_ROLE:
@@ -176,9 +174,9 @@ pk_offline_update_progress_cb (PkProgress *progress,
 static void
 pk_offline_update_reboot (void)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusConnection *connection = NULL;
-	_cleanup_variant_unref_ GVariant *val = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GVariant) val = NULL;
 
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "rebooting");
@@ -217,9 +215,9 @@ pk_offline_update_reboot (void)
 static void
 pk_offline_update_power_off (void)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GDBusConnection *connection = NULL;
-	_cleanup_variant_unref_ GVariant *val = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GVariant) val = NULL;
 
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "shutting down");
@@ -258,9 +256,9 @@ pk_offline_update_power_off (void)
 static void
 pk_offline_update_write_error (const GError *error)
 {
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ PkError *pk_error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(PkError) pk_error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	sd_journal_print (LOG_INFO, "writing failed results");
 	results = pk_results_new ();
@@ -281,7 +279,7 @@ pk_offline_update_write_error (const GError *error)
 static void
 pk_offline_update_write_results (PkResults *results)
 {
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	sd_journal_print (LOG_INFO, "writing actual results");
 	if (!pk_offline_auth_set_results (results, &error))
 		sd_journal_print (LOG_WARNING, "%s", error->message);
@@ -300,9 +298,9 @@ pk_offline_update_write_results (PkResults *results)
 static void
 pk_offline_update_write_dummy_results (void)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkError *pk_error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkError) pk_error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	sd_journal_print (LOG_INFO, "writing dummy results");
 	results = pk_results_new ();
@@ -362,8 +360,8 @@ pk_offline_update_get_action (void)
 static gboolean
 pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **error)
 {
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	/* get the list of packages to update */
 	package_ids = pk_offline_get_prepared_ids (error);
@@ -394,8 +392,8 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 static gboolean
 pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError **error)
 {
-	_cleanup_free_ gchar *version = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autofree gchar *version = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* get the version to upgrade to */
 	version = pk_offline_get_prepared_upgrade_version (error);
@@ -432,12 +430,12 @@ main (int argc, char *argv[])
 {
 	PkOfflineAction action = PK_OFFLINE_ACTION_UNKNOWN;
 	gint retval;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *link = NULL;
-	_cleanup_main_loop_unref_ GMainLoop *loop = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
-	_cleanup_object_unref_ PkProgressBar *progressbar = NULL;
-	_cleanup_object_unref_ PkTask *task = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *link = NULL;
+	g_autoptr(GMainLoop) loop = NULL;
+	g_autoptr(GFile) file = NULL;
+	g_autoptr(PkProgressBar) progressbar = NULL;
+	g_autoptr(PkTask) task = NULL;
 
 #if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
 	g_type_init ();

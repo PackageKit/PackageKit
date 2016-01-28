@@ -26,8 +26,6 @@
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "src/pk-cleanup.h"
-
 #include "pk-client.h"
 #include "pk-client-helper.h"
 #include "pk-control.h"
@@ -116,8 +114,8 @@ static void
 pk_test_offline_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
 	PkClient *client = PK_CLIENT (object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -131,10 +129,10 @@ static void
 pk_test_offline_func (void)
 {
 	gboolean ret;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_object_unref_ PkClient *client = NULL;
-	_cleanup_strv_free_ gchar **package_ids = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *data = NULL;
+	g_autoptr(PkClient) client = NULL;
+	g_auto(GStrv) package_ids = NULL;
 
 	/* set up an offline update */
 	client = pk_client_new ();
@@ -533,8 +531,8 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *categories = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) categories = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -560,8 +558,8 @@ pk_test_client_func (void)
 	PkRoleEnum role;
 	PkStatusEnum status;
 //	PkResults *results;
-	_cleanup_object_unref_ GCancellable *cancellable = NULL;
-	_cleanup_object_unref_ PkClient *client = NULL;
+	g_autoptr(GCancellable) cancellable = NULL;
+	g_autoptr(PkClient) client = NULL;
 
 #if 0
 	/* test user temp */
@@ -1137,8 +1135,8 @@ static void
 pk_test_task_install_packages_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
 	PkTask *task = PK_TASK (object);
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ PkResults *results = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
 
 	/* get the results */
 	results = pk_task_generic_finish (task, res, &error);

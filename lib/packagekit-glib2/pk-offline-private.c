@@ -27,8 +27,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include "src/pk-cleanup.h"
-
 #include "pk-offline.h"
 #include "pk-offline-private.h"
 
@@ -47,7 +45,7 @@ gboolean
 pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 {
 	const gchar *action_str;
-	_cleanup_error_free_ GError *error_local = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -95,9 +93,9 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 gboolean
 pk_offline_auth_cancel (GError **error)
 {
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ GFile *file1 = NULL;
-	_cleanup_object_unref_ GFile *file2 = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GFile) file1 = NULL;
+	g_autoptr(GFile) file2 = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -141,8 +139,8 @@ pk_offline_auth_cancel (GError **error)
 gboolean
 pk_offline_auth_clear_results (GError **error)
 {
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ GFile *file = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GFile) file = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -178,9 +176,9 @@ pk_offline_auth_clear_results (GError **error)
 gboolean
 pk_offline_auth_invalidate (GError **error)
 {
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ GFile *file1 = NULL;
-	_cleanup_object_unref_ GFile *file2 = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GFile) file1 = NULL;
+	g_autoptr(GFile) file2 = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -305,8 +303,8 @@ pk_offline_auth_trigger_upgrade (PkOfflineAction action, GError **error)
 gboolean
 pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 {
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
+	g_autofree gchar *data = NULL;
+	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -330,7 +328,7 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 gboolean
 pk_offline_auth_set_prepared_upgrade_version (const gchar *release_ver, GError **error)
 {
-	_cleanup_keyfile_unref_ GKeyFile *keyfile = NULL;
+	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -355,11 +353,11 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 {
 	guint i;
 	PkPackage *package;
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_keyfile_unref_ GKeyFile *key_file = NULL;
-	_cleanup_object_unref_ PkError *pk_error = NULL;
-	_cleanup_ptrarray_unref_ GPtrArray *packages = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autofree gchar *data = NULL;
+	g_autoptr(GKeyFile) key_file = NULL;
+	g_autoptr(PkError) pk_error = NULL;
+	g_autoptr(GPtrArray) packages = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -388,7 +386,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
-		_cleanup_string_free_ GString *string = NULL;
+		g_autoptr(GString) string = NULL;
 		string = g_string_new ("");
 		for (i = 0; i < packages->len; i++) {
 			package = g_ptr_array_index (packages, i);

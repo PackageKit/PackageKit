@@ -52,8 +52,6 @@
 #include <gio/gio.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-client-helper.h>
 
 static void     pk_client_helper_finalize	(GObject     *object);
@@ -167,7 +165,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	GIOStatus status;
 	gboolean ret = TRUE;
 	PkClientHelperPrivate *priv = client_helper->priv;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
@@ -266,7 +264,7 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 	GIOStatus status;
 	gsize written = 0;
 	gboolean ret = TRUE;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* package manager is done processing a package */
 	if ((condition & G_IO_HUP) > 0) {
@@ -322,7 +320,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	gint standard_error = 0;
 	gint fd;
 	GIOStatus status;
-	_cleanup_error_free_ GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* delaying connection */
 	if (priv->active_conn != NULL)
@@ -428,8 +426,8 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	gboolean use_kde_helper = FALSE;
 	gint fd;
 	PkClientHelperPrivate *priv = client_helper->priv;
-	_cleanup_error_free_ GError *error_local = NULL;
-	_cleanup_object_unref_ GSocketAddress *address = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (socket_filename != NULL, FALSE);

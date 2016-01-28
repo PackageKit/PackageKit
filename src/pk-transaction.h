@@ -48,6 +48,10 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransaction, g_object_unref)
+#endif
+
 /* these have to be kept in order */
 typedef enum {
 	PK_TRANSACTION_STATE_NEW,

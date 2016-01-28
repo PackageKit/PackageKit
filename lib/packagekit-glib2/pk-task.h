@@ -47,6 +47,10 @@ typedef struct _PkTaskPrivate	PkTaskPrivate;
 typedef struct _PkTask		PkTask;
 typedef struct _PkTaskClass	PkTaskClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTask, g_object_unref)
+#endif
+
 struct _PkTask
 {
 	 PkClient		 parent;

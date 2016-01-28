@@ -32,8 +32,6 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include "src/pk-cleanup.h"
-
 #include <packagekit-glib2/pk-transaction-list.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
@@ -133,8 +131,8 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 static void
 pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkTransactionList *tlist)
 {
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_strv_free_ gchar **transaction_ids = NULL;
+	g_autoptr(GError) error = NULL;
+	g_auto(GStrv) transaction_ids = NULL;
 
 	/* get the result */
 	transaction_ids = pk_control_get_transaction_list_finish (control, res, &error);

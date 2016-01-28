@@ -456,7 +456,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **filenames)
 {
-	_cleanup_free_ gchar *tmp = NULL;
+	g_autofree gchar *tmp = NULL;
 	tmp = pk_package_ids_to_string (filenames);
 	pk_backend_spawn_helper (priv->spawn, job,
 				 "yumBackend.py",

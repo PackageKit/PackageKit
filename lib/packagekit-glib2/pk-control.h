@@ -46,6 +46,10 @@ typedef struct _PkControlPrivate	PkControlPrivate;
 typedef struct _PkControl		PkControl;
 typedef struct _PkControlClass		PkControlClass;
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkControl, g_object_unref)
+#endif
+
 /**
  * PkControlError:
  * @PK_CONTROL_ERROR_FAILED: the transaction failed for an unknown reason
