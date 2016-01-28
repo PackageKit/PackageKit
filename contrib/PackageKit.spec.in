@@ -13,7 +13,7 @@ Requires: shared-mime-info
 Requires: comps-extras
 Requires: systemd
 
-BuildRequires: glib2-devel >= 2.32.0
+BuildRequires: glib2-devel >= 2.46.0
 BuildRequires: dbus-devel  >= 1.1.1
 BuildRequires: dbus-glib-devel >= 0.74
 BuildRequires: pam-devel

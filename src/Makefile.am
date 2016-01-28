@@ -65,8 +65,6 @@ shared_SOURCES =					\
 	pk-backend.h					\
 	pk-backend-job.c				\
 	pk-backend-job.h				\
-	pk-network.c					\
-	pk-network.h					\
 	pk-shared.c					\
 	pk-shared.h					\
 	pk-resources.c					\

@@ -47,7 +47,6 @@
 #include "pk-backend.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-network.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -72,7 +71,7 @@ struct PkEnginePrivate
 	PkScheduler		*scheduler;
 	PkTransactionDb		*transaction_db;
 	PkBackend		*backend;
-	PkNetwork		*network;
+	GNetworkMonitor		*network_monitor;
 	GKeyFile		*conf;
 	PkDbus			*dbus;
 	GFileMonitor		*monitor_conf;
@@ -396,7 +395,6 @@ pk_engine_backend_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 static gboolean
 pk_engine_state_changed_cb (gpointer data)
 {
-	PkNetworkEnum state;
 	PkEngine *engine = PK_ENGINE (data);
 	_cleanup_error_free_ GError *error = NULL;
 
@@ -407,8 +405,7 @@ pk_engine_state_changed_cb (gpointer data)
 		g_warning ("failed to invalidate: %s", error->message);
 
 	/* if network is not up, then just reschedule */
-	state = pk_network_get_network_state (engine->priv->network);
-	if (state == PK_NETWORK_ENUM_OFFLINE) {
+	if (!g_network_monitor_get_network_available (engine->priv->network_monitor)) {
 		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
 		return TRUE;
 	}
@@ -892,17 +889,33 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 }
 
 /**
+ * pk_engine_get_network_state:
+ **/
+static PkNetworkEnum
+pk_engine_get_network_state (GNetworkMonitor *network_monitor)
+{
+	if (!g_network_monitor_get_network_available (network_monitor))
+		return PK_NETWORK_ENUM_OFFLINE;
+	/* this isn't exactly true, but it's what the UI expects */
+	if (g_network_monitor_get_network_metered (network_monitor))
+		return PK_NETWORK_ENUM_MOBILE;
+	return PK_NETWORK_ENUM_ONLINE;
+}
+
+/**
  * pk_engine_network_state_changed_cb:
  **/
 static void
-pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_state, PkEngine *engine)
+pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
+				    gboolean available,
+				    PkEngine *engine)
 {
+	PkNetworkEnum network_state;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	/* already set */
-	if (engine->priv->network_state == network_state)
+	network_state = pk_engine_get_network_state (network_monitor);
+	if (network_state == engine->priv->network_state)
 		return;
-
 	engine->priv->network_state = network_state;
 
 	/* emit */
@@ -1821,10 +1834,10 @@ pk_engine_init (PkEngine *engine)
 	pk_directory_remove_contents (filename);
 
 	/* proxy the network state */
-	engine->priv->network = pk_network_new ();
-	g_signal_connect (engine->priv->network, "state-changed",
+	engine->priv->network_monitor = g_network_monitor_get_default ();
+	g_signal_connect (engine->priv->network_monitor, "network-changed",
 			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
-	engine->priv->network_state = pk_network_get_network_state (engine->priv->network);
+	engine->priv->network_state = pk_engine_get_network_state (engine->priv->network_monitor);
 
 	/* try to get the distro id */
 	engine->priv->distro_id = pk_get_distro_id ();
@@ -1911,7 +1924,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->monitor_offline_upgrade);
 	g_object_unref (engine->priv->scheduler);
 	g_object_unref (engine->priv->transaction_db);
-	g_object_unref (engine->priv->network);
 	if (engine->priv->authority != NULL)
 		g_object_unref (engine->priv->authority);
 	g_object_unref (engine->priv->backend);

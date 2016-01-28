@@ -39,10 +39,6 @@
 #include "pk-backend.h"
 #include "pk-shared.h"
 
-#ifdef PK_BUILD_DAEMON
-  #include "pk-network.h"
-#endif
-
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
 /**
@@ -203,9 +199,6 @@ struct PkBackendPrivate
 	PkBitfield		 roles;
 	GKeyFile		*conf;
 	GFileMonitor		*monitor;
-#ifdef PK_BUILD_DAEMON
-	PkNetwork		*network;
-#endif
 	gboolean		 backend_roles_set;
 	gpointer		 user_data;
 	GHashTable		*thread_hash;
@@ -923,19 +916,9 @@ pk_backend_bool_to_string (gboolean value)
 gboolean
 pk_backend_is_online (PkBackend *backend)
 {
-#ifdef PK_BUILD_DAEMON
-	PkNetworkEnum state;
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	state = pk_network_get_network_state (backend->priv->network);
-	if (state == PK_NETWORK_ENUM_ONLINE ||
-	    state == PK_NETWORK_ENUM_MOBILE ||
-	    state == PK_NETWORK_ENUM_WIFI ||
-	    state == PK_NETWORK_ENUM_WIRED)
-		return TRUE;
-	return FALSE;
-#else
-	return TRUE;
-#endif
+	GNetworkMonitor *network_monitor;
+	network_monitor = g_network_monitor_get_default ();
+	return g_network_monitor_get_network_available (network_monitor);
 }
 
 /**
@@ -1160,9 +1143,6 @@ pk_backend_finalize (GObject *object)
 
 	g_free (backend->priv->name);
 
-#ifdef PK_BUILD_DAEMON
-	g_object_unref (backend->priv->network);
-#endif
 	g_key_file_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
@@ -1903,9 +1883,6 @@ static void
 pk_backend_init (PkBackend *backend)
 {
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
-#ifdef PK_BUILD_DAEMON
-	backend->priv->network = pk_network_new ();
-#endif
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->thread_hash = g_hash_table_new_full (g_direct_hash,
 							    g_direct_equal,
