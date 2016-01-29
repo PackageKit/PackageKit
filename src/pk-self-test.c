@@ -1440,9 +1440,6 @@ pk_test_scheduler_parallel_func (void)
 int
 main (int argc, char **argv)
 {
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
 	g_test_init (&argc, &argv, NULL);
 
 #ifndef PK_ENABLE_DAEMON_TESTS

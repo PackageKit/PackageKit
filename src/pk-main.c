@@ -148,10 +148,6 @@ main (int argc, char *argv[])
 	textdomain (GETTEXT_PACKAGE);
 	openlog ("PackageKit", LOG_NDELAY, LOG_USER);
 
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
-
 	/* set the default thread explicitly */
 	pk_is_thread_default ();
 

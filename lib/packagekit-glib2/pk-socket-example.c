@@ -64,10 +64,6 @@ main (void)
 	g_autoptr(GSocketAddress) address = NULL;
 	g_autoptr(GSocket) socket = NULL;
 
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
-
 	loop = g_main_loop_new (NULL, FALSE);
 
 	/* create socket */

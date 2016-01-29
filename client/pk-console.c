@@ -1729,10 +1729,6 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
-
 	/* do stuff on ctrl-c */
 	ctx = g_new0 (PkConsoleCtx, 1);
 	ctx->defered_status = PK_STATUS_ENUM_UNKNOWN;

@@ -373,10 +373,6 @@ main (int argc, gchar **argv)
 		{ NULL }
 	};
 
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
-
 	gst_init (&argc, &argv);
 
 	context = g_option_context_new ("Install missing codecs");

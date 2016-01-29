@@ -781,14 +781,6 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 31)
-	if (! g_thread_supported ())
-		g_thread_init (NULL);
-#endif
-#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 35)
-	g_type_init ();
-#endif
-
 	/* don't show debugging, unless VERBOSE is specified */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
