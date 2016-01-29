@@ -95,6 +95,9 @@ gboolean		 pk_offline_clear_results	(GCancellable		*cancellable,
 gboolean		 pk_offline_trigger		(PkOfflineAction	 action,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gboolean		 pk_offline_trigger_upgrade	(PkOfflineAction	 action,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
 G_END_DECLS
 

@@ -208,6 +208,48 @@ pk_offline_trigger (PkOfflineAction action, GCancellable *cancellable, GError **
 }
 
 /**
+ * pk_offline_trigger_upgrade:
+ * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
+ * @cancellable: A #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Triggers the offline system upgrade so that the next reboot will perform the
+ * pending transaction.
+ *
+ * Return value: %TRUE for success, else %FALSE and @error set
+ *
+ * Since: 1.0.12
+ **/
+gboolean
+pk_offline_trigger_upgrade (PkOfflineAction action, GCancellable *cancellable, GError **error)
+{
+	const gchar *tmp;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GVariant) res = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, cancellable, error);
+	if (connection == NULL)
+		return FALSE;
+	tmp = pk_offline_action_to_string (action);
+	res = g_dbus_connection_call_sync (connection,
+					   "org.freedesktop.PackageKit",
+					   "/org/freedesktop/PackageKit",
+					   "org.freedesktop.PackageKit.Offline",
+					   "TriggerUpgrade",
+					   g_variant_new ("(s)", tmp),
+					   NULL,
+					   G_DBUS_CALL_FLAGS_NONE,
+					   -1,
+					   cancellable,
+					   error);
+	if (res == NULL)
+		return FALSE;
+	return TRUE;
+}
+
+/**
  * pk_offline_get_action:
  * @error: A #GError or %NULL
  *
