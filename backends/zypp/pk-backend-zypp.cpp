@@ -1008,13 +1008,6 @@ zypp_refresh_meta_and_cache (RepoManager &manager, RepoInfo &repo, bool force = 
 
 
 static gboolean
-system_and_package_are_x86 (sat::Solvable item)
-{
-	// i586, i686, ... all should be considered the same arch for our comparison
-	return ( item.arch() == Arch_i586 && ZConfig::defaultSystemArchitecture() == Arch_i686 );
-}
-
-static gboolean
 zypp_package_is_devel (const sat::Solvable &item)
 {
 	const string &name = item.name();
@@ -1069,13 +1062,12 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 			return TRUE;
 		if (i == PK_FILTER_ENUM_ARCH) {
 			if (item.arch () != ZConfig::defaultSystemArchitecture () &&
-			    item.arch () != Arch_noarch &&
-			    ! system_and_package_are_x86 (item))
+			    ! item.arch ().compatibleWith (ZConfig::defaultSystemArchitecture()))
 				return TRUE;
 		}
 		if (i == PK_FILTER_ENUM_NOT_ARCH) {
 			if (item.arch () == ZConfig::defaultSystemArchitecture () ||
-			    system_and_package_are_x86 (item))
+			    item.arch ().compatibleWith (ZConfig::defaultSystemArchitecture()))
 				return TRUE;
 		}
 		if (i == PK_FILTER_ENUM_SOURCE && !(isKind<SrcPackage>(item)))
