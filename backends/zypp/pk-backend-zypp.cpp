@@ -76,7 +76,6 @@
 #include <zypp/base/LogControl.h>
 #include <zypp/base/Logger.h>
 #include <zypp/base/String.h>
-#include <zypp/media/MediaManager.h>
 #include <zypp/parser/IniDict.h>
 #include <zypp/parser/ParseException.h>
 #include <zypp/parser/ProductFileReader.h>
@@ -639,22 +638,6 @@ zypp_logging ()
 	g_free (file_old);
 
 	return TRUE;
-}
-
-gboolean
-zypp_is_changeable_media (const Url &url)
-{
-	gboolean is_cd = false;
-	try {
-		media::MediaManager mm;
-		media::MediaAccessId id = mm.open (url);
-		is_cd = mm.isChangeable (id);
-		mm.close (id);
-	} catch (const media::MediaException &e) {
-		// TODO: Do anything about this?
-	}
-
-	return is_cd;
 }
 
 namespace {
@@ -1641,9 +1624,9 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		if (!force && !repo.autorefresh())
 			continue;
 
-		// skip changeable meda (DVDs and CDs).  Without doing this,
+		// skip changeable media (DVDs and CDs).  Without doing this,
 		// the disc would be required to be physically present.
-		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
+		if (repo.baseUrlsBegin ()->schemeIsVolatile())
 			continue;
 
 		try {
