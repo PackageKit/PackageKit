@@ -275,8 +275,6 @@ static void
 pk_engine_inhibit (PkEngine *engine)
 {
 #ifdef HAVE_SYSTEMD
-	const gint *fd_list;
-	gint fd_list_len = 0;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GUnixFDList) out_fd_list = NULL;
 	g_autoptr(GVariant) res = NULL;
@@ -311,12 +309,11 @@ pk_engine_inhibit (PkEngine *engine)
 	}
 
 	/* keep fd as cookie */
-	fd_list = g_unix_fd_list_peek_fds (out_fd_list, &fd_list_len);
-	if (fd_list_len != 1) {
+	if (g_unix_fd_list_get_length (out_fd_list) != 1) {
 		g_warning ("invalid response from logind");
 		return;
 	}
-	engine->priv->logind_fd = fd_list[0];
+	engine->priv->logind_fd = g_unix_fd_list_get (out_fd_list, 0, NULL);
 	g_debug ("opened logind fd %i", engine->priv->logind_fd);
 #endif
 }
