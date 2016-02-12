@@ -268,7 +268,7 @@ static gboolean
 pk_alpm_search_is_application (alpm_pkg_t *pkg) {
 	guint i;
 	alpm_filelist_t *filelist;
-	GRegex _cleanup_regex_unref_ *regex = NULL;
+	g_autoptr(GRegex) regex = NULL;
 
 	filelist = alpm_pkg_get_files (pkg);
 	regex = g_regex_new ("^usr/share/applications/.*\\.desktop$", 0, 0, NULL);
