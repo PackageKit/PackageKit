@@ -1,3 +1,56 @@
+Version 1.1.0
+~~~~~~~~~~~~~~
+Released: 2015-02-12
+
+Backends:
+ - alpm: Update for pacman 5.x API change (Christian Hesse)
+ - alpm: Remove versioning support (Christian Hesse)
+ - aptcc: Always append the repository name to the pkgid data (Matthias Klumpp)
+ - aptcc: Always use "installed" as data when the pkg is installed (Matthias Klumpp)
+ - aptcc: Do not use deprecated API (Matthias Klumpp)
+ - aptcc: Require C++11 support (Matthias Klumpp)
+ - aptcc: Store "packagekit role='%s'" as the apt cmdline (Michael Vogt)
+ - hif: Add support for UpgradeSystem (Kalev Lember)
+ - hif: Don't store repos in global data (Kalev Lember)
+ - hif: Factor out pk_backend_job_set_context (Kalev Lember)
+ - hif: Factor out pk_backend_setup_hif_context() (Kalev Lember)
+ - hif: Save cache files in versioned directories (Kalev Lember)
+ - hif: Save release ver in sack cache hash key (Kalev Lember)
+ - hif: Split out UpgradeSystem handling to a separate function (Kalev Lember)
+ - hif: Store the currently used HifContext in job private data (Kalev Lember)
+ - zypp: Avoid media access when testing for cd/dvd URL scheme (Michael Andres)
+ - zypp: Fix build (Dominique Leuenberger)
+ - zypp: Use libzypp's arch compatibility check (Thomas Perl)
+
+New Features:
+ - Add client side API for triggering offline system upgrades (Kalev Lember)
+ - Add getters for PkProgress (Robert Ancell)
+ - Add pk_get_distro_version_id (Kalev Lember)
+ - Add system upgrade API to PkTask (Kalev Lember)
+ - Port to g_autoptr() (Richard Hughes, Kalev Lember)
+ - Remove the PackageKit browser plugin (Richard Hughes)
+ - Use the GLib network monitoring support (Richard Hughes)
+
+Bugfixes:
+ - Add missing description for obsoleted packages (Kalev Lember)
+ - Add support for offline system upgrades (Kalev Lember)
+ - Allow to enable or disable systemd units for offline update (Christian Hesse)
+ - Correctly store file descriptor from logind (#94070) (Benjamin Berg)
+ - Do not crash on GetPrepared when there are no offline updates (Rui Matos)
+ - Do not crash on transaction database corruption (Richard Hughes)
+ - Do not crash when parsing a very broken transaction log (Richard Hughes)
+ - Do not install offline update related files if disabled (Christian Hesse)
+ - Emit PropertiesChanged for UpgradeSystem transaction flags (Kalev Lember)
+ - Fix download-size-remaining property type (Robert Ancell)
+ - Fix various minor memory leaks (Matthias Klumpp)
+ - Make transaction get_proxy() return TRUE for no proxy settings (Matthias Klumpp)
+ - Minor fixes in command_not_found_handle{,r}() for bash and zsh (Carsten Hey)
+ - Relax validation performed on input strings passed to backends (Richard Hughes)
+ - Require dbus.socket for offline update (Christian Hesse)
+ - Set PACKAGEKIT_CALLER_UID environment (Michael Vogt)
+ - Sort package names when printing out simulation (Kalev Lember)
+ - Use new PkTask API for system upgrades (Kalev Lember)
+
 Version 1.0.11
 ~~~~~~~~~~~~~~
 Released: 2015-11-27

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/freedesktop/packagekit/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
@@ -399,7 +399,7 @@ msgstr "將機器可讀的輸出列印到畫面，而不是使用動畫化的小
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "最大的中介資料快取時限。使用 -1 代表「永遠」。"
+msgstr "最大的中介資料快取時限。使用 -1 代表「永不」。"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -507,16 +507,6 @@ msgstr "需要指定軟體包提供字串"
 msgid "A filename is required"
 msgstr "需要指定檔名"
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "描述"
@@ -573,49 +563,9 @@ msgstr "在安裝完更新後關機…"
 msgid "Installing updates; this could take a while..."
 msgstr "正在安裝更新；這會花上一段時間..."
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "正在取得軟體包資訊..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "執行 %s"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "已安裝的版本"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "立刻執行版本 %s"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "立刻執行"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "更新至版本 %s"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "立刻安裝 %s"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "版本"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "找不到適合您系統的軟體包"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "正在安裝..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -623,7 +573,7 @@ msgstr "正在下載關於軟體來源的詳細資料。"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "正在下載檔案清單 (這會花上一段時間才能完成)。"
+msgstr "正在下載檔案清單（這會花上一段時間才能完成）。"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
@@ -927,7 +877,7 @@ msgstr "正在移除"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "正在清除"
+msgstr "正在清理"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
@@ -947,7 +897,7 @@ msgstr "已移除"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "已清除"
+msgstr "已清理"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -1065,6 +1015,10 @@ msgstr "正在取得分類"
 msgid "Getting transactions"
 msgstr "正在取得處理事項"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1172,6 +1126,10 @@ msgstr "下列軟體包必須重新安裝："
 msgid "The following packages have to be downgraded:"
 msgstr "下列軟體包必須降級："
 
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
+
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
@@ -1264,7 +1222,7 @@ msgid "Accept EULA"
 msgstr "接受終端使用者授權條款協議"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "要接受終端使用者授權條款協議需先通過身份核對"
+msgstr "要接受終端使用者授權條款協議須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1301,7 +1259,7 @@ msgid "Change software source parameters"
 msgstr "更改軟體來源參數"
 
 msgid "Authentication is required to change software source parameters"
-msgstr "要更改軟體來源參數需先通過身份核對"
+msgstr "要更改軟體來源參數須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1310,7 +1268,7 @@ msgid "Refresh system sources"
 msgstr "重新整理系統來源"
 
 msgid "Authentication is required to refresh the system sources"
-msgstr "要重新整理系統來源需先通過身份核對"
+msgstr "要重新整理系統來源須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1333,17 +1291,17 @@ msgid "Reload a device"
 msgstr "重新載入裝置"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "要以新驅動程式重新載入裝置的話需先通過身份核對"
+msgstr "若要以新驅動程式重新載入裝置須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "升級系統"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "要升級作業系統須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1353,7 +1311,7 @@ msgid "Repair System"
 msgstr "修復系統"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "要修復安裝的軟體需先通過身份認證"
+msgstr "要修復安裝的軟體須先通過身份認證"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1362,16 +1320,16 @@ msgid "Trigger offline updates"
 msgstr "觸發離線更新"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "要觸發離線更新需先通過身份核對"
+msgstr "要觸發離線更新須先通過身份核對"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr "清除離線更新訊息"
+msgstr "清理離線更新訊息"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "要清除離線更新訊息需先通過身份核對"
+msgstr "要清理離線更新訊息須先通過身份核對"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
@@ -1391,7 +1349,7 @@ msgstr "重新整理快取"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr "重新整理快取 (強制)"
+msgstr "重新整理快取（強制）"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
@@ -1451,7 +1409,7 @@ msgstr "引擎載入後離開"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr "啟動時不要清除環境變數"
+msgstr "啟動時不要清理環境變數"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"

@@ -2,7 +2,7 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_1_1_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_1_0_11.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
 Version 1.1.0

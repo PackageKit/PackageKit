@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Telugu (http://www.transifex.com/freedesktop/packagekit/language/te/)\n"
 "MIME-Version: 1.0\n"
@@ -506,16 +506,6 @@ msgstr "సంకలనము అందించు పదబందము(స్
 msgid "A filename is required"
 msgstr ""
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr ""
@@ -572,49 +562,9 @@ msgstr ""
 msgid "Installing updates; this could take a while..."
 msgstr ""
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "సంకలనము సమాచారమును పొందుచున్నది..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "%s నడుపు"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "సంస్థాపించిన వర్షన్"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "వర్షన్ %s యిప్పుడు నడుపుము"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "ఇప్పుడు నడుపుము"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "వర్షన్ %sకు నవీకరించుము"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "%s యిప్పుడు సంస్థాపించుము"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "వర్షన్"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "మీ సిస్టమ్ కొరకు ఎటువంటి సంకలనాలు కనబడలేదు"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "సంస్థాపించుచున్నది..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1064,6 +1014,10 @@ msgstr "వర్గములను పొందుచున్నది"
 msgid "Getting transactions"
 msgstr "బదిలీకరణలను పొందుచున్నది"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1170,6 +1124,10 @@ msgstr "ఈ క్రింది సంకలనములు తిరిగి
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
 msgstr "ఈ క్రింది సంకలనములు డౌన్‌గ్రేడ్ చేయవలసివుంది:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered

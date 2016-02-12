@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Russian (http://www.transifex.com/freedesktop/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -429,24 +429,24 @@ msgstr "Указанный фильтр некорректен"
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "Необходим тип поиска; например, «имя»"
+msgstr "Необходимо указать тип поиска, например: «имя»"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "Необходимо поисковое слово"
+msgstr "Необходимо указать поисковое слово"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "Необходимо название пакета для установки"
+msgstr "Необходимо указать название пакета для установки"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "Необходимо имя файла для установки"
+msgstr "Необходимо указать имя файла для установки"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -477,7 +477,7 @@ msgstr "Необходим идентификатор лицензии (eula-id)
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "Необходимо название пакета для разрешения"
+msgstr "Необходимо указать название пакета для разрешения"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
@@ -493,7 +493,7 @@ msgstr "Необходимо указать идентификатор репо�
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "Необходимо действие; например «update-packages»"
+msgstr "Необходимо указать действие, например: «update-packages»"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -503,7 +503,7 @@ msgstr "Необходимо указать правильную роль"
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "Необходимо название пакета"
+msgstr "Необходимо указать название пакета"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
@@ -514,16 +514,6 @@ msgstr "Необходима строка, указывающая на паке�
 
 msgid "A filename is required"
 msgstr "Необходимо указать имя файла"
-
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
@@ -581,49 +571,9 @@ msgstr "Выполняется выключение после установк�
 msgid "Installing updates; this could take a while..."
 msgstr "Установка обновлений; это может занять некоторое время…"
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "Получение информации о пакете..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "Выполнить %s"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "Установленная версия"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "Запустить версию %s сейчас"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "Выполнить сейчас"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "Обновление до версии %s"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "Установить %s сейчас"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "Версия"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "Для Вашей системы не найдено пакетов"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "Установка..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1073,6 +1023,10 @@ msgstr "Получение категорий"
 msgid "Getting transactions"
 msgstr "Получение операций"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1180,6 +1134,10 @@ msgstr "Следующие пакеты должны быть переустан
 msgid "The following packages have to be downgraded:"
 msgstr "Следующие пакеты должны быть понижены версией:"
 
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
+
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
@@ -1202,7 +1160,7 @@ msgstr "Отменить внешнюю задачу"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Требуются права на отмену задачи, запущенной не Вами"
+msgstr "Для отмены задачи, запущенной не Вами, требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1348,10 +1306,10 @@ msgstr "Для перезагрузки устройства с новым др�
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Обновление системы"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Для обновления операционной системы требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system

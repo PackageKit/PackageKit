@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/freedesktop/packagekit/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -514,16 +514,6 @@ msgstr "Se necesita la cadena de lo que proporciona el paquete"
 msgid "A filename is required"
 msgstr "Se necesita un nombre de archivo"
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "Descripción"
@@ -580,49 +570,9 @@ msgstr "Apagando tras la instalación de actualizaciones…"
 msgid "Installing updates; this could take a while..."
 msgstr ""
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "Extrayendo información del paquete..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "Ejecutar %s"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "Versión instalada"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "Ejecutar la versión %s ahora"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "Ejecutar ahora"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "Actualizar a la versión %s"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "Instalar %s ahora"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "Versión"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "No se encontró ningún paquete para el sistema"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "Instalando…"
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1072,6 +1022,10 @@ msgstr "Obteniendo categorías"
 msgid "Getting transactions"
 msgstr "Obteniendo operaciones"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1178,6 +1132,10 @@ msgstr "Los siguientes paquetes deben reinstalarse:"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
 msgstr "Los siguientes paquetes deben desactualizarse:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Catalan (http://www.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "MIME-Version: 1.0\n"
@@ -508,16 +508,6 @@ msgstr "Es requereix una cadena de proveïdor de paquet"
 msgid "A filename is required"
 msgstr "Es requereix el nom d'un fitxer"
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "Descripció"
@@ -574,49 +564,9 @@ msgstr "S'està apagant després d'instal·lar les actualitzacions..."
 msgid "Installing updates; this could take a while..."
 msgstr "S'estan instal·lant les actualitzacions; això pot trigar una estona..."
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "S'està obtenint la informació dels paquets..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "Executa %s"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "Versió instal·lada"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "Executa la versió %s ara"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "Executa ara"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "Actualitza a la versió %s"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "Instal·la %s ara"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "Versió"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "No s'han trobat paquets per al vostre sistema"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "S'està instal·lant..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1066,6 +1016,10 @@ msgstr "S'estan obtenint les categories"
 msgid "Getting transactions"
 msgstr "S'estan obtenint les transaccions"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1172,6 +1126,10 @@ msgstr "S'han de reinstal·lar els següents paquets:"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
 msgstr "S'ha de desfer l'actualització dels següents paquets:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1341,10 +1299,10 @@ msgstr "Es requereix autenticació per tornar a carregar el dispositiu amb un no
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Actualització del sistema"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Es requereix autenticació per actualitzar el sistema operatiu"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system

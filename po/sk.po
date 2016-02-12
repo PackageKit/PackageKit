@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/freedesktop/packagekit/language/sk/)\n"
 "MIME-Version: 1.0\n"
@@ -511,16 +511,6 @@ msgstr "Je potrebný reťazec poskytovania"
 msgid "A filename is required"
 msgstr "Je potrebný názov súboru"
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "Popis"
@@ -577,49 +567,9 @@ msgstr "Prebieha vypnutie po inštalácii aktualizácií..."
 msgid "Installing updates; this could take a while..."
 msgstr "Inštalujú sa aktualizácie. Toto môže chvíľu trvať..."
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "Získavajú sa informácie o balíku..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "Spustiť %s"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "Nainštalovaná verzia"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "Spustiť verziu %s teraz"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "Spustiť teraz"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "Aktualizovať na verziu %s"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "Nainštalovať %s teraz"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "Verzia"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "Pre váš systém neboli nájdené žiadne balíky"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "Inštaluje sa..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1069,6 +1019,10 @@ msgstr "Získavajú sa kategórie"
 msgid "Getting transactions"
 msgstr "Získavajú sa transakcie"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1175,6 +1129,10 @@ msgstr "Nasledujúce balíky budú musieť byť preinštalované:"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
 msgstr "Bude potrebné nainštalovať staršiu verziu nasledujúcich balíkov:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1344,10 +1302,10 @@ msgstr "Na načítanie nového ovládača zariadenia je potrebné overenie toto�
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Aktualizovať systém"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Na aktualizáciu operačného systému je potrebné overenie totožnosti"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system

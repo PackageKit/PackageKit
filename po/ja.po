@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-27 14:52+0000\n"
-"PO-Revision-Date: 2015-11-27 14:52+0000\n"
+"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/freedesktop/packagekit/language/ja/)\n"
 "MIME-Version: 1.0\n"
@@ -509,16 +509,6 @@ msgstr "パッケージの提供する文字列が必要です"
 msgid "A filename is required"
 msgstr "ファイル名は必須です"
 
-#. TRANSLATORS: The user did not
-#. * provide a distro name
-msgid "A distribution name is required"
-msgstr ""
-
-#. TRANSLATORS: The user did not
-#. * provide an upgrade type
-msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
-
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
 msgstr "説明"
@@ -575,49 +565,9 @@ msgstr ""
 msgid "Installing updates; this could take a while..."
 msgstr ""
 
-#. TRANSLATORS: when we are getting data from the daemon
-msgid "Getting package information..."
-msgstr "パッケージの情報を取得中..."
-
-#. TRANSLATORS: run an applicaiton
-#, c-format
-msgid "Run %s"
-msgstr "%s 実行"
-
-#. TRANSLATORS: show the installed version of a package
-msgid "Installed version"
-msgstr "インストールされたバージョン"
-
-#. TRANSLATORS: run the application now
-#, c-format
-msgid "Run version %s now"
-msgstr "バージョン %s をすぐに実行"
-
-#. TRANSLATORS: run the application now
-msgid "Run now"
-msgstr "すぐに実行"
-
-#. TRANSLATORS: update to a new version of the package
-#, c-format
-msgid "Update to version %s"
-msgstr "バージョン %s に更新"
-
-#. TRANSLATORS: To install a package
-#, c-format
-msgid "Install %s now"
-msgstr "%s をすぐにインストール"
-
-#. TRANSLATORS: the version of the package
-msgid "Version"
-msgstr "バージョン"
-
-#. TRANSLATORS: noting found, so can't install
-msgid "No packages found for your system"
-msgstr "ユーザーのシステム用のパッケージが見つかりません"
-
-#. TRANSLATORS: package is being installed
-msgid "Installing..."
-msgstr "インストール中..."
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1067,6 +1017,10 @@ msgstr "区分の取得中"
 msgid "Getting transactions"
 msgstr "トランザクションの取得中"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr ""
+
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
@@ -1173,6 +1127,10 @@ msgstr "以下のパッケージは再インストールされるべきもので
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
 msgstr "以下のパッケージはダウングレードされるべきものです:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr ""
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
