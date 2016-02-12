@@ -1,6 +1,6 @@
 Version 1.1.0
 ~~~~~~~~~~~~~~
-Released: 2015-02-12
+Released: 2016-02-12
 
 Backends:
  - alpm: Update for pacman 5.x API change (Christian Hesse)
