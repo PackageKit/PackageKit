@@ -275,7 +275,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	}
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level) {
-		pk_backend_job_error_code (_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, description.c_str ());
+		pk_backend_job_error_code (_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "%s", description.c_str ());
 		return ABORT;
 	}
 
@@ -310,7 +310,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description) {
-                pk_backend_job_error_code (_job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, description.c_str ());
+                pk_backend_job_error_code (_job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "%s", description.c_str ());
 		return ABORT;
 	}
 
@@ -409,7 +409,7 @@ struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::me
 {
 	virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, const std::string &label, zypp::media::MediaChangeReport::Error error, const std::string &description, const std::vector<std::string> & devices, unsigned int &dev_current)
 	{
-		pk_backend_job_error_code (_job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, description.c_str ());
+		pk_backend_job_error_code (_job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, "%s", description.c_str ());
 		// We've to abort here, because there is currently no feasible way to inform the user to insert/change media
 		return ABORT;
 	}
@@ -599,10 +599,10 @@ ZyppJob::get_zypp()
 			initialized = TRUE;
 		}
 	} catch (const ZYppFactoryException &ex) {
-		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
+		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s", ex.asUserString().c_str() );
 		return NULL;
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		pk_backend_job_error_code (priv->currentJob, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
 		return NULL;
 	}
 
@@ -952,7 +952,7 @@ zypp_get_Repository (PkBackendJob *job, const gchar *alias)
 		RepoManager manager;
 		info = manager.getRepositoryInfo (alias);
 	} catch (const repo::RepoNotFoundException &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 		return RepoInfo ();
 	}
 
@@ -1402,7 +1402,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 					it->statusReset ();
 			}
 
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
 			g_free (emsg);
 
 			goto exit;
@@ -1529,11 +1529,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		pk_backend_job_set_percentage(job, 100);
 		ret = TRUE;
 	} catch (const repo::RepoNotFoundException &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	} catch (const target::rpm::RpmException &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "%s", ex.asUserString().c_str () );
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
 	}
 
  exit:
@@ -1592,7 +1592,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 	catch ( const Exception &e)
 	{
 		// FIXME: make sure this dumps out the right sring.
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", e.asUserString().c_str() );
 		return FALSE;
 	}
 
@@ -1642,7 +1642,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		pk_backend_job_set_percentage (job, i >= num_of_repos ? 100 : (100 * i) / num_of_repos);
 	}
 	if (repo_messages != NULL)
-		g_printf(repo_messages);
+		g_printf("%s", repo_messages);
 
 	pk_backend_job_set_percentage (job, 100);
 	g_free (repo_messages);
@@ -2365,7 +2365,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	try {
 		manager.removeRepository (tmpRepo);
 	} catch (const repo::RepoNotFoundException &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
 }
 
@@ -3300,7 +3300,7 @@ backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user
 	} catch (const repo::RepoException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't access the given URL");
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asString ().c_str ());
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asString ().c_str ());
 	}
 }
 
