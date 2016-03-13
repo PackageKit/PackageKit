@@ -2123,7 +2123,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: (array zero-terminated=1): an array of package names to resolve, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2191,7 +2191,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2258,7 +2258,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2326,7 +2326,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2392,7 +2392,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2457,7 +2457,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2523,7 +2523,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
  * @client: a valid #PkClient instance
  * @files: (array zero-terminated=1): a null terminated array of filenames
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2593,7 +2593,7 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
  * @client: a valid #PkClient instance
  * @files: (array zero-terminated=1): a null terminated array of filenames
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2663,7 +2663,7 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2730,7 +2730,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the location where packages are to be downloaded
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2796,7 +2796,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2860,7 +2860,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
  * @client: a valid #PkClient instance
  * @number: the number of past transactions to return, or 0 for all
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2926,7 +2926,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -2993,7 +2993,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3059,7 +3059,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3127,7 +3127,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3196,7 +3196,7 @@ pk_client_what_provides_async (PkClient *client,
  * pk_client_get_distro_upgrades_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3260,7 +3260,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3324,7 +3324,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
  * pk_client_get_categories_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3390,7 +3390,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
  * @allow_deps: if other dependent packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3467,7 +3467,7 @@ pk_client_remove_packages_async (PkClient *client,
  * @client: a valid #PkClient instance
  * @force: if we should aggressively drop caches
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3535,7 +3535,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3603,7 +3603,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
  * @key_id: a key ID such as "0df23df"
  * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3670,7 +3670,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3817,7 +3817,7 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
  * @transaction_flags: a transaction type bitfield
  * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3912,7 +3912,7 @@ pk_client_install_files_async (PkClient *client,
  * @client: a valid #PkClient instance
  * @eula_id: the <literal>eula_id</literal> we are agreeing to
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -3976,7 +3976,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4041,7 +4041,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
  * @repo_id: a repo_id structure such as "livna-devel"
  * @enabled: if we should enable the repository
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4108,7 +4108,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
  * @parameter: the parameter to change
  * @value: what we should change it to
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4177,7 +4177,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
  * @repo_id: a repo_id structure such as "livna-devel"
  * @autoremove: If packages should be auto-removed
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4251,7 +4251,7 @@ pk_client_repo_remove_async (PkClient *client,
  * @distro_id: a distro ID such as "fedora-14"
  * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4324,7 +4324,7 @@ pk_client_upgrade_system_async (PkClient *client,
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -4412,7 +4412,7 @@ pk_client_adopt_get_proxy_cb (GObject *object,
  * @client: a valid #PkClient instance
  * @transaction_id: a transaction ID such as "/21_ebcbdaae_data"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready

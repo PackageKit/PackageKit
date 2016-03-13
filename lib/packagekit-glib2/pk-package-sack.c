@@ -793,7 +793,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
  * pk_package_sack_resolve_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -930,7 +930,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
  * pk_package_sack_get_details_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -1064,7 +1064,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
  * pk_package_sack_get_update_detail_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
