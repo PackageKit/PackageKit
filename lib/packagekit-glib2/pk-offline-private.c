@@ -241,7 +241,7 @@ pk_offline_auth_trigger_prepared_file (PkOfflineAction action, const gchar *prep
 		return FALSE;
 
 	/* create symlink for the systemd-system-update-generator */
-	rc = symlink ("/var/cache/PackageKit", PK_OFFLINE_TRIGGER_FILENAME);
+	rc = symlink (prepared_file, PK_OFFLINE_TRIGGER_FILENAME);
 	if (rc < 0) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
