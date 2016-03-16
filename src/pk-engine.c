@@ -1057,6 +1057,20 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 		return g_variant_new_boolean (ret);
 	}
 
+	/* look at the symlink target */
+	if (g_strcmp0 (property_name, "UpdateTriggered") == 0) {
+		g_autofree gchar *link = NULL;
+		link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+		return g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) == 0);
+	}
+
+	/* look at the symlink target */
+	if (g_strcmp0 (property_name, "UpgradeTriggered") == 0) {
+		g_autofree gchar *link = NULL;
+		link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+		return g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0);
+	}
+
 	/* return an error */
 	g_set_error (error,
 		     PK_ENGINE_ERROR,
@@ -1553,6 +1567,7 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
 	PkOfflineAction action;
 	gboolean ret;
+	g_autofree gchar *link = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(PolkitAuthorizationResult) result = NULL;
@@ -1609,6 +1624,14 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 	pk_engine_emit_offline_property_changed (helper->engine,
 						 "TriggerAction",
 						 g_variant_new_string (pk_offline_action_to_string (action)));
+
+	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	pk_engine_emit_offline_property_changed (helper->engine,
+						 "UpdateTriggered",
+						 g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) == 0));
+	pk_engine_emit_offline_property_changed (helper->engine,
+						 "UpgradeTriggered",
+						 g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0));
 
 	g_dbus_method_invocation_return_value (helper->invocation, NULL);
 	pk_engine_offline_helper_free (helper);
