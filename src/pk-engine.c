@@ -1522,6 +1522,7 @@ typedef enum {
 	PK_ENGINE_OFFLINE_ROLE_CANCEL,
 	PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS,
 	PK_ENGINE_OFFLINE_ROLE_TRIGGER,
+	PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE,
 	PK_ENGINE_OFFLINE_ROLE_LAST
 } PkEngineOfflineRole;
 
@@ -1587,6 +1588,9 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 		break;
 	case PK_ENGINE_OFFLINE_ROLE_TRIGGER:
 		ret = pk_offline_auth_trigger (helper->action, &error);
+		break;
+	case PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE:
+		ret = pk_offline_auth_trigger_upgrade (helper->action, &error);
 		break;
 	default:
 		g_assert_not_reached ();
@@ -1676,6 +1680,33 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
+		helper->invocation = g_object_ref (invocation);
+		helper->action = action;
+		polkit_authority_check_authorization (engine->priv->authority, subject,
+						      "org.freedesktop.packagekit.trigger-offline-update",
+						      NULL,
+						      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+						      NULL,
+						      pk_engine_offline_helper_cb,
+						      helper);
+		return;
+	}
+	if (g_strcmp0 (method_name, "TriggerUpgrade") == 0) {
+		const gchar *tmp;
+		PkOfflineAction action;
+		g_variant_get (parameters, "(&s)", &tmp);
+		action = pk_offline_action_from_string (tmp);
+		if (action == PK_OFFLINE_ACTION_UNKNOWN) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_NOT_SUPPORTED,
+							       "action %s unsupported",
+							       tmp);
+			return;
+		}
+		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
+		helper->engine = g_object_ref (engine);
+		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE;
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
 		polkit_authority_check_authorization (engine->priv->authority, subject,
