@@ -2402,7 +2402,8 @@ pk_backend_transaction_run (PkBackendJob *job,
 	HifState *state_local;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret = TRUE;
-	int flags = HIF_TRANSACTION_FLAG_NONE;
+	/* allow downgrades for all transaction types */
+	int flags = HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE;
 
 	/* set state */
 	ret = hif_state_set_steps (state, error,
@@ -2419,9 +2420,6 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (pk_bitfield_contain (job_data->transaction_flags,
 				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL))
 		flags |= HIF_TRANSACTION_FLAG_ALLOW_REINSTALL;
-	if (pk_bitfield_contain (job_data->transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE))
-		flags |= HIF_TRANSACTION_FLAG_ALLOW_DOWNGRADE;
 
 	hif_transaction_set_flags (job_data->transaction, flags);
 
