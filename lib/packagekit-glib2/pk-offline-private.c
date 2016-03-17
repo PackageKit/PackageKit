@@ -240,6 +240,9 @@ pk_offline_auth_trigger_prepared_file (PkOfflineAction action, const gchar *prep
 	if (!pk_offline_auth_set_action (action, error))
 		return FALSE;
 
+	/* delete any existing triggers we might have */
+	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
+
 	/* create symlink for the systemd-system-update-generator */
 	rc = symlink (prepared_file, PK_OFFLINE_TRIGGER_FILENAME);
 	if (rc < 0) {
