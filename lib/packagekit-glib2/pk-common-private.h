@@ -30,6 +30,7 @@
 
 G_BEGIN_DECLS
 
+gchar		*pk_get_distro_name			(GError		**error);
 gchar		*pk_get_distro_version_id		(GError		**error);
 
 G_END_DECLS
