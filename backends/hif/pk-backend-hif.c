@@ -2927,13 +2927,11 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		if (relations[i] == HY_EQ &&
 		    !pk_bitfield_contain (job_data->transaction_flags,
 					  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
-			gchar *printable_tmp;
-			printable_tmp = pk_package_id_to_printable (package_ids[i]);
+			g_autofree gchar *printable_tmp = pk_package_id_to_printable (package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 						   "%s is already installed",
 						   printable_tmp);
-			g_free (printable_tmp);
 			return;
 		}
 
