@@ -16,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2016-04-20 09:18+0100\n"
+"PO-Revision-Date: 2016-02-15 09:29+0000\n"
+"Last-Translator: Milo Casagrande <milo@ubuntu.com>\n"
 "Language-Team: Italian (http://www.transifex.com/freedesktop/packagekit/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -571,7 +571,7 @@ msgstr "Installazione aggiornamenti, potrebbe richiedere del tempo…"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Installazione avanzamento di sistema; potrebbe richiedere del tempo…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1023,7 +1023,7 @@ msgstr "Recupero delle transazioni"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Recupero avanzamenti di sistema"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1134,7 +1134,7 @@ msgstr "I seguenti pacchetti devono essere portati a una vecchia versione:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "I seguenti pacchetti devono essere resi obsoleti:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered

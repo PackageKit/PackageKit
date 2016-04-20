@@ -24,6 +24,7 @@
 #endif
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <errno.h>
 #include <string.h>
 

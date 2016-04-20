@@ -1,3 +1,23 @@
+Version 1.1.1
+~~~~~~~~~~~~~~
+Released: 2016-04-20
+
+Backends:
+ - alpm: port to g_autoptr() (Christian Hesse)
+ - hif: Set ALLOW_DOWNGRADE flag for all transactions (Kalev Lember)
+ - zypp: Enforce formatting input as string (Neal Gompa)
+
+New Features:
+ - Add UpdateTriggered / UpgradeTriggered DBus properties (Kalev Lember)
+ - Add TriggerUpgrade DBus method handling (Kalev Lember)
+
+Bugfixes:
+ - Emit UpdatesChanges when installing packages (Richard Hughes)
+ - Fix GIR annotations for progress callbacks (Matthias Klumpp)
+ - Increase the number of packages that can be resolved (Richard Hughes)
+ - Point offline update/upgrade trigger to the prepared update (Kalev Lember)
+ - Unlink any existing offline update triggers before creating (Kalev Lember)
+
 Version 1.1.0
 ~~~~~~~~~~~~~~
 Released: 2016-02-12

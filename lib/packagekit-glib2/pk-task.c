@@ -2427,8 +2427,6 @@ pk_task_get_only_trusted (PkTask *task)
  *
  * If package downgrades shall be allowed during transaction.
  *
- * Return value: %TRUE if we allow downgrades
- *
  * Since: 1.0.2
  **/
 void
@@ -2462,8 +2460,6 @@ pk_task_get_allow_downgrade (PkTask *task)
  * @allow_reinstall: %TRUE to allow packages to be reinstalled.
  *
  * If package reinstallation shall be allowed during transaction.
- *
- * Return value: %TRUE if we allow reinstallations
  *
  * Since: 1.0.2
  **/

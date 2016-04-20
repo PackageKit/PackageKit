@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2016-04-20 09:18+0100\n"
+"PO-Revision-Date: 2016-02-14 10:36+0000\n"
+"Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/freedesktop/packagekit/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -565,7 +565,7 @@ msgstr "正在安裝更新；這會花上一段時間..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "正在安裝系統升級；這會花上一段時間...s"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1017,7 +1017,7 @@ msgstr "正在取得處理事項"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "正在取得系統升級"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1128,7 +1128,7 @@ msgstr "下列軟體包必須降級："
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "下列軟體包必須廢棄："
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
