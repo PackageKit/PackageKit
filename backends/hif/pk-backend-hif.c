@@ -2962,7 +2962,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 					 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_NOT_AUTHORIZED,
-						   "missing authorization to update or downgrage software");
+						   "missing authorization to update or downgrade software");
 			return;
 		}
 		hy_packagelist_free (pkglist);
