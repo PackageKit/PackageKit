@@ -417,7 +417,7 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 if test x$enable_hif = xyes; then
-	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.1.7)
+	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.2.3)
 fi
 
 have_python_backend="no"

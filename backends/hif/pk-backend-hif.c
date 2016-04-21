@@ -2594,7 +2594,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 					 hy_package_get_name (pkg),
 					 from_repo);
 				if (autoremove) {
-					hif_package_set_user_action (pkg, TRUE);
 					hy_goal_erase (job_data->goal, pkg);
 				}
 				break;
@@ -2616,7 +2615,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 		hif_db_ensure_origin_pkg (db, pkg);
 		g_debug ("removing %s as installed for repo",
 			 hy_package_get_name (pkg));
-		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_erase (job_data->goal, pkg);
 	}
 
@@ -2809,7 +2807,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		hif_package_set_user_action (pkg, TRUE);
 		hy_goal_erase (job_data->goal, pkg);
 	}
 
@@ -2997,7 +2994,6 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		hif_package_set_user_action (pkg, TRUE);
 		if (relations[i] == HY_LT) {
 			hy_goal_downgrade_to (job_data->goal, pkg);
 		} else {
@@ -3221,7 +3217,6 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		hif_package_set_user_action (pkg, TRUE);
 
 		/* allow some packages to have multiple versions installed */
 		if (hif_package_is_installonly (pkg))
