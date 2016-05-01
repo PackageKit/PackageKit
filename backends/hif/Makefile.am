@@ -1,6 +1,8 @@
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_hif.la
 libpk_backend_hif_la_SOURCES =						\
+	hif-backend-vendor.h						\
+	hif-backend-vendor-@HIF_VENDOR@.c				\
 	hif-backend.c							\
 	hif-backend.h							\
 	pk-backend-hif.c

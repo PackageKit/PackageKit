@@ -49,6 +49,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(HifContext, g_object_unref)
 #include <hawkey/util.h>
 #include <librepo/librepo.h>
 
+#include "hif-backend-vendor.h"
 #include "hif-backend.h"
 
 typedef struct {
@@ -1166,33 +1167,14 @@ pk_backend_get_updates (PkBackend *backend,
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
-/* Obviously hardcoded and Fedora specific.  Colin Walters thinks this
- * concept should be based on user's trust of a GPG key or something
- * more flexible.
+/* Obviously hardcoded based on the repository ID labels.
+ * Colin Walters thinks this concept should be based on
+ * user's trust of a GPG key or something more flexible.
  */
 static gboolean
 source_is_supported (HifSource *source)
 {
-	const char *id = hif_source_get_id (source);
-	guint i;
-	const gchar *valid[] = { "fedora",
-				 "fedora-debuginfo",
-				 "fedora-source",
-				 "rawhide",
-				 "rawhide-debuginfo",
-				 "rawhide-source",
-				 "updates",
-				 "updates-debuginfo",
-				 "updates-source",
-				 "updates-testing",
-				 "updates-testing-debuginfo",
-				 "updates-testing-source",
-				 NULL };
-	for (i = 0; valid[i] != NULL; i++) {
-		if (g_strcmp0 (id, valid[i]) == 0)
-			return TRUE;
-	}
-	return FALSE;
+	return hif_validate_supported_source (hif_source_get_id (source));
 }
 
 /**
