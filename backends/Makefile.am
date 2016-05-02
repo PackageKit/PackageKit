@@ -52,6 +52,10 @@ if BACKEND_TYPE_PORTS
 SUBDIRS += ports
 endif
 
+if BACKEND_TYPE_NIX
+SUBDIRS += nix
+endif
+
 clean-local :
 	rm -f *~
 
