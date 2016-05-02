@@ -383,6 +383,7 @@ AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
+AC_ARG_ENABLE(nix, AS_HELP_STRING([--enable-nix],[use the Nix backend]),enable_nix=$enableval,enable_nix=no)
 
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
@@ -398,6 +399,7 @@ AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_NIX, [test x$enable_nix = xyes])
 
 dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
@@ -514,6 +516,18 @@ if test x$enable_katja = xyes; then
 	AC_SUBST(KATJA_LIBS)
 fi
 
+if test x$enable_nix = xyes; then
+	dnl Use C++
+	AC_LANG([C++])
+
+	# Require C++11 support
+	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+
+	PKG_CHECK_MODULES(NIX, nix-expr >= 1.12)
+	PKG_CHECK_MODULES(NIX, nix-main >= 1.12)
+	PKG_CHECK_MODULES(NIX, nix-store >= 1.12)
+fi
+
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib -DPK_COMPILATION $GLIB_CFLAGS $GMODULE_CFLAGS $GIO_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $GMODULE_LIBS $GIO_LIBS")
@@ -555,6 +569,7 @@ backends/portage/Makefile
 backends/ports/Makefile
 backends/ports/ruby_packagekit/Makefile
 backends/zypp/Makefile
+backends/nix/Makefile
 data/Makefile
 data/org.freedesktop.PackageKit.conf
 data/tests/Makefile
@@ -616,4 +631,5 @@ echo "
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
         Zypp backend:              ${enable_zypp}
+        Nix backend:               ${enable_nix}
 "
