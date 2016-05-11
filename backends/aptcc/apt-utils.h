@@ -79,6 +79,12 @@ bool utilRestartRequired(const string &packageName);
 gchar* utilBuildPackageId(const pkgCache::VerIterator &ver);
 
 /**
+ * Build a unique repository origin, in the form of
+ * {distro}-{suite}-{component}
+ */
+string utilBuildPackageOriginId(pkgCache::VerFileIterator vf);
+
+/**
   * Return an utf8 string
   */
 const char *utf8(const char *str);

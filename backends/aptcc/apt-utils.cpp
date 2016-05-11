@@ -354,6 +354,30 @@ bool utilRestartRequired(const string &packageName)
     return false;
 }
 
+string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
+{
+    if (vf.File().Origin() == NULL)
+        return string("local");
+    if (vf.File().Archive() == NULL)
+        return string("local");
+    if (vf.File().Component() == NULL)
+        return string("invalid");
+
+    // Origin, e.g. "Debian" or "Google Inc."
+    auto origin = string(vf.File().Origin());
+    // The suite, e.g. "jessie" or "sid"
+    auto suite = string(vf.File().Archive());
+    // The component, e.g. "main" or "non-free"
+    auto component = string(vf.File().Component());
+
+    // sanitize origin string
+    std::transform(origin.begin(), origin.end(), origin.begin(), ::tolower);
+    std::replace(origin.begin(), origin.end(), ' ', '_');
+
+    string res = origin + "-" + suite + "-" + component;
+    return res;
+}
+
 gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
 {
     gchar *package_id;
@@ -362,15 +386,10 @@ gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
     string data = "";
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
     if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
-        if (vf.File().Archive() == NULL) {
-            // we don't know a repository, the package must be local
-            data = "local";
-        } else {
-            // when a package is installed, the data part of a package-id is "installed:<repo>"
-            data = "installed:" + string(vf.File().Archive());
-        }
-    } else if (vf.File().Archive() != NULL) {
-        data = vf.File().Archive();
+        // when a package is installed, the data part of a package-id is "installed:<repo-id>"
+        data = "installed:" + utilBuildPackageOriginId(vf);
+    } else {
+        data = utilBuildPackageOriginId(vf);
     }
 
     package_id = pk_package_id_build(ver.ParentPkg().Name(),
