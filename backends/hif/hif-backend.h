@@ -24,25 +24,24 @@
 
 #include <glib.h>
 
-#include <hawkey/advisory.h>
-#include <hawkey/package.h>
-#include <hawkey/packagelist.h>
+#include <libhif/hif-advisory.h>
+#include <libhif/hif-package.h>
 
 #include <pk-backend.h>
 
-PkInfoEnum	 hif_advisory_type_to_info_enum	(HyAdvisoryType		 type);
+PkInfoEnum	 hif_advisory_kind_to_info_enum	(HifAdvisoryKind	 kind);
 void		 hif_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
-						 HyPackage		 pkg);
+						 HifPackage		*pkg);
 void		 hif_emit_package_list		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
-						 HyPackageList		 pkglist);
+						 GPtrArray		*pkglist);
 void		 hif_emit_package_array		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
 						 GPtrArray		*array);
 void		 hif_emit_package_list_filter	(PkBackendJob		*job,
 						 PkBitfield		 filters,
-						 HyPackageList		 pkglist);
+						 GPtrArray		*pkglist);
 PkBitfield	 hif_get_filter_for_ids		(gchar			**package_ids);
 
 G_END_DECLS

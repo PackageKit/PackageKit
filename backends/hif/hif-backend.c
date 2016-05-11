@@ -25,9 +25,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include <libhif.h>
-
-#include <hawkey/errno.h>
+#include <libhif/libhif.h>
 
 #include "hif-backend.h"
 
@@ -35,17 +33,17 @@
  * hif_emit_package:
  */
 void
-hif_emit_package (PkBackendJob *job, PkInfoEnum info, HyPackage pkg)
+hif_emit_package (PkBackendJob *job, PkInfoEnum info, HifPackage *pkg)
 {
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = hif_package_get_info (pkg);
 	if (info == PK_INFO_ENUM_UNKNOWN)
-		info = hy_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+		info = hif_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 	pk_backend_job_package (job,
 				info,
-				hif_package_get_id (pkg),
-				hy_package_get_summary (pkg));
+				hif_package_get_package_id (pkg),
+				hif_package_get_summary (pkg));
 }
 
 /**
@@ -54,13 +52,15 @@ hif_emit_package (PkBackendJob *job, PkInfoEnum info, HyPackage pkg)
 void
 hif_emit_package_list (PkBackendJob *job,
 		       PkInfoEnum info,
-		       HyPackageList pkglist)
+		       GPtrArray *pkglist)
 {
 	guint i;
-	HyPackage pkg;
+	HifPackage *pkg;
 
-	FOR_PACKAGELIST(pkg, pkglist, i)
+	for (i = 0; i < pkglist->len; i++) {
+		pkg = g_ptr_array_index (pkglist, i);
 		hif_emit_package (job, info, pkg);
+	}
 }
 
 /**
@@ -72,7 +72,7 @@ hif_emit_package_array (PkBackendJob *job,
 			 GPtrArray *array)
 {
 	guint i;
-	HyPackage pkg;
+	HifPackage *pkg;
 
 	for (i = 0; i < array->len; i++) {
 		pkg = g_ptr_array_index (array, i);
@@ -86,10 +86,10 @@ hif_emit_package_array (PkBackendJob *job,
 void
 hif_emit_package_list_filter (PkBackendJob *job,
 			      PkBitfield filters,
-			      HyPackageList pkglist)
+			      GPtrArray *pkglist)
 {
-	HyPackage found;
-	HyPackage pkg;
+	HifPackage *found;
+	HifPackage *pkg;
 	guint i;
 	g_autoptr(GHashTable) hash_cost = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
@@ -97,8 +97,9 @@ hif_emit_package_list_filter (PkBackendJob *job,
 	/* if a package exists in multiple repos, show the one with the lowest
 	 * cost of downloading */
 	hash_cost = g_hash_table_new (g_str_hash, g_str_equal);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		if (hy_package_installed (pkg))
+	for (i = 0; i < pkglist->len; i++) {
+		pkg = g_ptr_array_index (pkglist, i);
+		if (hif_package_installed (pkg))
 			continue;
 
 		/* if the NEVRA does not already exist in the array, just add */
@@ -124,8 +125,9 @@ hif_emit_package_list_filter (PkBackendJob *job,
 
 	/* add all the installed packages to a hash */
 	hash_installed = g_hash_table_new (g_str_hash, g_str_equal);
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		if (!hy_package_installed (pkg))
+	for (i = 0; i < pkglist->len; i++) {
+		pkg = g_ptr_array_index (pkglist, i);
+		if (!hif_package_installed (pkg))
 			continue;
 		g_hash_table_insert (hash_installed,
 				     (gpointer) hif_package_get_nevra (pkg),
@@ -133,19 +135,21 @@ hif_emit_package_list_filter (PkBackendJob *job,
 	}
 
 	/* anything remote in metadata-only mode needs to be unavailable */
-	FOR_PACKAGELIST(pkg, pkglist, i) {
-		HifSource *src;
-		if (hy_package_installed (pkg))
+	for (i = 0; i < pkglist->len; i++) {
+		HifRepo *src;
+		pkg = g_ptr_array_index (pkglist, i);
+		if (hif_package_installed (pkg))
 			continue;
-		src = hif_package_get_source (pkg);
+		src = hif_package_get_repo (pkg);
 		if (src == NULL)
 			continue;
-		if (hif_source_get_enabled (src) != HIF_SOURCE_ENABLED_METADATA)
+		if (hif_repo_get_enabled (src) != HIF_REPO_ENABLED_METADATA)
 			continue;
 		hif_package_set_info (pkg, PK_INFO_ENUM_UNAVAILABLE);
 	}
 
-	FOR_PACKAGELIST(pkg, pkglist, i) {
+	for (i = 0; i < pkglist->len; i++) {
+		pkg = g_ptr_array_index (pkglist, i);
 
 		/* blocked */
 		if ((PkInfoEnum) hif_package_get_info (pkg) == PK_INFO_ENUM_BLOCKED)
@@ -171,7 +175,7 @@ hif_emit_package_list_filter (PkBackendJob *job,
 
 		/* if this package is available and the very same NEVRA is
 		 * installed, skip this package */
-		if (!hy_package_installed (pkg)) {
+		if (!hif_package_installed (pkg)) {
 			found = g_hash_table_lookup (hash_installed,
 						     hif_package_get_nevra (pkg));
 			if (found != NULL)
@@ -183,27 +187,27 @@ hif_emit_package_list_filter (PkBackendJob *job,
 }
 
 /**
- * hif_advisory_type_to_info_enum:
+ * hif_advisory_kind_to_info_enum:
  */
 PkInfoEnum
-hif_advisory_type_to_info_enum (HyAdvisoryType type)
+hif_advisory_kind_to_info_enum (HifAdvisoryKind kind)
 {
 	PkInfoEnum info_enum = PK_INFO_ENUM_UNKNOWN;
-	switch (type) {
-	case HY_ADVISORY_SECURITY:
+	switch (kind) {
+	case HIF_ADVISORY_KIND_SECURITY:
 		info_enum = PK_INFO_ENUM_SECURITY;
 		break;
-	case HY_ADVISORY_BUGFIX:
+	case HIF_ADVISORY_KIND_BUGFIX:
 		info_enum = PK_INFO_ENUM_BUGFIX;
 		break;
-	case HY_ADVISORY_UNKNOWN:
+	case HIF_ADVISORY_KIND_UNKNOWN:
 		info_enum = PK_INFO_ENUM_NORMAL;
 		break;
-	case HY_ADVISORY_ENHANCEMENT:
+	case HIF_ADVISORY_KIND_ENHANCEMENT:
 		info_enum = PK_INFO_ENUM_ENHANCEMENT;
 		break;
 	default:
-		g_warning ("Failed to find HyAdvisoryType enum %i", type);
+		g_warning ("Failed to find HifAdvisoryKind enum %i", kind);
 		break;
 	}
 	return info_enum;
