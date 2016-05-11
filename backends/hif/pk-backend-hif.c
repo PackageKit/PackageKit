@@ -30,12 +30,6 @@
 #include <libhif.h>
 #include <appstream-glib.h>
 
-/* allow compiling with older libhif versions */
-#if !HIF_CHECK_VERSION(0,2,0)
-#include <libhif-private.h>
-#define hif_error_set_from_hawkey(r,e)	hif_rc_to_gerror(r,e)
-#endif
-
 #ifndef glib_autoptr_cleanup_HifContext
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(HifContext, g_object_unref)
 #endif

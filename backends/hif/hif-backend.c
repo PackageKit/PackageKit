@@ -27,11 +27,6 @@
 
 #include <libhif.h>
 
-/* allow compiling with older libhif versions */
-#if !HIF_CHECK_VERSION(0,2,0)
-#include <libhif-private.h>
-#endif
-
 #include <hawkey/errno.h>
 
 #include "hif-backend.h"
