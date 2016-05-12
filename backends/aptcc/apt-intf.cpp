@@ -2582,7 +2582,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
         _exit(res);
     }
 
-    cout << "PARENT proccess running..." << endl;
+    cout << "PARENT process running..." << endl;
     // make it nonblocking, verry important otherwise
     // when the child finish we stay stuck.
     fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);

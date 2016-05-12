@@ -841,7 +841,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         if (g_strv_length(full_paths) > 1) {
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_NOT_SUPPORTED,
-                                      "The backend can only proccess one file at time.");
+                                      "The backend can only process one file at time.");
             return;
         }
 

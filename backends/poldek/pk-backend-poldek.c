@@ -710,7 +710,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 		if (result == 1) { /* remove is allowed */
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
 
-			/* we shouldn't cancel remove proccess */
+			/* we shouldn't cancel remove process */
 			poldek_backend_set_allow_cancel (job, FALSE, FALSE);
 
 			if (dpkgs) {
@@ -2189,7 +2189,7 @@ poldek_backend_log (void *data, int pri, char *message)
 	if (strstr (message, "Preparing...")) {
 		pberror->rpmstate |= PB_RPM_STATE_ENUM_INSTALLING;
 
-		/* we shouldn't cancel install / update proccess */
+		/* we shouldn't cancel install / update process */
 		poldek_backend_set_allow_cancel (job, FALSE, FALSE);
 	} else if (strstr (message, "Repackaging...")) {
 		pberror->rpmstate |= PB_RPM_STATE_ENUM_REPACKAGING;
