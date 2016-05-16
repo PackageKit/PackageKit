@@ -116,7 +116,8 @@ pk_readline_unbuffered (const gchar *prompt)
 			g_warning ("Got unexpected EOF.");
 			break;
 		} else {
-			g_string_append_len (str, (const gchar *) &c, 1);
+			gchar c_safe = (gchar) c;
+			g_string_append_len (str, (const gchar *) &c_safe, 1);
 		}
 	}
 	tcsetattr (fileno (tty), TCSAFLUSH, &ots);
