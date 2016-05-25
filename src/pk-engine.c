@@ -1733,7 +1733,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
 		polkit_authority_check_authorization (engine->priv->authority, subject,
-						      "org.freedesktop.packagekit.trigger-offline-update",
+						      "org.freedesktop.packagekit.trigger-offline-upgrade",
 						      NULL,
 						      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 						      NULL,

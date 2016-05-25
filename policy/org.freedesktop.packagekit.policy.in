@@ -286,6 +286,22 @@
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.trigger-offline-upgrade">
+    <!-- SECURITY:
+          - Normal users require admin authentication to upgrade the system
+            to a new distribution since this can make the system unbootable or
+            stop other applications from working.
+     -->
+    <_description>Trigger offline updates</_description>
+    <_message>Authentication is required to trigger offline updates</_message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.clear-offline-update">
     <!-- SECURITY:
           - Normal users are able to clear the updates message that is
