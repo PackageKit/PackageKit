@@ -2400,7 +2400,7 @@ pk_task_set_only_trusted (PkTask *task, gboolean only_trusted)
 {
 	g_return_if_fail (PK_IS_TASK (task));
 	task->priv->only_trusted = only_trusted;
-	g_object_notify (G_OBJECT (task), "only-download");
+	g_object_notify (G_OBJECT (task), "only-trusted");
 }
 
 /**
