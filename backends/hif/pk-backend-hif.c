@@ -2414,6 +2414,10 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (pk_bitfield_contain (job_data->transaction_flags,
 				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL))
 		flags |= HIF_TRANSACTION_FLAG_ALLOW_REINSTALL;
+	/* only download packages and run a transaction test */
+	if (pk_bitfield_contain (job_data->transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+		flags |= HIF_TRANSACTION_FLAG_TEST;
 
 	hif_transaction_set_flags (job_data->transaction, flags);
 
@@ -2436,18 +2440,6 @@ pk_backend_transaction_run (PkBackendJob *job,
 		ret = pk_backend_transaction_simulate (job,
 						       state_local,
 						       error);
-		if (!ret)
-			return FALSE;
-		return hif_state_done (state, error);
-	}
-
-	/* just download */
-	if (pk_bitfield_contain (job_data->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		state_local = hif_state_get_child (state);
-		ret = hif_transaction_download (job_data->transaction,
-						state_local,
-						error);
 		if (!ret)
 			return FALSE;
 		return hif_state_done (state, error);
