@@ -184,7 +184,6 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	const gchar **search;
 	PkBitfield filters;
-	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t^a&s)", &filters, &search);
 
@@ -194,15 +193,13 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant* params, gpointer p)
 
 		/* find a package with the given id or name */
 		if (pk_package_id_check (*search)) {
-			if (!pk_backend_resolve_package (job, *search, filters, &error))
-				break;
+			pk_backend_resolve_package (job, *search, filters, NULL);
 		} else {
-			if (!pk_backend_resolve_name (job, *search, filters, &error))
-				break;
+			pk_backend_resolve_name (job, *search, filters, NULL);
 		}
 	}
 
-	pk_alpm_finish (job, error);
+	pk_alpm_finish (job, NULL);
 }
 
 void
