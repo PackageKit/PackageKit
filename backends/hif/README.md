@@ -13,8 +13,8 @@ mostly been reused from the Zif project, hence all the Hif prefixes everywhere.
 
 These are some key file locations:
 
-* /var/cache/PackageKit/metadata/ : Used to store the repository metadata
-* /var/cache/PackageKit/metadata/*/packages : Used for cached packages
+* /var/cache/PackageKit/$releasever/metadata/ : Used to store the repository metadata
+* /var/cache/PackageKit/$releasever/metadata/*/packages : Used for cached packages
 * /etc/yum.repos.d/ : the hardcoded location for .repo files
 * /etc/pki/rpm-gpg : the hardcoded location for the GPG signatures
 * $libdir/packagekit-backend/ : location of PackageKit backend objects
