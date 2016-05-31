@@ -19,13 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
+
 #include <glib/gi18n.h>
 #include <unistd.h>
 #include <stdio.h>
 
 #include <pk-debug.h>
-
-#include "config.h"
 
 static gboolean _verbose = FALSE;
 static gboolean _console = FALSE;

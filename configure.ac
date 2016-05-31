@@ -86,9 +86,6 @@ GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
-# Avoid g_simple_async_result deprecation warnings
-AC_DEFINE(GLIB_VERSION_MIN_REQUIRED, GLIB_VERSION_2_44, [Ignore post 2.44 deprecations])
-
 # Python2/3 stuff
 AC_ARG_ENABLE(python3, AS_HELP_STRING([--enable-python3],[Use Python3 for PackageKit]), enable_python3=$enableval,
 							enable_python3=$default_strict)
@@ -185,6 +182,9 @@ PKG_CHECK_MODULES(GIO, \
  gio-unix-2.0 >= $GIO_REQUIRED)
 PKG_CHECK_MODULES(POLKIT, \
 		  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
+
+# Avoid g_simple_async_result deprecation warnings in glib 2.46+
+AC_DEFINE(GLIB_VERSION_MIN_REQUIRED, GLIB_VERSION_2_44, [minimum glib version])
 
 dnl ---------------------------------------------------------------------------
 dnl - FreeBSD compatibility
