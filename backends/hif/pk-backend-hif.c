@@ -636,6 +636,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 	case PK_ROLE_ENUM_SEARCH_FILE:
 	case PK_ROLE_ENUM_GET_DETAILS:
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		flags |= HIF_SACK_ADD_FLAG_UNAVAILABLE;
 		break;
 	default:
