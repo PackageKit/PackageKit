@@ -611,6 +611,11 @@ pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
 			continue;
 		}
 
+		if (g_strcmp0 (key, "Usage") == 0 && str != NULL) {
+			/* Ignore "Usage" key instead of crashing */
+			continue;
+		}
+
 		/* report errors from above */
 		g_set_error (&e, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
 			     "unrecognised directive '%s'", key);
