@@ -41,6 +41,7 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-offline-private.h>
 #include <packagekit-glib2/pk-package-id.h>
@@ -1039,9 +1040,19 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 	if (transaction->priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM &&
 	    pk_bitfield_contain (transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		if (!pk_offline_auth_set_prepared_upgrade_version (transaction->priv->cached_value, &error)) {
-			g_warning ("failed to write offline system upgrade version: %s",
+		const gchar *version = transaction->priv->cached_value;
+		g_autofree gchar *name = NULL;
+
+		name = pk_get_distro_name (&error);
+		if (name == NULL) {
+			g_warning ("failed to get distro name: %s",
 				   error->message);
+			return;
+		}
+		if (!pk_offline_auth_set_prepared_upgrade (name, version, &error)) {
+			g_warning ("failed to write offline system upgrade state: %s",
+				   error->message);
+			return;
 		}
 		return;
 	}

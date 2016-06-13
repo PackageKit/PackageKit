@@ -1024,6 +1024,28 @@ _g_variant_new_maybe_string (const gchar *value)
 	return g_variant_new_string (value);
 }
 
+static GVariant *
+pk_engine_offline_get_prepared_upgrade_property (GError **error)
+{
+	GVariantBuilder builder;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
+
+	if (!pk_offline_get_prepared_upgrade (&name, &version, error))
+		return NULL;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+	if (name != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "name",
+		                       g_variant_new ("s", name));
+	if (version != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "version",
+		                       g_variant_new ("s", version));
+	return g_variant_builder_end (&builder);
+}
+
 /**
  * pk_engine_offline_get_property:
  **/
@@ -1069,6 +1091,10 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 		g_autofree gchar *link = NULL;
 		link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
 		return g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0);
+	}
+
+	if (g_strcmp0 (property_name, "PreparedUpgrade") == 0) {
+		return pk_engine_offline_get_prepared_upgrade_property (error);
 	}
 
 	/* return an error */
@@ -1566,8 +1592,11 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 {
 	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
 	PkOfflineAction action;
+	GVariant *prepared_upgrade;
 	gboolean ret;
 	g_autofree gchar *link = NULL;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(PolkitAuthorizationResult) result = NULL;
@@ -1632,6 +1661,11 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 	pk_engine_emit_offline_property_changed (helper->engine,
 						 "UpgradeTriggered",
 						 g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0));
+
+	prepared_upgrade = pk_engine_offline_get_prepared_upgrade_property (NULL);
+	pk_engine_emit_offline_property_changed (helper->engine,
+						 "PreparedUpgrade",
+						 prepared_upgrade);
 
 	g_dbus_method_invocation_return_value (helper->invocation, NULL);
 	pk_engine_offline_helper_free (helper);

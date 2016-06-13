@@ -555,6 +555,18 @@
     </property>
 
     <!--*********************************************************************-->
+    <property name="PreparedUpgrade" type="a{sv}" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Details about a prepared system upgrade. Currently recognized keys
+            are <doc:tt>"name"</doc:tt> and <doc:tt>"version"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*********************************************************************-->
     <property name="TriggerAction" type="s" access="read">
       <doc:doc>
         <doc:description>

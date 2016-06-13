@@ -70,8 +70,13 @@ gboolean		 pk_offline_auth_trigger_upgrade
 							 GError			**error);
 gboolean		 pk_offline_auth_set_prepared_ids(gchar			**package_ids,
 							 GError			**error);
-gboolean		 pk_offline_auth_set_prepared_upgrade_version
-							(const gchar		 *release_ver,
+gboolean		 pk_offline_auth_set_prepared_upgrade
+							(const gchar		 *name,
+							 const gchar		 *release_ver,
+							 GError			**error);
+gboolean		 pk_offline_get_prepared_upgrade
+							(gchar			**name,
+							 gchar			**release_ver,
 							 GError			**error);
 gboolean		 pk_offline_auth_invalidate	(GError			**error);
 gboolean		 pk_offline_auth_set_results	(PkResults		*results,

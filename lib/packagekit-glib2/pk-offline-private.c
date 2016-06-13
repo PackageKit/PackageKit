@@ -319,26 +319,90 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 }
 
 /**
- * pk_offline_auth_set_prepared_upgrade_version:
+ * pk_offline_auth_set_prepared_upgrade:
+ * @name: Distro name to upgrade to
  * @release_ver: Distro version to upgrade to
  * @error: A #GError or %NULL
  *
- * Saves the distro version to upgrade to a prepared transaction file.
+ * Saves the distro name and version to upgrade to a prepared transaction file.
  *
  * Return value: %TRUE for success, else %FALSE and @error set
  *
- * Since: 1.0.12
+ * Since: 1.1.2
  **/
 gboolean
-pk_offline_auth_set_prepared_upgrade_version (const gchar *release_ver, GError **error)
+pk_offline_auth_set_prepared_upgrade (const gchar *name, const gchar *release_ver, GError **error)
 {
 	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	keyfile = g_key_file_new ();
+	g_key_file_set_string (keyfile, "update", "name", name);
 	g_key_file_set_string (keyfile, "update", "releasever", release_ver);
 	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error);
+}
+
+/**
+ * pk_offline_get_prepared_upgrade:
+ * @name: (out): Return location for the distro name
+ * @release_ver: (out): Return location for the distro version
+ * @error: A #GError or %NULL
+ *
+ * Gets details about a prepared system upgrade transaction.
+ *
+ * Return value: %TRUE for success, else %FALSE and @error set
+ *
+ * Since: 1.1.2
+ **/
+gboolean
+pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **error)
+{
+	g_autoptr(GError) error_local = NULL;
+	g_autofree gchar *data = NULL;
+	g_autoptr(GKeyFile) keyfile = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* does exist? */
+	if (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_NO_DATA,
+			     "No offline system upgrades have been prepared");
+		return FALSE;
+	}
+
+	/* read data file */
+	if (!g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+				  &data, NULL, &error_local)) {
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_FAILED,
+			     "Failed to read %s: %s",
+			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			     error_local->message);
+		return FALSE;
+	}
+
+	keyfile = g_key_file_new ();
+	if (!g_key_file_load_from_data (keyfile, data, -1, G_KEY_FILE_NONE, error)) {
+		return FALSE;
+	}
+
+	if (name != NULL) {
+		*name = g_key_file_get_string (keyfile, "update", "name", error);
+		if (*name == NULL)
+			return FALSE;
+	}
+
+	if (release_ver != NULL) {
+		*release_ver = g_key_file_get_string (keyfile, "update", "releasever", error);
+		if (*release_ver == NULL)
+			return FALSE;
+	}
+
+	return TRUE;
 }
 
 /**

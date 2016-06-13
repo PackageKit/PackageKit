@@ -385,6 +385,29 @@ pk_offline_get_prepared_ids (GError **error)
 }
 
 /**
+ * pk_offline_get_prepared_upgrade_name:
+ * @error: A #GError or %NULL
+ *
+ * Gets the name of the prepared system upgrade in the prepared transaction.
+ *
+ * Return value: the name, or %NULL if unset, free with g_free()
+ *
+ * Since: 1.1.2
+ **/
+gchar *
+pk_offline_get_prepared_upgrade_name (GError **error)
+{
+	gchar *name = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	if (!pk_offline_get_prepared_upgrade (&name, NULL, error))
+		return NULL;
+
+	return name;
+}
+
+/**
  * pk_offline_get_prepared_upgrade_version:
  * @error: A #GError or %NULL
  *
@@ -397,39 +420,14 @@ pk_offline_get_prepared_ids (GError **error)
 gchar *
 pk_offline_get_prepared_upgrade_version (GError **error)
 {
-	g_autoptr(GError) error_local = NULL;
-	g_autofree gchar *data = NULL;
-	g_autoptr(GKeyFile) keyfile = NULL;
+	gchar *version = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-	/* does exist? */
-	if (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
-		g_set_error (error,
-			     PK_OFFLINE_ERROR,
-			     PK_OFFLINE_ERROR_NO_DATA,
-			     "No offline system upgrades have been prepared");
+	if (!pk_offline_get_prepared_upgrade (NULL, &version, error))
 		return NULL;
-	}
 
-	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
-				  &data, NULL, &error_local)) {
-		g_set_error (error,
-			     PK_OFFLINE_ERROR,
-			     PK_OFFLINE_ERROR_FAILED,
-			     "Failed to read %s: %s",
-			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
-			     error_local->message);
-		return NULL;
-	}
-
-	keyfile = g_key_file_new ();
-	if (!g_key_file_load_from_data (keyfile, data, -1, G_KEY_FILE_NONE, error)) {
-		return NULL;
-	}
-
-	return g_key_file_get_string (keyfile, "update", "releasever", error);
+	return version;
 }
 
 /**
