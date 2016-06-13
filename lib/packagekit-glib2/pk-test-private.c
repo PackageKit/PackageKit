@@ -804,6 +804,111 @@ pk_test_offline_func (void)
 	g_free (tmp);
 }
 
+static void
+pk_test_offline_upgrade_func (void)
+{
+	gboolean ret;
+	gchar *tmp;
+	PkOfflineAction action;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GFileMonitor) monitor = NULL;
+
+	/* cleanup */
+	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
+		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
+						 NULL, NULL, NULL, &error);
+		g_assert_no_error (error);
+		g_assert (ret);
+	}
+	g_assert_cmpint (g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755), ==, 0);
+
+	/* try to trigger without the fake upgrade */
+	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_clear_error (&error);
+	g_assert (!ret);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* get a non-existent upgrade */
+	ret = pk_offline_get_prepared_upgrade (&name, &version, &error);
+	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
+	g_assert (!ret);
+	g_assert (name == NULL);
+	g_assert (version == NULL);
+	g_clear_error (&error);
+
+	/* set up a fake upgrade */
+	ret = pk_offline_auth_set_prepared_upgrade ("Fedora", "25", &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	ret = pk_offline_get_prepared_upgrade (&name, &version, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (name, ==, "Fedora");
+	g_assert_cmpstr (version, ==, "25");
+	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, "[update]\n"
+	                          "name=Fedora\n"
+	                          "releasever=25\n");
+	g_free (tmp);
+
+	/* check monitor */
+	monitor = pk_offline_get_prepared_upgrade_monitor (NULL, &error);
+	g_assert_no_error (error);
+	g_assert (monitor != NULL);
+
+	/* trigger with a fake upgrade */
+	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* test actions */
+	action = pk_offline_get_action (&error);
+	g_assert_no_error (error);
+	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
+	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert_cmpstr (tmp, ==, "reboot");
+	g_free (tmp);
+
+	/* cancel the trigger */
+	ret = pk_offline_auth_cancel (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+
+	/* invalidate the upgrade */
+	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	ret = pk_offline_auth_invalidate (&error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -826,6 +931,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
 	g_test_add_func ("/packagekit-glib2/progress-bar", pk_test_progress_bar);
 	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
+	g_test_add_func ("/packagekit-glib2/offline-upgrade", pk_test_offline_upgrade_func);
 
 	return g_test_run ();
 }
