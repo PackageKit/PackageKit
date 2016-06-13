@@ -1919,8 +1919,10 @@ pk_engine_init (PkEngine *engine)
 
 	/* clear the download cache */
 	filename = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-	g_debug ("clearing download cache at %s", filename);
-	pk_directory_remove_contents (filename);
+	if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
+		g_debug ("clearing download cache at %s", filename);
+		pk_directory_remove_contents (filename);
+	}
 
 	/* proxy the network state */
 	engine->priv->network_monitor = g_network_monitor_get_default ();
