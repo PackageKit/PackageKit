@@ -862,6 +862,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 			     "Can't open transaction database: %s",
 			     sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
+		tdb->priv->db = NULL;
 		return FALSE;
 	}
 
