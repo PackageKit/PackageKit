@@ -14,7 +14,7 @@
 # To use the completion:
 #   1. Copy this file somewhere (e.g. ~/.pk-completion.sh).
 #   2. Add the following line to your .bashrc:
-#        source ~/.git-completion.sh
+#        source ~/.pk-completion.sh
 
 
 __pkcon_commandlist="
