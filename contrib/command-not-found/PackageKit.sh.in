@@ -39,6 +39,6 @@ command_not_found_handle () {
 
 if [[ -n "${ZSH_VERSION-}" ]]; then
 	command_not_found_handler () {
-		command_not_found_handle "$@" && return 127
+		command_not_found_handle "$@"
 	}
 fi
