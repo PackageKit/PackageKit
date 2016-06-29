@@ -423,6 +423,14 @@ AC_SUBST(DBUS_SERVICES_DIR)
 
 if test x$enable_hif = xyes; then
 	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.2.3)
+	AC_ARG_WITH(hif-vendor,
+			[AS_HELP_STRING([--with-hif-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
+	if test "$with_hif_vendor" = "fedora" -o "$with_hif_vendor" = "mageia"; then
+		with_hif_vendor="$with_hif_vendor"
+	else
+		with_hif_vendor="fedora"
+	fi
+	AC_SUBST(HIF_VENDOR, [$with_hif_vendor])
 fi
 
 have_python_backend="no"
@@ -623,6 +631,7 @@ echo "
         dummy backend:             ${enable_dummy}
         Entropy backend:           ${enable_entropy}
         Hif backend:               ${enable_hif}
+        Hif backend vendor:        ${with_hif_vendor}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
