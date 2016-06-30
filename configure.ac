@@ -424,8 +424,8 @@ AC_SUBST(DBUS_SERVICES_DIR)
 if test x$enable_hif = xyes; then
 	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.2.3)
 	AC_ARG_WITH(hif-vendor,
-			[AS_HELP_STRING([--with-hif-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
-	if test "$with_hif_vendor" = "fedora" -o "$with_hif_vendor" = "mageia"; then
+			[AS_HELP_STRING([--with-hif-vendor=<vendor>],[select a vendor configuration (fedora, mageia, openmandriva; default is fedora)])])
+	if test "$with_hif_vendor" = "fedora" -o "$with_hif_vendor" = "mageia" -o "$with_hif_vendor" = "openmandriva"; then
 		with_hif_vendor="$with_hif_vendor"
 	else
 		with_hif_vendor="fedora"
