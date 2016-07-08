@@ -162,7 +162,9 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
  */
 gchar** pk_backend_get_mime_types(PkBackend *backend)
 {
-    const gchar *mime_types[] = { "application/x-deb", NULL };
+    const gchar *mime_types[] = { "application/vnd.debian.binary-package",
+                                  "application/x-deb",
+                                  NULL };
     return g_strdupv ((gchar **) mime_types);
 }
 
