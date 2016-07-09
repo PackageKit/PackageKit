@@ -24,7 +24,7 @@ gchar *katja_pkgtools_get_mirror(KatjaPkgtools *pkgtools) {
  * katja_pkgtools_get_order:
  **/
 gushort katja_pkgtools_get_order(KatjaPkgtools *pkgtools) {
-	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), 0);
 
 	return KATJA_PKGTOOLS_GET_IFACE(pkgtools)->get_order(pkgtools);
 }
@@ -62,10 +62,10 @@ void katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, c
  * katja_pkgtools_download:
  **/
 gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name) {
-	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
-	g_return_if_fail(KATJA_PKGTOOLS_GET_IFACE(pkgtools)->download != NULL);
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), FALSE);
+	g_return_val_if_fail(KATJA_PKGTOOLS_GET_IFACE(pkgtools)->download != NULL, FALSE);
 
-	KATJA_PKGTOOLS_GET_IFACE(pkgtools)->download(pkgtools, job, dest_dir_name, pkg_name);
+	return KATJA_PKGTOOLS_GET_IFACE(pkgtools)->download(pkgtools, job, dest_dir_name, pkg_name);
 }
 
 /**
