@@ -82,7 +82,7 @@ typedef struct {
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("Hif");
+	return "Hif";
 }
 
 /**
@@ -91,7 +91,7 @@ pk_backend_get_description (PkBackend *backend)
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-	return g_strdup ("Richard Hughes <richard@hughsie.com>");
+	return "Richard Hughes <richard@hughsie.com>";
 }
 
 /**
