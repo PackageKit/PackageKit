@@ -3277,7 +3277,8 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	/* set up the sack for packages that should only ever be installed, never updated */
 	hy_sack_set_installonly (sack, hif_context_get_installonly_pkgs (job_data->context));
-	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context));
+	/* set the installonly limit one higher than usual to avoid removing any kernels during system upgrades */
+	hy_sack_set_installonly_limit (sack, hif_context_get_installonly_limit (job_data->context) + 1);
 
 	/* done */
 	if (!hif_state_done (job_data->state, &error)) {
