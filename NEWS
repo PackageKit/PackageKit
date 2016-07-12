@@ -1,3 +1,35 @@
+Version 1.1.2
+~~~~~~~~~~~~~~
+Released: 2016-07-12
+
+Notes:
+ - This release adds a new backend for the Nix package manager (Matthew Bauer)
+
+New Features:
+ - Add a test for offline distro upgrades (Kalev Lember)
+ - Add PreparedUpgrade DBus property (Kalev Lember)
+
+Bugfixes:
+ - Make pk_console_get_prompt() big endian safe (Richard Hughes)
+ - Require admin authorisation to trigger a distro upgrade (Richard Hughes)
+ - build: Avoid g_simple_async_result deprecation warnings (Kalev Lember)
+ - task: Fix only-trusted property notifications (Kalev Lember)
+ - task: Honour the only_trusted property when setting up transactions (Kalev Lember)
+
+Backends:
+ - alpm: Don't discard a resolve call just because one package is missing (Aleix Pol)
+ - alpm: Ignore the "Usage" key instead of crashing (Dustin Falgout)
+ - aptcc: Fix mimetype list (Harald Sitter)
+ - aptcc: Return the correct and complete result for package origins (Matthias Klumpp)
+ - hif: Add support for build-time vendor configurations (Neal Gompa)
+ - hif: Don't leak a dup'd string in get_author/get_description (Kalev Lember)
+ - hif: Don't set user action when installing / updating packages (Kalev Lember)
+ - hif: Drop ifdefs for older hawkey versions (Kalev Lember)
+ - hif: Match unavailable packages for the what-provides query (Kalev Lember)
+ - hif: Set the installonly limit one higher than usual for system upgrades (Kalev Lember)
+ - hif: Use new libhif API to run a test transaction for offline updates (Kalev Lember)
+ - katja: Fix return type warnings (Eugen Wissner)
+
 Version 1.1.1
 ~~~~~~~~~~~~~~
 Released: 2016-04-20
