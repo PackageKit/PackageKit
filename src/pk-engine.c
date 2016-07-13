@@ -487,24 +487,31 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 			      const gchar *proxy_ftp,
 			      const gchar *proxy_socks,
 			      const gchar *no_proxy,
-			      const gchar *pac)
+			      const gchar *pac,
+			      GError **error)
 {
-	gboolean ret = FALSE;
+	gboolean ret;
 	guint uid;
 	g_autofree gchar *session = NULL;
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		g_warning ("failed to get the uid");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to get the uid");
+		return FALSE;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		g_warning ("failed to get the session");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to get the session");
+		return FALSE;
 	}
 
 	/* save to database */
@@ -517,11 +524,13 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 					   no_proxy,
 					   pac);
 	if (!ret) {
-		g_warning ("failed to save the proxy in the database");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to save the proxy in the database");
+		return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 typedef struct {
@@ -544,7 +553,7 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 							 GAsyncResult *res,
 							 PkEngineDbusState *state)
 {
-	GError *error;
+	GError *error = NULL;
 	gboolean ret;
 	PkEnginePrivate *priv = state->engine->priv;
 	g_autoptr(GError) error_local = NULL;
@@ -578,10 +587,14 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 					    state->value3,
 					    state->value4,
 					    state->value5,
-					    state->value6);
+					    state->value6,
+					    &error_local);
 	if (!ret) {
-		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-					     "setting the proxy failed");
+		g_set_error (&error,
+			     PK_ENGINE_ERROR,
+			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+			     "setting the proxy failed: %s",
+			     error_local->message);
 		g_dbus_method_invocation_return_gerror (state->context, error);
 		goto out;
 	}
