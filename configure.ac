@@ -506,6 +506,12 @@ if test x$enable_zypp = xyes; then
 fi
 
 if test x$enable_katja = xyes; then
+	dnl Use C++
+	AC_LANG([C++])
+
+	# Require C++14 support
+	AX_CXX_COMPILE_STDCXX([14], [ext], [mandatory])
+
 	AC_CHECK_LIB(curl, curl_version, [
 	    CURL_CFLAGS="`curl-config --cflags`"
 	    CURL_LIBS="`curl-config --libs`"
