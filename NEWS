@@ -1,3 +1,15 @@
+Version 1.1.3
+~~~~~~~~~~~~~~
+Released: 2016-07-14
+
+Bugfixes:
+ - backend job: Avoid emitting duplicates with parallel download (Kalev Lember)
+ - Revert a patch that caused PackageKit to always request auth when installing packages (Kalev Lember)
+ - Update the GPLv2 text in COPYING (Kalev Lember)
+
+Backends:
+ - zypp: PK_FILTER_ENUM_ARCH is supposed to filter on primary arch (Dominique Leuenberger)
+
 Version 1.1.2
 ~~~~~~~~~~~~~~
 Released: 2016-07-12
