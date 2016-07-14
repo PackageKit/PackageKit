@@ -1073,11 +1073,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted) {
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
-	}
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	if (task->priv->allow_reinstall) {
 		pk_bitfield_add (state->transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
@@ -1135,10 +1131,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -1198,10 +1191,7 @@ pk_task_upgrade_system_async (PkTask *task,
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->distro_id = g_strdup (distro_id);
 	state->upgrade_kind = upgrade_kind;
 	state->progress_callback = progress_callback;
@@ -1312,10 +1302,10 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = 0;
 	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+		state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	else
+		state->transaction_flags = 0;
 	state->files = g_strdupv (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -1370,10 +1360,8 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	
 	if (state->task->priv->allow_downgrade)
 		pk_bitfield_add (state->transaction_flags,
 				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
@@ -1430,10 +1418,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
@@ -1484,10 +1469,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
@@ -1538,10 +1520,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
@@ -1592,10 +1571,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
@@ -1645,10 +1621,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
@@ -1697,10 +1670,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
@@ -1750,10 +1720,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
 	state->directory = g_strdup (directory);
 	state->request = pk_task_generate_request_id ();
@@ -1803,10 +1770,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
@@ -1857,10 +1821,7 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->package_ids = g_strdupv (package_ids);
 	state->recursive = recursive;
@@ -1911,10 +1872,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
@@ -1965,10 +1923,7 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->package_ids = g_strdupv (package_ids);
 	state->recursive = recursive;
@@ -2021,10 +1976,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
@@ -2074,10 +2026,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
@@ -2125,10 +2074,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->request = pk_task_generate_request_id ();
 
 	g_debug ("adding state %p", state);
@@ -2176,10 +2122,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->force = force;
 	state->request = pk_task_generate_request_id ();
 
@@ -2228,10 +2171,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
@@ -2281,10 +2221,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->repo_id = g_strdup (repo_id);
 	state->enabled = enabled;
 	state->request = pk_task_generate_request_id ();
@@ -2334,10 +2271,7 @@ pk_task_repair_system_async (PkTask *task,
 	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->transaction_flags = 0;
-	if (task->priv->only_trusted)
-		pk_bitfield_add (state->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
