@@ -103,7 +103,7 @@ struct PkBackendJobPrivate
 	gboolean		 background;
 	gboolean		 interactive;
 	gboolean		 locked;
-	PkPackage		*last_package;
+	GHashTable		*emitted;
 	PkErrorEnum		 last_error_code;
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
@@ -1068,6 +1068,7 @@ pk_backend_job_package (PkBackendJob *job,
 			const gchar *package_id,
 			const gchar *summary)
 {
+	PkPackage *emitted_item;
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkPackage) item = NULL;
@@ -1086,16 +1087,15 @@ pk_backend_job_package (PkBackendJob *job,
 	pk_package_set_info (item, info);
 	pk_package_set_summary (item, summary);
 
-	/* is it the same? */
-	ret = (job->priv->last_package != NULL &&
-	       pk_package_equal (job->priv->last_package, item));
-	if (ret)
+	/* already emitted? */
+	emitted_item = g_hash_table_lookup (job->priv->emitted, pk_package_get_id (item));
+	if (emitted_item != NULL && pk_package_equal (emitted_item, item))
 		return;
 
-	/* update the 'last' package */
-	if (job->priv->last_package != NULL)
-		g_object_unref (job->priv->last_package);
-	job->priv->last_package = g_object_ref (item);
+	/* update the emitted package table */
+	g_hash_table_insert (job->priv->emitted,
+	                     g_strdup (pk_package_get_id (item)),
+	                     g_object_ref (item));
 
 	/* have we already set an error? */
 	if (job->priv->set_error) {
@@ -1827,10 +1827,7 @@ pk_backend_job_finalize (GObject *object)
 	g_free (job->priv->cmdline);
 	g_free (job->priv->locale);
 	g_free (job->priv->frontend_socket);
-	if (job->priv->last_package != NULL) {
-		g_object_unref (job->priv->last_package);
-		job->priv->last_package = NULL;
-	}
+	g_hash_table_unref (job->priv->emitted);
 	if (job->priv->params != NULL)
 		g_variant_unref (job->priv->params);
 	g_timer_destroy (job->priv->timer);
@@ -1867,6 +1864,8 @@ pk_backend_job_init (PkBackendJob *job)
 	job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	job->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	job->priv->status = PK_STATUS_ENUM_UNKNOWN;
+	job->priv->emitted = g_hash_table_new_full (g_str_hash, g_str_equal,
+	                                            g_free, (GDestroyNotify) g_object_unref);
 }
 
 /**
