@@ -1243,7 +1243,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Files") == 0) {
-		gchar **files;
+		g_autofree gchar **files = NULL;
 		g_autoptr(PkFiles) item = NULL;
 		g_variant_get (parameters,
 			       "(&s^a&s)",
