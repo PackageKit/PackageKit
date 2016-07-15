@@ -556,6 +556,7 @@
 
     <!--*********************************************************************-->
     <property name="PreparedUpgrade" type="a{sv}" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"/>
       <doc:doc>
         <doc:description>
           <doc:para>
