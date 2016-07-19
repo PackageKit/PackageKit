@@ -30,15 +30,6 @@ gushort katja_pkgtools_get_order(KatjaPkgtools *pkgtools) {
 }
 
 /**
- * katja_pkgtools_get_blacklist:
- **/
-GRegex *katja_pkgtools_get_blacklist(KatjaPkgtools *pkgtools) {
-	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
-
-	return KATJA_PKGTOOLS_GET_IFACE(pkgtools)->get_blacklist(pkgtools);
-}
-
-/**
  * katja_pkgtools_collect_cache_info:
  **/
 GSList *katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl) {
@@ -85,7 +76,6 @@ static void katja_pkgtools_default_init(KatjaPkgtoolsInterface *iface) {
 	iface->get_name = NULL;
 	iface->get_mirror = NULL;
 	iface->get_order = NULL;
-	iface->get_blacklist = NULL;
 	iface->collect_cache_info = NULL;
 	iface->generate_cache = NULL;
 	iface->download = NULL;

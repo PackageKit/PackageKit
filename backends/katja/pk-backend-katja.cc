@@ -7,13 +7,17 @@
 #include <curl/curl.h>
 #include <pk-backend.h>
 #include "katja-slackpkg.h"
-#include "katja-dl.h"
+#include "pkgtools.hpp"
+#include "slackpkg.hpp"
+
+using namespace Katja;
 
 static GSList *repos = NULL;
+static std::map<std::string, Pkgtools*> repositories;
 
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
-	gchar *path, *blacklist, **groups;
+	gchar *path, **groups;
 	gint ret;
 	gushort i;
 	gsize groups_len;
@@ -76,27 +80,25 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 	/* Initialize an object for each well-formed repository */
 	groups = g_key_file_get_groups(katja_conf, &groups_len);
 	for (i = 0; i < groups_len; i++) {
-		blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
-		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
+		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL))
+		{
+			auto mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+			auto priority = g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL);
+			auto repository = new Slackpkg(groups[i], mirror, i + 1, priority);
+
+			repositories[repository->getName()] = repository;
+
+
 			repo = katja_slackpkg_new(groups[i],
-					 g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
+					 g_key_file_get_string(katja_conf, groups[i], mirror, NULL),
 					  i + 1,
-					  blacklist,
-					  g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
-		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
-			repo = katja_dl_new(groups[i],
-					g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
-					i + 1,
-					blacklist,
-					g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
+					  priority);
 		}
 
 		if (repo)
 			repos = g_slist_append(repos, repo);
 		else
 			g_free(groups[i]);
-
-		g_free(blacklist);
 	}
 	g_free(groups);
 
@@ -106,6 +108,7 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 void pk_backend_destroy(PkBackend *backend) {
 	g_debug("backend: destroy");
 
+	repositories.clear();
 	g_slist_free_full(repos, g_object_unref);
 	curl_global_cleanup();
 }
@@ -420,12 +423,14 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 							"WHERE name LIKE @name AND ver LIKE @ver AND arch LIKE @arch AND repo LIKE @repo",
 							-1,
 							&stmt,
-							NULL) != SQLITE_OK)) {
+							NULL) != SQLITE_OK))
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(job_data->db));
 		goto out;
 	}
 
-	for (i = 0; pkg_ids[i]; i++) {
+	for (i = 0; pkg_ids[i]; i++)
+	{
 		pkg_tokens = pk_package_id_split(pkg_ids[i]);
 		sqlite3_bind_text(stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(stmt, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);

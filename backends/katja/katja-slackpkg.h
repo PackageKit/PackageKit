@@ -29,7 +29,7 @@ GType katja_slackpkg_get_type(void);
 extern GHashTable *katja_slackpkg_cat_map;
 
 /* Constructors */
-KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar **priority);
+KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar **priority);
 
 /* Implementations */
 GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl);

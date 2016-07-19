@@ -8,15 +8,11 @@ plugin_LTLIBRARIES = libpk_backend_katja.la
 libpk_backend_katja_la_SOURCES = \
 	pk-backend-katja.cc \
 	katja-pkgtools.c \
-	katja-pkgtools.h \
 	katja-binary.c \
-	katja-binary.h \
 	katja-slackpkg.c \
-	katja-slackpkg.h \
-	katja-dl.c \
-	katja-dl.h \
 	katja-utils.c \
-	katja-utils.h
+	binary.cc \
+	slackpkg.cc
 libpk_backend_katja_la_LIBADD = -lbz2 $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
 libpk_backend_katja_la_LDFLAGS = -module -avoid-version
 libpk_backend_katja_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS) $(WARNINGFLAGS_C)
