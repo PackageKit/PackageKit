@@ -129,8 +129,10 @@ bool AptIntf::init(gchar **localDebs)
 
     // Create the AptCacheFile class to search for packages
     m_cache = new AptCacheFile(m_job);
-    for (int i = 0; i < g_strv_length(localDebs); ++i) {
-        markFileForInstall(localDebs[i]);
+    if (localDebs) {
+        for (int i = 0; i < g_strv_length(localDebs); ++i) {
+            markFileForInstall(localDebs[i]);
+        }
     }
 
     int timeout = 10;
