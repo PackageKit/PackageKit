@@ -2403,6 +2403,12 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		MIL << package_ids[i] << " " << solvable << endl;
+		if (!solvable) {
+			// Previously stored package_id no longer matches any solvable.
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						     "couldn't find package");
+			return;
+		}
 
 		Capabilities obs = solvable.obsoletes ();
 
