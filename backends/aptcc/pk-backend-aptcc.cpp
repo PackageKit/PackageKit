@@ -346,28 +346,32 @@ void pk_backend_get_files(PkBackend *backend, PkBackendJob *job, gchar **package
 
 static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **package_ids;
+    gchar **package_ids = nullptr;
+    gchar **files = nullptr;
     PkRoleEnum role;
     role = pk_backend_job_get_role(job);
 
-    g_variant_get(params, "(^a&s)",
-                  &package_ids);
+    if (role == PK_ROLE_ENUM_GET_DETAILS_LOCAL) {
+        g_variant_get(params, "(^a&s)",
+                      &files);
+    } else {
+        g_variant_get(params, "(^a&s)",
+                      &package_ids);
+    }
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
-    if (!apt->init()) {
+    if (!apt->init(files)) {
         g_debug ("Failed to create apt cache");
         return;
     }
 
-    if (package_ids == NULL) {
-        pk_backend_job_error_code(job,
-                                  PK_ERROR_ENUM_PACKAGE_ID_INVALID,
-                                  "Invalid package id");
-        return;
-    }
-
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    PkgList pkgs = apt->resolvePackageIds(package_ids);
+    PkgList pkgs;
+    if (role == PK_ROLE_ENUM_GET_DETAILS_LOCAL) {
+        pkgs = apt->resolveLocalFiles(files);
+    } else {
+        pkgs = apt->resolvePackageIds(package_ids);
+    }
 
     if (role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
         apt->emitUpdateDetails(pkgs);
@@ -388,6 +392,11 @@ void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar *
  * pk_backend_get_details:
  */
 void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+{
+    pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
+}
+
+void pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job, gchar **files)
 {
     pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
 }
@@ -1132,6 +1141,7 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_CANCEL,
                 PK_ROLE_ENUM_DEPENDS_ON,
                 PK_ROLE_ENUM_GET_DETAILS,
+                PK_ROLE_ENUM_GET_DETAILS_LOCAL,
                 PK_ROLE_ENUM_GET_FILES,
                 PK_ROLE_ENUM_REQUIRED_BY,
                 PK_ROLE_ENUM_GET_PACKAGES,
