@@ -1,7 +1,7 @@
 /* pk-backend-aptcc.cpp
  *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2009-2012 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (C) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -824,11 +824,10 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         fixBroken = true;
     }
 
-    g_debug("FILE INSTALL: %i", fileInstall);
     pk_backend_job_set_allow_cancel(job, true);
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
-    if (!apt->init()) {
+    if (!apt->init(full_paths)) {
         g_debug("Failed to create apt cache");
         return;
     }
@@ -836,31 +835,14 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
     PkgList installPkgs, removePkgs;
 
-    if (fileInstall) {
-        // File installation EXPERIMENTAL
-
-        // GDebi can not install more than one package at time
-        if (g_strv_length(full_paths) > 1) {
-            pk_backend_job_error_code(job,
-                                      PK_ERROR_ENUM_NOT_SUPPORTED,
-                                      "The backend can only process one file at time.");
-            return;
-        }
-
-        // get the list of packages to install
-        if (!apt->markFileForInstall(full_paths[0], installPkgs, removePkgs)) {
-            return;
-        }
-
-        cout << "installPkgs.size: " << installPkgs.size() << endl;
-        cout << "removePkgs.size: " << removePkgs.size() << endl;
-
-    } else if (!fixBroken) {
+    if (!fixBroken) {
         // Resolve the given packages
         if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
             removePkgs = apt->resolvePackageIds(package_ids);
-        } else {
+        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
             installPkgs = apt->resolvePackageIds(package_ids);
+        } else {
+            installPkgs = apt->resolveLocalFiles(full_paths);
         }
 
         if (removePkgs.size() == 0 && installPkgs.size() == 0) {
@@ -875,8 +857,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     bool ret;
     ret = apt->runTransaction(installPkgs,
                               removePkgs,
-                              fileInstall, // Mark newly installed packages as auto-installed
-                              // (they're dependencies of the new local package)
                               fixBroken,
                               transaction_flags,
                               autoremove);
@@ -884,22 +864,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
         return;
-    }
-
-    if (fileInstall) {
-        // Now perform the installation!
-        gchar *path;
-        for (uint i = 0; i < g_strv_length(full_paths); ++i) {
-            if (apt->cancelled()) {
-                break;
-            }
-
-            path = full_paths[i];
-            if (!apt->installFile(path, simulate)) {
-                cout << "Installation of DEB file " << path << " failed." << endl;
-                return;
-            }
-        }
     }
 }
 
@@ -1055,7 +1019,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         ret = apt->runTransaction(PkgList(),
                                                   removePkgs,
                                                   false,
-                                                  false,
                                                   transaction_flags,
                                                   false);
                         if (!ret) {
@@ -1190,16 +1153,12 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_REPO_ENABLE,
                 PK_ROLE_ENUM_REPAIR_SYSTEM,
                 PK_ROLE_ENUM_REPO_REMOVE,
+                PK_ROLE_ENUM_INSTALL_FILES,
                 -1);
 
     // only add GetDistroUpgrades if the binary is present
     if (g_file_test(PREUPGRADE_BINARY, G_FILE_TEST_EXISTS)) {
         pk_bitfield_add(roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-    }
-
-    // only add GetDistroUpgrades if the binary is present
-    if (g_file_test(GDEBI_BINARY, G_FILE_TEST_EXISTS)) {
-        pk_bitfield_add(roles, PK_ROLE_ENUM_INSTALL_FILES);
     }
 
     return roles;

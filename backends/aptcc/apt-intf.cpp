@@ -2,7 +2,7 @@
  *
  * Copyright (c) 1999-2008 Daniel Burrows
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
- *               2009 Daniel Nicoletti <dantti12@gmail.com>
+ *               2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,7 @@ AptIntf::AptIntf(PkBackendJob *job) :
     m_restartStat.st_mtime = 0;
 }
 
-bool AptIntf::init()
+bool AptIntf::init(gchar **localDebs)
 {
     const gchar *locale;
     const gchar *http_proxy;
@@ -129,6 +129,9 @@ bool AptIntf::init()
 
     // Create the AptCacheFile class to search for packages
     m_cache = new AptCacheFile(m_job);
+    for (int i = 0; i < g_strv_length(localDebs); ++i) {
+        markFileForInstall(localDebs[i]);
+    }
 
     int timeout = 10;
     // TODO test this
@@ -2079,215 +2082,33 @@ void AptIntf::markAutoInstalled(const PkgList &pkgs)
     }
 }
 
-bool AptIntf::markFileForInstall(const gchar *file, PkgList &install, PkgList &remove)
+bool AptIntf::markFileForInstall(std::string const &file)
 {
-    // We call gdebi to tell us what do we need to install/remove
-    // in order to be able to install this package
-    gint status;
-    gchar **argv;
-    gchar *std_out;
-    gchar *std_err;
-    GError *gerror = NULL;
-    argv = (gchar **) g_malloc(5 * sizeof(gchar *));
-    argv[0] = g_strdup(GDEBI_BINARY);
-    argv[1] = g_strdup("-q");
-    argv[2] = g_strdup("--apt-line");
-    argv[3] = g_strdup(file);
-    argv[4] = NULL;
-
-    gboolean ret;
-    ret = g_spawn_sync(NULL, // working dir
-                       argv, // argv
-                       NULL, // envp
-                       G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
-                       NULL, // child_setup
-                       NULL, // user_data
-                       &std_out, // standard_output
-                       &std_err, // standard_error
-                       &status,
-                       &gerror);
-    int exit_code = WEXITSTATUS(status);
-    //     cout << "DebStatus " << exit_code << " WEXITSTATUS " << WEXITSTATUS(status) << " ret: "<< ret << endl;
-    if (ret) {
-        cout << "std_out " << strlen(std_out) << std_out << endl;
-        cout << "std_err " << strlen(std_err) << std_err << endl;
-    }
-
-    PkgList pkgs;
-    if (!ret) {
-        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR,
-                                  "Spawn of helper '%s' failed: %s",
-                                  argv[0], gerror->message);
-        g_error_free(gerror);
-        return false;
-    } else if (exit_code == 1) {
-        if (strlen(std_out) == 0) {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Error: %s", std_err);
-        } else {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Error: %s", std_out);
-        }
-        return false;
-    } else {
-        // GDebi outputs two lines
-        gchar **lines = g_strsplit(std_out, "\n", 3);
-
-        // The first line contains the packages to install
-        gchar **installPkgs = g_strsplit(lines[0], " ", 0);
-
-        // The second line contains the packages to remove with '-' appended to
-        // the end of the package name
-        gchar **removePkgs = NULL;
-        if (strlen(lines[1]) > 0) {
-            gchar *removeStr = g_strndup(lines[1], strlen(lines[1]) - 1);
-            removePkgs = g_strsplit(removeStr, "- ", 0);
-            g_free(removeStr);
-        }
-
-        // Resolve the packages to install
-        PkBitfield intallFilters;
-        intallFilters = pk_bitfield_from_enums (
-                    PK_FILTER_ENUM_NOT_INSTALLED,
-                    -1);
-        install = resolvePackageIds(installPkgs, intallFilters);
-
-        // Resolve the packages to remove
-        PkBitfield removeFilters;
-        removeFilters = pk_bitfield_from_enums (
-                    PK_FILTER_ENUM_INSTALLED,
-                    -1);
-        remove = resolvePackageIds(removePkgs, removeFilters);
-
-        g_strfreev(lines);
-        g_strfreev(installPkgs);
-        g_strfreev(removePkgs);
-    }
-
-    return true;
+    return m_cache->GetSourceList()->AddVolatileFile(file);
 }
 
-bool AptIntf::installFile(const gchar *path, bool simulate)
+PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
 {
-    if (path == NULL) {
-        g_error ("installFile() path was NULL!");
-        return false;
-    }
-
-    DebFile deb(path);
-    if (!deb.isValid()) {
-        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR, "DEB package is invalid!");
-        return false;
-    }
-
-    if (simulate) {
-        // TODO: Emit signal for to-be-installed package
-        //emit_package("",  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
-        return true;
-    }
-
-    string arch = deb.architecture();
-    string aptArch = _config->Find("APT::Architecture");
-
-    // If we are not on multi-arch make sure we got the correct arch package
-    if (!m_isMultiArch && arch != "all" && arch != aptArch) {
-        pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,
-                                  "Package has wrong architecture, it is %s, but we need %s",
-                                  arch.c_str(),
-                                  aptArch.c_str());
-        return false;
-    }
-
-    // Close the package cache to release the lock
-    m_cache->Close();
-
-    // Build package-id for the new package
-    gchar *deb_package_id = pk_package_id_build(deb.packageName ().c_str (),
-                                                deb.version ().c_str (),
-                                                deb.architecture ().c_str (),
-                                                "local");
-    const gchar *deb_summary = deb.summary ().c_str ();
-
-    gint status;
-    gchar **argv;
-    gchar **envp;
-    gchar *std_out;
-    gchar *std_err;
-    GError *error = NULL;
-
-    argv = (gchar **) g_malloc(4 * sizeof(gchar *));
-    argv[0] = g_strdup("/usr/bin/dpkg");
-    argv[1] = g_strdup("-i");
-    argv[2] = g_strdup(path); //g_strdup_printf("\'%s\'", path);
-    argv[3] = NULL;
-
-    envp = (gchar **) g_malloc(4 * sizeof(gchar *));
-    envp[0] = g_strdup("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
-
-    const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
-    if ((m_interactive) && (socket != NULL)) {
-        envp[1] = g_strdup("DEBIAN_FRONTEND=passthrough");
-        envp[2] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
-        envp[3] = NULL;
-    } else {
-        // we don't have a socket set or are non-interactive, let's fallback to noninteractive
-        envp[1] = g_strdup("DEBIAN_FRONTEND=noninteractive");
-        envp[2] = NULL;
-        envp[3] = NULL;
-    }
-
-    // We're installing the package now...
-    pk_backend_job_package (m_job, PK_INFO_ENUM_INSTALLING, deb_package_id, deb_summary);
-
-    g_spawn_sync(NULL, // working dir
-                 argv,
-                 envp,
-                 G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
-                 NULL, // child_setup
-                 NULL, // user_data
-                 &std_out, // standard_output
-                 &std_err, // standard_error
-                 &status,
-                 &error);
-    int exit_code = WEXITSTATUS(status);
-
-    g_strfreev(envp);
-
-    cout << "DpkgOut: " << std_out << endl;
-    cout << "DpkgErr: " << std_err << endl;
-
-    if (error != NULL) {
-        // We couldn't run dpkg for some reason...
-        pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_TRANSACTION_ERROR,
-                                  "Failed to run DPKG: %s",
-                                  error->message);
-        return false;
-    }
-
-    // If installation has failed...
-    if (exit_code != 0) {
-        if ((std_out == NULL) || (strlen(std_out) == 0)) {
-            pk_backend_job_error_code(m_job,
-                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
-                                      "Failed: %s",
-                                      std_err);
-        } else {
-            pk_backend_job_error_code(m_job,
-                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
-                                      "Failed: %s",
-                                      std_out);
+    PkgList ret;
+    for (int i = 0; i < g_strv_length(localDebs); ++i) {
+        pkgCache::PkgIterator const P = (*m_cache)->FindPkg(localDebs[i]);
+        if (P.end()) {
+            continue;
         }
-        return false;
+
+        // Set any version providing the .deb as the candidate.
+        for (auto Prv = P.ProvidesList(); Prv.end() == false; Prv++) {
+            ret.push_back(Prv.OwnerVer());
+        }
+
+        // TODO do we need this?
+        // via cacheset to have our usual virtual handling
+        //APT::VersionContainerInterface::FromPackage(&(verset[MOD_INSTALL]), Cache, P, APT::CacheSetHelper::CANDIDATE, helper);
     }
-
-    // Emit data of the now-installed DEB package
-    pk_backend_job_package (m_job, PK_INFO_ENUM_INSTALLED, deb_package_id, deb_summary);
-    g_free (deb_package_id);
-
-    return true;
+    return ret;
 }
 
-bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool markAuto, bool fixBroken, PkBitfield flags, bool autoremove)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool fixBroken, PkBitfield flags, bool autoremove)
 {
     //cout << "runTransaction" << simulate << remove << endl;
 
@@ -2323,11 +2144,6 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
             }
 
             m_cache->tryToRemove(Fix, *it);
-        }
-
-        // Mark package dependencies of a local file as auto-installed
-        if (!simulate && markAuto) {
-            markAutoInstalled(install);
         }
 
         // Call the scored problem resolver

@@ -1,7 +1,7 @@
 /* apt-intf.h - Interface to APT
  *
  * Copyright (c) 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,6 @@
 #include "apt-sourceslist.h"
 
 #define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
-#define GDEBI_BINARY         "/usr/bin/gdebi"
 #define REBOOT_REQUIRED      "/var/run/reboot-required"
 
 class pkgProblemResolver;
@@ -47,7 +46,7 @@ public:
     AptIntf(PkBackendJob *job);
     ~AptIntf();
 
-    bool init();
+    bool init(gchar **localDebs = nullptr);
     void cancel();
     bool cancelled() const;
 
@@ -63,6 +62,8 @@ public:
      */
     PkgList resolvePackageIds(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
+    PkgList resolveLocalFiles(gchar **localDebs);
+
     /**
       * Refreshes the sources of packages
       */
@@ -74,7 +75,7 @@ public:
       * @param remove is where the packages to be removed will be stored
       * @returns true if the package can be installed
       */
-    bool markFileForInstall(const gchar *file, PkgList &install, PkgList &remove);
+    bool markFileForInstall(std::string const &file);
 
     /**
       * Marks the given packages as auto installed
@@ -91,7 +92,6 @@ public:
      */
     bool runTransaction(const PkgList &install,
                         const PkgList &remove,
-                        bool markAuto,
                         bool fixBroken,
                         PkBitfield flags,
                         bool autoremove);
@@ -210,15 +210,6 @@ public:
       *  Download and install packages
       */
     bool installPackages(PkBitfield flags, bool autoremove);
-
-    /**
-     *  Install a DEB file
-     *
-     *  If you don't want to actually install/update/remove
-     *    \p simulate should be true, in this case packages with
-     *    what's going to happen will be emitted.
-     */
-    bool installFile(const gchar *path, bool simulate);
 
     /**
      *  Check which package provides the codec
