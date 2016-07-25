@@ -251,11 +251,18 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 
 	/* build the dict */
 	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
-	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
-	g_variant_builder_add (&builder,
-			       "{sv}",
-			       property_name,
-			       property_value);
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+
+	if (property_value == NULL) {
+		g_variant_builder_add (&invalidated_builder,
+		                       "s",
+		                       property_name);
+	} else {
+		g_variant_builder_add (&builder,
+		                       "{sv}",
+		                       property_name,
+		                       property_value);
+	}
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
