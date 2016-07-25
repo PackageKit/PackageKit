@@ -891,6 +891,28 @@ pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
 						 g_variant_new_boolean (ret));
 }
 
+static GVariant *
+pk_engine_offline_get_prepared_upgrade_property (GError **error)
+{
+	GVariantBuilder builder;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
+
+	if (!pk_offline_get_prepared_upgrade (&name, &version, error))
+		return NULL;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+	if (name != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "name",
+		                       g_variant_new ("s", name));
+	if (version != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "version",
+		                       g_variant_new ("s", version));
+	return g_variant_builder_end (&builder);
+}
+
 /**
  * pk_engine_offline_upgrade_file_changed_cb:
  **/
@@ -900,6 +922,7 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
                                            GFileMonitorEvent event_type,
                                            PkEngine *engine)
 {
+	GVariant *prepared_upgrade;
 	gboolean ret;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -907,6 +930,12 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 	pk_engine_emit_offline_property_changed (engine,
 						 "UpgradePrepared",
 						 g_variant_new_boolean (ret));
+
+	prepared_upgrade = pk_engine_offline_get_prepared_upgrade_property (NULL);
+	pk_engine_emit_offline_property_changed (engine,
+						 "PreparedUpgrade",
+						 prepared_upgrade);
+
 }
 
 /**
@@ -1042,28 +1071,6 @@ _g_variant_new_maybe_string (const gchar *value)
 	if (value == NULL)
 		return g_variant_new_string ("");
 	return g_variant_new_string (value);
-}
-
-static GVariant *
-pk_engine_offline_get_prepared_upgrade_property (GError **error)
-{
-	GVariantBuilder builder;
-	g_autofree gchar *name = NULL;
-	g_autofree gchar *version = NULL;
-
-	if (!pk_offline_get_prepared_upgrade (&name, &version, error))
-		return NULL;
-
-	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
-	if (name != NULL)
-		g_variant_builder_add (&builder, "{sv}",
-		                       "name",
-		                       g_variant_new ("s", name));
-	if (version != NULL)
-		g_variant_builder_add (&builder, "{sv}",
-		                       "version",
-		                       g_variant_new ("s", version));
-	return g_variant_builder_end (&builder);
 }
 
 /**
