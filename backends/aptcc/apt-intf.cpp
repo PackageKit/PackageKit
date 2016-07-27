@@ -345,9 +345,9 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
         PkgList ret;
         ret.reserve(packages.size());
 
-        for (PkgList::const_iterator i = packages.begin(); i != packages.end(); ++i) {
-            if (matchPackage(*i, filters)) {
-                ret.push_back(*i);
+        for (const pkgCache::VerIterator &ver : packages) {
+            if (matchPackage(ver, filters)) {
+                ret.push_back(ver);
             }
         }
 
@@ -382,19 +382,19 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
                 return downloaded;
             }
 
-            for (PkgList::const_iterator verIt = ret.begin(); verIt != ret.end(); ++verIt) {
+            for (const pkgCache::VerIterator &verIt : ret) {
                 bool found = false;
                 for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
                     pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(*it);
                     const pkgCache::VerIterator ver = archive->version();
-                    if ((*it)->Local && *verIt == ver) {
+                    if ((*it)->Local && verIt == ver) {
                         found = true;
                         break;
                     }
                 }
 
                 if (found) {
-                    downloaded.push_back(*verIt);
+                    downloaded.push_back(verIt);
                 }
             }
 
@@ -448,12 +448,12 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
     output.removeDuplicates();
 
     output = filterPackages(output, filters);
-    for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
+    for (const pkgCache::VerIterator &verIt : output) {
         if (m_cancel) {
             break;
         }
 
-        emitPackage(*it, state);
+        emitPackage(verIt, state);
     }
 }
 
@@ -465,9 +465,9 @@ void AptIntf::emitRequireRestart(PkgList &output)
     // Remove the duplicated entries
     output.removeDuplicates();
 
-    for (PkgList::const_iterator it = output.begin(); it != output.end(); ++it) {
+    for (const pkgCache::VerIterator &verIt : output) {
         gchar *package_id;
-        package_id = utilBuildPackageId(*it);
+        package_id = utilBuildPackageId(verIt);
         pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, package_id);
         g_free(package_id);
     }
@@ -483,7 +483,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
     output.removeDuplicates();
 
     output = filterPackages(output, filters);
-    for (PkgList::const_iterator i = output.begin(); i != output.end(); ++i) {
+    for (const pkgCache::VerIterator &verIt : output) {
         if (m_cancel) {
             break;
         }
@@ -492,7 +492,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
         state = PK_INFO_ENUM_NORMAL;
 
         // let find what kind of upgrade this is
-        pkgCache::VerFileIterator vf = i->FileList();
+        pkgCache::VerFileIterator vf = verIt.FileList();
         std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
         std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
         std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
@@ -511,7 +511,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
             state = PK_INFO_ENUM_ENHANCEMENT;
         }
 
-        emitPackage(*i, state);
+        emitPackage(verIt, state);
     }
 }
 
@@ -765,12 +765,12 @@ void AptIntf::emitDetails(PkgList &pkgs)
     // Remove the duplicated entries
     pkgs.removeDuplicates();
 
-    for (PkgList::const_iterator i = pkgs.begin(); i != pkgs.end(); ++i) {
+    for (const pkgCache::VerIterator &verIt : pkgs) {
         if (m_cancel) {
             break;
         }
 
-        emitPackageDetail(*i);
+        emitPackageDetail(verIt);
     }
 }
 
@@ -884,12 +884,12 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
 void AptIntf::emitUpdateDetails(const PkgList &pkgs)
 {
-    for (PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
+    for (const pkgCache::VerIterator &verIt : pkgs) {
         if (m_cancel) {
             break;
         }
 
-        emitUpdateDetail(*it);
+        emitUpdateDetail(verIt);
     }
 }
 
@@ -941,8 +941,8 @@ void AptIntf::getRequires(PkgList &output,
         if (parentVer.end() == false) {
             PkgList deps;
             getDepends(deps, parentVer, false);
-            for (PkgList::const_iterator it = deps.begin(); it != deps.end(); ++it) {
-                if (*it == ver) {
+            for (const pkgCache::VerIterator &depVer : deps) {
+                if (depVer == ver) {
                     if (recursive) {
                         if (!output.contains(parentPkg)) {
                             output.push_back(parentVer);
@@ -1071,10 +1071,8 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
             section = section.substr(found + 1);
 
             // Don't insert virtual packages instead add what it provides
-            for (vector<PkGroupEnum>::const_iterator it = groups.begin();
-                 it != groups.end();
-                 ++it) {
-                if (*it == get_enum_group(section)) {
+            for (PkGroupEnum group : groups) {
+                if (group == get_enum_group(section)) {
                     output.push_back(ver);
                     break;
                 }
@@ -1227,12 +1225,11 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
     regfree(&re);
 
     // Resolve the package names now
-    for (vector<string>::const_iterator it = packages.begin();
-         it != packages.end(); ++it) {
+    for (const string &package : packages) {
         if (m_cancel) {
             break;
         }
-        const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(*it);
+        const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
         if (pkg.end() == true) {
             continue;
         }
@@ -1338,12 +1335,11 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
     regfree(&re);
 
     // resolve the package names
-    for (vector<string>::const_iterator it = packages.begin();
-         it != packages.end(); ++it) {
+    for (const string &package : packages) {
         if (m_cancel) {
             break;
         }
-        const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(*it);
+        const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
         if (pkg.end() == true) {
             continue;
         }
@@ -1614,9 +1610,9 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
 
 pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
 {
-    for (PkgList::const_iterator it = m_pkgs.begin(); it != m_pkgs.end(); ++it) {
-        if (it->ParentPkg().Name() == name) {
-            return *it;
+    for (const pkgCache::VerIterator &verIt : m_pkgs) {
+        if (verIt.ParentPkg().Name() == name) {
+            return verIt;
         }
     }
 
@@ -2074,13 +2070,13 @@ void AptIntf::refreshCache()
 
 void AptIntf::markAutoInstalled(const PkgList &pkgs)
 {
-    for (PkgList::const_iterator it = pkgs.begin(); it != pkgs.end(); ++it) {
+    for (const pkgCache::VerIterator &verIt : pkgs) {
         if (m_cancel) {
             break;
         }
 
         // Mark package as auto-installed
-        (*m_cache)->MarkAuto(it->ParentPkg(), true);
+        (*m_cache)->MarkAuto(verIt.ParentPkg(), true);
     }
 }
 
@@ -2130,22 +2126,22 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
     // new scope for the ActionGroup
     {
         pkgDepCache::ActionGroup group(*m_cache);
-        for (PkgList::const_iterator it = install.begin(); it != install.end(); ++it) {
+        for (const pkgCache::VerIterator &verIt : install) {
             if (m_cancel) {
                 break;
             }
 
-            if (!m_cache->tryToInstall(Fix, *it, BrokenFix)) {
+            if (!m_cache->tryToInstall(Fix, verIt, BrokenFix)) {
                 return false;
             }
         }
 
-        for (PkgList::const_iterator it = remove.begin(); it != remove.end(); ++it) {
+        for (const pkgCache::VerIterator &verIt : remove) {
             if (m_cancel) {
                 break;
             }
 
-            m_cache->tryToRemove(Fix, *it);
+            m_cache->tryToRemove(Fix, verIt);
         }
 
         // Call the scored problem resolver

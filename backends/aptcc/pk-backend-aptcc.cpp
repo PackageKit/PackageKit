@@ -961,55 +961,55 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                        &enabled);
     }
 
-    SourcesList _lst;
-    if (_lst.ReadSources() == false) {
+    SourcesList sourcesList;
+    if (sourcesList.ReadSources() == false) {
         _error->
                 Warning("Ignoring invalid record(s) in sources.list file!");
         //return false;
     }
 
-    if (_lst.ReadVendors() == false) {
+    if (sourcesList.ReadVendors() == false) {
         _error->Error("Cannot read vendors.list file");
         show_errors(job, PK_ERROR_ENUM_FAILED_CONFIG_PARSING);
         return;
     }
 
-    for (SourcesListIter it = _lst.SourceRecords.begin();
-         it != _lst.SourceRecords.end(); ++it) {
-        if ((*it)->Type & SourcesList::Comment) {
+    for (SourcesList::SourceRecord *souceRecord : sourcesList.SourceRecords) {
+
+        if (souceRecord->Type & SourcesList::Comment) {
             continue;
         }
 
-        string sections = (*it)->joinedSections();
+        string sections = souceRecord->joinedSections();
         
-        string repoId = (*it)->repoId();
+        string repoId = souceRecord->repoId();
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-                    ((*it)->Type & SourcesList::DebSrc ||
-                     (*it)->Type & SourcesList::RpmSrc ||
-                     (*it)->Type & SourcesList::RpmSrcDir ||
-                     (*it)->Type & SourcesList::RepomdSrc)) {
+                    (souceRecord->Type & SourcesList::DebSrc ||
+                     souceRecord->Type & SourcesList::RpmSrc ||
+                     souceRecord->Type & SourcesList::RpmSrcDir ||
+                     souceRecord->Type & SourcesList::RepomdSrc)) {
                 continue;
             }
 
             pk_backend_job_repo_detail(job,
                                        repoId.c_str(),
-                                       (*it)->niceName().c_str(),
-                                       !((*it)->Type & SourcesList::Disabled));
+                                       souceRecord->niceName().c_str(),
+                                       !(souceRecord->Type & SourcesList::Disabled));
         } else if (repoId.compare(repo_id) == 0) {
             // Found the repo to enable/disable
             found = true;
 
             if (role == PK_ROLE_ENUM_REPO_ENABLE) {
                 if (enabled) {
-                    (*it)->Type = (*it)->Type & ~SourcesList::Disabled;
+                    souceRecord->Type = souceRecord->Type & ~SourcesList::Disabled;
                 } else {
-                    (*it)->Type |= SourcesList::Disabled;
+                    souceRecord->Type |= SourcesList::Disabled;
                 }
 
                 // Commit changes
-                if (!_lst.UpdateSources()) {
+                if (!sourcesList.UpdateSources()) {
                     _error->Error("Could not update sources file");
                     show_errors(job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
                 }
@@ -1021,7 +1021,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         return;
                     }
 
-                    PkgList removePkgs = apt->getPackagesFromRepo(*it);
+                    PkgList removePkgs = apt->getPackagesFromRepo(souceRecord);
                     if (removePkgs.size() > 0) {
                         // Install/Update/Remove packages, or just simulate
                         bool ret;
@@ -1040,10 +1040,10 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
                 // Now if we are not simulating remove the repository
                 if (!pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-                    _lst.RemoveSource(*it);
+                    sourcesList.RemoveSource(souceRecord);
 
                     // Commit changes
-                    if (!_lst.UpdateSources()) {
+                    if (!sourcesList.UpdateSources()) {
                         _error->Error("Could not update sources file");
                         show_errors(job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG);
                     }
