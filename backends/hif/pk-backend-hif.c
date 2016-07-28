@@ -699,11 +699,7 @@ hif_utils_create_sack_for_filters (PkBackendJob *job,
 	/* create empty sack */
 	solv_dir = hif_utils_real_path (hif_context_get_solv_dir (job_data->context));
 	install_root = hif_utils_real_path (hif_context_get_install_root (job_data->context));
-#if HY_VERSION_CHECK(0,5,3)
 	sack = hy_sack_create (solv_dir, NULL, install_root, NULL, HY_MAKE_CACHE_DIR);
-#else
-	sack = hy_sack_create (solv_dir, NULL, install_root, HY_MAKE_CACHE_DIR);
-#endif
 	if (sack == NULL) {
 		ret = hif_error_set_from_hawkey (hy_get_errno (), error);
 		g_prefix_error (error, "failed to create sack in %s for %s: ",
