@@ -848,10 +848,18 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         // Resolve the given packages
         if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
             removePkgs = apt->resolvePackageIds(package_ids);
-        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+                   role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+            // Updates are like installs for the purposes of resolution, we
+            // want to install the updates essentially.
             installPkgs = apt->resolvePackageIds(package_ids);
-        } else {
+        } else if (role == PK_ROLE_ENUM_INSTALL_FILES) {
             installPkgs = apt->resolveLocalFiles(full_paths);
+        } else {
+            pk_backend_job_error_code(job,
+                                      PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                                      "Could not figure out what to do to apply the change.");
+            return;
         }
 
         if (removePkgs.size() == 0 && installPkgs.size() == 0) {
