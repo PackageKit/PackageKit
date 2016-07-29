@@ -1,6 +1,6 @@
 /* gst-matcher.cpp - Match GStreamer packages
  *
- * Copyright (c) 2010 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2010-2016 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,21 +107,21 @@ GstMatcher::~GstMatcher()
 {
     gst_deinit();
 
-    for (vector<Match>::iterator i = m_matches.begin(); i != m_matches.end(); ++i) {
-        gst_caps_unref(static_cast<GstCaps*>(i->caps));
+    for (const Match &match : m_matches) {
+        gst_caps_unref(static_cast<GstCaps*>(match.caps));
     }
 }
 
 bool GstMatcher::matches(string record)
 {
-    for (vector<Match>::iterator i = m_matches.begin(); i != m_matches.end(); ++i) {
+    for (const Match &match : m_matches) {
         // Tries to find "Gstreamer-version: xxx"
-        if (record.find(i->version) != string::npos) {
+        if (record.find(match.version) != string::npos) {
             size_t found;
-            found = record.find(i->type);
+            found = record.find(match.type);
             // Tries to find the type "Gstreamer-Uri-Sinks: "
             if (found != string::npos) {
-                found += i->type.size(); // skips the "Gstreamer-Uri-Sinks: " string
+                found += match.type.size(); // skips the "Gstreamer-Uri-Sinks: " string
                 size_t endOfLine;
                 endOfLine = record.find('\n', found);
 
@@ -132,7 +132,7 @@ bool GstMatcher::matches(string record)
                 }
 
                 // if the record is capable of intersect them we found the package
-                bool provides = gst_caps_can_intersect(static_cast<GstCaps*>(i->caps), caps);
+                bool provides = gst_caps_can_intersect(static_cast<GstCaps*>(match.caps), caps);
                 gst_caps_unref(caps);
 
                 if (provides) {

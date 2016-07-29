@@ -358,12 +358,12 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             pkgProblemResolver Fix(*m_cache);
             {
                 pkgDepCache::ActionGroup group(*m_cache);
-                for (PkgList::const_iterator it = ret.begin(); it != ret.end(); ++it) {
+                for (const pkgCache::VerIterator &ver : ret) {
                     if (m_cancel) {
                         break;
                     }
 
-                    m_cache->tryToInstall(Fix, *it, false);
+                    m_cache->tryToInstall(Fix, ver, false);
                 }
             }
 
