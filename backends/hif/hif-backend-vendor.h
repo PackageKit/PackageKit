@@ -24,7 +24,7 @@
 
 #include <glib.h>
 
-gboolean	hif_validate_supported_source(const gchar*);
+gboolean	dnf_validate_supported_source(const gchar*);
 
 G_END_DECLS
 
