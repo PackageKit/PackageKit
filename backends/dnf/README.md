@@ -3,13 +3,9 @@ DNF PackageKit Backend
 
 It uses the following libraries:
 
- * libhif : for tieing all the libraries below together
+ * libdnf : for tieing all the libraries below together
  * librepo : checking and downloading repository metadata
- * hawkey : for depsolving
  * rpm : for actually installing the packages on the system
-
-It also uses a lot of internal glue to hold all the pieces together. These have
-mostly been reused from the Zif project, hence all the Hif prefixes everywhere.
 
 These are some key file locations:
 

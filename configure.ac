@@ -424,7 +424,7 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 if test x$enable_dnf = xyes; then
-	PKG_CHECK_MODULES(DNF, appstream-glib libhif >= 0.2.3)
+	PKG_CHECK_MODULES(DNF, appstream-glib libdnf >= 0.7.0)
 	AC_ARG_WITH(dnf-vendor,
 			[AS_HELP_STRING([--with-dnf-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
 	if test "$with_dnf_vendor" = "fedora" -o "$with_dnf_vendor" = "mageia"; then
