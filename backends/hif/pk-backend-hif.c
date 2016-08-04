@@ -121,10 +121,10 @@ pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 }
 
 /**
- * pk_backend_dnf_repos_changed_cb:
+ * pk_backend_yum_repos_changed_cb:
  **/
 static void
-pk_backend_dnf_repos_changed_cb (DnfRepos *self, PkBackend *backend)
+pk_backend_yum_repos_changed_cb (DnfRepoLoader *self, PkBackend *backend)
 {
 	pk_backend_sack_cache_invalidate (backend, "yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
@@ -250,11 +250,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	/* use context's repository loaders */
 	priv->repos_timer = g_timer_new ();
-#if 0
-	/* XXX: save priv->repos ? */
-	g_signal_connect (dnf_context_get_repos (priv->context), "changed",
-			  G_CALLBACK (pk_backend_dnf_repos_changed_cb), backend);
-#endif
+	g_signal_connect (dnf_context_get_repo_loader (priv->context), "changed",
+			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 
 	lr_global_init ();
 }
@@ -481,7 +478,7 @@ pk_backend_ensure_repos (PkBackendDnfJobData *job_data, GError **error)
 		return TRUE;
 
 	/* set the list of repos */
-	job_data->sources = dnf_context_get_repos (job_data->context);
+	job_data->sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), error);
 	if (job_data->sources == NULL)
 		return FALSE;
 	return TRUE;
@@ -612,7 +609,6 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	g_autofree gchar *cache_key = NULL;
 	g_autofree gchar *install_root = NULL;
 	g_autofree gchar *solv_dir = NULL;
-	g_autoptr(DnfRepos) repos = NULL;
 
 	/* don't add if we're going to filter out anyway */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
@@ -637,9 +633,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* media repos could disappear at any time */
-	repos = dnf_repos_new (job_data->context); /* XXX: change dnf_context_get_repos() to return DnfRepos ? */
 	if ((create_flags & DNF_CREATE_SACK_FLAG_USE_CACHE) > 0 &&
-	    dnf_repos_has_removable (repos) &&
+	    dnf_repo_loader_has_removable_repos (dnf_context_get_repo_loader (job_data->context)) &&
 	    g_timer_elapsed (priv->repos_timer, NULL) > 1.0f) {
 		g_debug ("not reusing sack as media may have disappeared");
 		create_flags &= ~DNF_CREATE_SACK_FLAG_USE_CACHE;
@@ -1229,7 +1224,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = dnf_context_get_repos (job_data->context); /* XXX: set error */
+	sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
 	if (sources == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1286,7 +1281,6 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	DnfRepo *src;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	g_autoptr(GError) error = NULL;
-	g_autoptr(DnfRepos) repos = NULL;
 
 	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
 
@@ -1308,8 +1302,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	pk_backend_job_set_percentage (job, 0);
 
 	/* find the correct repo */
-	repos = dnf_repos_new (job_data->context); /* XXX: change dnf_context_get_repos() to return DnfRepos ? */
-	src = dnf_repos_get_by_id (repos, repo_id, &error);
+	src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -2020,7 +2013,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) files = NULL;
-	g_autoptr(DnfRepos) repos = NULL;
 
 	g_variant_get (params, "(^a&ss)",
 		       &package_ids,
@@ -2096,8 +2088,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		dnf_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package source */
-		repos = dnf_repos_new (job_data->context); /* XXX: change dnf_context_get_repos() to return DnfRepos ? */
-		src = dnf_repos_get_by_id (repos,
+		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
 						  dnf_package_get_reponame (pkg),
 						  &error);
 		if (src == NULL) {
@@ -2182,7 +2173,6 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 	DnfPackage *pkg;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	g_autoptr(GPtrArray) install = NULL;
-	g_autoptr(DnfRepos) repos = NULL;
 
 	/* find any packages in untrusted repos */
 	install = dnf_goal_get_packages (job_data->goal,
@@ -2204,8 +2194,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 		}
 
 		/* find repo */
-		repos = dnf_repos_new (job_data->context); /* XXX: change dnf_context_get_repos() to return DnfRepos ? */
-		src = dnf_repos_get_by_id (repos,
+		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
 						  dnf_package_get_reponame (pkg),
 						  error);
 		if (src == NULL) {
@@ -2467,7 +2456,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) removed_id = NULL;
 	g_autoptr(GPtrArray) sources = NULL;
-	g_autoptr(DnfRepos) repos = NULL;
 	g_auto(GStrv) search = NULL;
 
 	g_variant_get (params, "(t&sb)",
@@ -2486,8 +2474,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_assert (ret);
 
 	/* find the repo-release package name for @repo_id */
-	repos = dnf_repos_new (job_data->context); /* XXX: change dnf_context_get_repos() to return DnfRepos ? */
-	src = dnf_repos_get_by_id (repos, repo_id, &error);
+	src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
 	if (src == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -2502,7 +2489,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	}
 
 	/* find all the .repo files the repo-release package installed */
-	sources = dnf_context_get_repos (job_data->context);
+	sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
 	search = g_new0 (gchar *, sources->len + 0);
 	removed_id = g_ptr_array_new_with_free_func (g_free);
 	repo_filename = dnf_repo_get_filename (src);
