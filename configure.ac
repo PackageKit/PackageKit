@@ -372,6 +372,7 @@ fi
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),enable_aptcc=$enableval,enable_aptcc=no)
+AC_ARG_ENABLE(dnf, AS_HELP_STRING([--enable-dnf],[use the DNF backend]),enable_dnf=$enableval,enable_dnf=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(entropy, AS_HELP_STRING([--enable-entropy],[use the entropy backend]),enable_entropy=$enableval,enable_entropy=no)
 AC_ARG_ENABLE(hif, AS_HELP_STRING([--enable-hif],[use the hif backend]),enable_hif=$enableval,enable_hif=no)
@@ -388,6 +389,7 @@ AC_ARG_ENABLE(nix, AS_HELP_STRING([--enable-nix],[use the Nix backend]),enable_n
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_DNF, [test x$enable_dnf = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ENTROPY, [test x$enable_entropy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_HIF, [test x$enable_hif = xyes])
@@ -420,6 +422,18 @@ else
 fi
 AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
+
+if test x$enable_dnf = xyes; then
+	PKG_CHECK_MODULES(DNF, appstream-glib libhif >= 0.2.3)
+	AC_ARG_WITH(dnf-vendor,
+			[AS_HELP_STRING([--with-dnf-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
+	if test "$with_dnf_vendor" = "fedora" -o "$with_dnf_vendor" = "mageia"; then
+		with_dnf_vendor="$with_dnf_vendor"
+	else
+		with_dnf_vendor="fedora"
+	fi
+	AC_SUBST(DNF_VENDOR, [$with_dnf_vendor])
+fi
 
 if test x$enable_hif = xyes; then
 	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.2.3)
@@ -560,6 +574,7 @@ contrib/cron/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/aptcc/Makefile
+backends/dnf/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
 backends/hif/Makefile
@@ -628,6 +643,8 @@ echo "
         Backends:
         ALPM backend:              ${enable_alpm}
         APTcc backend:             ${enable_aptcc}
+        DNF backend:               ${enable_dnf}
+        DNF backend vendor:        ${with_dnf_vendor}
         dummy backend:             ${enable_dummy}
         Entropy backend:           ${enable_entropy}
         Hif backend:               ${enable_hif}
