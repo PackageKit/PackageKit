@@ -398,7 +398,7 @@ pk_backend_job_set_context (PkBackendJob *job, DnfContext *context)
 	g_clear_object (&job_data->transaction);
 	job_data->transaction = dnf_transaction_new (job_data->context);
 	dnf_transaction_set_repos (job_data->transaction,
-				     dnf_context_get_repos (job_data->context));
+	                           dnf_context_get_repos (job_data->context));
 	dnf_transaction_set_uid (job_data->transaction,
 				 pk_backend_job_get_uid (job));
 }
@@ -517,11 +517,11 @@ dnf_utils_add_remote (PkBackendJob *job,
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
-				    job_data->sources,
-				    pk_backend_job_get_cache_age (job),
-				    flags,
-				    state_local,
-				    error);
+	                          job_data->sources,
+	                          pk_backend_job_get_cache_age (job),
+	                          flags,
+	                          state_local,
+	                          error);
 	if (!ret)
 		return FALSE;
 
@@ -2089,8 +2089,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
 		/* get correct package source */
 		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-						  dnf_package_get_reponame (pkg),
-						  &error);
+		                                      dnf_package_get_reponame (pkg),
+		                                      &error);
 		if (src == NULL) {
 			g_prefix_error (&error, "Not sure where to download %s: ",
 					dnf_package_get_name (pkg));
@@ -2195,8 +2195,8 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 
 		/* find repo */
 		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-						  dnf_package_get_reponame (pkg),
-						  error);
+		                                      dnf_package_get_reponame (pkg),
+		                                      error);
 		if (src == NULL) {
 			g_prefix_error (error, "Can't GPG check %s: ",
 					dnf_package_get_name (pkg));
