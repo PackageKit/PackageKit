@@ -22,7 +22,7 @@
 #include "dnf-backend-vendor.h"
 
 gboolean
-hif_validate_supported_source(const gchar* id)
+dnf_validate_supported_source(const gchar* id)
 {
 	guint i;
 	const gchar *valid[] = { "fedora",

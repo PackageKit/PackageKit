@@ -24,26 +24,25 @@
 
 #include <glib.h>
 
-#include <hawkey/advisory.h>
-#include <hawkey/package.h>
-#include <hawkey/packagelist.h>
+#include <libdnf/dnf-advisory.h>
+#include <libdnf/dnf-package.h>
 
 #include <pk-backend.h>
 
-PkInfoEnum	 hif_advisory_type_to_info_enum	(HyAdvisoryType		 type);
-void		 hif_emit_package		(PkBackendJob		*job,
+PkInfoEnum	 dnf_advisory_kind_to_info_enum	(DnfAdvisoryKind	 kind);
+void		 dnf_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
-						 HyPackage		 pkg);
-void		 hif_emit_package_list		(PkBackendJob		*job,
+						 DnfPackage		*pkg);
+void		 dnf_emit_package_list		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
-						 HyPackageList		 pkglist);
-void		 hif_emit_package_array		(PkBackendJob		*job,
+						 GPtrArray		*pkglist);
+void		 dnf_emit_package_array		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
 						 GPtrArray		*array);
-void		 hif_emit_package_list_filter	(PkBackendJob		*job,
+void		 dnf_emit_package_list_filter	(PkBackendJob		*job,
 						 PkBitfield		 filters,
-						 HyPackageList		 pkglist);
-PkBitfield	 hif_get_filter_for_ids		(gchar			**package_ids);
+						 GPtrArray		*pkglist);
+PkBitfield	 dnf_get_filter_for_ids		(gchar			**package_ids);
 
 G_END_DECLS
 
