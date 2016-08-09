@@ -6,7 +6,6 @@ plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
 libpk_backend_aptcc_la_SOURCES = pkg-list.cpp \
 				 acqpkitstatus.cpp \
-				 deb-file.cpp \
 				 matcher.cpp \
 				 gst-matcher.cpp \
 				 apt-messages.cpp \
@@ -31,7 +30,6 @@ EXTRA_DIST = 20packagekit \
 	     apt-sourceslist.h \
 	     gst-matcher.h \
 	     matcher.h \
-	     deb-file.h \
 	     apt-messages.h \
 	     acqpkitstatus.h \
 	     apt-cache-file.h

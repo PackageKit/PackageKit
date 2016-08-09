@@ -46,7 +46,6 @@
 #include "gst-matcher.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
-#include "deb-file.h"
 
 using namespace APT;
 
