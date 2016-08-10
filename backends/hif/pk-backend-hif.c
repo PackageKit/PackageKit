@@ -2816,7 +2816,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	PkBitfield filters;
 	gboolean ret;
 	guint i;
-	enum _hy_comparison_type_e *relations = NULL;
+	g_autofree enum _hy_comparison_type_e *relations = NULL;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
