@@ -342,9 +342,9 @@ pk_offline_get_prepared_sack (GError **error)
 gchar **
 pk_offline_get_prepared_ids (GError **error)
 {
-	gchar *prepared_ids;
 	g_autoptr(GError) error_local = NULL;
 	g_autofree gchar *data = NULL;
+	g_autofree gchar *prepared_ids = NULL;
 	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
