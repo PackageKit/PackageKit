@@ -102,10 +102,10 @@ pk_backend_supports_parallelization (PkBackend *backend)
 static void
 pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 {
-	GList *values;
 	GList *l;
 	DnfSackCacheItem *cache_item;
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GList) values = NULL;
 
 	/* set all the cached sacks as invalid */
 	g_mutex_lock (&priv->sack_mutex);
