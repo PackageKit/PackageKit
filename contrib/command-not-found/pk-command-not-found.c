@@ -575,7 +575,7 @@ static PkCnfPolicy
 pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 {
 	PkCnfPolicy policy;
-	gchar *policy_text;
+	g_autofree gchar *policy_text = NULL;
 	g_autoptr(GError) error = NULL;
 
 	/* get from file */
@@ -586,7 +586,6 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 
 	/* convert to enum */
 	policy = pk_cnf_get_policy_from_string (policy_text);
-	g_free (policy_text);
 	return policy;
 }
 
@@ -597,8 +596,8 @@ static PkCnfPolicyConfig *
 pk_cnf_get_config (void)
 {
 	GKeyFile *file;
-	gchar *path;
 	gboolean ret;
+	g_autofree gchar *path = NULL;
 	g_autoptr(GError) error = NULL;
 	PkCnfPolicyConfig *config;
 
@@ -644,7 +643,6 @@ pk_cnf_get_config (void)
 		config->max_search_time = 2000;
 	}
 out:
-	g_free (path);
 	g_key_file_free (file);
 	return config;
 }
