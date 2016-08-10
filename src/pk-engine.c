@@ -622,6 +622,10 @@ out:
 	g_free (state->sender);
 	g_free (state->value1);
 	g_free (state->value2);
+	g_free (state->value3);
+	g_free (state->value4);
+	g_free (state->value5);
+	g_free (state->value6);
 	g_free (state);
 }
 
