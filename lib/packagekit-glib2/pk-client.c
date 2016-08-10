@@ -1156,6 +1156,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id", state->transaction_id,
 			      NULL);
 		pk_results_add_update_detail (state->results, item);
+		g_free (tmp_strv[0]);
+		g_free (tmp_strv[1]);
+		g_free (tmp_strv[2]);
+		g_free (tmp_strv[3]);
+		g_free (tmp_strv[4]);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Transaction") == 0) {

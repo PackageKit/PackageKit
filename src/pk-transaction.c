@@ -2925,9 +2925,9 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	gint retval;
 	guint length;
 	gboolean store_in_cache;
-	gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *directory = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3041,8 +3041,8 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	gchar *package_ids_temp;
 	guint length;
 	PkBitfield filter;
-	gchar **package_ids;
 	gboolean recursive;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3110,7 +3110,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	gchar **package_ids;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
@@ -3175,13 +3175,13 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	gchar **full_paths;
 	GError *error_local = NULL;
 	GError *error = NULL;
 	guint i;
 	guint length;
 	g_autofree gchar *content_type = NULL;
 	g_autofree gchar *files_temp = NULL;
+	g_autofree gchar **full_paths = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3279,13 +3279,13 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 				  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	gchar **full_paths;
 	GError *error_local = NULL;
 	guint i;
 	guint length;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *content_type = NULL;
 	g_autofree gchar *files_temp = NULL;
+	g_autofree gchar **full_paths = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3417,8 +3417,8 @@ pk_transaction_get_files (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	gchar **package_ids;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3636,9 +3636,9 @@ pk_transaction_required_by (PkTransaction *transaction,
 	gboolean ret;
 	guint length;
 	PkBitfield filter;
-	gchar **package_ids;
 	gboolean recursive;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3707,7 +3707,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 	gboolean ret;
 	GError *error = NULL;
 	guint length;
-	gchar **package_ids;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3858,9 +3858,9 @@ pk_transaction_install_files (PkTransaction *transaction,
 	guint length;
 	guint i;
 	PkBitfield transaction_flags;
-	gchar **full_paths;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *content_type = NULL;
+	g_autofree gchar **full_paths = NULL;
 	g_autofree gchar *full_paths_temp = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
@@ -3967,8 +3967,8 @@ pk_transaction_install_packages (PkTransaction *transaction,
 	gboolean ret;
 	guint length;
 	PkBitfield transaction_flags;
-	gchar **package_ids;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
@@ -4170,11 +4170,11 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	guint length;
-	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
@@ -4443,8 +4443,8 @@ pk_transaction_resolve (PkTransaction *transaction,
 	guint i;
 	guint length;
 	PkBitfield filter;
-	gchar **packages;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **packages = NULL;
 	g_autofree gchar *packages_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4517,7 +4517,7 @@ pk_transaction_search_details (PkTransaction *transaction,
 {
 	gboolean ret;
 	PkBitfield filter;
-	gchar **values;
+	g_autofree gchar **values = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4568,7 +4568,7 @@ pk_transaction_search_files (PkTransaction *transaction,
 	gboolean ret;
 	guint i;
 	PkBitfield filter;
-	gchar **values;
+	g_autofree gchar **values = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4631,7 +4631,7 @@ pk_transaction_search_groups (PkTransaction *transaction,
 	gboolean ret;
 	guint i;
 	PkBitfield filter;
-	gchar **values;
+	g_autofree gchar **values = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4693,7 +4693,7 @@ pk_transaction_search_names (PkTransaction *transaction,
 {
 	gboolean ret;
 	PkBitfield filter;
-	gchar **values;
+	g_autofree gchar **values = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4900,8 +4900,8 @@ pk_transaction_update_packages (PkTransaction *transaction,
 	gboolean ret;
 	guint length;
 	PkBitfield transaction_flags;
-	gchar **package_ids;
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
@@ -4984,7 +4984,7 @@ pk_transaction_what_provides (PkTransaction *transaction,
 {
 	gboolean ret;
 	PkBitfield filter;
-	gchar **values;
+	g_autofree gchar **values = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));

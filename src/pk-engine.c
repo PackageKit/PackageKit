@@ -1386,7 +1386,6 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	PkEngine *engine = PK_ENGINE (user_data);
 	PkRoleEnum role;
 	gchar **transaction_list;
-	gchar **package_names;
 	guint size;
 	gboolean is_priority = TRUE;
 	g_autoptr(GError) error = NULL;
@@ -1416,6 +1415,8 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetPackageHistory") == 0) {
+		g_autofree gchar **package_names = NULL;
+
 		g_variant_get (parameters, "(^a&su)", &package_names, &size);
 		if (package_names == NULL || g_strv_length (package_names) == 0) {
 			g_dbus_method_invocation_return_error (invocation,

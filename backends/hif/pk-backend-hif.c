@@ -894,7 +894,6 @@ static void
 pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	gchar **search_tmp;
 	HifDb *db;
 	HifState *state_local;
 	HyPackageList installs = NULL;
@@ -903,6 +902,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters = 0;
+	g_autofree gchar **search_tmp = NULL;
 	g_autoptr(GError) error = NULL;
 	g_auto(GStrv) search = NULL;
 
@@ -1751,13 +1751,13 @@ static void
 backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	gchar **package_ids;
 	guint i;
 	HifState *state_local;
 	HyPackage pkg;
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
@@ -1841,13 +1841,13 @@ static void
 backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	gchar **full_paths;
 	guint i;
 	HifState *state_local;
 	HyPackage pkg;
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	g_autofree gchar **full_paths = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(^a&s)", &full_paths);
@@ -1927,7 +1927,6 @@ static void
 backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	gchar **full_paths;
 	guint i;
 	HifState *state_local;
 	HyPackage pkg;
@@ -1935,6 +1934,7 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	HyStringArray files_array;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	g_autofree gchar **full_paths = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(^a&s)", &full_paths);
@@ -2010,7 +2010,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 {
 	const gchar *directory;
 	gboolean ret;
-	gchar **package_ids;
 	gchar *tmp;
 	guint i;
 	HifSource *src;
@@ -2020,6 +2019,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	HySack sack;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) files = NULL;
@@ -2670,8 +2670,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	gboolean allow_deps;
 	gboolean autoremove;
 	gboolean ret;
-	gchar **package_ids;
 	guint i;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
@@ -2815,9 +2815,9 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
 	gboolean ret;
-	gchar **package_ids;
 	guint i;
 	enum _hy_comparison_type_e *relations = NULL;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
@@ -3005,8 +3005,8 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
 	gboolean ret;
-	gchar **full_paths;
 	guint i;
+	g_autofree gchar **full_paths = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) array = NULL;
@@ -3114,8 +3114,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
 	gboolean ret;
-	gchar **package_ids;
 	guint i;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
@@ -3362,7 +3362,6 @@ static void
 pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
-	gchar **package_ids;
 	guint i;
 	guint j;
 	HifState *state_local;
@@ -3371,6 +3370,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	HyStringArray files_array;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
@@ -3470,7 +3470,6 @@ pk_backend_get_files (PkBackend *backend,
 static void
 pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	gchar **package_ids;
 	gboolean ret;
 	guint i;
 	gint j;
@@ -3481,6 +3480,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	HySack sack = NULL;
 	PkBackendHifJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
