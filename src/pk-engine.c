@@ -560,9 +560,9 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 							 GAsyncResult *res,
 							 PkEngineDbusState *state)
 {
-	GError *error = NULL;
 	gboolean ret;
 	PkEnginePrivate *priv = state->engine->priv;
+	g_autoptr(GError) error = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(PolkitAuthorizationResult) result = NULL;
 
