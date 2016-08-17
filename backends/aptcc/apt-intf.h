@@ -207,6 +207,11 @@ public:
     void emitPackageFiles(const gchar *pi);
 
     /**
+      *  Emits the files of a package
+      */
+    void emitPackageFilesLocal(const gchar *file);
+
+    /**
       *  Download and install packages
       */
     bool installPackages(PkBitfield flags, bool autoremove);

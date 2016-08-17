@@ -46,6 +46,7 @@
 #include "gst-matcher.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
+#include "deb-file.h"
 
 using namespace APT;
 
@@ -1455,6 +1456,28 @@ void AptIntf::emitPackageFiles(const gchar *pi)
         }
         g_ptr_array_unref(files);
     }
+}
+
+void AptIntf::emitPackageFilesLocal(const gchar *file)
+{
+    DebFile deb(file);
+    if (!deb.isValid()){
+        return;
+    }
+
+    gchar *package_id;
+    package_id = pk_package_id_build(deb.packageName().c_str(),
+                                     deb.version().c_str(),
+                                     deb.architecture().c_str(),
+                                     file);
+
+    GPtrArray *files = g_ptr_array_new_with_free_func(g_free);
+    for (auto file : deb.files()) {
+        g_ptr_array_add(files, g_strdup(file.c_str()));
+    }
+    pk_backend_job_files(m_job, package_id, (gchar **) files->pdata);
+
+    g_ptr_array_unref(files);
 }
 
 /**
