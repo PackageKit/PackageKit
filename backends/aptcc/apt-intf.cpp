@@ -1177,20 +1177,33 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
 {
     PkgList output;
     vector<string> packages;
+    string search;
     regex_t re;
-    gchar *search;
-    gchar *values_str;
 
-    values_str = g_strjoinv("$|^", values);
-    search = g_strdup_printf("^%s$",
-                             values_str);
-    g_free(values_str);
-    if(regcomp(&re, search, REG_NOSUB) != 0) {
+    for (uint i = 0; i < g_strv_length(values); ++i) {
+        gchar *value = values[i];
+        if (strlen(value) < 1) {
+            continue;
+        }
+
+        if (!search.empty()) {
+            search.append("|");
+        }
+
+        if (value[0] == '/') {
+            search.append("^");
+            search.append(value);
+            search.append("$");
+        } else {
+            search.append(value);
+            search.append("$");
+        }
+    }
+
+    if(regcomp(&re, search.c_str(), REG_NOSUB) != 0) {
         g_debug("Regex compilation error");
-        g_free(search);
         return output;
     }
-    g_free(search);
 
     DIR *dp;
     struct dirent *dirp;
@@ -1205,12 +1218,14 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
         if (m_cancel) {
             break;
         }
+
         if (ends_with(dirp->d_name, ".list")) {
             string f = "/var/lib/dpkg/info/" + string(dirp->d_name);
             ifstream in(f.c_str());
             if (!in != 0) {
                 continue;
             }
+
             while (!in.eof()) {
                 getline(in, line);
                 if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
@@ -1229,6 +1244,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
         if (m_cancel) {
             break;
         }
+
         const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
         if (pkg.end() == true) {
             continue;
