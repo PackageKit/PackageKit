@@ -1220,7 +1220,8 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
         }
 
         if (ends_with(dirp->d_name, ".list")) {
-            string f = "/var/lib/dpkg/info/" + string(dirp->d_name);
+            string file(dirp->d_name);
+            string f = "/var/lib/dpkg/info/" + file;
             ifstream in(f.c_str());
             if (!in != 0) {
                 continue;
@@ -1229,7 +1230,6 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
             while (!in.eof()) {
                 getline(in, line);
                 if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
-                    string file(dirp->d_name);
                     packages.push_back(file.erase(file.size() - 5, file.size()));
                     break;
                 }
@@ -1240,17 +1240,32 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
     regfree(&re);
 
     // Resolve the package names now
-    for (const string &package : packages) {
+    for (const string &name : packages) {
         if (m_cancel) {
             break;
         }
 
-        const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
-        if (pkg.end() == true) {
-            continue;
+        pkgCache::PkgIterator pkg;
+        if (name.find(':') != std::string::npos) {
+            pkg = (*m_cache)->FindPkg(name);
+            if (pkg.end()) {
+                continue;
+            }
+        } else {
+            pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
+            for (pkg = grp.PackageList(); pkg.end() == false; pkg = grp.NextPkg(pkg)) {
+                if (pkg->CurrentState == pkgCache::State::Installed) {
+                    break;
+                }
+            }
+
+            if (pkg->CurrentState != pkgCache::State::Installed) {
+                 continue;
+            }
         }
+
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == true) {
+        if (ver.end()) {
             continue;
         }
         output.push_back(ver);
