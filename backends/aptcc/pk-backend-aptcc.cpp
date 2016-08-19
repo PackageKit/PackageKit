@@ -1083,7 +1083,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
     if ((role == PK_ROLE_ENUM_REPO_ENABLE || role == PK_ROLE_ENUM_REPO_REMOVE) &&
             !found) {
-        _error->Error("Could not found the repository");
+        _error->Error("Could not find the repository");
         show_errors(job, PK_ERROR_ENUM_REPO_NOT_AVAILABLE);
     }
 }
