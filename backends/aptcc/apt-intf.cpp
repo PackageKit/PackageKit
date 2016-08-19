@@ -2030,41 +2030,39 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
 
         // Check if it's a valid package id
         if (pk_package_id_check(pi) == false) {
-            // Check if we are on multiarch AND if the package name didn't contains the arch field (GDEBI for instance)
-            if (m_isMultiArch && strstr(pi, ":") == NULL) {
+            string name(pi);
+            // Check if the package name didn't contains the arch field
+            if (name.find(':') == std::string::npos) {
                 // OK FindPkg is not suitable on muitarch without ":arch"
                 // it can only return one package in this case we need to
                 // search the whole package cache and match the package
                 // name manually
-                for (pkgCache::PkgIterator pkg = m_cache->GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
+                pkgCache::PkgIterator pkg;
+                pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
+                for (pkg = grp.PackageList(); pkg.end() == false; pkg = grp.NextPkg(pkg)) {
                     if (m_cancel) {
                         break;
                     }
 
-                    // check if this is the package we want
-                    if (strcmp(pkg.Name(), pi) != 0) {
-                        continue;
-                    }
-
-                    // Ignore packages that could not be found or that exist only due to dependencies.
-                    if ((pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))) {
+                    // Ignore packages that exist only due to dependencies.
+                    if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
                         continue;
                     }
 
                     const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
                     // check to see if the provided package isn't virtual too
-                    if (ver.end() == false) {
+                    if (!ver.end()) {
                         ret.push_back(ver);
                     }
 
                     const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
                     // check to see if the provided package isn't virtual too
-                    if (candidateVer.end() == false) {
+                    if (!candidateVer.end()) {
                         ret.push_back(candidateVer);
                     }
                 }
             } else {
-                const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(pi);
+                const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
                 // Ignore packages that could not be found or that exist only due to dependencies.
                 if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
                     continue;
