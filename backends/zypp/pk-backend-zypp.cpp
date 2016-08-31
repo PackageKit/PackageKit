@@ -1309,7 +1309,9 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 	    ( patch->reloginSuggested () ||
 	      patch->restartSuggested () ||
 	      patch->rebootSuggested ()) ) {
-		if (patch->reloginSuggested () || patch->restartSuggested ())
+		if (patch->restartSuggested ())
+			*restart = PK_RESTART_ENUM_APPLICATION;
+		if (patch->reloginSuggested ())
 			*restart = PK_RESTART_ENUM_SESSION;
 		if (patch->rebootSuggested ())
 			*restart = PK_RESTART_ENUM_SYSTEM;
