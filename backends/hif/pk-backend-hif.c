@@ -1326,13 +1326,13 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 		ret = (hif_source_get_enabled (src) & HIF_SOURCE_ENABLED_PACKAGES) > 0;
 		if (g_strcmp0 (value, "1") == 0 && ret) {
 			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+						   PK_ERROR_ENUM_REPO_ALREADY_SET,
 						   "repo already enabled");
 			goto out;
 		}
 		if (g_strcmp0 (value, "0") == 0 && !ret) {
 			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+						   PK_ERROR_ENUM_REPO_ALREADY_SET,
 						   "repo already disabled");
 			goto out;
 		}
