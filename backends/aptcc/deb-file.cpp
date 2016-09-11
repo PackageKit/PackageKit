@@ -1,6 +1,6 @@
 /* deb-file.cpp
  *
- * Copyright (c) 2011 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2011-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
@@ -25,8 +25,19 @@
 #include <glib.h>
 #include <apt-pkg/init.h>
 
-DebFile::DebFile(const string &filename) :
-    m_filePath(filename)
+class GetFilesStream : public pkgDirStream
+{
+public:
+    std::vector<std::string> files;
+
+    virtual bool DoItem(Item &Itm,int &Fd) override {
+        Fd = -1;
+        files.push_back(Itm.Name);
+        return true;
+    }
+};
+
+DebFile::DebFile(const string &filename)
 {
     FileFd in(filename, FileFd::ReadOnly);
     debDebFile deb(in);
@@ -34,27 +45,36 @@ DebFile::DebFile(const string &filename) :
     // Extract control data
     m_extractor = new debDebFile::MemControlExtract("control");
     if (!m_extractor->Read(deb)) {
-        m_isValid = false;
         return;
-    } else {
-        m_isValid = true;
     }
 
     if(!m_controlData.Scan(m_extractor->Control,m_extractor->Length+2)) {
         g_warning("DebFile: Scan failed.");
-        m_isValid = false;
         return;
     }
+
+    GetFilesStream stream;
+    if (deb.ExtractArchive(stream) == false) {
+        return;
+    }
+    m_files = stream.files;
+
+    m_isValid = true;
+}
+
+DebFile::~DebFile()
+{
+    delete m_extractor;
+}
+
+std::vector<std::string> DebFile::files() const
+{
+    return m_files;
 }
 
 bool DebFile::isValid() const
 {
     return m_isValid;
-}
-
-string DebFile::filePath() const
-{
-    return m_filePath;
 }
 
 string DebFile::packageName() const

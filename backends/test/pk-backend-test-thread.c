@@ -89,7 +89,7 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	guint percentage;
 	PkBitfield filters;
 	gchar *filters_text;
-	gchar **search;
+	g_autofree gchar **search = NULL;
 
 	g_variant_get (params, "(t^a&s)",
 		       &filters,

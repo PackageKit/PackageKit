@@ -37,12 +37,11 @@ BuildRequires: bash-completion
 %endif
 
 %if !0%{?rhel}
-BuildRequires: hawkey-devel >= 0.4.6
 BuildRequires: rpm-devel >= 4.11.0
 BuildRequires: libappstream-glib-devel
 BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
-BuildRequires: libhif-devel >= 0.1.6
+BuildRequires: libdnf-devel >= 0.7.0
 %endif
 
 # functionality moved to udev itself
@@ -138,7 +137,7 @@ using PackageKit.
 %configure \
         --disable-static \
 %if 0%{?rhel} == 0
-        --enable-hif \
+        --enable-dnf \
         --enable-introspection \
         --enable-bash-completion \
 %else
@@ -221,7 +220,7 @@ popd > /dev/null
 %{_unitdir}/system-update.target.wants/
 %{_libexecdir}/pk-*offline-update
 %if 0%{?rhel} == 0
-%{_libdir}/packagekit-backend/libpk_backend_hif.so
+%{_libdir}/packagekit-backend/libpk_backend_dnf.so
 %endif
 
 %files glib

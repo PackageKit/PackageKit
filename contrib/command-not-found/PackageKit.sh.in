@@ -14,7 +14,7 @@ command_not_found_handle () {
 	[[ $- =~ i ]] || runcnf=0
 
 	# don't run if DBus isn't running
-	[[ ! -S /var/run/dbus/system_bus_socket ]] && runcnf=0
+	[[ ! -S /run/dbus/system_bus_socket ]] && runcnf=0
 
 	# don't run if packagekitd doesn't exist in the _system_ root
 	[[ ! -x '@LIBEXECDIR@/packagekitd' ]] && runcnf=0

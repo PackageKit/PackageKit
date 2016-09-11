@@ -1,7 +1,7 @@
 /* matcher.h
  *
  * Copyright (c) 1999-2008 Daniel Burrows
- * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,6 @@ public:
     ~Matcher();
 
     bool matches(const string &s);
-    bool matchesFile(const string &s, map<int, bool> &matchers_used);
     bool hasError() const;
 
 private:
