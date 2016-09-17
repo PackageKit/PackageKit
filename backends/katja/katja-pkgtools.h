@@ -27,6 +27,7 @@ typedef struct {
 	gchar *(*get_name) (KatjaPkgtools *pkgtools);
 	gchar *(*get_mirror) (KatjaPkgtools *pkgtools);
 	gushort (*get_order) (KatjaPkgtools *pkgtools);
+	GRegex *(*get_blacklist) (KatjaPkgtools *pkgtools);
 	GSList *(*collect_cache_info) (KatjaPkgtools *pkgtools, const gchar *tmpl);
 	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 	gboolean (*download) (KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
@@ -39,6 +40,7 @@ GType katja_pkgtools_get_type(void);
 gchar *katja_pkgtools_get_name(KatjaPkgtools *pkgtools);
 gchar *katja_pkgtools_get_mirror(KatjaPkgtools *pkgtools);
 gushort katja_pkgtools_get_order(KatjaPkgtools *pkgtools);
+GRegex *katja_pkgtools_get_blacklist(KatjaPkgtools *pkgtools);
 GSList *katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
 void katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 gboolean katja_pkgtools_download(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);

@@ -7,6 +7,7 @@ static void katja_pkgtools_iface_init(KatjaPkgtoolsInterface *iface) {
 	iface->get_name = katja_binary_real_get_name;
 	iface->get_mirror = katja_binary_real_get_mirror;
 	iface->get_order = katja_binary_real_get_order;
+	iface->get_blacklist = katja_binary_real_get_blacklist;
 	iface->collect_cache_info = (GSList *(*)(KatjaPkgtools *, const gchar *)) katja_binary_collect_cache_info;
 	iface->generate_cache = (void (*)(KatjaPkgtools *, PkBackendJob *, const gchar *)) katja_binary_generate_cache;
 	iface->download = katja_binary_real_download;
@@ -161,6 +162,13 @@ gushort katja_binary_real_get_order(KatjaPkgtools *pkgtools) {
 }
 
 /**
+ * katja_binary_real_get_blacklist:
+ **/
+GRegex *katja_binary_real_get_blacklist(KatjaPkgtools *pkgtools) {
+	return KATJA_BINARY(pkgtools)->blacklist;
+}
+
+/**
  * katja_binary_real_download:
  **/
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, PkBackendJob *job,
@@ -255,6 +263,8 @@ static void katja_binary_finalize(GObject *object) {
 
 	g_free(binary->name);
 	g_free(binary->mirror);
+	if (binary->blacklist)
+		g_object_unref(binary->blacklist);
 
 	G_OBJECT_CLASS(katja_binary_parent_class)->finalize(object);
 }
@@ -274,5 +284,6 @@ static void katja_binary_class_init(KatjaBinaryClass *klass) {
 static void katja_binary_init(KatjaBinary *binary) {
 	binary->name = NULL;
 	binary->mirror = NULL;
+	binary->blacklist = NULL;
 	binary->order = 0;
 }

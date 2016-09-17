@@ -216,9 +216,12 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		if (!strncmp(line, "PACKAGE NAME:  ", 15)) {
 			filename = g_strdup(line + 15);
+			if (katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(binary)) &&
+				g_regex_match(katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(binary)), filename, 0, NULL)) {
 
 				g_free(filename);
 				filename = NULL;
+			}
 		} else if (filename && !strncmp(line, "PACKAGE LOCATION:  ", 19)) {
 			location = g_strdup(line + 21); /* Exclude ./ at the path beginning */
 		} else if (filename && !strncmp(line, "PACKAGE SIZE (compressed):  ", 28)) {
@@ -364,7 +367,7 @@ static void katja_slackpkg_init(KatjaSlackpkg *slackpkg) {
 /**
  * katja_slackpkg_new:
  **/
-KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar **priority) {
+KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar **priority) {
 	KatjaSlackpkg *slackpkg;
 
 	g_return_val_if_fail(name != NULL, NULL);
@@ -375,6 +378,9 @@ KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gch
 	KATJA_BINARY(slackpkg)->name = name;
 	KATJA_BINARY(slackpkg)->mirror = mirror;
 	KATJA_BINARY(slackpkg)->order = order;
+
+	if (blacklist) /* Blacklist if set */
+		KATJA_BINARY(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
 
 	slackpkg->priority = priority;
 

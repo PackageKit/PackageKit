@@ -21,6 +21,7 @@ typedef struct {
 	gchar *name;
 	gchar *mirror;
 	gushort order;
+	GRegex *blacklist;
 } KatjaBinary;
 
 typedef struct {
@@ -45,6 +46,7 @@ void katja_binary_manifest(KatjaBinary *binary, PkBackendJob *job, const gchar *
 gchar *katja_binary_real_get_name(KatjaPkgtools *pkgtools);
 gchar *katja_binary_real_get_mirror(KatjaPkgtools *pkgtools);
 gushort katja_binary_real_get_order(KatjaPkgtools *pkgtools);
+GRegex *katja_binary_real_get_blacklist(KatjaPkgtools *pkgtools);
 gboolean katja_binary_real_download(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
 void katja_binary_real_install(KatjaPkgtools *pkgtools, PkBackendJob *job, gchar *pkg_name);
 
