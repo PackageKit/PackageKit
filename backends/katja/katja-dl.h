@@ -1,7 +1,7 @@
 #ifndef __KATJA_DL_H
 #define __KATJA_DL_H
 
-#include <katja-binary.h>
+#include <katja-pkgtools.h>
 
 G_BEGIN_DECLS
 
@@ -13,14 +13,14 @@ G_BEGIN_DECLS
 #define KATJA_DL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), KATJA_TYPE_DL, KatjaDlClass))
 
 typedef struct {
-	KatjaBinary parent;
+	KatjaPkgtools parent;
 
 	/* public */
 	gchar *index_file;
 } KatjaDl;
 
 typedef struct {
-	KatjaBinaryClass parent_class;
+	KatjaPkgtoolsClass parent_class;
 } KatjaDlClass;
 
 GType katja_dl_get_type(void);
@@ -29,8 +29,8 @@ GType katja_dl_get_type(void);
 KatjaDl *katja_dl_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar *index_file);
 
 /* Implementations */
-GSList *katja_dl_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl);
-void katja_dl_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl);
+GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
+void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 

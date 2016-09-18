@@ -1,4 +1,7 @@
-#include "katja-utils.h"
+extern "C"
+{
+	#include "katja-utils.h"
+}
 
 /**
  * katja_get_file:
@@ -59,7 +62,7 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 
 	len = strlen(pkg_filename);
 	if (pkg_filename[len - 4] == '.') {
-		pkg_tokens = g_malloc_n(6, sizeof(gchar *));
+		pkg_tokens = static_cast<gchar **>(g_malloc_n(6, sizeof(gchar *)));
 
 		/* Full name without extension */
 		len -= 4;
@@ -70,7 +73,7 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 		pkg_tokens[4] = g_strdup(pkg_filename + len + 1);
 		pkg_tokens[5] = NULL;
 	} else {
-		pkg_tokens = g_malloc_n(4, sizeof(gchar *));
+		pkg_tokens = static_cast<gchar **>(g_malloc_n(4, sizeof(gchar *)));
 		pkg_full_name = g_strdup(pkg_filename);
 		pkg_tokens[3] = NULL;
 	}

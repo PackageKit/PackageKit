@@ -5,6 +5,7 @@
 #include <zlib.h>
 #include <curl/curl.h>
 #include <pk-backend.h>
+#include <packagekit-glib2/pk-debug.h>
 #include "katja-slackpkg.h"
 #include "katja-dl.h"
 
@@ -23,6 +24,10 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 	gpointer repo = NULL;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
+
+	// Use logging
+	pk_debug_add_log_domain(G_LOG_DOMAIN);
+	pk_debug_add_log_domain("Katja");
 
 	g_debug("backend: initialize");
 	curl_global_init(CURL_GLOBAL_DEFAULT);

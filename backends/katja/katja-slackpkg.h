@@ -1,7 +1,7 @@
 #ifndef __KATJA_SLACKPKG_H
 #define __KATJA_SLACKPKG_H
 
-#include <katja-binary.h>
+#include <katja-pkgtools.h>
 
 G_BEGIN_DECLS
 
@@ -13,14 +13,14 @@ G_BEGIN_DECLS
 #define KATJA_SLACKPKG_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), KATJA_TYPE_SLACKPKG, KatjaSlackpkgClass))
 
 typedef struct {
-	KatjaBinary parent;
+	KatjaPkgtools parent;
 
 	/* public */
 	gchar **priority;
 } KatjaSlackpkg;
 
 typedef struct {
-	KatjaBinaryClass parent_class;
+	KatjaPkgtoolsClass parent_class;
 } KatjaSlackpkgClass;
 
 GType katja_slackpkg_get_type(void);
@@ -32,8 +32,8 @@ extern GHashTable *katja_slackpkg_cat_map;
 KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gchar *blacklist, gchar **priority);
 
 /* Implementations */
-GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl);
-void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl);
+GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
+void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 
