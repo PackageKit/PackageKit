@@ -3,6 +3,8 @@ extern "C"
 	#include "katja-utils.h"
 }
 
+#include <glibmm.h>
+
 /**
  * katja_get_file:
  **/
@@ -112,6 +114,15 @@ PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name) {
 
 	g_return_val_if_fail(pkg_full_name != NULL, PK_INFO_ENUM_UNKNOWN);
 
+	auto metadataDir = new Glib::Dir("/var/log/packages");
+	auto pkgFullname = std::string(pkg_full_name);
+	
+	for (auto&& dir : *metadataDir)
+	{
+	}
+
+	delete metadataDir;
+
 	/* Read the package metadata directory and comprare all installed packages with ones in the cache */
 	pkg_metadata_dir = g_file_new_for_path("/var/log/packages");
 	if (!(pkg_metadata_enumerator = g_file_enumerate_children(pkg_metadata_dir, "standard::name",
@@ -143,6 +154,7 @@ PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name) {
 	g_strfreev(pkg_tokens);
 	g_object_unref(pkg_metadata_enumerator);
 	g_object_unref(pkg_metadata_dir);
+
 
 	return ret;
 }
