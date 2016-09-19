@@ -284,9 +284,6 @@ gboolean	 pk_task_user_declined			(PkTask			*task,
 void		 pk_task_set_simulate			(PkTask			*task,
 							 gboolean		 simulate);
 gboolean	 pk_task_get_simulate			(PkTask			*task);
-void		 pk_task_set_interactive		(PkTask			*task,
-							 gboolean		 interactive);
-gboolean	 pk_task_get_interactive		(PkTask			*task);
 void		 pk_task_set_only_download		(PkTask			*task,
 							 gboolean		 only_download);
 gboolean	 pk_task_get_only_download		(PkTask			*task);
