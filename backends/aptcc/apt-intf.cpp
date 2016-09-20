@@ -1289,14 +1289,15 @@ PkgList AptIntf::getUpdates(PkgList &blocked)
     }
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
-        if ((*m_cache)[pkg].Upgrade() == true && (*m_cache)[pkg].NewInstall() == false) {
+        const auto &state = (*m_cache)[pkg];
+        if (state.Upgrade() == true && state.NewInstall() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 updates.push_back(ver);
             }
-        } else if ((*m_cache)[pkg].Upgradable() == true &&
+        } else if (state.Upgradable() == true &&
                    pkg->CurrentVer != 0 &&
-                   (*m_cache)[pkg].Delete() == false) {
+                   state.Delete() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 blocked.push_back(ver);
