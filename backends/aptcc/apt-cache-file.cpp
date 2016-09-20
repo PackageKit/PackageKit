@@ -481,7 +481,7 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
     // FIXME: this is ignoring the return value. OTOH the return value means little to us
     //   since we run markinstall twice, once without autoinst and once with.
     //   We probably should change the return value behavior and have the callee decide whether to
-    //   error out or call us agian with autoinst. This however is further complicated by us
+    //   error out or call us again with autoinst. This however is further complicated by us
     //   having protected, so we'd have to lift protection before this?
     GetDepCache()->MarkInstall(Pkg, autoInst, 0, fromUser);
     // Protect against further resolver changes.
