@@ -1290,7 +1290,12 @@ PkgList AptIntf::getUpdates(PkgList &blocked)
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
         const auto &state = (*m_cache)[pkg];
-        if (state.Upgrade() == true && state.NewInstall() == false) {
+        if (pkg->SelectedState == pkgCache::State::Hold) {
+            // We pretend held packages are not upgradable at all since we can't represent
+            // the concept of holds in PackageKit.
+            // https://github.com/hughsie/PackageKit/issues/120
+            continue;
+        } else if (state.Upgrade() == true && state.NewInstall() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 updates.push_back(ver);
