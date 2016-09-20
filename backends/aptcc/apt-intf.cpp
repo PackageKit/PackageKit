@@ -352,7 +352,7 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             }
         }
 
-        // This filter is more complex so we filter it after the list has shrink
+        // This filter is more complex so we filter it after the list has shrunk
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && ret.size() > 0) {
             PkgList downloaded;
 
