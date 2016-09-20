@@ -889,12 +889,11 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 
     // Install/Update/Remove packages, or just simulate
-    bool ret;
-    ret = apt->runTransaction(installPkgs,
-                              removePkgs,
-                              fixBroken,
-                              transaction_flags,
-                              autoremove);
+    bool ret = apt->runTransaction(installPkgs,
+                                   removePkgs,
+                                   fixBroken,
+                                   transaction_flags,
+                                   autoremove);
     if (!ret) {
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
