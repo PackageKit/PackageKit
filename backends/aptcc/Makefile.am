@@ -29,11 +29,12 @@ EXTRA_DIST = 20packagekit \
 	     apt-intf.h \
 	     apt-utils.h \
 	     apt-sourceslist.h \
+	     apt-messages.h \
+	     apt-cache-file.h \
 	     gst-matcher.h \
 	     matcher.h \
-	     apt-messages.h \
-	     acqpkitstatus.h \
-	     apt-cache-file.h
+	     deb-file.h \
+	     acqpkitstatus.h
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc
 dist_helper_DATA =					\
