@@ -359,12 +359,14 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             pkgProblemResolver Fix(*m_cache);
             {
                 pkgDepCache::ActionGroup group(*m_cache);
-                for (const pkgCache::VerIterator &ver : ret) {
-                    if (m_cancel) {
-                        break;
-                    }
+                for (auto autoInst : { true, false }) {
+                    for (const pkgCache::VerIterator &ver : ret) {
+                        if (m_cancel) {
+                            break;
+                        }
 
-                    m_cache->tryToInstall(Fix, ver, false);
+                        m_cache->tryToInstall(Fix, ver, false, autoInst, false);
+                    }
                 }
             }
 
@@ -2176,26 +2178,28 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
 
     pkgProblemResolver Fix(*m_cache);
 
+    // TODO: could use std::bind an have a generic operation array iff toRemove had the same
+    //       signature
+
+    struct Operation {
+        const PkgList &list;
+        const bool preserveAuto;
+    };
+
     // new scope for the ActionGroup
     {
         pkgDepCache::ActionGroup group(*m_cache);
-        for (const pkgCache::VerIterator &verIt : install) {
-            if (m_cancel) {
-                break;
-            }
 
-            if (!m_cache->tryToInstall(Fix, verIt, BrokenFix)) {
-                return false;
-            }
-        }
-
-        for (const pkgCache::VerIterator &verIt : update) {
-            if (m_cancel) {
-                break;
-            }
-
-            if (!m_cache->tryToInstall(Fix, verIt, BrokenFix)) {
-                return false;
+        for (auto op : { Operation { install, false }, Operation { update, true } }) {
+            for (auto autoInst : { false, true }) {
+                for (const pkgCache::VerIterator &verIt : op.list) {
+                    if (m_cancel) {
+                        break;
+                    }
+                    if (!m_cache->tryToInstall(Fix, verIt, BrokenFix, autoInst, op.preserveAuto)) {
+                        return false;
+                    }
+                }
             }
         }
 

@@ -2,6 +2,7 @@
  *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2012 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (c) 2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,7 +130,7 @@ public:
 
     bool tryToInstall(pkgProblemResolver &Fix,
                       const pkgCache::VerIterator &ver,
-                      bool BrokenFix);
+                      bool BrokenFix, bool autoInst, bool preserveAuto);
 
     void tryToRemove(pkgProblemResolver &Fix,
                      const pkgCache::VerIterator &ver);
