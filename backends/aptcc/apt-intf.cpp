@@ -4,6 +4,7 @@
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
  *               2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
+ *               2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2157,7 +2158,8 @@ PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
     return ret;
 }
 
-bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool fixBroken, PkBitfield flags, bool autoremove)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, const PkgList &update,
+                             bool fixBroken, PkBitfield flags, bool autoremove)
 {
     //cout << "runTransaction" << simulate << remove << endl;
 
@@ -2178,6 +2180,16 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
     {
         pkgDepCache::ActionGroup group(*m_cache);
         for (const pkgCache::VerIterator &verIt : install) {
+            if (m_cancel) {
+                break;
+            }
+
+            if (!m_cache->tryToInstall(Fix, verIt, BrokenFix)) {
+                return false;
+            }
+        }
+
+        for (const pkgCache::VerIterator &verIt : update) {
             if (m_cancel) {
                 break;
             }
