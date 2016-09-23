@@ -106,55 +106,60 @@ gint katja_cmp_repo(gconstpointer a, gconstpointer b) {
  **/
 PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name) {
 	PkInfoEnum ret = PK_INFO_ENUM_INSTALLING;
-	gchar **pkg_tokens, **metadata_pkg_tokens;
-	const gchar *pkg_metadata_filename;
-	GFile *pkg_metadata_dir;
-	GFileEnumerator *pkg_metadata_enumerator;
-	GFileInfo *pkg_metadata_file_info;
 
 	g_return_val_if_fail(pkg_full_name != NULL, PK_INFO_ENUM_UNKNOWN);
 
+    // We want to find the package name without version for the package we're
+    // looking for.
+	const auto pkgFullname = std::string(pkg_full_name);
+    g_debug("Looking if %s is installed", pkgFullname.c_str());
+
+    std::string::const_iterator it;
+    unsigned short dashes = 0;
+
+    for (it = pkgFullname.end(); it != pkgFullname.begin(); --it)
+    {
+        if (*it == '-')
+        {
+            if (dashes == 2)
+            {
+                break;
+            }
+            ++dashes;
+        }
+    }
+    const auto pkgName = std::string(pkgFullname.begin(), it);
+
+	// Read the package metadata directory and comprare all installed packages
+    // with ones in the cache.
 	auto metadataDir = new Glib::Dir("/var/log/packages");
-	auto pkgFullname = std::string(pkg_full_name);
-	
-	for (auto&& dir : *metadataDir)
+	for (const auto&& dir : *metadataDir)
 	{
+        dashes = 0;
+        if (dir == pkgFullname)
+        {
+            ret = PK_INFO_ENUM_INSTALLED;
+            break;
+        }
+
+        for (it = dir.end(); it != dir.begin(); --it)
+        {
+            if (*it == '-')
+            {
+                if (dashes == 2)
+                {
+                    break;
+                }
+                ++dashes;
+            }
+        }
+        if (pkgName == std::string(dir.begin(), it))
+        {
+            ret = PK_INFO_ENUM_UPDATING;
+            break;
+        }
 	}
 
 	delete metadataDir;
-
-	/* Read the package metadata directory and comprare all installed packages with ones in the cache */
-	pkg_metadata_dir = g_file_new_for_path("/var/log/packages");
-	if (!(pkg_metadata_enumerator = g_file_enumerate_children(pkg_metadata_dir, "standard::name",
-														G_FILE_QUERY_INFO_NONE,
-														NULL,
-														NULL))) {
-		g_object_unref(pkg_metadata_dir);
-		return PK_INFO_ENUM_UNKNOWN;
-	}
-
-	pkg_tokens = katja_cut_pkg(pkg_full_name);
-
-	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL))) {
-		pkg_metadata_filename = g_file_info_get_name(pkg_metadata_file_info);
-		metadata_pkg_tokens = katja_cut_pkg(pkg_metadata_filename);
-
-		if (!g_strcmp0(pkg_metadata_filename, pkg_full_name))
-			ret = PK_INFO_ENUM_INSTALLED;
-		else if (!g_strcmp0(metadata_pkg_tokens[0], pkg_tokens[0]))
-			ret = PK_INFO_ENUM_UPDATING;
-
-		g_strfreev(metadata_pkg_tokens);
-		g_object_unref(pkg_metadata_file_info);
-
-		if (ret != PK_INFO_ENUM_INSTALLING) /* If installed */
-			break;
-	}
-
-	g_strfreev(pkg_tokens);
-	g_object_unref(pkg_metadata_enumerator);
-	g_object_unref(pkg_metadata_dir);
-
-
 	return ret;
 }
