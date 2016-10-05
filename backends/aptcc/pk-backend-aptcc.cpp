@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
+ *               2016 Harald Sitter <sitter@kde.org>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -860,17 +861,16 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    PkgList installPkgs, removePkgs;
+    PkgList installPkgs, removePkgs, updatePkgs;
 
     if (!fixBroken) {
         // Resolve the given packages
         if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
             removePkgs = apt->resolvePackageIds(package_ids);
-        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-                   role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-            // Updates are like installs for the purposes of resolution, we
-            // want to install the updates essentially.
+        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
             installPkgs = apt->resolvePackageIds(package_ids);
+        } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+            updatePkgs = apt->resolvePackageIds(package_ids);
         } else if (role == PK_ROLE_ENUM_INSTALL_FILES) {
             installPkgs = apt->resolveLocalFiles(full_paths);
         } else {
@@ -880,7 +880,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             return;
         }
 
-        if (removePkgs.size() == 0 && installPkgs.size() == 0) {
+        if (removePkgs.size() == 0 && installPkgs.size() == 0 && updatePkgs.size() == 0) {
             pk_backend_job_error_code(job,
                                       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
                                       "Could not find package(s)");
@@ -889,12 +889,12 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 
     // Install/Update/Remove packages, or just simulate
-    bool ret;
-    ret = apt->runTransaction(installPkgs,
-                              removePkgs,
-                              fixBroken,
-                              transaction_flags,
-                              autoremove);
+    bool ret = apt->runTransaction(installPkgs,
+                                   removePkgs,
+                                   updatePkgs,
+                                   fixBroken,
+                                   transaction_flags,
+                                   autoremove);
     if (!ret) {
         // Print transaction errors
         g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
@@ -1053,6 +1053,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         bool ret;
                         ret = apt->runTransaction(PkgList(),
                                                   removePkgs,
+                                                  PkgList(),
                                                   false,
                                                   transaction_flags,
                                                   false);

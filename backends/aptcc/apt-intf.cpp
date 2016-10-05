@@ -4,6 +4,7 @@
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
  *               2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
+ *               2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -351,19 +352,21 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             }
         }
 
-        // This filter is more complex so we filter it after the list has shrink
+        // This filter is more complex so we filter it after the list has shrunk
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && ret.size() > 0) {
             PkgList downloaded;
 
             pkgProblemResolver Fix(*m_cache);
             {
                 pkgDepCache::ActionGroup group(*m_cache);
-                for (const pkgCache::VerIterator &ver : ret) {
-                    if (m_cancel) {
-                        break;
-                    }
+                for (auto autoInst : { true, false }) {
+                    for (const pkgCache::VerIterator &ver : ret) {
+                        if (m_cancel) {
+                            break;
+                        }
 
-                    m_cache->tryToInstall(Fix, ver, false);
+                        m_cache->tryToInstall(Fix, ver, false, autoInst, false);
+                    }
                 }
             }
 
@@ -1286,14 +1289,20 @@ PkgList AptIntf::getUpdates(PkgList &blocked)
     }
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
-        if ((*m_cache)[pkg].Upgrade() == true && (*m_cache)[pkg].NewInstall() == false) {
+        const auto &state = (*m_cache)[pkg];
+        if (pkg->SelectedState == pkgCache::State::Hold) {
+            // We pretend held packages are not upgradable at all since we can't represent
+            // the concept of holds in PackageKit.
+            // https://github.com/hughsie/PackageKit/issues/120
+            continue;
+        } else if (state.Upgrade() == true && state.NewInstall() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 updates.push_back(ver);
             }
-        } else if ((*m_cache)[pkg].Upgradable() == true &&
+        } else if (state.Upgradable() == true &&
                    pkg->CurrentVer != 0 &&
-                   (*m_cache)[pkg].Delete() == false) {
+                   state.Delete() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 blocked.push_back(ver);
@@ -2157,7 +2166,8 @@ PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
     return ret;
 }
 
-bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool fixBroken, PkBitfield flags, bool autoremove)
+bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, const PkgList &update,
+                             bool fixBroken, PkBitfield flags, bool autoremove)
 {
     //cout << "runTransaction" << simulate << remove << endl;
 
@@ -2174,16 +2184,28 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, bool
 
     pkgProblemResolver Fix(*m_cache);
 
+    // TODO: could use std::bind an have a generic operation array iff toRemove had the same
+    //       signature
+
+    struct Operation {
+        const PkgList &list;
+        const bool preserveAuto;
+    };
+
     // new scope for the ActionGroup
     {
         pkgDepCache::ActionGroup group(*m_cache);
-        for (const pkgCache::VerIterator &verIt : install) {
-            if (m_cancel) {
-                break;
-            }
 
-            if (!m_cache->tryToInstall(Fix, verIt, BrokenFix)) {
-                return false;
+        for (auto op : { Operation { install, false }, Operation { update, true } }) {
+            for (auto autoInst : { false, true }) {
+                for (const pkgCache::VerIterator &verIt : op.list) {
+                    if (m_cancel) {
+                        break;
+                    }
+                    if (!m_cache->tryToInstall(Fix, verIt, BrokenFix, autoInst, op.preserveAuto)) {
+                        return false;
+                    }
+                }
             }
         }
 
