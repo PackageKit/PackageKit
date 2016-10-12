@@ -3,6 +3,7 @@
  * Copyright (c) 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
  * Copyright (c) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
  *               2012 Matthias Klumpp <matthias@tenstral.net>
+ *               2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,15 +84,17 @@ public:
     void markAutoInstalled(const PkgList &pkgs);
 
     /**
-     *  runs a transaction to install/remove/update packages
-     *  - for install and update, \p remove should be set to false
-     *  - if you are going to remove, \p remove should be true
-     *  - if you don't want to actually install/update/remove
-     *    \p simulate should be true, in this case packages with
-     *    what's going to happen will be emitted.
+     * runs a transaction to install/remove/update packages
+     * @param install List of packages to install
+     * @param remove List of packages to remove
+     * @param update List of packages to update
+     * @param fixBroken whether to automatically fix broken packages
+     * @param flags operation flags as per public API
+     * @param autoremove whether to autoremove dangling packages
      */
     bool runTransaction(const PkgList &install,
                         const PkgList &remove,
+                        const PkgList &update,
                         bool fixBroken,
                         PkBitfield flags,
                         bool autoremove);
