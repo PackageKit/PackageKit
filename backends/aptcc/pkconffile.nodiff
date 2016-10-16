@@ -6,7 +6,7 @@ Template: pkconffile/what_to_do
 Type: select
 Choices: Install the package maintainer's version, Keep the currently installed version, Show the differences between the current and new versions
 Default: Keep the currently installed version
-Description: How do you want to handle this conflic?
+Description: How do you want to handle this conflict?
  The configuration file '${forig}' (modified by you or a script) has a newer version.
 
 Template: pkconffile/diff
