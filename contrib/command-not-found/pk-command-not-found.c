@@ -815,6 +815,10 @@ main (int argc, char *argv[])
 	 * the style of bash itself -- apologies */
 	g_printerr ("%s: %s: %s...\n", shell, argv[1], _("command not found"));
 
+	/* ignore one char mistakes */
+	if (len < 2)
+		goto out;
+
 	/* user is not allowing CNF to do anything useful */
 	if (!config->software_source_search &&
 	    !config->similar_name_search) {
