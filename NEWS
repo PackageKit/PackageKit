@@ -1,3 +1,92 @@
+Version 1.1.4
+~~~~~~~~~~~~~~
+Released: 2016-09-19
+
+Backends:
+ - aptcc: Add get-files-local support (Daniel Nicoletti)
+ - aptcc: Add support for pk_backend_get_details_local (Daniel Nicoletti)
+ - aptcc: Add support for searching for relative paths (Daniel Nicoletti)
+ - aptcc: Convert a few more loops to C++11 range for (Daniel Nicoletti)
+ - aptcc: Drop DebFile helper class (Matthias Klumpp)
+ - aptcc: Fix locating package which a file list belongs to (Daniel Nicoletti)
+ - aptcc: Fix NULL assertion warning (Daniel Nicoletti)
+ - aptcc: Fix typo (Daniel Nicoletti)
+ - aptcc: Install local files using APT API (Daniel Nicoletti)
+ - aptcc: Update pk-matrix for GetDetailsLocal (Daniel Nicoletti)
+ - aptcc: Use C++11 range for loops (Daniel Nicoletti)
+ - aptcc: Use FindGrp instead of manual matching every package when resolving (Daniel Nicoletti)
+ - apt: Remove reference from pk-matrix.html (Daniel Nicoletti)
+ - dnf: Port from libhif to libdnf (Kalev Lember)
+ - hif/dnf: Fix a tiny memory leak when installing packages (Kalev Lember)
+ - hif/dnf: Fix a tiny memory leak when invalidating repo cache (Kalev Lember)
+ - zypp: pass the patch "Application Restart Suggested" flag down to PK (Dominique Leuenberger)
+ - zypp: Return error if invalid package IDs are detected (Michael Andres)
+
+New Features:
+ - Add a new DNF backend (Kalev Lember)
+ - Use GetFilesLocal in pkcon get-files if argument is a file (Daniel Nicoletti)
+
+Bugfixes:
+ - Add a new REPO_ALREADY_SET error enum and use it in backends (Kalev Lember)
+ - Annotate PreparedUpgrade DBus property for usage in PackageKit-Qt (Dominique Leuenberger)
+ - Change the configuration of the cron script to a sysconfig-like config (Dominique Leuenberger)
+ - Do not try to exec plymouth if it is not installed (Richard Hughes)
+ - Don't crash when emitting PropertiesChanged for NULL values (Kalev Lember)
+ - Fix a leak in get_prepared_sack() (Kalev Lember)
+ - Fix a tiny memory leak on error path (Kalev Lember)
+ - Fix a tiny memory leak when setting a proxy (Kalev Lember)
+ - Fix "cache-age changed to -1" debug message (when cache-age is G_MAXUINT) (Alan Jenkins)
+ - Fix two small memory leaks when processing signals from the daemon (Richard Hughes)
+ - Fix updates and change code to aid in not breaking this again (#149) (Harald Sitter)
+ - Fix various g_variant_get ^a&s leaks (Kalev Lember)
+ - Invalidate PreparedUpgrade property when the prepared file changes (Kalev Lember)
+ - Look for command-not-found dbus socket in /run instead of /var/run (Dominique Leuenberger)
+ - Remove declaration of non-existent pk_task_{get,set}_interactive() (Alan Jenkins)
+
+Version 1.1.3
+~~~~~~~~~~~~~~
+Released: 2016-07-14
+
+Bugfixes:
+ - backend job: Avoid emitting duplicates with parallel download (Kalev Lember)
+ - Revert a patch that caused PackageKit to always request auth when installing packages (Kalev Lember)
+ - Update the GPLv2 text in COPYING (Kalev Lember)
+
+Backends:
+ - zypp: PK_FILTER_ENUM_ARCH is supposed to filter on primary arch (Dominique Leuenberger)
+
+Version 1.1.2
+~~~~~~~~~~~~~~
+Released: 2016-07-12
+
+Notes:
+ - This release adds a new backend for the Nix package manager (Matthew Bauer)
+
+New Features:
+ - Add a test for offline distro upgrades (Kalev Lember)
+ - Add PreparedUpgrade DBus property (Kalev Lember)
+
+Bugfixes:
+ - Make pk_console_get_prompt() big endian safe (Richard Hughes)
+ - Require admin authorisation to trigger a distro upgrade (Richard Hughes)
+ - build: Avoid g_simple_async_result deprecation warnings (Kalev Lember)
+ - task: Fix only-trusted property notifications (Kalev Lember)
+ - task: Honour the only_trusted property when setting up transactions (Kalev Lember)
+
+Backends:
+ - alpm: Don't discard a resolve call just because one package is missing (Aleix Pol)
+ - alpm: Ignore the "Usage" key instead of crashing (Dustin Falgout)
+ - aptcc: Fix mimetype list (Harald Sitter)
+ - aptcc: Return the correct and complete result for package origins (Matthias Klumpp)
+ - hif: Add support for build-time vendor configurations (Neal Gompa)
+ - hif: Don't leak a dup'd string in get_author/get_description (Kalev Lember)
+ - hif: Don't set user action when installing / updating packages (Kalev Lember)
+ - hif: Drop ifdefs for older hawkey versions (Kalev Lember)
+ - hif: Match unavailable packages for the what-provides query (Kalev Lember)
+ - hif: Set the installonly limit one higher than usual for system upgrades (Kalev Lember)
+ - hif: Use new libhif API to run a test transaction for offline updates (Kalev Lember)
+ - katja: Fix return type warnings (Eugen Wissner)
+
 Version 1.1.1
 ~~~~~~~~~~~~~~
 Released: 2016-04-20

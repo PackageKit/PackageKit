@@ -9,17 +9,16 @@ libpk_backend_katja_la_SOURCES = \
 	pk-backend-katja.c \
 	katja-pkgtools.c \
 	katja-pkgtools.h \
-	katja-binary.c \
-	katja-binary.h \
 	katja-slackpkg.c \
 	katja-slackpkg.h \
 	katja-dl.c \
 	katja-dl.h \
-	katja-utils.c \
+	utils.cc \
 	katja-utils.h
 libpk_backend_katja_la_LIBADD = -lbz2 $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
 libpk_backend_katja_la_LDFLAGS = -module -avoid-version
-libpk_backend_katja_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C) $(KATJA_CFLAGS)
+libpk_backend_katja_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS) $(WARNINGFLAGS_C)
+libpk_backend_katja_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS) $(KATJA_CFLAGS) $(WARNINGFLAGS_CPP)
 
 confdir = $(sysconfdir)/PackageKit
 conf_in_files = Katja.conf.in

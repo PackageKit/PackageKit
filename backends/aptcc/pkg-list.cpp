@@ -1,6 +1,6 @@
 /* pkg-list.cpp
  *
- * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2012-2016 Daniel Nicoletti <dantti12@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,8 +70,8 @@ public:
 
 bool PkgList::contains(const pkgCache::PkgIterator &pkg)
 {
-    for (PkgList::const_iterator it = begin(); it != end(); ++it) {
-        if (it->ParentPkg() == pkg) {
+    for (const pkgCache::VerIterator &ver : *this) {
+        if (ver.ParentPkg() == pkg) {
             return true;
         }
     }

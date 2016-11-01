@@ -345,11 +345,11 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		      GVariant *parameters,
 		      gpointer user_data)
 {
-	const gchar **ids_tmp = NULL;
 	PkControl *control = PK_CONTROL (user_data);
 	g_auto(GStrv) ids = NULL;
 
 	if (g_strcmp0 (signal_name, "TransactionListChanged") == 0) {
+		g_autofree gchar **ids_tmp = NULL;
 		g_variant_get (parameters, "(^a&s)", &ids_tmp);
 		if (ids_tmp == NULL) {
 			ids = g_new0 (gchar *, 1);

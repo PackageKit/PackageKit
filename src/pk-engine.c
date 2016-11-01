@@ -251,11 +251,18 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 
 	/* build the dict */
 	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
-	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
-	g_variant_builder_add (&builder,
-			       "{sv}",
-			       property_name,
-			       property_value);
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+
+	if (property_value == NULL) {
+		g_variant_builder_add (&invalidated_builder,
+		                       "s",
+		                       property_name);
+	} else {
+		g_variant_builder_add (&builder,
+		                       "{sv}",
+		                       property_name,
+		                       property_value);
+	}
 	g_dbus_connection_emit_signal (engine->priv->connection,
 				       NULL,
 				       PK_DBUS_PATH,
@@ -487,24 +494,31 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 			      const gchar *proxy_ftp,
 			      const gchar *proxy_socks,
 			      const gchar *no_proxy,
-			      const gchar *pac)
+			      const gchar *pac,
+			      GError **error)
 {
-	gboolean ret = FALSE;
+	gboolean ret;
 	guint uid;
 	g_autofree gchar *session = NULL;
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		g_warning ("failed to get the uid");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to get the uid");
+		return FALSE;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		g_warning ("failed to get the session");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to get the session");
+		return FALSE;
 	}
 
 	/* save to database */
@@ -517,11 +531,13 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 					   no_proxy,
 					   pac);
 	if (!ret) {
-		g_warning ("failed to save the proxy in the database");
-		goto out;
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to save the proxy in the database");
+		return FALSE;
 	}
-out:
-	return ret;
+	return TRUE;
 }
 
 typedef struct {
@@ -544,9 +560,9 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 							 GAsyncResult *res,
 							 PkEngineDbusState *state)
 {
-	GError *error;
 	gboolean ret;
 	PkEnginePrivate *priv = state->engine->priv;
+	g_autoptr(GError) error = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(PolkitAuthorizationResult) result = NULL;
 
@@ -578,10 +594,14 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 					    state->value3,
 					    state->value4,
 					    state->value5,
-					    state->value6);
+					    state->value6,
+					    &error_local);
 	if (!ret) {
-		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-					     "setting the proxy failed");
+		g_set_error (&error,
+			     PK_ENGINE_ERROR,
+			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+			     "setting the proxy failed: %s",
+			     error_local->message);
 		g_dbus_method_invocation_return_gerror (state->context, error);
 		goto out;
 	}
@@ -602,6 +622,10 @@ out:
 	g_free (state->sender);
 	g_free (state->value1);
 	g_free (state->value2);
+	g_free (state->value3);
+	g_free (state->value4);
+	g_free (state->value5);
+	g_free (state->value6);
 	g_free (state);
 }
 
@@ -871,6 +895,28 @@ pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
 						 g_variant_new_boolean (ret));
 }
 
+static GVariant *
+pk_engine_offline_get_prepared_upgrade_property (GError **error)
+{
+	GVariantBuilder builder;
+	g_autofree gchar *name = NULL;
+	g_autofree gchar *version = NULL;
+
+	if (!pk_offline_get_prepared_upgrade (&name, &version, error))
+		return NULL;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+	if (name != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "name",
+		                       g_variant_new ("s", name));
+	if (version != NULL)
+		g_variant_builder_add (&builder, "{sv}",
+		                       "version",
+		                       g_variant_new ("s", version));
+	return g_variant_builder_end (&builder);
+}
+
 /**
  * pk_engine_offline_upgrade_file_changed_cb:
  **/
@@ -880,6 +926,7 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
                                            GFileMonitorEvent event_type,
                                            PkEngine *engine)
 {
+	GVariant *prepared_upgrade;
 	gboolean ret;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -887,6 +934,12 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 	pk_engine_emit_offline_property_changed (engine,
 						 "UpgradePrepared",
 						 g_variant_new_boolean (ret));
+
+	prepared_upgrade = pk_engine_offline_get_prepared_upgrade_property (NULL);
+	pk_engine_emit_offline_property_changed (engine,
+						 "PreparedUpgrade",
+						 prepared_upgrade);
+
 }
 
 /**
@@ -1022,28 +1075,6 @@ _g_variant_new_maybe_string (const gchar *value)
 	if (value == NULL)
 		return g_variant_new_string ("");
 	return g_variant_new_string (value);
-}
-
-static GVariant *
-pk_engine_offline_get_prepared_upgrade_property (GError **error)
-{
-	GVariantBuilder builder;
-	g_autofree gchar *name = NULL;
-	g_autofree gchar *version = NULL;
-
-	if (!pk_offline_get_prepared_upgrade (&name, &version, error))
-		return NULL;
-
-	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
-	if (name != NULL)
-		g_variant_builder_add (&builder, "{sv}",
-		                       "name",
-		                       g_variant_new ("s", name));
-	if (version != NULL)
-		g_variant_builder_add (&builder, "{sv}",
-		                       "version",
-		                       g_variant_new ("s", version));
-	return g_variant_builder_end (&builder);
 }
 
 /**
@@ -1359,7 +1390,6 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	PkEngine *engine = PK_ENGINE (user_data);
 	PkRoleEnum role;
 	gchar **transaction_list;
-	gchar **package_names;
 	guint size;
 	gboolean is_priority = TRUE;
 	g_autoptr(GError) error = NULL;
@@ -1389,6 +1419,8 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetPackageHistory") == 0) {
+		g_autofree gchar **package_names = NULL;
+
 		g_variant_get (parameters, "(^a&su)", &package_names, &size);
 		if (package_names == NULL || g_strv_length (package_names) == 0) {
 			g_dbus_method_invocation_return_error (invocation,

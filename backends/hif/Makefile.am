@@ -1,11 +1,14 @@
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_hif.la
+EXTRA_DIST =								\
+	hif-backend-vendor-fedora.c					\
+	hif-backend-vendor-mageia.c
 libpk_backend_hif_la_SOURCES =						\
 	hif-backend-vendor.h						\
-	hif-backend-vendor-@HIF_VENDOR@.c				\
 	hif-backend.c							\
 	hif-backend.h							\
 	pk-backend-hif.c
+nodist_libpk_backend_hif_la_SOURCES = hif-backend-vendor-@HIF_VENDOR@.c
 libpk_backend_hif_la_LIBADD = $(PK_PLUGIN_LIBS) $(HIF_LIBS)
 libpk_backend_hif_la_CPPFLAGS =						\
 	$(HIF_CFLAGS)							\

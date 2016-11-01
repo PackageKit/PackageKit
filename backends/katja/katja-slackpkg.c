@@ -1,6 +1,6 @@
 #include "katja-slackpkg.h"
 
-G_DEFINE_TYPE(KatjaSlackpkg, katja_slackpkg, KATJA_TYPE_BINARY);
+G_DEFINE_TYPE(KatjaSlackpkg, katja_slackpkg, KATJA_TYPE_PKGTOOLS);
 
 /* Static public members */
 GHashTable *katja_slackpkg_cat_map = NULL;
@@ -9,7 +9,7 @@ GHashTable *katja_slackpkg_cat_map = NULL;
 /**
  * katja_slackpkg_real_collect_cache_info:
  **/
-GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar *tmpl) {
+GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl) {
 	CURL *curl = NULL;
 	gchar **source_dest, **cur_priority;
 	GSList *file_list = NULL;
@@ -17,17 +17,17 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar 
 
 	/* Create the temporary directory for the repository */
 	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)));
+	repo_tmp_dir = g_file_get_child(tmp_dir, katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)));
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* Download PACKAGES.TXT. These files are most important, break if some of them couldn't be found */
-	for (cur_priority = KATJA_SLACKPKG(binary)->priority; *cur_priority; cur_priority++) {
+	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++) {
 		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(KATJA_PKGTOOLS(binary)),
+		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(KATJA_PKGTOOLS(pkgtools)),
 									 *cur_priority,
 									 "/PACKAGES.TXT",
 									 NULL);
-		source_dest[1] = g_build_filename(tmpl, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)), "PACKAGES.TXT", NULL);
+		source_dest[1] = g_build_filename(tmpl, katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)), "PACKAGES.TXT", NULL);
 		source_dest[2] = NULL;
 
 		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK) {
@@ -40,12 +40,12 @@ GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *binary, const gchar 
 
 		/* Download file lists if available */
 		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(KATJA_PKGTOOLS(binary)),
+		source_dest[0] = g_strconcat(katja_pkgtools_get_mirror(KATJA_PKGTOOLS(pkgtools)),
 									 *cur_priority,
 									 "/MANIFEST.bz2",
 									 NULL);
 		source_dest[1] = g_strconcat(tmpl,
-									 "/", katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)),
+									 "/", katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)),
 									 "/", *cur_priority, "-MANIFEST.bz2",
 									 NULL);
 		source_dest[2] = NULL;
@@ -138,7 +138,7 @@ out:
 /**
  * katja_slackpkg_real_generate_cache:
  **/
-void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, const gchar *tmpl) {
+void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl) {
 	gchar **pkg_tokens = NULL, **cur_priority;
 	gchar *query = NULL, *filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *packages_txt;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
@@ -151,7 +151,7 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
 
 	/* Check if the temporary directory for this repository exists, then the file metadata have to be generated */
-	packages_txt = g_build_filename(tmpl, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)), "PACKAGES.TXT", NULL);
+	packages_txt = g_build_filename(tmpl, katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)), "PACKAGES.TXT", NULL);
 	list_file = g_file_new_for_path(packages_txt);
 	fin = g_file_read(list_file, NULL, NULL);
 	g_object_unref(list_file);
@@ -165,7 +165,7 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 						   -1,
 						   &statement,
 						   NULL) == SQLITE_OK) {
-		sqlite3_bind_text(statement, 1, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(statement, 1, katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)), -1, SQLITE_TRANSIENT);
 		sqlite3_step(statement);
 		sqlite3_finalize(statement);
 	}
@@ -176,8 +176,8 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 						   &statement,
 						   NULL) != SQLITE_OK)
 		goto out;
-	sqlite3_bind_int(statement, 1, katja_pkgtools_get_order(KATJA_PKGTOOLS(binary)));
-	sqlite3_bind_text(statement, 2, katja_pkgtools_get_name(KATJA_PKGTOOLS(binary)), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(statement, 1, katja_pkgtools_get_order(KATJA_PKGTOOLS(pkgtools)));
+	sqlite3_bind_text(statement, 2, katja_pkgtools_get_name(KATJA_PKGTOOLS(pkgtools)), -1, SQLITE_TRANSIENT);
 	sqlite3_step(statement);
 	sqlite3_finalize(statement);
 
@@ -204,7 +204,7 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 							"ext = @ext, location = @location, summary = @summary, "
 							"desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
 							"WHERE name LIKE @name AND repo_order = %u",
-							katja_pkgtools_get_order(KATJA_PKGTOOLS(binary)));
+							katja_pkgtools_get_order(KATJA_PKGTOOLS(pkgtools)));
 	if (sqlite3_prepare_v2(job_data->db, query, -1, &update_statement, NULL) != SQLITE_OK)
 		goto out;
 
@@ -216,8 +216,8 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 	while ((line = g_data_input_stream_read_line(data_in, NULL, NULL, NULL))) {
 		if (!strncmp(line, "PACKAGE NAME:  ", 15)) {
 			filename = g_strdup(line + 15);
-			if (katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(binary)) &&
-				g_regex_match(katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(binary)), filename, 0, NULL)) {
+			if (katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(pkgtools)) &&
+				g_regex_match(katja_pkgtools_get_blacklist(KATJA_PKGTOOLS(pkgtools)), filename, 0, NULL)) {
 
 				g_free(filename);
 				filename = NULL;
@@ -256,7 +256,7 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 					statement = insert_default_statement;
 				}
 
-				sqlite3_bind_int(statement, 11, katja_pkgtools_get_order(KATJA_PKGTOOLS(binary)));
+				sqlite3_bind_int(statement, 11, katja_pkgtools_get_order(KATJA_PKGTOOLS(pkgtools)));
 			} else { /* Update package information if it is a patch */
 				statement = update_statement;
 			}
@@ -295,9 +295,9 @@ void katja_slackpkg_real_generate_cache(KatjaBinary *binary, PkBackendJob *job, 
 	g_object_unref(fin);
 
 	/* Parse MANIFEST.bz2 */
-	for (cur_priority = KATJA_SLACKPKG(binary)->priority; *cur_priority; cur_priority++) {
+	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++) {
 		filename = g_strconcat(*cur_priority, "-MANIFEST.bz2", NULL);
-		katja_binary_manifest(binary, job, tmpl, filename);
+		katja_pkgtools_manifest(pkgtools, job, tmpl, filename);
 		g_free(filename);
 	}
 
@@ -331,12 +331,12 @@ static void katja_slackpkg_finalize(GObject *object) {
  **/
 static void katja_slackpkg_class_init(KatjaSlackpkgClass *klass) {
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-	KatjaBinaryClass *binary_class = KATJA_BINARY_CLASS(klass);
+	KatjaPkgtoolsClass *pkgtools_class = KATJA_PKGTOOLS_CLASS(klass);
 
 	object_class->finalize = katja_slackpkg_finalize;
 
-	binary_class->collect_cache_info = katja_slackpkg_real_collect_cache_info;
-	binary_class->generate_cache = katja_slackpkg_real_generate_cache;
+	pkgtools_class->collect_cache_info = katja_slackpkg_real_collect_cache_info;
+	pkgtools_class->generate_cache = katja_slackpkg_real_generate_cache;
 
 	katja_slackpkg_cat_map = g_hash_table_new(g_str_hash, g_str_equal);
 	g_hash_table_insert(katja_slackpkg_cat_map, (gpointer) "a", (gpointer) "system");
@@ -375,12 +375,12 @@ KatjaSlackpkg *katja_slackpkg_new(gchar *name, gchar *mirror, gushort order, gch
 	g_return_val_if_fail(priority != NULL, NULL);
 
 	slackpkg = g_object_new(KATJA_TYPE_SLACKPKG, NULL);
-	KATJA_BINARY(slackpkg)->name = name;
-	KATJA_BINARY(slackpkg)->mirror = mirror;
-	KATJA_BINARY(slackpkg)->order = order;
+	KATJA_PKGTOOLS(slackpkg)->name = name;
+	KATJA_PKGTOOLS(slackpkg)->mirror = mirror;
+	KATJA_PKGTOOLS(slackpkg)->order = order;
 
 	if (blacklist) /* Blacklist if set */
-		KATJA_BINARY(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+		KATJA_PKGTOOLS(slackpkg)->blacklist = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
 
 	slackpkg->priority = priority;
 

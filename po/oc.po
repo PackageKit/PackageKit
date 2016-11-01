@@ -4,14 +4,16 @@
 # 
 # Translators:
 # Cédric Valmary <cvalmary@yahoo.fr>, 2015
+# Cédric Valmary <cvalmary@yahoo.fr>, 2015
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012
+# Tot en òc <totenoc@gmail.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2016-07-12 15:30+0100\n"
+"PO-Revision-Date: 2016-06-12 11:14+0000\n"
+"Last-Translator: Tot en òc <totenoc@gmail.com>\n"
 "Language-Team: Occitan (post 1500) (http://www.transifex.com/freedesktop/packagekit/language/oc/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -146,12 +148,12 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "Tornar aviar"
+msgstr "Reaviar"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr ""
+msgstr "Informacions de mesa a jorn"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -184,11 +186,11 @@ msgstr "Desactivat"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr ""
+msgstr "Reaviada del sistèma requesida per :"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr ""
+msgstr "Reaviada de la session requesida per :"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
@@ -242,7 +244,7 @@ msgstr ""
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr ""
+msgstr "La transaccion a fracassat"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -508,11 +510,11 @@ msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Descripcion"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -592,11 +594,11 @@ msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr ""
+msgstr "Impossible d'aviar :"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr ""
+msgstr "Impossibke d'installar los paquets"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
@@ -606,7 +608,7 @@ msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr ""
+msgstr "Comanda similara :"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
@@ -653,11 +655,11 @@ msgstr "Picatz un nombre entre 1 e %i : "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
-msgstr ""
+msgstr "Estat desconegut"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr ""
+msgstr "Aviada"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
@@ -666,19 +668,19 @@ msgstr ""
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr ""
+msgstr "En cors"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr ""
+msgstr "Requèsta"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr ""
+msgstr "Obtencion d'informacions"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr ""
+msgstr "Supression dels paquets"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
@@ -691,16 +693,16 @@ msgstr "Installacion dels paquets"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr ""
+msgstr "Mesa a jorn de la lista dels logicials"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr ""
+msgstr "Installar las mesas a jorn"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "Netejatge dels paquets"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
@@ -708,33 +710,33 @@ msgstr ""
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr ""
+msgstr "Resolucion de las dependéncias"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr ""
+msgstr "Verificacion de las signaturas"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr ""
+msgstr "Tèst dels cambiaments"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr ""
+msgstr "Validacion dels cambiaments"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr ""
+msgstr "Requèsta de donadas"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr ""
+msgstr "Acabat"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr ""
+msgstr "Anullacion"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
@@ -784,7 +786,7 @@ msgstr ""
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr ""
+msgstr "En espèra d'autentificacion"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
@@ -803,17 +805,17 @@ msgstr ""
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr ""
+msgstr "Còpia de fichièrs"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr ""
+msgstr "Mostrar las informacions de desbugatge per totes los fichièrs"
 
 msgid "Debugging Options"
-msgstr ""
+msgstr "Opcions de desbugatge"
 
 msgid "Show debugging options"
-msgstr ""
+msgstr "Mostrar las opcions de desbugatge"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
@@ -821,15 +823,15 @@ msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr ""
+msgstr "Important"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr ""
+msgstr "Seguretat"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix "
@@ -837,20 +839,20 @@ msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr ""
+msgstr "Melhoraments"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr ""
+msgstr "Blocat"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr ""
+msgstr "Installat"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr ""
+msgstr "Disponible"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
@@ -862,21 +864,21 @@ msgstr "Telecargament"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr ""
+msgstr "Mesa a jorn"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr ""
+msgstr "Installacion en cors"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr ""
+msgstr "Supression en cors"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr ""
+msgstr "Netejatge"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
@@ -888,11 +890,11 @@ msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr ""
+msgstr "Telecargat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr ""
+msgstr "Suprimit"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
@@ -900,11 +902,11 @@ msgstr ""
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr ""
+msgstr "Obsolèt"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr ""
+msgstr "Reïnstallat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -944,7 +946,7 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr ""
+msgstr "Recèrca per nom"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
@@ -956,7 +958,7 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr ""
+msgstr "Mesa a jorn dels paquets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
@@ -980,7 +982,7 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr ""
+msgstr "Resolucion"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
@@ -1046,11 +1048,11 @@ msgstr ""
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr ""
+msgstr "Identificant de la clau"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr ""
+msgstr "Emprenta de la clau"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
@@ -1071,11 +1073,11 @@ msgstr ""
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr ""
+msgstr "Contracte"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr ""
+msgstr "Acceptatz aqueste contracte ?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
@@ -1087,15 +1089,15 @@ msgstr ""
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr ""
+msgstr "Tipe de mèdia"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr ""
+msgstr "Etiqueta del mèdia"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
-msgstr ""
+msgstr "Tèxte"
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
@@ -1159,7 +1161,7 @@ msgstr ""
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr ""
+msgstr "Installar un paquet signat"
 
 msgid "Authentication is required to install software"
 msgstr ""
@@ -1313,8 +1315,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr ""
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr ""
 
@@ -1372,7 +1375,7 @@ msgstr ""
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
