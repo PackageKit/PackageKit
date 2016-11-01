@@ -27,6 +27,7 @@ hif_validate_supported_source(const gchar* id)
 	guint i, j, k, l;
 
 	const gchar *valid_sourcesect[] = { "",
+					  "-contrib",
 					  "-restricted",
 					  "-non-free",
 					  NULL };
@@ -43,8 +44,10 @@ hif_validate_supported_source(const gchar* id)
 				      NULL };
 
 	const gchar *valid[] = { "openmandriva",
+				 "release",
 				 "updates",
-				 "updates_testing",
+				 "testing",
+				 "3.0",
 				 "cooker",
 				 NULL };
 
