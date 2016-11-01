@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 09:18+0100\n"
-"PO-Revision-Date: 2016-02-13 12:47+0000\n"
+"POT-Creation-Date: 2016-07-12 15:30+0100\n"
+"PO-Revision-Date: 2016-06-04 15:34+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/freedesktop/packagekit/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -335,7 +335,7 @@ msgstr "Te narzędzie nie może odnaleźć wszystkich pakietów: %s"
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Demon zawiesił się w połowie transakcji!"
+msgstr "Usługa zawiesiła się w połowie transakcji."
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -536,7 +536,7 @@ msgid "Command failed"
 msgstr "Polecenie się nie powiodło"
 
 msgid "Failed to get daemon state"
-msgstr "Uzyskanie stanu demona się nie powiodło"
+msgstr "Uzyskanie stanu usługi się nie powiodło"
 
 msgid "Failed to get properties"
 msgstr "Uzyskanie właściwości się nie powiodło"
@@ -1313,8 +1313,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Wymagane jest uwierzytelnienie, aby naprawić zainstalowane oprogramowanie"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Włączenie aktualizacji w trybie offline"
 

@@ -2,6 +2,7 @@
  *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
+ *           (c) 2016 Daniel Nicoletti <dantti12@gmail.com>
  *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -42,14 +43,12 @@
 
 SourcesList::~SourcesList()
 {
-    for (list<SourceRecord *>::iterator it = SourceRecords.begin();
-         it != SourceRecords.end(); ++it) {
-        delete *it;
+    for (SourceRecord *sr : SourceRecords) {
+        delete sr;
     }
 
-    for (list<VendorRecord *>::iterator it = VendorRecords.begin();
-         it != VendorRecords.end(); ++it) {
-        delete *it;
+    for (VendorRecord *vr : VendorRecords) {
+        delete vr;
     }
 }
 
@@ -223,8 +222,8 @@ bool SourcesList::ReadSourceDir(string Dir)
     sort(List.begin(), List.end());
 
     // Read the files
-    for (vector<string>::const_iterator I = List.begin(); I != List.end(); ++I) {
-        if (ReadSourcePart(*I) == false) {
+    for (const string &sourcePart : List) {
+        if (ReadSourcePart(sourcePart) == false) {
             return false;
         }
     }
@@ -313,48 +312,45 @@ void SourcesList::SwapSources( SourceRecord *&rec_one, SourceRecord *&rec_two )
 bool SourcesList::UpdateSources()
 {
     list<string> filenames;
-    for (list<SourceRecord *>::iterator it = SourceRecords.begin();
-         it != SourceRecords.end(); ++it) {
-        if ((*it)->SourceFile == "") {
+    for (SourceRecord *sr : SourceRecords) {
+        if (sr->SourceFile == "") {
             continue;
         }
-        filenames.push_front((*it)->SourceFile);
+        filenames.push_front(sr->SourceFile);
     }
     filenames.sort();
     filenames.unique();
 
-    for (list<string>::iterator fi = filenames.begin();
-         fi != filenames.end(); fi++) {
-        ofstream ofs((*fi).c_str(), ios::out);
+    for (const string &filename : filenames) {
+        ofstream ofs(filename.c_str(), ios::out);
         if (!ofs != 0) {
             return false;
         }
 
-        for (list<SourceRecord *>::iterator it = SourceRecords.begin();
-             it != SourceRecords.end(); it++) {
-            if ((*fi) != (*it)->SourceFile) {
+        for (SourceRecord *sr : SourceRecords) {
+            if (filename != sr->SourceFile) {
                 continue;
             }
 
             string S;
-            if (((*it)->Type & Comment) != 0) {
-                S = (*it)->Comment;
-            } else if ((*it)->URI.empty() || (*it)->Dist.empty()) {
+            if ((sr->Type & Comment) != 0) {
+                S = sr->Comment;
+            } else if (sr->URI.empty() || sr->Dist.empty()) {
                 continue;
             } else {
-                if (((*it)->Type & Disabled) != 0)
+                if ((sr->Type & Disabled) != 0)
                     S = "# ";
 
-                S += (*it)->GetType() + " ";
+                S += sr->GetType() + " ";
 
-                if ((*it)->VendorID.empty() == false)
-                    S += "[" + (*it)->VendorID + "] ";
+                if (sr->VendorID.empty() == false)
+                    S += "[" + sr->VendorID + "] ";
 
-                S += (*it)->URI + " ";
-                S += (*it)->Dist + " ";
+                S += sr->URI + " ";
+                S += sr->Dist + " ";
 
-                for (unsigned int J = 0; J < (*it)->NumSections; ++J) {
-                    S += (*it)->Sections[J] + " ";
+                for (unsigned int J = 0; J < sr->NumSections; ++J) {
+                    S += sr->Sections[J] + " ";
                 }
             }
             ofs << S << endl;
@@ -535,9 +531,8 @@ bool SourcesList::ReadVendors()
         }
     }
 
-    for (list<VendorRecord *>::const_iterator I = VendorRecords.begin();
-         I != VendorRecords.end(); ++I) {
-        delete *I;
+    for (VendorRecord *vr : VendorRecords) {
+        delete vr;
     }
     VendorRecords.clear();
 
@@ -594,11 +589,10 @@ bool SourcesList::UpdateVendors()
         return false;
     }
 
-    for (list<VendorRecord *>::iterator it = VendorRecords.begin();
-         it != VendorRecords.end(); ++it) {
-        ofs << "simple-key \"" << (*it)->VendorID << "\" {" << endl;
-        ofs << "\tFingerPrint \"" << (*it)->FingerPrint << "\";" << endl;
-        ofs << "\tName \"" << (*it)->Description << "\";" << endl;
+    for (VendorRecord *vr : VendorRecords) {
+        ofs << "simple-key \"" << vr->VendorID << "\" {" << endl;
+        ofs << "\tFingerPrint \"" << vr->FingerPrint << "\";" << endl;
+        ofs << "\tName \"" << vr->Description << "\";" << endl;
         ofs << "}" << endl;
     }
 

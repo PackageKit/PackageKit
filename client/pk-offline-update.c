@@ -38,10 +38,14 @@ static void
 pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdargv = NULL;
 	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
+	cmdargv = g_find_program_in_path ("plymouth");
+	if (cmdargv == NULL)
 		return;
 	cmdline = g_strdup_printf ("plymouth display-message --text=\"%s\"", msg);
 	if (!g_spawn_command_line_async (cmdline, &error)) {
@@ -60,10 +64,14 @@ static void
 pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdargv = NULL;
 	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
+	cmdargv = g_find_program_in_path ("plymouth");
+	if (cmdargv == NULL)
 		return;
 	cmdline = g_strdup_printf ("plymouth change-mode --%s", mode);
 	if (!g_spawn_command_line_async (cmdline, &error)) {
@@ -82,10 +90,14 @@ static void
 pk_offline_update_set_plymouth_percentage (guint percentage)
 {
 	g_autoptr(GError) error = NULL;
+	g_autofree gchar *cmdargv = NULL;
 	g_autofree gchar *cmdline = NULL;
 
 	/* allow testing without sending commands to plymouth */
 	if (g_getenv ("PK_OFFLINE_UPDATE_TEST") != NULL)
+		return;
+	cmdargv = g_find_program_in_path ("plymouth");
+	if (cmdargv == NULL)
 		return;
 	cmdline = g_strdup_printf ("plymouth system-update --progress=%i",
 				   percentage);

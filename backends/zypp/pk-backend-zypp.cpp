@@ -1062,12 +1062,12 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 			return TRUE;
 		if (i == PK_FILTER_ENUM_ARCH) {
 			if (item.arch () != ZConfig::defaultSystemArchitecture () &&
-			    ! item.arch ().compatibleWith (ZConfig::defaultSystemArchitecture()))
+			    item.arch () != "noarch")
 				return TRUE;
 		}
 		if (i == PK_FILTER_ENUM_NOT_ARCH) {
 			if (item.arch () == ZConfig::defaultSystemArchitecture () ||
-			    item.arch ().compatibleWith (ZConfig::defaultSystemArchitecture()))
+			    item.arch () == "noarch")
 				return TRUE;
 		}
 		if (i == PK_FILTER_ENUM_SOURCE && !(isKind<SrcPackage>(item)))
@@ -1309,7 +1309,9 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 	    ( patch->reloginSuggested () ||
 	      patch->restartSuggested () ||
 	      patch->rebootSuggested ()) ) {
-		if (patch->reloginSuggested () || patch->restartSuggested ())
+		if (patch->restartSuggested ())
+			*restart = PK_RESTART_ENUM_APPLICATION;
+		if (patch->reloginSuggested ())
 			*restart = PK_RESTART_ENUM_SESSION;
 		if (patch->rebootSuggested ())
 			*restart = PK_RESTART_ENUM_SYSTEM;
@@ -2403,6 +2405,12 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		MIL << package_ids[i] << " " << solvable << endl;
+		if (!solvable) {
+			// Previously stored package_id no longer matches any solvable.
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						     "couldn't find package");
+			return;
+		}
 
 		Capabilities obs = solvable.obsoletes ();
 

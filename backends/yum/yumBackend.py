@@ -2728,13 +2728,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if repo.isEnabled():
                     repo.disablePersistent()
                 else:
-                    self.error(ERROR_REPO_NOT_AVAILABLE, "repo already disabled")
+                    self.error(ERROR_REPO_ALREADY_SET, "repo already disabled")
                     return
             else:
                 if not repo.isEnabled():
                     repo.enablePersistent()
                 else:
-                    self.error(ERROR_REPO_NOT_AVAILABLE, "repo already enabled")
+                    self.error(ERROR_REPO_ALREADY_SET, "repo already enabled")
                     return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))

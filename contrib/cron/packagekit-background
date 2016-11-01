@@ -1,18 +1,41 @@
-# should we attempt to do this? (valid: yes|no)
+## Path:	System/Cron/PackageKit
+## Description: Cron job to update the system daily with PackageKit
+
+## Type:	yesno
+## Default:	no
+#
+# Run the cron job.
+#
 ENABLED=no
 
-# don't install, just check (valid: yes|no)
+## Type:	yesno
+## Default:	no
+#
+# Check if updates are available, instead of installing.
+#
 CHECK_ONLY=no
 
-# if MAILTO is set, the mail command is used to deliver PackageKit output
-# by default MAILTO is unset, so crond mails the output by itself
-#MAILTO=root
+## Type:	string
+## Default:	""
+#
+# If MAILTO is set, the mail command is used to deliver PackageKit output.
+# By default MAILTO is unset, so crond mails the output by itself.
+#
+MAILTO=""
 
-# you may set SYSTEM_NAME if you want your PackageKit emails tagged 
-# differently default is output of hostname command
-#SYSTEM_NAME=""
+## Type:	string
+## Default:	""
+#
+# You may set SYSTEM_NAME if you want your PackageKit emails tagged differently.
+# Default is output of hostname command.
+#
+SYSTEM_NAME=""
 
-# update checks will sleep random time before contacting the servers to
+## Type:	integer
+## Default:	3600
+#
+# Update checks will sleep random time before contacting the servers to
 # avoid hammering them with thousands of request at the same time - this
-# is the maximum sleep time (in seconds) for the random wait period
+# is the maximum sleep time (in seconds) for the random wait period.
+#
 SLEEP_MAX=3600

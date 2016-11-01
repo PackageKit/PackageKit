@@ -1363,6 +1363,16 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
+	/* local file */
+	if (g_file_test (packages[0], G_FILE_TEST_EXISTS)) {
+		pk_client_get_files_local_async (PK_CLIENT (ctx->task),
+						   packages,
+						   ctx->cancellable,
+						   pk_console_progress_cb, ctx,
+						   pk_console_finished_cb, ctx);
+		return TRUE;
+	}
+
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
 		g_set_error (error,
