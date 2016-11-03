@@ -26,6 +26,8 @@
 #include "pk-alpm-packages.h"
 #include "pk-alpm-transaction.h"
 
+#include <syslog.h>
+
 static off_t dcomplete = 0;
 static off_t dtotal = 0;
 
@@ -211,7 +213,7 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	}
 
 	if (current < 1 || targets < current)
-		g_warning ("TODO: CURRENT/TARGETS FAILED for %d", type);
+		syslog (LOG_DAEMON | LOG_WARNING, "TODO: CURRENT/TARGETS FAILED for %d", type);
 
 	g_return_if_fail (target != NULL);
 	g_return_if_fail (0 <= percent && percent <= 100);
@@ -236,12 +238,12 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 		pk_backend_job_set_percentage (job, overall / targets);
 		recent = percent;
 
-		g_debug ("%d%% of %s complete (%zu of %zu)", percent,
+		syslog (LOG_DAEMON | LOG_WARNING, "%d%% of %s complete (%zu of %zu)", percent,
 			 target, current, targets);
 		break;
 
 	default:
-		g_warning ("unknown progress type %d", type);
+		syslog (LOG_DAEMON | LOG_WARNING, "unknown progress type %d", type);
 		break;
 	}
 }
@@ -342,7 +344,7 @@ pk_alpm_transaction_conv_cb (alpm_question_t *question)
 		break;
 
 	default:
-		g_warning ("unknown question %d", question->type);
+		syslog (LOG_DAEMON | LOG_WARNING, "unknown question %d", question->type);
 		break;
 	}
 }
@@ -717,7 +719,7 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 		break;
 
 	default:
-		g_debug ("unhandled event %d", event->type);
+		syslog (LOG_DAEMON | LOG_WARNING, "unhandled event %d", event->type);
 		break;
 	}
 }
@@ -933,7 +935,7 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 		break;
 	default:
 		if (data != NULL)
-			g_warning ("unhandled error %d", alpm_errno (priv->alpm));
+			syslog (LOG_DAEMON | LOG_WARNING, "unhandled error %d", alpm_errno (priv->alpm));
 		break;
 	}
 
@@ -1042,7 +1044,7 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 		break;
 	default:
 		if (data != NULL) {
-			g_warning ("unhandled error %d",
+			syslog (LOG_DAEMON | LOG_WARNING, "unhandled error %d",
 				   alpm_errno (priv->alpm));
 		}
 		break;

@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#include <syslog.h>
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -203,7 +204,7 @@ hif_advisory_type_to_info_enum (HyAdvisoryType type)
 		info_enum = PK_INFO_ENUM_ENHANCEMENT;
 		break;
 	default:
-		g_warning ("Failed to find HyAdvisoryType enum %i", type);
+		syslog (LOG_DAEMON | LOG_WARNING, "Failed to find HyAdvisoryType enum %i", type);
 		break;
 	}
 	return info_enum;

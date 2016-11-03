@@ -23,6 +23,7 @@
 
 #include <sstream>
 #include <cstdio>
+#include <syslog.h>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/progress.h>
 #include <apt-pkg/upgrade.h>
@@ -101,12 +102,12 @@ bool AptCacheFile::CheckDeps(bool AllowBroken)
         // We failed to fix the cache
         ShowBroken(true, PK_ERROR_ENUM_UNFINISHED_TRANSACTION);
 
-        g_warning("Unable to correct dependencies");
+        syslog (LOG_DAEMON | LOG_WARNING, "Unable to correct dependencies");
         return false;
     }
 
     if (pkgMinimizeUpgrade(*DCache) == false) {
-        g_warning("Unable to minimize the upgrade set");
+        syslog (LOG_DAEMON | LOG_WARNING, "Unable to minimize the upgrade set");
         show_errors(m_job, PK_ERROR_ENUM_INTERNAL_ERROR);
         return false;
     }

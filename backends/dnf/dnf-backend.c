@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <syslog.h>
 
 #include <libdnf/libdnf.h>
 
@@ -207,7 +208,7 @@ dnf_advisory_kind_to_info_enum (DnfAdvisoryKind kind)
 		info_enum = PK_INFO_ENUM_ENHANCEMENT;
 		break;
 	default:
-		g_warning ("Failed to find DnfAdvisoryKind enum %i", kind);
+		syslog (LOG_DAEMON | LOG_WARNING, "Failed to find DnfAdvisoryKind enum %i", kind);
 		break;
 	}
 	return info_enum;

@@ -1496,7 +1496,7 @@ void
 pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
-	g_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+	g_warning("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 
 	if (g_strcmp0 (parameter, "use-blocked") == 0)
 		priv->use_blocked = atoi (value);

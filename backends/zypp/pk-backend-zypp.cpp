@@ -43,6 +43,7 @@
 #include <gmodule.h>
 #include <pk-backend.h>
 #include <pk-shared.h>
+#include <syslog.h>
 #define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -729,7 +730,7 @@ zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 				continue;
 			// skip not cached repos
 			if (manager.isCached (repo) == false) {
-				g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+				syslog (LOG_DAEMON | LOG_WARNING, "%s is not cached! Do a refresh", repo.alias ().c_str ());
 				continue;
 			}
 			//FIXME see above, skip already cached repos
@@ -3381,7 +3382,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 		if (!solver.resolvePool ()) {
 			list<ResolverProblem_Ptr> problems = solver.problems ();
 			for (list<ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); ++it){
-				g_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				syslog (LOG_DAEMON | LOG_WARNING, "Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			solver.setIgnoreAlreadyRecommended (FALSE);
 			zypp_backend_finished_error (

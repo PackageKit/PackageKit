@@ -40,6 +40,7 @@
 #include <memory>
 #include <fstream>
 #include <dirent.h>
+#include <syslog.h>
 
 #include "apt-cache-file.h"
 #include "apt-utils.h"
@@ -2009,7 +2010,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
 
     if ((now - m_lastTermAction) > m_terminalTimeout) {
         // get some debug info
-        g_warning("no statusfd changes/content updates in terminal for %i"
+        syslog (LOG_DAEMON | LOG_WARNING, "no statusfd changes/content updates in terminal for %i"
                   " seconds",m_terminalTimeout);
         m_lastTermAction = time(NULL);
     }
@@ -2398,7 +2399,7 @@ bool AptIntf::installPackages(PkBitfield flags, bool autoremove)
     pkgPackageManager::OrderResult res;
     res = PM->DoInstallPreFork();
     if (res == pkgPackageManager::Failed) {
-        g_warning ("Failed to prepare installation");
+        syslog (LOG_DAEMON | LOG_WARNING, "Failed to prepare installation");
         show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         return false;
     }
