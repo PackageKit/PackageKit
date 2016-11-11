@@ -13,7 +13,7 @@ static GSList *repos = NULL;
 
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
-	gchar *path, *blacklist, **groups;
+	gchar *path, **groups;
 	gint ret;
 	gushort i;
 	gsize groups_len;
@@ -79,30 +79,34 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
 
 	/* Initialize an object for each well-formed repository */
 	groups = g_key_file_get_groups(katja_conf, &groups_len);
-	for (i = 0; i < groups_len; i++) {
-		blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
-		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL)) {
+	for (i = 0; i < groups_len; i++)
+	{
+		gchar *blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
+		gchar *mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
+		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL))
+		{
 			repo = katja_slackpkg_new(groups[i],
-					 g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
-					  i + 1,
-					  blacklist,
-					  g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
-		} else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL)) {
-			repo = katja_dl_new(groups[i],
-					g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL),
-					i + 1,
-					blacklist,
-					g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
+			                          mirror,
+			                          i + 1,
+			                          blacklist,
+			                          g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
 		}
-
+		else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL))
+		{
+			repo = katja_dl_new(groups[i],
+			                    mirror,	
+			                    i + 1,
+			                    blacklist,
+			                    g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
+		}
 		if (repo)
+		{
 			repos = g_slist_append(repos, repo);
-		else
-			g_free(groups[i]);
-
+		}
+		g_free(mirror);
 		g_free(blacklist);
 	}
-	g_free(groups);
+	g_strfreev(groups);
 
 	g_key_file_free(katja_conf);
 }
@@ -454,7 +458,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
 									   pkg_ids[i],
 									   (gchar *) sqlite3_column_text(stmt, 0));
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job, dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_binary_download(KATJA_BINARY(repo->data), job, dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -568,7 +572,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+				katja_binary_download(KATJA_BINARY(repo->data), job,
 										dest_dir_name,
 										pkg_tokens[PK_PACKAGE_ID_NAME]);
 			g_strfreev(pkg_tokens);
@@ -583,7 +587,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_binary_install(KATJA_BINARY(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
 			g_strfreev(pkg_tokens);
 		}
 	}
@@ -766,7 +770,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
-					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+					katja_binary_download(KATJA_BINARY(repo->data), job,
 											dest_dir_name,
 											pkg_tokens[PK_PACKAGE_ID_NAME]);
 			}
@@ -784,7 +788,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 				if (repo)
-					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
+					katja_binary_install(KATJA_BINARY(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
 			} else {
 				/* Remove obsolete package
 				 * TODO: Removing should be an independent operation (not during installing updates) */
@@ -861,7 +865,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	for (l = repos; l; l = g_slist_next(l))	/* Get list of files that should be downloaded */
 	{
 		file_list = g_slist_concat(file_list,
-				katja_pkgtools_collect_cache_info((KatjaPkgtools *)(l->data), tmp_dir_name));
+				katja_binary_collect_cache_info((KatjaBinary *)(l->data), tmp_dir_name));
 	}
 
 	/* Download repository */
@@ -876,7 +880,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	for (l = repos; l; l = g_slist_next(l))
 	{
-		katja_pkgtools_generate_cache((KatjaPkgtools *)(l->data), job, tmp_dir_name);
+		katja_binary_generate_cache((KatjaBinary *)(l->data), job, tmp_dir_name);
 	}
 
 out:

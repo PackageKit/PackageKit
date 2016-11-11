@@ -7,49 +7,62 @@ extern "C"
 
 /**
  * katja_get_file:
+ * @curl: curl easy handle.
+ * @source_url: source url.
+ * @dest: destination.
+ *
+ * Download the file.
+ *
+ * Returns: CURLE_OK (zero) on success, non-zero otherwise.
  **/
-CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest) {
+CURLcode
+katja_get_file(CURL **curl, gchar *source_url, gchar *dest)
+{
 	gchar *dest_dir_name;
 	FILE *fout = NULL;
 	CURLcode ret;
-	/*gdouble length_download;*/
 	glong response_code;
 
-	if ((*curl == NULL) && (!(*curl = curl_easy_init()))) return CURLE_BAD_FUNCTION_ARGUMENT;
+	if ((*curl == NULL) && (!(*curl = curl_easy_init())))
+	{
+		return CURLE_BAD_FUNCTION_ARGUMENT;
+	}
 
 	curl_easy_setopt(*curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(*curl, CURLOPT_URL, source_url);
 
-	if (dest == NULL) {
+	if (dest == NULL)
+	{
 		curl_easy_setopt(*curl, CURLOPT_NOBODY, 1L);
 		curl_easy_setopt(*curl, CURLOPT_HEADER, 1L);
 		ret = curl_easy_perform(*curl);
 		curl_easy_getinfo(*curl, CURLINFO_RESPONSE_CODE, &response_code);
+
 		if (response_code != 200)
+		{
 			ret = CURLE_REMOTE_FILE_NOT_FOUND;
-			/*curl_easy_getinfo(*curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, size);*/
-	} else {
-		if (g_file_test(dest, G_FILE_TEST_IS_DIR)) {
+		}
+	}
+	else
+	{
+		if (g_file_test(dest, G_FILE_TEST_IS_DIR))
+		{
 			dest_dir_name = dest;
 			dest = g_strconcat(dest_dir_name, g_strrstr(source_url, "/"), NULL);
 			g_free(dest_dir_name);
 		}
 		if ((fout = fopen(dest, "ab")) == NULL)
+		{
 			return CURLE_WRITE_ERROR;
-
-		/*curl_easy_setopt(*curl, CURLOPT_PROGRESSFUNCTION, katja_pkgtools_progress);
-		curl_easy_setopt(*curl, CURLOPT_NOPROGRESS, 0L);*/
+		}
 		curl_easy_setopt(*curl, CURLOPT_WRITEDATA, fout);
 		ret = curl_easy_perform(*curl);
-		/*if (!(ret = curl_easy_perform(*curl))) {
-			curl_easy_getinfo(*curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &length_download);
-			katja_pkgtools_job_progress.downloaded += length_download;
-		}*/
 	}
-
 	curl_easy_reset(*curl);
-	if (fout != NULL) fclose(fout);
-
+	if (fout != NULL)
+	{
+		fclose(fout);
+	}
 	return ret;
 }
 
@@ -96,9 +109,17 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 
 /**
  * katja_cmp_repo:
+ * @a: repository pointer.
+ * @b: repository pointer.
+ *
+ * Compare two repositories by the name.
+ *
+ * Returns: 0 if the names are equal, -1 or 1 otherwise.
  **/
-gint katja_cmp_repo(gconstpointer a, gconstpointer b) {
-	return g_strcmp0(katja_pkgtools_get_name(KATJA_PKGTOOLS(a)), (gchar *) b);
+gint
+katja_cmp_repo(gconstpointer a, gconstpointer b)
+{
+	return g_strcmp0(katja_binary_get_name((KatjaBinary *) a), (gchar *) b);
 }
 
 /**

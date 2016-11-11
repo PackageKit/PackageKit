@@ -6,7 +6,7 @@
 #include <glib/gstdio.h>
 #include <pk-backend.h>
 #include <pk-backend-job.h>
-#include "katja-pkgtools.h"
+#include "katja-binary.h"
 
 CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest);
 gchar **katja_cut_pkg(const gchar *pkg_filename);
