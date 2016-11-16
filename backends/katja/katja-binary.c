@@ -235,40 +235,62 @@ void katja_binary_real_install(KatjaBinary *pkgtools, PkBackendJob *job, gchar *
 
 /**
  * katja_binary_manifest:
+ * @binary:   a #KatjaBinary.
+ * @job:      a #PkBackendJob.
+ * @tmpl:     temporary directory.
+ * @filename: manifest filename
+ *
+ * Parse the manifest file and save the file list in the database.
  **/
-void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl, gchar *filename) {
+void katja_binary_manifest(KatjaBinary *binary,
+                           PkBackendJob *job,
+                           const gchar *tmpl,
+                           gchar *filename)
+{
 	FILE *manifest;
 	gint err, read_len;
 	guint pos;
-	gchar buf[KATJA_BINARY_MAX_BUF_SIZE], *path, *full_name = NULL, *pkg_filename, *rest = NULL, *start;
+	gchar buf[KATJA_BINARY_MAX_BUF_SIZE], *path, *pkg_filename, *rest = NULL, *start;
 	gchar **line, **lines;
 	BZFILE *manifest_bz2;
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
 	GMatchInfo *match_info;
 	sqlite3_stmt *statement = NULL;
 	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	GValue name = G_VALUE_INIT;
 
-	path = g_build_filename(tmpl, katja_binary_get_name(pkgtools), filename, NULL);
+	g_value_init(&name, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(binary), "name", &name);
+
+	path = g_build_filename(tmpl, g_value_get_string(&name), filename, NULL);
 	manifest = fopen(path, "rb");
 	g_free(path);
 
 	if (!manifest)
+	{
 		return;
+	}
 	if (!(manifest_bz2 = BZ2_bzReadOpen(&err, manifest, 0, 0, NULL, 0)))
+	{
 		goto out;
+	}
 
 	/* Prepare regular expressions */
-	if (!(pkg_expr = g_regex_new("^\\|\\|[[:blank:]]+Package:[[:blank:]]+.+\\/(.+)\\.(t[blxg]z$)?",
-								 G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-								 0,
-								 NULL)) ||
-		!(file_expr = g_regex_new("^[-bcdlps][-r][-w][-xsS][-r][-w][-xsS][-r][-w][-xtT][[:space:]][^[:space:]]+"
-								  "[[:space:]]+[[:digit:]]+[[:space:]][[:digit:]-]+[[:space:]][[:digit:]:]+[[:space:]]"
-								  "(?!install\\/|\\.)(.*)",
-								 G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-								 0,
-								 NULL)))
+	pkg_expr = g_regex_new("^\\|\\|[[:blank:]]+Package:[[:blank:]]+.+\\/(.+)\\.(t[blxg]z$)?",
+	                       G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
+	                       0,
+	                       NULL);
+	file_expr = g_regex_new("^[-bcdlps][-r][-w][-xsS][-r][-w][-xsS][-r][-w]"
+	                        "[-xtT][[:space:]][^[:space:]]+[[:space:]]+"
+	                        "[[:digit:]]+[[:space:]][[:digit:]-]+[[:space:]]"
+	                        "[[:digit:]:]+[[:space:]](?!install\\/|\\.)(.*)",
+	                        G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
+	                        0,
+	                        NULL);
+	if (!(file_expr) || !(pkg_expr))
+	{
 		goto out;
+	}
 
 	/* Prepare SQL statements */
 	if (sqlite3_prepare_v2(job_data->db,
@@ -276,39 +298,50 @@ void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar
 						   -1,
 						   &statement,
 						   NULL) != SQLITE_OK)
+	{
 		goto out;
+	}
 
 	sqlite3_exec(job_data->db, "BEGIN TRANSACTION", NULL, NULL, NULL);
-	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, KATJA_BINARY_MAX_BUF_SIZE))) {
+	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, KATJA_BINARY_MAX_BUF_SIZE - 1)))
+	{
 		if ((err != BZ_OK) && (err != BZ_STREAM_END))
+		{
 			break;
+		}
+		buf[read_len] = '\0';
 
 		/* Split the read text into lines */
 		lines = g_strsplit(buf, "\n", 0);
-		if (rest) { /* Add to the first line rest characters from the previous read operation */
+		if (rest)
+		{ /* Add to the first line rest characters from the previous read operation */
 			start = lines[0];
 			lines[0] = g_strconcat(rest, lines[0], NULL);
 			g_free(start);
 			g_free(rest);
 		}
-		if (err != BZ_STREAM_END) { /* The last line can be incomplete */
+		if (err != BZ_STREAM_END) /* The last line can be incomplete */
+		{
 			pos = g_strv_length(lines) - 1;
 			rest = lines[pos];
 			lines[pos] = NULL;
 		}
-		for (line = lines; *line; line++) {
-			if (g_regex_match(pkg_expr, *line, 0, &match_info)) {
-				if (g_match_info_get_match_count(match_info) > 2) { /* If the extension matches */
-					g_free(full_name);
+		for (line = lines; *line; line++)
+		{
+			gchar *full_name = NULL;
+
+			if (g_regex_match(pkg_expr, *line, 0, &match_info))
+			{
+				if (g_match_info_get_match_count(match_info) > 2)
+				{ /* If the extension matches */
 					full_name = g_match_info_fetch(match_info, 1);
-				} else {
-					full_name = NULL;
 				}
 			}
 			g_match_info_free(match_info);
 
 			match_info = NULL;
-			if (full_name && g_regex_match(file_expr, *line, 0, &match_info)) {
+			if (full_name && g_regex_match(file_expr, *line, 0, &match_info))
+			{
 				pkg_filename = g_match_info_fetch(match_info, 1);
 				sqlite3_bind_text(statement, 1, full_name, -1, SQLITE_TRANSIENT);
 				sqlite3_bind_text(statement, 2, pkg_filename, -1, SQLITE_TRANSIENT);
@@ -317,22 +350,26 @@ void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar
 				sqlite3_reset(statement);
 				g_free(pkg_filename);
 			}
+
+			g_free(full_name);
 			g_match_info_free(match_info);
 		}
 		g_strfreev(lines);
 	}
 
 	sqlite3_exec(job_data->db, "END TRANSACTION", NULL, NULL, NULL);
-	g_free(full_name);
 	BZ2_bzReadClose(&err, manifest_bz2);
 
 out:
 	sqlite3_finalize(statement);
 	if (file_expr)
+	{
 		g_regex_unref(file_expr);
+	}
 	if (pkg_expr)
+	{
 		g_regex_unref(pkg_expr);
-
+	}
 	fclose(manifest);
 }
 
@@ -405,38 +442,15 @@ static void
 katja_binary_class_init(KatjaBinaryClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-	GParamSpec *spec;
 
+	// Properties
 	object_class->set_property = katja_binary_set_property;
 	object_class->get_property = katja_binary_get_property;
 
-	// Properties
-	spec = g_param_spec_string("name",
-	                           "Name",
-	                           "Repository name",
-	                           NULL,
-	                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-	g_object_class_install_property(object_class, PROP_NAME, spec);
-	spec = g_param_spec_string("mirror",
-	                           "Mirror",
-	                           "Repository mirror",
-	                           NULL,
-	                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-	g_object_class_install_property(object_class, PROP_MIRROR, spec);
-	spec = g_param_spec_uint("order",
-	                         "Order",
-	                         "Repository order",
-	                         0,
-	                         G_MAXUSHORT,
-	                         0,
-	                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-	g_object_class_install_property(object_class, PROP_ORDER, spec);
-	spec = g_param_spec_boxed("blacklist",
-	                          "Blacklist",
-	                          "Repository blacklist",
-	                          G_TYPE_REGEX,
-	                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property(object_class, PROP_BLACKLIST, spec);
+	g_object_class_override_property(object_class, PROP_NAME, "name");
+	g_object_class_override_property(object_class, PROP_MIRROR, "mirror");
+	g_object_class_override_property(object_class, PROP_ORDER, "order");
+	g_object_class_override_property(object_class, PROP_BLACKLIST, "blacklist");
 
 	// Implementations
 	klass->collect_cache_info = (GSList *(*)(KatjaBinary *, const gchar *)) katja_binary_collect_cache_info;
