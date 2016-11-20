@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <sqlite3.h>
+#include "katja-pkgtools.h"
 #include "katja-utils.h"
 
 G_BEGIN_DECLS
@@ -18,8 +19,8 @@ typedef struct
 
 	sqlite3 *db;
 	CURL *curl;
-	GSList *(*collect_cache_info) (KatjaBinary *pkgtools, const gchar *tmpl);
-	void (*generate_cache) (KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl);
+	GSList *(*collect_cache_info) (KatjaPkgtools *pkgtools, const gchar *tmpl);
+	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 } PkBackendKatjaJobData;
 
 struct _KatjaBinaryClass
@@ -30,8 +31,8 @@ struct _KatjaBinaryClass
 	gchar *(*get_mirror) (KatjaBinary *pkgtools);
 	gushort (*get_order) (KatjaBinary *pkgtools);
 	GRegex *(*get_blacklist) (KatjaBinary *pkgtools);
-	GSList *(*collect_cache_info) (KatjaBinary *pkgtools, const gchar *tmpl);
-	void (*generate_cache) (KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl);
+	GSList *(*collect_cache_info) (KatjaPkgtools *pkgtools, const gchar *tmpl);
+	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 	gboolean (*download) (KatjaBinary *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
 	void (*install) (KatjaBinary *pkgtools, PkBackendJob *job, gchar *pkg_name);
 };
@@ -41,8 +42,8 @@ const gchar *katja_binary_get_name(KatjaBinary *binary);
 const gchar *katja_binary_get_mirror(KatjaBinary *binary);
 gushort katja_binary_get_order(KatjaBinary *binary);
 const GRegex *katja_binary_get_blacklist(KatjaBinary *binary);
-GSList *katja_binary_collect_cache_info(KatjaBinary *pkgtools, const gchar *tmpl);
-void katja_binary_generate_cache(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl);
+GSList *katja_binary_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
+void katja_binary_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 gboolean katja_binary_download(KatjaBinary *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
 void katja_binary_install(KatjaBinary *pkgtools, PkBackendJob *job, gchar *pkg_name);
 

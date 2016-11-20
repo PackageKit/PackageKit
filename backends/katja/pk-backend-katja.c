@@ -846,16 +846,24 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 								 -1,
 								 &stmt,
 								 NULL);
-		if ((ret != SQLITE_OK) || ((ret = sqlite3_step(stmt)) != SQLITE_ROW)) {
-			pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE, "%s: %s", path, sqlite3_errstr(ret));
+		if ((ret != SQLITE_OK) || ((ret = sqlite3_step(stmt)) != SQLITE_ROW))
+		{
+			pk_backend_job_error_code(job,
+			                          PK_ERROR_ENUM_NO_CACHE,
+			                          "%s: %s",
+			                          path,
+			                          sqlite3_errstr(ret));
 			goto out;
 		}
 		if ((guint32) sqlite3_column_int(stmt, 0) > g_file_info_get_attribute_uint32(file_info, "time::modified-usec"))
+		{
 			force = TRUE;
+		}
 	}
-
-	if (force) { /* It should empty all tables */
-		if (sqlite3_exec(job_data->db, "DELETE FROM repos", NULL, 0, &db_err) != SQLITE_OK) {
+	if (force) /* It should empty all tables */
+	{
+		if (sqlite3_exec(job_data->db, "DELETE FROM repos", NULL, 0, &db_err) != SQLITE_OK)
+		{
 			pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", db_err);
 			sqlite3_free(db_err);
 			goto out;
@@ -864,15 +872,20 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	for (l = repos; l; l = g_slist_next(l))	/* Get list of files that should be downloaded */
 	{
-		file_list = g_slist_concat(file_list,
-				katja_binary_collect_cache_info((KatjaBinary *)(l->data), tmp_dir_name));
+		KatjaPkgtools *r = (KatjaPkgtools *) (l->data);
+		GSList *cache_info = katja_pkgtools_collect_cache_info(r, tmp_dir_name);
+		file_list = g_slist_concat(file_list, cache_info);
 	}
 
 	/* Download repository */
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY);
 
 	for (l = file_list; l; l = g_slist_next(l))
-		katja_get_file(&job_data->curl, ((gchar **)l->data)[0], ((gchar **)l->data)[1]);
+	{
+		katja_get_file(&job_data->curl,
+		               ((gchar **)l->data)[0],
+		               ((gchar **)l->data)[1]);
+	}
 	g_slist_free_full(file_list, (GDestroyNotify)g_strfreev);
 
 	/* Refresh cache */
@@ -880,15 +893,20 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	for (l = repos; l; l = g_slist_next(l))
 	{
-		katja_binary_generate_cache((KatjaBinary *)(l->data), job, tmp_dir_name);
+		KatjaPkgtools *r = (KatjaPkgtools *) (l->data);
+		katja_pkgtools_generate_cache(r, job, tmp_dir_name);
 	}
 
 out:
 	sqlite3_finalize(stmt);
 	if (file_info)
+	{
 		g_object_unref(file_info);
+	}
 	if (db_file)
+	{
 		g_object_unref(db_file);
+	}
 	g_free(path);
 
 	pk_directory_remove_contents(tmp_dir_name);

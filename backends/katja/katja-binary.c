@@ -22,6 +22,8 @@ typedef struct _KatjaBinaryPrivate
 static void
 katja_binary_pkgtools_interface_init(KatjaPkgtoolsInterface *iface)
 {
+	iface->collect_cache_info = katja_binary_collect_cache_info;
+	iface->generate_cache = katja_binary_generate_cache;
 }
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE(KatjaBinary, katja_binary, G_TYPE_OBJECT,
@@ -111,7 +113,9 @@ katja_binary_get_blacklist(KatjaBinary *binary)
 /**
  * katja_binary_collect_cache_info:
  **/
-GSList *katja_binary_collect_cache_info(KatjaBinary *pkgtools, const gchar *tmpl) {
+GSList *
+katja_binary_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
+{
 	g_return_val_if_fail(KATJA_IS_BINARY(pkgtools), NULL);
 	g_return_val_if_fail(KATJA_BINARY_GET_CLASS(pkgtools)->collect_cache_info != NULL, NULL);
 
@@ -121,7 +125,9 @@ GSList *katja_binary_collect_cache_info(KatjaBinary *pkgtools, const gchar *tmpl
 /**
  * katja_binary_generate_cache:
  **/
-void katja_binary_generate_cache(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl) {
+void
+katja_binary_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl)
+{
 	g_return_if_fail(KATJA_IS_BINARY(pkgtools));
 	g_return_if_fail(KATJA_BINARY_GET_CLASS(pkgtools)->generate_cache != NULL);
 
@@ -453,8 +459,8 @@ katja_binary_class_init(KatjaBinaryClass *klass)
 	g_object_class_override_property(object_class, PROP_BLACKLIST, "blacklist");
 
 	// Implementations
-	klass->collect_cache_info = (GSList *(*)(KatjaBinary *, const gchar *)) katja_binary_collect_cache_info;
-	klass->generate_cache = (void (*)(KatjaBinary *, PkBackendJob *, const gchar *)) katja_binary_generate_cache;
+	klass->collect_cache_info = katja_binary_collect_cache_info;
+	klass->generate_cache = katja_binary_generate_cache;
 	klass->download = katja_binary_real_download;
 	klass->install = katja_binary_real_install;
 }

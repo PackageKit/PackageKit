@@ -37,3 +37,31 @@ katja_pkgtools_default_init(KatjaPkgtoolsInterface *iface)
 	                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	g_object_interface_install_property(iface, spec);
 }
+
+GSList *
+katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
+{
+	KatjaPkgtoolsInterface *iface;
+
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), NULL);
+
+	iface = KATJA_PKGTOOLS_GET_IFACE(pkgtools);
+	g_return_val_if_fail(iface->collect_cache_info != NULL, NULL);
+
+	return iface->collect_cache_info(pkgtools, tmpl);
+}
+
+void
+katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools,
+                              PkBackendJob  *job,
+                              const gchar   *tmpl)
+{
+	KatjaPkgtoolsInterface *iface;
+
+	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
+
+	iface = KATJA_PKGTOOLS_GET_IFACE(pkgtools);
+	g_return_if_fail(iface->generate_cache != NULL);
+
+	iface->generate_cache(pkgtools, job, tmpl);
+}

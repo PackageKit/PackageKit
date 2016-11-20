@@ -19,8 +19,8 @@ KatjaSlackpkg *katja_slackpkg_new(gchar *name,
                                   gchar **priority);
 
 /* Implementations */
-GSList *katja_slackpkg_real_collect_cache_info(KatjaBinary *pkgtools, const gchar *tmpl);
-void katja_slackpkg_real_generate_cache(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl);
+GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
+void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 
