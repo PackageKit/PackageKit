@@ -51,7 +51,7 @@
 #include "pk-transaction.h"
 #include "pk-scheduler.h"
 
-#ifndef glib_autoptr_cleanup_PolkitAuthorizationResult
+#ifndef HAVE_POLKIT_0_114
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PolkitAuthorizationResult, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PolkitSubject, g_object_unref)
 #endif
