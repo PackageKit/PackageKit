@@ -183,6 +183,14 @@ PKG_CHECK_MODULES(GIO, \
 PKG_CHECK_MODULES(POLKIT, \
 		  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 
+# 0.114 introduced autocleanup functions for its types.
+PKG_CHECK_MODULES([POLKIT_0_114], [polkit-gobject-1 >= 0.114],
+                  [have_polkit_0_114=yes], [have_polkit_0_114=no])
+AS_IF([test "$have_polkit_0_114" = "yes"], [
+	AC_DEFINE([HAVE_POLKIT_0_114],[1],
+	          [Define as 1 if you have polkit >= 0.114])
+])
+
 # Avoid g_simple_async_result deprecation warnings in glib 2.46+
 AC_DEFINE(GLIB_VERSION_MIN_REQUIRED, GLIB_VERSION_2_44, [minimum glib version])
 
