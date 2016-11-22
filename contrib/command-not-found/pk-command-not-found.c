@@ -876,6 +876,7 @@ main (int argc, char *argv[])
 
 			/* TRANSLATORS: ask the user to choose a file to run */
 			i = pk_console_get_number (_("Please choose a command to run"), array->len);
+			g_assert (i < array->len);
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
@@ -947,6 +948,7 @@ main (int argc, char *argv[])
 					g_printerr ("%s\n", _("User aborted selection"));
 					goto out;
 				}
+				g_assert (i < len);
 
 				/* run command */
 				ret = pk_cnf_install_package_id (package_ids[i - 1]);
