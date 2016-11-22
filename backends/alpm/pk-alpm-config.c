@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 #include <glib/gstdio.h>
+#include <syslog.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-alpm-config.h"
@@ -845,18 +846,18 @@ pk_alpm_spawn (const gchar *command)
 	g_return_val_if_fail (command != NULL, FALSE);
 
 	if (!g_spawn_command_line_sync (command, NULL, NULL, &status, &error)) {
-		g_warning ("could not spawn command: %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "could not spawn command: %s", error->message);
 		return FALSE;
 	}
 
 	if (WIFEXITED (status) == 0) {
-		g_warning ("command did not execute correctly");
+		syslog (LOG_DAEMON | LOG_WARNING, "command did not execute correctly");
 		return FALSE;
 	}
 
 	if (WEXITSTATUS (status) != EXIT_SUCCESS) {
 		gint code = WEXITSTATUS (status);
-		g_warning ("command returned error code %d", code);
+		syslog (LOG_DAEMON | LOG_WARNING, "command returned error code %d", code);
 		return FALSE;
 	}
 
@@ -881,7 +882,7 @@ pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
 
 	oldpwd = g_get_current_dir ();
 	if (g_chdir (path) < 0) {
-		g_warning ("could not find or read directory '%s'", path);
+		syslog (LOG_DAEMON | LOG_WARNING, "could not find or read directory '%s'", path);
 		g_free (oldpwd);
 		return -1;
 	}
@@ -917,7 +918,7 @@ pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
 	if (g_strrstr (xfercmd, "%o") != NULL) {
 		/* using .part filename */
 		if (g_rename (part, file) < 0) {
-			g_warning ("could not rename %s", part);
+			syslog (LOG_DAEMON | LOG_WARNING, "could not rename %s", part);
 			result = -1;
 			goto out;
 		}

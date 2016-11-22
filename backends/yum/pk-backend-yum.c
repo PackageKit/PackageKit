@@ -24,6 +24,7 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <string.h>
+#include <syslog.h>
 #include <packagekit-glib2/pk-debug.h>
 
 #define PREUPGRADE_BINARY			"/usr/bin/preupgrade"
@@ -131,7 +132,7 @@ pk_backend_enable_media_repo (gboolean enabled)
 	g_key_file_set_integer (keyfile, "InstallMedia", "enabled", enabled);
 	data = g_key_file_to_data (keyfile, NULL, &error);
 	if (data == NULL) {
-		g_warning ("failed to get data: %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "failed to get data: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -139,7 +140,7 @@ pk_backend_enable_media_repo (gboolean enabled)
 	/* save */
 	ret = g_file_set_contents (PACKAGE_MEDIA_REPO_FILENAME, data, -1, &error);
 	if (!ret) {
-		g_warning ("failed to save %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "failed to save %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -179,7 +180,7 @@ pk_backend_mount_add (GMount *mount, gpointer user_data)
 	/* copy to the system repo dir */
 	ret = g_file_copy (repo, dest, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error);
 	if (!ret) {
-		g_warning ("failed to copy: %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "failed to copy: %s", error->message);
 		g_error_free (error);
 	}
 out:
@@ -231,7 +232,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	if (priv->monitor != NULL) {
 		g_signal_connect (priv->monitor, "changed", G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 	} else {
-		g_warning ("failed to setup monitor: %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "failed to setup monitor: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -241,7 +242,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	g_debug ("loading configuration from %s", config_file);
 	ret = g_key_file_load_from_file (key_file, config_file, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		g_warning ("failed to load Yum.conf: %s", error->message);
+		syslog (LOG_DAEMON | LOG_WARNING, "failed to load Yum.conf: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}

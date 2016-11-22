@@ -26,6 +26,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <syslog.h>
 #include <string.h>
 #include <appstream-glib.h>
 
@@ -1457,7 +1458,7 @@ pk_backend_refresh_source (PkBackendJob *job,
 			if (g_error_matches (error_local,
 					     DNF_ERROR,
 					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
-				g_warning ("Skipping refresh of %s: %s",
+				syslog (LOG_DAEMON | LOG_WARNING, "Skipping refresh of %s: %s",
 					   dnf_repo_get_id (src),
 					   error_local->message);
 				g_clear_error (&error_local);
@@ -1483,7 +1484,7 @@ pk_backend_refresh_source (PkBackendJob *job,
 				return FALSE;
 			}
 #else
-			g_warning ("need to install AppStream metadata %s", tmp);
+			syslog (LOG_DAEMON | LOG_WARNING, "need to install AppStream metadata %s", tmp);
 #endif
 		}
 	}

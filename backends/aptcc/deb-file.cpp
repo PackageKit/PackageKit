@@ -22,6 +22,7 @@
 
 #include "deb-file.h"
 
+#include <syslog.h>
 #include <glib.h>
 #include <apt-pkg/init.h>
 
@@ -49,7 +50,7 @@ DebFile::DebFile(const string &filename)
     }
 
     if(!m_controlData.Scan(m_extractor->Control,m_extractor->Length+2)) {
-        g_warning("DebFile: Scan failed.");
+        syslog (LOG_DAEMON | LOG_WARNING, "DebFile: Scan failed.");
         return;
     }
 
