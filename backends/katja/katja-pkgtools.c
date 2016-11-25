@@ -38,6 +38,16 @@ katja_pkgtools_default_init(KatjaPkgtoolsInterface *iface)
 	g_object_interface_install_property(iface, spec);
 }
 
+/**
+ * katja_pkgtools_collect_cache_info:
+ * @pkgtools: a #KatjaPkgtools.
+ * @tmpl:     temporary directory for downloading the files.
+ *
+ * Download files needed to get the information like the list of packages
+ * in available repositories, updates, package descriptions and so on.
+ *
+ * Returns: list of files needed for building the cache.
+ **/
 GSList *
 katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
 {
@@ -51,6 +61,14 @@ katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
 	return iface->collect_cache_info(pkgtools, tmpl);
 }
 
+/**
+ * katja_pkgtools_generate_cache:
+ * @pkgtools: a #KatjaPkgtools.
+ * @job:      a #PkBackendJob.
+ * @tmpl:     temporary directory with the downloaded files.
+ *
+ * Generate package cache information and store it in the database.
+ **/
 void
 katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools,
                               PkBackendJob  *job,

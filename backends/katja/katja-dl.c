@@ -63,7 +63,7 @@ katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
  * katja_dl_real_generate_cache:
  **/
 void
-katja_dl_real_generate_cache(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl)
+katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl)
 {
 	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
 	gboolean skip = FALSE;

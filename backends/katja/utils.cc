@@ -109,7 +109,7 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 
 /**
  * katja_cmp_repo:
- * @a: repository pointer.
+ * @a: a #KatjaPkgtools pointer.
  * @b: repository pointer.
  *
  * Compare two repositories by the name.
@@ -119,7 +119,12 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 gint
 katja_cmp_repo(gconstpointer a, gconstpointer b)
 {
-	return g_strcmp0(katja_binary_get_name((KatjaBinary *) a), (gchar *) b);
+	GValue name = G_VALUE_INIT;
+
+	g_value_init(&name, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(a), "name", &name);
+
+	return g_strcmp0(g_value_get_string(&name), (gchar *) b);
 }
 
 /**
