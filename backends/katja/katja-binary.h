@@ -27,17 +27,7 @@ struct _KatjaBinaryClass
 
 	GSList *(*collect_cache_info) (KatjaPkgtools *pkgtools, const gchar *tmpl);
 	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
-	gboolean (*download) (KatjaBinary *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
-	void (*install) (KatjaBinary *pkgtools, PkBackendJob *job, gchar *pkg_name);
 };
-
-/* Virtual public methods */
-gboolean katja_binary_download(KatjaBinary *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
-void katja_binary_install(KatjaBinary *pkgtools, PkBackendJob *job, gchar *pkg_name);
-
-/* Implementations */
-gboolean katja_binary_real_download(KatjaBinary *pkgtools, PkBackendJob *job, gchar *dest_dir_name, gchar *pkg_name);
-void katja_binary_real_install(KatjaBinary *pkgtools, PkBackendJob *job, gchar *pkg_name);
 
 /* Public methods */
 void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl, gchar *filename);

@@ -454,11 +454,15 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 		sqlite3_bind_text(stmt, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(stmt, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 		if (sqlite3_step(stmt) == SQLITE_ROW) {
-			if ((repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo))) {
+			if ((repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo)))
+			{
 				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
 									   pkg_ids[i],
 									   (gchar *) sqlite3_column_text(stmt, 0));
-				katja_binary_download(KATJA_BINARY(repo->data), job, dir_path, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data),
+				                        job,
+				                        dir_path,
+				                        pkg_tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -482,7 +486,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 	gchar *dest_dir_name, **pkg_tokens, **pkg_ids;
 	guint i;
 	gdouble percent_step;
-	GSList *repo, *install_list = NULL, *l;
+	GSList *install_list = NULL, *l;
 	sqlite3_stmt *pkglist_stmt = NULL, *collection_stmt = NULL;
     PkBitfield transaction_flags = 0;
 	PkInfoEnum ret;
@@ -510,45 +514,58 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		goto out;
 	}
 
-	for (i = 0; pkg_ids[i]; i++) {
+	for (i = 0; pkg_ids[i]; i++)
+	{
 		pkg_tokens = pk_package_id_split(pkg_ids[i]);
 		sqlite3_bind_text(pkglist_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_stmt, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_stmt, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_stmt, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
-		if (sqlite3_step(pkglist_stmt) == SQLITE_ROW) {
-
+		if (sqlite3_step(pkglist_stmt) == SQLITE_ROW)
+		{
 			/* If it isn't a collection */
-			if (g_strcmp0((gchar *) sqlite3_column_text(pkglist_stmt, 1), "collections")) {
-				if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+			if (g_strcmp0((gchar *) sqlite3_column_text(pkglist_stmt, 1), "collections"))
+			{
+				if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+				{
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLING,
 										   pkg_ids[i],
 										   (gchar *) sqlite3_column_text(pkglist_stmt, 0));
-				} else {
+				}
+				else
+				{
 					install_list = g_slist_append(install_list, g_strdup(pkg_ids[i]));
 				}
-			} else {
+			}
+			else
+			{
 				sqlite3_bind_text(collection_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
 				sqlite3_bind_text(collection_stmt, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
-				while (sqlite3_step(collection_stmt) == SQLITE_ROW) {
+				while (sqlite3_step(collection_stmt) == SQLITE_ROW)
+				{
 					ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(collection_stmt, 2));
-					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING)) {
+					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING))
+					{
 						if ((pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) &&
-							!g_strcmp0((gchar *) sqlite3_column_text(collection_stmt, 3), "obsolete")) {
+							!g_strcmp0((gchar *) sqlite3_column_text(collection_stmt, 3), "obsolete"))
+						{
 							/* TODO: Don't just skip obsolete packages but remove them */
-						} else if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+						}
+						else if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+						{
 							pk_backend_job_package(job, ret,
 												   (gchar *) sqlite3_column_text(collection_stmt, 0),
 												   (gchar *) sqlite3_column_text(collection_stmt, 1));
-						} else {
+						}
+						else
+						{
 							install_list = g_slist_append(install_list,
 														  g_strdup((gchar *) sqlite3_column_text(collection_stmt, 0)));
 						}
 					}
 				}
-
 				sqlite3_clear_bindings(collection_stmt);
 				sqlite3_reset(collection_stmt);
 			}
@@ -566,28 +583,40 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		/* Download the packages */
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-		for (l = install_list, i = 0; l; l = g_slist_next(l), i++) {
+		for (l = install_list, i = 0; l; l = g_slist_next(l), i++)
+		{
+			GSList *repo;
+
 			pk_backend_job_set_percentage(job, percent_step * i);
 			pkg_tokens = pk_package_id_split((gchar *)(l->data));
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_binary_download(KATJA_BINARY(repo->data), job,
-										dest_dir_name,
-										pkg_tokens[PK_PACKAGE_ID_NAME]);
+			{
+				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data),
+				                        job,
+				                        dest_dir_name,
+				                        pkg_tokens[PK_PACKAGE_ID_NAME]);
+			}
 			g_strfreev(pkg_tokens);
 		}
 		g_free(dest_dir_name);
 
 		/* Install the packages */
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
-		for (l = install_list; l; l = g_slist_next(l), i++) {
+		for (l = install_list; l; l = g_slist_next(l), i++)
+		{
+			GSList *repo;
+
 			pk_backend_job_set_percentage(job, percent_step * i);
 			pkg_tokens = pk_package_id_split((gchar *)(l->data));
 			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
 
 			if (repo)
-				katja_binary_install(KATJA_BINARY(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
+			{
+				KatjaPkgtools *pkgtools = KATJA_PKGTOOLS(repo->data);
+				katja_pkgtools_install(pkgtools, job, pkg_tokens[PK_PACKAGE_ID_NAME]);
+			}
 			g_strfreev(pkg_tokens);
 		}
 	}
@@ -753,7 +782,6 @@ void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield fi
 static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
 	gchar *dest_dir_name, *cmd_line, **pkg_tokens, **pkg_ids;
 	guint i;
-	GSList *repo;
     PkBitfield transaction_flags = 0;
 
 	g_variant_get(params, "(t^a&s)", &transaction_flags, &pkg_ids);
@@ -766,13 +794,17 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		for (i = 0; pkg_ids[i]; i++) {
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
 
-			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
-				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
-
+			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete"))
+			{
+				GSList *repo = g_slist_find_custom(repos,
+				                                   pkg_tokens[PK_PACKAGE_ID_DATA],
+				                                   katja_cmp_repo);
 				if (repo)
-					katja_binary_download(KATJA_BINARY(repo->data), job,
-											dest_dir_name,
-											pkg_tokens[PK_PACKAGE_ID_NAME]);
+				{
+					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+					                        dest_dir_name,
+					                        pkg_tokens[PK_PACKAGE_ID_NAME]);
+				}
 			}
 
 			g_strfreev(pkg_tokens);
@@ -784,19 +816,26 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		for (i = 0; pkg_ids[i]; i++) {
 			pkg_tokens = pk_package_id_split(pkg_ids[i]);
 
-			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete")) {
-				repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
-
+			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete"))
+			{
+				GSList *repo = g_slist_find_custom(repos,
+				                                   pkg_tokens[PK_PACKAGE_ID_DATA],
+				                                   katja_cmp_repo);
 				if (repo)
-					katja_binary_install(KATJA_BINARY(repo->data), job, pkg_tokens[PK_PACKAGE_ID_NAME]);
-			} else {
+				{
+					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data),
+					                       job,
+					                       pkg_tokens[PK_PACKAGE_ID_NAME]);
+				}
+			}
+			else
+			{
 				/* Remove obsolete package
 				 * TODO: Removing should be an independent operation (not during installing updates) */
 				cmd_line = g_strconcat("/sbin/removepkg ", pkg_tokens[PK_PACKAGE_ID_NAME], NULL);
 				g_spawn_command_line_sync(cmd_line, NULL, NULL, NULL, NULL);
 				g_free(cmd_line);
 			}
-
 			g_strfreev(pkg_tokens);
 		}
 	}

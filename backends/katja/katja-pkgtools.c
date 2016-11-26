@@ -71,8 +71,8 @@ katja_pkgtools_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
  **/
 void
 katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools,
-                              PkBackendJob  *job,
-                              const gchar   *tmpl)
+                              PkBackendJob *job,
+                              const gchar *tmpl)
 {
 	KatjaPkgtoolsInterface *iface;
 
@@ -82,4 +82,54 @@ katja_pkgtools_generate_cache(KatjaPkgtools *pkgtools,
 	g_return_if_fail(iface->generate_cache != NULL);
 
 	iface->generate_cache(pkgtools, job, tmpl);
+}
+
+/**
+ * katja_pkgools_download:
+ * @pkgtools:      a #KatjaPkgtools.
+ * @job:           a #PkBackendJob.
+ * @dest_dir_name: destination directory.
+ * @pkg_name:      package name.
+ *
+ * Download a package.
+ *
+ * Returns: TRUE on success, FALSE otherwise.
+ **/
+gboolean
+katja_pkgtools_download(KatjaPkgtools *pkgtools,
+                        PkBackendJob *job,
+                        gchar *dest_dir_name,
+                        gchar *pkg_name)
+{
+	KatjaPkgtoolsInterface *iface;
+
+	g_return_val_if_fail(KATJA_IS_PKGTOOLS(pkgtools), FALSE);
+
+	iface = KATJA_PKGTOOLS_GET_IFACE(pkgtools);
+	g_return_val_if_fail(iface->download != NULL, FALSE);
+
+	return iface->download(pkgtools, job, dest_dir_name, pkg_name);
+}
+
+/**
+ * katja_pkgtools_install:
+ * @pkgtools: a #KatjaPkgtools.
+ * @job:      a #PkBackendJob.
+ * @pkg_name: package name.
+ *
+ * Install a package.
+ **/
+void
+katja_pkgtools_install(KatjaPkgtools *pkgtools,
+                       PkBackendJob *job,
+                       gchar *pkg_name)
+{
+	KatjaPkgtoolsInterface *iface;
+
+	g_return_if_fail(KATJA_IS_PKGTOOLS(pkgtools));
+
+	iface = KATJA_PKGTOOLS_GET_IFACE(pkgtools);
+	g_return_if_fail(iface->install != NULL);
+
+	iface->install(pkgtools, job, pkg_name);
 }
