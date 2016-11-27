@@ -99,16 +99,18 @@ out:
  * katja_slackpkg_real_generate_cache:
  **/
 void
-katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl)
+katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools,
+                                   PkBackendJob *job,
+                                   const gchar *tmpl)
 {
-	gchar **pkg_tokens = NULL, **cur_priority;
+	gchar **pkg_tokens = NULL;
 	gchar *query = NULL, *filename = NULL, *location = NULL, *cat, *summary = NULL, *line, *packages_txt;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
 	gushort pkg_name_len;
 	GString *desc;
 	GFile *list_file;
-	GFileInputStream *fin;
-	GDataInputStream *data_in;
+	GFileInputStream *fin = NULL;
+	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
 	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
 	GValue name = G_VALUE_INIT, order = G_VALUE_INIT, blacklist = G_VALUE_INIT;
@@ -236,8 +238,9 @@ katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, c
 
 			summary = g_strstr_len(line, -1, "(");
 			if (summary) /* Else summary = NULL */
+			{
 				summary = g_strndup(summary + 1, strlen(summary) - 2); /* Without ( ) */
-
+			}
 			pkg_tokens = katja_cut_pkg(filename);
 			pkg_name_len = strlen(pkg_tokens[0]); /* Description begins with pkg_name: */
 		}
@@ -299,14 +302,12 @@ katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, c
 	sqlite3_exec(job_data->db, "END TRANSACTION", NULL, NULL, NULL);
 
 	g_string_free(desc, TRUE);
-
 	g_object_unref(data_in);
-	g_object_unref(fin);
 
 	/* Parse MANIFEST.bz2 */
-	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++)
+	for (gchar **p = KATJA_SLACKPKG(pkgtools)->priority; *p; p++)
 	{
-		filename = g_strconcat(*cur_priority, "-MANIFEST.bz2", NULL);
+		filename = g_strconcat(*p, "-MANIFEST.bz2", NULL);
 		katja_binary_manifest((KatjaBinary *) pkgtools, job, tmpl, filename);
 		g_free(filename);
 	}
