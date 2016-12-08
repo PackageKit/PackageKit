@@ -57,6 +57,10 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_COMMUNICATION;
     } else if (group.compare ("interpreters") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("java") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("javascript") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("kde") == 0) {
         return PK_GROUP_ENUM_DESKTOP_KDE;
     } else if (group.compare ("libdevel") == 0) {
@@ -80,6 +84,10 @@ PkGroupEnum get_enum_group(string group)
     } else if (group.compare ("perl") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("python") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("ruby") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("rust") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("science") == 0) {
         return PK_GROUP_ENUM_SCIENCE;
