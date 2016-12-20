@@ -384,8 +384,7 @@ pk_backend_job_set_context (PkBackendJob *job, DnfContext *context)
 	const gchar *value;
 
 	/* DnfContext */
-	g_clear_object (&job_data->context);
-	job_data->context = g_object_ref (context);
+	g_set_object (&job_data->context, context);
 
 	/* set proxy */
 	value = pk_backend_job_get_proxy_http (job);
