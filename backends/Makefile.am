@@ -20,10 +20,6 @@ if BACKEND_TYPE_ENTROPY
 SUBDIRS += entropy
 endif
 
-if BACKEND_TYPE_HIF
-SUBDIRS += hif
-endif
-
 if BACKEND_TYPE_KATJA
 SUBDIRS += katja
 endif

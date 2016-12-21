@@ -383,7 +383,6 @@ AC_ARG_ENABLE(aptcc, AS_HELP_STRING([--enable-aptcc],[use the APTcc backend]),en
 AC_ARG_ENABLE(dnf, AS_HELP_STRING([--enable-dnf],[use the DNF backend]),enable_dnf=$enableval,enable_dnf=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(entropy, AS_HELP_STRING([--enable-entropy],[use the entropy backend]),enable_entropy=$enableval,enable_entropy=no)
-AC_ARG_ENABLE(hif, AS_HELP_STRING([--enable-hif],[use the hif backend]),enable_hif=$enableval,enable_hif=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
@@ -400,7 +399,6 @@ AM_CONDITIONAL(BACKEND_TYPE_APTCC, [test x$enable_aptcc = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DNF, [test x$enable_dnf = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ENTROPY, [test x$enable_entropy = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_HIF, [test x$enable_hif = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
@@ -441,18 +439,6 @@ if test x$enable_dnf = xyes; then
 		with_dnf_vendor="fedora"
 	fi
 	AC_SUBST(DNF_VENDOR, [$with_dnf_vendor])
-fi
-
-if test x$enable_hif = xyes; then
-	PKG_CHECK_MODULES(HIF, appstream-glib libhif >= 0.2.3)
-	AC_ARG_WITH(hif-vendor,
-			[AS_HELP_STRING([--with-hif-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
-	if test "$with_hif_vendor" = "fedora" -o "$with_hif_vendor" = "mageia"; then
-		with_hif_vendor="$with_hif_vendor"
-	else
-		with_hif_vendor="fedora"
-	fi
-	AC_SUBST(HIF_VENDOR, [$with_hif_vendor])
 fi
 
 have_python_backend="no"
@@ -594,7 +580,6 @@ backends/aptcc/Makefile
 backends/dnf/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
-backends/hif/Makefile
 backends/katja/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
@@ -664,8 +649,6 @@ echo "
         DNF backend vendor:        ${with_dnf_vendor}
         dummy backend:             ${enable_dummy}
         Entropy backend:           ${enable_entropy}
-        Hif backend:               ${enable_hif}
-        Hif backend vendor:        ${with_hif_vendor}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
