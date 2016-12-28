@@ -29,6 +29,7 @@
 #include <pk-backend.h>
 
 #include "pk-backend-alpm.h"
+#include "pk-alpm-version.h"
 #include "pk-alpm-config.h"
 #include "pk-alpm-databases.h"
 #include "pk-alpm-error.h"
