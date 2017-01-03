@@ -54,7 +54,6 @@ typedef struct {
 typedef struct {
 	GKeyFile	*conf;
 	DnfContext	*context;
-	GMutex		 mutex;
 	GHashTable	*sack_cache;	/* of DnfSackCacheItem */
 	GMutex		 sack_mutex;
 	GTimer		*repos_timer;
@@ -226,8 +225,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	if (release_ver == NULL)
 		g_error ("Failed to parse os-release: %s", error->message);
 
-	g_mutex_init (&priv->mutex);
-
 	/* a cache of DnfSacks with the key being which sacks are loaded
 	 *
 	 * notes:
@@ -271,7 +268,6 @@ pk_backend_destroy (PkBackend *backend)
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
 	g_timer_destroy (priv->repos_timer);
-	g_mutex_clear (&priv->mutex);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
 	g_free (priv);
@@ -891,12 +887,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	HyQuery query = NULL;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = 0;
 	g_autofree gchar **search_tmp = NULL;
 	g_autoptr(GError) error = NULL;
 	g_auto(GStrv) search = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -1221,11 +1215,9 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	guint i;
 	DnfRepo *src;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autoptr(GPtrArray) sources = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t)", &filters);
 
@@ -1287,9 +1279,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	gboolean ret = FALSE;
 	DnfRepo *src;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
 
@@ -1514,14 +1504,12 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	DnfState *state_loop;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	gboolean force;
 	gboolean ret;
 	guint cnt = 0;
 	guint i;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) refresh_sources = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* set state */
 	dnf_state_set_steps (job_data->state, NULL,
@@ -1757,12 +1745,10 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	DnfPackage *pkg;
 	DnfSack *sack;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(^a&s)", &package_ids);
 
@@ -1849,11 +1835,9 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autofree gchar **full_paths = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(^a&s)", &full_paths);
 
@@ -1938,11 +1922,9 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autofree gchar **full_paths = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(^a&s)", &full_paths);
 
@@ -2025,13 +2007,11 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	DnfPackage *pkg;
 	DnfSack *sack;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED);
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) files = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(^a&ss)",
 		       &package_ids,
@@ -2461,7 +2441,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	HyQuery query_release = NULL;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
 	const gchar *from_repo;
 	const gchar *repo_filename;
@@ -2477,7 +2456,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_autoptr(GPtrArray) removed_id = NULL;
 	g_autoptr(GPtrArray) sources = NULL;
 	g_auto(GStrv) search = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t&sb)",
 		       &job_data->transaction_flags,
@@ -2679,7 +2657,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean allow_deps;
 	gboolean autoremove;
@@ -2688,7 +2665,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t^a&sbb)",
 		       &job_data->transaction_flags,
@@ -2828,7 +2804,6 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean ret;
 	guint i;
@@ -2836,7 +2811,6 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3020,7 +2994,6 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean ret;
 	guint i;
@@ -3028,7 +3001,6 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) array = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3131,14 +3103,12 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	DnfPackage *pkg;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	gboolean ret;
 	guint i;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	g_variant_get (params, "(t^a&s)",
 		       &job_data->transaction_flags,
@@ -3248,7 +3218,6 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	gboolean ret;
 	const gchar *release_ver = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* get arguments */
 	g_variant_get (params, "(t&su)",
@@ -3391,12 +3360,10 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	DnfPackage *pkg;
 	DnfSack *sack;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -3503,12 +3470,10 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	GPtrArray *references;
 	DnfSack *sack = NULL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield filters;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -3654,14 +3619,11 @@ pk_backend_repair_remove_rpm_index (const gchar *index_fn, GError **error)
 static void
 pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (job_data->backend);
 	PkBitfield transaction_flags;
 	const gchar *tmp;
 	gboolean ret;
 	g_autoptr(GDir) dir = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* don't do anything when simulating */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
