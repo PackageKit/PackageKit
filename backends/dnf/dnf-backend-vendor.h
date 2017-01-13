@@ -24,7 +24,7 @@
 
 #include <glib.h>
 
-gboolean	dnf_validate_supported_source(const gchar*);
+gboolean	dnf_validate_supported_repo (const gchar *id);
 
 G_END_DECLS
 

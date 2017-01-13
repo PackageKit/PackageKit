@@ -136,14 +136,14 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 
 	/* anything remote in metadata-only mode needs to be unavailable */
 	for (i = 0; i < pkglist->len; i++) {
-		DnfRepo *src;
+		DnfRepo *repo;
 		pkg = g_ptr_array_index (pkglist, i);
 		if (dnf_package_installed (pkg))
 			continue;
-		src = dnf_package_get_repo (pkg);
-		if (src == NULL)
+		repo = dnf_package_get_repo (pkg);
+		if (repo == NULL)
 			continue;
-		if (dnf_repo_get_enabled (src) != DNF_REPO_ENABLED_METADATA)
+		if (dnf_repo_get_enabled (repo) != DNF_REPO_ENABLED_METADATA)
 			continue;
 		dnf_package_set_info (pkg, PK_INFO_ENUM_UNAVAILABLE);
 	}

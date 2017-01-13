@@ -60,7 +60,7 @@ typedef struct {
 } PkBackendDnfPrivate;
 
 typedef struct {
-	GPtrArray	*sources;
+	GPtrArray	*repos;
 	DnfContext	*context;
 	DnfTransaction	*transaction;
 	DnfState	*state;
@@ -458,8 +458,8 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		g_object_unref (job_data->transaction);
 	if (job_data->context != NULL)
 		g_object_unref (job_data->context);
-	if (job_data->sources != NULL)
-		g_ptr_array_unref (job_data->sources);
+	if (job_data->repos != NULL)
+		g_ptr_array_unref (job_data->repos);
 	if (job_data->goal != NULL)
 		hy_goal_free (job_data->goal);
 	g_free (job_data);
@@ -473,12 +473,12 @@ static gboolean
 pk_backend_ensure_repos (PkBackendDnfJobData *job_data, GError **error)
 {
 	/* already set */
-	if (job_data->sources != NULL)
+	if (job_data->repos != NULL)
 		return TRUE;
 
 	/* set the list of repos */
-	job_data->sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), error);
-	if (job_data->sources == NULL)
+	job_data->repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), error);
+	if (job_data->repos == NULL)
 		return FALSE;
 	return TRUE;
 }
@@ -500,7 +500,7 @@ dnf_utils_add_remote (PkBackendJob *job,
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
 				   2, /* load files */
-				   98, /* add sources */
+				   98, /* add repos */
 				   -1);
 	if (!ret)
 		return FALSE;
@@ -516,7 +516,7 @@ dnf_utils_add_remote (PkBackendJob *job,
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
-	                          job_data->sources,
+	                          job_data->repos,
 	                          pk_backend_job_get_cache_age (job),
 	                          flags,
 	                          state_local,
@@ -896,7 +896,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	ret = dnf_state_set_steps (job_data->state, NULL,
 				   39, /* add repos */
 				   50, /* query */
-				   1, /* ensure source list */
+				   1, /* ensure repo list */
 				   1, /* ensure origin */
 				   9, /* emit */
 				   -1);
@@ -1011,7 +1011,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 
-	/* set the src on each package */
+	/* set the repo on each package */
 	ret = dnf_transaction_ensure_repo_list (job_data->transaction, pkglist, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -1156,47 +1156,47 @@ pk_backend_get_updates (PkBackend *backend,
  * user's trust of a GPG key or something more flexible.
  */
 static gboolean
-source_is_supported (DnfRepo *source)
+repo_is_supported (DnfRepo *repo)
 {
-	return dnf_validate_supported_source (dnf_repo_get_id (source));
+	return dnf_validate_supported_repo (dnf_repo_get_id (repo));
 }
 
 /**
- * pk_backend_source_filter:
+ * pk_backend_repo_filter:
  */
 static gboolean
-pk_backend_source_filter (DnfRepo *src, PkBitfield filters)
+pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 {
 	/* devel and ~devel */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) &&
-	    !dnf_repo_is_devel (src))
+	    !dnf_repo_is_devel (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-	    dnf_repo_is_devel (src))
+	    dnf_repo_is_devel (repo))
 		return FALSE;
 
 	/* source and ~source */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) &&
-	    !dnf_repo_is_repo (src))
+	    !dnf_repo_is_repo (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) &&
-	    dnf_repo_is_repo (src))
+	    dnf_repo_is_repo (repo))
 		return FALSE;
 
 	/* installed and ~installed == enabled */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-	    dnf_repo_get_enabled (src) == DNF_REPO_ENABLED_NONE)
+	    dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
-	    dnf_repo_get_enabled (src) != DNF_REPO_ENABLED_NONE)
+	    dnf_repo_get_enabled (repo) != DNF_REPO_ENABLED_NONE)
 		return FALSE;
 
 	/* supported and ~supported == core */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED) &&
-	    !source_is_supported (src))
+	    !repo_is_supported (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED) &&
-	    source_is_supported (src))
+	    repo_is_supported (repo))
 		return FALSE;
 
 	/* not filtered */
@@ -1213,18 +1213,18 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 {
 	gboolean enabled;
 	guint i;
-	DnfRepo *src;
+	DnfRepo *repo;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	g_autoptr(GPtrArray) sources = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t)", &filters);
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
-	if (sources == NULL) {
+	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
+	if (repos == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
 					   "failed to scan yum.repos.d: %s",
@@ -1233,7 +1233,7 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	}
 
 	/* none? */
-	if (sources->len == 0) {
+	if (repos->len == 0) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_REPO_NOT_FOUND,
 					   "failed to find any repos");
@@ -1241,15 +1241,15 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	}
 
 	/* emit each repo */
-	for (i = 0; i < sources->len; i++) {
+	for (i = 0; i < repos->len; i++) {
 		g_autofree gchar *description = NULL;
-		src = g_ptr_array_index (sources, i);
-		if (!pk_backend_source_filter (src, filters))
+		repo = g_ptr_array_index (repos, i);
+		if (!pk_backend_repo_filter (repo, filters))
 			continue;
-		description = dnf_repo_get_description (src);
-		enabled = (dnf_repo_get_enabled (src) & DNF_REPO_ENABLED_PACKAGES) > 0;
+		description = dnf_repo_get_description (repo);
+		enabled = (dnf_repo_get_enabled (repo) & DNF_REPO_ENABLED_PACKAGES) > 0;
 		pk_backend_job_repo_detail (job,
-					    dnf_repo_get_id (src),
+					    dnf_repo_get_id (repo),
 					    description, enabled);
 	}
 }
@@ -1277,7 +1277,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	const gchar *parameter;
 	const gchar *value;
 	gboolean ret = FALSE;
-	DnfRepo *src;
+	DnfRepo *repo;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	g_autoptr(GError) error = NULL;
 
@@ -1301,8 +1301,8 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	pk_backend_job_set_percentage (job, 0);
 
 	/* find the correct repo */
-	src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
-	if (src == NULL) {
+	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
+	if (repo == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
 					   "%s", error->message);
@@ -1311,7 +1311,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 
 	/* check this isn't a waste of time */
 	if (g_strcmp0 (parameter, "enabled") == 0) {
-		ret = (dnf_repo_get_enabled (src) & DNF_REPO_ENABLED_PACKAGES) > 0;
+		ret = (dnf_repo_get_enabled (repo) & DNF_REPO_ENABLED_PACKAGES) > 0;
 		if (g_strcmp0 (value, "1") == 0 && ret) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_REPO_ALREADY_SET,
@@ -1326,7 +1326,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 		}
 	}
 
-	ret = dnf_repo_set_data (src, parameter, value, &error);
+	ret = dnf_repo_set_data (repo, parameter, value, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1334,7 +1334,7 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 					   error->message);
 		goto out;
 	}
-	ret = dnf_repo_commit (src, &error);
+	ret = dnf_repo_commit (repo, &error);
 	if (!ret) {
 		pk_backend_job_error_code (job,
 					   error->code,
@@ -1403,16 +1403,16 @@ pk_backend_get_mime_types (PkBackend *backend)
 }
 
 /**
- * pk_backend_refresh_source:
+ * pk_backend_refresh_repo:
  */
 static gboolean
-pk_backend_refresh_source (PkBackendJob *job,
-			   DnfRepo *src,
-			   DnfState *state,
-			   GError **error)
+pk_backend_refresh_repo (PkBackendJob *job,
+                         DnfRepo *repo,
+                         DnfState *state,
+                         GError **error)
 {
 	gboolean ret;
-	gboolean src_okay;
+	gboolean repo_okay;
 	DnfState *state_local;
 	GError *error_local = NULL;
 	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
@@ -1427,15 +1427,15 @@ pk_backend_refresh_source (PkBackendJob *job,
 	if (!ret)
 		return FALSE;
 
-	/* is the source up to date? */
+	/* is the repo up to date? */
 	state_local = dnf_state_get_child (state);
-	src_okay = dnf_repo_check (src,
-	                           pk_backend_job_get_cache_age (job),
-	                           state_local,
-	                           &error_local);
-	if (!src_okay) {
+	repo_okay = dnf_repo_check (repo,
+	                            pk_backend_job_get_cache_age (job),
+	                            state_local,
+	                            &error_local);
+	if (!repo_okay) {
 		g_debug ("repo %s not okay [%s], refreshing",
-			 dnf_repo_get_id (src), error_local->message);
+			 dnf_repo_get_id (repo), error_local->message);
 		g_clear_error (&error_local);
 		if (!dnf_state_finished (state_local, error))
 			return FALSE;
@@ -1446,9 +1446,9 @@ pk_backend_refresh_source (PkBackendJob *job,
 		return FALSE;
 
 	/* update repo, TODO: if we have network access */
-	if (!src_okay) {
+	if (!repo_okay) {
 		state_local = dnf_state_get_child (state);
-		ret = dnf_repo_update (src,
+		ret = dnf_repo_update (repo,
 		                       DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
 		                       state_local,
 		                       &error_local);
@@ -1457,7 +1457,7 @@ pk_backend_refresh_source (PkBackendJob *job,
 					     DNF_ERROR,
 					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
 				g_warning ("Skipping refresh of %s: %s",
-					   dnf_repo_get_id (src),
+					   dnf_repo_get_id (repo),
 					   error_local->message);
 				g_clear_error (&error_local);
 				if (!dnf_state_finished (state_local, error))
@@ -1471,12 +1471,12 @@ pk_backend_refresh_source (PkBackendJob *job,
 
 	/* copy the appstream files somewhere that the GUI will pick them up */
 	for (i = 0; as_basenames[i] != NULL; i++) {
-		tmp = dnf_repo_get_filename_md (src, as_basenames[i]);
+		tmp = dnf_repo_get_filename_md (repo, as_basenames[i]);
 		if (tmp != NULL) {
 #if AS_CHECK_VERSION(0,3,4)
 			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
 							tmp,
-							dnf_repo_get_id (src),
+							dnf_repo_get_id (repo),
 							NULL,
 							error)) {
 				return FALSE;
@@ -1499,7 +1499,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 GVariant *params,
 				 gpointer user_data)
 {
-	DnfRepo *src;
+	DnfRepo *repo;
 	DnfState *state_local;
 	DnfState *state_loop;
 	DnfSack *sack = NULL;
@@ -1509,7 +1509,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	guint cnt = 0;
 	guint i;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GPtrArray) refresh_sources = NULL;
+	g_autoptr(GPtrArray) refresh_repos = NULL;
 
 	/* set state */
 	dnf_state_set_steps (job_data->state, NULL,
@@ -1527,42 +1527,42 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		return;
 	}
 
-	/* count the enabled sources */
-	for (i = 0; i < job_data->sources->len; i++) {
-		src = g_ptr_array_index (job_data->sources, i);
-		if (dnf_repo_get_enabled (src) == DNF_REPO_ENABLED_NONE)
+	/* count the enabled repos */
+	for (i = 0; i < job_data->repos->len; i++) {
+		repo = g_ptr_array_index (job_data->repos, i);
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
 			continue;
-		if (dnf_repo_get_kind (src) == DNF_REPO_KIND_MEDIA)
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
 			continue;
-		if (dnf_repo_get_kind (src) == DNF_REPO_KIND_LOCAL)
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
 			continue;
 		cnt++;
 	}
 
-	/* figure out which sources need refreshing */
-	refresh_sources = g_ptr_array_new ();
+	/* figure out which repos need refreshing */
+	refresh_repos = g_ptr_array_new ();
 	state_local = dnf_state_get_child (job_data->state);
 	dnf_state_set_number_steps (state_local, cnt);
-	for (i = 0; i < job_data->sources->len; i++) {
-		gboolean src_okay;
+	for (i = 0; i < job_data->repos->len; i++) {
+		gboolean repo_okay;
 
-		src = g_ptr_array_index (job_data->sources, i);
-		if (dnf_repo_get_enabled (src) == DNF_REPO_ENABLED_NONE)
+		repo = g_ptr_array_index (job_data->repos, i);
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
 			continue;
-		if (dnf_repo_get_kind (src) == DNF_REPO_KIND_MEDIA)
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
 			continue;
-		if (dnf_repo_get_kind (src) == DNF_REPO_KIND_LOCAL)
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
 			continue;
 
-		/* is the source up to date? */
+		/* is the repo up to date? */
 		state_loop = dnf_state_get_child (state_local);
-		src_okay = dnf_repo_check (src,
-		                           pk_backend_job_get_cache_age (job),
-		                           state_loop,
-		                           NULL);
-		if (!src_okay || force)
-			g_ptr_array_add (refresh_sources,
-			                 g_ptr_array_index (job_data->sources, i));
+		repo_okay = dnf_repo_check (repo,
+		                            pk_backend_job_get_cache_age (job),
+		                            state_loop,
+		                            NULL);
+		if (!repo_okay || force)
+			g_ptr_array_add (refresh_repos,
+			                 g_ptr_array_index (job_data->repos, i));
 
 		/* done */
 		ret = dnf_state_done (state_local, &error);
@@ -1580,7 +1580,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	}
 
 	/* is everything up to date? */
-	if (refresh_sources->len == 0) {
+	if (refresh_repos->len == 0) {
 		if (!dnf_state_finished (job_data->state, &error))
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
@@ -1588,14 +1588,14 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 
 	/* refresh each repo */
 	state_local = dnf_state_get_child (job_data->state);
-	dnf_state_set_number_steps (state_local, refresh_sources->len);
-	for (i = 0; i < refresh_sources->len; i++) {
-		src = g_ptr_array_index (refresh_sources, i);
+	dnf_state_set_number_steps (state_local, refresh_repos->len);
+	for (i = 0; i < refresh_repos->len; i++) {
+		repo = g_ptr_array_index (refresh_repos, i);
 
 		/* delete content even if up to date */
 		if (force) {
-			g_debug ("Deleting contents of %s as forced", dnf_repo_get_id (src));
-			ret = dnf_repo_clean (src, &error);
+			g_debug ("Deleting contents of %s as forced", dnf_repo_get_id (repo));
+			ret = dnf_repo_clean (repo, &error);
 			if (!ret) {
 				pk_backend_job_error_code (job, error->code, "%s", error->message);
 				return;
@@ -1604,7 +1604,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 
 		/* check and download */
 		state_loop = dnf_state_get_child (state_local);
-		ret = pk_backend_refresh_source (job, src, state_loop, &error);
+		ret = pk_backend_refresh_repo (job, repo, state_loop, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			return;
@@ -2001,7 +2001,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	gboolean ret;
 	gchar *tmp;
 	guint i;
-	DnfRepo *src;
+	DnfRepo *repo;
 	DnfState *state_local;
 	DnfState *state_loop;
 	DnfPackage *pkg;
@@ -2086,11 +2086,11 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
 		dnf_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
-		/* get correct package source */
-		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-		                                      dnf_package_get_reponame (pkg),
-		                                      &error);
-		if (src == NULL) {
+		/* get correct package repo */
+		repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
+		                                       dnf_package_get_reponame (pkg),
+		                                       &error);
+		if (repo == NULL) {
 			g_prefix_error (&error, "Not sure where to download %s: ",
 					dnf_package_get_name (pkg));
 			pk_backend_job_error_code (job, error->code,
@@ -2100,7 +2100,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
 		/* download */
 		state_loop = dnf_state_get_child (state_local);
-		tmp = dnf_repo_download_package (src,
+		tmp = dnf_repo_download_package (repo,
 		                                 pkg,
 		                                 directory,
 		                                 state_loop,
@@ -2168,7 +2168,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 	gboolean ret = TRUE;
 	GPtrArray *array = NULL;
 	guint i;
-	DnfRepo *src;
+	DnfRepo *repo;
 	DnfPackage *pkg;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	g_autoptr(GPtrArray) install = NULL;
@@ -2193,10 +2193,10 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 		}
 
 		/* find repo */
-		src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-		                                      dnf_package_get_reponame (pkg),
-		                                      error);
-		if (src == NULL) {
+		repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
+		                                       dnf_package_get_reponame (pkg),
+		                                       error);
+		if (repo == NULL) {
 			g_prefix_error (error, "Can't GPG check %s: ",
 					dnf_package_get_name (pkg));
 			ret = FALSE;
@@ -2204,7 +2204,7 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 		}
 
 		/* repo has no gpg key */
-		if (!dnf_repo_get_gpgcheck (src))
+		if (!dnf_repo_get_gpgcheck (repo))
 			g_ptr_array_add (array, g_object_ref (pkg));
 	}
 out:
@@ -2432,7 +2432,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 			       gpointer user_data)
 {
 	DnfDb *db;
-	DnfRepo *src;
+	DnfRepo *repo;
 	DnfState *state_local;
 	DnfPackage *pkg;
 	GPtrArray *pkglist = NULL;
@@ -2454,7 +2454,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	guint j;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) removed_id = NULL;
-	g_autoptr(GPtrArray) sources = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
 	g_auto(GStrv) search = NULL;
 
 	g_variant_get (params, "(t&sb)",
@@ -2473,8 +2473,8 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_assert (ret);
 
 	/* find the repo-release package name for @repo_id */
-	src = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
-	if (src == NULL) {
+	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
+	if (repo == NULL) {
 		pk_backend_job_error_code (job,
 					   error->code,
 					   "%s", error->message);
@@ -2488,22 +2488,22 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	}
 
 	/* find all the .repo files the repo-release package installed */
-	sources = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
-	search = g_new0 (gchar *, sources->len + 0);
+	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
+	search = g_new0 (gchar *, repos->len + 0);
 	removed_id = g_ptr_array_new_with_free_func (g_free);
-	repo_filename = dnf_repo_get_filename (src);
-	for (i = 0; i < sources->len; i++) {
-		src = g_ptr_array_index (sources, i);
-		if (g_strcmp0 (dnf_repo_get_filename (src), repo_filename) != 0)
+	repo_filename = dnf_repo_get_filename (repo);
+	for (i = 0; i < repos->len; i++) {
+		repo = g_ptr_array_index (repos, i);
+		if (g_strcmp0 (dnf_repo_get_filename (repo), repo_filename) != 0)
 			continue;
 
 		/* this repo_id will get purged */
-		tmp = dnf_repo_get_id (src);
+		tmp = dnf_repo_get_id (repo);
 		g_debug ("adding id %s to check", tmp);
 		g_ptr_array_add (removed_id, g_strdup (tmp));
 
 		/* the package that installed the .repo file will be removed */
-		tmp = dnf_repo_get_filename (src);
+		tmp = dnf_repo_get_filename (repo);
 		for (j = 0, found = FALSE; search[j] != NULL; j++) {
 			if (g_strcmp0 (tmp, search[j]) == 0)
 				found = TRUE;
