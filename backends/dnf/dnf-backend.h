@@ -29,6 +29,8 @@
 
 #include <pk-backend.h>
 
+G_BEGIN_DECLS
+
 PkInfoEnum	 dnf_advisory_kind_to_info_enum	(DnfAdvisoryKind	 kind);
 void		 dnf_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
