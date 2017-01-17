@@ -15,7 +15,7 @@
 # hpeters <hpeters@redhat.com>, 2009
 # Marcus Nitzschke <kenda@fedoraproject.org>, 2009-2010
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2012
-# Matthias K. <matthias@tenstral.net>, 2012
+# Matthias Klumpp <matthias@tenstral.net>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
 # Stefan Posdzich <cheekyboinc@foresightlinux.org>, 2008
 # Thomas Spura <tomspur@fedoraproject.org>, 2008
@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 09:18+0100\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
 "PO-Revision-Date: 2016-03-17 19:11+0000\n"
 "Last-Translator: Christian <Christian.Kirbach@googlemail.com>\n"
 "Language-Team: German (http://www.transifex.com/freedesktop/packagekit/language/de/)\n"
@@ -1328,8 +1328,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Legitimation ist zum Reparieren der installierten Software erforderlich"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Offline-Aktualisierungen anstoßen"
 

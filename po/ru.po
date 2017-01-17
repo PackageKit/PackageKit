@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 09:18+0100\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
 "PO-Revision-Date: 2016-02-13 07:53+0000\n"
 "Last-Translator: Serge Vylekzhanin <vylekzhanin@mail.ru>\n"
 "Language-Team: Russian (http://www.transifex.com/freedesktop/packagekit/language/ru/)\n"
@@ -1322,8 +1322,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Для восстановления установленного ПО необходима аутентификация"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Запустить автономные обновления"
 

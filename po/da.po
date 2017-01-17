@@ -3,16 +3,16 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Joe Hansen <joedalton2@yahoo.dk>, 2013-2015
+# Joe Hansen <joedalton2@yahoo.dk>, 2013-2016
 # Kris Thomsen <lakristho@gmail.com>, 2009-2013
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
+"PO-Revision-Date: 2016-08-31 13:33+0000\n"
+"Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish (http://www.transifex.com/freedesktop/packagekit/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -297,7 +297,7 @@ msgstr "Ingen pakker blev fundet"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "Forventet pakkenavn fik faktisk fil. Prøv at bruge \"pkcon install-local %s\" istedet."
+msgstr "Forventet pakkenavn fik faktisk fil. Prøv at bruge »pkcon install-local %s« i stedet."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -374,7 +374,7 @@ msgstr "Sæt filteret, f.eks. installeret"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "Installér pakkerne uden at spørge efter bekræftelse"
+msgstr "Installer pakkerne uden at spørge efter bekræftelse"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
@@ -399,7 +399,7 @@ msgstr "Udskriv for at vise maskinlæsbart output, istedet for at bruge animered
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for \"aldrig\"."
+msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for »aldrig«."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -485,7 +485,7 @@ msgstr "Et pakkearkiv-id og automatisk fjernelse krævet"
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "En handling, f.eks. \"update-packages\" er krævet"
+msgstr "En handling, f.eks. »update-packages« er krævet"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -530,7 +530,7 @@ msgstr "Filen findes allerede: %s"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "Indstilling \"%s\" er ikke understøttet"
+msgstr "Tilvalget »%s« er ikke understøttet"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
@@ -561,11 +561,11 @@ msgstr "Lukker ned efter installation af opdateringer ..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Installerer opdateringer,;det kan tage et stykke tid ..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Installerer opdateringer; det kan tage et stykke tid ..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -630,7 +630,7 @@ msgstr "Pakken der udbyder denne fil er:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installér pakke \"%s\" for at udbyde kommando \"%s\"?"
+msgstr "Installer pakke »%s« for at udbyde kommando »%s«?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
@@ -1017,7 +1017,7 @@ msgstr "Henter overførsler"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Henter systemopgraderinger"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1128,7 +1128,7 @@ msgstr "Følgende pakker er nødt til at blive nedgraderet:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "De følgende pakker skal gøres forældede:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1148,7 +1148,7 @@ msgstr "Overførslen fortsatte ikke."
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr "Annullér fremmed opgave"
+msgstr "Annuller fremmed opgave"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
@@ -1160,7 +1160,7 @@ msgstr "Godkendelse kræves for at annullere en opgave, der ikke er startet af d
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr "Installér signeret pakke"
+msgstr "Installer signeret pakke"
 
 msgid "Authentication is required to install software"
 msgstr "Godkendelse er krævet for at installere programmer"
@@ -1171,7 +1171,7 @@ msgstr "Godkendelse er krævet for at installere programmer"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "Installér upålidelig lokal fil"
+msgstr "Installer upålidelig lokal fil"
 
 msgid "Authentication is required to install untrusted software"
 msgstr "Godkendelse er krævet for at installere upålidelige pakker"
@@ -1219,7 +1219,7 @@ msgstr "Godkendelse er krævet for at overveje en nøgle brugt for signering af 
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "Acceptér EULA"
+msgstr "Accepter EULA"
 
 msgid "Authentication is required to accept a EULA"
 msgstr "Godkendelse kræves for at acceptere en EULA"
@@ -1265,7 +1265,7 @@ msgstr "Godkendelse kræves for at ændre softewarekildeparametre"
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system sources"
-msgstr "Opdatér systemkilder"
+msgstr "Opdater systemkilder"
 
 msgid "Authentication is required to refresh the system sources"
 msgstr "Godkendelse kræves for at opdatere systemkilderne"
@@ -1298,24 +1298,25 @@ msgstr "Godkendelse kræves for at genindlæse enheden med en ny driver"
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Opgrader system"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Godkendelse er krævet for at opgradere operativsystemet"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr "Reparér system"
+msgstr "Reparer system"
 
 msgid "Authentication is required to repair the installed software"
 msgstr "Godkendelse er krævet for at reparere det installerede software"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Udløs offline-opdateringer"
 
@@ -1393,7 +1394,7 @@ msgstr "Kunne ikke indlæse motoren"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "Deaktivér tomgangstimeren"
+msgstr "Deaktiver tomgangstimeren"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
@@ -1420,13 +1421,13 @@ msgid "The software is not from a trusted source."
 msgstr "Softwaren er ikke fra en betroet kilde."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Opdatér ikke denne pakke medmindre du er sikker på, at det er sikkert."
+msgstr "Opdater ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Opdatér ikke disse pakker medmindre du er sikker på, at det er sikkert."
+msgstr "Opdater ikke disse pakker medmindre du er sikker på, at det er sikkert."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Installér ikke denne pakke medmindre du er sikker på, at det er sikkert."
+msgstr "Installer ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Installér ikke disse pakker medmindre du er sikker på, at det er sikkert."
+msgstr "Installer ikke disse pakker medmindre du er sikker på, at det er sikkert."

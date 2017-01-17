@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-12 15:30+0100\n"
-"PO-Revision-Date: 2016-06-04 15:34+0000\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
+"PO-Revision-Date: 2016-09-10 17:41+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/freedesktop/packagekit/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -65,7 +65,7 @@ msgstr "Nazwa użytkownika"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
-msgstr "Imię i nazwisko"
+msgstr "Imię i nazwisko"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -246,10 +246,10 @@ msgstr "Transakcja się nie powiodła"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "Brak dostępnych aktualizacji w tej chwili."
+msgstr "Brak dostępnych aktualizacji w tej chwili."
 
 msgid "There are no upgrades available at this time."
-msgstr "Brak dostępnych aktualizacji w tej chwili."
+msgstr "Brak dostępnych aktualizacji w tej chwili."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -257,7 +257,7 @@ msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
+msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
@@ -269,7 +269,7 @@ msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację, pon
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
+msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -335,7 +335,7 @@ msgstr "Te narzędzie nie może odnaleźć wszystkich pakietów: %s"
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Usługa zawiesiła się w połowie transakcji."
+msgstr "Usługa zawiesiła się w połowie transakcji."
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -365,7 +365,7 @@ msgstr "Nie można ustawić pośrednika"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "Wyświetla wersję programu i kończy działanie"
+msgstr "Wyświetla wersję programu i kończy działanie"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
@@ -373,7 +373,7 @@ msgstr "Ustawia filtr, np. zainstalowane"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "Instaluje pakiety bez prośby o potwierdzenie"
+msgstr "Instaluje pakiety bez prośby o potwierdzenie"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
@@ -388,7 +388,7 @@ msgstr "Zezwala na ponowne instalowanie pakietów podczas transakcji"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Wykonuje polecenie używając bezczynnego połączenia sieciowego, a także zużywając mniej energii"
+msgstr "Wykonuje polecenie za pomocą bezczynnego połączenia sieciowego, a także zużywając mniej energii"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
@@ -398,7 +398,7 @@ msgstr "Wyświetla wyjście czytelne dla komputera, zamiast używania animowanyc
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej. Wartość -1 oznacza „never” (nigdy)."
+msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej. Wartość -1 oznacza „never” (nigdy)."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -410,7 +410,7 @@ msgstr "Przetworzenie wiersza poleceń się nie powiodło"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "Skontaktowanie się z usługą PackageKit się nie powiodło"
+msgstr "Skontaktowanie się z usługą PackageKit się nie powiodło"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -442,7 +442,7 @@ msgstr "Wymagana jest nazwa pliku do zainstalowania"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Wymagany jest typ, key_id i package_id"
+msgstr "Wymagany jest typ, key_id i package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -453,7 +453,7 @@ msgstr "Wymagana jest nazwa pakietu do usunięcia"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Wymagany jest katalog docelowy i nazwy pakietów do pobrania"
+msgstr "Wymagany jest katalog docelowy i nazwy pakietów do pobrania"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -476,10 +476,10 @@ msgid "A repository name is required"
 msgstr "Wymagana jest nazwa repozytorium"
 
 msgid "A repo name, parameter and value are required"
-msgstr "Wymagana jest nazwa, parametr i wartość repozytorium"
+msgstr "Wymagana jest nazwa, parametr i wartość repozytorium"
 
 msgid "A repo id and autoremove required"
-msgstr "Wymagany jest identyfikator i automatyczne usuwanie"
+msgstr "Wymagany jest identyfikator i automatyczne usuwanie"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -568,7 +568,7 @@ msgstr "Instalowanie aktualizacji systemu, może to chwilę zająć…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr "Pobieranie szczegółów o źródłach oprogramowania."
+msgstr "Pobieranie szczegółów o źródłach oprogramowania."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -662,7 +662,7 @@ msgstr "Rozpoczynanie"
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "Oczekiwanie w kolejce"
+msgstr "Oczekiwanie w kolejce"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
@@ -738,7 +738,7 @@ msgstr "Anulowanie"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "Pobieranie informacji o repozytorium"
+msgstr "Pobieranie informacji o repozytorium"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
@@ -758,11 +758,11 @@ msgstr "Pobieranie grup"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "Pobieranie informacji o aktualizacji"
+msgstr "Pobieranie informacji o aktualizacji"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "Ponowne umieszczanie plików w pakietach"
+msgstr "Ponowne umieszczanie plików w pakietach"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
@@ -807,7 +807,7 @@ msgstr "Kopiowanie plików"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "Wyświetla informacje o debugowaniu dla wszystkich plików"
+msgstr "Wyświetla informacje o debugowaniu dla wszystkich plików"
 
 msgid "Debugging Options"
 msgstr "Opcje debugowania"
@@ -1123,7 +1123,7 @@ msgstr "Następujące pakiety muszą zostać ponownie zainstalowane:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "Następujące pakiety muszą zostać zainstalowane w starszych wersjach:"
+msgstr "Następujące pakiety muszą zostać zainstalowane w starszych wersjach:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
@@ -1317,19 +1317,19 @@ msgstr "Wymagane jest uwierzytelnienie, aby naprawić zainstalowane oprogramowan
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr "Włączenie aktualizacji w trybie offline"
+msgstr "Włączenie aktualizacji w trybie offline"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Wymagane jest uwierzytelnienie, aby włączyć aktualizacje w trybie offline"
+msgstr "Wymagane jest uwierzytelnienie, aby włączyć aktualizacje w trybie offline"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Wymagane jest uwierzytelnienie, aby wyczyścić komunikat aktualizacji w trybie offline"
+msgstr "Wymagane jest uwierzytelnienie, aby wyczyścić komunikat aktualizacji w trybie offline"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
@@ -1389,7 +1389,7 @@ msgstr "Wczytanie modułu przetwarzającego się nie powiodło"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr "Usunięcie modułu przetwarzającego z pamięci się nie powiodło"
+msgstr "Usunięcie modułu przetwarzającego z pamięci się nie powiodło"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
@@ -1397,7 +1397,7 @@ msgstr "Wyłącza licznik czasu bezczynności"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "Wyświetla wersję i kończy działanie"
+msgstr "Wyświetla wersję i kończy działanie"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
@@ -1417,7 +1417,7 @@ msgstr "Usługa PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "Oprogramowanie nie jest z zaufanego źródła."
+msgstr "Oprogramowanie nie jest z zaufanego źródła."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Nie należy aktualizować tego pakietu, jeśli nie ma się pewności, że to bezpieczne."

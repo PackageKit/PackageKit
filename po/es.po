@@ -3,12 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Adolfo Jayme Barrientos, 2014
-# Adolfo Jayme Barrientos, 2013
-# Adolfo Jayme Barrientos, 2015
-# Adolfo Jayme Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2013
+# Adolfo Jayme-Barrientos, 2015
+# Adolfo Jayme-Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
-# Daniel Mustieles <daniel.mustieles@gmail.com>, 2012-2013
+# Daniel Mustieles <inactive+leo@transifex.com>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
 # Javier Alejandro Castro <javier.alejandro.castro@gmail.com>, 2008
 # Jorge González <aloriel@gmail.com>, 2011
@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
 "PO-Revision-Date: 2016-02-12 19:52+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/freedesktop/packagekit/language/es/)\n"
@@ -1321,8 +1321,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Se necesita autenticación para reparar el software instalado"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Iniciar actualizaciones en modo desconectado"
 

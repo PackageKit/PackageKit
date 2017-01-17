@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Andika Triwidada <andika@gmail.com>, 2011-2015
+# Andika Triwidada <andika@gmail.com>, 2011-2016
 # Dichi Al Faridi <dichi@alfaridi.info>, 2010
 # dirgita <dirgitadevina@yahoo.co.id>, 2014
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
+"PO-Revision-Date: 2016-07-28 09:58+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/freedesktop/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -562,11 +562,11 @@ msgstr "Mematikan sistem usai pemutakhiran..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Memasang pemutakhiran, ini bisa makan waktu..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Memasang peningkatan sistem, ini bisa makan waktu..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1018,7 +1018,7 @@ msgstr "Sedang mengambil transaksi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Mengambil peningkatan sistem"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1129,7 +1129,7 @@ msgstr "Paket berikut mesti diturunkan versinya:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "Paket-paket berikut menjadi usang:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1299,10 +1299,10 @@ msgstr "Perlu otentikasi untuk memuat ulang perangkat dengan penggerak baru"
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Tingkatkan Sistem"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Otentikasi diperlukan untuk meningkatkan sistem operasi"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1315,8 +1315,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Diperlukan otentikasi untuk memperbaiki perangkat lunak yang telah terpasang"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Memicu pemutakhiran luring"
 

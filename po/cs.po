@@ -5,8 +5,9 @@
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
 # fri, 2011
+# fri, 2011
 # Jozef Mlích <xmlich02@stud.fit.vutbr.cz>, 2015
-# Marek Černocký <marek@manet.cz>, 2013-2014
+# Marek Černocký <marek@manet.cz>, 2013-2016
 # Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Vojtech Smejkal <smejkalv@gmail.com>, 2008
@@ -14,9 +15,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 19:52+0000\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2017-01-17 10:15+0100\n"
+"PO-Revision-Date: 2016-09-22 15:42+0000\n"
+"Last-Translator: Marek Černocký <marek@manet.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -357,7 +358,7 @@ msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato činnost byla na
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Od doby"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -382,14 +383,14 @@ msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Připravit transakci pouhým stažením balíčků"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -484,7 +485,7 @@ msgid "A repo name, parameter and value are required"
 msgstr "Jsou požadovány název, parametr a hodnota"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Jsou požadovány ID repozitáře a automatické odstranění"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -561,15 +562,15 @@ msgstr "Restartuje se po instalaci aktualizací…"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Vypíná se po instalaci aktualizací…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instalují se aktualizace, což může chvíli trvat…"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Instaluje se povýšení systému, což může trvat delší chvíli…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -1021,7 +1022,7 @@ msgstr "Získávají se transakce"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Získává se povýšení systému"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1132,7 +1133,7 @@ msgstr "Následující balíčky musí být vráceny na předchozí verzi:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "Následující balíčky musí být označené jako zastaralé:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1187,7 +1188,7 @@ msgstr "Pro instalaci nedůvěryhodného software je vyžadováno ověření"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Opětovná instalace již nainstalovaného balíčku"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Reinstalace vyžaduje ověření"
@@ -1202,7 +1203,7 @@ msgid "Install older version of installed package"
 msgstr "Nainstalovat starší verzi instalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Pro přechod softwaru na nižší verzi je vyžadován ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1215,7 +1216,7 @@ msgstr "Důvěřovat klíči použitému pro podepsání software"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Pro zvážení důvěryhodnosti klíče použitého k podepsání softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1283,7 +1284,7 @@ msgstr "Nastavit proxy sítě"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Pro nastavení systémové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1302,10 +1303,10 @@ msgstr "Pro opětovné zavedení zařízení s novým ovladačem je vyžadováno
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Povýšení systému"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Pro povýšení operačního systému je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1318,8 +1319,9 @@ msgid "Authentication is required to repair the installed software"
 msgstr "Pro opravu nainstalovaného softwaru je vyžadováno ověření"
 
 #. SECURITY:
-#. - Normal users are able to ask updates to be installed at
-#. early boot time without a password.
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
 msgid "Trigger offline updates"
 msgstr "Spustit off-line aktualizace"
 
@@ -1389,11 +1391,11 @@ msgstr "Nepodařilo se načíst soubor s nastavením"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Selhalo načtení výkonné části"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Selhalo ukončení výkonné části"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
