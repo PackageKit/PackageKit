@@ -1,3 +1,32 @@
+Version 1.1.5
+~~~~~~~~~~~~~~
+Released: 2017-01-17
+
+Notes:
+ - This release removes the hif backend which is superseded by the new dnf
+   backend (Kalev Lember)
+
+Backends:
+ - alpm: Get alpm backend warnings on the syslog() (Aleix Pol)
+ - aptcc: handle updates distinct from installs (Harald Sitter)
+ - aptcc: make toinstall more apt compliant (Harald Sitter)
+ - aptcc: exclude held packages from update list (Harald Sitter)
+ - aptcc: Update for new programming language sections (Josh Triplett)
+ - aptcc: fix ac_compile_ifelse (tintou)
+ - katja: pk-backend-katja -> C++14 (Eugen Wissner)
+ - katja: Add classes for the main repository types (Eugen Wissner)
+ - katja: Add explicit casting (Eugen Wissner)
+ - katja: Enable logging in the backend (Eugen Wissner)
+ - katja: Link with glibmm (Eugen Wissner)
+ - katja: Rewrite katja_pkg_is_installed in C++ (Eugen Wissner)
+ - katja: Switch to gobject properties (Eugen Wissner)
+ - katja: Fix libpcre segmentation fault (Eugen Wissner)
+
+Bugfixes:
+ - Fix redeclaration of polkit autocleanup functions (Philip Withnall)
+ - Check for a zero-length search string before passing to backends (Richard Hughes)
+ - command-not-found: Ignore commands of only one character (Richard Hughes)
+
 Version 1.1.4
 ~~~~~~~~~~~~~~
 Released: 2016-09-19
