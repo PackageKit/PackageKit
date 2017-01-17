@@ -28,7 +28,7 @@ cd po
 make PackageKit.pot
 INTLTOOL_EXTRACT="/usr/bin/intltool-extract" XGETTEXT="/usr/bin/xgettext --no-location" srcdir=. /usr/bin/intltool-update --gettext-package PackageKit --pot
 tx push --source
-tx pull --all --minimum-perc=5
+tx pull --all --force --minimum-perc=5
 git add *.po
 
 3. Update library version if new ABI or API in configure.ac
