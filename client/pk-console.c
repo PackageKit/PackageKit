@@ -2468,6 +2468,7 @@ out:
 		g_object_unref (ctx->cancellable);
 		if (ctx->defered_status_id > 0)
 			g_source_remove (ctx->defered_status_id);
+		g_main_loop_unref (ctx->loop);
 		g_free (ctx);
 	}
 out_last:
