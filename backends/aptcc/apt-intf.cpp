@@ -2047,8 +2047,11 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
                 // search the whole package cache and match the package
                 // name manually
                 pkgCache::PkgIterator pkg;
+                // Name can be supplied user input and may not be an actually valid id. In this
+                // case FindGrp can come back with a bad group we shouldn't process any further
+                // as results are undefined.
                 pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
-                for (pkg = grp.PackageList(); pkg.end() == false; pkg = grp.NextPkg(pkg)) {
+                for (pkg = grp.PackageList(); grp.IsGood() && pkg.end() == false; pkg = grp.NextPkg(pkg)) {
                     if (m_cancel) {
                         break;
                     }
