@@ -157,7 +157,7 @@ public:
     /**
      *  Emits a package with the given percentage
      */
-    void emitPackageProgress(const pkgCache::VerIterator &ver, uint percentage);
+    void emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, uint percentage);
 
     /**
       * Emits a list of packages that matches the given filters
