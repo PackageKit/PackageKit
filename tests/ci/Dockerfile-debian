@@ -1,0 +1,7 @@
+FROM debian:stretch
+
+RUN echo "deb-src http://deb.debian.org/debian/ stretch main" >> /etc/apt/sources.list
+RUN apt-get update -qq
+RUN apt-get build-dep -yq packagekit
+RUN mkdir /build
+WORKDIR /build
