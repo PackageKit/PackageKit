@@ -211,6 +211,6 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc & Itm, int status)
         m_apt->emitPackage(ver, PK_INFO_ENUM_DOWNLOADING);
         
         // Emit the individual progress
-        m_apt->emitPackageProgress(ver, status);
+        m_apt->emitPackageProgress(ver, PK_STATUS_ENUM_DOWNLOAD, status);
     }
 }
