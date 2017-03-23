@@ -1,7 +1,13 @@
 [Unit]
-Description=Updates the operating system whilst offline
-Requires=dbus.socket
-OnFailure=reboot.target
+Description=Update the operating system whilst offline
+
+DefaultDependencies=no
+Requires=sysinit.target dbus.socket
+After=sysinit.target dbus.socket systemd-journald.socket
+Before=shutdown.target system-update.target
 
 [Service]
+Type=oneshot
 ExecStart=@libexecdir@/pk-offline-update
+
+FailureAction=reboot
