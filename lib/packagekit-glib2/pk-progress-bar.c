@@ -268,8 +268,10 @@ pk_progress_bar_start (PkProgressBar *self, const gchar *text)
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 
 	/* same as last time */
-	if (g_strcmp0 (self->priv->old_start_text, text) == 0)
-		return TRUE;
+	if (self->priv->old_start_text != NULL && text != NULL) {
+		if (g_strcmp0 (self->priv->old_start_text, text) == 0)
+			return TRUE;
+	}
 	g_free (self->priv->old_start_text);
 	self->priv->old_start_text = g_strdup (text);
 
