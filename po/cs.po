@@ -459,12 +459,12 @@ msgstr "Je požadován název balíčku, který se má odstranit"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
+msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "Složka nenalezena"
+msgstr "Adresář nenalezen"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -1203,7 +1203,7 @@ msgid "Install older version of installed package"
 msgstr "Nainstalovat starší verzi instalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Pro přechod softwaru na nižší verzi je vyžadován ověření"
+msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
