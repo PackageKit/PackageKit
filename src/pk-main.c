@@ -174,13 +174,13 @@ main (int argc, char *argv[])
 	conf = g_key_file_new ();
 	conf_filename = pk_util_get_config_filename ();
 	if (conf_filename == NULL) {
-		g_print ("Config file was not found.");
+		g_printerr ("Config file was not found.");
 		goto out;
 	}
 	ret = g_key_file_load_from_file (conf, conf_filename,
 					 G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		g_print ("Failed to load config file: %s", error->message);
+		g_printerr ("Failed to load config file: %s", error->message);
 		goto out;
 	}
 	g_key_file_set_boolean (conf, "Daemon", "KeepEnvironment", keep_environment);
@@ -205,7 +205,7 @@ main (int argc, char *argv[])
 	if (backend_name == NULL || g_strcmp0 (backend_name, "auto") == 0) {
 		ret  = pk_util_set_auto_backend (conf, &error);
 		if (!ret) {
-			g_print ("Failed to resolve auto: %s", error->message);
+			g_printerr ("Failed to resolve auto: %s", error->message);
 			goto out;
 		}
 	}
@@ -228,7 +228,7 @@ main (int argc, char *argv[])
 	ret = pk_engine_load_backend (engine, &error);
 	if (!ret) {
 		/* TRANSLATORS: cannot load the backend the user specified */
-		g_print ("Failed to load the backend: %s", error->message);
+		g_printerr ("Failed to load the backend: %s", error->message);
 		goto out;
 	}
 
