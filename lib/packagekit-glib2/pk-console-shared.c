@@ -324,6 +324,10 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		/* TRANSLATORS: transaction state, we are copying package files before or after the transaction */
 		text = _("Copying files");
 		break;
+	case PK_STATUS_ENUM_RUN_HOOK:
+		/* TRANSLATORS: transaction state, we are running hooks before or after the transaction */
+		text = _("Running hooks");
+		break;
 	default:
 		g_warning ("status unrecognised: %s", pk_status_enum_to_string (status));
 	}
