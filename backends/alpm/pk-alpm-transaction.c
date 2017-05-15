@@ -394,6 +394,12 @@ pk_alpm_transaction_dep_resolve (PkBackendJob *job)
 }
 
 static void
+pk_alpm_transaction_hook (PkBackendJob *job)
+{
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_RUN_HOOK);
+}
+
+static void
 pk_alpm_transaction_test_commit (PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_TEST_COMMIT);
@@ -630,10 +636,10 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_RESOLVEDEPS_START:
 		pk_alpm_transaction_dep_resolve (job);
 		break;
-	case ALPM_EVENT_FILECONFLICTS_START:
-	case ALPM_EVENT_INTERCONFLICTS_START:
 	case ALPM_EVENT_DELTA_INTEGRITY_START:
 	case ALPM_EVENT_DISKSPACE_START:
+	case ALPM_EVENT_FILECONFLICTS_START:
+	case ALPM_EVENT_INTERCONFLICTS_START:
 		pk_alpm_transaction_test_commit (job);
 		break;
 	case ALPM_EVENT_PACKAGE_OPERATION_START:
@@ -690,6 +696,7 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_SCRIPTLET_INFO:
 		pk_alpm_transaction_output (((alpm_event_scriptlet_info_t *) event)->line);
 		break;
+	case ALPM_EVENT_KEY_DOWNLOAD_START:
 	case ALPM_EVENT_RETRIEVE_START:
 		pk_alpm_transaction_download (job);
 		break;
@@ -700,21 +707,35 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 			pk_alpm_transaction_optdepend_removal (job, e->pkg, e->optdep);
 		}
 		break;
+	case ALPM_EVENT_HOOK_START:
+		pk_alpm_transaction_hook (job);
+		break;
 	case ALPM_EVENT_CHECKDEPS_DONE:
-	case ALPM_EVENT_FILECONFLICTS_DONE:
-	case ALPM_EVENT_RESOLVEDEPS_DONE:
-	case ALPM_EVENT_INTERCONFLICTS_DONE:
-	case ALPM_EVENT_INTEGRITY_DONE:
-	case ALPM_EVENT_LOAD_DONE:
+	case ALPM_EVENT_DATABASE_MISSING:
 	case ALPM_EVENT_DELTA_INTEGRITY_DONE:
-	case ALPM_EVENT_DELTA_PATCHES_DONE:
 	case ALPM_EVENT_DELTA_PATCH_DONE:
+	case ALPM_EVENT_DELTA_PATCHES_DONE:
 	case ALPM_EVENT_DELTA_PATCH_FAILED:
 	case ALPM_EVENT_DISKSPACE_DONE:
-	case ALPM_EVENT_DATABASE_MISSING:
-	case ALPM_EVENT_KEYRING_DONE:
-	case ALPM_EVENT_KEY_DOWNLOAD_START:
+	case ALPM_EVENT_FILECONFLICTS_DONE:
+	case ALPM_EVENT_HOOK_DONE:
+	case ALPM_EVENT_HOOK_RUN_DONE:
+	case ALPM_EVENT_HOOK_RUN_START:
+	case ALPM_EVENT_INTEGRITY_DONE:
+	case ALPM_EVENT_INTERCONFLICTS_DONE:
 	case ALPM_EVENT_KEY_DOWNLOAD_DONE:
+	case ALPM_EVENT_KEYRING_DONE:
+	case ALPM_EVENT_LOAD_DONE:
+	case ALPM_EVENT_PACNEW_CREATED:
+	case ALPM_EVENT_PACSAVE_CREATED:
+	case ALPM_EVENT_PKGDOWNLOAD_DONE:
+	case ALPM_EVENT_PKGDOWNLOAD_FAILED:
+	case ALPM_EVENT_PKGDOWNLOAD_START:
+	case ALPM_EVENT_RESOLVEDEPS_DONE:
+	case ALPM_EVENT_RETRIEVE_DONE:
+	case ALPM_EVENT_RETRIEVE_FAILED:
+	case ALPM_EVENT_TRANSACTION_DONE:
+	case ALPM_EVENT_TRANSACTION_START:
 		/* ignored */
 		break;
 
