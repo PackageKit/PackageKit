@@ -1515,6 +1515,7 @@ void AptIntf::emitPackageFilesLocal(const gchar *file)
     for (auto file : deb.files()) {
         g_ptr_array_add(files, g_strdup(file.c_str()));
     }
+    g_ptr_array_add(files, NULL);
     pk_backend_job_files(m_job, package_id, (gchar **) files->pdata);
 
     g_ptr_array_unref(files);
