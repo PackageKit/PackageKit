@@ -30,9 +30,9 @@ GstMatcher::GstMatcher(gchar **values)
     // The search term from PackageKit daemon:
     // gstreamer0.10(urisource-foobar)
     // gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
-    const char *pkreg = "^gstreamer\\([0-9\\.]\\+\\)"
+    const char *pkreg = "^gstreamer\\(0.10\\|1\\)\\(\\.0\\)"
                         "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
-                        "\\(([^\\(^\\)]*)\\)\\?";
+                        "\\((.*)\\)\\?";
 
     regex_t pkre;
     if (regcomp(&pkre, pkreg, 0) != 0) {
@@ -43,8 +43,8 @@ GstMatcher::GstMatcher(gchar **values)
     gchar *value;
     for (uint i = 0; i < g_strv_length(values); ++i) {
         value = values[i];
-        regmatch_t matches[5];
-        if (regexec(&pkre, value, 5, matches, 0) != REG_NOMATCH) {
+        regmatch_t matches[6];
+        if (regexec(&pkre, value, 6, matches, 0) != REG_NOMATCH) {
             Match values;
             string version, type, data, opt;
 
@@ -53,15 +53,23 @@ GstMatcher::GstMatcher(gchar **values)
             version.append(string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so));
 
             // type (encode|decoder...)
-            type = string(value, matches[2].rm_so, matches[2].rm_eo - matches[2].rm_so);
+            type = string(value, matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 
             // data "audio/x-wma"
-            data = string(value, matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
+            data = string(value, matches[4].rm_so, matches[4].rm_eo - matches[4].rm_so);
 
             // opt "wmaversion=3"
-            if (matches[4].rm_so != -1) {
+            if (matches[5].rm_so != -1) {
                 // remove the '(' ')' that the regex matched
-                opt = string(value, matches[4].rm_so + 1, matches[4].rm_eo - matches[4].rm_so - 2);
+                opt = string(value, matches[5].rm_so + 1, matches[5].rm_eo - matches[5].rm_so - 2);
+                if (!opt.empty()) {
+                    // Replace all ")(" with "," - convert from input to serialized caps format
+                    size_t start_pos = 0;
+                    while ((start_pos = opt.find(")(", start_pos)) != string::npos) {
+                        opt.replace(start_pos, 2, ",");
+                        start_pos++;
+                    }
+                }
             }
 
             if (type.compare("encoder") == 0) {
