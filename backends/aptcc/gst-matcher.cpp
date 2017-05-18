@@ -23,9 +23,14 @@
 #include <regex.h>
 #include <gst/gst.h>
 
+static bool inited = false;
+
 GstMatcher::GstMatcher(gchar **values)
 {
-    gst_init(NULL, NULL);
+    if (!inited) {
+        gst_init(NULL, NULL);
+        inited = true;
+    }
 
     // The search term from PackageKit daemon:
     // gstreamer0.10(urisource-foobar)
@@ -113,8 +118,6 @@ GstMatcher::GstMatcher(gchar **values)
 
 GstMatcher::~GstMatcher()
 {
-    gst_deinit();
-
     for (const Match &match : m_matches) {
         gst_caps_unref(static_cast<GstCaps*>(match.caps));
     }
