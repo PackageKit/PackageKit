@@ -397,6 +397,17 @@ static void
 pk_alpm_transaction_hook (PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_RUN_HOOK);
+	pk_backend_job_set_percentage (job, 0);
+}
+
+static void
+pk_alpm_transaction_hook_run (PkBackendJob *job, alpm_event_hook_run_t * event)
+{
+	/* Every hook runs a single command, so there is no progress.
+	   Instead calculate the progress from total and finished hooks. */
+	pk_backend_job_set_percentage (job, 100 * event->position / event->total);
+	syslog (LOG_DAEMON | LOG_WARNING, "Hook %s (%s) complete (%zu of %zu)",
+		event->name, event->desc, event->position, event->total);
 }
 
 static void
@@ -710,6 +721,9 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_HOOK_START:
 		pk_alpm_transaction_hook (job);
 		break;
+	case ALPM_EVENT_HOOK_RUN_DONE:
+		pk_alpm_transaction_hook_run (job, (alpm_event_hook_run_t *)event);
+		break;
 	case ALPM_EVENT_CHECKDEPS_DONE:
 	case ALPM_EVENT_DATABASE_MISSING:
 	case ALPM_EVENT_DELTA_INTEGRITY_DONE:
@@ -719,7 +733,6 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_DISKSPACE_DONE:
 	case ALPM_EVENT_FILECONFLICTS_DONE:
 	case ALPM_EVENT_HOOK_DONE:
-	case ALPM_EVENT_HOOK_RUN_DONE:
 	case ALPM_EVENT_HOOK_RUN_START:
 	case ALPM_EVENT_INTEGRITY_DONE:
 	case ALPM_EVENT_INTERCONFLICTS_DONE:
