@@ -550,17 +550,17 @@ pk_alpm_transaction_upgrade_done (PkBackendJob *job, alpm_pkg_t *pkg,
 	const gchar *name, *pre, *post;
 
 	g_return_if_fail (pkg != NULL);
-	g_return_if_fail (old != NULL || direction == 0);
+	g_return_if_fail (old != NULL || direction == ALPM_PACKAGE_REINSTALL);
 
 	name = alpm_pkg_get_name (pkg);
-	if (direction != 0)
+	if (direction != ALPM_PACKAGE_REINSTALL)
 		pre = alpm_pkg_get_version (old);
 	post = alpm_pkg_get_version (pkg);
 
-	if (direction > 0) {
+	if (direction == ALPM_PACKAGE_UPGRADE) {
 		alpm_logaction (priv->alpm, PK_LOG_PREFIX, "upgraded %s (%s -> %s)\n",
 				name, pre, post);
-	} else if (direction < 0) {
+	} else if (direction == ALPM_PACKAGE_DOWNGRADE) {
 		alpm_logaction (priv->alpm, PK_LOG_PREFIX,
 				"downgraded %s (%s -> %s)\n", name, pre, post);
 	} else {
@@ -569,7 +569,7 @@ pk_alpm_transaction_upgrade_done (PkBackendJob *job, alpm_pkg_t *pkg,
 	}
 	pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_FINISHED);
 
-	if (direction != 0)
+	if (direction != ALPM_PACKAGE_REINSTALL)
 		pk_alpm_transaction_process_new_optdepends (pkg, old);
 	pk_alpm_transaction_output_end ();
 }
@@ -665,13 +665,13 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 					pk_alpm_transaction_remove_done (job, e->oldpkg);
 					break;
 				case ALPM_PACKAGE_UPGRADE:
-					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, 1);
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, ALPM_PACKAGE_UPGRADE);
 					break;
 				case ALPM_PACKAGE_DOWNGRADE:
-					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, -1);
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, ALPM_PACKAGE_DOWNGRADE);
 					break;
 				case ALPM_PACKAGE_REINSTALL:
-					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, 0);
+					pk_alpm_transaction_upgrade_done (job, e->newpkg, e->oldpkg, ALPM_PACKAGE_REINSTALL);
 					break;
 			}
 		}
