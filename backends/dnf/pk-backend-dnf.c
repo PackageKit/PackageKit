@@ -483,6 +483,29 @@ pk_backend_ensure_repos (PkBackendDnfJobData *job_data, GError **error)
 	return TRUE;
 }
 
+static gboolean
+dnf_utils_refresh_repo_appstream (DnfRepo *repo, GError **error)
+{
+	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
+	for (guint i = 0; as_basenames[i] != NULL; i++) {
+		const gchar *tmp = dnf_repo_get_filename_md (repo, as_basenames[i]);
+		if (tmp != NULL) {
+#if AS_CHECK_VERSION(0,3,4)
+			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
+							tmp,
+							dnf_repo_get_id (repo),
+							NULL,
+							error)) {
+				return FALSE;
+			}
+#else
+			g_warning ("need to install AppStream metadata %s", tmp);
+#endif
+		}
+	}
+	return TRUE;
+}
+
 /**
  * dnf_utils_add_remote:
  */
@@ -523,6 +546,13 @@ dnf_utils_add_remote (PkBackendJob *job,
 	                          error);
 	if (!ret)
 		return FALSE;
+
+	/* update the AppStream copies in /var */
+	for (guint i = 0; i < job_data->repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (job_data->repos, i);
+		if (!dnf_utils_refresh_repo_appstream (repo, error))
+			return FALSE;
+	}
 
 	/* done */
 	if (!dnf_state_done (state, error))
@@ -1415,9 +1445,6 @@ pk_backend_refresh_repo (PkBackendJob *job,
 	gboolean repo_okay;
 	DnfState *state_local;
 	GError *error_local = NULL;
-	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
-	const gchar *tmp;
-	guint i;
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
@@ -1470,22 +1497,8 @@ pk_backend_refresh_repo (PkBackendJob *job,
 	}
 
 	/* copy the appstream files somewhere that the GUI will pick them up */
-	for (i = 0; as_basenames[i] != NULL; i++) {
-		tmp = dnf_repo_get_filename_md (repo, as_basenames[i]);
-		if (tmp != NULL) {
-#if AS_CHECK_VERSION(0,3,4)
-			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
-							tmp,
-							dnf_repo_get_id (repo),
-							NULL,
-							error)) {
-				return FALSE;
-			}
-#else
-			g_warning ("need to install AppStream metadata %s", tmp);
-#endif
-		}
-	}
+	if (dnf_utils_refresh_repo_appstream (repo, error))
+		return FALSE;
 
 	/* done */
 	return dnf_state_done (state, error);
