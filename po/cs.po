@@ -15,9 +15,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-17 10:15+0100\n"
-"PO-Revision-Date: 2016-09-22 15:42+0000\n"
-"Last-Translator: Marek Černocký <marek@manet.cz>\n"
+"POT-Creation-Date: 2017-06-07 16:15+0100\n"
+"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -459,12 +459,12 @@ msgstr "Je požadován název balíčku, který se má odstranit"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
+msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "Adresář nenalezen"
+msgstr "Složka nenalezena"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -810,6 +810,11 @@ msgstr "Ověřují se používané knihovny"
 #. after the transaction
 msgid "Copying files"
 msgstr "Kopírují se soubory"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr ""
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -1203,7 +1208,7 @@ msgid "Install older version of installed package"
 msgstr "Nainstalovat starší verzi instalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
+msgstr "Pro přechod softwaru na nižší verzi je vyžadován ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.

@@ -1,3 +1,27 @@
+Version 1.1.6
+~~~~~~~~~~~~~~
+Released: 2017-06-07
+
+Backends:
+ - alpm: Calculate progress for hooks (Christian Hesse)
+ - alpm: Clean up status, add handling for hooks (Christian Hesse)
+ - alpm: Use enum for upgrade/reinstall/downgrade (Christian Hesse)
+ - aptcc: Don't deinit (Iain Lane)
+ - aptcc: Fix a crash when the user supplies a bad package ID (Harald Sitter)
+ - aptcc: Fix crash in GetFilesLocal (Robert Ancell)
+ - aptcc: Fix WhatProvides gstreamer for 1.0 (Iain Lane)
+ - dnf: Ensure AppStream is deployed when the repo is updated (Richard Hughes)
+
+New Features:
+ - Add new status "Running hooks" (Christian Hesse)
+
+Bugfixes:
+ - Checks NULL strings inside pk_progress_bar_start (Julio Faracco)
+ - Fix segfault when config file is not found [v3] (Julio Faracco)
+ - Return success to avoid reboot in pk-offline-update (Zbigniew Jędrzejewski-Szmek)
+ - Use g_printerr() for errors instead g_print() (Julio Faracco)
+ - Various tweaks to the offline-updates service file (Zbigniew Jędrzejewski-Szmek)
+
 Version 1.1.5
 ~~~~~~~~~~~~~~
 Released: 2017-01-17

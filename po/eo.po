@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-17 10:15+0100\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
+"POT-Creation-Date: 2017-06-07 16:15+0100\n"
+"PO-Revision-Date: 2017-06-07 15:15+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Esperanto (http://www.transifex.com/freedesktop/packagekit/language/eo/)\n"
 "MIME-Version: 1.0\n"
@@ -804,6 +804,11 @@ msgstr ""
 #. after the transaction
 msgid "Copying files"
 msgstr "Kopiante dosierojn"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr ""
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"

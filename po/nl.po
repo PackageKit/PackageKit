@@ -4,15 +4,15 @@
 # 
 # Translators:
 # Geert Warrink <geert.warrink@onsnet.nu>, 2009
-# Richard E. van der Luit <nippur@fedoraproject.org>, 2011, 2012
+# Richard E. van der Luit <nippur@fedoraproject.org>, 2011-2012,2017
 # Richard Hughes <richard@hughsie.com>, 2011
 # Richard E. van der Luit <nippur@fedoraproject.org>, 2009, 2010
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-17 10:15+0100\n"
-"PO-Revision-Date: 2016-02-12 19:52+0000\n"
+"POT-Creation-Date: 2017-06-07 16:15+0100\n"
+"PO-Revision-Date: 2017-06-07 15:15+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Dutch (http://www.transifex.com/freedesktop/packagekit/language/nl/)\n"
 "MIME-Version: 1.0\n"
@@ -285,11 +285,11 @@ msgstr "Kies het juiste pakket: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Pakket niet gevonden"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Geen pakketten gevonden"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -320,7 +320,7 @@ msgstr "Dit programma kon het pakket %s niet vinden."
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Update van pakketten is niet nodig."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -354,12 +354,12 @@ msgstr "Verkrijgen van de tijd die verlopen is sinds deze actie voor het laatst 
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Tijd sinds"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Klaargezette updates:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
@@ -379,14 +379,14 @@ msgstr "Installeer het pakket zonder goedkeuring te vragen"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Transactie voorbereiden door pakketten alleen te downloaden"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Pakketten downgraden toestaan gedurende transactie"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Pakketten herïnstalleren toestaan gedurende transactie"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -404,7 +404,7 @@ msgstr "De maximum leeftijd van de  metadata-cache. Gebruik -1 voor 'nooit'."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Installeren 'untrusted' pakketten toestaan"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -481,7 +481,7 @@ msgid "A repo name, parameter and value are required"
 msgstr "Een repo-naam, parameter en waarde zijn vereist"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Een repo-ID en 'autoremove' vereist"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -506,26 +506,26 @@ msgid "A package provide string is required"
 msgstr "Een 'pakket levert' string is vereist"
 
 msgid "A filename is required"
-msgstr ""
+msgstr "Bestandsnaam vereist"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Beschrijving"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Auteur"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Geef een lijstbestand op om aan te maken"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Bestand bestaat al: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -550,23 +550,23 @@ msgstr "PackageKit monitor"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion
 msgid "Installing Updates"
-msgstr ""
+msgstr "Installeren updates"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "Rebooten na installeren updates..."
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Afsluiten na installeren updates..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Installeren updates; dit kan even duren..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Installeren systeemupgrade; dit kan evenduren..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -647,7 +647,7 @@ msgid "Please choose a package to install"
 msgstr "Kies een pakket om te installeren"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "Gebruiker onderbrak selectie"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
@@ -807,6 +807,11 @@ msgstr "Controleren van bibliotheken in gebruik"
 msgid "Copying files"
 msgstr "Bestanden kopiëren"
 
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr ""
+
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
 msgstr "Toon debug informatie voor alle bestanden"
@@ -856,7 +861,7 @@ msgstr "Beschikbaar"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Niet beschikbaar"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -978,7 +983,7 @@ msgstr "Data instellen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "Repository verwijderen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
@@ -1018,7 +1023,7 @@ msgstr "Transacties ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Ophalen systeemupgrades"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1129,7 +1134,7 @@ msgstr "De volgende pakketten moeten gedowngrade worden:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "De volgende pakketten moeten als verouderd worden aangemerkt:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1164,7 +1169,7 @@ msgid "Install signed package"
 msgstr "Ondertekend pakket installeren"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Authenticatie is verplicht bij installeren software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1175,7 +1180,7 @@ msgid "Install untrusted local file"
 msgstr "Lokaal niet-vertrouwd bestand installeren"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Authenticatie is verplicht bij installeren van untrusted software"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1184,10 +1189,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr ""
+msgstr "Herinstalleren van reeds geïnstalleerd pakket"
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Authenticatie is vereist bij herinstalleren software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1196,10 +1201,10 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr ""
+msgstr "Installeren oudere versie van geïnstalleerd pakket"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Authenticatie is vereist bij downgraden van software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1207,12 +1212,12 @@ msgstr ""
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Vertrouw sleutel gebruikt bij signeren software "
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Authenticatie vereist indien men een sleutel die gebruikt is voor signeren van software als vertrouwd wil aanmerken"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1238,7 +1243,7 @@ msgid "Remove package"
 msgstr "Pakket verwijderen"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Authenticatie is vereist bij verwijderen software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1247,10 +1252,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Sofware updaten"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Authenticatie is vereist bij updaten software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1280,7 +1285,7 @@ msgstr "Stel netwerkproxy in"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr ""
+msgstr "Authenticatie is vereist bij instellen van een netwerkproxy die gebruikt wordt voor het downloaden van software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1299,10 +1304,10 @@ msgstr "Authenticatie wordt vereist om het apparaat te herladen met een nieuw st
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Systeem upgraden"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Authenticatie is vereist bij upgraden van het besturingssysteem"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1336,10 +1341,10 @@ msgstr "Authenticatie is vereist om offline-updateberichten te kunnen wissen"
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Alias van %s"
 
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Commando niet gevonden, geldige commando's zijn:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1347,51 +1352,51 @@ msgstr "Te gebruiken pakketbackend, b.v. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Cache verversen"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Cache verversen (afgedwongen)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Zoeken op naam"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Zoeken op details"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Zoeken op bestanden"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Installeren pakketen"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Instellen repository-opties"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Doorgeven argumenten faalde"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Config-bestand kon niet geladen worden"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Backend kon niet geladen worden"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Backend kon niet worden vrijgegeven"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
