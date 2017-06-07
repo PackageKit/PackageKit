@@ -168,7 +168,6 @@ dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.46.0
 GIO_REQUIRED=2.16.1
-NETWORK_MANAGER_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.98
 
 dnl ---------------------------------------------------------------------------
@@ -201,47 +200,10 @@ AC_CHECK_HEADERS([execinfo.h])
 AC_CHECK_FUNCS(clearenv)
 AC_PATH_PROG(GMSGFMT, msgfmt, msgfmt)
 
-# unix networking stack always available
-networking_apis="unix"
-
 dnl ---------------------------------------------------------------------------
 dnl - Haiku compatibility
 dnl ---------------------------------------------------------------------------
 AC_CHECK_FUNCS(setpriority)
-
-dnl ---------------------------------------------------------------------------
-dnl - NetworkManager (default enabled)
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),
-		enable_networkmanager=$enableval)
-if test x$enable_networkmanager != xno; then
-	PKG_CHECK_MODULES(NETWORK_MANAGER, NetworkManager >= $NETWORK_MANAGER_REQUIRED, HAVE_NETWORKMANAGER="yes", HAVE_NETWORKMANAGER="no")
-	if test "x$HAVE_NETWORKMANAGER" = "xyes"; then
-		networking_apis="${networking_apis},NetworkManager"
-		AC_DEFINE(HAVE_NETWORKMANAGER, 1, [define if NetworkManager is installed])
-	else
-		if test x$enable_networkmanager = xyes; then
-			AC_MSG_ERROR([NetworkManager enabled but not found])
-		fi
-	fi
-fi
-
-dnl ---------------------------------------------------------------------------
-dnl - ConnMan (default disabled)
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(connman, AS_HELP_STRING([--enable-connman],[Enable ConnMan support]),
-	      enable_connman=$enableval, enable_connman=no)
-if test x$enable_connman != xno; then
-	PKG_CHECK_MODULES(CONNMAN, connman, HAVE_CONNMAN="yes", HAVE_CONNMAN="no")
-	if test "x$HAVE_CONNMAN" = "xyes"; then
-		networking_apis="${networking_apis},ConnMan"
-		AC_DEFINE(HAVE_CONNMAN, 1, [define if Connection Manager is installed])
-	else
-		if test x$enable_connman = xyes; then
-			AC_MSG_ERROR([Connman enabled but not found])
-		fi
-	fi
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Use systemd and logind rather than ConsoleKit
@@ -631,7 +593,6 @@ echo "
         Able to run locally:       ${enable_local}
         Use systemd:               ${enable_systemd}
         Enable offline update:     ${enable_offline_update}
-        Networking stacks:         ${networking_apis}
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module (GTK+3):      ${build_gtk_module}
         gobject-introspection:     ${found_introspection}
