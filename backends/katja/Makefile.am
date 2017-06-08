@@ -7,10 +7,10 @@ plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_katja.la
 libpk_backend_katja_la_SOURCES = \
 	pk-backend-katja.c \
-	katja-pkgtools.c \
-	katja-binary.c \
-	katja-slackpkg.c \
-	katja-dl.c \
+	pkgtools.cc \
+	binary.cc \
+	slackpkg.cc \
+	dl.cc \
 	utils.cc
 libpk_backend_katja_la_LIBADD = -lbz2 $(PK_PLUGIN_LIBS) ${KATJA_LIBS}
 libpk_backend_katja_la_LDFLAGS = -module -avoid-version

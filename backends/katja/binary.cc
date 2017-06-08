@@ -1,7 +1,13 @@
 #include <stdlib.h>
 #include <bzlib.h>
+
+extern "C"
+{
+
 #include "katja-pkgtools.h"
 #include "katja-binary.h"
+
+}
 
 enum
 {
@@ -63,9 +69,9 @@ katja_binary_download(KatjaPkgtools *pkgtools,
 	gboolean ret = FALSE;
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
-	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
 	KatjaBinary *binary = KATJA_BINARY(pkgtools);
-	KatjaBinaryPrivate *priv = katja_binary_get_instance_private(binary);
+	auto priv = static_cast<KatjaBinaryPrivate*>(katja_binary_get_instance_private(binary));
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT location, (full_name || '.' || ext) FROM pkglist "
@@ -112,9 +118,9 @@ katja_binary_install(KatjaPkgtools *pkgtools,
 {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
-	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
 	KatjaBinary *binary = KATJA_BINARY(pkgtools);
-	KatjaBinaryPrivate *priv = katja_binary_get_instance_private(binary);
+	auto priv = static_cast<KatjaBinaryPrivate*>(katja_binary_get_instance_private(binary));
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT (full_name || '.' || ext) FROM pkglist "
@@ -131,11 +137,11 @@ katja_binary_install(KatjaPkgtools *pkgtools,
 
 	if (sqlite3_step(statement) == SQLITE_ROW) {
 		pkg_filename = g_build_filename(LOCALSTATEDIR,
-								   "cache",
-								   "PackageKit",
-								   "downloads",
-								   sqlite3_column_text(statement, 0),
-								   NULL);
+								        "cache",
+								        "PackageKit",
+								        "downloads",
+								        sqlite3_column_text(statement, 0),
+								        NULL);
 		cmd_line = g_strconcat("/sbin/upgradepkg --install-new ", pkg_filename, NULL);
 		g_spawn_command_line_sync(cmd_line, NULL, NULL, NULL, NULL);
 		g_free(cmd_line);
@@ -177,7 +183,7 @@ void katja_binary_manifest(KatjaBinary *binary,
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
 	GMatchInfo *match_info;
 	sqlite3_stmt *statement = NULL;
-	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
 	GValue name = G_VALUE_INIT;
 
 	g_value_init(&name, G_TYPE_STRING);
@@ -198,15 +204,15 @@ void katja_binary_manifest(KatjaBinary *binary,
 
 	/* Prepare regular expressions */
 	pkg_expr = g_regex_new("^\\|\\|[[:blank:]]+Package:[[:blank:]]+.+\\/(.+)\\.(t[blxg]z$)?",
-	                       G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-	                       0,
+	                       static_cast<GRegexCompileFlags>(G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES),
+	                       static_cast<GRegexMatchFlags>(0),
 	                       NULL);
 	file_expr = g_regex_new("^[-bcdlps][-r][-w][-xsS][-r][-w][-xsS][-r][-w]"
 	                        "[-xtT][[:space:]][^[:space:]]+[[:space:]]+"
 	                        "[[:digit:]]+[[:space:]][[:digit:]-]+[[:space:]]"
 	                        "[[:digit:]:]+[[:space:]](?!install\\/|\\.)(.*)",
-	                        G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-	                        0,
+	                        static_cast<GRegexCompileFlags>(G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES),
+	                        static_cast<GRegexMatchFlags>(0),
 	                        NULL);
 	if (!(file_expr) || !(pkg_expr))
 	{
@@ -251,7 +257,7 @@ void katja_binary_manifest(KatjaBinary *binary,
 		{
 			gchar *full_name = NULL;
 
-			if (g_regex_match(pkg_expr, *line, 0, &match_info))
+			if (g_regex_match(pkg_expr, *line, static_cast<GRegexMatchFlags>(0), &match_info))
 			{
 				if (g_match_info_get_match_count(match_info) > 2)
 				{ /* If the extension matches */
@@ -261,7 +267,7 @@ void katja_binary_manifest(KatjaBinary *binary,
 			g_match_info_free(match_info);
 
 			match_info = NULL;
-			if (full_name && g_regex_match(file_expr, *line, 0, &match_info))
+			if (full_name && g_regex_match(file_expr, *line, static_cast<GRegexMatchFlags>(0), &match_info))
 			{
 				pkg_filename = g_match_info_fetch(match_info, 1);
 				sqlite3_bind_text(statement, 1, full_name, -1, SQLITE_TRANSIENT);
@@ -306,7 +312,7 @@ katja_binary_set_property(GObject *object,
                           GParamSpec *pspec)
 {
 	KatjaBinary *binary = KATJA_BINARY(object);
-	KatjaBinaryPrivate *priv = katja_binary_get_instance_private(binary);
+	auto priv = static_cast<KatjaBinaryPrivate*>(katja_binary_get_instance_private(binary));
 
 	switch (property_id)
 	{
@@ -322,7 +328,7 @@ katja_binary_set_property(GObject *object,
 			priv->order = g_value_get_uint(value);
 			break;
 		case PROP_BLACKLIST:
-			priv->blacklist = g_value_get_boxed(value);
+			priv->blacklist = static_cast<GRegex*>(g_value_get_boxed(value));
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -337,7 +343,7 @@ katja_binary_get_property(GObject *object,
                           GParamSpec *pspec)
 {
 	KatjaBinary *binary = KATJA_BINARY(object);
-	KatjaBinaryPrivate *priv = katja_binary_get_instance_private(binary);
+	auto priv = static_cast<KatjaBinaryPrivate*>(katja_binary_get_instance_private(binary));
 
 	switch (property_id)
 	{

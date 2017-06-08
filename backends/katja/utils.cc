@@ -1,6 +1,8 @@
 extern "C"
 {
-	#include "katja-utils.h"
+
+#include "katja-utils.h"
+
 }
 
 #include <glibmm.h>

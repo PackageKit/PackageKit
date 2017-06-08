@@ -1,6 +1,11 @@
 #include <stdlib.h>
 
+extern "C"
+{
+
 #include "katja-slackpkg.h"
+
+}
 
 struct _KatjaSlackpkg
 {
@@ -42,7 +47,7 @@ katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmp
 	/* Download PACKAGES.TXT. These files are most important, break if some of them couldn't be found */
 	for (cur_priority = KATJA_SLACKPKG(pkgtools)->priority; *cur_priority; cur_priority++)
 	{
-		source_dest = g_malloc_n(3, sizeof(gchar *));
+		source_dest = static_cast<gchar**>(g_malloc_n(3, sizeof(gchar *)));
 		source_dest[0] = g_strconcat(g_value_get_string(&mirror),
 									 *cur_priority,
 									 "/PACKAGES.TXT",
@@ -65,7 +70,7 @@ katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmp
 		}
 
 		/* Download file lists if available */
-		source_dest = g_malloc_n(3, sizeof(gchar *));
+		source_dest = static_cast<gchar**>(g_malloc_n(3, sizeof(gchar *)));
 		source_dest[0] = g_strconcat(g_value_get_string(&mirror),
 		                             *cur_priority,
 		                             "/MANIFEST.bz2",
@@ -112,7 +117,7 @@ katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools,
 	GFileInputStream *fin = NULL;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
-	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
 	GValue name = G_VALUE_INIT, order = G_VALUE_INIT, blacklist = G_VALUE_INIT;
 
 	/* Get properties */
@@ -211,7 +216,10 @@ katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools,
 		{
 			filename = g_strdup(line + 15);
 			if (g_value_get_boxed(&blacklist)
-			 && g_regex_match(g_value_get_boxed(&blacklist), filename, 0, NULL))
+			 && g_regex_match(static_cast<const GRegex*>(g_value_get_boxed(&blacklist)),
+			                  filename,
+							  static_cast<GRegexMatchFlags>(0),
+							  NULL))
 			{
 				g_free(filename);
 				filename = NULL;
@@ -256,7 +264,7 @@ katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools,
 				cat = g_strrstr(location, "/");
 				if (cat) /* Else cat = NULL */
 				{
-					cat = g_hash_table_lookup(katja_slackpkg_cat_map, cat + 1);
+					cat = static_cast<gchar*>(g_hash_table_lookup(katja_slackpkg_cat_map, cat + 1));
 				}
 				if (cat)
 				{
@@ -400,17 +408,17 @@ katja_slackpkg_new(gchar *name,
 	g_return_val_if_fail(mirror != NULL, NULL);
 	g_return_val_if_fail(priority != NULL, NULL);
 
-	slackpkg = g_object_new(KATJA_TYPE_SLACKPKG,
-	                        "name", name,
-	                        "mirror", mirror,
-	                        "order", order,
-	                        NULL);
+	slackpkg = static_cast<KatjaSlackpkg*>(g_object_new(KATJA_TYPE_SLACKPKG,
+	                                                    "name", name,
+	                                                    "mirror", mirror,
+	                                                    "order", order,
+	                                                    NULL));
 
 	if (blacklist) /* Blacklist if set */
 	{
 		GValue val = G_VALUE_INIT;
 		g_value_init(&val, G_TYPE_REGEX);
-		g_value_set_boxed(&val, g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL));
+		g_value_set_boxed(&val, g_regex_new(blacklist, G_REGEX_OPTIMIZE, static_cast<GRegexMatchFlags>(0), NULL));
 		g_object_set_property(G_OBJECT(slackpkg), "blacklist", &val);
 	}
 	slackpkg->priority = priority;

@@ -1,6 +1,11 @@
 #include <stdlib.h>
 
+extern "C"
+{
+
 #include "katja-dl.h"
+
+}
 
 struct _KatjaDl
 {
@@ -33,7 +38,7 @@ katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl)
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* There is no ChangeLog yet to check if there are updates or not. Just mark the index file for download */
-	source_dest = g_malloc_n(3, sizeof(gchar *));
+	source_dest = static_cast<gchar**>(g_malloc_n(3, sizeof(gchar *)));
 	source_dest[0] = g_strdup(KATJA_DL(pkgtools)->index_file);
 	source_dest[1] = g_build_filename(tmpl,
 	                                  g_value_get_string(&name),
@@ -71,7 +76,7 @@ katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const g
 	GFileInputStream *fin;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *stmt = NULL;
-	PkBackendKatjaJobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
 	GValue name = G_VALUE_INIT, blacklist = G_VALUE_INIT, order = G_VALUE_INIT;
 
 	/* Get properties */
@@ -141,7 +146,10 @@ katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const g
 		line_tokens = g_strsplit(line, ":", 0);
 		if ((g_strv_length(line_tokens) > 6)
 		 && (!g_value_get_boxed(&blacklist)
-		  || !g_regex_match(g_value_get_boxed(&blacklist), line_tokens[0], 0, NULL)))
+		 || !g_regex_match(static_cast<GRegex*>(g_value_get_boxed(&blacklist)),
+		                   line_tokens[0],
+						   static_cast<GRegexMatchFlags>(0),
+						   NULL)))
 		{
 			pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
@@ -210,7 +218,10 @@ katja_dl_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const g
 			line_tokens = g_strsplit(line, ":", 0);
 			if ((g_strv_length(line_tokens) > 6)
 			 && (!g_value_get_boxed(&blacklist)
-			  || !g_regex_match(g_value_get_boxed(&blacklist), line_tokens[0], 0, NULL)))
+			  || !g_regex_match(static_cast<GRegex*>(g_value_get_boxed(&blacklist)),
+			                    line_tokens[0],
+								static_cast<GRegexMatchFlags>(0),
+								NULL)))
 			{
 				pkg_tokens = katja_cut_pkg(line_tokens[0]);
 
@@ -307,17 +318,17 @@ katja_dl_new(gchar *name,
 	g_return_val_if_fail(mirror != NULL, NULL);
 	g_return_val_if_fail(index_file != NULL, NULL);
 
-	dl = g_object_new(KATJA_TYPE_DL,
-	                  "name", name,
-	                  "mirror", mirror,
-	                  "order", order,
-	                  NULL);
+	dl = static_cast<KatjaDl*>(g_object_new(KATJA_TYPE_DL,
+	                           "name", name,
+	                           "mirror", mirror,
+	                           "order", order,
+	                           NULL));
 	
 	if (blacklist) /* Blacklist if set */
 	{
 		GValue val = G_VALUE_INIT;
 		g_value_init(&val, G_TYPE_REGEX);
-		g_value_set_boxed(&val, g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL));
+		g_value_set_boxed(&val, g_regex_new(blacklist, G_REGEX_OPTIMIZE, static_cast<GRegexMatchFlags>(0), NULL));
 		g_object_set_property(G_OBJECT(dl), "blacklist", &val);
 	}
 	dl->index_file = index_file;
