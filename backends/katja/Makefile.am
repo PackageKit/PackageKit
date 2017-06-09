@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_katja.la
 libpk_backend_katja_la_SOURCES = \
-	pk-backend-katja.c \
+	pk-backend-katja.cc \
 	pkgtools.cc \
 	binary.cc \
 	slackpkg.cc \

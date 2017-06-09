@@ -1,3 +1,10 @@
+extern "C"
+{
+
+#include <packagekit-glib2/pk-debug.h>
+
+}
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -5,9 +12,8 @@
 #include <zlib.h>
 #include <curl/curl.h>
 #include <pk-backend.h>
-#include <packagekit-glib2/pk-debug.h>
-#include "katja-slackpkg.h"
-#include "katja-dl.h"
+#include "slackpkg.h"
+#include "dl.h"
 
 static GSList *repos = NULL;
 

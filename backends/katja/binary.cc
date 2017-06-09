@@ -1,13 +1,7 @@
 #include <stdlib.h>
 #include <bzlib.h>
-
-extern "C"
-{
-
-#include "katja-pkgtools.h"
-#include "katja-binary.h"
-
-}
+#include "pkgtools.h"
+#include "binary.h"
 
 enum
 {

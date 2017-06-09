@@ -1,10 +1,4 @@
-extern "C"
-{
-
-#include "katja-utils.h"
-
-}
-
+#include "utils.h"
 #include <glibmm.h>
 
 /**

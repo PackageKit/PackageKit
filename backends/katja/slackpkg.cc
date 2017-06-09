@@ -1,11 +1,5 @@
 #include <stdlib.h>
-
-extern "C"
-{
-
-#include "katja-slackpkg.h"
-
-}
+#include "slackpkg.h"
 
 struct _KatjaSlackpkg
 {

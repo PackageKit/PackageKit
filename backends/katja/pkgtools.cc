@@ -1,9 +1,4 @@
-extern "C"
-{
-
-#include "katja-pkgtools.h"
-
-}
+#include "pkgtools.h"
 
 G_DEFINE_INTERFACE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT)
 

@@ -1,11 +1,5 @@
 #include <stdlib.h>
-
-extern "C"
-{
-
-#include "katja-dl.h"
-
-}
+#include "dl.h"
 
 struct _KatjaDl
 {

@@ -3,8 +3,8 @@
 
 #include <errno.h>
 #include <sqlite3.h>
-#include "katja-pkgtools.h"
-#include "katja-utils.h"
+#include "pkgtools.h"
+#include "utils.h"
 
 G_BEGIN_DECLS
 
