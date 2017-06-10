@@ -1,6 +1,28 @@
 #include <stdlib.h>
 #include "dl.h"
 
+namespace katja
+{
+
+Dl::Dl(KatjaDl* dl) noexcept
+	: gObj_(dl)
+{
+	GValue name = G_VALUE_INIT;
+
+	g_value_init(&name, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(dl), "name", &name);
+
+	name_ = g_value_get_string(&name);
+}
+
+KatjaPkgtools*
+Dl::data() const noexcept
+{
+	return reinterpret_cast<KatjaPkgtools*>(gObj_);
+}
+
+}
+
 struct _KatjaDl
 {
 	KatjaBinary parent;

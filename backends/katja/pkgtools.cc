@@ -1,5 +1,32 @@
 #include "pkgtools.h"
 
+namespace katja
+{
+
+Pkgtools::~Pkgtools() noexcept
+{
+}
+
+const std::string&
+Pkgtools::name() const noexcept
+{
+	return name_;
+}
+
+bool
+Pkgtools::operator==(const gchar* name) const noexcept
+{
+	return name_.compare(name) == 0;
+}
+
+bool
+Pkgtools::operator!=(const gchar* name) const noexcept
+{
+	return name_.compare(name) != 0;
+}
+
+}
+
 G_DEFINE_INTERFACE(KatjaPkgtools, katja_pkgtools, G_TYPE_OBJECT)
 
 static void

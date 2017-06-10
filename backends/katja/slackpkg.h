@@ -24,4 +24,20 @@ void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *j
 
 G_END_DECLS
 
+namespace katja
+{
+
+class Slackpkg final : public Binary
+{
+public:
+	explicit Slackpkg(KatjaSlackpkg* slackpkg) noexcept;
+
+	KatjaPkgtools* data() const noexcept;
+
+private:
+	KatjaSlackpkg* gObj_;
+};
+
+}
+
 #endif /* __KATJA_SLACKPKG_H */

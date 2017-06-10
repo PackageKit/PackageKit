@@ -1,6 +1,28 @@
 #include <stdlib.h>
 #include "slackpkg.h"
 
+namespace katja
+{
+
+Slackpkg::Slackpkg(KatjaSlackpkg* slackpkg) noexcept
+	: gObj_(slackpkg)
+{
+	GValue name = G_VALUE_INIT;
+
+	g_value_init(&name, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(slackpkg), "name", &name);
+
+	name_ = g_value_get_string(&name);
+}
+
+KatjaPkgtools*
+Slackpkg::data() const noexcept
+{
+	return reinterpret_cast<KatjaPkgtools*>(gObj_);
+}
+
+}
+
 struct _KatjaSlackpkg
 {
 	KatjaBinary parent;

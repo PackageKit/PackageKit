@@ -185,3 +185,19 @@ PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name) {
 	delete metadataDir;
 	return ret;
 }
+
+namespace katja
+{
+
+CompareRepo::CompareRepo(const gchar* name) noexcept
+	: name_(name)
+{
+}
+
+bool
+CompareRepo::operator()(const Pkgtools* repo) const noexcept
+{
+		return *repo == name_;
+}
+
+}

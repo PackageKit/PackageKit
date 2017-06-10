@@ -30,4 +30,20 @@ void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools,
 
 G_END_DECLS
 
+namespace katja
+{
+
+class Dl final : public Binary
+{
+public:
+	explicit Dl(KatjaDl* dl) noexcept;
+
+	KatjaPkgtools* data() const noexcept;
+
+private:
+	KatjaDl* gObj_;
+};
+
+}
+
 #endif /* __KATJA_DL_H */

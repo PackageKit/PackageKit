@@ -1,7 +1,6 @@
 #ifndef __KATJA_BINARY_H
 #define __KATJA_BINARY_H
 
-#include <errno.h>
 #include <sqlite3.h>
 #include "pkgtools.h"
 #include "utils.h"
@@ -33,5 +32,14 @@ struct _KatjaBinaryClass
 void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl, gchar *filename);
 
 G_END_DECLS
+
+namespace katja
+{
+
+class Binary : public Pkgtools
+{
+};
+
+}
 
 #endif /* __KATJA_BINARY_H */
