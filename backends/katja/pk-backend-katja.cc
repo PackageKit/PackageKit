@@ -18,8 +18,7 @@ extern "C"
 #include "slackpkg.h"
 #include "dl.h"
 
-static GSList *repos = NULL;
-static std::forward_list<katja::Pkgtools*> repoList;
+static std::forward_list<katja::Pkgtools*> repos;
 
 
 void
@@ -104,7 +103,7 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 			                          g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
 			if (repo)
 			{
-				repoList.push_front(new katja::Slackpkg(KATJA_SLACKPKG(repo)));
+				repos.push_front(new katja::Slackpkg(KATJA_SLACKPKG(repo)));
 			}
 		}
 		else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL))
@@ -116,12 +115,8 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 			                    g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
 			if (repo)
 			{
-				repoList.push_front(new katja::Dl(KATJA_DL(repo)));
+				repos.push_front(new katja::Dl(KATJA_DL(repo)));
 			}
-		}
-		if (repo)
-		{
-			repos = g_slist_append(repos, repo);
 		}
 		g_free(mirror);
 		g_free(blacklist);
@@ -136,8 +131,7 @@ pk_backend_destroy(PkBackend *backend)
 {
 	g_debug("backend: destroy");
 
-	g_slist_free_full(repos, g_object_unref);
-	for (auto r = repoList.begin(); r != repoList.end(); ++r)
+	for (auto r = repos.begin(); r != repos.end(); ++r)
 	{
 		delete *r;
 	}
@@ -332,7 +326,8 @@ void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield f
 }
 
 static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar **pkg_ids, **pkg_tokens, *homepage = NULL;
+	gchar **pkg_ids, *homepage = NULL;
+	gchar** tokens;
 	gsize i;
 	GString *desc;
 	GRegex *expr;
@@ -355,10 +350,10 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
 		goto out;
 	}
 
-	pkg_tokens = pk_package_id_split(pkg_ids[0]);
-	sqlite3_bind_text(stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
-	g_strfreev(pkg_tokens);
+	tokens = pk_package_id_split(pkg_ids[0]);
+	sqlite3_bind_text(stmt, 1, tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+	g_strfreev(tokens);
 
 	if (sqlite3_step(stmt) != SQLITE_ROW)
 		goto out;
@@ -399,7 +394,9 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
 
 	g_free(homepage);
 	if (desc)
+	{
 		g_string_free(desc, TRUE);
+	}
 
 out:
 	sqlite3_finalize(stmt);
@@ -492,10 +489,10 @@ pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointe
 		sqlite3_bind_text(stmt, 4, tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 		if (sqlite3_step(stmt) == SQLITE_ROW)
 		{
-			auto const repo = std::find_if(repoList.begin(),
-			                               repoList.end(),
+			auto const repo = std::find_if(repos.begin(),
+			                               repos.end(),
 			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-			if (repo != repoList.end())
+			if (repo != repos.end())
 			{
 				auto const column = sqlite3_column_text(stmt, 0);
 				pk_backend_job_package(job,
@@ -526,7 +523,8 @@ void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar *
 }
 
 static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *dest_dir_name, **pkg_tokens, **pkg_ids;
+	gchar* dest_dir_name;
+	gchar** pkg_ids;
 	guint i;
 	gdouble percent_step;
 	GSList *install_list = NULL, *l;
@@ -559,11 +557,11 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 	for (i = 0; pkg_ids[i]; i++)
 	{
-		pkg_tokens = pk_package_id_split(pkg_ids[i]);
-		sqlite3_bind_text(pkglist_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_stmt, 2, pkg_tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_stmt, 3, pkg_tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(pkglist_stmt, 4, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+		auto const tokens = pk_package_id_split(pkg_ids[i]);
+		sqlite3_bind_text(pkglist_stmt, 1, tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 2, tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 3, tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(pkglist_stmt, 4, tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
 		if (sqlite3_step(pkglist_stmt) == SQLITE_ROW)
 		{
@@ -583,8 +581,8 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			}
 			else
 			{
-				sqlite3_bind_text(collection_stmt, 1, pkg_tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
-				sqlite3_bind_text(collection_stmt, 2, pkg_tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(collection_stmt, 1, tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(collection_stmt, 2, tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 
 				while (sqlite3_step(collection_stmt) == SQLITE_ROW)
 				{
@@ -616,10 +614,11 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 		sqlite3_clear_bindings(pkglist_stmt);
 		sqlite3_reset(pkglist_stmt);
-		g_strfreev(pkg_tokens);
+		g_strfreev(tokens);
 	}
 
-	if (install_list && !pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+	if (install_list && !pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+	{
 		/* / 2 means total percentage for installing and for downloading */
 		percent_step = 100.0 / g_slist_length(install_list) / 2;
 
@@ -628,20 +627,21 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
 		for (l = install_list, i = 0; l; l = g_slist_next(l), i++)
 		{
-			GSList *repo;
-
 			pk_backend_job_set_percentage(job, percent_step * i);
-			pkg_tokens = pk_package_id_split((gchar *)(l->data));
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
+			auto const tokens = pk_package_id_split((gchar *)(l->data));
 
-			if (repo)
+			auto const repo = std::find_if(repos.begin(),
+			                               repos.end(),
+			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
+			if (repo != repos.end())
 			{
-				katja_pkgtools_download(KATJA_PKGTOOLS(repo->data),
+				katja_pkgtools_download((*repo)->data(),
 				                        job,
 				                        dest_dir_name,
-				                        pkg_tokens[PK_PACKAGE_ID_NAME]);
+				                        tokens[PK_PACKAGE_ID_NAME]);
 			}
-			g_strfreev(pkg_tokens);
+
+			g_strfreev(tokens);
 		}
 		g_free(dest_dir_name);
 
@@ -649,18 +649,17 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
 		for (l = install_list; l; l = g_slist_next(l), i++)
 		{
-			GSList *repo;
-
 			pk_backend_job_set_percentage(job, percent_step * i);
-			pkg_tokens = pk_package_id_split((gchar *)(l->data));
-			repo = g_slist_find_custom(repos, pkg_tokens[PK_PACKAGE_ID_DATA], katja_cmp_repo);
+			auto const tokens = pk_package_id_split((gchar *)(l->data));
 
-			if (repo)
+			auto const repo = std::find_if(repos.begin(),
+			                               repos.end(),
+			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
+			if (repo != repos.end())
 			{
-				KatjaPkgtools *pkgtools = KATJA_PKGTOOLS(repo->data);
-				katja_pkgtools_install(pkgtools, job, pkg_tokens[PK_PACKAGE_ID_NAME]);
+				katja_pkgtools_install((*repo)->data(), job, tokens[PK_PACKAGE_ID_NAME]);
 			}
-			g_strfreev(pkg_tokens);
+			g_strfreev(tokens);
 		}
 	}
 	g_slist_free_full(install_list, g_free);
@@ -679,7 +678,7 @@ void pk_backend_install_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar **pkg_tokens, **pkg_ids, *cmd_line;
+	gchar **pkg_ids, *cmd_line;
 	guint i;
 	gdouble percent_step;
     gboolean allow_deps, autoremove;
@@ -695,18 +694,20 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 
 		/* Add percent_step percents per removed package */
 		percent_step = 100.0 / g_strv_length(pkg_ids);
-		for (i = 0; pkg_ids[i]; i++) {
+		for (i = 0; pkg_ids[i]; i++)
+		{
 			pk_backend_job_set_percentage(job, percent_step * i);
-			pkg_tokens = pk_package_id_split(pkg_ids[i]);
-			cmd_line = g_strconcat("/sbin/removepkg ", pkg_tokens[PK_PACKAGE_ID_NAME], NULL);
+			auto const tokens = pk_package_id_split(pkg_ids[i]);
+			cmd_line = g_strconcat("/sbin/removepkg ", tokens[PK_PACKAGE_ID_NAME], NULL);
 
 			/* Pkgtools return always 0 */
 			g_spawn_command_line_sync(cmd_line, NULL, NULL, NULL, &err);
 
 			g_free(cmd_line);
-			g_strfreev(pkg_tokens);
+			g_strfreev(tokens);
 
-			if (err) {
+			if (err)
+			{
 				pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE, "%s", err->message);
 				g_error_free(err);
 
@@ -727,7 +728,7 @@ void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
 }
 
 static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *pkg_id, *full_name, *desc, **pkg_tokens;
+	gchar *pkg_id, *full_name, *desc;
 	const gchar *pkg_metadata_filename;
 	GFile *pkg_metadata_dir;
 	GFileEnumerator *pkg_metadata_enumerator;
@@ -765,21 +766,27 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 
 	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL))) {
 		pkg_metadata_filename = g_file_info_get_name(pkg_metadata_file_info);
-		pkg_tokens = katja_cut_pkg(pkg_metadata_filename);
+		auto const tokens = katja_cut_pkg(pkg_metadata_filename);
 
 		/* Select the package from the database */
-		sqlite3_bind_text(stmt, 1, pkg_tokens[0], -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 1, tokens[0], -1, SQLITE_TRANSIENT);
 
-		/* If there are more packages with the same name, remember the one from the repository with the lowest order */
+		/* If there are more packages with the same name, remember the one from the
+		 * repository with the lowest order. */
 		if ((sqlite3_step(stmt) == SQLITE_ROW) ||
-			g_slist_find_custom(repos, ((gchar *) sqlite3_column_text(stmt, 4)), katja_cmp_repo)) {
+		    std::find_if(repos.begin(),
+		                 repos.end(),
+		                 katja::CompareRepo(reinterpret_cast<const gchar*>(sqlite3_column_text(stmt, 4))))
+		 != repos.end())
+		{
 
 			full_name = g_strdup((gchar *) sqlite3_column_text(stmt, 0));
 
-			if (!g_strcmp0((gchar *) sqlite3_column_text(stmt, 6), "obsolete")) { /* Remove if obsolete */
-				pkg_id = pk_package_id_build(pkg_tokens[PK_PACKAGE_ID_NAME],
-											 pkg_tokens[PK_PACKAGE_ID_VERSION],
-											 pkg_tokens[PK_PACKAGE_ID_ARCH],
+			if (!g_strcmp0((gchar *) sqlite3_column_text(stmt, 6), "obsolete"))
+			{ /* Remove if obsolete */
+				pkg_id = pk_package_id_build(tokens[PK_PACKAGE_ID_NAME],
+											 tokens[PK_PACKAGE_ID_VERSION],
+											 tokens[PK_PACKAGE_ID_ARCH],
 											 "obsolete");
 				/* TODO:
 				 * 1: Use the repository name instead of "obsolete" above and check in pk_backend_update_packages()
@@ -791,7 +798,9 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 
 				g_free(desc);
 				g_free(pkg_id);
-			} else if (g_strcmp0(pkg_metadata_filename, full_name)) { /* Update available */
+			}
+			else if (g_strcmp0(pkg_metadata_filename, full_name))
+			{ /* Update available */
 				pkg_id = pk_package_id_build((gchar *) sqlite3_column_text(stmt, 1),
 											 (gchar *) sqlite3_column_text(stmt, 2),
 											 (gchar *) sqlite3_column_text(stmt, 3),
@@ -809,7 +818,7 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 		sqlite3_clear_bindings(stmt);
 		sqlite3_reset(stmt);
 
-		g_strfreev(pkg_tokens);
+		g_strfreev(tokens);
 		g_object_unref(pkg_metadata_file_info);
 	}
 	g_object_unref(pkg_metadata_enumerator);
@@ -822,8 +831,9 @@ void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield fi
 	pk_backend_job_thread_create(job, pk_backend_get_updates_thread, NULL, NULL);
 }
 
-static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
-	gchar *dest_dir_name, *cmd_line, **pkg_tokens, **pkg_ids;
+static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	gchar *dest_dir_name, *cmd_line, **pkg_ids;
 	guint i;
     PkBitfield transaction_flags = 0;
 
@@ -834,52 +844,55 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 
 		/* Download the packages */
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-		for (i = 0; pkg_ids[i]; i++) {
-			pkg_tokens = pk_package_id_split(pkg_ids[i]);
+		for (i = 0; pkg_ids[i]; i++)
+		{
+			auto const tokens = pk_package_id_split(pkg_ids[i]);
 
-			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete"))
+			if (g_strcmp0(tokens[PK_PACKAGE_ID_DATA], "obsolete"))
 			{
-				GSList *repo = g_slist_find_custom(repos,
-				                                   pkg_tokens[PK_PACKAGE_ID_DATA],
-				                                   katja_cmp_repo);
-				if (repo)
+				auto const repo = std::find_if(repos.begin(),
+				                               repos.end(),
+				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
+				if (repo != repos.end())
 				{
-					katja_pkgtools_download(KATJA_PKGTOOLS(repo->data), job,
+					katja_pkgtools_download((*repo)->data(),
+					                        job,
 					                        dest_dir_name,
-					                        pkg_tokens[PK_PACKAGE_ID_NAME]);
+					                        tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 
-			g_strfreev(pkg_tokens);
+			g_strfreev(tokens);
 		}
 		g_free(dest_dir_name);
 
 		/* Install the packages */
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
-		for (i = 0; pkg_ids[i]; i++) {
-			pkg_tokens = pk_package_id_split(pkg_ids[i]);
+		for (i = 0; pkg_ids[i]; i++)
+		{
+			auto const tokens = pk_package_id_split(pkg_ids[i]);
 
-			if (g_strcmp0(pkg_tokens[PK_PACKAGE_ID_DATA], "obsolete"))
+			if (g_strcmp0(tokens[PK_PACKAGE_ID_DATA], "obsolete"))
 			{
-				GSList *repo = g_slist_find_custom(repos,
-				                                   pkg_tokens[PK_PACKAGE_ID_DATA],
-				                                   katja_cmp_repo);
-				if (repo)
+				auto const repo = std::find_if(repos.begin(),
+				                               repos.end(),
+				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
+				if (repo != repos.end())
 				{
-					katja_pkgtools_install(KATJA_PKGTOOLS(repo->data),
+					katja_pkgtools_install((*repo)->data(),
 					                       job,
-					                       pkg_tokens[PK_PACKAGE_ID_NAME]);
+					                       tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 			else
 			{
 				/* Remove obsolete package
 				 * TODO: Removing should be an independent operation (not during installing updates) */
-				cmd_line = g_strconcat("/sbin/removepkg ", pkg_tokens[PK_PACKAGE_ID_NAME], NULL);
+				cmd_line = g_strconcat("/sbin/removepkg ", tokens[PK_PACKAGE_ID_NAME], NULL);
 				g_spawn_command_line_sync(cmd_line, NULL, NULL, NULL, NULL);
 				g_free(cmd_line);
 			}
-			g_strfreev(pkg_tokens);
+			g_strfreev(tokens);
 		}
 	}
 }
@@ -894,7 +907,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	gchar *tmp_dir_name, *db_err, *path = NULL;
 	gint ret;
 	gboolean force;
-	GSList *file_list = NULL, *l;
+	GSList *file_list = NULL;
 	GFile *db_file = NULL;
 	GFileInfo *file_info = NULL;
 	GError *err = NULL;
@@ -952,9 +965,10 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 		}
 	}
 
-	for (l = repos; l; l = g_slist_next(l))	/* Get list of files that should be downloaded */
+	// Get list of files that should be downloaded.
+	for (auto l = repos.begin(); l != repos.end(); ++l)
 	{
-		KatjaPkgtools *r = (KatjaPkgtools *) (l->data);
+		KatjaPkgtools* r = (*l)->data();
 		GSList *cache_info = katja_pkgtools_collect_cache_info(r, tmp_dir_name);
 		file_list = g_slist_concat(file_list, cache_info);
 	}
@@ -962,7 +976,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	/* Download repository */
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY);
 
-	for (l = file_list; l; l = g_slist_next(l))
+	for (auto l = file_list; l; l = g_slist_next(l))
 	{
 		katja_get_file(&job_data->curl,
 		               ((gchar **)l->data)[0],
@@ -973,9 +987,9 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	/* Refresh cache */
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	for (l = repos; l; l = g_slist_next(l))
+	for (auto l = repos.begin(); l != repos.end(); ++l)
 	{
-		KatjaPkgtools *r = (KatjaPkgtools *) (l->data);
+		KatjaPkgtools* r = (*l)->data();
 		katja_pkgtools_generate_cache(r, job, tmp_dir_name);
 	}
 
@@ -1025,6 +1039,7 @@ static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *par
 	}
 }
 
-void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids) {
+void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+{
 	pk_backend_job_thread_create(job, pk_backend_get_update_detail_thread, NULL, NULL);
 }
