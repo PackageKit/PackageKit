@@ -1497,7 +1497,7 @@ pk_backend_refresh_repo (PkBackendJob *job,
 	}
 
 	/* copy the appstream files somewhere that the GUI will pick them up */
-	if (dnf_utils_refresh_repo_appstream (repo, error))
+	if (!dnf_utils_refresh_repo_appstream (repo, error))
 		return FALSE;
 
 	/* done */
