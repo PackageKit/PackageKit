@@ -35,7 +35,7 @@ GstMatcher::GstMatcher(gchar **values)
     // The search term from PackageKit daemon:
     // gstreamer0.10(urisource-foobar)
     // gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
-    const char *pkreg = "^gstreamer\\(0.10\\|1\\)\\(\\.0\\)"
+    const char *pkreg = "^gstreamer\\(0.10\\|1\\)\\(\\.0\\)\\?"
                         "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
                         "\\((.*)\\)\\?";
 
@@ -51,7 +51,7 @@ GstMatcher::GstMatcher(gchar **values)
         regmatch_t matches[6];
         if (regexec(&pkre, value, 6, matches, 0) != REG_NOMATCH) {
             Match values;
-            string version, type, data, opt;
+            string version, type, data, opt, arch;
 
             // Appends the version "0.10"
             version = "\nGstreamer-Version: ";
@@ -68,8 +68,18 @@ GstMatcher::GstMatcher(gchar **values)
                 // remove the '(' ')' that the regex matched
                 opt = string(value, matches[5].rm_so + 1, matches[5].rm_eo - matches[5].rm_so - 2);
                 if (!opt.empty()) {
-                    // Replace all ")(" with "," - convert from input to serialized caps format
                     size_t start_pos = 0;
+                    // This is hardcoded in pk-gstreamer-install, so we also hardcode it here
+                    const string x86_64 = "()(64bit";
+
+                    if (equal(x86_64.rbegin(), x86_64.rend(), opt.rbegin())) {
+                            // We hardcode 64bit -> amd64 here
+                            arch = "amd64";
+                            // -1 -> remove the last )
+                            opt.erase(opt.end() - x86_64.length() - 1, opt.end());
+                    }
+
+                    // Replace all ")(" with "," - convert from input to serialized caps format
                     while ((start_pos = opt.find(")(", start_pos)) != string::npos) {
                         opt.replace(start_pos, 2, ",");
                         start_pos++;
@@ -107,6 +117,7 @@ GstMatcher::GstMatcher(gchar **values)
             values.data    = data;
             values.opt     = opt;
             values.caps    = caps;
+            values.arch    = arch;
 
             m_matches.push_back(values);
         } else {
@@ -123,12 +134,14 @@ GstMatcher::~GstMatcher()
     }
 }
 
-bool GstMatcher::matches(string record)
+bool GstMatcher::matches(string record, string arch)
 {
     for (const Match &match : m_matches) {
         // Tries to find "Gstreamer-version: xxx"
         if (record.find(match.version) != string::npos) {
             size_t found;
+            if (!match.arch.empty() && arch != match.arch)
+                    continue;
             found = record.find(match.type);
             // Tries to find the type "Gstreamer-Uri-Sinks: "
             if (found != string::npos) {
