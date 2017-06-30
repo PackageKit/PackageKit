@@ -521,6 +521,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
 // search packages which provide a codec (specified in "values")
 void AptIntf::providesCodec(PkgList &output, gchar **values)
 {
+    string arch;
     GstMatcher *matcher = new GstMatcher(values);
     if (!matcher->hasMatches()) {
         return;
@@ -540,6 +541,7 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         // TODO search in updates packages
         // Ignore virtual packages
         pkgCache::VerIterator ver = m_cache->findVer(pkg);
+        arch = string(ver.Arch());
         if (ver.end() == true) {
             ver = m_cache->findCandidateVer(pkg);
             if (ver.end() == true) {
@@ -552,7 +554,7 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         const char *start, *stop;
         rec.GetRec(start, stop);
         string record(start, stop - start);
-        if (matcher->matches(record)) {
+        if (matcher->matches(record, arch)) {
             output.push_back(ver);
         }
     }

@@ -34,6 +34,7 @@ typedef struct {
     string   data;
     string   opt;
     void    *caps;
+    string   arch;
 } Match;
 
 class GstMatcher
@@ -42,7 +43,7 @@ public:
     GstMatcher(gchar **values);
     ~GstMatcher();
 
-    bool matches(string record);
+    bool matches(string record, string arch);
     bool hasMatches() const;
 
 private:
