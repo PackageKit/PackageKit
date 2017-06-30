@@ -67,7 +67,9 @@ katja_get_file(CURL **curl, gchar *source_url, gchar *dest)
  *
  * Got the name of a package, without version-arch-release data.
  **/
-gchar **katja_cut_pkg(const gchar *pkg_filename) {
+gchar**
+katja_cut_pkg(const gchar *pkg_filename)
+{
 	gchar *pkg_full_name, **pkg_tokens, **reversed_tokens;
 	gint len;
 
@@ -104,29 +106,11 @@ gchar **katja_cut_pkg(const gchar *pkg_filename) {
 }
 
 /**
- * katja_cmp_repo:
- * @a: a #KatjaPkgtools pointer.
- * @b: repository pointer.
- *
- * Compare two repositories by the name.
- *
- * Returns: 0 if the names are equal, -1 or 1 otherwise.
- **/
-gint
-katja_cmp_repo(gconstpointer a, gconstpointer b)
-{
-	GValue name = G_VALUE_INIT;
-
-	g_value_init(&name, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(a), "name", &name);
-
-	return g_strcmp0(g_value_get_string(&name), (gchar *) b);
-}
-
-/**
  * katja_pkg_is_installed:
  **/
-PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name) {
+PkInfoEnum
+katja_pkg_is_installed(gchar *pkg_full_name)
+{
 	PkInfoEnum ret = PK_INFO_ENUM_INSTALLING;
 
 	g_return_val_if_fail(pkg_full_name != NULL, PK_INFO_ENUM_UNKNOWN);

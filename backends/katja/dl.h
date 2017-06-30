@@ -13,21 +13,6 @@ struct _KatjaDlClass
 	KatjaBinaryClass parent_class;
 };
 
-/* Constructors */
-KatjaDl *katja_dl_new(gchar *name,
-                      gchar *mirror,
-                      gushort order,
-                      gchar *blacklist,
-                      gchar *index_file);
-
-/* Implementations */
-GSList *katja_dl_real_collect_cache_info(KatjaPkgtools *pkgtools,
-                                         const gchar   *tmpl);
-
-void katja_dl_real_generate_cache(KatjaPkgtools *pkgtools,
-                                  PkBackendJob  *job,
-                                  const gchar   *tmpl);
-
 G_END_DECLS
 
 namespace katja
@@ -36,12 +21,27 @@ namespace katja
 class Dl final : public Binary
 {
 public:
-	explicit Dl(KatjaDl* dl) noexcept;
+	/**
+	 * @name: repository name.
+	 * @mirror: repository mirror.
+	 * @order: repository order.
+	 * @blacklist: repository blacklist.
+	 * @index_file: the index file URL.
+	 *
+	 * Constructor.
+	 **/
+	explicit Dl(const std::string& name,
+	            const std::string& mirror,
+	            std::uint8_t order,
+	            const gchar* blacklist,
+	            const std::string& indexFile);
+	~Dl();
 
-	KatjaPkgtools* data() const noexcept;
+	GSList* collectCacheInfo(const gchar* tmpl);
+	void generateCache(PkBackendJob* job, const gchar* tmpl);
 
 private:
-	KatjaDl* gObj_;
+	std::string indexFile_;
 };
 
 }

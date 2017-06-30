@@ -3,24 +3,12 @@
 
 #include "binary.h"
 
+#include <unordered_map>
+
 G_BEGIN_DECLS
 
 #define KATJA_TYPE_SLACKPKG katja_slackpkg_get_type()
 G_DECLARE_FINAL_TYPE(KatjaSlackpkg, katja_slackpkg, KATJA, SLACKPKG, KatjaBinary)
-
-/* Public static members */
-extern GHashTable *katja_slackpkg_cat_map;
-
-/* Constructors */
-KatjaSlackpkg *katja_slackpkg_new(gchar *name,
-                                  gchar *mirror,
-                                  gushort order,
-                                  gchar *blacklist,
-                                  gchar **priority);
-
-/* Implementations */
-GSList *katja_slackpkg_real_collect_cache_info(KatjaPkgtools *pkgtools, const gchar *tmpl);
-void katja_slackpkg_real_generate_cache(KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 
 G_END_DECLS
 
@@ -30,12 +18,29 @@ namespace katja
 class Slackpkg final : public Binary
 {
 public:
-	explicit Slackpkg(KatjaSlackpkg* slackpkg) noexcept;
+	/**
+	 * @name: repository name.
+	 * @mirror: repository mirror.
+	 * @order: repository order.
+	 * @blacklist: repository blacklist.
+	 * @priority: groups priority.
+	 *
+	 * Constructor.
+	 **/
+	explicit Slackpkg(const std::string& name,
+	                  const std::string& mirror,
+	                  std::uint8_t order,
+	                  const gchar* blacklist,
+	                  gchar** priority);
+	~Slackpkg();
 
-	KatjaPkgtools* data() const noexcept;
+	GSList* collectCacheInfo(const gchar* tmpl);
+	void generateCache(PkBackendJob* job, const gchar* tmpl);
 
 private:
-	KatjaSlackpkg* gObj_;
+	gchar** priority_;
+
+	static const std::unordered_map<std::string, std::string> categoryMap;
 };
 
 }

@@ -11,12 +11,16 @@
 
 CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest);
 gchar **katja_cut_pkg(const gchar *pkg_filename);
-gint katja_cmp_repo(gconstpointer a, gconstpointer b);
 PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name);
 
 namespace katja
 {
 
+/**
+ * Compare two repositories by the name.
+ *
+ * Returns: false if the names are equal, true otherwise.
+ **/
 struct CompareRepo final
 {
 public:

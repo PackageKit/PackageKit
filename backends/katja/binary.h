@@ -10,8 +10,6 @@ G_BEGIN_DECLS
 #define KATJA_TYPE_BINARY katja_binary_get_type()
 G_DECLARE_DERIVABLE_TYPE(KatjaBinary, katja_binary, KATJA, BINARY, GObject)
 
-#define KATJA_BINARY_MAX_BUF_SIZE 8192
-
 typedef struct
 {
 	GObjectClass parent_class;
@@ -23,13 +21,7 @@ typedef struct
 struct _KatjaBinaryClass
 {
 	GObjectClass parent_class;
-
-	GSList *(*collect_cache_info) (KatjaPkgtools *pkgtools, const gchar *tmpl);
-	void (*generate_cache) (KatjaPkgtools *pkgtools, PkBackendJob *job, const gchar *tmpl);
 };
-
-/* Public methods */
-void katja_binary_manifest(KatjaBinary *pkgtools, PkBackendJob *job, const gchar *tmpl, gchar *filename);
 
 G_END_DECLS
 
@@ -38,6 +30,24 @@ namespace katja
 
 class Binary : public Pkgtools
 {
+public:
+	static const std::size_t maxBufSize;
+
+	virtual bool download(PkBackendJob* job,
+	                      gchar* dest_dir_name,
+	                      gchar* pkg_name);
+	virtual void install(PkBackendJob* job, gchar* pkg_name);
+
+	/**
+	 * @job:      a #PkBackendJob.
+	 * @tmpl:     temporary directory.
+	 * @filename: manifest filename
+	 *
+	 * Parse the manifest file and save the file list in the database.
+	 **/
+	void manifest(PkBackendJob* job,
+	              const gchar* tmpl,
+	              gchar* filename);
 };
 
 }

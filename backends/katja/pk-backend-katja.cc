@@ -32,7 +32,6 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 	GFileInfo *file_info;
 	GKeyFile *katja_conf;
 	GError *err = NULL;
-	gpointer repo = NULL;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 
@@ -53,7 +52,8 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 	katja_conf = g_key_file_new();
 	path = g_build_filename(SYSCONFDIR, "PackageKit", "Katja.conf", NULL);
 	g_key_file_load_from_file(katja_conf, path, G_KEY_FILE_NONE, &err);
-	if (err) {
+	if (err)
+	{
 		g_error("%s: %s", path, err->message);
 		g_error_free(err);
 	}
@@ -96,27 +96,21 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 		gchar *mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
 		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL))
 		{
-			repo = katja_slackpkg_new(groups[i],
-			                          mirror,
-			                          i + 1,
-			                          blacklist,
-			                          g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
-			if (repo)
-			{
-				repos.push_front(new katja::Slackpkg(KATJA_SLACKPKG(repo)));
-			}
+			auto repo = new katja::Slackpkg(groups[i],
+			                                mirror,
+			                                i + 1,
+			                                blacklist,
+			                                g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
+			repos.push_front(repo);
 		}
 		else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL))
 		{
-			repo = katja_dl_new(groups[i],
-			                    mirror,	
-			                    i + 1,
-			                    blacklist,
-			                    g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
-			if (repo)
-			{
-				repos.push_front(new katja::Dl(KATJA_DL(repo)));
-			}
+			auto repo = new katja::Dl(groups[i],
+			                          mirror,	
+			                          i + 1,
+			                          blacklist,
+			                          g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
+			repos.push_front(repo);
 		}
 		g_free(mirror);
 		g_free(blacklist);
@@ -160,32 +154,36 @@ pk_backend_supports_parallelization(PkBackend *backend)
 }
 
 const gchar*
-pk_backend_get_description(PkBackend *backend)
+pk_backend_get_description(PkBackend* backend)
 {
 	return "Katja";
 }
 
-const gchar *pk_backend_get_author(PkBackend *backend) {
-	return "Eugene Wissner <belka.ew@gmail.com>";
+const gchar*
+pk_backend_get_author(PkBackend* backend)
+{
+	return "Eugene Wissner <belka@caraus.de>";
 }
 
-PkBitfield pk_backend_get_groups(PkBackend *backend) {
+PkBitfield
+pk_backend_get_groups(PkBackend* backend)
+{
 	return pk_bitfield_from_enums(PK_GROUP_ENUM_COLLECTIONS,
-								  PK_GROUP_ENUM_SYSTEM,
-								  PK_GROUP_ENUM_ADMIN_TOOLS,
-								  PK_GROUP_ENUM_PROGRAMMING,
-								  PK_GROUP_ENUM_PUBLISHING,
-								  PK_GROUP_ENUM_DOCUMENTATION,
-								  PK_GROUP_ENUM_DESKTOP_KDE,
-								  PK_GROUP_ENUM_LOCALIZATION,
-								  PK_GROUP_ENUM_NETWORK,
-								  PK_GROUP_ENUM_DESKTOP_OTHER,
-								  PK_GROUP_ENUM_ACCESSORIES,
-								  PK_GROUP_ENUM_DESKTOP_XFCE,
-								  PK_GROUP_ENUM_GAMES,
-								  PK_GROUP_ENUM_OTHER,
-								  PK_GROUP_ENUM_UNKNOWN,
-								  -1);
+	                              PK_GROUP_ENUM_SYSTEM,
+	                              PK_GROUP_ENUM_ADMIN_TOOLS,
+	                              PK_GROUP_ENUM_PROGRAMMING,
+	                              PK_GROUP_ENUM_PUBLISHING,
+	                              PK_GROUP_ENUM_DOCUMENTATION,
+	                              PK_GROUP_ENUM_DESKTOP_KDE,
+	                              PK_GROUP_ENUM_LOCALIZATION,
+	                              PK_GROUP_ENUM_NETWORK,
+	                              PK_GROUP_ENUM_DESKTOP_OTHER,
+	                              PK_GROUP_ENUM_ACCESSORIES,
+	                              PK_GROUP_ENUM_DESKTOP_XFCE,
+	                              PK_GROUP_ENUM_GAMES,
+	                              PK_GROUP_ENUM_OTHER,
+	                              PK_GROUP_ENUM_UNKNOWN,
+	                              -1);
 }
 
 void pk_backend_start_job(PkBackend *backend, PkBackendJob *job) {
@@ -213,18 +211,22 @@ out:
 	g_free(db_filename);
 }
 
-void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job) {
+void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
+{
 	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
 
 	if (job_data->curl)
+	{
 		curl_easy_cleanup(job_data->curl);
+	}
 
 	sqlite3_close(job_data->db);
 	g_free(job_data);
 	pk_backend_job_set_user_data(job, NULL);
 }
 
-static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+{
 	gchar **vals, *search, *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
@@ -499,10 +501,9 @@ pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointe
 				                       PK_INFO_ENUM_DOWNLOADING,
 				                       pkg_ids[i],
 				                       reinterpret_cast<const gchar*>(column));
-				katja_pkgtools_download((*repo)->data(),
-				                        job,
-				                        dir_path,
-				                        tokens[PK_PACKAGE_ID_NAME]);
+				(*repo)->download(job,
+				                  dir_path,
+				                  tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -635,10 +636,9 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
 			if (repo != repos.end())
 			{
-				katja_pkgtools_download((*repo)->data(),
-				                        job,
-				                        dest_dir_name,
-				                        tokens[PK_PACKAGE_ID_NAME]);
+				(*repo)->download(job,
+				                  dest_dir_name,
+				                  tokens[PK_PACKAGE_ID_NAME]);
 			}
 
 			g_strfreev(tokens);
@@ -657,7 +657,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
 			if (repo != repos.end())
 			{
-				katja_pkgtools_install((*repo)->data(), job, tokens[PK_PACKAGE_ID_NAME]);
+				(*repo)->install(job, tokens[PK_PACKAGE_ID_NAME]);
 			}
 			g_strfreev(tokens);
 		}
@@ -855,10 +855,9 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
 				if (repo != repos.end())
 				{
-					katja_pkgtools_download((*repo)->data(),
-					                        job,
-					                        dest_dir_name,
-					                        tokens[PK_PACKAGE_ID_NAME]);
+					(*repo)->download(job,
+					                  dest_dir_name,
+					                  tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 
@@ -879,9 +878,7 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
 				if (repo != repos.end())
 				{
-					katja_pkgtools_install((*repo)->data(),
-					                       job,
-					                       tokens[PK_PACKAGE_ID_NAME]);
+					(*repo)->install(job, tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 			else
@@ -968,8 +965,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	// Get list of files that should be downloaded.
 	for (auto l = repos.begin(); l != repos.end(); ++l)
 	{
-		KatjaPkgtools* r = (*l)->data();
-		GSList *cache_info = katja_pkgtools_collect_cache_info(r, tmp_dir_name);
+		GSList *cache_info = (*l)->collectCacheInfo(tmp_dir_name);
 		file_list = g_slist_concat(file_list, cache_info);
 	}
 
@@ -989,8 +985,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	for (auto l = repos.begin(); l != repos.end(); ++l)
 	{
-		KatjaPkgtools* r = (*l)->data();
-		katja_pkgtools_generate_cache(r, job, tmp_dir_name);
+		(*l)->generateCache(job, tmp_dir_name);
 	}
 
 out:
