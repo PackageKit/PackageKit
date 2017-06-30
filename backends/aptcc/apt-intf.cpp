@@ -538,6 +538,12 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
             continue;
         }
 
+        // Ignore debug packages - these aren't interesting as codec providers,
+        // but they do have apt GStreamer-* metadata.
+        if (ends_with (pkg.Name(), "-dbg") || ends_with (pkg.Name(), "-dbgsym")) {
+            continue;
+        }
+
         // TODO search in updates packages
         // Ignore virtual packages
         pkgCache::VerIterator ver = m_cache->findVer(pkg);
