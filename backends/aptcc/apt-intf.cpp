@@ -537,6 +537,14 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
             continue;
         }
 
+        // Ignore installed packages - we're being told that we don't have the
+        // codec, so installed packages can't satisfy what we're after. In
+        // particular, the caps syntax currently doesn't allow us to filter out
+        // -good when requesting packages for MP3s.
+        if (pkg->CurrentState == pkgCache::State::Installed) {
+            continue;
+        }
+
         // TODO search in updates packages
         // Ignore virtual packages
         pkgCache::VerIterator ver = m_cache->findVer(pkg);
