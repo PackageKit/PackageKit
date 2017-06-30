@@ -19,6 +19,7 @@
  */
 
 #include "gst-matcher.h"
+#include "apt-utils.h"
 
 #include <regex.h>
 #include <gst/gst.h>
@@ -72,7 +73,7 @@ GstMatcher::GstMatcher(gchar **values)
                     // This is hardcoded in pk-gstreamer-install, so we also hardcode it here
                     const string x86_64 = "()(64bit";
 
-                    if (equal(x86_64.rbegin(), x86_64.rend(), opt.rbegin())) {
+                    if (ends_with(opt.c_str(), x86_64.c_str())) {
                             // We hardcode 64bit -> amd64 here
                             arch = "amd64";
                             // -1 -> remove the last )
