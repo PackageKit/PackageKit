@@ -3,18 +3,6 @@
 
 #include "binary.h"
 
-G_BEGIN_DECLS
-
-#define KATJA_TYPE_DL katja_dl_get_type()
-G_DECLARE_FINAL_TYPE(KatjaDl, katja_dl, KATJA, DL, KatjaBinary)
-
-struct _KatjaDlClass
-{
-	KatjaBinaryClass parent_class;
-};
-
-G_END_DECLS
-
 namespace katja
 {
 

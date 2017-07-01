@@ -5,18 +5,6 @@
 #include <pk-backend.h>
 #include <string>
 
-G_BEGIN_DECLS
-
-#define KATJA_TYPE_PKGTOOLS katja_pkgtools_get_type()
-G_DECLARE_INTERFACE(KatjaPkgtools, katja_pkgtools, KATJA, PKGTOOLS, GObject)
-
-struct _KatjaPkgtoolsInterface
-{
-	GTypeInterface parent_iface;
-};
-
-G_END_DECLS
-
 namespace katja
 {
 

@@ -7,20 +7,12 @@
 
 G_BEGIN_DECLS
 
-#define KATJA_TYPE_BINARY katja_binary_get_type()
-G_DECLARE_DERIVABLE_TYPE(KatjaBinary, katja_binary, KATJA, BINARY, GObject)
-
-typedef struct
+struct PkBackendKatjaJobData
 {
 	GObjectClass parent_class;
 
 	sqlite3 *db;
 	CURL *curl;
-} PkBackendKatjaJobData;
-
-struct _KatjaBinaryClass
-{
-	GObjectClass parent_class;
 };
 
 G_END_DECLS

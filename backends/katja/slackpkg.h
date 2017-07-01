@@ -5,13 +5,6 @@
 
 #include <unordered_map>
 
-G_BEGIN_DECLS
-
-#define KATJA_TYPE_SLACKPKG katja_slackpkg_get_type()
-G_DECLARE_FINAL_TYPE(KatjaSlackpkg, katja_slackpkg, KATJA, SLACKPKG, KatjaBinary)
-
-G_END_DECLS
-
 namespace katja
 {
 

@@ -1,13 +1,6 @@
 #include <stdlib.h>
 #include "dl.h"
 
-struct _KatjaDl
-{
-	KatjaBinary parent;
-
-	gchar *index_file;
-};
-
 namespace katja
 {
 
@@ -253,36 +246,4 @@ out:
 	g_free(list_filename);
 }
 
-}
-
-G_DEFINE_TYPE(KatjaDl, katja_dl, KATJA_TYPE_BINARY)
-
-/**
- * katja_dl_finalize:
- **/
-static void katja_dl_finalize(GObject *object) {
-	KatjaDl *dl;
-
-	g_return_if_fail(KATJA_IS_DL(object));
-
-	dl = KATJA_DL(object);
-	if (dl->index_file)
-		g_free(dl->index_file);
-
-	G_OBJECT_CLASS(katja_dl_parent_class)->finalize(object);
-}
-
-/**
- * katja_dl_class_init:
- **/
-static void katja_dl_class_init(KatjaDlClass *klass) {
-	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-
-	object_class->finalize = katja_dl_finalize;
-}
-
-static void
-katja_dl_init(KatjaDl *dl)
-{
-	dl->index_file = NULL;
 }

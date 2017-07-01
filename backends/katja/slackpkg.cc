@@ -1,13 +1,6 @@
 #include <stdlib.h>
 #include "slackpkg.h"
 
-struct _KatjaSlackpkg
-{
-	KatjaBinary parent;
-
-	gchar **priority;
-};
-
 namespace katja
 {
 
@@ -341,38 +334,4 @@ out:
 	}
 }
 
-}
-
-G_DEFINE_TYPE(KatjaSlackpkg, katja_slackpkg, KATJA_TYPE_BINARY)
-
-/**
- * katja_slackpkg_finalize:
- **/
-static void katja_slackpkg_finalize(GObject *object) {
-	KatjaSlackpkg *slackpkg;
-
-	g_return_if_fail(KATJA_IS_SLACKPKG(object));
-
-	slackpkg = KATJA_SLACKPKG(object);
-	if (slackpkg->priority)
-	{
-		g_strfreev(slackpkg->priority);
-	}
-
-	G_OBJECT_CLASS(katja_slackpkg_parent_class)->finalize(object);
-}
-
-/**
- * katja_slackpkg_class_init:
- **/
-static void katja_slackpkg_class_init(KatjaSlackpkgClass *klass) {
-	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-
-	object_class->finalize = katja_slackpkg_finalize;
-}
-
-static void
-katja_slackpkg_init(KatjaSlackpkg *slackpkg)
-{
-	slackpkg->priority = NULL;
 }
