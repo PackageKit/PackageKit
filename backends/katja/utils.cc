@@ -105,19 +105,16 @@ katja_cut_pkg(const gchar *pkg_filename)
 	return pkg_tokens;
 }
 
-/**
- * katja_pkg_is_installed:
- **/
+namespace katja
+{
+
 PkInfoEnum
-katja_pkg_is_installed(gchar *pkg_full_name)
+isInstalled(const std::string& pkgFullname)
 {
 	PkInfoEnum ret = PK_INFO_ENUM_INSTALLING;
 
-	g_return_val_if_fail(pkg_full_name != NULL, PK_INFO_ENUM_UNKNOWN);
-
     // We want to find the package name without version for the package we're
     // looking for.
-	const auto pkgFullname = std::string(pkg_full_name);
     g_debug("Looking if %s is installed", pkgFullname.c_str());
 
     std::string::const_iterator it;
@@ -134,12 +131,16 @@ katja_pkg_is_installed(gchar *pkg_full_name)
             ++dashes;
         }
     }
-    const auto pkgName = std::string(pkgFullname.begin(), it);
+	if (dashes < 2)
+	{
+		return PK_INFO_ENUM_UNKNOWN;
+	}
+    const std::string pkgName(pkgFullname.begin(), it);
 
 	// Read the package metadata directory and comprare all installed packages
     // with ones in the cache.
-	auto metadataDir = new Glib::Dir("/var/log/packages");
-	for (const auto&& dir : *metadataDir)
+	Glib::Dir metadataDir("/var/log/packages");
+	for (const auto&& dir : metadataDir)
 	{
         dashes = 0;
         if (dir == pkgFullname)
@@ -166,12 +167,8 @@ katja_pkg_is_installed(gchar *pkg_full_name)
         }
 	}
 
-	delete metadataDir;
 	return ret;
 }
-
-namespace katja
-{
 
 CompareRepo::CompareRepo(const gchar* name) noexcept
 	: name_(name)

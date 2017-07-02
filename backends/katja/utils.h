@@ -11,13 +11,24 @@
 
 CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest);
 gchar **katja_cut_pkg(const gchar *pkg_filename);
-PkInfoEnum katja_pkg_is_installed(gchar *pkg_full_name);
 
 namespace katja
 {
 
 /**
- * Compare two repositories by the name.
+ * Checks if a package is already installed in the system.
+ *
+ * Params:
+ * 	pkgFullname = Package name should be looked for.
+ *
+ * Returns: PK_INFO_ENUM_INSTALLING if pkgFullname is already installed,
+ *          PK_INFO_ENUM_UPDATING if an elder version of pkgFullname is
+ *          installed, PK_INFO_ENUM_UNKNOWN if pkgFullname is malformed.
+ */
+PkInfoEnum isInstalled(const std::string& pkgFullname);
+
+/**
+ * Compares two repositories by the name.
  *
  * Returns: false if the names are equal, true otherwise.
  **/

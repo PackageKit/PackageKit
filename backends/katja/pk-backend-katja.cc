@@ -245,22 +245,29 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 							(gchar *) user_data,
 							search);
 
-	if ((sqlite3_prepare_v2(job_data->db, query, -1, &stmt, NULL) == SQLITE_OK)) {
+	if ((sqlite3_prepare_v2(job_data->db, query, -1, &stmt, NULL) == SQLITE_OK))
+	{
 		/* Now we're ready to output all packages */
-		while (sqlite3_step(stmt) == SQLITE_ROW) {
-			ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(stmt, 2));
-			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
+		while (sqlite3_step(stmt) == SQLITE_ROW)
+		{
+			ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
+			{
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
-										(gchar *) sqlite3_column_text(stmt, 0),
-										(gchar *) sqlite3_column_text(stmt, 1));
-			} else if (ret == PK_INFO_ENUM_INSTALLING) {
+				                       (gchar*) sqlite3_column_text(stmt, 0),
+				                       (gchar*) sqlite3_column_text(stmt, 1));
+			}
+			else if (ret == PK_INFO_ENUM_INSTALLING)
+			{
 				pk_backend_job_package(job, PK_INFO_ENUM_AVAILABLE,
-										(gchar *) sqlite3_column_text(stmt, 0),
-										(gchar *) sqlite3_column_text(stmt, 1));
+				                       (gchar *) sqlite3_column_text(stmt, 0),
+				                       (gchar *) sqlite3_column_text(stmt, 1));
 			}
 		}
 		sqlite3_finalize(stmt);
-	} else {
+	}
+	else
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(job_data->db));
 	}
 
@@ -299,22 +306,29 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 							"p.full_name FROM filelist AS f NATURAL JOIN pkglist AS p NATURAL JOIN repos AS r "
 							"WHERE f.filename LIKE '%%%q%%' GROUP BY f.full_name", search);
 
-	if ((sqlite3_prepare_v2(job_data->db, query, -1, &stmt, NULL) == SQLITE_OK)) {
+	if ((sqlite3_prepare_v2(job_data->db, query, -1, &stmt, NULL) == SQLITE_OK))
+	{
 		/* Now we're ready to output all packages */
-		while (sqlite3_step(stmt) == SQLITE_ROW) {
-			ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(stmt, 2));
-			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
+		while (sqlite3_step(stmt) == SQLITE_ROW)
+		{
+			ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
+			{
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
-										(gchar *) sqlite3_column_text(stmt, 0),
-										(gchar *) sqlite3_column_text(stmt, 1));
-			} else if (ret == PK_INFO_ENUM_INSTALLING) {
+				                       (gchar*) sqlite3_column_text(stmt, 0),
+				                       (gchar*) sqlite3_column_text(stmt, 1));
+			}
+			else if (ret == PK_INFO_ENUM_INSTALLING)
+			{
 				pk_backend_job_package(job, PK_INFO_ENUM_AVAILABLE,
-										(gchar *) sqlite3_column_text(stmt, 0),
-										(gchar *) sqlite3_column_text(stmt, 1));
+				                       (gchar*) sqlite3_column_text(stmt, 0),
+				                       (gchar*) sqlite3_column_text(stmt, 1));
 			}
 		}
 		sqlite3_finalize(stmt);
-	} else {
+	}
+	else
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(job_data->db));
 	}
 	sqlite3_free(query);
@@ -428,19 +442,24 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 							&stmt,
 							NULL) == SQLITE_OK)) {
 		/* Output packages matching each pattern */
-		for (val = vals; *val; val++) {
+		for (val = vals; *val; val++)
+		{
 			sqlite3_bind_text(stmt, 1, *val, -1, SQLITE_TRANSIENT);
 
-			while (sqlite3_step(stmt) == SQLITE_ROW) {
-				ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(stmt, 2));
-				if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING)) {
+			while (sqlite3_step(stmt) == SQLITE_ROW)
+			{
+				ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+				if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
+				{
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
-											(gchar *) sqlite3_column_text(stmt, 0),
-											(gchar *) sqlite3_column_text(stmt, 1));
-				} else if (ret == PK_INFO_ENUM_INSTALLING) {
+					                       (gchar*) sqlite3_column_text(stmt, 0),
+					                       (gchar*) sqlite3_column_text(stmt, 1));
+				}
+				else if (ret == PK_INFO_ENUM_INSTALLING)
+				{
 					pk_backend_job_package(job, PK_INFO_ENUM_AVAILABLE,
-											(gchar *) sqlite3_column_text(stmt, 0),
-											(gchar *) sqlite3_column_text(stmt, 1));
+					                       (gchar*) sqlite3_column_text(stmt, 0),
+					                       (gchar*) sqlite3_column_text(stmt, 1));
 				}
 			}
 
@@ -587,7 +606,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 
 				while (sqlite3_step(collection_stmt) == SQLITE_ROW)
 				{
-					ret = katja_pkg_is_installed((gchar *) sqlite3_column_text(collection_stmt, 2));
+					ret = katja::isInstalled((gchar*) sqlite3_column_text(collection_stmt, 2));
 					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING))
 					{
 						if ((pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) &&
@@ -598,13 +617,13 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 						else if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 						{
 							pk_backend_job_package(job, ret,
-												   (gchar *) sqlite3_column_text(collection_stmt, 0),
-												   (gchar *) sqlite3_column_text(collection_stmt, 1));
+							                       (gchar *) sqlite3_column_text(collection_stmt, 0),
+							                       (gchar *) sqlite3_column_text(collection_stmt, 1));
 						}
 						else
 						{
 							install_list = g_slist_append(install_list,
-														  g_strdup((gchar *) sqlite3_column_text(collection_stmt, 0)));
+							                              g_strdup((gchar *) sqlite3_column_text(collection_stmt, 0)));
 						}
 					}
 				}
@@ -915,20 +934,23 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	/* Create temporary directory */
 	tmp_dir_name = g_dir_make_tmp("PackageKit.XXXXXX", &err);
-	if (!tmp_dir_name) {
+	if (!tmp_dir_name)
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", err->message);
 		g_error_free(err);
-			return;
+		return;
 	}
 
 	g_variant_get(params, "(b)", &force);
 
 	/* Force the complete cache refresh if the read configuration file is newer than the metadata cache */
-	if (!force) {
+	if (!force)
+	{
 		path = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
 		db_file = g_file_new_for_path(path);
 		file_info = g_file_query_info(db_file, "time::modified-usec", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &err);
-		if (err) {
+		if (err)
+		{
 			pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE, "%s: %s", path, err->message);
 			g_error_free(err);
 			goto out;
