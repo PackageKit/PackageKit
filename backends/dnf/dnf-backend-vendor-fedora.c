@@ -37,6 +37,8 @@ dnf_validate_supported_repo (const gchar *id)
 				 "updates-testing",
 				 "updates-testing-debuginfo",
 				 "updates-testing-source",
+				 "fedora-cisco-openh264",
+				 "fedora-cisco-openh264-debuginfo",
 				 NULL };
 	for (i = 0; valid[i] != NULL; i++) {
 		if (g_strcmp0 (id, valid[i]) == 0)
