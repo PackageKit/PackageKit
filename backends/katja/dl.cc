@@ -48,7 +48,7 @@ Dl::collectCacheInfo(const gchar *tmpl)
 	                                  NULL);
 	source_dest[2] = NULL;
 	/* Check if the remote file can be found */
-	if (katja_get_file(&curl, source_dest[0], NULL))
+	if (katja::getFile(&curl, source_dest[0], NULL))
 	{
 		g_strfreev(source_dest);
 	}
@@ -67,7 +67,7 @@ Dl::collectCacheInfo(const gchar *tmpl)
 }
 
 void
-Dl::generateCache(PkBackendJob *job, const gchar *tmpl)
+Dl::generateCache(PkBackendJob* job, const gchar* tmpl)
 {
 	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
 	gboolean skip = FALSE;
@@ -75,7 +75,7 @@ Dl::generateCache(PkBackendJob *job, const gchar *tmpl)
 	GFileInputStream *fin;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *stmt = NULL;
-	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
 	list_filename = g_build_filename(tmpl,
@@ -138,10 +138,10 @@ Dl::generateCache(PkBackendJob *job, const gchar *tmpl)
 		                                    static_cast<GRegexMatchFlags>(0),
 		                                    NULL)))
 		{
-			pkg_tokens = katja_cut_pkg(line_tokens[0]);
+			pkg_tokens = katja::splitPackageName(line_tokens[0]);
 
-			/* If the katja_cut_pkg doesn't return a full name and an extension, it is a collection.
-			 * We save its name in this case */
+			/* If the splitPackageName doesn't return a full name and an extension, it
+			 * is a collection. We save its name in this case */
 			if (pkg_tokens[3])
 			{
 				sqlite3_bind_text(stmt, 1, pkg_tokens[3], -1, SQLITE_TRANSIENT);
@@ -210,7 +210,7 @@ Dl::generateCache(PkBackendJob *job, const gchar *tmpl)
 								static_cast<GRegexMatchFlags>(0),
 								NULL)))
 			{
-				pkg_tokens = katja_cut_pkg(line_tokens[0]);
+				pkg_tokens = katja::splitPackageName(line_tokens[0]);
 
 				/* If not a collection itself */
 				if (pkg_tokens[3]) /* Save this package as a part of the collection */

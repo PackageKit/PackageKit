@@ -18,7 +18,7 @@ Binary::download(PkBackendJob* job,
 	gboolean ret = FALSE;
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
-	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT location, (full_name || '.' || ext) FROM pkglist "
@@ -42,7 +42,7 @@ Binary::download(PkBackendJob* job,
 
 		if (!g_file_test(dest_filename, G_FILE_TEST_EXISTS))
 		{
-			if (katja_get_file(&curl, source_url, dest_filename) == CURLE_OK) {
+			if (katja::getFile(&curl, source_url, dest_filename) == CURLE_OK) {
 				ret = TRUE;
 			}
 		}
@@ -68,7 +68,7 @@ Binary::install(PkBackendJob* job, gchar* pkg_name)
 {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
-	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT (full_name || '.' || ext) FROM pkglist "
@@ -114,7 +114,7 @@ Binary::manifest(PkBackendJob* job,
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
 	GMatchInfo *match_info;
 	sqlite3_stmt *statement = NULL;
-	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	path = g_build_filename(tmpl, name().c_str(), filename, NULL);
 	manifest = fopen(path, "rb");

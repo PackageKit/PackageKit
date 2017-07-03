@@ -73,7 +73,7 @@ Slackpkg::collectCacheInfo(const gchar *tmpl)
 		                                  NULL);
 		source_dest[2] = NULL;
 
-		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
+		if (katja::getFile(&curl, source_dest[0], NULL) == CURLE_OK)
 		{
 			file_list = g_slist_prepend(file_list, source_dest);
 		}
@@ -95,7 +95,7 @@ Slackpkg::collectCacheInfo(const gchar *tmpl)
 		                             "/", *cur_priority, "-MANIFEST.bz2",
 		                             NULL);
 		source_dest[2] = NULL;
-		if (katja_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
+		if (katja::getFile(&curl, source_dest[0], NULL) == CURLE_OK)
 		{
 			file_list = g_slist_prepend(file_list, source_dest);
 		}
@@ -127,7 +127,7 @@ Slackpkg::generateCache(PkBackendJob *job, const gchar *tmpl)
 	GFileInputStream *fin = NULL;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
-	auto job_data = static_cast<PkBackendKatjaJobData*>(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	/* Check if the temporary directory for this repository exists, then the file metadata have to be generated */
 	packages_txt = g_build_filename(tmpl,
@@ -247,7 +247,7 @@ Slackpkg::generateCache(PkBackendJob *job, const gchar *tmpl)
 			{
 				summary = g_strndup(summary + 1, strlen(summary) - 2); /* Without ( ) */
 			}
-			pkg_tokens = katja_cut_pkg(filename);
+			pkg_tokens = katja::splitPackageName(filename);
 			pkg_name_len = strlen(pkg_tokens[0]); /* Description begins with pkg_name: */
 		}
 		else if (filename && !strncmp(line, pkg_tokens[0], pkg_name_len))

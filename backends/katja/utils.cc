@@ -1,18 +1,11 @@
 #include "utils.h"
 #include <glibmm.h>
 
-/**
- * katja_get_file:
- * @curl: curl easy handle.
- * @source_url: source url.
- * @dest: destination.
- *
- * Download the file.
- *
- * Returns: CURLE_OK (zero) on success, non-zero otherwise.
- **/
+namespace katja
+{
+
 CURLcode
-katja_get_file(CURL **curl, gchar *source_url, gchar *dest)
+getFile(CURL** curl, gchar* source_url, gchar* dest)
 {
 	gchar *dest_dir_name;
 	FILE *fout = NULL;
@@ -62,19 +55,15 @@ katja_get_file(CURL **curl, gchar *source_url, gchar *dest)
 	return ret;
 }
 
-/**
- * katja_cut_pkg:
- *
- * Got the name of a package, without version-arch-release data.
- **/
 gchar**
-katja_cut_pkg(const gchar *pkg_filename)
+splitPackageName(const gchar* pkg_filename)
 {
 	gchar *pkg_full_name, **pkg_tokens, **reversed_tokens;
 	gint len;
 
 	len = strlen(pkg_filename);
-	if (pkg_filename[len - 4] == '.') {
+	if (pkg_filename[len - 4] == '.')
+	{
 		pkg_tokens = static_cast<gchar **>(g_malloc_n(6, sizeof(gchar *)));
 
 		/* Full name without extension */
@@ -85,7 +74,9 @@ katja_cut_pkg(const gchar *pkg_filename)
 		/* The last 3 characters should be the file extension */
 		pkg_tokens[4] = g_strdup(pkg_filename + len + 1);
 		pkg_tokens[5] = NULL;
-	} else {
+	}
+	else
+	{
 		pkg_tokens = static_cast<gchar **>(g_malloc_n(4, sizeof(gchar *)));
 		pkg_full_name = g_strdup(pkg_filename);
 		pkg_tokens[3] = NULL;
@@ -104,9 +95,6 @@ katja_cut_pkg(const gchar *pkg_filename)
 
 	return pkg_tokens;
 }
-
-namespace katja
-{
 
 PkInfoEnum
 isInstalled(const std::string& pkgFullname)

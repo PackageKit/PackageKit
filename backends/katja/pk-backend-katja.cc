@@ -186,9 +186,10 @@ pk_backend_get_groups(PkBackend* backend)
 	                              -1);
 }
 
-void pk_backend_start_job(PkBackend *backend, PkBackendJob *job) {
+void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
+{
 	gchar *db_filename = NULL;
-	PkBackendKatjaJobData *job_data = g_new0(PkBackendKatjaJobData, 1);
+	katja::JobData* job_data = g_new0(katja::JobData, 1);
 
 	pk_backend_job_set_allow_cancel(job, TRUE);
 	pk_backend_job_set_allow_cancel(job, FALSE);
@@ -211,9 +212,9 @@ out:
 	g_free(db_filename);
 }
 
-void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
+void pk_backend_stop_job(PkBackend* backend, PkBackendJob* job)
 {
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	if (job_data->curl)
 	{
@@ -225,12 +226,12 @@ void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 	pk_backend_job_set_user_data(job, NULL);
 }
 
-static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+static void pk_backend_search_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
 {
 	gchar **vals, *search, *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -277,24 +278,28 @@ static void pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpoint
 	pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
+void pk_backend_search_names(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+{
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "name", NULL);
 }
 
-void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
+void pk_backend_search_details(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+{
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "desc", NULL);
 }
 
-void pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
+void pk_backend_search_groups(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+{
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "cat", NULL);
 }
 
-static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void pk_backend_search_files_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar **vals, *search;
 	gchar *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -341,7 +346,8 @@ void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield f
 	pk_backend_job_thread_create(job, pk_backend_search_files_thread, NULL, NULL);
 }
 
-static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void pk_backend_get_details_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar **pkg_ids, *homepage = NULL;
 	gchar** tokens;
 	gsize i;
@@ -350,7 +356,7 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
 	GMatchInfo *match_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -418,15 +424,17 @@ out:
 	sqlite3_finalize(stmt);
 }
 
-void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids) {
+void pk_backend_get_details(PkBackend* backend, PkBackendJob* job, gchar** package_ids)
+{
 	pk_backend_job_thread_create(job, pk_backend_get_details_thread, NULL, NULL);
 }
 
-static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void pk_backend_resolve_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar **vals, **val;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -474,17 +482,19 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 	pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages) {
+void
+pk_backend_resolve(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** packages)
+{
 	pk_backend_job_thread_create(job, pk_backend_resolve_thread, NULL, NULL);
 }
 
 static void
-pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+pk_backend_download_packages_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
 {
 	gchar *dir_path, *path, **pkg_ids, *to_strv[] = {NULL, NULL};
 	guint i;
 	sqlite3_stmt *stmt;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	g_variant_get(params, "(^a&ss)", &pkg_ids, &dir_path);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
@@ -538,11 +548,15 @@ out:
 	sqlite3_finalize(stmt);
 }
 
-void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory) {
+void
+pk_backend_download_packages(PkBackend* backend, PkBackendJob* job, gchar** package_ids, const gchar* directory)
+{
 	pk_backend_job_thread_create(job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
-static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void
+pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar* dest_dir_name;
 	gchar** pkg_ids;
 	guint i;
@@ -551,7 +565,7 @@ static void pk_backend_install_packages_thread(PkBackendJob *job, GVariant *para
 	sqlite3_stmt *pkglist_stmt = NULL, *collection_stmt = NULL;
     PkBitfield transaction_flags = 0;
 	PkInfoEnum ret;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	g_variant_get(params, "(t^a&s)", &transaction_flags, &pkg_ids);
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -738,15 +752,20 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 	}
 }
 
-void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
-								 PkBitfield transaction_flags,
-								 gchar **package_ids,
-								 gboolean allow_deps,
-								 gboolean autoremove) {
+void
+pk_backend_remove_packages(PkBackend* backend,
+                           PkBackendJob* job,
+                           PkBitfield transaction_flags,
+                           gchar** package_ids,
+                           gboolean allow_deps,
+                           gboolean autoremove)
+{
 	pk_backend_job_thread_create(job, pk_backend_remove_packages_thread, NULL, NULL);
 }
 
-static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void
+pk_backend_get_updates_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar *pkg_id, *full_name, *desc;
 	const gchar *pkg_metadata_filename;
 	GFile *pkg_metadata_dir;
@@ -754,7 +773,7 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 	GFileInfo *pkg_metadata_file_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -777,15 +796,17 @@ static void pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, g
 														 NULL,
 														 &err);
 	g_object_unref(pkg_metadata_dir);
-	if (err) {
+	if (err)
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE, "/var/log/packages: %s", err->message);
 		g_error_free(err);
 		goto out;
 	}
 
-	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL))) {
+	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL)))
+	{
 		pkg_metadata_filename = g_file_info_get_name(pkg_metadata_file_info);
-		auto const tokens = katja_cut_pkg(pkg_metadata_filename);
+		auto const tokens = katja::splitPackageName(pkg_metadata_filename);
 
 		/* Select the package from the database */
 		sqlite3_bind_text(stmt, 1, tokens[0], -1, SQLITE_TRANSIENT);
@@ -913,13 +934,18 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 	}
 }
 
-void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
-								PkBitfield transaction_flags,
-								gchar **package_ids) {
+void
+pk_backend_update_packages(PkBackend* backend,
+                           PkBackendJob* job,
+                           PkBitfield transaction_flags,
+                           gchar** package_ids)
+{
 	pk_backend_job_thread_create(job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
-static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void
+pk_backend_refresh_cache_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar *tmp_dir_name, *db_err, *path = NULL;
 	gint ret;
 	gboolean force;
@@ -928,7 +954,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 	GFileInfo *file_info = NULL;
 	GError *err = NULL;
 	sqlite3_stmt *stmt = NULL;
-	PkBackendKatjaJobData *job_data = (PkBackendKatjaJobData *)(pk_backend_job_get_user_data(job));
+	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
 
@@ -996,7 +1022,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 	for (auto l = file_list; l; l = g_slist_next(l))
 	{
-		katja_get_file(&job_data->curl,
+		katja::getFile(&job_data->curl,
 		               ((gchar **)l->data)[0],
 		               ((gchar **)l->data)[1]);
 	}

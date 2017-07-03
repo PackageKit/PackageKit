@@ -5,18 +5,6 @@
 #include "pkgtools.h"
 #include "utils.h"
 
-G_BEGIN_DECLS
-
-struct PkBackendKatjaJobData
-{
-	GObjectClass parent_class;
-
-	sqlite3 *db;
-	CURL *curl;
-};
-
-G_END_DECLS
-
 namespace katja
 {
 

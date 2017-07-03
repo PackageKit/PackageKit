@@ -9,11 +9,32 @@
 #include <pk-backend-job.h>
 #include "binary.h"
 
-CURLcode katja_get_file(CURL **curl, gchar *source_url, gchar *dest);
-gchar **katja_cut_pkg(const gchar *pkg_filename);
-
 namespace katja
 {
+
+struct JobData
+{
+	GObjectClass parent_class;
+
+	sqlite3 *db;
+	CURL *curl;
+};
+
+/**
+ * @curl: curl easy handle.
+ * @source_url: source url.
+ * @dest: destination.
+ *
+ * Download the file.
+ *
+ * Returns: CURLE_OK (zero) on success, non-zero otherwise.
+ **/
+CURLcode getFile(CURL** curl, gchar* source_url, gchar* dest);
+
+/**
+ * Got the name of a package, without version-arch-release data.
+ **/
+gchar** splitPackageName(const gchar* pkg_filename);
 
 /**
  * Checks if a package is already installed in the system.
@@ -24,7 +45,7 @@ namespace katja
  * Returns: PK_INFO_ENUM_INSTALLING if pkgFullname is already installed,
  *          PK_INFO_ENUM_UPDATING if an elder version of pkgFullname is
  *          installed, PK_INFO_ENUM_UNKNOWN if pkgFullname is malformed.
- */
+ **/
 PkInfoEnum isInstalled(const std::string& pkgFullname);
 
 /**
