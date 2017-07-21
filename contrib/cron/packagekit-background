@@ -15,6 +15,13 @@ ENABLED=no
 #
 CHECK_ONLY=no
 
+## Type:	yesno
+## Default:	no
+#
+# Trigger updates, so they will be installed on reboot.
+#
+UPDATE_OFFLINE=no
+
 ## Type:	string
 ## Default:	""
 #

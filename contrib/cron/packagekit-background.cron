@@ -21,6 +21,11 @@ fi
 
 PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
 PKCON_OPTIONS="--background --noninteractive --plain"
+if [ "$UPDATE_OFFLINE" = "yes" ]; then
+	ONLY_DOWNLOAD="--only-download"
+else
+	ONLY_DOWNLOAD=""
+fi
 
 # wait a random amount of time to avoid hammering the servers
 [ -z "$SLEEP_MAX" ] && SLEEP_MAX=$RANDOM
@@ -31,8 +36,11 @@ if [ "$CHECK_ONLY" = "yes" ]; then
 	pkcon $PKCON_OPTIONS get-updates &> $PKTMP
 	PKCON_RETVAL=$?
 else
-	pkcon $PKCON_OPTIONS update &> $PKTMP
+	pkcon $PKCON_OPTIONS $ONLY_DOWNLOAD update &> $PKTMP
 	PKCON_RETVAL=$?
+	if [ $PKCON_RETVAL -eq 0 -a "$UPDATE_OFFLINE" = "yes" ]; then
+		pkcon $PKCON_OPTIONS offline-trigger &> $PKTMP
+	fi
 fi
 
 # this is when seomthing useful was done
