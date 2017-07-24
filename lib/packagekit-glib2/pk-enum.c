@@ -1194,7 +1194,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		break;
 	case PK_ROLE_ENUM_REPO_ENABLE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Enabling repository");
+		text = dgettext("PackageKit", "Modifying repository");
 		break;
 	case PK_ROLE_ENUM_REPO_SET_DATA:
 		/* TRANSLATORS: The role of the transaction, in present tense */
