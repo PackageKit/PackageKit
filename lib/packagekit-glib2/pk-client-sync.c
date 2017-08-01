@@ -1070,6 +1070,8 @@ pk_client_get_categories (PkClient *client, GCancellable *cancellable,
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 
+	g_main_context_push_thread_default (helper.context);
+
 	/* run async method */
 	pk_client_get_categories_async (client, cancellable, progress_callback, progress_user_data,
 					(GAsyncReadyCallback) pk_client_generic_finish_sync, &helper);
@@ -1439,6 +1441,8 @@ pk_client_install_files (PkClient *client,
 	g_main_loop_run (helper.loop);
 
 	results = helper.results;
+
+	g_main_context_pop_thread_default (helper.context);
 
 	/* free temp object */
 	g_main_loop_unref (helper.loop);
