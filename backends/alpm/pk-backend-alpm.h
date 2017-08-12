@@ -26,7 +26,6 @@
 #include <pk-backend.h>
 
 typedef struct {
-	gsize		environment_initialized;
 	alpm_db_t	*localdb;
 	alpm_list_t	*syncfirsts;
 	alpm_list_t	*holdpkgs;

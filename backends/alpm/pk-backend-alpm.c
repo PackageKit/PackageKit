@@ -225,10 +225,5 @@ pk_alpm_finish (PkBackendJob *job, GError *error)
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	if (g_once_init_enter (&priv->environment_initialized))
-	{
-		pk_alpm_environment_initialize (job);
-		g_once_init_leave (&priv->environment_initialized, TRUE);
-	}
+	pk_alpm_environment_initialize (job);
 }

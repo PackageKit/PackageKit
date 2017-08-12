@@ -54,35 +54,46 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("http_proxy", uri, TRUE);
+	} else {
+		g_unsetenv ("http_proxy");
 	}
 
 	tmp = pk_backend_job_get_proxy_https (job);
 	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("https_proxy", uri, TRUE);
+	} else {
+		g_unsetenv ("https_proxy");
 	}
 
 	tmp = pk_backend_job_get_proxy_ftp (job);
 	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("ftp_proxy", uri, TRUE);
+	} else {
+		g_unsetenv ("ftp_proxy");
 	}
 
 	tmp = pk_backend_job_get_proxy_socks (job);
 	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri_socks (tmp);
 		g_setenv ("all_proxy", uri, TRUE);
+	} else {
+		g_unsetenv ("all_proxy");
 	}
 
 	tmp = pk_backend_job_get_no_proxy (job);
 	if (!pk_strzero (tmp)) {
 		g_setenv ("no_proxy", tmp, TRUE);
+	} else {
+		g_unsetenv ("no_proxy");
 	}
 
 	tmp = pk_backend_job_get_pac (job);
 	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("pac", uri, TRUE);
+	} else {
+		g_unsetenv ("pac");
 	}
 }
-
