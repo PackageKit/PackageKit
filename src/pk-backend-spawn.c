@@ -741,15 +741,15 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* socks_proxy */
 	proxy_socks = pk_backend_job_get_proxy_socks (priv->job);
 	if (!pk_strzero (proxy_socks)) {
-		uri = pk_backend_convert_uri (proxy_socks);
+		uri = pk_backend_convert_uri_socks (proxy_socks);
 		g_hash_table_replace (env_table, g_strdup ("all_proxy"), uri);
 	}
 
 	/* no_proxy */
 	no_proxy = pk_backend_job_get_no_proxy (priv->job);
 	if (!pk_strzero (no_proxy)) {
-		uri = pk_backend_convert_uri (no_proxy);
-		g_hash_table_replace (env_table, g_strdup ("no_proxy"), uri);
+		g_hash_table_replace (env_table, g_strdup ("no_proxy"),
+		                      g_strdup (no_proxy));
 	}
 
 	/* pac */

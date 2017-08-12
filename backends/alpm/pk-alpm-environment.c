@@ -70,7 +70,7 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 
 	tmp = pk_backend_job_get_proxy_socks (job);
 	if (!pk_strzero (tmp)) {
-		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
+		g_autofree gchar *uri = pk_backend_convert_uri_socks (tmp);
 		g_setenv ("all_proxy", uri, TRUE);
 	}
 

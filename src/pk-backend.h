@@ -97,6 +97,7 @@ gboolean	 pk_backend_is_transaction_inhibited    (PkBackend      *backend);
 const gchar	*pk_backend_bool_to_string		(gboolean	 value);
 gboolean	 pk_backend_is_online			(PkBackend	*backend);
 gchar		*pk_backend_convert_uri			(const gchar	*proxy);
+gchar		*pk_backend_convert_uri_socks		(const gchar	*proxy);
 
 /* config changed functions */
 typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
