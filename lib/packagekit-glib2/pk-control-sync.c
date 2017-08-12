@@ -226,7 +226,11 @@ pk_control_set_proxy_cb (PkControl *control, GAsyncResult *res, PkControlHelper 
  * pk_control_set_proxy2:
  * @control: a valid #PkControl instance
  * @proxy_http: the HTTP proxy server
+ * @proxy_https: the HTTPS proxy server
  * @proxy_ftp: the FTP proxy server
+ * @proxy_socks: the SOCKS proxy server
+ * @no_proxy: the list of download IPs that shouldn't go through the proxy
+ * @pac: the PAC string
  * @cancellable: a #GCancellable or %NULL
  * @error: A #GError or %NULL
  *
