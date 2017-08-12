@@ -3,14 +3,9 @@ Setting the proxy:
 The packagekitd daemon sets the network proxy for the packaging backend so that
 packages can be downloaded when on a corporate or managed network.
 
-If the system-wide ProxyHTTP or ProxyFTP are set in PackageKit.conf then these
-are used by default. If these keys are blank or not present then the session
-proxy can be used. The session proxies are the values that are set in the
-network proxy configuration.
-
 The session proxy is read by a session process that is started at login time,
-and then relayed to PackageKit. In GNOME, this is done by the gpk-update-icon
-process, which reads the settings from GConf, and executes SetProxy on
+and then relayed to PackageKit. In GNOME, this is done by gnome-software, which
+reads the settings from GSettings, and executes SetProxy on
 org.freedesktop.PackageKit.
 
 Note: this method is on the main interface, not a transaction interface. The
