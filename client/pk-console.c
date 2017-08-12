@@ -1652,7 +1652,7 @@ pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 				     http_proxy,
 				     g_getenv ("https_proxy"),
 				     ftp_proxy,
-				     g_getenv ("socks_proxy"),
+				     g_getenv ("all_proxy"),
 				     g_getenv ("no_proxy"),
 				     g_getenv ("pac"),
 				     ctx->cancellable,

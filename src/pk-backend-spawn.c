@@ -742,7 +742,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	proxy_socks = pk_backend_job_get_proxy_socks (priv->job);
 	if (!pk_strzero (proxy_socks)) {
 		uri = pk_backend_convert_uri (proxy_socks);
-		g_hash_table_replace (env_table, g_strdup ("socks_proxy"), uri);
+		g_hash_table_replace (env_table, g_strdup ("all_proxy"), uri);
 	}
 
 	/* no_proxy */
