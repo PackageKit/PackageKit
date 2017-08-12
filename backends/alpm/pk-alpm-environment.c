@@ -51,36 +51,36 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 		setlocale (LC_ALL, tmp);
 
 	tmp = pk_backend_job_get_proxy_http (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("http_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_https (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("https_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_ftp (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("ftp_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_proxy_socks (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
-		g_setenv ("socks_proxy", uri, TRUE);
+		g_setenv ("all_proxy", uri, TRUE);
 	}
 
 	tmp = pk_backend_job_get_no_proxy (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_setenv ("no_proxy", tmp, TRUE);
 	}
 
 	tmp = pk_backend_job_get_pac (job);
-	if (tmp != NULL) {
+	if (!pk_strzero (tmp)) {
 		g_autofree gchar *uri = pk_backend_convert_uri (tmp);
 		g_setenv ("pac", uri, TRUE);
 	}
