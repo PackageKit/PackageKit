@@ -595,6 +595,42 @@ pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
 }
 
 /**
+ * pk_transaction_db_is_proxy_set:
+ **/
+static gboolean
+pk_transaction_db_is_proxy_set (PkTransactionDb *tdb, guint uid, const gchar *session)
+{
+	gchar *error_msg = NULL;
+	gboolean ret = FALSE;
+	gint rc;
+	PkTransactionDbProxyItem *item;
+	g_autofree gchar *statement = NULL;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
+
+	/* get existing data */
+	item = g_new0 (PkTransactionDbProxyItem, 1);
+	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
+				     uid, session);
+	rc = sqlite3_exec (tdb->priv->db, statement,
+			   pk_transaction_sqlite_proxy_cb,
+			   item,
+			   &error_msg);
+	if (rc != SQLITE_OK) {
+		g_warning ("SQL error: %s", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	ret = item->set;
+
+out:
+	pk_transaction_db_proxy_item_free (item);
+	return ret;
+}
+
+/**
  * pk_transaction_db_get_proxy:
  * @tdb: the #PkTransactionDb instance
  * @uid: the user ID of the user
@@ -696,13 +732,7 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
 	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
 
 	/* check for previous entries */
-	ret = pk_transaction_db_get_proxy (tdb, uid, session,
-					   &proxy_http_tmp,
-					   NULL,
-					   NULL,
-					   NULL,
-					   NULL,
-					   NULL);
+	ret = pk_transaction_db_is_proxy_set (tdb, uid, session);
 	if (ret) {
 		g_debug ("updated proxy %s, %s for uid:%i and session:%s",
 			 proxy_http, proxy_ftp, uid, session);
