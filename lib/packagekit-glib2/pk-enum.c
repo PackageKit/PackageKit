@@ -980,7 +980,7 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		break;
 	case PK_INFO_ENUM_BUGFIX:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Bug fix ");
+		text = dgettext("PackageKit", "Bug fix");
 		break;
 	case PK_INFO_ENUM_ENHANCEMENT:
 		/* TRANSLATORS: The type of update */

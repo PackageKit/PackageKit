@@ -837,7 +837,7 @@ msgid "Security"
 msgstr "రక్షణ"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "బగ్ పరిష్కారము"
 
 #. TRANSLATORS: The type of update

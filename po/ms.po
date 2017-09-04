@@ -1193,7 +1193,7 @@ msgstr ""
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-enum.c:1075
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr ""
 
 #. TRANSLATORS: The type of update

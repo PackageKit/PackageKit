@@ -839,7 +839,7 @@ msgid "Security"
 msgstr "Güvenlik"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Hata düzeltmesi "
 
 #. TRANSLATORS: The type of update

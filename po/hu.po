@@ -841,7 +841,7 @@ msgid "Security"
 msgstr "Biztonsági"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Hibajavítás"
 
 #. TRANSLATORS: The type of update

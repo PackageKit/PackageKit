@@ -840,7 +840,7 @@ msgid "Security"
 msgstr "セキュリティー"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "バグ修正"
 
 #. TRANSLATORS: The type of update

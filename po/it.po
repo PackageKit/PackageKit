@@ -844,7 +844,7 @@ msgid "Security"
 msgstr "Sicurezza"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Correzione bug"
 
 #. TRANSLATORS: The type of update

@@ -840,7 +840,7 @@ msgid "Security"
 msgstr "Saugumo"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Klaidos pataisymas"
 
 #. TRANSLATORS: The type of update

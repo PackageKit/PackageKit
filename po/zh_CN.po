@@ -843,7 +843,7 @@ msgid "Security"
 msgstr "安全"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "缺陷修复"
 
 #. TRANSLATORS: The type of update

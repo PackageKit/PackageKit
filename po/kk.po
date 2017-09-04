@@ -836,7 +836,7 @@ msgid "Security"
 msgstr "Қауіпсіздік"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Ақаулықты жөндеу"
 
 #. TRANSLATORS: The type of update

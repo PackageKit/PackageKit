@@ -852,7 +852,7 @@ msgid "Security"
 msgstr "Sicherheit"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Problembehebung "
 
 #. TRANSLATORS: The type of update

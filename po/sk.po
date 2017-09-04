@@ -842,7 +842,7 @@ msgid "Security"
 msgstr "Bezpečnostná"
 
 #. TRANSLATORS: The type of update
-msgid "Bug fix "
+msgid "Bug fix"
 msgstr "Oprava chýb"
 
 #. TRANSLATORS: The type of update
