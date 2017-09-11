@@ -8,6 +8,7 @@
 # Leah Liu <lliu@redhat.com>, 2009
 # Tommy He <lovenemesis@gmail.com>, 2011, 2012
 # Michael Jay Tong <michaeljayt@gmail.com>, 2014
+# Mingcong Bai <jeffbai@aosc.xyz>, 2017
 # Richard Hughes <richard@hughsie.com>, 2011
 # Wylmer Wang, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2016
@@ -15,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/freedesktop/packagekit/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -552,7 +553,12 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit 监视器"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "正在安装系统更新"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "正在安装更新"
 
@@ -814,7 +820,7 @@ msgstr "正在复制文件"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "正在运行关联操作"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -844,7 +850,7 @@ msgstr "安全"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "缺陷修复"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -978,8 +984,8 @@ msgid "Getting repositories"
 msgstr "获取软件仓库"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "启用软件仓库"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"

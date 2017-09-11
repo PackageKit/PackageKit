@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Serbian (http://www.transifex.com/freedesktop/packagekit/language/sr/)\n"
 "MIME-Version: 1.0\n"
@@ -546,7 +546,12 @@ msgid "PackageKit Monitor"
 msgstr "Надгледник Пакетског прибора"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr ""
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Инсталирам ажурирања"
 
@@ -838,7 +843,7 @@ msgstr "Безбедносно"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Исправка грешке "
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -972,8 +977,8 @@ msgid "Getting repositories"
 msgstr "Добављам ризнице"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "Укључујем ризнице"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"

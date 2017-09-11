@@ -5,14 +5,14 @@
 # Translators:
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2013
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011
-# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2016
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017
 # Shinjo Park <kde@peremen.name>, 2012,2015
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Korean (http://www.transifex.com/freedesktop/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
@@ -548,7 +548,12 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit 모니터"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr ""
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "업데이트 설치 중"
 
@@ -810,7 +815,7 @@ msgstr "파일 복사 중"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "실행 중인 훅"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -840,7 +845,7 @@ msgstr "보안"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "버그 수정"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -974,8 +979,8 @@ msgid "Getting repositories"
 msgstr "저장소 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "저장소 활성화 중"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"

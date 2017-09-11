@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
+# Daniel Rusek <mail@asciiwolf.com>, 2017
 # fri, 2011
 # fri, 2011
 # Jozef Mlích <xmlich02@stud.fit.vutbr.cz>, 2015
@@ -15,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -459,12 +460,12 @@ msgstr "Je požadován název balíčku, který se má odstranit"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
+msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "Složka nenalezena"
+msgstr "Adresář nenalezen"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -552,7 +553,12 @@ msgid "PackageKit Monitor"
 msgstr "Sledování PackageKit"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Instaluje se povýšení systému"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Instalují se aktualizace"
 
@@ -844,7 +850,7 @@ msgstr "Bezpečnostní"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Oprava chyby"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -978,8 +984,8 @@ msgid "Getting repositories"
 msgstr "Získávají se repozitáře"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "Povolují se repozitáře"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1208,7 +1214,7 @@ msgid "Install older version of installed package"
 msgstr "Nainstalovat starší verzi instalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Pro přechod softwaru na nižší verzi je vyžadován ověření"
+msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.

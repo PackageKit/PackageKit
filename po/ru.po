@@ -5,21 +5,22 @@
 # Translators:
 # Alexey Kostyuk <unitoff@gmail.com>, 2009
 # Dimitriy Ryazantcev <DJm00n@mail.ru>, 2015
-# Ivan Ignatyev <ivan.ignatyev@auditory.ru>, 2008, 2009
+# Ivan Ignatyev <ivan.ignatyev@auditory.ru>, 2008-2009
 # Misha Shnurapet <shnurapet@fedoraproject.org>, 2011-2012
 # Misha Shnurapet <zayzayats@yandex.ru>, 2010
 # Richard Hughes <richard@hughsie.com>, 2011
-# Serge Vylekzhanin <vylekzhanin@mail.ru>, 2014-2016
+# Serge Vylekzhanin <vylekzhanin@mail.ru>, 2014-2017
 # Yulia <ypoyarko@redhat.com>, 2009
 # Yuri Khabarov <madb00blik@gmail.com>, 2011
 # Yuri Kozlov <yuray@komyakino.ru>, 2011,2013-2014
+# Yuri Myasoedov <omerta13@yandex.ru>, 2017
 # Игорь Горбунов <igor.gorbounov@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Russian (http://www.transifex.com/freedesktop/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -32,7 +33,7 @@ msgstr ""
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr "Операция"
+msgstr "Транзакция"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
@@ -44,10 +45,10 @@ msgid "Succeeded"
 msgstr "Успешно"
 
 msgid "True"
-msgstr "Истина"
+msgstr "Да"
 
 msgid "False"
-msgstr "Ложь"
+msgstr "Нет"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
@@ -82,7 +83,7 @@ msgstr "Затронутые пакеты:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "Затронутые пакеты: Нет"
+msgstr "Затронутые пакеты: нет"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
@@ -95,7 +96,7 @@ msgstr "Тип"
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 msgid "Summary"
-msgstr "Суммарно"
+msgstr "Сводка"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
@@ -107,7 +108,7 @@ msgstr "Идентификатор"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "Родитель"
+msgstr "Родительская группа"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
@@ -132,12 +133,12 @@ msgstr "Пакет"
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 msgid "Updates"
-msgstr "Обновления"
+msgstr "Обновляет"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "Устаревшие"
+msgstr "Объявляет устаревшим"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -146,7 +147,7 @@ msgstr "Поставщик"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr "Система отслеживания ошибок Bugzilla"
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
@@ -185,33 +186,33 @@ msgstr "Обновлено"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "Включено"
+msgstr "Включён"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "Выключено"
+msgstr "Выключен"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "Необходим перезапуск системы для:"
+msgstr "Пакет, требующий перезапуска системы:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "Необходим перезапуск сеанса:"
+msgstr "Пакет, требующий перезапуска сеанса:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "Необходим перезапуск системы (безопасность) для:"
+msgstr "Пакет, требующий перезапуска системы (безопасность):"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "Необходим перезапуск сеанса (безопасность):"
+msgstr "Пакет, требующий перезапуска сеанса (безопасность):"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "Необходим перезапуск приложения для:"
+msgstr "Пакет, требующий перезапуска приложения:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -227,7 +228,7 @@ msgstr "Файлы пакета"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
-msgstr "Проценты"
+msgstr "Процент"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
@@ -240,7 +241,7 @@ msgstr "Результаты:"
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr "Серьезная ошибка"
+msgstr "Неисправимая ошибка"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -251,7 +252,7 @@ msgstr "Нет пакетов для обновления."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "Операция не удалась"
+msgstr "Транзакция завершилась с ошибкой"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -262,23 +263,23 @@ msgstr "В данный момент обновления отсутствуют
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "Пожалуйста, перезагрузите компьютер для завершения обновления."
+msgstr "Перезагрузите компьютер для завершения обновления."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "Пожалуйста, перезайдите в систему для завершения обновления."
+msgstr "Выйдите из системы и войдите в неё снова, чтобы завершить обновление."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "Пожалуйста, перезагрузите компьютер для завершения обновления, так как были установлены важные обновления безопасности."
+msgstr "Установлены важные обновления по безопасности, перезагрузите компьютер для завершения обновления."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr "Пожалуйста, перезайдите в систему для завершения обновления, так как были установлены важные обновления безопасности."
+msgstr "Установлены важные обновления безопасности, выйдите из системы и войдите в неё снова."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -287,7 +288,7 @@ msgstr "Найдено несколько подходящих пакетов"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "Пожалуйста, выберите корректный пакет:"
+msgstr "Выберите корректный пакет: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -305,25 +306,25 @@ msgstr "Пакеты не найдены"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "Ожидалось имя пакета, а получено имя файла. Попробуйте вместо этого использовать «pkcon install-local %s»."
+msgstr "Ожидалось имя пакета, а получено имя файла. Попробуйте команду «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "Не найдено доступного пакета: %s"
+msgstr "Этот инструмент не нашёл ни одного доступного пакета: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "Не найдено установленного пакета: %s"
+msgstr "Этот инструмент не нашёл ни одного установленного пакета: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Невозможно найти пакет: %s"
+msgstr "Этот инструмент не нашёл пакет: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
@@ -339,12 +340,12 @@ msgstr "Нет пакетов, требующих обновлений до по
 #. * any software sources. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Невозможно найти все пакеты: %s"
+msgstr "Этот инструмент не нашёл всех пакетов: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Аварийное завершение фоновой службы во время операции!"
+msgstr "Служба аварийно завершилась во время выполнения транзакции!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -357,11 +358,11 @@ msgstr "Подкоманды:"
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "Неизвестно, как давно было совершено это действие"
+msgstr "Не удалось получить информацию о том, как давно было совершено это действие"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr "Время с момента"
+msgstr "Прошло времени"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -378,26 +379,26 @@ msgstr "Показать версию программы и выйти"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Задать фильтр; например, «установленные»"
+msgstr "Задать фильтр, например «installed»"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "Установить пакеты без запроса подтверждения"
+msgstr "Установить пакеты без подтверждения"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "Подготовить операцию, только загрузив пакеты"
+msgstr "Выполнить транзакцию, только загрузив пакеты"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Разрешить понижать версии пакетов во время операции"
+msgstr "Разрешить понижение версий пакетов во время транзакции"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Разрешить переустанавливать пакеты во время операции"
+msgstr "Разрешить переустановку пакетов во время транзакции"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Выполнить команду, используя свободную часть сетевого подключения, и при меньших затратах энергии"
+msgstr "Выполнить команду, используя простои в сетевом трафике, и при меньших затратах энергии"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
@@ -407,15 +408,15 @@ msgstr "Вывести на экран в простом формате без �
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Максимальное время хранения метаданных в кэше. Используйте -1 для «никогда»."
+msgstr "Максимальное время хранения метаданных в кэше. -1 — не ограничено."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "Разрешить установку пакетов из ненадежных источников."
+msgstr "Разрешить установку пакетов из ненадёжных источников."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr "Не удалось разобрать данные командной строки"
+msgstr "Не удалось разобрать аргументы командной строки"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
@@ -424,45 +425,45 @@ msgstr "Не удалось соединиться с PackageKit"
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "Указанный фильтр некорректен"
+msgstr "Указан неправильный фильтр"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "Необходимо указать тип поиска, например: «имя»"
+msgstr "Укажите тип поиска, например «name»"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "Необходимо указать поисковое слово"
+msgstr "Укажите поисковое слово"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "Необходимо указать название пакета для установки"
+msgstr "Укажите название устанавливаемого пакета"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "Необходимо указать имя файла для установки"
+msgstr "Укажите имя файла для установки"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Необходимо указать тип, key_id и package_id"
+msgstr "Укажите тип, key_id и package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr "Необходимо название пакета для удаления"
+msgstr "Укажите название удаляемого пакета"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Необходимо указать каталог назначения и названия пакетов"
+msgstr "Укажите целевой каталог и названия пакетов для загрузки"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -472,48 +473,48 @@ msgstr "Каталог не найден"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "Необходим идентификатор лицензии (eula-id)"
+msgstr "Укажите идентификатор лицензии (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "Необходимо указать название пакета для разрешения"
+msgstr "Укажите название пакета, для которого выполнить сопоставление"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "Необходимо указать название репозитория"
+msgstr "Укажите название репозитория"
 
 msgid "A repo name, parameter and value are required"
-msgstr "Необходимо указать имя, параметр и значение репозитория"
+msgstr "Укажите название репозитория, параметр и значение"
 
 msgid "A repo id and autoremove required"
-msgstr "Необходимо указать идентификатор репозитория и autoremove"
+msgstr "Укажите идентификатор репозитория и autoremove"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "Необходимо указать действие, например: «update-packages»"
+msgstr "Укажите действие, например «update-packages»"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr "Необходимо указать правильную роль"
+msgstr "Укажите корректную роль"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "Необходимо указать название пакета"
+msgstr "Укажите название пакета"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "Необходима строка, указывающая на пакет"
+msgstr "Укажите строку с предоставляемыми возможностями"
 
 msgid "A filename is required"
-msgstr "Необходимо указать имя файла"
+msgstr "Укажите имя файла"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
@@ -525,7 +526,7 @@ msgstr "Автор"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr "Вам необходимо указать создаваемый файл списка"
+msgstr "Необходимо указать создаваемый файл со списком"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -538,14 +539,14 @@ msgstr "Файл уже существует: %s"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "Опция '%s' не поддерживается"
+msgstr "Параметр «%s» не поддерживается"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "Действие не удалось"
+msgstr "Команда завершилась с ошибкой"
 
 msgid "Failed to get daemon state"
-msgstr "Не удалось получить состояние  фоновой службы"
+msgstr "Не удалось получить состояние службы"
 
 msgid "Failed to get properties"
 msgstr "Не удалось получить свойства"
@@ -555,41 +556,46 @@ msgid "PackageKit Monitor"
 msgstr "Монитор PackageKit"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Установка обновления системы"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
-msgstr "Устанавливаются обновления"
+msgstr "Установка обновлений"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "Выполняется перезагрузка после установки обновлений…"
+msgstr "Перезагрузка после установки обновлений…"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr "Выполняется выключение после установки обновлений…"
+msgstr "Выключение после установки обновлений…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr "Установка обновлений; это может занять некоторое время…"
+msgstr "Установка обновлений. Это может занять некоторое время…"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "Установка обновлений системы; это может занять некоторое время…"
+msgstr "Установка обновления системы. Это может занять некоторое время…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
-msgstr "Загрузка подробностей об источниках ПО."
+msgstr "Загрузка подробностей об источниках приложений."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Загрузка списка файлов (это может занять некоторое время)"
+msgstr "Загрузка списков файлов (это может занять некоторое время)."
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Ожидание разблокирования пакетного менеджера."
+msgstr "Ожидание разблокировки менеджера пакетов."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "Загрузка списка пакетов"
+msgstr "Загрузка списка пакетов."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -628,7 +634,7 @@ msgstr "Аналогичные команды:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "Пожалуйста, выберите команду для запуска"
+msgstr "Выберите команду для запуска"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
@@ -638,7 +644,7 @@ msgstr "Пакет, предоставляющий этот файл:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Установить пакет '%s' предоставляющий команду '%s'?"
+msgstr "Установить пакет «%s», предоставляющий команду «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
@@ -651,14 +657,14 @@ msgstr "Подходящие пакеты:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "Пожалуйста, выберите пакет для установки:"
+msgstr "Выберите пакет для установки"
 
 msgid "User aborted selection"
 msgstr "Выбор прерван пользователем"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Пожалуйста, введите число от 1 до %i"
+msgstr "Введите число от 1 до %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
@@ -666,7 +672,7 @@ msgstr "Неизвестное состояние"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "Начало"
+msgstr "Запуск"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
@@ -700,7 +706,7 @@ msgstr "Установка пакетов"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "Обновление списка ПО"
+msgstr "Обновление списка приложений"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -713,7 +719,7 @@ msgstr "Очистка пакетов"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "Устаревшие пакеты"
+msgstr "Устаревание пакетов"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
@@ -743,7 +749,7 @@ msgstr "Завершено"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr "Прерывание"
+msgstr "Отмена"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
@@ -817,11 +823,11 @@ msgstr "Копирование файлов"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Запуск обработчиков"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "Показать отладочную информацию для всех файлов"
+msgstr "Показывать отладочную информацию для всех файлов"
 
 msgid "Debugging Options"
 msgstr "Параметры отладки"
@@ -847,7 +853,7 @@ msgstr "Безопасность"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Устранение ошибок"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -855,20 +861,20 @@ msgstr "Улучшение"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "Заблокирован"
+msgstr "Заблокированное"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "Установленный"
+msgstr "Установлен"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "Доступный"
+msgstr "Доступен"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr "Недоступно"
+msgstr "Не доступен"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -902,23 +908,23 @@ msgstr "Переустановка"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "Загружено"
+msgstr "Загружен"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "Удалено"
+msgstr "Удалён"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "Очищено"
+msgstr "Очищен"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "Устарело"
+msgstr "Устарел"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "Переустановлено"
+msgstr "Переустановлен"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -946,11 +952,11 @@ msgstr "Получение обновлений"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "Поиск по особенностям"
+msgstr "Поиск по подробной информации"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "Поиск по имени файла"
+msgstr "Поиск по файлу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
@@ -981,12 +987,12 @@ msgid "Getting repositories"
 msgstr "Получение репозиториев"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "Подключение репозитория"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "Настройка данных"
+msgstr "Установка данных"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
@@ -1002,7 +1008,7 @@ msgstr "Получение списка файлов"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Получение содержимого"
+msgstr "Получение возможностей"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
@@ -1026,7 +1032,7 @@ msgstr "Получение категорий"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "Получение операций"
+msgstr "Получение транзакций"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
@@ -1035,20 +1041,20 @@ msgstr "Получение обновлений системы"
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "Желаете разрешить установку неподписанного ПО?"
+msgstr "Разрешить установку приложений без подписи?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "Неподписанное ПО установлено не будет."
+msgstr "Приложения без подписи установлены не будет."
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "Необходима подпись источника ПО"
+msgstr "Необходима подпись источника приложений"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "Название источника ПО"
+msgstr "Название источника приложений"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
@@ -1056,7 +1062,7 @@ msgstr "URL ключа"
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
-msgstr "Ключ пользователя"
+msgstr "Пользователь ключа"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
@@ -1064,7 +1070,7 @@ msgstr "Идентификатор ключа"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr "Метка ключа"
+msgstr "Отпечаток ключа"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
@@ -1072,7 +1078,7 @@ msgstr "Время создания ключа"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr "Вы принимаете эту подпись?"
+msgstr "Принять эту подпись?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
@@ -1089,7 +1095,7 @@ msgstr "Соглашение"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "Принимаете это соглашение?"
+msgstr "Принять это соглашение?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
@@ -1097,15 +1103,15 @@ msgstr "Соглашение не было принято."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr "Требуется сменить носитель информации"
+msgstr "Требуется сменить носитель"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr "Тип носителя информации"
+msgstr "Тип носителя"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr "Метка носителя информации"
+msgstr "Метка носителя"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
@@ -1113,11 +1119,11 @@ msgstr "Текст"
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "Пожалуйста, вставьте верный носитель информации"
+msgstr "Вставьте нужный носитель"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr "Верный носитель информации не был вставлен."
+msgstr "Нужный носитель не был вставлен."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
@@ -1137,7 +1143,7 @@ msgstr "Следующие пакеты должны быть переустан
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "Следующие пакеты должны быть понижены версией:"
+msgstr "Следующие пакеты должны быть понижены в версиях:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
@@ -1150,11 +1156,11 @@ msgstr "Следующие пакеты получены из ненадёжны
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "Продолжать с изменениями?"
+msgstr "Продолжить с этими изменениями?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "Операция не была продолжена"
+msgstr "Транзакция не была продолжена."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1165,7 +1171,7 @@ msgstr "Отменить внешнюю задачу"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Для отмены задачи, запущенной не Вами, требуется аутентификация"
+msgstr "Для отмены задачи, запущенной не вами, требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1176,7 +1182,7 @@ msgid "Install signed package"
 msgstr "Установить подписанный пакет"
 
 msgid "Authentication is required to install software"
-msgstr "Для установки ПО требуется аутентификация"
+msgstr "Для установки приложений требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1187,7 +1193,7 @@ msgid "Install untrusted local file"
 msgstr "Установить локальный файл из ненадёжных источниов"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "Для установки ПО из ненадёжных источников требуется аутентификация"
+msgstr "Для установки приложений из ненадёжных источников требуется аутентификация"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1199,7 +1205,7 @@ msgid "Install already installed package again"
 msgstr "Установить уже установленный пакет снова"
 
 msgid "Authentication is required to reinstall software"
-msgstr "Для переустановки ПО требуется аутентификация"
+msgstr "Для переустановки приложений требуется аутентификация"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1211,7 +1217,7 @@ msgid "Install older version of installed package"
 msgstr "Установить более старую версию уже установленного пакета"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Для понижения версии ПО требуется аутентификация"
+msgstr "Для понижения версии приложений требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1219,12 +1225,12 @@ msgstr "Для понижения версии ПО требуется ауте�
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr "Доверять ключу, используемому для подписи ПО"
+msgstr "Доверять ключу, используемому для подписи приложений"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "Для признания ключа, используемого для подписи ПО как надёжного, требуется аутентификация"
+msgstr "Для признания ключа, используемого для подписи приложений как надёжного, требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1250,7 +1256,7 @@ msgid "Remove package"
 msgstr "Удалить пакет"
 
 msgid "Authentication is required to remove software"
-msgstr "Для удаления ПО требуется аутентификация"
+msgstr "Для удаления приложений требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1259,20 +1265,20 @@ msgstr "Для удаления ПО требуется аутентификац
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr "Обновление ПО"
+msgstr "Обновление приложений"
 
 msgid "Authentication is required to update software"
-msgstr "Для обновления ПО требуется аутентификация"
+msgstr "Для обновления приложений требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software source parameters"
-msgstr "Изменить параметры источника ПО"
+msgstr "Изменить параметры источника приложений"
 
 msgid "Authentication is required to change software source parameters"
-msgstr "Для изменения параметров источника ПО необходима аутентификация"
+msgstr "Для изменения параметров источника приложений необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1287,12 +1293,12 @@ msgstr "Для обновления системных источников не
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "Задать прокси-сервер"
+msgstr "Указать прокси-сервер"
 
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "Для настройки прокси-сервера, используемого для загрузки ПО, необходима аутентификация"
+msgstr "Для настройки прокси-сервера, используемого для загрузки приложений, необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1301,7 +1307,7 @@ msgstr "Для настройки прокси-сервера, использу�
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr "Перезагрузка устройства"
+msgstr "Перезагрузить устройство"
 
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "Для перезагрузки устройства с новым драйвером необходима аутентификация"
@@ -1321,10 +1327,10 @@ msgstr "Для обновления операционной системы тр
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr "Восстановление системы"
+msgstr "Восстановить систему"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Для восстановления установленного ПО необходима аутентификация"
+msgstr "Для восстановления установленных приложений необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
@@ -1355,7 +1361,7 @@ msgstr "Команда не найдена, корректные команды:
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Используемый модуль обработки (backend) пакетной системы; например, «заглушка»"
+msgstr "Используемый движок пакетной системы, например «dummy»"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
@@ -1371,11 +1377,11 @@ msgstr "Поиск по названиям"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr "Поиск по особенностям"
+msgstr "Поиск по подробной информации"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr "Поиск по именам файлов"
+msgstr "Поиск по файлам"
 
 #. TRANSLATORS: command description
 msgid "Install package"
@@ -1383,7 +1389,7 @@ msgstr "Установить пакет"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr "Задать параметры репозитория"
+msgstr "Указать параметры репозитория"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
@@ -1399,11 +1405,11 @@ msgstr "Не удалось загрузить конфигурационный 
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr "Не удалось загрузить модуль обработки (backend)"
+msgstr "Не удалось загрузить движок"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr "Не удалось выгрузить модуль обработки (backend)"
+msgstr "Не удалось выгрузить движок"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
@@ -1415,7 +1421,7 @@ msgstr "Показать версию и выйти"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "Выйти после недолгой задержки"
+msgstr "Выйти после небольшой задержки"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
@@ -1431,7 +1437,7 @@ msgstr "Служба PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "ПО из ненадёжного источника."
+msgstr "Приложения из ненадёжного источника."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Не обновляйте этот пакет, если не уверены в том, что это безопасно."

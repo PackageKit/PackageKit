@@ -1,3 +1,34 @@
+Version 1.1.7
+~~~~~~~~~~~~~~
+Released: 2017-09-11
+
+Libraries:
+ - Add missing context pushes and pops (David Hewitt)
+
+Backends:
+ - alpm: Read the session proxy settings for each job (Xiang Fan)
+ - aptcc: Ignore -dbg for codec queries (Iain Lane)
+ - aptcc: Support "()(64bit)" (Iain Lane)
+ - dnf: Add fedora-cisco-openh264 repos to supported repos list (Neal Gompa)
+ - dnf: Fix an inverted condition that led to frequent crashes (Kalev Lember)
+ - katja: Compile backend with C++14 (Eugen Wissner)
+ - katja: declare download() and install() in the iface (Eugen Wissner)
+ - katja: Fix double g_object_unref (Eugen Wissner)
+ - katja: katja_pkg_is_installed -> katja::isInstalled (Eugen Wissner)
+ - katja: Move all utils into the backend namespace (Eugen Wissner)
+ - katja: Move GLib class functionality to C++ classes (Eugen Wissner)
+ - katja: Put initialized repos in std::forward_list (Eugen Wissner)
+ - zypp: Fix stack smashing on 32-bit system (Jonathan Kang)
+
+New Features:
+ - Add the ability to install updates on reboot in PackageKit-cron (Sander Hoentjen)
+
+Bugfixes:
+ - Don't search for NetworkManager or ConnMan anymore (Matthias Klumpp)
+ - Effectively check for previous proxy entries (Xiang Fan)
+ - Fix proxy environment variables (Xiang Fan)
+ - Show a different progress message for system upgrades (Kalev Lember)
+
 Version 1.1.6
 ~~~~~~~~~~~~~~
 Released: 2017-06-07

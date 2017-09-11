@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2016
+# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2017
 # Richard Hughes <richard@hughsie.com>, 2011
 # Ville-Pekka Vainio <vpvainio@iki.fi>, 2011
 # Ville Skyttä <ville.skytta@iki.fi>, 2011
@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/freedesktop/packagekit/language/fi/)\n"
 "MIME-Version: 1.0\n"
@@ -404,7 +404,7 @@ msgstr "Suurin metatietojen välimuistin ikä. Arvo -1 tarkoittaa ”ei koskaan�
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr ""
+msgstr "Salli ei-luotetut paketit asennettavaksi."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -548,7 +548,12 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit-tarkkailija"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Asennetaan järjestelmäpäivitystä"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Asennetaan päivityksiä"
 
@@ -566,7 +571,7 @@ msgstr "Asennetaan päivityksiä, tämä saattaa kestää hetken..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Asennetaan järjestelmäpäivitystä, tässä saattaa kestää hetki..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software sources."
@@ -840,7 +845,7 @@ msgstr "Turvallisuus"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Virhekorjaus"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -974,8 +979,8 @@ msgid "Getting repositories"
 msgstr "Haetaan asennuslähteitä"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "Otetaan asennuslähde käyttöön"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1180,7 +1185,7 @@ msgid "Install untrusted local file"
 msgstr "Asenna paikallinen tiedosto, johon ei luoteta"
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Tunnistautuminen vaaditaan ei-luotettavan ohjelmiston asentamiseksi"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1327,7 +1332,7 @@ msgid "Trigger offline updates"
 msgstr ""
 
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Tunnistautuminen vaaditaan päivitysten käynnistämiseksi yhteydettömässä tilassa"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is

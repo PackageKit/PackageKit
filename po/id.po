@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Andika Triwidada <andika@gmail.com>, 2011-2016
+# Andika Triwidada <andika@gmail.com>, 2011-2017
 # Dichi Al Faridi <dichi@alfaridi.info>, 2010
 # dirgita <dirgitadevina@yahoo.co.id>, 2014
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-07 16:15+0100\n"
-"PO-Revision-Date: 2017-06-07 15:15+0000\n"
+"POT-Creation-Date: 2017-09-11 13:07+0100\n"
+"PO-Revision-Date: 2017-09-11 12:07+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/freedesktop/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
@@ -548,7 +548,12 @@ msgid "PackageKit Monitor"
 msgstr "PackageKit Monitor"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Sedang Memasang Peningkatan Sistem"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Sedang Memasang Pemutakhiran"
 
@@ -810,7 +815,7 @@ msgstr "Menyalin berkas"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Kait yang berjalan"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -840,7 +845,7 @@ msgstr "Keamanan"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Perbaikan bug"
+msgstr ""
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -974,8 +979,8 @@ msgid "Getting repositories"
 msgstr "Sedang mengambil repositori"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Enabling repository"
-msgstr "Sedang mengaktifkan repositori"
+msgid "Modifying repository"
+msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
