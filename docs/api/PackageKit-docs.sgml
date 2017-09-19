@@ -94,14 +94,11 @@
       </para>
     </partintro>
     <xi:include href="xml/pk-bitfield.xml"/>
-    <xi:include href="xml/pk-client-sync.xml"/>
     <xi:include href="xml/pk-common.xml"/>
-    <xi:include href="xml/pk-control-sync.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
     <xi:include href="xml/pk-offline.xml"/>
     <xi:include href="xml/pk-package-ids.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>
-    <xi:include href="xml/pk-task-sync.xml"/>
   </reference>
 
   <index id="api-index-0-5-0">

@@ -106,7 +106,12 @@ include $(top_srcdir)/gtk-doc.make
 EXTRA_DIST += version.xml.in
 
 CLEANFILES +=						\
-	*.txt						\
+	*-decl.txt					\
+	*-decl-list.txt					\
+	*-overrides.txt					\
+	*-undeclared.txt				\
+	*-undocumented.txt				\
+	*-unused.txt					\
 	*.types						\
 	*.args						\
 	*.hierarchy					\
