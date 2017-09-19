@@ -73,6 +73,7 @@
     <xi:include href="xml/pk-error.xml"/>
     <xi:include href="xml/pk-eula-required.xml"/>
     <xi:include href="xml/pk-files.xml"/>
+    <xi:include href="xml/pk-item-progress.xml"/>
     <xi:include href="xml/pk-media-change-required.xml"/>
     <xi:include href="xml/pk-package-sack.xml"/>
     <xi:include href="xml/pk-package.xml"/>
@@ -121,6 +122,10 @@
     <title>Index of new symbols in 0.5.5</title>
     <xi:include href="xml/api-index-0.5.5.xml"/>
   </index>
+  <index id="api-index-0-6-0">
+    <title>Index of new symbols in 0.6.0</title>
+    <xi:include href="xml/api-index-0.6.0.xml"/>
+  </index>
   <index id="api-index-0-6-1">
     <title>Index of new symbols in 0.6.1</title>
     <xi:include href="xml/api-index-0.6.1.xml"/>
@@ -168,6 +173,10 @@
   <index id="api-index-0-8-1">
     <title>Index of new symbols in 0.8.1</title>
     <xi:include href="xml/api-index-0.8.1.xml"/>
+  </index>
+  <index id="api-index-0-8-2">
+    <title>Index of new symbols in 0.8.2</title>
+    <xi:include href="xml/api-index-0.8.2.xml"/>
   </index>
   <index id="api-index-0-8-6">
     <title>Index of new symbols in 0.8.6</title>
