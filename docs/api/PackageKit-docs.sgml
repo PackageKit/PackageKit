@@ -228,5 +228,9 @@
     <title>Index of new symbols in 1.1.2</title>
     <xi:include href="xml/api-index-1.1.2.xml"/>
   </index>
+  <index id="api-index-1-1-8">
+    <title>Index of new symbols in 1.1.8</title>
+    <xi:include href="xml/api-index-1.1.8.xml"/>
+  </index>
 </book>
 

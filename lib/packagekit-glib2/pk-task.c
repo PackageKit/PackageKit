@@ -652,7 +652,7 @@ pk_task_accept_eulas (PkTaskState *state)
 {
 	PkEulaRequired *item;
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *eula_id = NULL;
+	const gchar *eula_id;
 	g_autoptr(GPtrArray) array = NULL;
 
 	/* get results */
@@ -677,9 +677,7 @@ pk_task_accept_eulas (PkTaskState *state)
 
 	/* get first item of data */
 	item = g_ptr_array_index (array, 0);
-	g_object_get (item,
-		      "eula-id", &eula_id,
-		      NULL);
+	eula_id = pk_eula_required_get_eula_id (item);
 
 	/* do new async method */
 	pk_client_accept_eula_async (PK_CLIENT(state->task), eula_id,

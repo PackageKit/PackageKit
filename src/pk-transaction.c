@@ -1411,10 +1411,10 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 				 PkEulaRequired *item,
 				 PkTransaction *transaction)
 {
-	g_autofree gchar *eula_id = NULL;
-	g_autofree gchar *package_id = NULL;
-	g_autofree gchar *vendor_name = NULL;
-	g_autofree gchar *license_agreement = NULL;
+	const gchar *eula_id;
+	const gchar *package_id;
+	const gchar *vendor_name;
+	const gchar *license_agreement;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1423,12 +1423,10 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 	pk_results_add_eula_required (transaction->priv->results, item);
 
 	/* get data */
-	g_object_get (item,
-		      "eula-id", &eula_id,
-		      "package-id", &package_id,
-		      "vendor-name", &vendor_name,
-		      "license-agreement", &license_agreement,
-		      NULL);
+	eula_id = pk_eula_required_get_eula_id (item);
+	package_id = pk_eula_required_get_package_id (item);
+	vendor_name = pk_eula_required_get_vendor_name (item);
+	license_agreement = pk_eula_required_get_license_agreement (item);
 
 	/* emit */
 	g_debug ("emitting eula-required %s, %s, %s, %s",

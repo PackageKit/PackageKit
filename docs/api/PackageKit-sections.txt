@@ -433,6 +433,10 @@ pk_error_get_type
 <FILE>pk-eula-required</FILE>
 <TITLE>PkEulaRequired</TITLE>
 pk_eula_required_new
+pk_eula_required_get_eula_id
+pk_eula_required_get_license_agreement
+pk_eula_required_get_package_id
+pk_eula_required_get_vendor_name
 <SUBSECTION Standard>
 PK_EULA_REQUIRED
 PK_EULA_REQUIRED_CLASS

@@ -66,6 +66,10 @@ struct _PkEulaRequiredClass
 
 GType		 pk_eula_required_get_type	 	(void);
 PkEulaRequired	*pk_eula_required_new			(void);
+const gchar	*pk_eula_required_get_eula_id		(PkEulaRequired *eula_required);
+const gchar	*pk_eula_required_get_package_id	(PkEulaRequired *eula_required);
+const gchar	*pk_eula_required_get_vendor_name	(PkEulaRequired *eula_required);
+const gchar	*pk_eula_required_get_license_agreement	(PkEulaRequired *eula_required);
 
 G_END_DECLS
 

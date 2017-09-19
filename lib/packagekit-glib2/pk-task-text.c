@@ -171,12 +171,7 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
-	gchar *printable = NULL;
 	GPtrArray *array;
-	PkEulaRequired *item;
-	gchar *package_id;
-	gchar *vendor_name;
-	gchar *license_agreement;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -188,15 +183,13 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	/* get data */
 	array = pk_results_get_eula_required_array (results);
 	for (i = 0; i < array->len; i++) {
+		PkEulaRequired *item;
+		g_autofree gchar *printable = NULL;
+
 		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "package-id", &package_id,
-			      "vendor-name", &vendor_name,
-			      "license-agreement", &license_agreement,
-			      NULL);
 
 		/* create printable */
-		printable = pk_package_id_to_printable (package_id);
+		printable = pk_package_id_to_printable (pk_eula_required_get_package_id (item));
 
 		/* TRANSLATORS: this is another name for a software licence that has to be read before installing */
 		g_print ("%s\n", _("End user licence agreement required"));
@@ -205,15 +198,10 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 		g_print (" %s: %s\n", _("Package"), printable);
 
 		/* TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA */
-		g_print (" %s: %s\n", _("Vendor"), vendor_name);
+		g_print (" %s: %s\n", _("Vendor"), pk_eula_required_get_vendor_name (item));
 
 		/* TRANSLATORS: the EULA text itself (long and boring) */
-		g_print (" %s: %s\n", _("Agreement"), license_agreement);
-
-		g_free (printable);
-		g_free (package_id);
-		g_free (vendor_name);
-		g_free (license_agreement);
+		g_print (" %s: %s\n", _("Agreement"), pk_eula_required_get_license_agreement (item));
 	}
 
 	/* TRANSLATORS: ask the user if they've read and accepted the EULA */

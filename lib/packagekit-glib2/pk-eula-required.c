@@ -62,6 +62,74 @@ enum {
 
 G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
 
+/**
+ * pk_eula_required_get_eula_id:
+ * @eula_required: a valid #PkEulaRequired instance.
+ *
+ * Get the ID for this EULA
+ *
+ * Return value: an ID
+ *
+ * Since: 1.1.8
+ */
+const gchar *
+pk_eula_required_get_eula_id (PkEulaRequired *eula_required)
+{
+	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
+	return eula_required->priv->eula_id;
+}
+
+/**
+ * pk_eula_required_get_package_id:
+ * @eula_required: a valid #PkEulaRequired instance.
+ *
+ * Get the PackageID this EULA is for
+ *
+ * Return value: a PackageID
+ *
+ * Since: 1.1.8
+ */
+const gchar *
+pk_eula_required_get_package_id (PkEulaRequired *eula_required)
+{
+	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
+	return eula_required->priv->package_id;
+}
+
+/**
+ * pk_eula_required_get_vendor_name:
+ * @eula_required: a valid #PkEulaRequired instance.
+ *
+ * Get the vendor this EULA is from.
+ *
+ * Return value: license vendor name
+ *
+ * Since: 1.1.8
+ */
+const gchar *
+pk_eula_required_get_vendor_name (PkEulaRequired *eula_required)
+{
+	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
+	return eula_required->priv->vendor_name;
+}
+
+/**
+ * pk_eula_required_get_license_agreement:
+ * @eula_required: a valid #PkEulaRequired instance.
+ *
+ * Get the text of the license agreement.
+ *
+ * Return value: license agreement text
+ *
+ * Since: 1.1.8
+ **/
+const gchar *
+pk_eula_required_get_license_agreement (PkEulaRequired *eula_required)
+{
+	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
+	return eula_required->priv->license_agreement;
+}
+
 /*
  * pk_eula_required_get_property:
  **/
