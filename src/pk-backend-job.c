@@ -1281,7 +1281,7 @@ pk_backend_job_details (PkBackendJob *job,
 /**
  * pk_backend_job_files:
  *
- * package_id is NULL when we are using this as a calback from DownloadPackages
+ * @package_id is %NULL when we are using this as a calback from DownloadPackages
  **/
 void
 pk_backend_job_files (PkBackendJob *job,

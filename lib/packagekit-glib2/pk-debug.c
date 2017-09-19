@@ -33,7 +33,9 @@ static gboolean _console = FALSE;
 /**
  * pk_debug_is_verbose:
  *
- * Returns: TRUE if we have debugging enabled
+ * Check if verbose debugging is enabled.
+ *
+ * Returns: %TRUE if we have debugging enabled
  **/
 gboolean
 pk_debug_is_verbose (void)
@@ -49,7 +51,7 @@ pk_debug_is_verbose (void)
 }
 
 
-/**
+/*
  * pk_debug_ignore_cb:
  **/
 static void
@@ -70,7 +72,7 @@ pk_debug_ignore_cb (const gchar *log_domain, GLogLevelFlags log_level,
 
 #define PK_DEBUG_LOG_DOMAIN_LENGTH	20
 
-/**
+/*
  * pk_debug_handler_cb:
  **/
 static void
@@ -128,7 +130,7 @@ out:
 	g_mutex_unlock (&mutex);
 }
 
-/**
+/*
  * pk_debug_pre_parse_hook:
  */
 static gboolean
@@ -148,6 +150,7 @@ pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer 
 
 /**
  * pk_debug_add_log_domain:
+ * @log_domain:
  */
 void
 pk_debug_add_log_domain (const gchar *log_domain)
@@ -170,6 +173,9 @@ pk_debug_add_log_domain (const gchar *log_domain)
 
 /**
  * pk_debug_set_verbose:
+ * @verbose: %TRUE if verbose debugging should be enabled.
+ *
+ * Set if verbose debugging is enabled.
  */
 void
 pk_debug_set_verbose (gboolean verbose)
@@ -178,7 +184,7 @@ pk_debug_set_verbose (gboolean verbose)
 	_console = (isatty (fileno (stdout)) == 1);
 }
 
-/**
+/*
  * pk_debug_post_parse_hook:
  */
 static gboolean

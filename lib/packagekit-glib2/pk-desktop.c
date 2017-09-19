@@ -53,7 +53,7 @@ static gpointer pk_desktop_object = NULL;
  * pk_desktop_get_files_for_package:
  * @desktop: a valid #PkDesktop instance
  * @package: the package name, e.g. "gnome-power-manager"
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Return all desktop files owned by a package, regardless if they are shown
  * in the main menu or not.
@@ -76,7 +76,7 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GErr
  * pk_desktop_get_shown_for_package:
  * @desktop: a valid #PkDesktop instance
  * @package: the package name, e.g. "gnome-power-manager"
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Return all desktop files owned by a package that would be shown in a menu,
  * i.e are an application
@@ -99,7 +99,7 @@ pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GErr
  * pk_desktop_get_package_for_file:
  * @desktop: a valid #PkDesktop instance
  * @filename: a fully qualified filename
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Returns the package name that owns the desktop file. Fast.
  *
@@ -120,11 +120,12 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GErr
 /**
  * pk_desktop_open_database:
  * @desktop: a valid #PkDesktop instance
+ * @error: a #GError to put the error code and message in, or %NULL
+ *
+ * This method is unused and will be removed next time the library
+ * soname changes!
  *
  * Return value: %TRUE if opened correctly
- *
- * NOTE: This method is unused and will be removed next time the library
- * soname changes!
  *
  * Since: 0.5.3
  **/
@@ -134,7 +135,7 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 	return TRUE;
 }
 
-/**
+/*
  * pk_desktop_class_init:
  **/
 static void
@@ -145,7 +146,7 @@ pk_desktop_class_init (PkDesktopClass *klass)
 	g_type_class_add_private (klass, sizeof (PkDesktopPrivate));
 }
 
-/**
+/*
  * pk_desktop_init:
  **/
 static void
@@ -154,7 +155,7 @@ pk_desktop_init (PkDesktop *desktop)
 	desktop->priv = PK_DESKTOP_GET_PRIVATE (desktop);
 }
 
-/**
+/*
  * pk_desktop_finalize:
  **/
 static void

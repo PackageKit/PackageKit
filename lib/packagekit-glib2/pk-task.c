@@ -108,7 +108,7 @@ G_DEFINE_TYPE (PkTask, pk_task, PK_TYPE_CLIENT)
 
 static void pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state);
 
-/**
+/*
  * pk_task_generate_request_id:
  **/
 static guint
@@ -118,7 +118,7 @@ pk_task_generate_request_id (void)
 	return ++id;
 }
 
-/**
+/*
  * pk_task_find_by_request:
  **/
 static PkTaskState *
@@ -140,7 +140,7 @@ pk_task_find_by_request (PkTask *task, guint request)
 	return NULL;
 }
 
-/**
+/*
  * pk_task_generic_state_finish:
  **/
 static void
@@ -184,7 +184,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_slice_free (PkTaskState, state);
 }
 
-/**
+/*
  * pk_task_do_async_action:
  **/
 static void
@@ -318,7 +318,7 @@ pk_task_do_async_action (PkTaskState *state)
 	}
 }
 
-/**
+/*
  * pk_task_package_filter_cb:
  **/
 static gboolean
@@ -337,7 +337,7 @@ pk_task_package_filter_cb (PkPackage *package, gpointer user_data)
 
 static void pk_task_do_async_simulate_action (PkTaskState *state);
 
-/**
+/*
  * pk_task_simulate_ready_cb:
  **/
 static void
@@ -421,7 +421,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	klass->simulate_question (state->task, state->request, state->results);
 }
 
-/**
+/*
  * pk_task_do_async_simulate_action:
  **/
 static void
@@ -507,7 +507,7 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 	}
 }
 
-/**
+/*
  * pk_task_install_signatures_ready_cb:
  **/
 static void
@@ -552,7 +552,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	pk_task_do_async_action (state);
 }
 
-/**
+/*
  * pk_task_install_signatures:
  **/
 static void
@@ -599,7 +599,7 @@ pk_task_install_signatures (PkTaskState *state)
 					   (GAsyncReadyCallback) pk_task_install_signatures_ready_cb, state);
 }
 
-/**
+/*
  * pk_task_accept_eulas_ready_cb:
  **/
 static void
@@ -644,7 +644,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	pk_task_do_async_action (state);
 }
 
-/**
+/*
  * pk_task_accept_eulas:
  **/
 static void
@@ -687,7 +687,7 @@ pk_task_accept_eulas (PkTaskState *state)
 				     (GAsyncReadyCallback) pk_task_accept_eulas_ready_cb, state);
 }
 
-/**
+/*
  * pk_task_repair_ready_cb:
  **/
 static void
@@ -733,7 +733,7 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState 
 	pk_task_do_async_action (state);
 }
 
-/**
+/*
  * pk_task_user_accepted_idle_cb:
  **/
 static gboolean
@@ -773,6 +773,10 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 
 /**
  * pk_task_user_accepted:
+ * @task:
+ * @request:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -796,7 +800,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 	return TRUE;
 }
 
-/**
+/*
  * pk_task_user_declined_idle_cb:
  **/
 static gboolean
@@ -824,6 +828,10 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 
 /**
  * pk_task_user_declined:
+ * @task:
+ * @request:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -847,7 +855,7 @@ pk_task_user_declined (PkTask *task, guint request)
 	return TRUE;
 }
 
-/**
+/*
  * pk_task_retry_cancelled_transaction_cb:
  **/
 static gboolean
@@ -859,7 +867,7 @@ pk_task_retry_cancelled_transaction_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
+/*
  * pk_task_ready_cb:
  **/
 static void
@@ -1221,7 +1229,7 @@ pk_task_upgrade_system_async (PkTask *task,
  * @user_data: the data to pass to @callback_ready
  *
  * Remove a package (optionally with dependancies) from the system.
- * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *
  * Since: 0.5.2
@@ -2043,7 +2051,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback_ready (scope async): the function to run on completion
+ * @callback_ready: (scope async): the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the categories available.
@@ -2488,7 +2496,7 @@ pk_task_get_allow_reinstall (PkTask *task)
 	return task->priv->allow_reinstall;
 }
 
-/**
+/*
  * pk_task_get_property:
  **/
 static void
@@ -2519,7 +2527,7 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 	}
 }
 
-/**
+/*
  * pk_task_set_property:
  **/
 static void
@@ -2550,7 +2558,7 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 	}
 }
 
-/**
+/*
  * pk_task_class_init:
  **/
 static void
@@ -2615,7 +2623,7 @@ pk_task_class_init (PkTaskClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
 
-/**
+/*
  * pk_task_init:
  **/
 static void
@@ -2628,7 +2636,7 @@ pk_task_init (PkTask *task)
 	task->priv->allow_downgrade = FALSE;
 }
 
-/**
+/*
  * pk_task_finalize:
  **/
 static void

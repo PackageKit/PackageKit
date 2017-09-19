@@ -282,7 +282,7 @@ pk_update_detail_get_updated (PkUpdateDetail *update_detail)
 	return update_detail->priv->updated;
 }
 
-/**
+/*
  * pk_update_detail_get_property:
  **/
 static void
@@ -334,7 +334,7 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_update_detail_set_property:
  **/
 static void
@@ -396,7 +396,7 @@ pk_update_detail_set_property (GObject *object, guint prop_id, const GValue *val
 	}
 }
 
-/**
+/*
  * pk_update_detail_class_init:
  **/
 static void
@@ -531,7 +531,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	g_type_class_add_private (klass, sizeof (PkUpdateDetailPrivate));
 }
 
-/**
+/*
  * pk_update_detail_init:
  **/
 static void
@@ -540,7 +540,7 @@ pk_update_detail_init (PkUpdateDetail *update_detail)
 	update_detail->priv = PK_UPDATE_DETAIL_GET_PRIVATE (update_detail);
 }
 
-/**
+/*
  * pk_update_detail_finalize:
  **/
 static void
@@ -566,7 +566,7 @@ pk_update_detail_finalize (GObject *object)
 /**
  * pk_update_detail_new:
  *
- * Return value: a new PkUpdateDetail object.
+ * Return value: a new #PkUpdateDetail object.
  *
  * Since: 0.5.4
  **/

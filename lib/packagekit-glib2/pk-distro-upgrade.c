@@ -115,7 +115,7 @@ pk_distro_upgrade_get_state (PkDistroUpgrade *distro_upgrade)
 }
 
 
-/**
+/*
  * pk_distro_upgrade_get_property:
  **/
 static void
@@ -140,7 +140,7 @@ pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, G
 	}
 }
 
-/**
+/*
  * pk_distro_upgrade_set_property:
  **/
 static void
@@ -167,7 +167,7 @@ pk_distro_upgrade_set_property (GObject *object, guint prop_id, const GValue *va
 	}
 }
 
-/**
+/*
  * pk_distro_upgrade_class_init:
  **/
 static void
@@ -212,7 +212,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	g_type_class_add_private (klass, sizeof (PkDistroUpgradePrivate));
 }
 
-/**
+/*
  * pk_distro_upgrade_init:
  **/
 static void
@@ -221,7 +221,7 @@ pk_distro_upgrade_init (PkDistroUpgrade *distro_upgrade)
 	distro_upgrade->priv = PK_DISTRO_UPGRADE_GET_PRIVATE (distro_upgrade);
 }
 
-/**
+/*
  * pk_distro_upgrade_finalize:
  **/
 static void

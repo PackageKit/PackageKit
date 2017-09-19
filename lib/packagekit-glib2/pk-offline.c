@@ -31,9 +31,18 @@
 #include "pk-offline-private.h"
 
 /**
+ * SECTION:pk-offline
+ * @short_description: Perform offline updates
+ *
+ * Functions for perform offline updates.
+ */
+
+/**
  * pk_offline_error_quark:
  *
- * Return value: The error quark.
+ * An error quark for #PkOfflineError.
+ *
+ * Return value: an error quark.
  *
  * Since: 0.9.6
  **/

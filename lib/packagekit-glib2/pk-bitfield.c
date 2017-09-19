@@ -36,6 +36,7 @@
  * pk_bitfield_contain_priority:
  * @values: a valid bitfield instance
  * @value: the values we are searching for
+ * @...:
  *
  * Finds elements in a list, but with priority going to the preceeding entry
  *
@@ -76,6 +77,7 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 /**
  * pk_bitfield_from_enums:
  * @value: the values we want to add to the bitfield
+ * @...:
  *
  * Return value: The return bitfield, or 0 if invalid
  *

@@ -62,7 +62,7 @@ enum {
 
 G_DEFINE_TYPE (PkMediaChangeRequired, pk_media_change_required, PK_TYPE_SOURCE)
 
-/**
+/*
  * pk_media_change_required_get_property:
  **/
 static void
@@ -87,7 +87,7 @@ pk_media_change_required_get_property (GObject *object, guint prop_id, GValue *v
 	}
 }
 
-/**
+/*
  * pk_media_change_required_set_property:
  **/
 static void
@@ -114,7 +114,7 @@ pk_media_change_required_set_property (GObject *object, guint prop_id, const GVa
 	}
 }
 
-/**
+/*
  * pk_media_change_required_class_init:
  **/
 static void
@@ -159,7 +159,7 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	g_type_class_add_private (klass, sizeof (PkMediaChangeRequiredPrivate));
 }
 
-/**
+/*
  * pk_media_change_required_init:
  **/
 static void
@@ -168,7 +168,7 @@ pk_media_change_required_init (PkMediaChangeRequired *media_change_required)
 	media_change_required->priv = PK_MEDIA_CHANGE_REQUIRED_GET_PRIVATE (media_change_required);
 }
 
-/**
+/*
  * pk_media_change_required_finalize:
  **/
 static void

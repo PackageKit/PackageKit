@@ -49,7 +49,6 @@ struct _PkTaskTextClass
 	PkTaskClass			 parent_class;
 };
 
-GQuark		 pk_task_text_error_quark			(void);
 GType		 pk_task_text_get_type				(void);
 PkTaskText	*pk_task_text_new				(void);
 void		 pk_task_text_test				(gpointer		 user_data);

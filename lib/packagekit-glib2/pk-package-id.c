@@ -116,7 +116,7 @@ pk_package_id_build (const gchar *name, const gchar *version,
 			  NULL);
 }
 
-/**
+/*
  * pk_arch_base_ix86:
  **/
 static gboolean
@@ -130,7 +130,7 @@ pk_arch_base_ix86 (const gchar *arch)
 	return FALSE;
 }
 
-/**
+/*
  * pk_package_id_equal_fuzzy_arch_section:
  **/
 static gboolean

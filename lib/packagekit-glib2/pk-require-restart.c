@@ -60,7 +60,7 @@ enum {
 
 G_DEFINE_TYPE (PkRequireRestart, pk_require_restart, PK_TYPE_SOURCE)
 
-/**
+/*
  * pk_require_restart_get_property:
  **/
 static void
@@ -82,7 +82,7 @@ pk_require_restart_get_property (GObject *object, guint prop_id, GValue *value, 
 	}
 }
 
-/**
+/*
  * pk_require_restart_set_property:
  **/
 static void
@@ -105,7 +105,7 @@ pk_require_restart_set_property (GObject *object, guint prop_id, const GValue *v
 	}
 }
 
-/**
+/*
  * pk_require_restart_class_init:
  **/
 static void
@@ -140,7 +140,7 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	g_type_class_add_private (klass, sizeof (PkRequireRestartPrivate));
 }
 
-/**
+/*
  * pk_require_restart_init:
  **/
 static void
@@ -149,7 +149,7 @@ pk_require_restart_init (PkRequireRestart *require_restart)
 	require_restart->priv = PK_REQUIRE_RESTART_GET_PRIVATE (require_restart);
 }
 
-/**
+/*
  * pk_require_restart_finalize:
  **/
 static void

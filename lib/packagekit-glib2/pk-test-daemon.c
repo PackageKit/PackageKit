@@ -57,7 +57,7 @@ _g_test_hang_check_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
+/*
  * _g_test_loop_run_with_timeout:
  **/
 static void
@@ -78,7 +78,7 @@ _g_test_hang_wait_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
+/*
  * _g_test_loop_wait:
  **/
 static void
@@ -91,7 +91,7 @@ _g_test_loop_wait (guint timeout_ms)
 }
 #endif
 
-/**
+/*
  * _g_test_loop_quit:
  **/
 static void
@@ -181,7 +181,7 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 }
 
-/**
+/*
  * pk_test_client_helper_output_cb:
  **/
 static gboolean
@@ -1000,7 +1000,7 @@ pk_test_package_sack_update_detail_cb (GObject *object, GAsyncResult *res, gpoin
 	_g_test_loop_quit ();
 }
 
-/**
+/*
  * pk_test_package_sack_filter_cb:
  **/
 static gboolean

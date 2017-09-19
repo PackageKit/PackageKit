@@ -53,6 +53,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkControl, g_object_unref)
 /**
  * PkControlError:
  * @PK_CONTROL_ERROR_FAILED: the transaction failed for an unknown reason
+ * @PK_CONTROL_ERROR_CANNOT_START_DAEMON: the PackageKit daemon failed to start
  *
  * Errors that can be thrown
  */

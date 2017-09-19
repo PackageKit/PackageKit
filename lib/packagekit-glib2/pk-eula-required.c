@@ -62,7 +62,7 @@ enum {
 
 G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
 
-/**
+/*
  * pk_eula_required_get_property:
  **/
 static void
@@ -90,7 +90,7 @@ pk_eula_required_get_property (GObject *object, guint prop_id, GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_eula_required_set_property:
  **/
 static void
@@ -122,7 +122,7 @@ pk_eula_required_set_property (GObject *object, guint prop_id, const GValue *val
 	}
 }
 
-/**
+/*
  * pk_eula_required_class_init:
  **/
 static void
@@ -177,7 +177,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	g_type_class_add_private (klass, sizeof (PkEulaRequiredPrivate));
 }
 
-/**
+/*
  * pk_eula_required_init:
  **/
 static void
@@ -186,7 +186,7 @@ pk_eula_required_init (PkEulaRequired *eula_required)
 	eula_required->priv = PK_EULA_REQUIRED_GET_PRIVATE (eula_required);
 }
 
-/**
+/*
  * pk_eula_required_finalize:
  **/
 static void

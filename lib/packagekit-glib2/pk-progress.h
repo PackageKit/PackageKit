@@ -70,6 +70,27 @@ GType		 pk_progress_get_type		  	(void);
 PkProgress	*pk_progress_new			(void);
 void		 pk_progress_test			(gpointer		 user_data);
 
+/**
+ * PkProgressType:
+ * @PK_PROGRESS_TYPE_PACKAGE_ID: package id updated
+ * @PK_PROGRESS_TYPE_TRANSACTION_ID: transaction ID updated
+ * @PK_PROGRESS_TYPE_PERCENTAGE: percentage updated
+ * @PK_PROGRESS_TYPE_ALLOW_CANCEL: allow cancel updated
+ * @PK_PROGRESS_TYPE_STATUS: status updated
+ * @PK_PROGRESS_TYPE_ROLE: role updated
+ * @PK_PROGRESS_TYPE_CALLER_ACTIVE: called active updated
+ * @PK_PROGRESS_TYPE_ELAPSED_TIME: elapsed time updated
+ * @PK_PROGRESS_TYPE_REMAINING_TIME: remaining time updated
+ * @PK_PROGRESS_TYPE_SPEED: speed updated
+ * @PK_PROGRESS_TYPE_DOWNLOAD_SIZE_REMAINING: download size remaining updated
+ * @PK_PROGRESS_TYPE_UID: uid updated
+ * @PK_PROGRESS_TYPE_PACKAGE: package updated
+ * @PK_PROGRESS_TYPE_ITEM_PROGRESS: item progress updated
+ * @PK_PROGRESS_TYPE_TRANSACTION_FLAGS: transaction flags updated
+ * @PK_PROGRESS_TYPE_INVALID:
+ *
+ * Flag to show which progress field has been updated.
+ **/
 typedef enum {
 	PK_PROGRESS_TYPE_PACKAGE_ID,
 	PK_PROGRESS_TYPE_TRANSACTION_ID,
@@ -100,7 +121,7 @@ gboolean	 pk_progress_set_item_progress		(PkProgress		*progress,
 							 PkItemProgress		*item_progress);
 PkItemProgress	*pk_progress_get_item_progress		(PkProgress		*progress);
 gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
-							 const gchar		*package_id);
+							 const gchar		*transaction_id);
 const gchar	*pk_progress_get_transaction_id		(PkProgress		*progress);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
 							 gint			 percentage);

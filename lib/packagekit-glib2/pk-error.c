@@ -60,7 +60,7 @@ enum {
 
 G_DEFINE_TYPE (PkError, pk_error, PK_TYPE_SOURCE)
 
-/**
+/*
  * pk_error_get_property:
  **/
 static void
@@ -82,7 +82,7 @@ pk_error_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 	}
 }
 
-/**
+/*
  * pk_error_set_property:
  **/
 static void
@@ -107,6 +107,11 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 
 /**
  * pk_error_get_code:
+ * @error_code: a valid #PkError instance
+ *
+ * Get the error code for this error.
+ *
+ * Return value: a #PkErrorEnum
  *
  * Since: 0.5.5
  **/
@@ -119,6 +124,11 @@ pk_error_get_code (PkError *error_code)
 
 /**
  * pk_error_get_details:
+ * @error_code: a valid #PkError instance
+ *
+ * Get details for this error.
+ *
+ * Return value: an string description
  *
  * Since: 0.5.5
  **/
@@ -129,7 +139,7 @@ pk_error_get_details (PkError *error_code)
 	return error_code->priv->details;
 }
 
-/**
+/*
  * pk_error_class_init:
  **/
 static void
@@ -164,7 +174,7 @@ pk_error_class_init (PkErrorClass *klass)
 	g_type_class_add_private (klass, sizeof (PkErrorPrivate));
 }
 
-/**
+/*
  * pk_error_init:
  **/
 static void
@@ -173,7 +183,7 @@ pk_error_init (PkError *error_code)
 	error_code->priv = PK_ERROR_CODE_GET_PRIVATE (error_code);
 }
 
-/**
+/*
  * pk_error_finalize:
  **/
 static void

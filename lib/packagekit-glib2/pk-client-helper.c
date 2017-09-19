@@ -153,7 +153,7 @@ out:
 	return ret;
 }
 
-/**
+/*
  * pk_client_helper_copy_stdout_cb:
  **/
 static gboolean
@@ -221,7 +221,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_helper_echo_stderr_cb:
  **/
 static gboolean
@@ -252,7 +252,7 @@ out:
 	return ret;
 }
 
-/**
+/*
  * pk_client_helper_copy_conn_cb:
  **/
 static gboolean
@@ -307,7 +307,7 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_helper_accept_connection_cb:
  **/
 static gboolean
@@ -504,7 +504,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_helper_class_init:
  **/
 static void
@@ -515,7 +515,7 @@ pk_client_helper_class_init (PkClientHelperClass *klass)
 	g_type_class_add_private (klass, sizeof (PkClientHelperPrivate));
 }
 
-/**
+/*
  * pk_client_helper_init:
  **/
 static void
@@ -524,7 +524,7 @@ pk_client_helper_init (PkClientHelper *client_helper)
 	client_helper->priv = PK_CLIENT_HELPER_GET_PRIVATE (client_helper);
 }
 
-/**
+/*
  * pk_client_helper_finalize:
  **/
 static void

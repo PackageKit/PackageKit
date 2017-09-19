@@ -147,7 +147,7 @@ pk_package_sack_get_array (PkPackageSack *sack)
 /**
  * pk_package_sack_filter_by_info:
  * @sack: a valid #PkPackageSack instance
- * @info: a %PkInfoEnum value to match
+ * @info: a #PkInfoEnum value to match
  *
  * Returns a new package sack which only matches packages that match the
  * specified info enum value.
@@ -248,7 +248,7 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
  * pk_package_sack_add_package_by_id:
  * @sack: a valid #PkPackageSack instance
  * @package_id: a package_id descriptor
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Adds a package reference to the sack.
  *
@@ -277,7 +277,7 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack,
 	return TRUE;
 }
 
-/**
+/*
  * pk_package_sack_add_packages_from_line:
  **/
 static gboolean
@@ -315,7 +315,7 @@ pk_package_sack_add_packages_from_line (PkPackageSack *sack,
  * pk_package_sack_add_packages_from_file:
  * @sack: a valid #PkPackageSack instance
  * @file: a valid package-list file
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Adds packages from package-list file to a PkPackageSack.
  *
@@ -358,7 +358,7 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
  * pk_package_sack_to_file:
  * @sack: a valid #PkPackageSack instance
  * @file: a valid package-list file
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Write the contents of a PkPackageSack to a package-list file.
  *
@@ -558,7 +558,7 @@ pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_
 	return NULL;
 }
 
-/**
+/*
  * pk_package_sack_sort_compare_name_func:
  **/
 static gint
@@ -576,7 +576,7 @@ pk_package_sack_sort_compare_name_func (PkPackage **a, PkPackage **b)
 	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
 }
 
-/**
+/*
  * pk_package_sack_sort_compare_package_id_func:
  **/
 static gint
@@ -589,7 +589,7 @@ pk_package_sack_sort_compare_package_id_func (PkPackage **a, PkPackage **b)
 	return g_strcmp0 (package_id1, package_id2);
 }
 
-/**
+/*
  * pk_package_sack_sort_compare_summary_func:
  **/
 static gint
@@ -602,7 +602,7 @@ pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
 	return g_strcmp0 (summary1, summary2);
 }
 
-/**
+/*
  * pk_package_sack_sort_compare_info_func:
  **/
 static gint
@@ -620,7 +620,7 @@ pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
 }
 
 /**
- * pk_package_sack_sort_package_id:
+ * pk_package_sack_sort:
  * @sack: a valid #PkPackageSack instance
  * @type: the type of sorting, e.g. #PK_PACKAGE_SACK_SORT_TYPE_NAME
  *
@@ -675,7 +675,7 @@ pk_package_sack_get_total_bytes (PkPackageSack *sack)
 	return bytes;
 }
 
-/**
+/*
  * pk_package_sack_get_package_ids:
  **/
 static gchar **
@@ -708,7 +708,7 @@ typedef struct {
 
 /***************************************************************************************************/
 
-/**
+/*
  * pk_package_sack_merge_bool_state_finish:
  **/
 static void
@@ -732,7 +732,7 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	g_slice_free (PkPackageSackState, state);
 }
 
-/**
+/*
  * pk_package_sack_resolve_cb:
  **/
 static void
@@ -863,7 +863,7 @@ pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GE
 
 /***************************************************************************************************/
 
-/**
+/*
  * pk_package_sack_get_details_cb:
  **/
 static void
@@ -968,7 +968,7 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 
 /***************************************************************************************************/
 
-/**
+/*
  * pk_package_sack_get_update_detail_cb:
  **/
 static void
@@ -1104,7 +1104,7 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 
 /***************************************************************************************************/
 
-/**
+/*
  * pk_package_sack_class_init:
  **/
 static void
@@ -1131,7 +1131,7 @@ pk_package_sack_class_init (PkPackageSackClass *klass)
 	g_type_class_add_private (klass, sizeof (PkPackageSackPrivate));
 }
 
-/**
+/*
  * pk_package_sack_init:
  **/
 static void
@@ -1146,7 +1146,7 @@ pk_package_sack_init (PkPackageSack *sack)
 	priv->client = pk_client_new ();
 }
 
-/**
+/*
  * pk_package_sack_finalize:
  **/
 static void

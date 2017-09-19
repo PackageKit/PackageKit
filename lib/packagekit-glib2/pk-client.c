@@ -137,13 +137,15 @@ pk_client_signal_cb (GDBusProxy *proxy,
 /**
  * pk_client_error_quark:
  *
- * Return value: Our personal error quark.
+ * An error quark for #PkClientError.
+ *
+ * Return value: an error quark.
  *
  * Since: 0.5.2
  **/
 G_DEFINE_QUARK (pk-client-error-quark, pk_client_error)
 
-/**
+/*
  * pk_client_get_property:
  **/
 static void
@@ -174,7 +176,7 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	}
 }
 
-/**
+/*
  * pk_client_set_property:
  **/
 static void
@@ -203,7 +205,7 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 	}
 }
 
-/**
+/*
  * pk_client_fixup_dbus_error:
  **/
 static void
@@ -263,7 +265,7 @@ pk_client_fixup_dbus_error (GError *error)
 	g_warning ("couldn't parse execption '%s', please report", name);
 }
 
-/**
+/*
  * pk_client_real_path:
  *
  * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
@@ -299,7 +301,7 @@ pk_client_real_path (const gchar *path)
 	return real;
 }
 
-/**
+/*
  * pk_client_convert_real_paths:
  **/
 static gchar **
@@ -327,7 +329,7 @@ pk_client_convert_real_paths (gchar **paths, GError **error)
 	return g_strdupv (res);
 }
 
-/**
+/*
  * pk_client_get_user_temp:
  *
  * Return (and create if does not exist) a temporary directory
@@ -358,7 +360,7 @@ pk_client_get_user_temp (const gchar *subfolder, GError **error)
 	return path;
 }
 
-/**
+/*
  * pk_client_is_file_native:
  **/
 static gboolean
@@ -377,7 +379,7 @@ pk_client_is_file_native (const gchar *filename)
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_percentage_to_signed:
  */
 static gint
@@ -388,7 +390,7 @@ pk_client_percentage_to_signed (guint percentage)
 	return (gint) percentage;
 }
 
-/**
+/*
  * pk_client_set_property_value:
  **/
 static void
@@ -551,7 +553,7 @@ pk_client_set_property_value (PkClientState *state,
 	g_warning ("unhandled property '%s'", key);
 }
 
-/**
+/*
  * pk_client_cancel_cb:
  **/
 static void
@@ -576,7 +578,7 @@ pk_client_cancel_cb (GObject *source_object,
 	g_debug ("cancelled %s", state->tid);
 }
 
-/**
+/*
  * pk_client_cancellable_cancel_cb:
  **/
 static void
@@ -598,7 +600,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 			   pk_client_cancel_cb, state);
 }
 
-/**
+/*
  * pk_client_state_remove:
  **/
 static void
@@ -615,7 +617,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 	}
 }
 
-/**
+/*
  * pk_client_state_add:
  **/
 static void
@@ -633,7 +635,7 @@ pk_client_state_add (PkClient *client, PkClientState *state)
 	}
 }
 
-/**
+/*
  * pk_client_state_finish:
  **/
 static void
@@ -714,7 +716,7 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	g_slice_free (PkClientState, state);
 }
 
-/**
+/*
  * pk_client_properties_changed_cb:
  **/
 static void
@@ -738,7 +740,7 @@ pk_client_properties_changed_cb (GDBusProxy *proxy,
 	}
 }
 
-/**
+/*
  * pk_client_signal_package:
  */
 static void
@@ -799,7 +801,7 @@ pk_client_signal_package (PkClientState *state,
 	}
 }
 
-/**
+/*
  * pk_client_copy_finished_remove_old_files:
  *
  * Removes all the files that do not have the prefix destination path.
@@ -833,7 +835,7 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 	}
 }
 
-/**
+/*
  * pk_client_copy_downloaded_finished_cb:
  */
 static void
@@ -860,7 +862,7 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 	}
 }
 
-/**
+/*
  * pk_client_copy_progress_cb:
  */
 static void
@@ -890,7 +892,7 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 	}
 }
 
-/**
+/*
  * pk_client_copy_downloaded_file:
  */
 static void
@@ -937,7 +939,7 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	pk_results_add_files (state->results, item);
 }
 
-/**
+/*
  * pk_client_copy_downloaded:
  *
  * We have to copy the files from the temporary directory into the user-specified
@@ -991,7 +993,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	}
 }
 
-/**
+/*
  * pk_client_signal_finished:
  */
 static void
@@ -1039,7 +1041,7 @@ pk_client_signal_finished (PkClientState *state,
 	pk_client_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_client_signal_cb:
  **/
 static void
@@ -1391,7 +1393,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 }
 
-/**
+/*
  * pk_client_proxy_connect:
  **/
 static void
@@ -1420,7 +1422,7 @@ pk_client_proxy_connect (PkClientState *state)
 			  state);
 }
 
-/**
+/*
  * pk_client_method_cb:
  **/
 static void
@@ -1445,7 +1447,7 @@ pk_client_method_cb (GObject *source_object,
 	/* wait for ::Finished() */
 }
 
-/**
+/*
  * pk_client_set_role:
  **/
 static void
@@ -1463,7 +1465,7 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
 	return;
 }
 
-/**
+/*
  * pk_client_set_hints_cb:
  **/
 static void
@@ -1851,7 +1853,7 @@ pk_client_set_hints_cb (GObject *source_object,
 	}
 }
 
-/**
+/*
  * pk_client_bool_to_string:
  **/
 static const gchar *
@@ -1862,7 +1864,7 @@ pk_client_bool_to_string (gboolean value)
 	return "false";
 }
 
-/**
+/*
  * pk_client_create_helper_argv_envp_test:
  **/
 static gboolean
@@ -1888,7 +1890,7 @@ pk_client_create_helper_argv_envp_test (PkClientState *state,
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_create_helper_argv_envp:
  **/
 static gboolean
@@ -1945,7 +1947,7 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 	return TRUE;
 }
 
-/**
+/*
  * pk_client_create_helper_socket:
  **/
 static gchar *
@@ -1994,7 +1996,7 @@ pk_client_create_helper_socket (PkClientState *state)
 	return g_strdup_printf ("frontend-socket=%s", socket_filename);
 }
 
-/**
+/*
  * pk_client_get_proxy_cb:
  **/
 static void
@@ -2065,7 +2067,7 @@ pk_client_get_proxy_cb (GObject *object,
 	g_ptr_array_add (state->client->priv->calls, state);
 }
 
-/**
+/*
  * pk_client_get_tid_cb:
  **/
 static void
@@ -2125,7 +2127,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 /**
  * pk_client_resolve_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: (array zero-terminated=1): an array of package names to resolve, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2133,7 +2135,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * Resolve a package name into a %package_id. This can return installed and
+ * Resolve a package name into a @package_id. This can return installed and
  * available packages and allows you find out if a package is installed locally
  * or is available in a repository.
  *
@@ -2193,7 +2195,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 /**
  * pk_client_search_names_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2260,7 +2262,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 /**
  * pk_client_search_details_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2328,7 +2330,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 /**
  * pk_client_search_groups_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2394,7 +2396,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 /**
  * pk_client_search_files_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2799,7 +2801,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 /**
  * pk_client_get_updates_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_DEVELOPMENT or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -2927,7 +2929,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 /**
  * pk_client_depends_on_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @cancellable: a #GCancellable or %NULL
@@ -2996,7 +2998,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 /**
  * pk_client_get_packages_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -3060,7 +3062,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 /**
  * pk_client_required_by_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @cancellable: a #GCancellable or %NULL
@@ -3129,7 +3131,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 /**
  * pk_client_what_provides_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -3401,7 +3403,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
  * @user_data: the data to pass to @callback_ready
  *
  * Remove a package (optionally with dependancies) from the system.
- * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *
  * Since: 0.8.1
@@ -3741,7 +3743,7 @@ pk_client_update_packages_async (PkClient *client,
 				  state);
 }
 
-/**
+/*
  * pk_client_copy_native_finished_cb:
  */
 static void
@@ -3765,7 +3767,7 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState
 	}
 }
 
-/**
+/*
  * pk_client_copy_non_native_then_get_tid:
  **/
 static void
@@ -3979,7 +3981,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 /**
  * pk_client_get_repo_list_async:
  * @client: a valid #PkClient instance
- * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_DEVELOPMENT or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -4391,7 +4393,7 @@ pk_client_repair_system_async (PkClient *client,
 
 /**********************************************************************/
 
-/**
+/*
  * pk_client_adopt_get_proxy_cb:
  **/
 static void
@@ -4524,7 +4526,7 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
 	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
-/**
+/*
  * pk_client_get_progress_state_finish:
  **/
 static void
@@ -4572,7 +4574,7 @@ pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 	g_slice_free (PkClientState, state);
 }
 
-/**
+/*
  * pk_client_get_progress_cb:
  **/
 static void
@@ -4667,7 +4669,7 @@ pk_client_get_progress_async (PkClient *client,
 
 /**********************************************************************/
 
-/**
+/*
  * pk_client_cancel_all_dbus_methods:
  **/
 static gboolean
@@ -4847,7 +4849,7 @@ pk_client_get_cache_age (PkClient *client)
 	return client->priv->cache_age;
 }
 
-/**
+/*
  * pk_client_class_init:
  **/
 static void
@@ -4912,7 +4914,7 @@ pk_client_class_init (PkClientClass *klass)
 	g_object_class_install_property (object_class, PROP_CACHE_AGE, pspec);
 }
 
-/**
+/*
  * pk_client_init:
  **/
 static void
@@ -4932,7 +4934,7 @@ pk_client_init (PkClient *client)
 	client->priv->locale = 	g_strdup (setlocale (LC_MESSAGES, NULL));
 }
 
-/**
+/*
  * pk_client_finalize:
  **/
 static void
@@ -4957,7 +4959,7 @@ pk_client_finalize (GObject *object)
  * PkClient is a nice GObject wrapper for PackageKit and makes writing
  * frontends easy.
  *
- * Return value: A new %PkClient instance
+ * Return value: A new #PkClient instance
  *
  * Since: 0.5.2
  **/

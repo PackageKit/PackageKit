@@ -83,7 +83,7 @@ enum {
 
 G_DEFINE_TYPE (PkProgress, pk_progress, G_TYPE_OBJECT)
 
-/**
+/*
  * pk_progress_get_property:
  **/
 static void
@@ -146,6 +146,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 /**
  * pk_progress_set_package_id:
  * @progress: a valid #PkProgress instance
+ * @package_id:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -176,6 +179,8 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
  * pk_progress_get_package_id:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 const gchar *
@@ -188,6 +193,9 @@ pk_progress_get_package_id (PkProgress *progress)
 /**
  * pk_progress_set_item_progress:
  * @progress: a valid #PkProgress instance
+ * @item_progress:
+ *
+ * Return value:
  *
  * Since: 0.8.1
  **/
@@ -227,8 +235,11 @@ pk_progress_get_item_progress (PkProgress *progress)
 /**
  * pk_progress_set_transaction_id:
  * @progress: a valid #PkProgress instance
+ * @transaction_id:
  *
  * Since: 0.5.3
+ *
+ * Return value:
  **/
 gboolean
 pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_id)
@@ -263,6 +274,9 @@ pk_progress_get_transaction_id (PkProgress *progress)
 /**
  * pk_progress_set_percentage:
  * @progress: a valid #PkProgress instance
+ * @percentage:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -286,6 +300,8 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
  * pk_progress_get_percentage:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 gint
@@ -298,6 +314,9 @@ pk_progress_get_percentage (PkProgress *progress)
 /**
  * pk_progress_set_status:
  * @progress: a valid #PkProgress instance
+ * @status:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -321,6 +340,8 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
  * pk_progress_get_status:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 PkStatusEnum
@@ -333,6 +354,9 @@ pk_progress_get_status (PkProgress *progress)
 /**
  * pk_progress_set_role:
  * @progress: a valid #PkProgress instance
+ * @role:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -361,6 +385,8 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
  * pk_progress_get_role:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 PkRoleEnum
@@ -373,6 +399,9 @@ pk_progress_get_role (PkProgress *progress)
 /**
  * pk_progress_set_allow_cancel:
  * @progress: a valid #PkProgress instance
+ * @allow_cancel:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -396,6 +425,8 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
  * pk_progress_get_allow_cancel:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 gboolean
@@ -408,6 +439,9 @@ pk_progress_get_allow_cancel (PkProgress *progress)
 /**
  * pk_progress_set_caller_active:
  * @progress: a valid #PkProgress instance
+ * @caller_active:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -431,6 +465,8 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
  * pk_progress_get_caller_active:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 gboolean
@@ -443,6 +479,9 @@ pk_progress_get_caller_active (PkProgress *progress)
 /**
  * pk_progress_set_elapsed_time:
  * @progress: a valid #PkProgress instance
+ * @elapsed_time:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -466,6 +505,8 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
  * pk_progress_get_elapsed_time:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint
@@ -478,6 +519,9 @@ pk_progress_get_elapsed_time (PkProgress *progress)
 /**
  * pk_progress_set_remaining_time:
  * @progress: a valid #PkProgress instance
+ * @remaining_time:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -501,6 +545,8 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
  * pk_progress_get_remaining_time:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint
@@ -513,6 +559,9 @@ pk_progress_get_remaining_time (PkProgress *progress)
 /**
  * pk_progress_set_speed:
  * @progress: a valid #PkProgress instance
+ * @speed:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -536,6 +585,8 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
  * pk_progress_get_speed:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint
@@ -548,6 +599,9 @@ pk_progress_get_speed (PkProgress *progress)
 /**
  * pk_progress_set_download_size_remaining:
  * @progress: a valid #PkProgress instance
+ * @download_size_remaining:
+ *
+ * Return value:
  *
  * Since: 0.8.0
  **/
@@ -571,6 +625,8 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
  * pk_progress_get_download_size_remaining:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint64
@@ -583,6 +639,9 @@ pk_progress_get_download_size_remaining (PkProgress *progress)
 /**
  * pk_progress_set_transaction_flags:
  * @progress: a valid #PkProgress instance
+ * @transaction_flags:
+ *
+ * Return value:
  *
  * Since: 0.8.8
  **/
@@ -606,6 +665,8 @@ pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_fla
  * pk_progress_get_transaction_flags:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint64
@@ -618,6 +679,9 @@ pk_progress_get_transaction_flags (PkProgress *progress)
 /**
  * pk_progress_set_uid:
  * @progress: a valid #PkProgress instance
+ * @uid:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -641,6 +705,8 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
  * pk_progress_get_uid:
  * @progress: a valid #PkProgress instance
  *
+ * Return value:
+ *
  * Since: 1.0.12
  **/
 guint
@@ -653,6 +719,9 @@ pk_progress_get_uid (PkProgress *progress)
 /**
  * pk_progress_set_package:
  * @progress: a valid #PkProgress instance
+ * @package:
+ *
+ * Return value:
  *
  * Since: 0.5.2
  **/
@@ -689,7 +758,7 @@ pk_progress_get_package (PkProgress *progress)
 	return progress->priv->package;
 }
 
-/**
+/*
  * pk_progress_set_property:
  **/
 static void
@@ -743,7 +812,7 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	}
 }
 
-/**
+/*
  * pk_progress_class_init:
  **/
 static void
@@ -910,7 +979,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }
 
-/**
+/*
  * pk_progress_init:
  **/
 static void
@@ -919,7 +988,7 @@ pk_progress_init (PkProgress *progress)
 	progress->priv = PK_PROGRESS_GET_PRIVATE (progress);
 }
 
-/**
+/*
  * pk_progress_finalize:
  **/
 static void
@@ -944,7 +1013,7 @@ pk_progress_finalize (GObject *object)
  * PkProgress is a nice GObject wrapper for PackageKit and makes writing
  * frontends easy.
  *
- * Return value: A new %PkProgress instance
+ * Return value: A new #PkProgress instance
  *
  * Since: 0.5.2
  **/

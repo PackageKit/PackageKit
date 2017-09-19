@@ -32,6 +32,8 @@ G_BEGIN_DECLS
 
 /**
  * PkEnumMatch:
+ * @value: enumerated value
+ * @string: string for given value
  *
  * Matching an enumerated type to a string
  **/
@@ -42,6 +44,41 @@ typedef struct {
 
 /**
  * PkRoleEnum:
+ * @PK_ROLE_ENUM_UNKNOWN: Unknow request
+ * @PK_ROLE_ENUM_CANCEL: Cancel transaction
+ * @PK_ROLE_ENUM_DEPENDS_ON: Get package dependencies
+ * @PK_ROLE_ENUM_GET_DETAILS: Get package details
+ * @PK_ROLE_ENUM_GET_FILES:
+ * @PK_ROLE_ENUM_GET_PACKAGES: Get available packages
+ * @PK_ROLE_ENUM_GET_REPO_LIST: Get repository list
+ * @PK_ROLE_ENUM_REQUIRED_BY: Get packages required by given package
+ * @PK_ROLE_ENUM_GET_UPDATE_DETAIL: Get update details
+ * @PK_ROLE_ENUM_GET_UPDATES: Get available updates
+ * @PK_ROLE_ENUM_INSTALL_FILES: Install package files
+ * @PK_ROLE_ENUM_INSTALL_PACKAGES: Install packages
+ * @PK_ROLE_ENUM_INSTALL_SIGNATURE: Install signature
+ * @PK_ROLE_ENUM_REFRESH_CACHE: Refresh cache
+ * @PK_ROLE_ENUM_REMOVE_PACKAGES: Remove packages
+ * @PK_ROLE_ENUM_REPO_ENABLE: Enable repository
+ * @PK_ROLE_ENUM_REPO_SET_DATA:
+ * @PK_ROLE_ENUM_RESOLVE: Resolve depdencies
+ * @PK_ROLE_ENUM_SEARCH_DETAILS: Search for details
+ * @PK_ROLE_ENUM_SEARCH_FILE: Search for file
+ * @PK_ROLE_ENUM_SEARCH_GROUP: Search for group
+ * @PK_ROLE_ENUM_SEARCH_NAME: Search for package name
+ * @PK_ROLE_ENUM_UPDATE_PACKAGES: Update packages
+ * @PK_ROLE_ENUM_WHAT_PROVIDES: Get what a package provides
+ * @PK_ROLE_ENUM_ACCEPT_EULA: Accept an EULA
+ * @PK_ROLE_ENUM_DOWNLOAD_PACKAGES: Download packages
+ * @PK_ROLE_ENUM_GET_DISTRO_UPGRADES: Get available distribution upgrades
+ * @PK_ROLE_ENUM_GET_CATEGORIES: Get available categories
+ * @PK_ROLE_ENUM_GET_OLD_TRANSACTIONS: Get old transation information
+ * @PK_ROLE_ENUM_REPAIR_SYSTEM: Repair system
+ * @PK_ROLE_ENUM_GET_DETAILS_LOCAL: Get details on local package
+ * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
+ * @PK_ROLE_ENUM_REPO_REMOVE: Remove repository
+ * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade system
+ * @PK_ROLE_ENUM_LAST:
  *
  * What we were asked to do, this never changes for the lifetime of the
  * transaction.
@@ -88,6 +125,44 @@ typedef enum {
 
 /**
  * PkStatusEnum:
+ * @PK_STATUS_ENUM_UNKNOWN: Unknown status
+ * @PK_STATUS_ENUM_WAIT: Waiting
+ * @PK_STATUS_ENUM_SETUP: Setting up
+ * @PK_STATUS_ENUM_RUNNING: Running
+ * @PK_STATUS_ENUM_QUERY:
+ * @PK_STATUS_ENUM_INFO:
+ * @PK_STATUS_ENUM_REMOVE: Removing
+ * @PK_STATUS_ENUM_REFRESH_CACHE: Refreshing cache
+ * @PK_STATUS_ENUM_DOWNLOAD: Downloading
+ * @PK_STATUS_ENUM_INSTALL: Installing
+ * @PK_STATUS_ENUM_UPDATE: Updating
+ * @PK_STATUS_ENUM_CLEANUP: Cleaning up
+ * @PK_STATUS_ENUM_OBSOLETE:
+ * @PK_STATUS_ENUM_DEP_RESOLVE: Resolving dependencies
+ * @PK_STATUS_ENUM_SIG_CHECK: Checking signatures
+ * @PK_STATUS_ENUM_TEST_COMMIT: Testing commit
+ * @PK_STATUS_ENUM_COMMIT: Committing
+ * @PK_STATUS_ENUM_REQUEST:
+ * @PK_STATUS_ENUM_FINISHED: Finished
+ * @PK_STATUS_ENUM_CANCEL: Cancelling
+ * @PK_STATUS_ENUM_DOWNLOAD_REPOSITORY: Downloading respository
+ * @PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST: Donwloading package list
+ * @PK_STATUS_ENUM_DOWNLOAD_FILELIST: Downloading file list
+ * @PK_STATUS_ENUM_DOWNLOAD_CHANGELOG: Downloading changelog information
+ * @PK_STATUS_ENUM_DOWNLOAD_GROUP: Downloading group information
+ * @PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO: Downloading update information
+ * @PK_STATUS_ENUM_REPACKAGING: Repackaging
+ * @PK_STATUS_ENUM_LOADING_CACHE: Loading cache
+ * @PK_STATUS_ENUM_SCAN_APPLICATIONS: Scanning for applications
+ * @PK_STATUS_ENUM_GENERATE_PACKAGE_LIST: Generating package list
+ * @PK_STATUS_ENUM_WAITING_FOR_LOCK: Waiting for lock
+ * @PK_STATUS_ENUM_WAITING_FOR_AUTH: Waiting for authentication/authorization
+ * @PK_STATUS_ENUM_SCAN_PROCESS_LIST: Scanning running processes
+ * @PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES: Checking executable files
+ * @PK_STATUS_ENUM_CHECK_LIBRARIES: Checking libraries
+ * @PK_STATUS_ENUM_COPY_FILES: Copying files
+ * @PK_STATUS_ENUM_RUN_HOOK: Running package hook
+ * @PK_STATUS_ENUM_LAST:
  *
  * What status we are now; this can change for each transaction giving a
  * status of what sort of thing is happening
@@ -149,6 +224,19 @@ typedef enum {
 
 /**
  * PkExitEnum:
+ * @PK_EXIT_ENUM_UNKNOWN: Unknown exit status
+ * @PK_EXIT_ENUM_SUCCESS: Backend exited successfully
+ * @PK_EXIT_ENUM_FAILED: Backend failed
+ * @PK_EXIT_ENUM_CANCELLED: Backend was cancelled
+ * @PK_EXIT_ENUM_KEY_REQUIRED: A repository encryption key needs installing
+ * @PK_EXIT_ENUM_EULA_REQUIRED: A EULA is required to be accepted
+ * @PK_EXIT_ENUM_KILLED: Backend was killed
+ * @PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED: Media change required
+ * @PK_EXIT_ENUM_NEED_UNTRUSTED:
+ * @PK_EXIT_ENUM_CANCELLED_PRIORITY: Cancelled due to higher priority task
+ * @PK_EXIT_ENUM_SKIP_TRANSACTION:
+ * @PK_EXIT_ENUM_REPAIR_REQUIRED: Package database requires repairing
+ * @PK_EXIT_ENUM_LAST:
  *
  * How the backend exited
  **/
@@ -170,6 +258,15 @@ typedef enum {
 
 /**
  * PkNetworkEnum:
+ * @PK_NETWORK_ENUM_UNKNOWN: Unknown network
+ * @PK_NETWORK_ENUM_OFFLINE: Offline (no network)
+ * @PK_NETWORK_ENUM_ONLINE: Online (network type unknown)
+ * @PK_NETWORK_ENUM_WIRED: Wired network
+ * @PK_NETWORK_ENUM_WIFI: WiFi network
+ * @PK_NETWORK_ENUM_MOBILE: Mobile network
+ * @PK_NETWORK_ENUM_LAST:
+ *
+ * Network type
  **/
 typedef enum {
 	PK_NETWORK_ENUM_UNKNOWN,
@@ -183,6 +280,35 @@ typedef enum {
 
 /**
  * PkFilterEnum:
+ * @PK_FILTER_ENUM_UNKNOWN: Unknown filter
+ * @PK_FILTER_ENUM_NONE: No filter
+ * @PK_FILTER_ENUM_INSTALLED: Filter for installed packages
+ * @PK_FILTER_ENUM_NOT_INSTALLED: Filter for not installed packages
+ * @PK_FILTER_ENUM_DEVELOPMENT: Filter for development packages
+ * @PK_FILTER_ENUM_NOT_DEVELOPMENT: Filter for non-development packages
+ * @PK_FILTER_ENUM_GUI: Filter for GUI packages
+ * @PK_FILTER_ENUM_NOT_GUI: Filter for non-GUI packages
+ * @PK_FILTER_ENUM_FREE: Filter for free packages
+ * @PK_FILTER_ENUM_NOT_FREE: Filter for non-free packages
+ * @PK_FILTER_ENUM_VISIBLE: Filter for visible packages
+ * @PK_FILTER_ENUM_NOT_VISIBLE: Filter for invisible packages
+ * @PK_FILTER_ENUM_SUPPORTED: Filter for supported packages
+ * @PK_FILTER_ENUM_NOT_SUPPORTED: Filter for not supported packages
+ * @PK_FILTER_ENUM_BASENAME: Filter for packages that match basename
+ * @PK_FILTER_ENUM_NOT_BASENAME: Filter for packages that don't match basename
+ * @PK_FILTER_ENUM_NEWEST: Filter for newest packages
+ * @PK_FILTER_ENUM_NOT_NEWEST: Filter for not newest packages
+ * @PK_FILTER_ENUM_ARCH: Filter for packages that match architecture
+ * @PK_FILTER_ENUM_NOT_ARCH: Filter for packages that don't match architecture
+ * @PK_FILTER_ENUM_SOURCE: Filter for source packages
+ * @PK_FILTER_ENUM_NOT_SOURCE: Filter for non-source packages
+ * @PK_FILTER_ENUM_COLLECTIONS: Filter for collections
+ * @PK_FILTER_ENUM_NOT_COLLECTIONS: Filter for not collections
+ * @PK_FILTER_ENUM_APPLICATION: Filter for application packages
+ * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for non-application packages
+ * @PK_FILTER_ENUM_DOWNLOADED: Filter for downloaded packages
+ * @PK_FILTER_ENUM_NOT_DOWNLOADED: Filter for not downloaded packages
+ * @PK_FILTER_ENUM_LAST:
  *
  * The filter types
  **/
@@ -220,6 +346,14 @@ typedef enum {
 
 /**
  * PkRestartEnum:
+ * @PK_RESTART_ENUM_UNKNOWN: Unknown restart state
+ * @PK_RESTART_ENUM_NONE: No restart required
+ * @PK_RESTART_ENUM_APPLICATION: Need to restart the application
+ * @PK_RESTART_ENUM_SESSION: Need to restart the session
+ * @PK_RESTART_ENUM_SYSTEM: Need to restart the system
+ * @PK_RESTART_ENUM_SECURITY_SESSION:
+ * @PK_RESTART_ENUM_SECURITY_SYSTEM:
+ * @PK_RESTART_ENUM_LAST:
  *
  * What restart we need to after a transaction, ordered by severity
  **/
@@ -236,6 +370,76 @@ typedef enum {
 
 /**
  * PkErrorEnum:
+ * @PK_ERROR_ENUM_UNKNOWN:
+ * @PK_ERROR_ENUM_OOM: Out of memory
+ * @PK_ERROR_ENUM_NO_NETWORK: No network access available
+ * @PK_ERROR_ENUM_NOT_SUPPORTED: Request not supported
+ * @PK_ERROR_ENUM_INTERNAL_ERROR: Undefined internal error
+ * @PK_ERROR_ENUM_GPG_FAILURE: GPG encryption failure
+ * @PK_ERROR_ENUM_PACKAGE_ID_INVALID: Invalid package ID provided
+ * @PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED: Requested package not installed
+ * @PK_ERROR_ENUM_PACKAGE_NOT_FOUND: Requested package not found
+ * @PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED: Requested package already installed
+ * @PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED: Failed to download package
+ * @PK_ERROR_ENUM_GROUP_NOT_FOUND: Requested group not gound
+ * @PK_ERROR_ENUM_GROUP_LIST_INVALID: Invalid group list provided
+ * @PK_ERROR_ENUM_DEP_RESOLUTION_FAILED: Failed to resolve dependencies
+ * @PK_ERROR_ENUM_FILTER_INVALID: Invalid filter provides
+ * @PK_ERROR_ENUM_CREATE_THREAD_FAILED: Failed to create thread
+ * @PK_ERROR_ENUM_TRANSACTION_ERROR: Error occurred during transaction
+ * @PK_ERROR_ENUM_TRANSACTION_CANCELLED: Transaction was cancelled
+ * @PK_ERROR_ENUM_NO_CACHE: No cache available
+ * @PK_ERROR_ENUM_REPO_NOT_FOUND: Requested repository not found
+ * @PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE: Not allowed to remove system package
+ * @PK_ERROR_ENUM_PROCESS_KILL: Process killed
+ * @PK_ERROR_ENUM_FAILED_INITIALIZATION:
+ * @PK_ERROR_ENUM_FAILED_FINALISE:
+ * @PK_ERROR_ENUM_FAILED_CONFIG_PARSING: Configuration is not valid
+ * @PK_ERROR_ENUM_CANNOT_CANCEL:
+ * @PK_ERROR_ENUM_CANNOT_GET_LOCK: Cannot get lock
+ * @PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE: No packages to update
+ * @PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG: Cannot write repository configuration
+ * @PK_ERROR_ENUM_LOCAL_INSTALL_FAILED:
+ * @PK_ERROR_ENUM_BAD_GPG_SIGNATURE: Bad GPG signature found
+ * @PK_ERROR_ENUM_MISSING_GPG_SIGNATURE: Required GPG signature not found
+ * @PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE: Cannot install source package
+ * @PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR:
+ * @PK_ERROR_ENUM_NO_LICENSE_AGREEMENT:
+ * @PK_ERROR_ENUM_FILE_CONFLICTS: File conflicts detected
+ * @PK_ERROR_ENUM_PACKAGE_CONFLICTS: Package conflict
+ * @PK_ERROR_ENUM_REPO_NOT_AVAILABLE: Repository not available
+ * @PK_ERROR_ENUM_INVALID_PACKAGE_FILE:
+ * @PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED: Package installation blocked
+ * @PK_ERROR_ENUM_PACKAGE_CORRUPT: Package corruption occurred
+ * @PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED: All packages already installed
+ * @PK_ERROR_ENUM_FILE_NOT_FOUND: Required file not found
+ * @PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY: Out of repository mirrors to try
+ * @PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA: No distribution upgrade path found
+ * @PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE: Incompatible architecture found
+ * @PK_ERROR_ENUM_NO_SPACE_ON_DEVICE: Out of required disk space
+ * @PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED: Need to change media
+ * @PK_ERROR_ENUM_NOT_AUTHORIZED: Authorization failed
+ * @PK_ERROR_ENUM_UPDATE_NOT_FOUND: Update not found
+ * @PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED: Installation repository missing signature
+ * @PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED: Update repository missing signature
+ * @PK_ERROR_ENUM_CANNOT_GET_FILELIST: Cannot get file list
+ * @PK_ERROR_ENUM_CANNOT_GET_REQUIRES: Cannot get package requirements
+ * @PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY: Cannot disable reposoitory
+ * @PK_ERROR_ENUM_RESTRICTED_DOWNLOAD:
+ * @PK_ERROR_ENUM_PACKAGE_FAILED_TO_CONFIGURE: Package failed to configure
+ * @PK_ERROR_ENUM_PACKAGE_FAILED_TO_BUILD: Package failed to build
+ * @PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL: Package failed to install
+ * @PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE: Package failed to remove
+ * @PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS:
+ * @PK_ERROR_ENUM_PACKAGE_DATABASE_CHANGED:
+ * @PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED:
+ * @PK_ERROR_ENUM_INSTALL_ROOT_INVALID: Installtion root not suitable
+ * @PK_ERROR_ENUM_CANNOT_FETCH_SOURCES: Cannot fetch sources
+ * @PK_ERROR_ENUM_CANCELLED_PRIORITY: Cancelled due to higher priority task
+ * @PK_ERROR_ENUM_UNFINISHED_TRANSACTION: Transaction unfinished
+ * @PK_ERROR_ENUM_LOCK_REQUIRED: Required lock not available
+ * @PK_ERROR_ENUM_REPO_ALREADY_SET:
+ * @PK_ERROR_ENUM_LAST:
  *
  * The error type
  **/
@@ -314,6 +518,42 @@ typedef enum {
 
 /**
  * PkGroupEnum:
+ * @PK_GROUP_ENUM_UNKNOWN: Unknown group
+ * @PK_GROUP_ENUM_ACCESSIBILITY: Accessibility related packages
+ * @PK_GROUP_ENUM_ACCESSORIES: Accessory packages
+ * @PK_GROUP_ENUM_ADMIN_TOOLS: Administration tools packages
+ * @PK_GROUP_ENUM_COMMUNICATION: Communication packages
+ * @PK_GROUP_ENUM_DESKTOP_GNOME: GNOME packages
+ * @PK_GROUP_ENUM_DESKTOP_KDE: KDE packages
+ * @PK_GROUP_ENUM_DESKTOP_OTHER: Other desktop packages
+ * @PK_GROUP_ENUM_DESKTOP_XFCE: XFCE packages
+ * @PK_GROUP_ENUM_EDUCATION: Education packages
+ * @PK_GROUP_ENUM_FONTS: Fonts
+ * @PK_GROUP_ENUM_GAMES: Games
+ * @PK_GROUP_ENUM_GRAPHICS: Graphics related packages
+ * @PK_GROUP_ENUM_INTERNET: Internet related packages
+ * @PK_GROUP_ENUM_LEGACY: Legacy packages
+ * @PK_GROUP_ENUM_LOCALIZATION: Localization related packages
+ * @PK_GROUP_ENUM_MAPS: Map related packages
+ * @PK_GROUP_ENUM_MULTIMEDIA: Multimedia packages
+ * @PK_GROUP_ENUM_NETWORK: Network related packages
+ * @PK_GROUP_ENUM_OFFICE: Office packages
+ * @PK_GROUP_ENUM_OTHER:
+ * @PK_GROUP_ENUM_POWER_MANAGEMENT: Power-management related packages
+ * @PK_GROUP_ENUM_PROGRAMMING: Programming packages
+ * @PK_GROUP_ENUM_PUBLISHING: Publishing related packages
+ * @PK_GROUP_ENUM_REPOS:
+ * @PK_GROUP_ENUM_SECURITY: Security packages
+ * @PK_GROUP_ENUM_SERVERS: Server related packages
+ * @PK_GROUP_ENUM_SYSTEM: System packages
+ * @PK_GROUP_ENUM_VIRTUALIZATION: Virtualization packages
+ * @PK_GROUP_ENUM_SCIENCE: Science related packages
+ * @PK_GROUP_ENUM_DOCUMENTATION: Documentation
+ * @PK_GROUP_ENUM_ELECTRONICS: Electronics package
+ * @PK_GROUP_ENUM_COLLECTIONS:
+ * @PK_GROUP_ENUM_VENDOR: Vendor defined group
+ * @PK_GROUP_ENUM_NEWEST: Special group for recently updated packages
+ * @PK_GROUP_ENUM_LAST:
  *
  * The group type
  **/
@@ -358,6 +598,11 @@ typedef enum {
 
 /**
  * PkUpdateStateEnum:
+ * @PK_UPDATE_STATE_ENUM_UNKNOWN: Update stability unknown
+ * @PK_UPDATE_STATE_ENUM_STABLE: Update is a stable release
+ * @PK_UPDATE_STATE_ENUM_UNSTABLE: Update is an unstable release
+ * @PK_UPDATE_STATE_ENUM_TESTING: Update is a testing release
+ * @PK_UPDATE_STATE_ENUM_LAST:
  *
  * What state the update is in
  **/
@@ -371,6 +616,33 @@ typedef enum {
 
 /**
  * PkInfoEnum:
+ * @PK_INFO_ENUM_UNKNOWN: Package status is unknown
+ * @PK_INFO_ENUM_INSTALLED: Package is installed
+ * @PK_INFO_ENUM_AVAILABLE: Package is available to be installed
+ * @PK_INFO_ENUM_LOW:
+ * @PK_INFO_ENUM_ENHANCEMENT:
+ * @PK_INFO_ENUM_NORMAL:
+ * @PK_INFO_ENUM_BUGFIX:
+ * @PK_INFO_ENUM_IMPORTANT:
+ * @PK_INFO_ENUM_SECURITY:
+ * @PK_INFO_ENUM_BLOCKED: Package is blocked
+ * @PK_INFO_ENUM_DOWNLOADING: Package is downloading
+ * @PK_INFO_ENUM_UPDATING: Package is updating
+ * @PK_INFO_ENUM_INSTALLING: Package is being installed
+ * @PK_INFO_ENUM_REMOVING: Package is being removed
+ * @PK_INFO_ENUM_CLEANUP: Package is running cleanup
+ * @PK_INFO_ENUM_OBSOLETING:
+ * @PK_INFO_ENUM_COLLECTION_INSTALLED:
+ * @PK_INFO_ENUM_COLLECTION_AVAILABLE:
+ * @PK_INFO_ENUM_FINISHED:
+ * @PK_INFO_ENUM_REINSTALLING: Package is being reinstalled
+ * @PK_INFO_ENUM_DOWNGRADING: Package is being downgraded
+ * @PK_INFO_ENUM_PREPARING: Package is preparing for installation/removal
+ * @PK_INFO_ENUM_DECOMPRESSING: Package is decompressing
+ * @PK_INFO_ENUM_UNTRUSTED:
+ * @PK_INFO_ENUM_TRUSTED:
+ * @PK_INFO_ENUM_UNAVAILABLE: Package is unavailable
+ * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific
  * package action, rather than a general state
@@ -407,6 +679,10 @@ typedef enum {
 
 /**
  * PkDistroUpgradeEnum:
+ * @PK_DISTRO_UPGRADE_ENUM_UNKNOWN: Unknown disto upgrade state
+ * @PK_DISTRO_UPGRADE_ENUM_STABLE: Upgraded to stable release
+ * @PK_DISTRO_UPGRADE_ENUM_UNSTABLE: Upgraded to unstable release
+ * @PK_DISTRO_UPGRADE_ENUM_LAST:
  *
  * The distro upgrade status
  **/
@@ -419,6 +695,9 @@ typedef enum {
 
 /**
  * PkSigTypeEnum:
+ * @PK_SIGTYPE_ENUM_UNKNOWN: Unkwown signature type
+ * @PK_SIGTYPE_ENUM_GPG: GPG signature
+ * @PK_SIGTYPE_ENUM_LAST:
  *
  * The signature type type
  **/
@@ -430,6 +709,11 @@ typedef enum {
 
 /**
  * PkMediaTypeEnum:
+ * @PK_MEDIA_TYPE_ENUM_UNKNOWN: Unknown media type
+ * @PK_MEDIA_TYPE_ENUM_CD: Media is a CD
+ * @PK_MEDIA_TYPE_ENUM_DVD: Media is a DVD
+ * @PK_MEDIA_TYPE_ENUM_DISC: Media is a disc (not CD or DVD)
+ * @PK_MEDIA_TYPE_ENUM_LAST:
  *
  * The media type
  **/
@@ -443,6 +727,11 @@ typedef enum {
 
 /**
  * PkAuthorizeEnum:
+ * @PK_AUTHORIZE_ENUM_UNKNOWN: Unknown authorization status
+ * @PK_AUTHORIZE_ENUM_YES: Authorized
+ * @PK_AUTHORIZE_ENUM_NO: Not authorized
+ * @PK_AUTHORIZE_ENUM_INTERACTIVE: Interaction required for authorization
+ * @PK_AUTHORIZE_ENUM_LAST:
  *
  * The authorization result
  **/
@@ -456,6 +745,11 @@ typedef enum {
 
 /**
  * PkUpgradeKindEnum:
+ * @PK_UPGRADE_KIND_ENUM_UNKNOWN:
+ * @PK_UPGRADE_KIND_ENUM_MINIMAL: Perform minimal upgrade
+ * @PK_UPGRADE_KIND_ENUM_DEFAULT: Perform default upgrade
+ * @PK_UPGRADE_KIND_ENUM_COMPLETE: Perform complete upgrade
+ * @PK_UPGRADE_KIND_ENUM_LAST:
  *
  * The type of distribution upgrade to perform
  **/
@@ -469,6 +763,14 @@ typedef enum {
 
 /**
  * PkTransactionFlagEnum:
+ * @PK_TRANSACTION_FLAG_ENUM_NONE: No transaction flag
+ * @PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED: Only allow trusted packages
+ * @PK_TRANSACTION_FLAG_ENUM_SIMULATE: Simulate transaction
+ * @PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD: Only download packages
+ * @PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL: Allow package reinstallation
+ * @PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL: Only allow package reinstallation
+ * @PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE: Allow packages to be downgraded
+ * @PK_TRANSACTION_FLAG_ENUM_LAST:
  *
  * The transaction flags that alter how the transaction is handled
  **/

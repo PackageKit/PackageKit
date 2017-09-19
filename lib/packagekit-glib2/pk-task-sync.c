@@ -39,7 +39,7 @@ typedef struct {
 	PkResults	*results;
 } PkTaskHelper;
 
-/**
+/*
  * pk_task_generic_finish_sync:
  **/
 static void
@@ -67,13 +67,13 @@ pk_task_generic_finish_sync (PkTask *task, GAsyncResult *res, PkTaskHelper *help
  * @error: the #GError to store any failure, or %NULL
  *
  * Remove a package (optionally with dependancies) from the system.
- * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.5.3
  **/
@@ -126,7 +126,7 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.5.3
  **/
@@ -179,7 +179,7 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.5.3
  **/
@@ -233,7 +233,7 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.5.3
  **/
@@ -286,7 +286,7 @@ pk_task_install_files_sync (PkTask *task, gchar **files, GCancellable *cancellab
  *
  * Since: 0.6.5
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  **/
 PkResults *
 pk_task_resolve_sync (PkTask *task, PkBitfield filters, gchar **packages, GCancellable *cancellable,
@@ -338,7 +338,7 @@ pk_task_resolve_sync (PkTask *task, PkBitfield filters, gchar **packages, GCance
  *
  * Since: 0.6.5
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  **/
 PkResults *
 pk_task_search_names_sync (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -390,7 +390,7 @@ pk_task_search_names_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
  *
  * Since: 0.6.5
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  **/
 PkResults *
 pk_task_search_details_sync (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -440,7 +440,7 @@ pk_task_search_details_sync (PkTask *task, PkBitfield filters, gchar **values, G
  *
  * Searches the group lists.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -492,7 +492,7 @@ pk_task_search_groups_sync (PkTask *task, PkBitfield filters, gchar **values, GC
  *
  * Searches for specific files.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -543,7 +543,7 @@ pk_task_search_files_sync (PkTask *task, PkBitfield filters, gchar **values, GCa
  *
  * Gets details about packages.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -594,7 +594,7 @@ pk_task_get_details_sync (PkTask *task, gchar **package_ids, GCancellable *cance
  *
  * Gets details about updates.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -646,7 +646,7 @@ pk_task_get_update_detail_sync (PkTask *task, gchar **package_ids, GCancellable 
  *
  * Downloads packages
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -697,7 +697,7 @@ pk_task_download_packages_sync (PkTask *task, gchar **package_ids, const gchar *
  *
  * Gets the update lists.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -750,7 +750,7 @@ pk_task_get_updates_sync (PkTask *task, PkBitfield filters, GCancellable *cancel
  *
  * Get the list of dependent packages.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -801,7 +801,7 @@ pk_task_depends_on_sync (PkTask *task, PkBitfield filters, gchar **package_ids, 
  *
  * Gets the list of packages.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -854,7 +854,7 @@ pk_task_get_packages_sync (PkTask *task, PkBitfield filters, GCancellable *cance
  *
  * Get the packages this package requires.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -906,7 +906,7 @@ pk_task_required_by_sync (PkTask *task, PkBitfield filters, gchar **package_ids,
  *
  * Find the package that provides some resource.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -958,7 +958,7 @@ pk_task_what_provides_sync (PkTask *task, PkBitfield filters,
  *
  * Get the files in a package.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -1008,7 +1008,7 @@ pk_task_get_files_sync (PkTask *task, gchar **package_ids, GCancellable *cancell
  *
  * Get the categories available.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -1059,7 +1059,7 @@ pk_task_get_categories_sync (PkTask *task, GCancellable *cancellable,
  *
  * Refresh the package cache.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -1110,7 +1110,7 @@ pk_task_refresh_cache_sync (PkTask *task, gboolean force, GCancellable *cancella
  *
  * Get the list of available repositories.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -1162,7 +1162,7 @@ pk_task_get_repo_list_sync (PkTask *task, PkBitfield filters, GCancellable *canc
  *
  * Enable or disable a specific repo.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.6.5
  **/
@@ -1218,7 +1218,7 @@ pk_task_repo_enable_sync (PkTask *task, const gchar *repo_id, gboolean enabled, 
  *
  * The backend will decide what is best to do.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 1.0.12
  **/
@@ -1274,7 +1274,7 @@ pk_task_upgrade_system_sync (PkTask *task,
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: (transfer full): a %PkResults object, or NULL for error
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
  * Since: 0.7.2
  **/

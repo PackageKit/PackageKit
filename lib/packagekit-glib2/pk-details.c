@@ -189,7 +189,7 @@ pk_details_get_size (PkDetails *details)
 	return details->priv->size;
 }
 
-/**
+/*
  * pk_details_get_property:
  **/
 static void
@@ -226,7 +226,7 @@ pk_details_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	}
 }
 
-/**
+/*
  * pk_details_set_property:
  **/
 static void
@@ -268,7 +268,7 @@ pk_details_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_details_class_init:
  **/
 static void
@@ -353,7 +353,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	g_type_class_add_private (klass, sizeof (PkDetailsPrivate));
 }
 
-/**
+/*
  * pk_details_init:
  **/
 static void
@@ -362,7 +362,7 @@ pk_details_init (PkDetails *details)
 	details->priv = PK_DETAILS_GET_PRIVATE (details);
 }
 
-/**
+/*
  * pk_details_finalize:
  **/
 static void

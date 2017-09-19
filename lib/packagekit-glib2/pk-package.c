@@ -149,7 +149,7 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
  * pk_package_set_id:
  * @package: a valid #PkPackage instance
  * @package_id: the valid package_id
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Sets the package object to have the given ID
  *
@@ -205,7 +205,7 @@ out:
  * pk_package_parse:
  * @package: a valid #PkPackage instance
  * @data: the data describing the package
- * @error: a %GError to put the error code and message in, or %NULL
+ * @error: a #GError to put the error code and message in, or %NULL
  *
  * Parses the data to populate the #PkPackage.
  *
@@ -243,7 +243,7 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
  *
  * Gets the package object ID
  *
- * Return value: the %PkInfoEnum
+ * Return value: the #PkInfoEnum
  *
  * Since: 0.5.4
  **/
@@ -257,7 +257,7 @@ pk_package_get_info (PkPackage *package)
 /**
  * pk_package_set_info:
  * @package: a valid #PkPackage instance
- * @info: the %PkInfoEnum
+ * @info: the #PkInfoEnum
  *
  * Sets the package info enum.
  *
@@ -412,7 +412,7 @@ pk_package_print (PkPackage *package)
 		 package->priv->summary);
 }
 
-/**
+/*
  * pk_package_get_property:
  **/
 static void
@@ -485,7 +485,7 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	}
 }
 
-/**
+/*
  * pk_package_set_property:
  **/
 static void
@@ -567,7 +567,7 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_package_class_init:
  * @klass: The PkPackageClass
  **/
@@ -805,7 +805,7 @@ pk_package_class_init (PkPackageClass *klass)
 	g_type_class_add_private (klass, sizeof (PkPackagePrivate));
 }
 
-/**
+/*
  * pk_package_init:
  * @package: This class instance
  **/
@@ -819,7 +819,7 @@ pk_package_init (PkPackage *package)
 	package->priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 }
 
-/**
+/*
  * pk_package_finalize:
  * @object: The object to finalize
  **/

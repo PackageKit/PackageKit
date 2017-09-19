@@ -98,10 +98,135 @@
     <xi:include href="xml/pk-common.xml"/>
     <xi:include href="xml/pk-control-sync.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
+    <xi:include href="xml/pk-offline.xml"/>
     <xi:include href="xml/pk-package-ids.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>
     <xi:include href="xml/pk-task-sync.xml"/>
   </reference>
 
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.5.0</title>
+    <xi:include href="xml/api-index-0.5.0.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.5.2</title>
+    <xi:include href="xml/api-index-0.5.2.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.5.3</title>
+    <xi:include href="xml/api-index-0.5.3.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.5.4</title>
+    <xi:include href="xml/api-index-0.5.4.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.5.5</title>
+    <xi:include href="xml/api-index-0.5.5.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.1</title>
+    <xi:include href="xml/api-index-0.6.1.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.2</title>
+    <xi:include href="xml/api-index-0.6.2.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.3</title>
+    <xi:include href="xml/api-index-0.6.3.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.4</title>
+    <xi:include href="xml/api-index-0.6.4.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.5</title>
+    <xi:include href="xml/api-index-0.6.5.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.10</title>
+    <xi:include href="xml/api-index-0.6.10.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.11</title>
+    <xi:include href="xml/api-index-0.6.11.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.6.13</title>
+    <xi:include href="xml/api-index-0.6.13.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.7.2</title>
+    <xi:include href="xml/api-index-0.7.2.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.7.5</title>
+    <xi:include href="xml/api-index-0.7.5.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.0</title>
+    <xi:include href="xml/api-index-0.8.0.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.1</title>
+    <xi:include href="xml/api-index-0.8.1.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.6</title>
+    <xi:include href="xml/api-index-0.8.6.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.8</title>
+    <xi:include href="xml/api-index-0.8.8.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.11</title>
+    <xi:include href="xml/api-index-0.8.11.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.12</title>
+    <xi:include href="xml/api-index-0.8.12.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.14</title>
+    <xi:include href="xml/api-index-0.8.14.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.16</title>
+    <xi:include href="xml/api-index-0.8.16.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.8.17</title>
+    <xi:include href="xml/api-index-0.8.17.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.9.1</title>
+    <xi:include href="xml/api-index-0.9.1.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.9.5</title>
+    <xi:include href="xml/api-index-0.9.5.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 0.9.6</title>
+    <xi:include href="xml/api-index-0.9.6.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 1.0.2</title>
+    <xi:include href="xml/api-index-1.0.2.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 1.0.10</title>
+    <xi:include href="xml/api-index-1.0.10.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 1.0.12</title>
+    <xi:include href="xml/api-index-1.0.12.xml"/>
+  </index>
+  <index id="api-index-1-0">
+    <title>Index of new symbols in 1.1.2</title>
+    <xi:include href="xml/api-index-1.1.2.xml"/>
+  </index>
 </book>
 

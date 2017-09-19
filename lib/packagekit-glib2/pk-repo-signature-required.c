@@ -72,7 +72,7 @@ enum {
 
 G_DEFINE_TYPE (PkRepoSignatureRequired, pk_repo_signature_required, PK_TYPE_SOURCE)
 
-/**
+/*
  * pk_repo_signature_required_get_property:
  **/
 static void
@@ -112,7 +112,7 @@ pk_repo_signature_required_get_property (GObject *object, guint prop_id, GValue 
 	}
 }
 
-/**
+/*
  * pk_repo_signature_required_set_property:
  **/
 static void
@@ -159,7 +159,7 @@ pk_repo_signature_required_set_property (GObject *object, guint prop_id, const G
 	}
 }
 
-/**
+/*
  * pk_repo_signature_required_class_init:
  **/
 static void
@@ -254,7 +254,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	g_type_class_add_private (klass, sizeof (PkRepoSignatureRequiredPrivate));
 }
 
-/**
+/*
  * pk_repo_signature_required_init:
  **/
 static void
@@ -263,7 +263,7 @@ pk_repo_signature_required_init (PkRepoSignatureRequired *repo_signature_require
 	repo_signature_required->priv = PK_REPO_SIGNATURE_REQUIRED_GET_PRIVATE (repo_signature_required);
 }
 
-/**
+/*
  * pk_repo_signature_required_finalize:
  **/
 static void

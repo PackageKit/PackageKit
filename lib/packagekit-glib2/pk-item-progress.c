@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-item_progress
+ * SECTION:pk-item-progress
  * @short_description: ItemProgress object
  *
  * This GObject represents a item_progress from a transaction.
@@ -63,6 +63,11 @@ G_DEFINE_TYPE (PkItemProgress, pk_item_progress, PK_TYPE_SOURCE)
 
 /**
  * pk_item_progress_get_status:
+ * @item_progress: a valid #PkItemProgress instance
+ *
+ * Get the status of this item.
+ *
+ * Return value: a #PkStatusEnum
  **/
 guint
 pk_item_progress_get_status (PkItemProgress *item_progress)
@@ -72,6 +77,11 @@ pk_item_progress_get_status (PkItemProgress *item_progress)
 
 /**
  * pk_item_progress_get_percentage:
+ * @item_progress: a valid #PkItemProgress instance
+ *
+ * Get the percentage complete of this item.
+ *
+ * Return value: a progress percentage (0-100)
  **/
 guint
 pk_item_progress_get_percentage (PkItemProgress *item_progress)
@@ -81,6 +91,11 @@ pk_item_progress_get_percentage (PkItemProgress *item_progress)
 
 /**
  * pk_item_progress_get_package_id:
+ * @item_progress: a valid #PkItemProgress instance
+ *
+ * Get the package ID this item is working on.
+ *
+ * Return value: a package ID
  **/
 const gchar *
 pk_item_progress_get_package_id (PkItemProgress *item_progress)
@@ -88,7 +103,7 @@ pk_item_progress_get_package_id (PkItemProgress *item_progress)
 	return item_progress->priv->package_id;
 }
 
-/**
+/*
  * pk_item_progress_get_property:
  **/
 static void
@@ -113,7 +128,7 @@ pk_item_progress_get_property (GObject *object, guint prop_id, GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_item_progress_set_property:
  **/
 static void
@@ -139,7 +154,7 @@ pk_item_progress_set_property (GObject *object, guint prop_id, const GValue *val
 	}
 }
 
-/**
+/*
  * pk_item_progress_class_init:
  **/
 static void
@@ -184,7 +199,7 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	g_type_class_add_private (klass, sizeof (PkItemProgressPrivate));
 }
 
-/**
+/*
  * pk_item_progress_init:
  **/
 static void
@@ -193,7 +208,7 @@ pk_item_progress_init (PkItemProgress *item_progress)
 	item_progress->priv = PK_ITEM_PROGRESS_GET_PRIVATE (item_progress);
 }
 
-/**
+/*
  * pk_item_progress_finalize:
  **/
 static void
@@ -209,6 +224,8 @@ pk_item_progress_finalize (GObject *object)
 
 /**
  * pk_item_progress_new:
+ *
+ * An object containing item inside a #PkProgress.
  *
  * Return value: a new PkItemProgress object.
  *

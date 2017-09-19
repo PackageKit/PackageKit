@@ -174,7 +174,7 @@ _g_strvcmp0 (gchar **one, gchar **two)
 	return TRUE;
 }
 
-/**
+/*
  * pk_control_set_property_value:
  **/
 static void
@@ -311,7 +311,7 @@ pk_control_set_property_value (PkControl *control,
 	g_warning ("unhandled property '%s'", key);
 }
 
-/**
+/*
  * pk_control_properties_changed_cb:
  **/
 static void
@@ -335,7 +335,7 @@ pk_control_properties_changed_cb (GDBusProxy *proxy,
 	}
 }
 
-/**
+/*
  * pk_control_signal_cb:
  **/
 static void
@@ -378,7 +378,7 @@ pk_control_signal_cb (GDBusProxy *proxy,
 	}
 }
 
-/**
+/*
  * pk_control_proxy_connect:
  **/
 static void
@@ -412,7 +412,7 @@ pk_control_proxy_connect (PkControlState *state)
 
 /**********************************************************************/
 
-/**
+/*
  * pk_control_get_tid_state_finish:
  **/
 static void
@@ -447,7 +447,7 @@ pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_get_tid_cb:
  **/
 static void
@@ -476,7 +476,7 @@ pk_control_get_tid_cb (GObject *source_object,
 	pk_control_get_tid_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_get_tid_internal:
  **/
 static void
@@ -492,7 +492,7 @@ pk_control_get_tid_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_get_tid_proxy_cb:
  **/
 static void
@@ -613,7 +613,7 @@ pk_control_get_tid_finish (PkControl *control,
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_suggest_daemon_quit_state_finish:
  **/
 static void
@@ -647,7 +647,7 @@ pk_control_suggest_daemon_quit_state_finish (PkControlState *state,
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_suggest_daemon_quit_cb:
  **/
 static void
@@ -674,7 +674,7 @@ pk_control_suggest_daemon_quit_cb (GObject *source_object,
 	pk_control_suggest_daemon_quit_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_suggest_daemon_quit_internal:
  **/
 static void
@@ -690,7 +690,7 @@ pk_control_suggest_daemon_quit_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_suggest_daemon_quit_proxy_cb:
  **/
 static void
@@ -809,7 +809,7 @@ pk_control_suggest_daemon_quit_finish (PkControl *control, GAsyncResult *res, GE
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_get_daemon_state_state_finish:
  **/
 static void
@@ -843,7 +843,7 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *e
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_get_daemon_state_cb:
  **/
 static void
@@ -872,7 +872,7 @@ pk_control_get_daemon_state_cb (GObject *source_object,
 	pk_control_get_daemon_state_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_get_daemon_state_internal:
  **/
 static void
@@ -888,7 +888,7 @@ pk_control_get_daemon_state_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_get_daemon_state_proxy_cb:
  **/
 static void
@@ -1009,7 +1009,7 @@ pk_control_get_daemon_state_finish (PkControl *control,
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_set_proxy_state_finish:
  **/
 static void
@@ -1044,7 +1044,7 @@ pk_control_set_proxy_state_finish (PkControlState *state,
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_set_proxy_cb:
  **/
 static void
@@ -1072,7 +1072,7 @@ pk_control_set_proxy_cb (GObject *source_object,
 	pk_control_set_proxy_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_set_proxy_internal:
  **/
 static void
@@ -1088,7 +1088,7 @@ pk_control_set_proxy_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_set_proxy_proxy_cb:
  **/
 static void
@@ -1264,7 +1264,7 @@ pk_control_set_proxy_finish (PkControl *control,
 
 /**********************************************************************/
 
-/**
+/*
  * pk_control_get_transaction_list_state_finish:
  **/
 static void
@@ -1300,7 +1300,7 @@ pk_control_get_transaction_list_state_finish (PkControlState *state,
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_get_transaction_list_cb:
  **/
 static void
@@ -1336,7 +1336,7 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 	pk_control_get_transaction_list_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_get_transaction_list_internal:
  **/
 static void
@@ -1352,7 +1352,7 @@ pk_control_get_transaction_list_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_get_transaction_list_proxy_cb:
  **/
 static void
@@ -1473,7 +1473,7 @@ pk_control_get_transaction_list_finish (PkControl *control,
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_get_time_since_action_state_finish:
  **/
 static void
@@ -1507,7 +1507,7 @@ pk_control_get_time_since_action_state_finish (PkControlState *state,
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_get_time_since_action_cb:
  **/
 static void
@@ -1541,7 +1541,7 @@ pk_control_get_time_since_action_cb (GObject *source_object,
 	pk_control_get_time_since_action_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_get_time_since_action_internal:
  **/
 static void
@@ -1557,7 +1557,7 @@ pk_control_get_time_since_action_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_get_time_since_action_proxy_cb:
  **/
 static void
@@ -1683,7 +1683,7 @@ pk_control_get_time_since_action_finish (PkControl *control,
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_can_authorize_state_finish:
  **/
 static void
@@ -1716,7 +1716,7 @@ pk_control_can_authorize_state_finish (PkControlState *state, const GError *erro
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_can_authorize_cb:
  **/
 static void
@@ -1750,7 +1750,7 @@ pk_control_can_authorize_cb (GObject *source_object,
 	pk_control_can_authorize_state_finish (state, NULL);
 }
 
-/**
+/*
  * pk_control_can_authorize_internal:
  **/
 static void
@@ -1766,7 +1766,7 @@ pk_control_can_authorize_internal (PkControlState *state)
 			   state);
 }
 
-/**
+/*
  * pk_control_can_authorize_proxy_cb:
  **/
 static void
@@ -1863,7 +1863,7 @@ pk_control_can_authorize_async (PkControl *control,
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the %PkAuthorizeEnum or %PK_AUTHORIZE_ENUM_UNKNOWN if the method failed
+ * Return value: the #PkAuthorizeEnum or %PK_AUTHORIZE_ENUM_UNKNOWN if the method failed
  *
  * Since: 0.5.2
  **/
@@ -1890,7 +1890,7 @@ pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError *
 /**********************************************************************/
 
 
-/**
+/*
  * pk_control_get_properties_state_finish:
  **/
 static void
@@ -1923,7 +1923,7 @@ pk_control_get_properties_state_finish (PkControlState *state, const GError *err
 	g_slice_free (PkControlState, state);
 }
 
-/**
+/*
  * pk_control_get_properties_cb:
  **/
 static void
@@ -2051,7 +2051,7 @@ pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError 
 
 /**********************************************************************/
 
-/**
+/*
  * pk_control_get_property:
  **/
 static void
@@ -2112,7 +2112,7 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	}
 }
 
-/**
+/*
  * pk_control_set_property:
  **/
 static void
@@ -2125,7 +2125,7 @@ pk_control_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	}
 }
 
-/**
+/*
  * pk_control_class_init:
  * @klass: The PkControlClass
  **/
@@ -2347,7 +2347,7 @@ pk_control_class_init (PkControlClass *klass)
 	g_type_class_add_private (klass, sizeof (PkControlPrivate));
 }
 
-/**
+/*
  * pk_control_name_appeared_cb:
  **/
 static void
@@ -2362,7 +2362,7 @@ pk_control_name_appeared_cb (GDBusConnection *connection,
 	g_object_notify (G_OBJECT(control), "connected");
 }
 
-/**
+/*
  * pk_control_proxy_destroy:
  **/
 static void
@@ -2380,7 +2380,7 @@ pk_control_proxy_destroy (PkControl *control)
 	control->priv->proxy = NULL;
 }
 
-/**
+/*
  * pk_control_name_vanished_cb:
  **/
 static void
@@ -2399,7 +2399,7 @@ pk_control_name_vanished_cb (GDBusConnection *connection,
 	pk_control_proxy_destroy (control);
 }
 
-/**
+/*
  * pk_control_init:
  * @control: This class instance
  **/
@@ -2422,7 +2422,7 @@ pk_control_init (PkControl *control)
 						    NULL);
 }
 
-/**
+/*
  * pk_control_finalize:
  * @object: The object to finalize
  **/

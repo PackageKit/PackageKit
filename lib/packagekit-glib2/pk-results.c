@@ -79,7 +79,7 @@ enum {
 
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
 
-/**
+/*
  * pk_results_get_property:
  **/
 static void
@@ -107,7 +107,7 @@ pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	}
 }
 
-/**
+/*
  * pk_results_set_property:
  **/
 static void
@@ -552,7 +552,6 @@ pk_results_get_error_code (PkResults *results)
  *
  * Since: 0.5.2
  **/
-
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
@@ -804,7 +803,7 @@ pk_results_get_repo_detail_array (PkResults *results)
 	return g_ptr_array_ref (results->priv->repo_detail_array);
 }
 
-/**
+/*
  * pk_results_class_init:
  **/
 static void
@@ -860,7 +859,7 @@ pk_results_class_init (PkResultsClass *klass)
 	g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
 }
 
-/**
+/*
  * pk_results_init:
  **/
 static void
@@ -886,7 +885,7 @@ pk_results_init (PkResults *results)
 	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
-/**
+/*
  * pk_results_finalize:
  **/
 static void

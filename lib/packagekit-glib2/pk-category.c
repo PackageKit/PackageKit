@@ -64,7 +64,7 @@ G_DEFINE_TYPE (PkCategory, pk_category, PK_TYPE_SOURCE)
 
 /**
  * pk_category_get_parent_id:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  *
  * Gets the parent category id.
  *
@@ -81,7 +81,7 @@ pk_category_get_parent_id (PkCategory *category)
 
 /**
  * pk_category_set_parent_id:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  * @parent_id: the new value
  *
  * Sets the parent category id.
@@ -98,7 +98,7 @@ pk_category_set_parent_id (PkCategory *category, const gchar *parent_id)
 
 /**
  * pk_category_get_id:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  *
  * Gets the id specific to this category.
  *
@@ -115,7 +115,7 @@ pk_category_get_id (PkCategory *category)
 
 /**
  * pk_category_set_id:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  * @cat_id: the new value
  *
  * Sets the id specific to this category.
@@ -132,7 +132,7 @@ pk_category_set_id (PkCategory *category, const gchar *cat_id)
 
 /**
  * pk_category_get_name:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  *
  * Gets the name.
  *
@@ -149,7 +149,7 @@ pk_category_get_name (PkCategory *category)
 
 /**
  * pk_category_set_name:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  * @name: the new value
  *
  * Sets the name.
@@ -166,7 +166,7 @@ pk_category_set_name (PkCategory *category, const gchar *name)
 
 /**
  * pk_category_get_summary:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  *
  * Gets the summary.
  *
@@ -183,7 +183,7 @@ pk_category_get_summary (PkCategory *category)
 
 /**
  * pk_category_set_summary:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  * @summary: the new value
  *
  * Sets the summary.
@@ -200,7 +200,7 @@ pk_category_set_summary (PkCategory *category, const gchar *summary)
 
 /**
  * pk_category_get_icon:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  *
  * Gets the icon filename.
  *
@@ -217,7 +217,7 @@ pk_category_get_icon (PkCategory *category)
 
 /**
  * pk_category_set_icon:
- * @category: The %PkCategory
+ * @category: The #PkCategory
  * @icon: the new value
  *
  * Sets the icon filename.
@@ -232,7 +232,7 @@ pk_category_set_icon (PkCategory *category, const gchar *icon)
 	category->priv->icon = g_strdup (icon);
 }
 
-/**
+/*
  * pk_category_get_property:
  **/
 static void
@@ -263,7 +263,7 @@ pk_category_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 	}
 }
 
-/**
+/*
  * pk_category_set_property:
  **/
 static void
@@ -299,7 +299,7 @@ pk_category_set_property (GObject *object, guint prop_id, const GValue *value, G
 	}
 }
 
-/**
+/*
  * pk_category_class_init:
  **/
 static void
@@ -364,7 +364,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	g_type_class_add_private (klass, sizeof (PkCategoryPrivate));
 }
 
-/**
+/*
  * pk_category_init:
  **/
 static void
@@ -373,7 +373,7 @@ pk_category_init (PkCategory *category)
 	category->priv = PK_CATEGORY_GET_PRIVATE (category);
 }
 
-/**
+/*
  * pk_category_finalize:
  **/
 static void

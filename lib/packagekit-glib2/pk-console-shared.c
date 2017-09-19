@@ -39,6 +39,12 @@
 
 /**
  * pk_console_get_number:
+ * @question: question to ask user
+ * @maxnum: maximum number allowed
+ *
+ * Get a number from the console.
+ *
+ * Return value: a number entered by the user.
  **/
 guint
 pk_console_get_number (const gchar *question, guint maxnum)
@@ -70,7 +76,7 @@ pk_console_get_number (const gchar *question, guint maxnum)
 }
 
 
-/**
+/*
  * pk_readline_unbuffered:
  **/
 static GString *
@@ -131,6 +137,12 @@ out:
 
 /**
  * pk_console_get_prompt:
+ * @question: question to ask user
+ * @defaultyes: %TRUE if the default answer is yes
+ *
+ * Prompt the user with a yes/no question.
+ *
+ * Return value: %TRUE if the user accepted the question.
  **/
 gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
@@ -174,6 +186,11 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 /**
  * pk_status_enum_to_localised_text:
+ * @status: a #PkStatusEnum
+ *
+ * Convert a #PkStatusEnum to a localized string suitable for showing to a user.
+ *
+ * Return value: a localized string.
  **/
 const gchar *
 pk_status_enum_to_localised_text (PkStatusEnum status)

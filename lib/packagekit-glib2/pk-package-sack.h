@@ -70,6 +70,16 @@ struct _PkPackageSackClass
 	void (*_pk_reserved5) (void);
 };
 
+/**
+ * PkPackageSackSortType:
+ * @PK_PACKAGE_SACK_SORT_TYPE_NAME: Sort by name
+ * @PK_PACKAGE_SACK_SORT_TYPE_INFO: Sort by package info
+ * @PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID: Sort by package ID
+ * @PK_PACKAGE_SACK_SORT_TYPE_SUMMARY: Sort by summary
+ * @PK_PACKAGE_SACK_SORT_TYPE_LAST:
+ *
+ * Type of sort to perform.
+ **/
 typedef enum {
 	PK_PACKAGE_SACK_SORT_TYPE_NAME,
 	PK_PACKAGE_SACK_SORT_TYPE_INFO,

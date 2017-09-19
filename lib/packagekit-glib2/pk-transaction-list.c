@@ -62,7 +62,7 @@ static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 
-/**
+/*
  * pk_transaction_list_process_transaction_list:
  **/
 static void
@@ -125,7 +125,7 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 	}
 }
 
-/**
+/*
  * pk_transaction_list_get_transaction_list_cb:
  **/
 static void
@@ -145,7 +145,7 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
 }
 
-/**
+/*
  * pk_transaction_list_get_transaction_list:
  **/
 static void
@@ -156,7 +156,7 @@ pk_transaction_list_get_transaction_list (PkTransactionList *tlist)
 					       (GAsyncReadyCallback) pk_transaction_list_get_transaction_list_cb, tlist);
 }
 
-/**
+/*
  * pk_transaction_list_task_list_changed_cb:
  **/
 static void
@@ -166,7 +166,7 @@ pk_transaction_list_task_list_changed_cb (PkControl *control, gchar **transactio
 	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
 }
 
-/**
+/*
  * pk_transaction_list_notify_connected_cb:
  **/
 static void
@@ -195,7 +195,7 @@ pk_transaction_list_get_ids (PkTransactionList *tlist)
 	return pk_ptr_array_to_strv (tlist->priv->transaction_ids);
 }
 
-/**
+/*
  * pk_transaction_list_class_init:
  **/
 static void
@@ -236,7 +236,7 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTransactionListPrivate));
 }
 
-/**
+/*
  * pk_transaction_list_init:
  **/
 static void
@@ -259,7 +259,7 @@ pk_transaction_list_init (PkTransactionList *tlist)
 	pk_transaction_list_get_transaction_list (tlist);
 }
 
-/**
+/*
  * pk_transaction_list_finalize:
  **/
 static void

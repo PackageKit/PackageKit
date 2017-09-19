@@ -111,7 +111,7 @@ pk_repo_detail_get_enabled (PkRepoDetail *repo_detail)
 	return repo_detail->priv->enabled;
 }
 
-/**
+/*
  * pk_repo_detail_get_property:
  **/
 static void
@@ -136,7 +136,7 @@ pk_repo_detail_get_property (GObject *object, guint prop_id, GValue *value, GPar
 	}
 }
 
-/**
+/*
  * pk_repo_detail_set_property:
  **/
 static void
@@ -163,7 +163,7 @@ pk_repo_detail_set_property (GObject *object, guint prop_id, const GValue *value
 	}
 }
 
-/**
+/*
  * pk_repo_detail_class_init:
  **/
 static void
@@ -208,7 +208,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	g_type_class_add_private (klass, sizeof (PkRepoDetailPrivate));
 }
 
-/**
+/*
  * pk_repo_detail_init:
  **/
 static void
@@ -217,7 +217,7 @@ pk_repo_detail_init (PkRepoDetail *repo_detail)
 	repo_detail->priv = PK_REPO_DETAIL_GET_PRIVATE (repo_detail);
 }
 
-/**
+/*
  * pk_repo_detail_finalize:
  **/
 static void

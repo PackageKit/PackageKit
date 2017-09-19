@@ -40,7 +40,7 @@ typedef struct {
 	gchar		**transaction_list;
 } PkControlHelper;
 
-/**
+/*
  * pk_control_get_properties_cb:
  **/
 static void
@@ -97,7 +97,7 @@ pk_control_get_properties (PkControl *control, GCancellable *cancellable, GError
 	return ret;
 }
 
-/**
+/*
  * pk_control_get_transaction_list_cb:
  **/
 static void
@@ -154,7 +154,7 @@ pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, 
 	return transaction_list;
 }
 
-/**
+/*
  * pk_control_suggest_daemon_quit_cb:
  **/
 static void
@@ -211,7 +211,7 @@ pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, G
 	return ret;
 }
 
-/**
+/*
  * pk_control_set_proxy_cb:
  **/
 static void

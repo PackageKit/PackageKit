@@ -41,6 +41,9 @@ CFILE_GLOB=$(top_srcdir)/lib/packagekit-glib2/pk-*.c
 IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
+	pk-common-private.h				\
+	pk-offline-private.h				\
+	pk-spawn-polkit-agent.h				\
 	$(NULL)
 
 # Images to copy into HTML directory.

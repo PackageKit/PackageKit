@@ -43,7 +43,7 @@ struct _PkTaskWrapperPrivate
 
 G_DEFINE_TYPE (PkTaskWrapper, pk_task_wrapper, PK_TYPE_TASK)
 
-/**
+/*
  * pk_task_wrapper_untrusted_question:
  **/
 static void
@@ -60,7 +60,7 @@ pk_task_wrapper_untrusted_question (PkTask *task, guint request, PkResults *resu
 	pk_task_user_accepted (task, request);
 }
 
-/**
+/*
  * pk_task_wrapper_key_question:
  **/
 static void
@@ -75,7 +75,7 @@ pk_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 	pk_task_user_accepted (task, request);
 }
 
-/**
+/*
  * pk_task_wrapper_eula_question:
  **/
 static void
@@ -90,7 +90,7 @@ pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 	pk_task_user_accepted (task, request);
 }
 
-/**
+/*
  * pk_task_wrapper_media_change_question:
  **/
 static void
@@ -105,7 +105,7 @@ pk_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *r
 	pk_task_user_accepted (task, request);
 }
 
-/**
+/*
  * pk_task_wrapper_simulate_question:
  **/
 static void
@@ -139,7 +139,7 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 	pk_task_user_accepted (task, request);
 }
 
-/**
+/*
  * pk_task_wrapper_class_init:
  **/
 static void
@@ -158,7 +158,7 @@ pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTaskWrapperPrivate));
 }
 
-/**
+/*
  * pk_task_wrapper_init:
  * @task_wrapper: This class instance
  **/
@@ -169,7 +169,7 @@ pk_task_wrapper_init (PkTaskWrapper *task)
 	task->priv->user_data = NULL;
 }
 
-/**
+/*
  * pk_task_wrapper_finalize:
  * @object: The object to finalize
  **/

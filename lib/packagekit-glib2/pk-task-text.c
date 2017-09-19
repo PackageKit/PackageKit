@@ -47,7 +47,7 @@ struct _PkTaskTextPrivate
 
 G_DEFINE_TYPE (PkTaskText, pk_task_text, PK_TYPE_TASK)
 
-/**
+/*
  * pk_task_text_untrusted_question:
  **/
 static void
@@ -73,7 +73,7 @@ pk_task_text_untrusted_question (PkTask *task, guint request, PkResults *results
 	}
 }
 
-/**
+/*
  * pk_task_text_key_question:
  **/
 static void
@@ -163,7 +163,7 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	g_ptr_array_unref (array);
 }
 
-/**
+/*
  * pk_task_text_eula_question:
  **/
 static void
@@ -229,7 +229,7 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	g_ptr_array_unref (array);
 }
 
-/**
+/*
  * pk_task_text_media_change_question:
  **/
 static void
@@ -288,7 +288,7 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 	g_ptr_array_unref (array);
 }
 
-/**
+/*
  * pk_task_text_simulate_question_type_to_string:
  **/
 static const gchar *
@@ -348,7 +348,7 @@ package_sort_func (gconstpointer a, gconstpointer b)
 	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
 }
 
-/**
+/*
  * pk_task_text_simulate_question:
  **/
 static void
@@ -442,7 +442,7 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	g_ptr_array_unref (array);
 }
 
-/**
+/*
  * pk_task_text_class_init:
  **/
 static void
@@ -461,7 +461,7 @@ pk_task_text_class_init (PkTaskTextClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTaskTextPrivate));
 }
 
-/**
+/*
  * pk_task_text_init:
  * @task_text: This class instance
  **/
@@ -472,7 +472,7 @@ pk_task_text_init (PkTaskText *task)
 	task->priv->user_data = NULL;
 }
 
-/**
+/*
  * pk_task_text_finalize:
  * @object: The object to finalize
  **/

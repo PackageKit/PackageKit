@@ -49,7 +49,6 @@ struct _PkTaskWrapperClass
 	PkTaskClass			 parent_class;
 };
 
-GQuark		 pk_task_wrapper_error_quark			(void);
 GType		 pk_task_wrapper_get_type			(void);
 PkTaskWrapper	*pk_task_wrapper_new				(void);
 

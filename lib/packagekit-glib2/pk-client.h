@@ -48,13 +48,16 @@ G_BEGIN_DECLS
 /**
  * PkClientError:
  * @PK_CLIENT_ERROR_FAILED: the transaction failed for an unknown reason
+ * @PK_CLIENT_ERROR_FAILED_AUTH: the transaction failed authentication/authorization
  * @PK_CLIENT_ERROR_NO_TID: the transaction id was not pre-allocated (internal error)
  * @PK_CLIENT_ERROR_ALREADY_TID: the transaction id has already been used (internal error)
  * @PK_CLIENT_ERROR_ROLE_UNKNOWN: the role was not set (internal error)
+ * @PK_CLIENT_ERROR_CANNOT_START_DAEMON: the PackageKit daemon failed to start
  * @PK_CLIENT_ERROR_INVALID_INPUT: the package_id is invalid
  * @PK_CLIENT_ERROR_INVALID_FILE: the file is invalid
  * @PK_CLIENT_ERROR_NOT_SUPPORTED: the action is not supported
  * @PK_CLIENT_ERROR_DECLINED_SIMULATION: the simulation was declined by the user
+ * @PK_CLIENT_ERROR_LAST:
  *
  * Errors that can be thrown
  */

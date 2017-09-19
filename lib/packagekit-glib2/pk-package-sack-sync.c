@@ -38,7 +38,7 @@ typedef struct {
 	gboolean	 ret;
 } PkPackageSackHelper;
 
-/**
+/*
  * pk_package_sack_generic_cb:
  **/
 static void

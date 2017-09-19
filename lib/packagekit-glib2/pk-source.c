@@ -59,7 +59,7 @@ enum {
 
 G_DEFINE_TYPE (PkSource, pk_source, G_TYPE_OBJECT)
 
-/**
+/*
  * pk_source_get_property:
  **/
 static void
@@ -81,7 +81,7 @@ pk_source_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	}
 }
 
-/**
+/*
  * pk_source_set_property:
  **/
 static void
@@ -104,7 +104,7 @@ pk_source_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 	}
 }
 
-/**
+/*
  * pk_source_class_init:
  **/
 static void
@@ -139,7 +139,7 @@ pk_source_class_init (PkSourceClass *klass)
 	g_type_class_add_private (klass, sizeof (PkSourcePrivate));
 }
 
-/**
+/*
  * pk_source_init:
  **/
 static void
@@ -148,7 +148,7 @@ pk_source_init (PkSource *source)
 	source->priv = PK_SOURCE_GET_PRIVATE (source);
 }
 
-/**
+/*
  * pk_source_finalize:
  **/
 static void

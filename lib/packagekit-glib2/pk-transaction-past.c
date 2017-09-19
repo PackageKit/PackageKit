@@ -254,7 +254,7 @@ pk_transaction_past_get_cmdline (PkTransactionPast *past)
 	return past->priv->cmdline;
 }
 
-/**
+/*
  * pk_transaction_past_get_property:
  **/
 static void
@@ -294,7 +294,7 @@ pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value,
 	}
 }
 
-/**
+/*
  * pk_transaction_past_set_property:
  **/
 static void
@@ -338,7 +338,7 @@ pk_transaction_past_set_property (GObject *object, guint prop_id, const GValue *
 	}
 }
 
-/**
+/*
  * pk_transaction_past_class_init:
  **/
 static void
@@ -433,7 +433,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTransactionPastPrivate));
 }
 
-/**
+/*
  * pk_transaction_past_init:
  **/
 static void
@@ -442,7 +442,7 @@ pk_transaction_past_init (PkTransactionPast *transaction_past)
 	transaction_past->priv = PK_TRANSACTION_PAST_GET_PRIVATE (transaction_past);
 }
 
-/**
+/*
  * pk_transaction_past_finalize:
  **/
 static void
