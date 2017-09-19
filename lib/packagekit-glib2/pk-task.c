@@ -773,10 +773,12 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 
 /**
  * pk_task_user_accepted:
- * @task:
- * @request:
+ * @task: a valid #PkTask instance
+ * @request: request ID for EULA.
  *
- * Return value:
+ * Mark a EULA as accepted by the user.
+ *
+ * Return value: %TRUE if @request is valid.
  *
  * Since: 0.5.2
  **/
@@ -828,10 +830,12 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 
 /**
  * pk_task_user_declined:
- * @task:
- * @request:
+ * @task: a valid #PkTask instance
+ * @request: request ID for EULA.
  *
- * Return value:
+ * Mark a EULA as declined by the user.
+ *
+ * Return value: %TRUE if @request is valid.
  *
  * Since: 0.5.2
  **/
@@ -2381,7 +2385,7 @@ pk_task_set_only_download (PkTask *task, gboolean only_download)
  *
  * Gets if we are just preparing the transaction for later.
  *
- * Return value: %TRUE if we are simulating
+ * Return value: %TRUE if only downloading
  *
  * Since: 0.8.1
  **/
@@ -2485,7 +2489,7 @@ pk_task_set_allow_reinstall (PkTask *task, gboolean allow_reinstall)
  *
  * Gets if we allow packages to be reinstalled.
  *
- * Return value: %TRUE if package downgrades are allowed
+ * Return value: %TRUE if package reinstallation is allowed
  *
  * Since: 1.0.2
  **/
