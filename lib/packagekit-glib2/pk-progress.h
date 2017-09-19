@@ -68,7 +68,6 @@ struct _PkProgressClass
 
 GType		 pk_progress_get_type		  	(void);
 PkProgress	*pk_progress_new			(void);
-void		 pk_progress_test			(gpointer		 user_data);
 
 /**
  * PkProgressType:

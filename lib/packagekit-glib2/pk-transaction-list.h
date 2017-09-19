@@ -62,7 +62,6 @@ struct _PkTransactionListClass
 
 GType			 pk_transaction_list_get_type		(void);
 PkTransactionList	*pk_transaction_list_new		(void);
-void			 pk_transaction_list_test		(gpointer	 user_data);
 
 gchar			**pk_transaction_list_get_ids		(PkTransactionList	*tlist);
 

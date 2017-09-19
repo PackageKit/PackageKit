@@ -51,7 +51,6 @@ struct _PkTaskTextClass
 
 GType		 pk_task_text_get_type				(void);
 PkTaskText	*pk_task_text_new				(void);
-void		 pk_task_text_test				(gpointer		 user_data);
 
 G_END_DECLS
 

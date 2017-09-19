@@ -76,7 +76,6 @@ struct _PkDesktopClass
 
 GType		 pk_desktop_get_type			(void);
 PkDesktop	*pk_desktop_new				(void);
-void		 pk_desktop_test			(gpointer	 user_data);
 
 gboolean	 pk_desktop_open_database		(PkDesktop	*desktop,
 							 GError		**error);

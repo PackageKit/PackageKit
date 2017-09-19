@@ -108,7 +108,6 @@ struct _PkClientClass
 GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_get_type		  	(void);
 PkClient	*pk_client_new				(void);
-void		 pk_client_test				(gpointer	 user_data);
 
 /* get transaction results */
 PkResults	*pk_client_generic_finish		(PkClient		*client,

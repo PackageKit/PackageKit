@@ -58,7 +58,6 @@ G_BEGIN_DECLS
  */
 #define PK_PACKAGE_ID_DATA	3
 
-void		 pk_package_id_test			(gpointer		 user_data);
 gchar		*pk_package_id_build			(const gchar		*name,
 							 const gchar		*version,
 							 const gchar		*arch,

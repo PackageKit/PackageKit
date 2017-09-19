@@ -71,7 +71,6 @@ struct _PkPackageClass
 
 GType		 pk_package_get_type		  	(void);
 PkPackage	*pk_package_new				(void);
-void		 pk_package_test			(gpointer	 user_data);
 
 gboolean	 pk_package_set_id			(PkPackage	*package,
 							 const gchar	*package_id,

@@ -43,7 +43,6 @@ G_BEGIN_DECLS
  */
 #define PK_PACKAGE_IDS_DELIM	"&"
 
-void		 pk_package_ids_test			(gpointer	 user_data);
 gchar		**pk_package_ids_from_id		(const gchar	*package_id);
 gchar		**pk_package_ids_from_string		(const gchar	*package_id);
 gboolean	 pk_package_ids_check			(gchar		**package_ids);

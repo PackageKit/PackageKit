@@ -80,7 +80,6 @@ struct _PkResultsClass
 
 GType		 pk_results_get_type		  	(void);
 PkResults	*pk_results_new				(void);
-void		 pk_results_test			(gpointer		 user_data);
 
 /* set */
 gboolean	 pk_results_set_exit_code		(PkResults		*results,

@@ -90,7 +90,6 @@ typedef enum {
 
 GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
-void		 pk_package_sack_test			(gpointer		 user_data);
 
 typedef gboolean (*PkPackageSackFilterFunc)		(PkPackage		*package,
 							 gpointer		 user_data);

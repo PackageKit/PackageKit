@@ -17,7 +17,6 @@ pk_filter_bitfield_from_string
 pk_filter_bitfield_to_string
 pk_transaction_flag_bitfield_from_string
 pk_transaction_flag_bitfield_to_string
-pk_bitfield_test
 </SECTION>
 
 <SECTION>
@@ -55,7 +54,6 @@ PK_CLIENT_TYPE_ERROR
 PkClientError
 pk_client_error_quark
 pk_client_new
-pk_client_test
 pk_client_generic_finish
 pk_client_resolve
 pk_client_resolve_async
@@ -176,7 +174,6 @@ PK_DBUS_INTERFACE_TRANSACTION
 PK_DBUS_INTERFACE_OFFLINE
 PK_SYSTEM_PACKAGE_LIST_FILENAME
 PK_SYSTEM_PACKAGE_CACHE_FILENAME
-pk_common_test
 pk_ptr_array_to_strv
 pk_iso8601_present
 pk_iso8601_from_date
@@ -187,7 +184,6 @@ pk_get_distro_id
 
 <SECTION>
 <FILE>pk-console-shared</FILE>
-pk_console_test
 pk_console_get_number
 pk_console_get_prompt
 </SECTION>
@@ -200,7 +196,6 @@ PK_CONTROL_TYPE_ERROR
 PkControlError
 pk_control_error_quark
 pk_control_new
-pk_control_test
 pk_control_get_tid_async
 pk_control_get_tid_finish
 pk_control_suggest_daemon_quit
@@ -250,7 +245,6 @@ pk_debug_set_verbose
 PK_DESKTOP_DEFAULT_DATABASE
 PK_DESKTOP_DEFAULT_APPLICATION_DIR
 pk_desktop_new
-pk_desktop_test
 pk_desktop_open_database
 pk_desktop_get_files_for_package
 pk_desktop_get_shown_for_package
@@ -331,7 +325,6 @@ PkMediaTypeEnum
 PkAuthorizeEnum
 PkUpgradeKindEnum
 PkTransactionFlagEnum
-pk_enum_test
 pk_enum_find_value
 pk_enum_find_string
 pk_sig_type_enum_from_string
@@ -542,7 +535,6 @@ pk_offline_trigger_upgrade
 <TITLE>PkPackage</TITLE>
 PK_PACKAGE_TYPE_ERROR
 pk_package_new
-pk_package_test
 pk_package_set_id
 pk_package_parse
 pk_package_print
@@ -576,7 +568,6 @@ PK_PACKAGE_ID_NAME
 PK_PACKAGE_ID_VERSION
 PK_PACKAGE_ID_ARCH
 PK_PACKAGE_ID_DATA
-pk_package_id_test
 pk_package_id_build
 pk_package_id_check
 pk_package_id_split
@@ -587,7 +578,6 @@ pk_package_id_equal_fuzzy_arch
 <SECTION>
 <FILE>pk-package-ids</FILE>
 PK_PACKAGE_IDS_DELIM
-pk_package_ids_test
 pk_package_ids_from_id
 pk_package_ids_from_string
 pk_package_ids_check
@@ -606,7 +596,6 @@ pk_package_ids_to_text
 PK_PACKAGE_SACK_TYPE_ERROR
 PkPackageSackSortType
 pk_package_sack_new
-pk_package_sack_test
 PkPackageSackFilterFunc
 pk_package_sack_clear
 pk_package_sack_get_ids
@@ -651,7 +640,6 @@ pk_package_sack_get_type
 <TITLE>PkProgress</TITLE>
 PK_PROGRESS_TYPE_ERROR
 pk_progress_new
-pk_progress_test
 PkProgressType
 PkProgressCallback
 pk_progress_set_package_id
@@ -775,7 +763,6 @@ pk_require_restart_get_type
 <TITLE>PkResults</TITLE>
 PK_RESULTS_TYPE_ERROR
 pk_results_new
-pk_results_test
 pk_results_set_exit_code
 pk_results_set_error_code
 pk_results_add_package
@@ -843,7 +830,6 @@ pk_source_get_type
 <TITLE>PkTask</TITLE>
 PK_TASK_TYPE_ERROR
 pk_task_new
-pk_task_test
 pk_task_generic_finish
 pk_task_install_packages_sync
 pk_task_install_packages_async
@@ -922,7 +908,6 @@ pk_task_get_type
 <FILE>pk-task-text</FILE>
 <TITLE>PkTaskText</TITLE>
 pk_task_text_new
-pk_task_text_test
 <SUBSECTION Standard>
 PK_IS_TASK_TEXT
 PK_IS_TASK_TEXT_CLASS
@@ -957,7 +942,6 @@ pk_task_wrapper_get_type
 <FILE>pk-transaction-list</FILE>
 <TITLE>PkTransactionList</TITLE>
 pk_transaction_list_new
-pk_transaction_list_test
 pk_transaction_list_get_ids
 <SUBSECTION Standard>
 PK_IS_TRANSACTION_LIST
