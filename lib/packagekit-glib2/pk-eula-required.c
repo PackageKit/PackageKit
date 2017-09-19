@@ -205,6 +205,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	/**
 	 * PkEulaRequired:eula-id:
 	 *
+         * ID for this EULA.
+         *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("eula-id", NULL, NULL,
@@ -215,6 +217,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	/**
 	 * PkEulaRequired:package-id:
 	 *
+         * PackageID this EULA is for.
+         *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
@@ -225,6 +229,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	/**
 	 * PkEulaRequired:vendor-name:
 	 *
+         * Vendor this EULA is from.
+         *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("vendor-name", NULL, NULL,
@@ -235,6 +241,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	/**
 	 * PkEulaRequired:license-agreement:
 	 *
+         * The text of the license agreement.
+         *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("license-agreement", NULL, NULL,

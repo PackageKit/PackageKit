@@ -504,7 +504,7 @@ pk_results_get_role (PkResults *results)
  *
  * Gets the transaction flag for these results.
  *
- * Return value: The #PkBitfield or 0 if not set
+ * Return value: a #PkBitfield containing #PkTransactionFlagEnum 0 if not set
  *
  * Since: 0.8.1
  **/
@@ -817,7 +817,9 @@ pk_results_class_init (PkResultsClass *klass)
 
 	/**
 	 * PkResults:role:
-	 *
+         *
+         * The #PkRoleEnum or %PK_ROLE_ENUM_UNKNOWN if not set
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_enum ("role", NULL, NULL,
@@ -828,6 +830,8 @@ pk_results_class_init (PkResultsClass *klass)
 	/**
 	 * PkResults:transaction-flags:
 	 *
+         * A #PkBitfield containing #PkTransactionFlagEnum for this result.
+         *
 	 * Since: 0.8.1
 	 */
 	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,

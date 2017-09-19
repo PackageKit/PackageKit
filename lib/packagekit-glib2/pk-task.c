@@ -2575,6 +2575,8 @@ pk_task_class_init (PkTaskClass *klass)
 	/**
 	 * PkTask:simulate:
 	 *
+         * %TRUE if we are simulating.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_boolean ("simulate", NULL, NULL,
@@ -2585,6 +2587,8 @@ pk_task_class_init (PkTaskClass *klass)
 	/**
 	 * PkTask:only-download:
 	 *
+         * %TRUE if we are just preparing the transaction for later.
+         *
 	 * Since: 0.8.1
 	 */
 	pspec = g_param_spec_boolean ("only-download", NULL, NULL,
@@ -2595,6 +2599,8 @@ pk_task_class_init (PkTaskClass *klass)
 	/**
 	 * PkTask:only-trusted:
 	 *
+         * %TRUE if only authenticated packages should be allowed in the transaction.
+         *
 	 * Since: 0.9.5
 	 */
 	pspec = g_param_spec_boolean ("only-trusted", NULL, NULL,
@@ -2605,6 +2611,8 @@ pk_task_class_init (PkTaskClass *klass)
 	/**
 	 * PkTask:allow-reinstall:
 	 *
+         * %TRUE if package reinstallation shall be allowed during transaction.
+         *
 	 * Since: 1.0.2
 	 */
 	pspec = g_param_spec_boolean ("allow-reinstall", NULL, NULL,
@@ -2615,6 +2623,8 @@ pk_task_class_init (PkTaskClass *klass)
 	/**
 	 * PkTask:allow-downgrade:
 	 *
+         * %TRUE if package downgrades are allowed.
+         *
 	 * Since: 1.0.2
 	 */
 	pspec = g_param_spec_boolean ("allow-downgrade", NULL, NULL,

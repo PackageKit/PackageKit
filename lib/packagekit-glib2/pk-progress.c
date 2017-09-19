@@ -245,7 +245,7 @@ pk_progress_get_item_progress (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @transaction_id: a transaction ID.
  *
- * Set the transaction ID used by this transaction.
+ * Set the ID used by this transaction.
  *
  * Since: 0.5.3
  *
@@ -272,7 +272,7 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
  * pk_progress_get_transaction_id:
  * @progress: a valid #PkProgress instance
  *
- * Get the transaction ID used by this transaction.
+ * Get the ID used by this transaction.
  *
  * Return value: a transaction ID.
  *
@@ -290,7 +290,7 @@ pk_progress_get_transaction_id (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @percentage: a percentage value (0-100)
  *
- * Set the percentage complete of a progress.
+ * Set the percentage complete of this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -334,7 +334,7 @@ pk_progress_get_percentage (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @status: a #PkStatusEnum
  *
- * Set the status of a progress.
+ * Set the status of this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -378,7 +378,7 @@ pk_progress_get_status (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @role: a #PkRoleEnum
  *
- * Set the role of a progress.
+ * Set the role of this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -888,7 +888,9 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:package-id:
-	 *
+         *
+	 * Package ID this transaction is acting on.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("package-id", NULL,
@@ -900,6 +902,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:transaction-id:
 	 *
+         * ID used by this transaction.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("transaction-id", NULL,
@@ -910,6 +914,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:percentage:
+         *
+         * Percentage complete of this transaction.
 	 *
 	 * Since: 0.5.2
 	 */
@@ -920,6 +926,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:allow-cancel:
+         *
+         * %TRUE if this transaction can be cancelled.
 	 *
 	 * Since: 0.5.2
 	 */
@@ -930,6 +938,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:status:
+         *
+         * Status of this transaction.
 	 *
 	 * Since: 0.5.2
 	 */
@@ -940,6 +950,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:role:
+         *
+         * Role of this transaction.
 	 *
 	 * Since: 0.5.2
 	 */
@@ -951,6 +963,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:caller-active:
 	 *
+         * %TRUE if the transaction caller is still connected.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_boolean ("caller-active", NULL, NULL,
@@ -961,6 +975,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:elapsed-time:
 	 *
+         * Amount of time the transaction has taken in seconds.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("elapsed-time", NULL, NULL,
@@ -971,6 +987,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:remaining-time:
 	 *
+         * Amount of time the transaction will take to complete in seconds or 0 if unknown.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("remaining-time", NULL, NULL,
@@ -981,6 +999,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:speed:
 	 *
+         * Transaction speed in bits per second or 0 if unknown.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("speed", NULL, NULL,
@@ -991,6 +1011,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:download-size-remaining:
 	 *
+         * Number of bytes remaining to download.
+         *
 	 * Since: 0.8.0
 	 */
 	pspec = g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
@@ -1001,6 +1023,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:transaction-flags:
 	 *
+         * A #PkBitfield containing #PkTransactionFlagEnum associated with this transaction.
+         *
 	 * Since: 0.8.8
 	 */
 	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
@@ -1011,6 +1035,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:uid:
 	 *
+         * The UID that started this transaction.
+         *
 	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
@@ -1021,6 +1047,8 @@ pk_progress_class_init (PkProgressClass *klass)
 	/**
 	 * PkProgress:package:
 	 *
+         * The package this transaction is acting on.
+         *
 	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_object ("package", NULL, NULL,
@@ -1030,6 +1058,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:item-progress:
+         *
+         * Item progress associated with this transaction.
 	 *
 	 * Since: 0.8.1
 	 */
