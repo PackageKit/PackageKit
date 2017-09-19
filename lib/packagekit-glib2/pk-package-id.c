@@ -21,7 +21,8 @@
 
 /**
  * SECTION:pk-package-id
- * @short_description: Functionality to read a PackageID
+ * @title: PackageIDs
+ * @short_description: Functions for process PackageIDs
  */
 
 #include "config.h"
@@ -66,6 +67,8 @@ out:
  * pk_package_id_check:
  * @package_id: the PackageID to check
  *
+ * Check if a Packageid is well formed.
+ *
  * Return value: %TRUE if the PackageID was well formed.
  *
  * Since: 0.5.0
@@ -98,6 +101,8 @@ pk_package_id_check (const gchar *package_id)
  * @version: the package version
  * @arch: the package architecture
  * @data: the package extra data
+ *
+ * Generate a PackageID.
  *
  * Return value: returns a string to form the PackageID.
  *

@@ -109,6 +109,14 @@ typedef enum {
 	PK_PROGRESS_TYPE_INVALID
 } PkProgressType;
 
+/**
+ * PkProgressCallback:
+ * @progress: a #PkProgress
+ * @type: the type of progress update this is
+ * @user_data: User data supplied when the callback was registered.
+ *
+ * Function that is called when progress updates are given.
+ */
 typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 							 PkProgressType		 type,
                                                          gpointer		 user_data);

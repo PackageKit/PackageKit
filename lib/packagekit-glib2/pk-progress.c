@@ -146,7 +146,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 /**
  * pk_progress_set_package_id:
  * @progress: a valid #PkProgress instance
- * @package_id:
+ * @package_id: a PackageID
+ *
+ * Set the package ID this transaction is acting on.
  *
  * Return value: %TRUE if value changed.
  *
@@ -179,9 +181,9 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
  * pk_progress_get_package_id:
  * @progress: a valid #PkProgress instance
  *
- * Get the package ID this progress is for.
+ * Get the package ID this transaction is acting on.
  *
- * Return value: a package ID
+ * Return value: a PackageID
  *
  * Since: 1.0.12
  **/
@@ -195,7 +197,9 @@ pk_progress_get_package_id (PkProgress *progress)
 /**
  * pk_progress_set_item_progress:
  * @progress: a valid #PkProgress instance
- * @item_progress:
+ * @item_progress: a #PkItemProgress
+ *
+ * Set the item progress associated with this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -223,7 +227,7 @@ pk_progress_set_item_progress (PkProgress *progress,
  * pk_progress_get_item_progress:
  * @progress: a valid #PkProgress instance
  *
- *
+ * Get the item progress associated with this transaction.
  *
  * Return value: (transfer none): a #PkItemProgress
  *
@@ -239,7 +243,9 @@ pk_progress_get_item_progress (PkProgress *progress)
 /**
  * pk_progress_set_transaction_id:
  * @progress: a valid #PkProgress instance
- * @transaction_id:
+ * @transaction_id: a transaction ID.
+ *
+ * Set the transaction ID used by this transaction.
  *
  * Since: 0.5.3
  *
@@ -266,6 +272,10 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
  * pk_progress_get_transaction_id:
  * @progress: a valid #PkProgress instance
  *
+ * Get the transaction ID used by this transaction.
+ *
+ * Return value: a transaction ID.
+ *
  * Since: 1.0.12
  **/
 const gchar *
@@ -278,7 +288,9 @@ pk_progress_get_transaction_id (PkProgress *progress)
 /**
  * pk_progress_set_percentage:
  * @progress: a valid #PkProgress instance
- * @percentage:
+ * @percentage: a percentage value (0-100)
+ *
+ * Set the percentage complete of a progress.
  *
  * Return value: %TRUE if value changed.
  *
@@ -320,7 +332,9 @@ pk_progress_get_percentage (PkProgress *progress)
 /**
  * pk_progress_set_status:
  * @progress: a valid #PkProgress instance
- * @status:
+ * @status: a #PkStatusEnum
+ *
+ * Set the status of a progress.
  *
  * Return value: %TRUE if value changed.
  *
@@ -346,7 +360,7 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
  * pk_progress_get_status:
  * @progress: a valid #PkProgress instance
  *
- * Get the status of this progress.
+ * Get the status of this transaction.
  *
  * Return value: a status string
  *
@@ -362,7 +376,9 @@ pk_progress_get_status (PkProgress *progress)
 /**
  * pk_progress_set_role:
  * @progress: a valid #PkProgress instance
- * @role:
+ * @role: a #PkRoleEnum
+ *
+ * Set the role of a progress.
  *
  * Return value: %TRUE if value changed.
  *
@@ -393,7 +409,7 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
  * pk_progress_get_role:
  * @progress: a valid #PkProgress instance
  *
- * Get the role this progress is for.
+ * Get the role of this transaction.
  *
  * Return value: a #PkRoleEnum
  *
@@ -409,9 +425,9 @@ pk_progress_get_role (PkProgress *progress)
 /**
  * pk_progress_set_allow_cancel:
  * @progress: a valid #PkProgress instance
- * @allow_cancel:
+ * @allow_cancel: %TRUE if this transaction can be cancelled.
  *
- * Set if this progress can be cancelled.
+ * Set if this transaction can be cancelled.
  *
  * Return value: %TRUE if value changed.
  *
@@ -437,7 +453,7 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
  * pk_progress_get_allow_cancel:
  * @progress: a valid #PkProgress instance
  *
- * Get if this progress can be cancelled.
+ * Get if this transaction can be cancelled.
  *
  * Return value: %TRUE if progress can be cancelled.
  *
@@ -453,7 +469,9 @@ pk_progress_get_allow_cancel (PkProgress *progress)
 /**
  * pk_progress_set_caller_active:
  * @progress: a valid #PkProgress instance
- * @caller_active:
+ * @caller_active: %TRUE if the transaction caller is still connected.
+ *
+ * Set if the transaction caller is connected.
  *
  * Return value: %TRUE if value changed.
  *
@@ -479,7 +497,9 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
  * pk_progress_get_caller_active:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get if the transaction caller is connected.
+ *
+ * Return value: %TRUE if the transaction caller is still connected.
  *
  * Since: 1.0.12
  **/
@@ -493,7 +513,9 @@ pk_progress_get_caller_active (PkProgress *progress)
 /**
  * pk_progress_set_elapsed_time:
  * @progress: a valid #PkProgress instance
- * @elapsed_time:
+ * @elapsed_time: time in seconds
+ *
+ * Set the amount of time the transaction has taken.
  *
  * Return value: %TRUE if value changed.
  *
@@ -519,9 +541,9 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
  * pk_progress_get_elapsed_time:
  * @progress: a valid #PkProgress instance
  *
+ * Get the amount of time the transaction has taken.
  *
- *
- * Return value:
+ * Return value: time in seconds
  *
  * Since: 1.0.12
  **/
@@ -535,9 +557,9 @@ pk_progress_get_elapsed_time (PkProgress *progress)
 /**
  * pk_progress_set_remaining_time:
  * @progress: a valid #PkProgress instance
- * @remaining_time:
+ * @remaining_time: time in seconds or 0 if unknown.
  *
- *
+ * Set the amount of time the transaction will take to complete.
  *
  * Return value: %TRUE if value changed.
  *
@@ -563,9 +585,9 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
  * pk_progress_get_remaining_time:
  * @progress: a valid #PkProgress instance
  *
+ * Get the amount of time the transaction will take to complete.
  *
- *
- * Return value:
+ * Return value: time in seconds or 0 if unknown.
  *
  * Since: 1.0.12
  **/
@@ -579,7 +601,9 @@ pk_progress_get_remaining_time (PkProgress *progress)
 /**
  * pk_progress_set_speed:
  * @progress: a valid #PkProgress instance
- * @speed:
+ * @speed: speed in bits per second or 0 if unknown
+ *
+ * Set the speed of this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -605,7 +629,9 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
  * pk_progress_get_speed:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the speed of this transaction.
+ *
+ * Return value: speed in bits per scond or 0 if unknown
  *
  * Since: 1.0.12
  **/
@@ -663,7 +689,9 @@ pk_progress_get_download_size_remaining (PkProgress *progress)
 /**
  * pk_progress_set_transaction_flags:
  * @progress: a valid #PkProgress instance
- * @transaction_flags:
+ * @transaction_flags: a #PkBitfield containing #PkTransactionFlagEnum values.
+ *
+ * Set the flags associated with this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -689,7 +717,9 @@ pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_fla
  * pk_progress_get_transaction_flags:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the flags associated with this transaction.
+ *
+ * Return value: a #PkBitfield containing #PkTransactionFlagEnum values.
  *
  * Since: 1.0.12
  **/
@@ -705,7 +735,7 @@ pk_progress_get_transaction_flags (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @uid: a UID
  *
- * Set the UID associated with this progress.
+ * Set the UID that started this transaction.
  *
  * Return value: %TRUE if value changed.
  *
@@ -731,7 +761,7 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
  * pk_progress_get_uid:
  * @progress: a valid #PkProgress instance
  *
- * Get the UID associated with this progress.
+ * Get the UID that started this transaction.
  *
  * Return value: an UID
  *
@@ -749,7 +779,7 @@ pk_progress_get_uid (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @package: a #PkPackage
  *
- * Set the package associated with this progress.
+ * Set the package this transaction is acting on.
  *
  * Return value: %TRUE if value changed.
  *
@@ -777,7 +807,7 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
  * pk_progress_get_package:
  * @progress: a valid #PkProgress instance
  *
- * Get the package associated with this progress.
+ * Get the package this transaction is acting on.
  *
  * Return value: (transfer none): a #PkPackage
  *

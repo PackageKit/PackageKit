@@ -57,7 +57,29 @@ gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
 							 const gchar	*package_id);
 
 /* compat defines for old versions */
+
+/**
+ * pk_package_ids_from_text:
+ * @package_id: A single package_id
+ *
+ * Form a composite string array of package_id's from
+ * a delimited string
+ *
+ * Return value: (transfer full): the string array, or %NULL if invalid, free with g_strfreev()
+ *
+ * Deprecated: Use pk_package_ids_from_string()
+ */
 #define pk_package_ids_from_text	pk_package_ids_from_string
+
+/**
+ * pk_package_ids_to_text:
+ * @package_ids: a string array of package_id's
+ *
+ * Cats the string array of package_id's into one delimited string
+ * Return value: a string representation of all the package_id's.
+ *
+ * Deprecated: pk_package_ids_to_string()
+ */
 #define pk_package_ids_to_text		pk_package_ids_to_string
 
 G_END_DECLS

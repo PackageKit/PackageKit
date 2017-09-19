@@ -21,6 +21,7 @@
 
 /**
  * SECTION:pk-common
+ * @title: Common functions
  * @short_description: Common utility functions for PackageKit
  *
  * This file contains functions that may be useful.
@@ -89,6 +90,8 @@ pk_iso8601_from_date (const GDate *date)
  * pk_iso8601_to_date: (skip)
  * @iso_date: The ISO8601 date to convert
  *
+ * Convert an ISO8601 date string to a #GDate.
+ *
  * Return value: If valid then a new %GDate, else NULL
  *
  * Since: 0.5.2
@@ -138,6 +141,8 @@ out:
 /**
  * pk_iso8601_to_datetime: (skip)
  * @iso_date: The ISO8601 date to convert
+ *
+ * Convert an ISO8601 date string to a #GDateTime.
  *
  * Return value: If valid then a new %GDateTime, else NULL
  *

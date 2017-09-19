@@ -69,9 +69,11 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 /**
  * pk_progress_bar_set_padding:
  * @progress_bar: a valid #PkProgressBar instance
- * @padding:
+ * @padding: minimum size of progress bar text.
  *
- * Return value:
+ * Set minimum size of progress bar text - it will be padded with spaces to meet this requirement.
+ *
+ * Return value: %TRUE if changed
  **/
 gboolean
 pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
@@ -85,9 +87,11 @@ pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
 /**
  * pk_progress_bar_set_size:
  * @progress_bar: a valid #PkProgressBar instance
- * @size:
+ * @size: width of progress bar in characters.
  *
- * Return value:
+ * Set the width of the progress bar.
+ *
+ * Return value: %TRUE if changed
  **/
 gboolean
 pk_progress_bar_set_size (PkProgressBar *progress_bar, guint size)
@@ -195,9 +199,11 @@ pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 /**
  * pk_progress_bar_set_percentage:
  * @progress_bar: a valid #PkProgressBar instance
- * @percentage:
+ * @percentage: percentage value to set (0-100).
  *
- * Return value:
+ * Set the percentage value of the progress bar.
+ *
+ * Return value: %TRUE if changed
  **/
 gboolean
 pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
@@ -271,9 +277,11 @@ pk_strpad (const gchar *data, guint length)
 /**
  * pk_progress_bar_start:
  * @progress_bar: a valid #PkProgressBar instance
- * @text:
+ * @text: text to show in progress bar.
  *
- * Return value:
+ * Start showing progress.
+ *
+ * Return value: %TRUE if progress bar started
  **/
 gboolean
 pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
@@ -320,7 +328,9 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
  * pk_progress_bar_end:
  * @progress_bar: a valid #PkProgressBar instance
  *
- * Return value:
+ * Stop showing progress.
+ *
+ * Return value: %TRUE if progress bar stopped
  **/
 gboolean
 pk_progress_bar_end (PkProgressBar *progress_bar)
@@ -395,7 +405,9 @@ pk_progress_bar_init (PkProgressBar *self)
 /**
  * pk_progress_bar_new:
  *
- * Return value: A new progress_bar class instance.
+ * #PkProgressBar is a console text progress bar.
+ *
+ * Return value: A new #PkProgressBar instance
  **/
 PkProgressBar *
 pk_progress_bar_new (void)

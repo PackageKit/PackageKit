@@ -42,6 +42,7 @@ IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
 	pk-common-private.h				\
+	pk-debug.h					\
 	pk-offline-private.h				\
 	pk-spawn-polkit-agent.h				\
 	$(NULL)

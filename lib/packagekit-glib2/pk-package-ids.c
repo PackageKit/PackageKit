@@ -19,13 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-/**
- * SECTION:pk-package-ids
- * @short_description: Functionality to modify multiple PackageIDs
- *
- * Composite PackageId's are difficult to read and create.
- */
-
 #include "config.h"
 
 #include <glib.h>

@@ -21,9 +21,10 @@
 
 /**
  * SECTION:pk-enum
- * @short_description: Functions for converting strings to enum and vice-versa
+ * @title: Enumerations
+ * @short_description: Enumerations used in packagekit-glib2
  *
- * This file contains functions to convert to and from enumerated types.
+ * Enumerated values used in packagekit-glib2 and functions for using these.
  */
 
 #include "config.h"

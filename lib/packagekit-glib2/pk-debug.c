@@ -150,7 +150,9 @@ pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer 
 
 /**
  * pk_debug_add_log_domain:
- * @log_domain:
+ * @log_domain: a log domain
+ *
+ * Add a log domain to the debug output.
  */
 void
 pk_debug_add_log_domain (const gchar *log_domain)

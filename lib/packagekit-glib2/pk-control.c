@@ -137,7 +137,7 @@ typedef struct {
  **/
 G_DEFINE_QUARK (pk-control-error-quark, pk_control_error)
 
-/**
+/*
  * pk_control_fixup_dbus_error:
  **/
 static void

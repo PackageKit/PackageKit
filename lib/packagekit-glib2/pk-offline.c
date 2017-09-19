@@ -32,7 +32,8 @@
 
 /**
  * SECTION:pk-offline
- * @short_description: Perform offline updates
+ * @title: Offline Updates
+ * @short_description: Function to perform offline updates
  *
  * Functions for perform offline updates.
  */

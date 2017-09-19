@@ -91,6 +91,15 @@ typedef enum {
 GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
 
+/**
+ * PkPackageSackFilterFunc:
+ * @package: the package being considered
+ * @user_data: User data supplied when the callback was registered
+ *
+ * Function to filter packages in #PkPackageSack.
+ *
+ * Return value: %TRUE if @package should remain in the sack.
+ */
 typedef gboolean (*PkPackageSackFilterFunc)		(PkPackage		*package,
 							 gpointer		 user_data);
 

@@ -4956,7 +4956,7 @@ pk_client_finalize (GObject *object)
 /**
  * pk_client_new:
  *
- * PkClient is a nice GObject wrapper for PackageKit and makes writing
+ * #PkClient is a nice GObject wrapper for PackageKit and makes writing
  * frontends easy.
  *
  * Return value: A new #PkClient instance

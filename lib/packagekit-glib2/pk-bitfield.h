@@ -30,14 +30,68 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PkBitfield:
+ *
+ * A bitfield capable of storing enumerations with up to 64 values.
+ */
 typedef guint64 PkBitfield;
+
+/**
+ * PK_BITFIELD_FORMAT:
+ *
+ * printf format string suitable for printing #PkBitfield values.
+ */
 #define PK_BITFIELD_FORMAT G_GUINT64_FORMAT
 
 /* convenience functions as it's easy to forget the bitwise operators */
+
+/**
+ * pk_bitfield_add:
+ * @bitfield: a #PkBitfield
+ * @enum: value to add
+ *
+ * Set a value in a bitfield
+ */
 #define pk_bitfield_add(bitfield,enum)		do { ((bitfield) |= (pk_bitfield_value(enum))); } while (0)
+
+/**
+ * pk_bitfield_remove:
+ * @bitfield: a #PkBitfield
+ * @enum: value to remove
+ *
+ * Remove a value from a bitfield
+ */
 #define pk_bitfield_remove(bitfield,enum)	do { ((bitfield) &= ~(pk_bitfield_value(enum))); } while (0)
+
+/**
+ * pk_bitfield_invert:
+ * @bitfield: a #PkBitfield
+ * @enum: value to invert
+ *
+ * Invert a value in a bitfield
+ */
 #define pk_bitfield_invert(bitfield,enum)	do { ((bitfield) ^= (pk_bitfield_value(enum))); } while (0)
+
+/**
+ * pk_bitfield_contain:
+ * @bitfield: a #PkBitfield
+ * @enum: value to check
+ *
+ * Check if a bitfield contains a value
+ *
+ * Return value: %TRUE if the bitfield contains this value
+ */
 #define pk_bitfield_contain(bitfield,enum)	(((bitfield) & (pk_bitfield_value(enum))) > 0)
+
+/**
+ * pk_bitfield_value:
+ * @enum: enumerated valued to convert
+ *
+ * Convert an enumerated value to a bitfield value
+ *
+ * Return value: a bitfield value
+ */
 #define pk_bitfield_value(enum)			((PkBitfield) 1 << (enum))
 
 gint		 pk_bitfield_contain_priority		(PkBitfield	 values,

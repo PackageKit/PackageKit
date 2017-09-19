@@ -167,6 +167,10 @@ pk_client_helper_get_type
 
 <SECTION>
 <FILE>pk-common</FILE>
+PK_MAJOR_VERSION
+PK_MINOR_VERSION
+PK_MICRO_VERSION
+PK_CHECK_VERSION
 PK_DBUS_SERVICE
 PK_DBUS_PATH
 PK_DBUS_INTERFACE
@@ -229,14 +233,6 @@ PkControl
 PkControlClass
 PkControlPrivate
 pk_control_get_type
-</SECTION>
-
-<SECTION>
-<FILE>pk-debug</FILE>
-pk_debug_is_verbose
-pk_debug_get_option_group
-pk_debug_add_log_domain
-pk_debug_set_verbose
 </SECTION>
 
 <SECTION>
@@ -573,10 +569,6 @@ pk_package_id_check
 pk_package_id_split
 pk_package_id_to_printable
 pk_package_id_equal_fuzzy_arch
-</SECTION>
-
-<SECTION>
-<FILE>pk-package-ids</FILE>
 PK_PACKAGE_IDS_DELIM
 pk_package_ids_from_id
 pk_package_ids_from_string
@@ -1011,12 +1003,3 @@ PkUpdateDetailClass
 PkUpdateDetailPrivate
 pk_update_detail_get_type
 </SECTION>
-
-<SECTION>
-<FILE>pk-version</FILE>
-PK_MAJOR_VERSION
-PK_MINOR_VERSION
-PK_MICRO_VERSION
-PK_CHECK_VERSION
-</SECTION>
-
