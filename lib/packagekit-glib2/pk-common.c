@@ -22,7 +22,7 @@
 /**
  * SECTION:pk-common
  * @title: Common functions
- * @short_description: Common utility functions for PackageKit
+ * @short_description: Common utility functions
  *
  * This file contains functions that may be useful.
  */
