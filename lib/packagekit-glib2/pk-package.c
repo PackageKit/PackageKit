@@ -569,7 +569,6 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 
 /*
  * pk_package_class_init:
- * @klass: The PkPackageClass
  **/
 static void
 pk_package_class_init (PkPackageClass *klass)
@@ -851,7 +850,7 @@ pk_package_finalize (GObject *object)
 /**
  * pk_package_new:
  *
- * Return value: a new PkPackage object.
+ * Return value: a new #PkPackage object.
  *
  * Since: 0.5.4
  **/

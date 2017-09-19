@@ -184,7 +184,7 @@ pk_task_wrapper_finalize (GObject *object)
 /**
  * pk_task_wrapper_new:
  *
- * Return value: a new PkTaskWrapper object.
+ * Return value: a new #PkTaskWrapper object.
  **/
 PkTaskWrapper *
 pk_task_wrapper_new (void)

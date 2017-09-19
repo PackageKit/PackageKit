@@ -554,7 +554,7 @@ pk_client_helper_finalize (GObject *object)
 /**
  * pk_client_helper_new:
  *
- * Return value: a new PkClientHelper object.
+ * Return value: a new #PkClientHelper object.
  *
  * Since: 0.6.10
  **/

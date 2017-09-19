@@ -239,7 +239,7 @@ pk_distro_upgrade_finalize (GObject *object)
 /**
  * pk_distro_upgrade_new:
  *
- * Return value: a new PkDistroUpgrade object.
+ * Return value: a new #PkDistroUpgrade object.
  *
  * Since: 0.5.4
  **/

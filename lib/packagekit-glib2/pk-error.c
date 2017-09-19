@@ -21,7 +21,7 @@
 
 /**
  * SECTION:pk-error
- * @short_description: ErrorCode object
+ * @short_description: Error object
  *
  * This GObject represents a error_code from a transaction.
  * These objects represent single items of data from the transaction, and are
@@ -200,7 +200,7 @@ pk_error_finalize (GObject *object)
 /**
  * pk_error_new:
  *
- * Return value: a new PkError object.
+ * Return value: a new #PkError object.
  *
  * Since: 0.5.5
  **/

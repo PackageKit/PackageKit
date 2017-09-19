@@ -286,7 +286,7 @@ pk_repo_signature_required_finalize (GObject *object)
 /**
  * pk_repo_signature_required_new:
  *
- * Return value: a new PkRepoSignatureRequired object.
+ * Return value: a new #PkRepoSignatureRequired object.
  *
  * Since: 0.5.4
  **/

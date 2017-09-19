@@ -383,7 +383,7 @@ pk_details_finalize (GObject *object)
 /**
  * pk_details_new:
  *
- * Return value: a new PkDetails object.
+ * Return value: a new #PkDetails object.
  *
  * Since: 0.5.4
  **/

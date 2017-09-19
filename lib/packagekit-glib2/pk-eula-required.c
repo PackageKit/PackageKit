@@ -206,7 +206,7 @@ pk_eula_required_finalize (GObject *object)
 /**
  * pk_eula_required_new:
  *
- * Return value: a new PkEulaRequired object.
+ * Return value: a new #PkEulaRequired object.
  *
  * Since: 0.5.4
  **/

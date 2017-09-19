@@ -462,7 +462,7 @@ pk_transaction_past_finalize (GObject *object)
 /**
  * pk_transaction_past_new:
  *
- * Return value: a new PkTransactionPast object.
+ * Return value: a new #PkTransactionPast object.
  *
  * Since: 0.5.4
  **/

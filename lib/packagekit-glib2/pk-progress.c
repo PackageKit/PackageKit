@@ -148,7 +148,7 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
  * @progress: a valid #PkProgress instance
  * @package_id:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -179,7 +179,9 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
  * pk_progress_get_package_id:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the package ID this progress is for.
+ *
+ * Return value: a package ID
  *
  * Since: 1.0.12
  **/
@@ -195,7 +197,7 @@ pk_progress_get_package_id (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @item_progress:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.8.1
  **/
@@ -221,7 +223,9 @@ pk_progress_set_item_progress (PkProgress *progress,
  * pk_progress_get_item_progress:
  * @progress: a valid #PkProgress instance
  *
- * Return value: (transfer none):
+ *
+ *
+ * Return value: (transfer none): a #PkItemProgress
  *
  * Since: 1.0.12
  **/
@@ -239,7 +243,7 @@ pk_progress_get_item_progress (PkProgress *progress)
  *
  * Since: 0.5.3
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  **/
 gboolean
 pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_id)
@@ -276,7 +280,7 @@ pk_progress_get_transaction_id (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @percentage:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -300,7 +304,9 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
  * pk_progress_get_percentage:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the percentage complete.
+ *
+ * Return value: a percentage (0-100)
  *
  * Since: 1.0.12
  **/
@@ -316,7 +322,7 @@ pk_progress_get_percentage (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @status:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -340,7 +346,9 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
  * pk_progress_get_status:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the status of this progress.
+ *
+ * Return value: a status string
  *
  * Since: 1.0.12
  **/
@@ -356,7 +364,7 @@ pk_progress_get_status (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @role:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -385,7 +393,9 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
  * pk_progress_get_role:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the role this progress is for.
+ *
+ * Return value: a #PkRoleEnum
  *
  * Since: 1.0.12
  **/
@@ -401,7 +411,9 @@ pk_progress_get_role (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @allow_cancel:
  *
- * Return value:
+ * Set if this progress can be cancelled.
+ *
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -425,7 +437,9 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
  * pk_progress_get_allow_cancel:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get if this progress can be cancelled.
+ *
+ * Return value: %TRUE if progress can be cancelled.
  *
  * Since: 1.0.12
  **/
@@ -441,7 +455,7 @@ pk_progress_get_allow_cancel (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @caller_active:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -481,7 +495,7 @@ pk_progress_get_caller_active (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @elapsed_time:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -505,6 +519,8 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
  * pk_progress_get_elapsed_time:
  * @progress: a valid #PkProgress instance
  *
+ *
+ *
  * Return value:
  *
  * Since: 1.0.12
@@ -521,7 +537,9 @@ pk_progress_get_elapsed_time (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @remaining_time:
  *
- * Return value:
+ *
+ *
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -545,6 +563,8 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
  * pk_progress_get_remaining_time:
  * @progress: a valid #PkProgress instance
  *
+ *
+ *
  * Return value:
  *
  * Since: 1.0.12
@@ -561,7 +581,7 @@ pk_progress_get_remaining_time (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @speed:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -599,9 +619,11 @@ pk_progress_get_speed (PkProgress *progress)
 /**
  * pk_progress_set_download_size_remaining:
  * @progress: a valid #PkProgress instance
- * @download_size_remaining:
+ * @download_size_remaining: number of bytes remaining to download.
  *
- * Return value:
+ * Set the number of bytes remaining to download.
+ *
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.8.0
  **/
@@ -625,7 +647,9 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
  * pk_progress_get_download_size_remaining:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the number of bytes remaining to download.
+ *
+ * Return value: number of bytes remaining to download.
  *
  * Since: 1.0.12
  **/
@@ -641,7 +665,7 @@ pk_progress_get_download_size_remaining (PkProgress *progress)
  * @progress: a valid #PkProgress instance
  * @transaction_flags:
  *
- * Return value:
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.8.8
  **/
@@ -679,9 +703,11 @@ pk_progress_get_transaction_flags (PkProgress *progress)
 /**
  * pk_progress_set_uid:
  * @progress: a valid #PkProgress instance
- * @uid:
+ * @uid: a UID
  *
- * Return value:
+ * Set the UID associated with this progress.
+ *
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -705,7 +731,9 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
  * pk_progress_get_uid:
  * @progress: a valid #PkProgress instance
  *
- * Return value:
+ * Get the UID associated with this progress.
+ *
+ * Return value: an UID
  *
  * Since: 1.0.12
  **/
@@ -719,9 +747,11 @@ pk_progress_get_uid (PkProgress *progress)
 /**
  * pk_progress_set_package:
  * @progress: a valid #PkProgress instance
- * @package:
+ * @package: a #PkPackage
  *
- * Return value:
+ * Set the package associated with this progress.
+ *
+ * Return value: %TRUE if value changed.
  *
  * Since: 0.5.2
  **/
@@ -747,7 +777,9 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
  * pk_progress_get_package:
  * @progress: a valid #PkProgress instance
  *
- * Return value: (transfer none):
+ * Get the package associated with this progress.
+ *
+ * Return value: (transfer none): a #PkPackage
  *
  * Since: 1.0.12
  **/
@@ -1010,7 +1042,7 @@ pk_progress_finalize (GObject *object)
 /**
  * pk_progress_new:
  *
- * PkProgress is a nice GObject wrapper for PackageKit and makes writing
+ * #PkProgress is a nice GObject wrapper for PackageKit and makes writing
  * frontends easy.
  *
  * Return value: A new #PkProgress instance

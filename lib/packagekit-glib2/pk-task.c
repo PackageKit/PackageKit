@@ -2650,7 +2650,7 @@ pk_task_finalize (GObject *object)
 /**
  * pk_task_new:
  *
- * Return value: a new PkTask object.
+ * Return value: a new #PkTask object.
  *
  * Since: 0.5.2
  **/

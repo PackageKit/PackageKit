@@ -394,7 +394,7 @@ pk_category_finalize (GObject *object)
 /**
  * pk_category_new:
  *
- * Return value: a new PkCategory object.
+ * Return value: a new #PkCategory object.
  *
  * Since: 0.5.4
  **/

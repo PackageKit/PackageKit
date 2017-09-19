@@ -487,7 +487,7 @@ pk_task_text_finalize (GObject *object)
 /**
  * pk_task_text_new:
  *
- * Return value: a new PkTaskText object.
+ * Return value: a new #PkTaskText object.
  **/
 PkTaskText *
 pk_task_text_new (void)

@@ -235,7 +235,7 @@ pk_repo_detail_finalize (GObject *object)
 /**
  * pk_repo_detail_new:
  *
- * Return value: a new PkRepoDetail object.
+ * Return value: a new #PkRepoDetail object.
  *
  * Since: 0.5.4
  **/

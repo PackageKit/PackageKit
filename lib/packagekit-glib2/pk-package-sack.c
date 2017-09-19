@@ -317,7 +317,7 @@ pk_package_sack_add_packages_from_line (PkPackageSack *sack,
  * @file: a valid package-list file
  * @error: a #GError to put the error code and message in, or %NULL
  *
- * Adds packages from package-list file to a PkPackageSack.
+ * Adds packages from package-list file to a #PkPackageSack.
  *
  * Return value: %TRUE if there were no errors.
  *
@@ -360,7 +360,7 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
  * @file: a valid package-list file
  * @error: a #GError to put the error code and message in, or %NULL
  *
- * Write the contents of a PkPackageSack to a package-list file.
+ * Write the contents of a #PkPackageSack to a package-list file.
  *
  * Return value: %TRUE if there were no errors.
  *
@@ -1165,7 +1165,7 @@ pk_package_sack_finalize (GObject *object)
 /**
  * pk_package_sack_new:
  *
- * Return value: a new PkPackageSack object.
+ * Return value: a new #PkPackageSack object.
  *
  * Since: 0.5.2
  **/

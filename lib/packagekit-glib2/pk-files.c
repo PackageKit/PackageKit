@@ -202,7 +202,7 @@ pk_files_finalize (GObject *object)
 /**
  * pk_files_new:
  *
- * Return value: a new PkFiles object.
+ * Return value: a new #PkFiles object.
  *
  * Since: 0.5.4
  **/

@@ -165,7 +165,7 @@ pk_source_finalize (GObject *object)
 /**
  * pk_source_new:
  *
- * Return value: a new PkSource object.
+ * Return value: a new #PkSource object.
  *
  * Since: 0.6.0
  **/

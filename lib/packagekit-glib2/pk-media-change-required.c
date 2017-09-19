@@ -186,7 +186,7 @@ pk_media_change_required_finalize (GObject *object)
 /**
  * pk_media_change_required_new:
  *
- * Return value: a new PkMediaChangeRequired object.
+ * Return value: a new #PkMediaChangeRequired object.
  *
  * Since: 0.5.4
  **/

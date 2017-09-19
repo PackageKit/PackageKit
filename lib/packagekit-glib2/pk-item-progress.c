@@ -227,7 +227,7 @@ pk_item_progress_finalize (GObject *object)
  *
  * An object containing item inside a #PkProgress.
  *
- * Return value: a new PkItemProgress object.
+ * Return value: a new #PkItemProgress object.
  *
  * Since: 0.8.1
  **/

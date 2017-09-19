@@ -917,7 +917,7 @@ pk_results_finalize (GObject *object)
 /**
  * pk_results_new:
  *
- * Return value: a new PkResults object.
+ * Return value: a new #PkResults object.
  *
  * Since: 0.5.2
  **/

@@ -166,7 +166,7 @@ pk_require_restart_finalize (GObject *object)
 /**
  * pk_require_restart_new:
  *
- * Return value: a new PkRequireRestart object.
+ * Return value: a new #PkRequireRestart object.
  *
  * Since: 0.5.4
  **/

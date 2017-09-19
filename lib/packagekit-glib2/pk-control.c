@@ -2127,7 +2127,6 @@ pk_control_set_property (GObject *object, guint prop_id, const GValue *value, GP
 
 /*
  * pk_control_class_init:
- * @klass: The PkControlClass
  **/
 static void
 pk_control_class_init (PkControlClass *klass)
@@ -2463,7 +2462,7 @@ pk_control_finalize (GObject *object)
 /**
  * pk_control_new:
  *
- * Return value: a new PkControl object.
+ * Return value: a new #PkControl object.
  *
  * Since: 0.5.2
  **/
