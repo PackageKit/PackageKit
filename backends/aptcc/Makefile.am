@@ -15,11 +15,24 @@ libpk_backend_aptcc_la_SOURCES = pkg-list.cpp \
 				 apt-intf.cpp \
 				 deb-file.cpp \
 				 pk-backend-aptcc.cpp
-libpk_backend_aptcc_la_LIBADD = -lcrypt -lapt-pkg -lapt-inst -lutil $(PK_PLUGIN_LIBS)
-libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GSTREAMER_LIBS)
-libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS)
-libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(APTCC_CFLAGS) $(GSTREAMER_CFLAGS) \
-	$(AM_CPPFLAGS)
+libpk_backend_aptcc_la_LIBADD = -lcrypt \
+				-lapt-pkg \
+				-lapt-inst \
+				-lutil \
+				$(PK_PLUGIN_LIBS)
+libpk_backend_aptcc_la_LDFLAGS = -module \
+				-avoid-version \
+				$(APTCC_LIBS) \
+				$(APPSTREAM_LIBS) \
+				$(GSTREAMER_LIBS)
+libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS) \
+				$(AM_CPPFLAGS) \
+				$(APPSTREAM_CFLAGS)
+libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) \
+				  $(APTCC_CFLAGS) \
+				  $(APPSTREAM_CFLAGS) \
+				  $(GSTREAMER_CFLAGS) \
+				  $(AM_CPPFLAGS)
 
 aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit

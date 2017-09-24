@@ -437,6 +437,8 @@ if test x$enable_aptcc = xyes; then
 	AC_SUBST(GSTREAMER_CFLAGS)
 	AC_SUBST(GSTREAMER_LIBS)
 
+	PKG_CHECK_MODULES(APPSTREAM, appstream >= 0.11)
+
 	AC_MSG_CHECKING([whether apt is at least at version 1.1])
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <apt-pkg/pkgsystem.h>]],
 					  [[_system->ArchitecturesSupported();]])],

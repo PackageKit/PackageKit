@@ -30,6 +30,8 @@
 #include <apt-pkg/pkgsystem.h>
 #include <apt-pkg/version.h>
 
+#include <appstream.h>
+
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
 #include <sys/wait.h>
@@ -1324,93 +1326,57 @@ PkgList AptIntf::getUpdates(PkgList &blocked)
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
 void AptIntf::providesMimeType(PkgList &output, gchar **values)
 {
-    regex_t re;
-    gchar *value;
-    gchar *values_str;
-
-    values_str = g_strjoinv("|", values);
-    value = g_strdup_printf("^MimeType=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
-                            values_str);
-    g_free(values_str);
-
-    if(regcomp(&re, value, REG_NOSUB) != 0) {
-        g_debug("Regex compilation error");
-        g_free(value);
-        return;
-    }
-    g_free(value);
-
-    DIR *dp;
-    struct dirent *dirp;
-    if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
-        g_debug ("Error opening /usr/share/app-install/desktop/\n");
-        regfree(&re);
-        return;
-    }
-
+    g_autoptr(AsPool) pool = NULL;
+    g_autoptr(GError) error = NULL;
+    guint i;
     vector<string> packages;
-    string line;
-    while ((dirp = readdir(dp)) != NULL) {
-        if (m_cancel) {
+
+    pool = as_pool_new ();
+    as_pool_load (pool, NULL, &error);
+    if (error != NULL) {
+        /* we do not fail here because even with error we might still find metadata */
+        g_warning ("Issue while loading the AppStream metadata pool: %s", error->message);
+        g_error_free (error);
+        error = NULL;
+    }
+
+    for (i = 0; values[i] != NULL; i++) {
+        g_autoptr(GPtrArray) result = NULL;
+        guint j;
+        if (m_cancel)
             break;
-        }
-        if (ends_with(dirp->d_name, ".desktop")) {
-            string f = "/usr/share/app-install/desktop/" + string(dirp->d_name);
-            ifstream in(f.c_str());
-            if (!in != 0) {
-                continue;
-            }
-            bool getName = false;
-            while (!in.eof()) {
-                getline(in, line);
-                if (getName) {
-                    if (starts_with(line, "X-AppInstall-Package=")) {
-                        // Remove the X-AppInstall-Package=
-                        packages.push_back(line.substr(21));
-                        break;
-                    }
-                } else {
-                    if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
-                        in.seekg(ios_base::beg);
-                        getName = true;
-                    }
-                }
-            }
+
+        result = as_pool_get_components_by_provided_item (pool, AS_PROVIDED_KIND_MIMETYPE, values[i]);
+        for (j = 0; j < result->len; j++) {
+            AsComponent *cpt = AS_COMPONENT (g_ptr_array_index (result, j));
+            /* we only select one package per component - on Debian systems, AppStream components never reference multiple packages */
+            packages.push_back (as_component_get_pkgname (cpt));
         }
     }
 
-    closedir(dp);
-    regfree(&re);
-
-    // resolve the package names
+    /* resolve the package names */
     for (const string &package : packages) {
-        if (m_cancel) {
+        if (m_cancel)
             break;
-        }
+
         const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
-        if (pkg.end() == true) {
+        if (pkg.end() == true)
             continue;
-        }
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == true) {
+        if (ver.end() == true)
             continue;
-        }
+
         output.push_back(ver);
     }
 
-    // Check if app-install-data is installed
+    /* check if we found nothing because AppStream data is missing completely */
     if (output.empty()) {
-        // check if app-install-data is installed
-        pkgCache::PkgIterator pkg;
-        pkg = (*m_cache)->FindPkg("app-install-data");
-        if (pkg->CurrentState != pkgCache::State::Installed) {
+        g_autoptr(GPtrArray) all_cpts = as_pool_get_components (pool);
+        if (all_cpts->len <= 0) {
             pk_backend_job_error_code(m_job,
                                       PK_ERROR_ENUM_INTERNAL_ERROR,
-                                      "You need the app-install-data "
-                                      "package to be able to look for "
-                                      "applications that can handle "
-                                      "this kind of file");
-        }
+                                      "No AppStream metadata was found. This means we are unable to find any information for your request.");
+	}
     }
 }
 
