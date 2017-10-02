@@ -1737,7 +1737,7 @@ pk_backend_destroy (PkBackend *backend)
 static bool
 zypp_is_no_solvable (const sat::Solvable &solv)
 {
-	return solv.id() == sat::detail::noSolvableId;
+	return solv == sat::Solvable::noSolvable;
 }
 
 /**
@@ -2042,6 +2042,13 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		MIL << package_ids[i] << endl;
 
 		sat::Solvable solv = zypp_get_package_by_id( package_ids[i] );
+
+		if (zypp_is_no_solvable(solvable)) {
+			// Previously stored package_id no longer matches any solvable.
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						     "couldn't find package");
+			return;
+		}
 
 		ResObject::constPtr obj = make<ResObject>( solv );
 		if (obj == NULL) {
@@ -2516,6 +2523,13 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 		for (guint i = 0; package_ids[i]; i++) {
 			MIL << package_ids[i] << endl;
 			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+
+			if (zypp_is_no_solvable(solvable)) {
+				// Previously stored package_id no longer matches any solvable.
+				zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+							     "couldn't find package");
+				return;
+			}
 			
 			to_install++;
 			PoolItem item(solvable);
@@ -3154,6 +3168,14 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+
+		if (zypp_is_no_solvable(solvable)) {
+			// Previously stored package_id no longer matches any solvable.
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						     "couldn't find package");
+			return;
+		}
+
 		ui::Selectable::Ptr sel( ui::Selectable::get( solvable ));
 		
 		PoolItem item(solvable);
