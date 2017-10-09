@@ -2043,7 +2043,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		sat::Solvable solv = zypp_get_package_by_id( package_ids[i] );
 
-		if (zypp_is_no_solvable(solvable)) {
+		if (zypp_is_no_solvable(solv)) {
 			// Previously stored package_id no longer matches any solvable.
 			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						     "couldn't find package");
