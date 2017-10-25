@@ -84,6 +84,8 @@ PkResults	*pk_results_new				(void);
 /* set */
 gboolean	 pk_results_set_exit_code		(PkResults		*results,
 							 PkExitEnum		 exit_enum);
+gboolean	 pk_results_set_role	 		(PkResults		*results,
+							 PkRoleEnum		 role);
 gboolean	 pk_results_set_error_code 		(PkResults		*results,
 							 PkError		*item);
 

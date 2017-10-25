@@ -563,6 +563,7 @@ pk_offline_get_results (GError **error)
 	guint i;
 	g_autoptr(GError) error_local = NULL;
 	g_autofree gchar *data = NULL;
+	g_autofree gchar *role_str = NULL;
 	g_autoptr(GKeyFile) file = NULL;
 	g_autoptr(PkError) pk_error = NULL;
 	g_autoptr(PkResults) results = NULL;
@@ -619,6 +620,14 @@ pk_offline_get_results (GError **error)
 	} else {
 		pk_results_set_exit_code (results, PK_EXIT_ENUM_SUCCESS);
 	}
+
+	/* set role */
+	role_str = g_key_file_get_string (file,
+	                                  PK_OFFLINE_RESULTS_GROUP,
+	                                  "Role",
+	                                  NULL);
+	if (role_str != NULL)
+		pk_results_set_role (results, pk_role_enum_from_string (role_str));
 
 	/* add packages */
 	data = g_key_file_get_string (file, PK_OFFLINE_RESULTS_GROUP,

@@ -138,6 +138,28 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 }
 
 /**
+ * pk_results_set_role:
+ * @results: a valid #PkResults instance
+ * @role: the role enum
+ *
+ * Sets the results object to have the given role enum.
+ *
+ * Return value: %TRUE if the value was set
+ *
+ * Since: 1.1.8
+ **/
+gboolean
+pk_results_set_role (PkResults *results, PkRoleEnum role)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (role != PK_ROLE_ENUM_UNKNOWN, FALSE);
+
+	results->priv->role = role;
+
+	return TRUE;
+}
+
+/**
  * pk_results_set_exit_code:
  * @results: a valid #PkResults instance
  * @exit_enum: the exit code

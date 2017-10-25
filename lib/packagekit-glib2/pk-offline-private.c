@@ -421,6 +421,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 {
 	guint i;
 	PkPackage *package;
+	PkRoleEnum role;
 	g_autoptr(GError) error_local = NULL;
 	g_autofree gchar *data = NULL;
 	g_autoptr(GKeyFile) key_file = NULL;
@@ -449,6 +450,15 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 					PK_OFFLINE_RESULTS_GROUP,
 					"Success",
 					TRUE);
+	}
+
+	/* save role */
+	role = pk_results_get_role (results);
+	if (role != PK_ROLE_ENUM_UNKNOWN) {
+		g_key_file_set_string (key_file,
+		                       PK_OFFLINE_RESULTS_GROUP,
+		                       "Role",
+		                       pk_role_enum_to_string (role));
 	}
 
 	/* save packages if any set */
