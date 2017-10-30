@@ -1,43 +1,32 @@
-extern "C"
-{
-
+#include <dirent.h>
+#include <glib/gstdio.h>
 #include <packagekit-glib2/pk-debug.h>
-
-}
-
 #include <stdlib.h>
 #include <stdio.h>
-#include <dirent.h>
 #include <zlib.h>
 #include <curl/curl.h>
 #include <pk-backend.h>
-#include <algorithm>
-#include <forward_list>
-#include <functional>
-#include <memory>
-#include "slackpkg.h"
-#include "dl.h"
+#include <sqlite3.h>
+#include "slack-dl.h"
+#include "slack-pkgtools.h"
+#include "slack-slackpkg.h"
+#include "slack-utils.h"
 
-static std::forward_list<katja::Pkgtools*> repos;
+static GSList *repos = NULL;
 
-
-void
-pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
+void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
 	gchar *path, **groups;
 	gint ret;
 	gushort i;
 	gsize groups_len;
-	GFile *katja_conf_file;
+	GFile *conf_file;
 	GFileInfo *file_info;
-	GKeyFile *katja_conf;
+	GKeyFile *key_conf;
 	GError *err = NULL;
+	gpointer repo = NULL;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
-
-	// Use logging
-	pk_debug_add_log_domain(G_LOG_DOMAIN);
-	pk_debug_add_log_domain("Katja");
 
 	g_debug("backend: initialize");
 	curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -45,25 +34,28 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 	/* Open the database. We will need it to save the time the configuration file was last modified. */
 	path = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
 	if (sqlite3_open(path, &db) != SQLITE_OK)
+	{
 		g_error("%s: %s", path, sqlite3_errmsg(db));
+	}
 	g_free(path);
 
 	/* Read the configuration file */
-	katja_conf = g_key_file_new();
-	path = g_build_filename(SYSCONFDIR, "PackageKit", "Katja.conf", NULL);
-	g_key_file_load_from_file(katja_conf, path, G_KEY_FILE_NONE, &err);
+	key_conf = g_key_file_new();
+	path = g_build_filename(SYSCONFDIR, "PackageKit", "Slackware.conf", NULL);
+	g_key_file_load_from_file(key_conf, path, G_KEY_FILE_NONE, &err);
 	if (err)
 	{
 		g_error("%s: %s", path, err->message);
 		g_error_free(err);
 	}
 
-	katja_conf_file = g_file_new_for_path(path);
-	if (!(file_info = g_file_query_info(katja_conf_file,
-					"time::modified-usec",
-					G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
-					NULL,
-					&err))) {
+	conf_file = g_file_new_for_path(path);
+	if (!(file_info = g_file_query_info(conf_file,
+	                                    "time::modified-usec",
+	                                    G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+	                                    NULL,
+	                                    &err)))
+	{
 		g_error("%s", err->message);
 		g_error_free(err);
 	}
@@ -75,49 +67,63 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 					NULL)) == SQLITE_OK) {
 		ret = sqlite3_bind_int(stmt, 1, g_file_info_get_attribute_uint32(file_info, "time::modified-usec"));
 		if (ret == SQLITE_OK)
+		{
 			ret = sqlite3_step(stmt);
+		}
 		sqlite3_finalize(stmt);
 	}
 	if ((ret != SQLITE_OK) && (ret != SQLITE_DONE))
+	{
 		g_error("%s: %s", path, sqlite3_errstr(ret));
+	}
 	else if (!sqlite3_changes(db))
+	{
 		g_error("Failed to update database: %s", path);
+	}
 
 	g_object_unref(file_info);
-	g_object_unref(katja_conf_file);
+	g_object_unref(conf_file);
 	sqlite3_close_v2(db);
 	g_free(path);
 
 	/* Initialize an object for each well-formed repository */
-	groups = g_key_file_get_groups(katja_conf, &groups_len);
+	groups = g_key_file_get_groups(key_conf, &groups_len);
 	for (i = 0; i < groups_len; i++)
 	{
-		gchar *blacklist = g_key_file_get_string(katja_conf, groups[i], "Blacklist", NULL);
-		gchar *mirror = g_key_file_get_string(katja_conf, groups[i], "Mirror", NULL);
-		if (g_key_file_has_key(katja_conf, groups[i], "Priority", NULL))
+		gchar *blacklist = g_key_file_get_string(key_conf, groups[i], "Blacklist", NULL);
+		gchar *mirror = g_key_file_get_string(key_conf, groups[i], "Mirror", NULL);
+
+		if (g_key_file_has_key(key_conf, groups[i], "Priority", NULL))
 		{
-			auto repo = new katja::Slackpkg(groups[i],
-			                                mirror,
-			                                i + 1,
-			                                blacklist,
-			                                g_key_file_get_string_list(katja_conf, groups[i], "Priority", NULL, NULL));
-			repos.push_front(repo);
-		}
-		else if (g_key_file_has_key(katja_conf, groups[i], "IndexFile", NULL))
-		{
-			auto repo = new katja::Dl(groups[i],
-			                          mirror,	
+			repo = slack_slackpkg_new(groups[i],
+			                          mirror,
 			                          i + 1,
 			                          blacklist,
-			                          g_key_file_get_string(katja_conf, groups[i], "IndexFile", NULL));
-			repos.push_front(repo);
+			                          g_key_file_get_string_list(key_conf, groups[i], "Priority", NULL, NULL));
+		}
+		else if (g_key_file_has_key(key_conf, groups[i], "IndexFile", NULL))
+		{
+			repo = slack_dl_new(groups[i],
+			                    mirror,
+			                    i + 1,
+			                    blacklist,
+			                    g_key_file_get_string(key_conf, groups[i], "IndexFile", NULL));
+		}
+
+		if (repo)
+		{
+			repos = g_slist_append(repos, repo);
+		}
+		else
+		{
+			g_free(groups[i]);
 		}
 		g_free(mirror);
 		g_free(blacklist);
 	}
-	g_strfreev(groups);
+	g_free(groups);
 
-	g_key_file_free(katja_conf);
+	g_key_file_free(key_conf);
 }
 
 void
@@ -125,15 +131,11 @@ pk_backend_destroy(PkBackend *backend)
 {
 	g_debug("backend: destroy");
 
-	for (auto r = repos.begin(); r != repos.end(); ++r)
-	{
-		delete *r;
-	}
-
+	g_slist_free_full(repos, g_object_unref);
 	curl_global_cleanup();
 }
 
-gchar**
+gchar **
 pk_backend_get_mime_types(PkBackend *backend)
 {
 	const gchar *mime_types[] = {
@@ -153,20 +155,20 @@ pk_backend_supports_parallelization(PkBackend *backend)
 	return FALSE;
 }
 
-const gchar*
+const gchar *
 pk_backend_get_description(PkBackend* backend)
 {
-	return "Katja";
+	return "Slackware";
 }
 
-const gchar*
+const gchar *
 pk_backend_get_author(PkBackend* backend)
 {
 	return "Eugene Wissner <belka@caraus.de>";
 }
 
 PkBitfield
-pk_backend_get_groups(PkBackend* backend)
+pk_backend_get_groups(PkBackend *backend)
 {
 	return pk_bitfield_from_enums(PK_GROUP_ENUM_COLLECTIONS,
 	                              PK_GROUP_ENUM_SYSTEM,
@@ -186,10 +188,11 @@ pk_backend_get_groups(PkBackend* backend)
 	                              -1);
 }
 
-void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
+void
+pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
 {
 	gchar *db_filename = NULL;
-	katja::JobData* job_data = g_new0(katja::JobData, 1);
+	JobData *job_data = g_new0(JobData, 1);
 
 	pk_backend_job_set_allow_cancel(job, TRUE);
 	pk_backend_job_set_allow_cancel(job, FALSE);
@@ -197,7 +200,9 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
 	db_filename = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "metadata", "metadata.db", NULL);
 	if (sqlite3_open(db_filename, &job_data->db) == SQLITE_OK) { /* Some SQLite settings */
 		sqlite3_exec(job_data->db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
-	} else {
+	}
+	else
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_CACHE,
 								  "%s: %s",
 								  db_filename,
@@ -212,9 +217,10 @@ out:
 	g_free(db_filename);
 }
 
-void pk_backend_stop_job(PkBackend* backend, PkBackendJob* job)
+void
+pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 {
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	if (job_data->curl)
 	{
@@ -226,12 +232,13 @@ void pk_backend_stop_job(PkBackend* backend, PkBackendJob* job)
 	pk_backend_job_set_user_data(job, NULL);
 }
 
-static void pk_backend_search_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+static void
+pk_backend_search_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **vals, *search, *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -251,7 +258,7 @@ static void pk_backend_search_thread(PkBackendJob* job, GVariant* params, gpoint
 		/* Now we're ready to output all packages */
 		while (sqlite3_step(stmt) == SQLITE_ROW)
 		{
-			ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+			ret = slack_is_installed((gchar*) sqlite3_column_text(stmt, 2));
 			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
 			{
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
@@ -278,28 +285,32 @@ static void pk_backend_search_thread(PkBackendJob* job, GVariant* params, gpoint
 	pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_search_names(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+void
+pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "name", NULL);
 }
 
-void pk_backend_search_details(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+void
+pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "desc", NULL);
 }
 
-void pk_backend_search_groups(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** values)
+void
+pk_backend_search_groups(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create(job, pk_backend_search_thread, (gpointer) "cat", NULL);
 }
 
-static void pk_backend_search_files_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+static void
+pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **vals, *search;
 	gchar *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -316,7 +327,7 @@ static void pk_backend_search_files_thread(PkBackendJob* job, GVariant* params, 
 		/* Now we're ready to output all packages */
 		while (sqlite3_step(stmt) == SQLITE_ROW)
 		{
-			ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+			ret = slack_is_installed((gchar*) sqlite3_column_text(stmt, 2));
 			if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
 			{
 				pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
@@ -342,11 +353,14 @@ static void pk_backend_search_files_thread(PkBackendJob* job, GVariant* params, 
 	pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values) {
+void
+pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+{
 	pk_backend_job_thread_create(job, pk_backend_search_files_thread, NULL, NULL);
 }
 
-static void pk_backend_get_details_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+static void
+pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **pkg_ids, *homepage = NULL;
 	gchar** tokens;
@@ -356,7 +370,7 @@ static void pk_backend_get_details_thread(PkBackendJob* job, GVariant* params, g
 	GMatchInfo *match_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -387,16 +401,20 @@ static void pk_backend_get_details_thread(PkBackendJob* job, GVariant* params, g
 			(GRegexCompileFlags)(G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES),
 			(GRegexMatchFlags)(0),
 			&err);
-	if (err) {
+	if (err)
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_UNKNOWN, "%s", err->message);
 		g_error_free(err);
 		goto out;
 	}
-	if (g_regex_match(expr, desc->str, (GRegexMatchFlags)0, &match_info)) {
+	if (g_regex_match(expr, desc->str, (GRegexMatchFlags)0, &match_info))
+	{
 		homepage = g_match_info_fetch(match_info, 0); /* URL */
 		/* Remove the last sentence with the copied URL */
-		for (i = desc->len - 1; i > 0; i--) {
-			if ((desc->str[i - 1] == '.') && (desc->str[i] == ' ')) {
+		for (i = desc->len - 1; i > 0; i--)
+		{
+			if ((desc->str[i - 1] == '.') && (desc->str[i] == ' '))
+			{
 				g_string_truncate(desc, i);
 				break;
 			}
@@ -424,17 +442,19 @@ out:
 	sqlite3_finalize(stmt);
 }
 
-void pk_backend_get_details(PkBackend* backend, PkBackendJob* job, gchar** package_ids)
+void
+pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_job_thread_create(job, pk_backend_get_details_thread, NULL, NULL);
 }
 
-static void pk_backend_resolve_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+static void
+pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar **vals, **val;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -456,7 +476,7 @@ static void pk_backend_resolve_thread(PkBackendJob* job, GVariant* params, gpoin
 
 			while (sqlite3_step(stmt) == SQLITE_ROW)
 			{
-				ret = katja::isInstalled((gchar*) sqlite3_column_text(stmt, 2));
+				ret = slack_is_installed((gchar*) sqlite3_column_text(stmt, 2));
 				if ((ret == PK_INFO_ENUM_INSTALLED) || (ret == PK_INFO_ENUM_UPDATING))
 				{
 					pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED,
@@ -483,18 +503,18 @@ static void pk_backend_resolve_thread(PkBackendJob* job, GVariant* params, gpoin
 }
 
 void
-pk_backend_resolve(PkBackend* backend, PkBackendJob* job, PkBitfield filters, gchar** packages)
+pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
 	pk_backend_job_thread_create(job, pk_backend_resolve_thread, NULL, NULL);
 }
 
 static void
-pk_backend_download_packages_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *dir_path, *path, **pkg_ids, *to_strv[] = {NULL, NULL};
 	guint i;
 	sqlite3_stmt *stmt;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	g_variant_get(params, "(^a&ss)", &pkg_ids, &dir_path);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
@@ -512,7 +532,7 @@ pk_backend_download_packages_thread(PkBackendJob* job, GVariant* params, gpointe
 
 	for (i = 0; pkg_ids[i]; ++i)
 	{
-		auto const tokens = pk_package_id_split(pkg_ids[i]);
+		gchar **tokens = pk_package_id_split(pkg_ids[i]);
 
 		sqlite3_bind_text(stmt, 1, tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(stmt, 2, tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
@@ -520,19 +540,13 @@ pk_backend_download_packages_thread(PkBackendJob* job, GVariant* params, gpointe
 		sqlite3_bind_text(stmt, 4, tokens[PK_PACKAGE_ID_DATA], -1, SQLITE_TRANSIENT);
 		if (sqlite3_step(stmt) == SQLITE_ROW)
 		{
-			auto const repo = std::find_if(repos.begin(),
-			                               repos.end(),
-			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-			if (repo != repos.end())
+			GSList *repo;
+			if ((repo = g_slist_find_custom(repos, tokens[PK_PACKAGE_ID_DATA], slack_cmp_repo)))
 			{
-				auto const column = sqlite3_column_text(stmt, 0);
-				pk_backend_job_package(job,
-				                       PK_INFO_ENUM_DOWNLOADING,
-				                       pkg_ids[i],
-				                       reinterpret_cast<const gchar*>(column));
-				(*repo)->download(job,
-				                  dir_path,
-				                  tokens[PK_PACKAGE_ID_NAME]);
+				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
+									   pkg_ids[i],
+									   (gchar *) sqlite3_column_text(stmt, 0));
+				slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job, dir_path, tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -549,23 +563,23 @@ out:
 }
 
 void
-pk_backend_download_packages(PkBackend* backend, PkBackendJob* job, gchar** package_ids, const gchar* directory)
+pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
 	pk_backend_job_thread_create(job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
 static void
-pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	gchar* dest_dir_name;
-	gchar** pkg_ids;
+	gchar *dest_dir_name;
+	gchar **pkg_ids;
 	guint i;
 	gdouble percent_step;
 	GSList *install_list = NULL, *l;
 	sqlite3_stmt *pkglist_stmt = NULL, *collection_stmt = NULL;
     PkBitfield transaction_flags = 0;
 	PkInfoEnum ret;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	g_variant_get(params, "(t^a&s)", &transaction_flags, &pkg_ids);
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -584,14 +598,15 @@ pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer
 						   "WHERE c.name LIKE @name AND r.repo LIKE @repo",
 						   -1,
 						   &collection_stmt,
-						   NULL) != SQLITE_OK)) {
+						   NULL) != SQLITE_OK))
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(job_data->db));
 		goto out;
 	}
 
 	for (i = 0; pkg_ids[i]; i++)
 	{
-		auto const tokens = pk_package_id_split(pkg_ids[i]);
+		gchar **tokens = pk_package_id_split(pkg_ids[i]);
 		sqlite3_bind_text(pkglist_stmt, 1, tokens[PK_PACKAGE_ID_NAME], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_stmt, 2, tokens[PK_PACKAGE_ID_VERSION], -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(pkglist_stmt, 3, tokens[PK_PACKAGE_ID_ARCH], -1, SQLITE_TRANSIENT);
@@ -620,7 +635,7 @@ pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer
 
 				while (sqlite3_step(collection_stmt) == SQLITE_ROW)
 				{
-					ret = katja::isInstalled((gchar*) sqlite3_column_text(collection_stmt, 2));
+					ret = slack_is_installed((gchar*) sqlite3_column_text(collection_stmt, 2));
 					if ((ret == PK_INFO_ENUM_INSTALLING) || (ret == PK_INFO_ENUM_UPDATING))
 					{
 						if ((pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) &&
@@ -661,19 +676,19 @@ pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
 		for (l = install_list, i = 0; l; l = g_slist_next(l), i++)
 		{
+			gchar **tokens;
+			GSList *repo;
+
 			pk_backend_job_set_percentage(job, percent_step * i);
-			auto const tokens = pk_package_id_split((gchar *)(l->data));
+			tokens = pk_package_id_split((gchar *)(l->data));
+			repo = g_slist_find_custom(repos, tokens[PK_PACKAGE_ID_DATA], slack_cmp_repo);
 
-			auto const repo = std::find_if(repos.begin(),
-			                               repos.end(),
-			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-			if (repo != repos.end())
+			if (repo)
 			{
-				(*repo)->download(job,
-				                  dest_dir_name,
-				                  tokens[PK_PACKAGE_ID_NAME]);
+				slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job,
+										dest_dir_name,
+										tokens[PK_PACKAGE_ID_NAME]);
 			}
-
 			g_strfreev(tokens);
 		}
 		g_free(dest_dir_name);
@@ -682,15 +697,16 @@ pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
 		for (l = install_list; l; l = g_slist_next(l), i++)
 		{
-			pk_backend_job_set_percentage(job, percent_step * i);
-			auto const tokens = pk_package_id_split((gchar *)(l->data));
+			gchar **tokens;
+			GSList *repo;
 
-			auto const repo = std::find_if(repos.begin(),
-			                               repos.end(),
-			                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-			if (repo != repos.end())
+			pk_backend_job_set_percentage(job, percent_step * i);
+			tokens = pk_package_id_split((gchar *)(l->data));
+			repo = g_slist_find_custom(repos, tokens[PK_PACKAGE_ID_DATA], slack_cmp_repo);
+
+			if (repo)
 			{
-				(*repo)->install(job, tokens[PK_PACKAGE_ID_NAME]);
+				slack_pkgtools_install(SLACK_PKGTOOLS(repo->data), job, tokens[PK_PACKAGE_ID_NAME]);
 			}
 			g_strfreev(tokens);
 		}
@@ -700,17 +716,20 @@ pk_backend_install_packages_thread(PkBackendJob* job, GVariant* params, gpointer
 out:
 	sqlite3_finalize(pkglist_stmt);
 	sqlite3_finalize(collection_stmt);
-
-	pk_backend_job_finished (job);
 }
 
-void pk_backend_install_packages(PkBackend *backend, PkBackendJob *job,
-								 PkBitfield transaction_flags,
-								 gchar **package_ids) {
+void
+pk_backend_install_packages(PkBackend *backend,
+                            PkBackendJob *job,
+                            PkBitfield transaction_flags,
+                            gchar **package_ids)
+{
 	pk_backend_job_thread_create(job, pk_backend_install_packages_thread, NULL, NULL);
 }
 
-static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void
+pk_backend_remove_packages_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+{
 	gchar **pkg_ids, *cmd_line;
 	guint i;
 	gdouble percent_step;
@@ -720,17 +739,22 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 
 	g_variant_get(params, "(t^a&sbb)", &transaction_flags, &pkg_ids, &allow_deps, &autoremove);
  
-	if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+	if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+	{
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_DEP_RESOLVE);
-	} else {
+	}
+	else
+	{
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_REMOVE);
 
 		/* Add percent_step percents per removed package */
 		percent_step = 100.0 / g_strv_length(pkg_ids);
 		for (i = 0; pkg_ids[i]; i++)
 		{
+			gchar **tokens;
+
 			pk_backend_job_set_percentage(job, percent_step * i);
-			auto const tokens = pk_package_id_split(pkg_ids[i]);
+			tokens = pk_package_id_split(pkg_ids[i]);
 			cmd_line = g_strconcat("/sbin/removepkg ", tokens[PK_PACKAGE_ID_NAME], NULL);
 
 			/* Pkgtools return always 0 */
@@ -753,10 +777,10 @@ static void pk_backend_remove_packages_thread(PkBackendJob *job, GVariant *param
 }
 
 void
-pk_backend_remove_packages(PkBackend* backend,
-                           PkBackendJob* job,
+pk_backend_remove_packages(PkBackend *backend,
+                           PkBackendJob *job,
                            PkBitfield transaction_flags,
-                           gchar** package_ids,
+                           gchar **package_ids,
                            gboolean allow_deps,
                            gboolean autoremove)
 {
@@ -764,7 +788,7 @@ pk_backend_remove_packages(PkBackend* backend,
 }
 
 static void
-pk_backend_get_updates_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *pkg_id, *full_name, *desc;
 	const gchar *pkg_metadata_filename;
@@ -773,7 +797,7 @@ pk_backend_get_updates_thread(PkBackendJob* job, GVariant* params, gpointer user
 	GFileInfo *pkg_metadata_file_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -784,7 +808,8 @@ pk_backend_get_updates_thread(PkBackendJob* job, GVariant* params, gpointer user
 							"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)",
 							-1,
 							&stmt,
-							NULL) != SQLITE_OK)) {
+							NULL) != SQLITE_OK))
+	{
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_CANNOT_GET_FILELIST, "%s", sqlite3_errmsg(job_data->db));
 		goto out;
 	}
@@ -805,19 +830,18 @@ pk_backend_get_updates_thread(PkBackendJob* job, GVariant* params, gpointer user
 
 	while ((pkg_metadata_file_info = g_file_enumerator_next_file(pkg_metadata_enumerator, NULL, NULL)))
 	{
+		gchar **tokens;
+
 		pkg_metadata_filename = g_file_info_get_name(pkg_metadata_file_info);
-		auto const tokens = katja::splitPackageName(pkg_metadata_filename);
+		tokens = slack_split_package_name(pkg_metadata_filename);
 
 		/* Select the package from the database */
 		sqlite3_bind_text(stmt, 1, tokens[0], -1, SQLITE_TRANSIENT);
 
 		/* If there are more packages with the same name, remember the one from the
 		 * repository with the lowest order. */
-		if ((sqlite3_step(stmt) == SQLITE_ROW) ||
-		    std::find_if(repos.begin(),
-		                 repos.end(),
-		                 katja::CompareRepo(reinterpret_cast<const gchar*>(sqlite3_column_text(stmt, 4))))
-		 != repos.end())
+		if ((sqlite3_step(stmt) == SQLITE_ROW)
+		 || g_slist_find_custom(repos, ((gchar *) sqlite3_column_text(stmt, 4)), slack_cmp_repo))
 		{
 
 			full_name = g_strdup((gchar *) sqlite3_column_text(stmt, 0));
@@ -867,11 +891,14 @@ out:
 	sqlite3_finalize(stmt);
 }
 
-void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters) {
+void
+pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+{
 	pk_backend_job_thread_create(job, pk_backend_get_updates_thread, NULL, NULL);
 }
 
-static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+static void
+pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *dest_dir_name, *cmd_line, **pkg_ids;
 	guint i;
@@ -886,18 +913,17 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		dest_dir_name = g_build_filename(LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
 		for (i = 0; pkg_ids[i]; i++)
 		{
-			auto const tokens = pk_package_id_split(pkg_ids[i]);
+			gchar **tokens = pk_package_id_split(pkg_ids[i]);
 
 			if (g_strcmp0(tokens[PK_PACKAGE_ID_DATA], "obsolete"))
 			{
-				auto const repo = std::find_if(repos.begin(),
-				                               repos.end(),
-				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-				if (repo != repos.end())
+				GSList *repo = g_slist_find_custom(repos, tokens[PK_PACKAGE_ID_DATA], slack_cmp_repo);
+
+				if (repo)
 				{
-					(*repo)->download(job,
-					                  dest_dir_name,
-					                  tokens[PK_PACKAGE_ID_NAME]);
+					slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job,
+					                        dest_dir_name,
+					                        tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 
@@ -909,16 +935,18 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
 		for (i = 0; pkg_ids[i]; i++)
 		{
-			auto const tokens = pk_package_id_split(pkg_ids[i]);
+			gchar **tokens = pk_package_id_split(pkg_ids[i]);
 
 			if (g_strcmp0(tokens[PK_PACKAGE_ID_DATA], "obsolete"))
 			{
-				auto const repo = std::find_if(repos.begin(),
-				                               repos.end(),
-				                               katja::CompareRepo(tokens[PK_PACKAGE_ID_DATA]));
-				if (repo != repos.end())
+				GSList *repo = g_slist_find_custom(repos, tokens[PK_PACKAGE_ID_DATA], slack_cmp_repo);
+
+				if (repo)
 				{
-					(*repo)->install(job, tokens[PK_PACKAGE_ID_NAME]);
+					slack_pkgtools_download(SLACK_PKGTOOLS(repo->data),
+					                        job,
+					                        dest_dir_name,
+					                        tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 			else
@@ -935,16 +963,16 @@ static void pk_backend_update_packages_thread(PkBackendJob *job, GVariant *param
 }
 
 void
-pk_backend_update_packages(PkBackend* backend,
-                           PkBackendJob* job,
+pk_backend_update_packages(PkBackend *backend,
+                           PkBackendJob *job,
                            PkBitfield transaction_flags,
-                           gchar** package_ids)
+                           gchar **package_ids)
 {
 	pk_backend_job_thread_create(job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
 static void
-pk_backend_refresh_cache_thread(PkBackendJob* job, GVariant* params, gpointer user_data)
+pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gchar *tmp_dir_name, *db_err, *path = NULL;
 	gint ret;
@@ -954,7 +982,7 @@ pk_backend_refresh_cache_thread(PkBackendJob* job, GVariant* params, gpointer us
 	GFileInfo *file_info = NULL;
 	GError *err = NULL;
 	sqlite3_stmt *stmt = NULL;
-	auto job_data = static_cast<katja::JobData*>(pk_backend_job_get_user_data(job));
+	JobData *job_data = pk_backend_job_get_user_data(job);
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
 
@@ -1011,19 +1039,19 @@ pk_backend_refresh_cache_thread(PkBackendJob* job, GVariant* params, gpointer us
 	}
 
 	// Get list of files that should be downloaded.
-	for (auto l = repos.begin(); l != repos.end(); ++l)
+	for (GSList *l = repos; l; l = g_slist_next(l))
 	{
-		GSList *cache_info = (*l)->collectCacheInfo(tmp_dir_name);
-		file_list = g_slist_concat(file_list, cache_info);
+		file_list = g_slist_concat(file_list,
+		                           slack_pkgtools_collect_cache_info(SLACK_PKGTOOLS(l->data), tmp_dir_name));
 	}
 
 	/* Download repository */
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_REPOSITORY);
 
-	for (auto l = file_list; l; l = g_slist_next(l))
+	for (GSList *l = file_list; l; l = g_slist_next(l))
 	{
-		katja::getFile(&job_data->curl,
-		               ((gchar **)l->data)[0],
+		slack_get_file(&job_data->curl,
+		               ((gchar **) l->data)[0],
 		               ((gchar **)l->data)[1]);
 	}
 	g_slist_free_full(file_list, (GDestroyNotify)g_strfreev);
@@ -1031,9 +1059,9 @@ pk_backend_refresh_cache_thread(PkBackendJob* job, GVariant* params, gpointer us
 	/* Refresh cache */
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	for (auto l = repos.begin(); l != repos.end(); ++l)
+	for (GSList *l = repos; l; l = g_slist_next(l))
 	{
-		(*l)->generateCache(job, tmp_dir_name);
+		slack_pkgtools_generate_cache(SLACK_PKGTOOLS(l->data), job, tmp_dir_name);
 	}
 
 out:
@@ -1053,11 +1081,15 @@ out:
 	g_free(tmp_dir_name);
 }
 
-void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force) {
+void
+pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
+{
 	pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
-static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *params, gpointer user_data) {
+static void
+pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+{
 	guint i;
 	gchar **pkg_ids;
 
@@ -1065,7 +1097,8 @@ static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *par
 
 	g_variant_get(params, "(^a&s)", &pkg_ids);
 
-	for (i = 0; pkg_ids[i] != NULL; i++) {
+	for (i = 0; pkg_ids[i] != NULL; i++)
+	{
 		pk_backend_job_update_detail (job,
 									  pkg_ids[i],
 									  NULL,
@@ -1082,7 +1115,8 @@ static void pk_backend_get_update_detail_thread(PkBackendJob *job, GVariant *par
 	}
 }
 
-void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+void
+pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_job_thread_create(job, pk_backend_get_update_detail_thread, NULL, NULL);
 }

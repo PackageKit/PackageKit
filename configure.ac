@@ -349,7 +349,7 @@ AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enabl
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
 AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
-AC_ARG_ENABLE(katja, AS_HELP_STRING([--enable-katja],[use the Slackware backend]),enable_katja=$enableval,enable_katja=no)
+AC_ARG_ENABLE(slack, AS_HELP_STRING([--enable-slack],[use the Slackware backend]),enable_slack=$enableval,enable_slack=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
@@ -365,7 +365,7 @@ AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_KATJA, [test x$enable_katja = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_SLACK, [test x$enable_slack = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
@@ -477,32 +477,30 @@ if test x$enable_zypp = xyes; then
 	fi
 fi
 
-if test x$enable_katja = xyes; then
-	dnl Use C++
-	AC_LANG([C++])
-
-	# Require C++14 support
-	AX_CXX_COMPILE_STDCXX([14], [ext], [mandatory])
-
+if test x$enable_slack = xyes; then
 	AC_CHECK_LIB(curl, curl_version, [
 	    CURL_CFLAGS="`curl-config --cflags`"
 	    CURL_LIBS="`curl-config --libs`"
 	    ], [AC_MSG_ERROR([Cant find curl])])
 	case "`uname -m`" in
 		x86-64|x86_64|X86-64|X86_64)
-			KATJA_PKGMAIN="slackware64"
+			SLACK_PKGMAIN="slackware64"
 			;;
 		*)
-			KATJA_PKGMAIN="slackware"
+			SLACK_PKGMAIN="slackware"
 	esac
 
-	PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4, giomm-2.4])
+	SLACK_CFLAGS="$CURL_CFLAGS"
+	SLACK_LIBS="$CURL_LIBS"
 
-	KATJA_CFLAGS="$CURL_CFLAGS $GLIBMM_CFLAGS"
-	KATJA_LIBS="$CURL_LIBS $GLIBMM_LIBS"
-	AC_SUBST(KATJA_PKGMAIN)
-	AC_SUBST(KATJA_CFLAGS)
-	AC_SUBST(KATJA_LIBS)
+	# Require C11 support
+	AX_CHECK_COMPILE_FLAG([-std=c11], [
+		SLACK_CFLAGS+=" -std=c11"
+	])
+
+	AC_SUBST(SLACK_PKGMAIN)
+	AC_SUBST(SLACK_CFLAGS)
+	AC_SUBST(SLACK_LIBS)
 fi
 
 if test x$enable_nix = xyes; then
@@ -544,7 +542,7 @@ backends/aptcc/Makefile
 backends/dnf/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
-backends/katja/Makefile
+backends/slack/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile
@@ -616,7 +614,7 @@ echo "
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
         Ports backend:             ${enable_ports}
-        Katja backend:             ${enable_katja}
+        Slackware backend:         ${enable_slack}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
         Zypp backend:              ${enable_zypp}
