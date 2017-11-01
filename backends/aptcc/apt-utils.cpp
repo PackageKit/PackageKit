@@ -34,14 +34,22 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_ADMIN_TOOLS;
     } else if (group.compare ("base") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
+    } else if (group.compare ("cli-mono") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("comm") == 0) {
         return PK_GROUP_ENUM_COMMUNICATION;
+    } else if (group.compare ("database") == 0) {
+        return PK_GROUP_ENUM_ADMIN_TOOLS;
+    } else if (group.compare ("debug") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("devel") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("doc") == 0) {
         return PK_GROUP_ENUM_DOCUMENTATION;
     } else if (group.compare ("editors") == 0) {
         return PK_GROUP_ENUM_PUBLISHING;
+    } else if (group.compare ("education") == 0) {
+        return PK_GROUP_ENUM_EDUCATION;
     } else if (group.compare ("electronics") == 0) {
         return PK_GROUP_ENUM_ELECTRONICS;
     } else if (group.compare ("embedded") == 0) {
@@ -52,11 +60,23 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_GAMES;
     } else if (group.compare ("gnome") == 0) {
         return PK_GROUP_ENUM_DESKTOP_GNOME;
+    } else if (group.compare ("gnu-r") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("gnustep") == 0) {
+        return PK_GROUP_ENUM_DESKTOP_OTHER;
+    } else if (group.compare ("golang") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("graphics") == 0) {
         return PK_GROUP_ENUM_GRAPHICS;
     } else if (group.compare ("hamradio") == 0) {
         return PK_GROUP_ENUM_COMMUNICATION;
+    } else if (group.compare ("haskell") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("httpd") == 0) {
+        return PK_GROUP_ENUM_SERVERS;
     } else if (group.compare ("interpreters") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("introspection") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("java") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
@@ -64,10 +84,14 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("kde") == 0) {
         return PK_GROUP_ENUM_DESKTOP_KDE;
+    } else if (group.compare ("kernel") == 0) {
+        return PK_GROUP_ENUM_SYSTEM;
     } else if (group.compare ("libdevel") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("libs") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
+    } else if (group.compare ("lisp") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("mail") == 0) {
         return PK_GROUP_ENUM_INTERNET;
     } else if (group.compare ("math") == 0) {
@@ -78,11 +102,15 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_NETWORK;
     } else if (group.compare ("news") == 0) {
         return PK_GROUP_ENUM_INTERNET;
+    } else if (group.compare ("ocaml") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("oldlibs") == 0) {
         return PK_GROUP_ENUM_LEGACY;
     } else if (group.compare ("otherosfs") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
     } else if (group.compare ("perl") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("php") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("python") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
@@ -102,10 +130,18 @@ PkGroupEnum get_enum_group(string group)
         return PK_GROUP_ENUM_PUBLISHING;
     } else if (group.compare ("utils") == 0) {
         return PK_GROUP_ENUM_ACCESSORIES;
+    } else if (group.compare ("vcs") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
+    } else if (group.compare ("video") == 0) {
+        return PK_GROUP_ENUM_MULTIMEDIA;
     } else if (group.compare ("web") == 0) {
         return PK_GROUP_ENUM_INTERNET;
     } else if (group.compare ("x11") == 0) {
         return PK_GROUP_ENUM_DESKTOP_OTHER;
+    } else if (group.compare ("xfce") == 0) {
+        return PK_GROUP_ENUM_DESKTOP_XFCE;
+    } else if (group.compare ("zope") == 0) {
+        return PK_GROUP_ENUM_PROGRAMMING;
     } else if (group.compare ("alien") == 0) {
         return PK_GROUP_ENUM_UNKNOWN;//FIXME alien is an unknown group?
     } else if (group.compare ("translations") == 0) {
