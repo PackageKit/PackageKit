@@ -803,7 +803,9 @@ main (int argc, char *argv[])
 	len = strlen (argv[1]);
 	if (len < 1)
 		goto out;
-	if (argv[1][0] == '.')
+
+	/* invalid */
+	if (g_strcmp0 (argv[1], ".") == 0 || g_strcmp0 (argv[1], "..") == 0)
 		goto out;
 
 	env_shell = g_getenv ("SHELL");
