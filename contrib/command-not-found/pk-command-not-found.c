@@ -803,6 +803,11 @@ main (int argc, char *argv[])
 	len = strlen (argv[1]);
 	if (len < 1)
 		goto out;
+	// exit with code 0 if the argument is "." or ".." to prevent unwanted behavior
+	if (argv[1][0] == '.') {
+		if (len == 1) goto out;
+		if (len == 2 && argv[1][1] == '.') goto out;
+	}
 
 	env_shell = g_getenv ("SHELL");
 	if (env_shell != NULL)
