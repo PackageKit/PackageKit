@@ -57,6 +57,7 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 	gint err, read_len;
 	guint pos;
 	gchar buf[SLACK_BINARY_MAX_BUF_SIZE], *path, *pkg_filename, *rest = NULL, *start;
+	gchar *full_name = NULL;
 	gchar **line, **lines;
 	BZFILE *manifest_bz2;
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
@@ -133,13 +134,16 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 		}
 		for (line = lines; *line; line++)
 		{
-			gchar *full_name = NULL;
-
 			if (g_regex_match(pkg_expr, *line, 0, &match_info))
 			{
 				if (g_match_info_get_match_count(match_info) > 2)
 				{ /* If the extension matches */
+					g_free(full_name);
 					full_name = g_match_info_fetch(match_info, 1);
+				}
+				else
+				{
+					full_name = NULL;
 				}
 			}
 			g_match_info_free(match_info);
@@ -155,8 +159,6 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 				sqlite3_reset(statement);
 				g_free(pkg_filename);
 			}
-
-			g_free(full_name);
 			g_match_info_free(match_info);
 		}
 		g_strfreev(lines);
