@@ -165,6 +165,7 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 	}
 
 	sqlite3_exec(job_data->db, "END TRANSACTION", NULL, NULL, NULL);
+	g_free(full_name);
 	BZ2_bzReadClose(&err, manifest_bz2);
 
 out:
