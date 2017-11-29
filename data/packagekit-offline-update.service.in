@@ -5,6 +5,8 @@ DefaultDependencies=no
 Requires=sysinit.target dbus.socket
 After=sysinit.target dbus.socket systemd-journald.socket
 Before=shutdown.target system-update.target
+# See packagekit.service
+ConditionPathExists=!/run/ostree-booted
 
 [Service]
 Type=oneshot
