@@ -1789,7 +1789,6 @@ void AptIntf::updateInterface(int fd, int writeFd)
                 int exit_code = WEXITSTATUS(exitStatus);
                 cout << filename << " " << exit_code << " ret: "<< ret << endl;
 
-                g_free(filename);
                 g_strfreev(argv);
                 g_strfreev(envp);
 
