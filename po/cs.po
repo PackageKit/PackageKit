@@ -16,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-11 13:07+0100\n"
-"PO-Revision-Date: 2017-09-11 12:07+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-01-09 13:29+0100\n"
+"PO-Revision-Date: 2017-11-25 14:24+0000\n"
+"Last-Translator: Daniel Rusek <mail@asciiwolf.com>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1179,7 +1179,7 @@ msgid "Install signed package"
 msgstr "Nainstalovat podepsaný balíček"
 
 msgid "Authentication is required to install software"
-msgstr "Pro instalaci software je vyžadováno ověření"
+msgstr "Pro instalaci softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1190,7 +1190,7 @@ msgid "Install untrusted local file"
 msgstr "Nainstalovat místní nedůvěryhodný soubor"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "Pro instalaci nedůvěryhodného software je vyžadováno ověření"
+msgstr "Pro instalaci nedůvěryhodného softwaru je vyžadováno ověření"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1222,7 +1222,7 @@ msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr "Důvěřovat klíči použitému pro podepsání software"
+msgstr "Důvěřovat klíči použitému pro podepsání softwaru"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
@@ -1253,7 +1253,7 @@ msgid "Remove package"
 msgstr "Odebrat balíček"
 
 msgid "Authentication is required to remove software"
-msgstr "Pro odebrání software je vyžadováno ověření"
+msgstr "Pro odebrání softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1262,10 +1262,10 @@ msgstr "Pro odebrání software je vyžadováno ověření"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr "Akutalizace software"
+msgstr "Aktualizace softwaru"
 
 msgid "Authentication is required to update software"
-msgstr "Pro aktualizaci software je vyžadováno ověření"
+msgstr "Pro aktualizaci softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable

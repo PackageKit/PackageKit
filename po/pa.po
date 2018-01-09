@@ -5,15 +5,15 @@
 # Translators:
 # Amanpreet Singh Alam <aalam@users.sf.net>, 2008, 2009
 # A S Alam <aalam@users.sf.net>, 2009
-# A S Alam <apreet.alam@gmail.com>, 2011-2014,2016
+# A S Alam <alam.yellow@gmail.com>, 2011-2014,2016
 # Jaswinder Singh <jsingh@redhat.com>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-11 13:07+0100\n"
-"PO-Revision-Date: 2017-09-11 12:07+0000\n"
+"POT-Creation-Date: 2018-01-09 13:29+0100\n"
+"PO-Revision-Date: 2017-09-23 18:02+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Panjabi (Punjabi) (http://www.transifex.com/freedesktop/packagekit/language/pa/)\n"
 "MIME-Version: 1.0\n"

@@ -1,3 +1,32 @@
+Version 1.1.8
+~~~~~~~~~~~~~~
+Released: 2018-01-09
+
+Notes:
+ - The Slackware backend was renamed from "katja" to "slack"
+
+Libraries:
+ - Add getters for PkEulaRequired (Robert Ancell)
+ - Add new pk_results_set_role() API (Kalev Lember)
+
+Backends:
+ - aptcc: do not crash on double free when updating a config file (Harald Sitter)
+ - aptcc: fix offline updates by sanitizing origin more aggressively (Harald Sitter)
+ - aptcc: Make mimetype search work again (Matthias Klumpp)
+ - slack: Add tests (Eugen Wissner)
+ - slack: Fix collecting file list (Eugen Wissner)
+ - slack: Fix memory leak in slack_slackpkg_manifest (Eugen Wissner)
+ - zypp: Return error if invalid package IDs are detected (Jonathan Kang)
+
+New Features:
+ - Save transaction role to the offline update results file (Kalev Lember)
+
+Bugfixes:
+ - Various fixes to docs (Robert Ancell)
+ - Bring introspection and vapigen m4 macros into the source (Robert Ancell)
+ - command-not-found: Be more explicit when ignoring path components (Richard Hughes)
+ - service: Use ConditionPathExists=!/run/ostree-booted (Colin Walters)
+
 Version 1.1.7
 ~~~~~~~~~~~~~~
 Released: 2017-09-11

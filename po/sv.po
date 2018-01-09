@@ -5,6 +5,7 @@
 # Translators:
 # Anders Jonsson <transifex@norsjovallen.se>, 2014,2017
 # Daniel Nylander <po@danielnylander.se>, 2008-2011
+# Josef Andersson <josef.andersson@fripost.org>, 2017
 # Richard Hughes <richard@hughsie.com>, 2011
 # sebras <sebras@gmail.com>, 2015
 # sebras <sebras@gmail.com>, 2015-2016
@@ -12,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-11 13:07+0100\n"
-"PO-Revision-Date: 2017-09-11 12:07+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-01-09 13:29+0100\n"
+"PO-Revision-Date: 2017-12-04 09:15+0000\n"
+"Last-Translator: Josef Andersson <josef.andersson@fripost.org>\n"
 "Language-Team: Swedish (http://www.transifex.com/freedesktop/packagekit/language/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -551,7 +552,7 @@ msgstr "Övervakare för PackageKit"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Installerar systemuppgradering"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -816,7 +817,7 @@ msgstr "Kopierar filer"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Exekverar krokar"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -846,7 +847,7 @@ msgstr "Säkerhet"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Programfix"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -981,7 +982,7 @@ msgstr "Hämtar förråd"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Modifierar förråd"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
