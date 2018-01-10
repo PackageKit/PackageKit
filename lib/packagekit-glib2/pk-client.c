@@ -564,7 +564,6 @@ pk_client_cancel_cb (GObject *source_object,
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
-	PkClientState *state = (PkClientState *) user_data;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
@@ -573,9 +572,6 @@ pk_client_cancel_cb (GObject *source_object,
 		g_warning ("failed to cancel: %s", error->message);
 		return;
 	}
-
-	/* finished this call */
-	g_debug ("cancelled %s", state->tid);
 }
 
 /*
@@ -597,7 +593,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 			   NULL,
-			   pk_client_cancel_cb, state);
+			   pk_client_cancel_cb, NULL);
 }
 
 /*
