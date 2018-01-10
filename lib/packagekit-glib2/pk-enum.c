@@ -89,6 +89,7 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES,	"check-executable-files"},
 	{PK_STATUS_ENUM_CHECK_LIBRARIES,	"check-libraries"},
 	{PK_STATUS_ENUM_COPY_FILES,		"copy-files"},
+	{PK_STATUS_ENUM_RUN_HOOK,		"run-hook"},
 	{0, NULL}
 };
 
