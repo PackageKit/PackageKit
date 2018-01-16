@@ -1389,7 +1389,6 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	PkAuthorizeEnum result_enum;
 	PkEngine *engine = PK_ENGINE (user_data);
 	PkRoleEnum role;
-	gchar **transaction_list;
 	guint size;
 	gboolean is_priority = TRUE;
 	g_autoptr(GError) error = NULL;
@@ -1468,9 +1467,9 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetTransactionList") == 0) {
+		g_auto(GStrv) transaction_list = NULL;
 		transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
 		value = g_variant_new ("(^a&o)", transaction_list);
-		g_free (transaction_list);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
 	}
