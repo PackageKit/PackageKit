@@ -2387,6 +2387,7 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 	}
 
 out:
+	g_ptr_array_unref (data->actions);
 	g_free (data);
 }
 
