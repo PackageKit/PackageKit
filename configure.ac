@@ -211,7 +211,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(systemd, AS_HELP_STRING([--enable-systemd],[enable systemd and logind code]),
 	      enable_systemd=$enableval,enable_systemd=yes)
 if test x$enable_systemd = xyes; then
-	PKG_CHECK_MODULES(SYSTEMD, libsystemd)
+	PKG_CHECK_MODULES(SYSTEMD, libsystemd >= 213)
 	AC_ARG_WITH([systemdsystemunitdir],
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 		    [has_systemdsystemunitdir=$with_systemdsystemunitdir],
