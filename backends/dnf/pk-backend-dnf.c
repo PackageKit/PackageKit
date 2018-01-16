@@ -2871,10 +2871,10 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	for (i = 0; package_ids[i] != NULL; i++) {
 		HyQuery query = NULL;
 		DnfPackage *inst_pkg = NULL;
-		gchar **split = NULL;
 		DnfPackage *latest = NULL;
 		GPtrArray *pkglist = NULL;
 		guint pli;
+		g_auto(GStrv) split = NULL;
 
 		split = pk_package_id_split (package_ids[i]);
 		query = hy_query_create (sack);
