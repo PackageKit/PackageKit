@@ -96,7 +96,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 
 	/* if a package exists in multiple repos, show the one with the lowest
 	 * cost of downloading */
-	hash_cost = g_hash_table_new (g_str_hash, g_str_equal);
+	hash_cost = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	for (i = 0; i < pkglist->len; i++) {
 		pkg = g_ptr_array_index (pkglist, i);
 		if (dnf_package_installed (pkg))
@@ -107,7 +107,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 					     dnf_package_get_nevra (pkg));
 		if (found == NULL) {
 			g_hash_table_insert (hash_cost,
-					     (gpointer) dnf_package_get_nevra (pkg),
+					     g_strdup (dnf_package_get_nevra (pkg)),
 					     (gpointer) pkg);
 			continue;
 		}
@@ -116,7 +116,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 		if (dnf_package_get_cost (pkg) < dnf_package_get_cost (found)) {
 			dnf_package_set_info (found, PK_INFO_ENUM_BLOCKED);
 			g_hash_table_replace (hash_cost,
-					      (gpointer) dnf_package_get_nevra (pkg),
+					      g_strdup (dnf_package_get_nevra (pkg)),
 					      (gpointer) pkg);
 		} else {
 			dnf_package_set_info (pkg, PK_INFO_ENUM_BLOCKED);
@@ -124,13 +124,13 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 	}
 
 	/* add all the installed packages to a hash */
-	hash_installed = g_hash_table_new (g_str_hash, g_str_equal);
+	hash_installed = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	for (i = 0; i < pkglist->len; i++) {
 		pkg = g_ptr_array_index (pkglist, i);
 		if (!dnf_package_installed (pkg))
 			continue;
 		g_hash_table_insert (hash_installed,
-				     (gpointer) dnf_package_get_nevra (pkg),
+				     g_strdup (dnf_package_get_nevra (pkg)),
 				     (gpointer) pkg);
 	}
 
