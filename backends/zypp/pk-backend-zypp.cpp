@@ -2612,7 +2612,6 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	gboolean autoremove = false;
 	gboolean allow_deps = false;
 	gchar **package_ids;
-	vector<PoolItem> *items = new vector<PoolItem> ();
 
 	g_variant_get(params, "(t^a&sbb)",
 		      &transaction_flags,
@@ -2639,12 +2638,14 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	pk_backend_job_set_percentage (job, 10);
 
 	PoolStatusSaver saver;
+	vector<PoolItem> *items = new vector<PoolItem> ();
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		
 		if (zypp_is_no_solvable(solvable)) {
 			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						     "couldn't find package");
+			delete (items);
 			return;
 		}
 		PoolItem item(solvable);
