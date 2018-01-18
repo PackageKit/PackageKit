@@ -40,7 +40,7 @@ const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	return "Aurelien Lefebvre <alkh@mandriva.org>, "
-		"Per Oyvind Karlsen <peroyvind@mandriva.org>",
+		"Per Oyvind Karlsen <peroyvind@mandriva.org>, "
 		"Thierry Vignaud <thierry.vignaud@gmail.com>";
 }
 
