@@ -1311,7 +1311,26 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	g_autoptr(GError) error = NULL;
 
-	g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
+	/* get arguments */
+	switch (pk_backend_job_get_role (job)) {
+	case PK_ROLE_ENUM_REPO_ENABLE:
+		{
+			gboolean enabled;
+
+		        g_variant_get (params, "(&sb)", &repo_id, &enabled);
+			if (enabled)
+				value = "1";
+			else
+				value = "0";
+
+			parameter = "enabled";
+		}
+		break;
+	default:
+		g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
+		break;
+	}
+
 
 	/* take lock */
 	ret = dnf_state_take_lock (job_data->state,
@@ -1401,8 +1420,7 @@ pk_backend_repo_enable (PkBackend *backend,
 			const gchar *repo_id,
 			gboolean enabled)
 {
-	pk_backend_repo_set_data (backend, job, repo_id,
-				  "enabled", enabled ? "1" : "0");
+	pk_backend_job_thread_create (job, pk_backend_repo_set_data_thread, NULL, NULL);
 }
 
 /**
