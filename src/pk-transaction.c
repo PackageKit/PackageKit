@@ -5564,7 +5564,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->job);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->results);
-//	g_object_unref (transaction->priv->authority);
+	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
