@@ -1789,10 +1789,10 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 				   49, /* find packages */
 				   1, /* emit */
 				   -1);
+	g_assert (ret);
 
 	/* get sack */
 	filters = dnf_get_filter_for_ids (package_ids);
-	g_assert (ret);
 	state_local = dnf_state_get_child (job_data->state);
 	sack = dnf_utils_create_sack_for_filters (job,
 						  filters,
