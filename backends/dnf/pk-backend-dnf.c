@@ -106,9 +106,9 @@ pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 	DnfSackCacheItem *cache_item;
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GList) values = NULL;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 
 	/* set all the cached sacks as invalid */
-	g_mutex_lock (&priv->sack_mutex);
 	values = g_hash_table_get_values (priv->sack_cache);
 	for (l = values; l != NULL; l = l->next) {
 		cache_item = l->data;
@@ -117,7 +117,6 @@ pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 			cache_item->valid = FALSE;
 		}
 	}
-	g_mutex_unlock (&priv->sack_mutex);
 }
 
 /**
@@ -680,14 +679,13 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	/* do we have anything in the cache */
 	cache_key = dnf_utils_create_cache_key (dnf_context_get_release_ver (job_data->context), flags);
 	if ((create_flags & DNF_CREATE_SACK_FLAG_USE_CACHE) > 0) {
-		g_mutex_lock (&priv->sack_mutex);
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
 		if (cache_item != NULL && cache_item->sack != NULL) {
 			if (cache_item->valid) {
 				ret = TRUE;
 				g_debug ("using cached sack %s", cache_key);
 				sack = g_object_ref (cache_item->sack);
-				g_mutex_unlock (&priv->sack_mutex);
 				return g_steal_pointer (&sack);
 			} else {
 				/* we have to do this now rather than rely on the
@@ -695,7 +693,6 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 				g_hash_table_remove (priv->sack_cache, cache_key);
 			}
 		}
-		g_mutex_unlock (&priv->sack_mutex);
 	}
 
 	/* update status */
