@@ -1,4 +1,4 @@
-FROM fedora:25
+FROM fedora:27
 
 RUN dnf -y update
 RUN dnf -y install dnf-plugins-core libdnf-devel redhat-rpm-config autoconf-archive
