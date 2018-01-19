@@ -63,9 +63,6 @@ AptIntf::AptIntf(PkBackendJob *job) :
     m_cache(0)
 {
     m_cancel = false;
-
-    // Make sure initial m_time is 0
-    m_restartStat.st_mtime = 0;
 }
 
 bool AptIntf::init(gchar **localDebs)
@@ -96,11 +93,6 @@ bool AptIntf::init(gchar **localDebs)
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
     if (ftp_proxy != NULL)
         setenv("ftp_proxy", ftp_proxy, 1);
-
-    // Prepare for the restart thing
-    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
-        g_stat(REBOOT_REQUIRED, &m_restartStat);
-    }
 
     // Check if we should open the Cache with lock
     bool withLock;
@@ -171,25 +163,6 @@ bool AptIntf::init(gchar **localDebs)
 
 AptIntf::~AptIntf()
 {
-    // Check the restart thing
-    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
-        struct stat restartStat;
-        g_stat(REBOOT_REQUIRED, &restartStat);
-
-        if (restartStat.st_mtime > m_restartStat.st_mtime) {
-            // Emit the packages that caused the restart
-            if (!m_restartPackages.empty()) {
-                emitRequireRestart(m_restartPackages);
-            } else if (!m_pkgs.empty()) {
-                // Assume all of them
-                emitRequireRestart(m_pkgs);
-            } else {
-                // Emit a foo require restart
-                pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, "aptcc;;;");
-            }
-        }
-    }
-
     delete m_cache;
 }
 
@@ -2209,9 +2182,35 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
         }
     }
 
+    // Prepare for the restart thing
+    struct stat restartStatStart;
+    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+        g_stat(REBOOT_REQUIRED, &restartStatStart);
+    }
+
     // If we are simulating the install packages
     // will just calculate the trusted packages
-    return installPackages(flags, autoremove);
+    const auto ret = installPackages(flags, autoremove);
+
+    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+        struct stat restartStat;
+        g_stat(REBOOT_REQUIRED, &restartStat);
+
+        if (restartStat.st_mtime > restartStatStart.st_mtime) {
+            // Emit the packages that caused the restart
+            if (!m_restartPackages.empty()) {
+                emitRequireRestart(m_restartPackages);
+            } else if (!m_pkgs.empty()) {
+                // Assume all of them
+                emitRequireRestart(m_pkgs);
+            } else {
+                // Emit a foo require restart
+                pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, "aptcc;;;");
+            }
+        }
+    }
+
+    return ret;
 }
 
 /**
