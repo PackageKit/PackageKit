@@ -478,6 +478,9 @@ if test x$enable_zypp = xyes; then
 fi
 
 if test x$enable_slack = xyes; then
+	AC_LANG([C++])
+	AX_CXX_COMPILE_STDCXX_14([ext], [mandatory])
+
 	AC_CHECK_LIB(curl, curl_version, [
 	    CURL_CFLAGS="`curl-config --cflags`"
 	    CURL_LIBS="`curl-config --libs`"

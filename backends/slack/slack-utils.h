@@ -13,6 +13,10 @@ typedef struct
 	CURL *curl;
 } JobData;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 CURLcode slack_get_file(CURL **curl, gchar *source_url, gchar *dest);
 
 gchar **slack_split_package_name(const gchar *pkg_filename);
@@ -20,5 +24,9 @@ gchar **slack_split_package_name(const gchar *pkg_filename);
 PkInfoEnum slack_is_installed(const gchar *pkg_fullname);
 
 gint slack_cmp_repo(gconstpointer a, gconstpointer b);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SLACK_UTILS_H */

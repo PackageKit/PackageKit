@@ -25,13 +25,15 @@ libpk_backend_slack_la_SOURCES = \
 	slack-utils.c \
 	slack-pkgtools.c \
 	slack-slackpkg.c \
-	slack-dl.c
+	slack-dl.c \
+	job.cc
 libpk_backend_slack_la_LIBADD = \
 	-lbz2 \
 	$(PK_PLUGIN_LIBS) \
 	${SLACK_LIBS}
 libpk_backend_slack_la_LDFLAGS = -module -avoid-version
 libpk_backend_slack_la_CFLAGS = $(AM_CFLAGS)
+libpk_backend_slack_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS)
 
 confdir = $(sysconfdir)/PackageKit
 conf_in_files = Slackware.conf.in
@@ -45,7 +47,8 @@ database_DATA =	metadata.db
 
 check_PROGRAMS = \
 	slack-slackpkg-test \
-	slack-dl-test
+	slack-dl-test \
+	job-test
 
 slack_slackpkg_test_SOURCES = \
 	slack-utils.c \
@@ -64,6 +67,15 @@ slack_dl_test_SOURCES = \
 	slack-dl-test.c
 slack_dl_test_LDADD = $(PK_GLIB2_LIBS)
 slack_dl_test_CFLAGS = $(AM_CFLAGS)
+
+job_test_SOURCES = \
+	slack-utils.c \
+	job.cc \
+	$(pk_dependencies_SOURCES) \
+	job-test.cc
+job_test_LDADD = $(PK_GLIB2_LIBS)
+job_test_CFLAGS = $(AM_CFLAGS)
+job_test_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS)
 
 TESTS = $(check_PROGRAMS)
 
