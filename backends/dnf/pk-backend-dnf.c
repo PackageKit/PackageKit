@@ -2393,6 +2393,112 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	return dnf_state_done (state, error);
 }
 
+static void
+find_files_recursively (const gchar *directory, const gchar *filename_suffix, GPtrArray *array)
+{
+	g_autoptr(GDir) dir = NULL;
+	g_autoptr(GError) error = NULL;
+	const gchar *filename;
+
+	/* open directory */
+	dir = g_dir_open (directory, 0, &error);
+	if (dir == NULL) {
+		g_warning ("failed to open directory %s: %s", directory, error->message);
+		return;
+	}
+
+	/* recursively go through the directories and collect any matching filenames to the array */
+	while ((filename = g_dir_read_name (dir))) {
+		g_autofree gchar *path = g_build_filename (directory, filename, NULL);
+		if (g_file_test (path, G_FILE_TEST_IS_SYMLINK)) {
+			/* skip symlinks */
+		} else if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
+			find_files_recursively (path, filename_suffix, array);
+		} else if (g_str_has_suffix (filename, filename_suffix)) {
+			g_ptr_array_add (array, g_strdup (path));
+		}
+	}
+}
+
+static GPtrArray *
+find_files (const gchar *directory, const gchar *filename_suffix)
+{
+	g_autoptr(GPtrArray) array = g_ptr_array_new_with_free_func (g_free);
+
+	find_files_recursively (directory, filename_suffix, array);
+	return g_steal_pointer (&array);
+}
+
+static void
+pk_backend_add_download_cache_files (PkBackendJob *job, GHashTable *hash)
+{
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	const gchar *cache_dir;
+	g_autoptr(GPtrArray) packages = NULL;
+
+	cache_dir = dnf_context_get_cache_dir (job_data->context);
+	g_assert (cache_dir != NULL);
+
+	packages = dnf_goal_get_packages (job_data->goal,
+	                                  DNF_PACKAGE_INFO_INSTALL,
+	                                  DNF_PACKAGE_INFO_REINSTALL,
+	                                  DNF_PACKAGE_INFO_DOWNGRADE,
+	                                  DNF_PACKAGE_INFO_UPDATE,
+	                                  -1);
+
+	for (guint i = 0; i < packages->len; i++) {
+		DnfPackage *pkg = g_ptr_array_index (packages, i);
+		const gchar *reponame;
+		g_autofree gchar *basename = NULL;
+		g_autofree gchar *filename = NULL;
+
+		reponame = dnf_package_get_reponame (pkg);
+
+		/* local file */
+		if (g_strcmp0 (reponame, HY_CMDLINE_REPO_NAME) == 0)
+			continue;
+
+		basename = g_path_get_basename (dnf_package_get_location (pkg));
+		filename = g_build_filename (cache_dir, reponame, "packages", basename, NULL);
+		g_hash_table_insert (hash, g_steal_pointer (&filename), GINT_TO_POINTER (1));
+	}
+}
+
+static void
+pk_backend_prune_cache_directory (PkBackendJob *job)
+{
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	const gchar *cache_dir;
+	g_autoptr(GHashTable) keep_files_hash = NULL;
+	g_autoptr(GPtrArray) rpm_files = NULL;
+
+	/* create a hash table for rpms we want to avoid deleting */
+	keep_files_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+	/* add files we're going to download */
+	pk_backend_add_download_cache_files (job, keep_files_hash);
+
+	/* get all the rpms in the cache directory */
+	cache_dir = dnf_context_get_cache_dir (job_data->context);
+	g_assert (cache_dir != NULL);
+	rpm_files = find_files (cache_dir, ".rpm");
+
+	/* prune all cached rpms, except for those in the keep_files_hash */
+	for (guint i = 0; i < rpm_files->len; i++) {
+		const gchar *fn = g_ptr_array_index (rpm_files, i);
+
+		if (g_hash_table_contains (keep_files_hash, fn))
+			continue;
+
+		/* sanity check */
+		g_assert (g_str_has_prefix (fn, "/var/cache/PackageKit/"));
+
+		g_debug ("pruning from cache: %s", fn);
+		if (g_unlink (fn) != 0)
+			g_warning ("failed to remove %s", fn);
+	}
+}
+
 /**
  * pk_backend_transaction_download_commit:
  */
@@ -2418,10 +2524,18 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
+				   1,  /* prune cache */
 				   50, /* download */
-				   50, /* install/remove */
+				   49, /* install/remove */
 				   -1);
 	if (!ret)
+		return FALSE;
+
+	/* prune cache */
+	pk_backend_prune_cache_directory (job);
+
+	/* done */
+	if (!dnf_state_done (state, error))
 		return FALSE;
 
 	/* download */
