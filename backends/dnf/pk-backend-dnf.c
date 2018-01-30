@@ -199,6 +199,52 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 	return dnf_context_setup (context, NULL, error);
 }
 
+static void
+remove_old_cache_directories (PkBackend *backend, const gchar *release_ver_str)
+{
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	gboolean keep_cache;
+	guint64 release_ver;
+	g_autofree gchar *destdir = NULL;
+	g_autoptr(GError) error = NULL;
+
+	g_assert (priv->conf != NULL);
+
+	/* cache cleanup disabled? */
+	keep_cache = g_key_file_get_boolean (priv->conf, "Daemon", "KeepCache", NULL);
+	if (keep_cache) {
+		g_debug ("KeepCache config option set; skipping old cache directory cleanup");
+		return;
+	}
+
+	/* only do cache cleanup for regular installs */
+	destdir = g_key_file_get_string (priv->conf, "Daemon", "DestDir", NULL);
+	if (destdir != NULL) {
+		g_debug ("DestDir config option set; skipping old cache directory cleanup");
+		return;
+	}
+
+	/* parse the version, while being careful to not trip over for any
+	 * non-numeric strings that we don't know how to handle, e.g. "7.5" */
+	if (!g_ascii_string_to_unsigned (release_ver_str, 10, 1, 1000, &release_ver, &error)) {
+		g_debug ("failed to parse current release version: %s", error->message);
+		return;
+	}
+
+	/* remove any older directories */
+	for (guint i = 0; i < (guint)release_ver; i++) {
+		g_autofree gchar *dir = NULL;
+
+		dir = g_strdup_printf ("/var/cache/PackageKit/%u", i);
+		if (g_file_test (dir, G_FILE_TEST_IS_DIR)) {
+			g_debug ("removing old cache directory %s", dir);
+			pk_directory_remove_contents (dir);
+			if (g_remove (dir) != 0)
+				g_warning ("failed to remove directory %s", dir);
+		}
+	}
+}
+
 /**
  * pk_backend_initialize:
  */
@@ -217,6 +263,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	/* create private area */
 	priv = g_new0 (PkBackendDnfPrivate, 1);
 	pk_backend_set_user_data (backend, priv);
+	priv->conf = g_key_file_ref (conf);
 
 	g_debug ("Using Dnf %i.%i.%i",
 		 LIBDNF_MAJOR_VERSION,
@@ -231,6 +278,9 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	if (release_ver == NULL)
 		g_error ("Failed to parse os-release: %s", error->message);
 
+	/* clean up any cache directories left over from a distro upgrade */
+	remove_old_cache_directories (backend, release_ver);
+
 	/* a cache of DnfSacks with the key being which sacks are loaded
 	 *
 	 * notes:
@@ -243,8 +293,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  g_str_equal,
 						  g_free,
 						  (GDestroyNotify) dnf_sack_cache_item_free);
-
-	priv->conf = g_key_file_ref (conf);
 
 	/* set defaults */
 	priv->context = dnf_context_new ();

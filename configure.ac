@@ -166,7 +166,7 @@ AM_GLIB_GNU_GETTEXT
 dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
-GLIB_REQUIRED=2.46.0
+GLIB_REQUIRED=2.54.0
 GIO_REQUIRED=2.16.1
 POLKIT_GOBJECT_REQUIRED=0.98
 
