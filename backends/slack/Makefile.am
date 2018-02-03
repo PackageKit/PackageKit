@@ -7,6 +7,15 @@ AM_CFLAGS = \
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" \
 	-DLIBDIR=\""$(libdir)"\"
 
+AM_CPPFLAGS = \
+	$(PK_PLUGIN_CFLAGS) \
+	$(filter-out -std=c11,$(SLACK_CFLAGS)) \
+	$(WARNINGFLAGS_CPP) \
+	-DG_LOG_DOMAIN=\"PackageKit-Slackware\" \
+	-DSYSCONFDIR=\""$(sysconfdir)"\" \
+	-DLOCALSTATEDIR=\""$(localstatedir)"\" \
+	-DLIBDIR=\""$(libdir)"\"
+
 PK_GLIB2_LIBS =	\
 	-lbz2 -lcurl \
 	$(SQLITE_LIBS) \
@@ -21,7 +30,7 @@ pk_dependencies_SOURCES = \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_slack.la
 libpk_backend_slack_la_SOURCES = \
-	pk-backend-slack.c \
+	pk-backend-slack.cc \
 	slack-utils.c \
 	slack-pkgtools.c \
 	slack-slackpkg.c \
@@ -33,7 +42,7 @@ libpk_backend_slack_la_LIBADD = \
 	${SLACK_LIBS}
 libpk_backend_slack_la_LDFLAGS = -module -avoid-version
 libpk_backend_slack_la_CFLAGS = $(AM_CFLAGS)
-libpk_backend_slack_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS)
+libpk_backend_slack_la_CPPFLAGS = $(AM_CPPFLAGS)
 
 confdir = $(sysconfdir)/PackageKit
 conf_in_files = Slackware.conf.in
@@ -75,7 +84,7 @@ job_test_SOURCES = \
 	job-test.cc
 job_test_LDADD = $(PK_GLIB2_LIBS)
 job_test_CFLAGS = $(AM_CFLAGS)
-job_test_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(AM_CPPFLAGS)
+job_test_CPPFLAGS = $(AM_CPPFLAGS)
 
 TESTS = $(check_PROGRAMS)
 

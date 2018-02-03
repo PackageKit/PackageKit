@@ -3,6 +3,10 @@
 
 #include <glib-object.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 G_BEGIN_DECLS
 
 #define SLACK_TYPE_SLACKPKG slack_slackpkg_get_type()
@@ -26,5 +30,9 @@ gboolean slack_slackpkg_is_blacklisted(SlackSlackpkg *slackpkg,
                                        const gchar *pkg);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SLACK_SLACKPKG_H */

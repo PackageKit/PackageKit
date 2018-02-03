@@ -3,6 +3,10 @@
 
 #include <glib-object.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 G_BEGIN_DECLS
 
 #define SLACK_TYPE_DL slack_dl_get_type()
@@ -20,5 +24,9 @@ guint8 slack_dl_get_order(SlackDl *dl);
 gboolean slack_dl_is_blacklisted(SlackDl *dl, const gchar *pkg);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SLACK_DL_H */

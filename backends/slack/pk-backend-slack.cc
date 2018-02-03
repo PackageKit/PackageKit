@@ -221,7 +221,7 @@ out:
 void
 pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 {
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	if (job_data->curl)
 	{
@@ -258,7 +258,7 @@ pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer use
 	gchar *query;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -318,7 +318,7 @@ pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user
 	GMatchInfo *match_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -402,7 +402,7 @@ pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_dat
 	gchar **vals, **val;
 	sqlite3_stmt *stmt;
 	PkInfoEnum ret;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage(job, 0);
@@ -462,7 +462,7 @@ pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointe
 	gchar *dir_path, *path, **pkg_ids, *to_strv[] = {NULL, NULL};
 	guint i;
 	sqlite3_stmt *stmt;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	g_variant_get(params, "(^a&ss)", &pkg_ids, &dir_path);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
@@ -527,7 +527,7 @@ pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer
 	sqlite3_stmt *pkglist_stmt = NULL, *collection_stmt = NULL;
     PkBitfield transaction_flags = 0;
 	PkInfoEnum ret;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	g_variant_get(params, "(t^a&s)", &transaction_flags, &pkg_ids);
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -745,7 +745,7 @@ pk_backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user
 	GFileInfo *pkg_metadata_file_info;
 	GError *err = NULL;
 	sqlite3_stmt *stmt;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
@@ -930,7 +930,7 @@ pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer us
 	GFileInfo *file_info = NULL;
 	GError *err = NULL;
 	sqlite3_stmt *stmt = NULL;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
 
@@ -1074,5 +1074,6 @@ pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 			PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NOT_INSTALLED,
+			PK_FILTER_ENUM_APPLICATION, PK_FILTER_ENUM_NOT_APPLICATION,
 			-1);
 }

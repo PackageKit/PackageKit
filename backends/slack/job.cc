@@ -1,5 +1,7 @@
 #include "job.h"
 
+#include <string>
+
 namespace slack {
 
 /**
@@ -17,6 +19,34 @@ filter_package (PkBitfield filters, bool is_installed)
 	return false;
 }
 
+static std::string
+generate_query(PkBitfield filters)
+{
+	std::string query(
+			"SELECT (p1.name || ';' || p1.ver || ';' || p1.arch || ';' || r.repo), p1.summary, "
+			"p1.full_name FROM pkglist AS p1 NATURAL JOIN repos AS r "
+			"WHERE p1.%s LIKE '%%%q%%' AND p1.ext NOT LIKE 'obsolete' AND p1.repo_order = "
+			"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)");
+
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_APPLICATION))
+	{
+		query.append(
+				" AND EXISTS (SELECT filelist.full_name "
+				"FROM filelist "
+				"WHERE filelist.full_name = p1.full_name "
+				"AND filelist.filename LIKE 'usr/share/applications/%%.desktop')");
+	}
+	else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_APPLICATION))
+	{
+		query.append(
+				" AND NOT EXISTS (SELECT filelist.full_name "
+				"FROM filelist "
+				"WHERE filelist.full_name = p1.full_name "
+				"AND filelist.filename LIKE 'usr/share/applications/%%.desktop')");
+	}
+	return query;
+}
+
 }
 
 void
@@ -32,11 +62,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	g_variant_get (params, "(t^a&s)", &filters, &vals);
 	gchar *search = g_strjoinv ("%", vals);
 
-	gchar *query = sqlite3_mprintf (
-			"SELECT (p1.name || ';' || p1.ver || ';' || p1.arch || ';' || r.repo), p1.summary, "
-			"p1.full_name FROM pkglist AS p1 NATURAL JOIN repos AS r "
-			"WHERE p1.%s LIKE '%%%q%%' AND p1.ext NOT LIKE 'obsolete' AND p1.repo_order = "
-			"(SELECT MIN(p2.repo_order) FROM pkglist AS p2 WHERE p2.name = p1.name GROUP BY p2.name)",
+	gchar *query = sqlite3_mprintf (slack::generate_query(filters).c_str(),
 			user_data, search);
 
 	sqlite3_stmt *stmt;
