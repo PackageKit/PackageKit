@@ -1199,7 +1199,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 
 	/* report to syslog */
 	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID) {
-		syslog (LOG_DAEMON | LOG_INFO,
+		syslog (LOG_DAEMON | LOG_DEBUG,
 			"%s transaction %s from uid %i finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
@@ -1207,7 +1207,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			pk_exit_enum_to_string (exit_enum),
 			time_ms);
 	} else {
-		syslog (LOG_DAEMON | LOG_INFO,
+		syslog (LOG_DAEMON | LOG_DEBUG,
 			"%s transaction %s finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
