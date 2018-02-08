@@ -468,6 +468,10 @@ string SourcesList::SourceRecord::niceName()
         ret += " (" + joinedSections() + ")";
     }
 
+    if(Type & SourcesList::DebSrc) {
+        ret += " Sources";
+    }
+
     return ret;
 }
 
