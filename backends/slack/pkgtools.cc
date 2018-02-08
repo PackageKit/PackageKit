@@ -1,6 +1,6 @@
 #include <curl/curl.h>
 #include <sqlite3.h>
-#include "slack-pkgtools.h"
+#include "pkgtools.h"
 #include "slack-utils.h"
 
 G_DEFINE_INTERFACE(SlackPkgtools, slack_pkgtools, G_TYPE_OBJECT)
@@ -13,14 +13,14 @@ slack_pkgtools_default_init(SlackPkgtoolsInterface *iface)
 	                            "Name",
 	                            "Repository name",
 	                            NULL,
-	                            G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+	                            static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 	g_object_interface_install_property(iface, param);
 
 	param = g_param_spec_string("mirror",
 	                            "Mirror",
 	                            "Repository mirror",
 	                            NULL,
-	                            G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+	                            static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 	g_object_interface_install_property(iface, param);
 
 	param = g_param_spec_uint("order",
@@ -29,7 +29,7 @@ slack_pkgtools_default_init(SlackPkgtoolsInterface *iface)
 	                          0,
 	                          G_MAXUINT8,
 	                          0,
-	                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+	                          static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 	g_object_interface_install_property(iface, param);
 }
 
@@ -54,7 +54,7 @@ slack_pkgtools_download(SlackPkgtools *pkgtools,
 	gboolean ret = FALSE;
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
 	GValue order = G_VALUE_INIT;
 	GValue mirror = G_VALUE_INIT;
 
@@ -122,7 +122,7 @@ slack_pkgtools_install(SlackPkgtools *pkgtools,
 {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
 	GValue order = G_VALUE_INIT;
 
 	g_value_init(&order, G_TYPE_UINT);
@@ -207,4 +207,40 @@ slack_pkgtools_generate_cache(SlackPkgtools *pkgtools,
 	g_return_if_fail(iface->generate_cache != NULL);
 
 	iface->generate_cache(pkgtools, job, tmpl);
+}
+
+/**
+ * SlackPkgtools::get_name:
+ *
+ * Retrieves the repository name.
+ *
+ * Returns: Repository name.
+ **/
+const gchar *
+SlackPkgtools::get_name () noexcept
+{
+	GValue name = G_VALUE_INIT;
+
+	g_value_init (&name, G_TYPE_STRING);
+	g_object_get_property (G_OBJECT (this), "name", &name);
+
+	return g_value_get_string (&name);
+}
+
+/**
+ * SlackPkgtools::get_mirror:
+ *
+ * Retrieves the repository mirror.
+ *
+ * Returns: Repository mirror.
+ **/
+const gchar *
+SlackPkgtools::get_mirror () noexcept
+{
+	GValue mirror = G_VALUE_INIT;
+
+	g_value_init (&mirror, G_TYPE_STRING);
+	g_object_get_property (G_OBJECT (this), "mirror", &mirror);
+
+	return g_value_get_string(&mirror);
 }

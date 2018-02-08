@@ -2,8 +2,7 @@
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
-#include "slack-pkgtools.h"
-#include "slack-slackpkg.h"
+#include "slackpkg.h"
 #include "slack-utils.h"
 
 typedef struct
@@ -14,11 +13,6 @@ typedef struct
 	GRegex *blacklist;
 	gchar **priority;
 } SlackSlackpkgPrivate;
-
-struct _SlackSlackpkg
-{
-	GObject parent;
-};
 
 enum
 {
@@ -63,10 +57,10 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 	GRegex *pkg_expr = NULL, *file_expr = NULL;
 	GMatchInfo *match_info;
 	sqlite3_stmt *statement = NULL;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	path = g_build_filename(tmpl,
-	                        slack_slackpkg_get_name(slackpkg),
+	                        slackpkg->get_name (),
 	                        filename,
 	                        NULL);
 	manifest = fopen(path, "rb");
@@ -83,15 +77,15 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 
 	/* Prepare regular expressions */
 	pkg_expr = g_regex_new("^\\|\\|[[:blank:]]+Package:[[:blank:]]+.+\\/(.+)\\.(t[blxg]z$)?",
-	                       G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-	                       0,
+	                       static_cast<GRegexCompileFlags> (G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES),
+	                       static_cast<GRegexMatchFlags> (0),
 	                       NULL);
 	file_expr = g_regex_new("^[-bcdlps][-r][-w][-xsS][-r][-w][-xsS][-r][-w]"
 	                        "[-xtT][[:space:]][^[:space:]]+[[:space:]]+"
 	                        "[[:digit:]]+[[:space:]][[:digit:]-]+[[:space:]]"
 	                        "[[:digit:]:]+[[:space:]](?!install\\/|\\.)(.*)",
-	                        G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES,
-	                        0,
+	                        static_cast<GRegexCompileFlags> (G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES),
+	                        static_cast<GRegexMatchFlags> (0),
 	                        NULL);
 	if (!(file_expr) || !(pkg_expr))
 	{
@@ -134,7 +128,7 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 		}
 		for (line = lines; *line; line++)
 		{
-			if (g_regex_match(pkg_expr, *line, 0, &match_info))
+			if (g_regex_match(pkg_expr, *line, static_cast<GRegexMatchFlags> (0), &match_info))
 			{
 				if (g_match_info_get_match_count(match_info) > 2)
 				{ /* If the extension matches */
@@ -149,7 +143,7 @@ slack_slackpkg_manifest(SlackSlackpkg *slackpkg,
 			g_match_info_free(match_info);
 
 			match_info = NULL;
-			if (full_name && g_regex_match(file_expr, *line, 0, &match_info))
+			if (full_name && g_regex_match(file_expr, *line, static_cast<GRegexMatchFlags> (0), &match_info))
 			{
 				pkg_filename = g_match_info_fetch(match_info, 1);
 				sqlite3_bind_text(statement, 1, full_name, -1, SQLITE_TRANSIENT);
@@ -186,26 +180,26 @@ slack_slackpkg_collect_cache_info(SlackPkgtools *pkgtools, const gchar *tmpl)
 {
 	CURL *curl = NULL;
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(pkgtools);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 	gchar **source_dest;
 	GSList *file_list = NULL;
 	GFile *tmp_dir, *repo_tmp_dir;
 
 	/* Create the temporary directory for the repository */
 	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, slack_slackpkg_get_name(slackpkg));
+	repo_tmp_dir = g_file_get_child(tmp_dir, slackpkg->get_name ());
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* Download PACKAGES.TXT. These files are most important, break if some of them couldn't be found */
 	for (gchar **cur_priority = priv->priority; *cur_priority; cur_priority++)
 	{
-		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(slack_slackpkg_get_mirror(slackpkg),
+		source_dest = static_cast<gchar **> (g_malloc_n(3, sizeof(gchar *)));
+		source_dest[0] = g_strconcat(slackpkg->get_mirror (),
 									 *cur_priority,
 									 "/PACKAGES.TXT",
 									 NULL);
 		source_dest[1] = g_build_filename(tmpl,
-		                                  slack_slackpkg_get_name(slackpkg),
+		                                  slackpkg->get_name (),
 		                                  "PACKAGES.TXT",
 		                                  NULL);
 		source_dest[2] = NULL;
@@ -222,13 +216,13 @@ slack_slackpkg_collect_cache_info(SlackPkgtools *pkgtools, const gchar *tmpl)
 		}
 
 		/* Download file lists if available */
-		source_dest = g_malloc_n(3, sizeof(gchar *));
-		source_dest[0] = g_strconcat(slack_slackpkg_get_mirror(slackpkg),
+		source_dest = static_cast<gchar **> (g_malloc_n(3, sizeof(gchar *)));
+		source_dest[0] = g_strconcat(slackpkg->get_mirror (),
 		                             *cur_priority,
 		                             "/MANIFEST.bz2",
 		                             NULL);
 		source_dest[1] = g_strconcat(tmpl,
-		                             "/", slack_slackpkg_get_name(slackpkg),
+		                             "/", slackpkg->get_name (),
 		                             "/", *cur_priority, "-MANIFEST.bz2",
 		                             NULL);
 		source_dest[2] = NULL;
@@ -258,7 +252,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
                               const gchar *tmpl)
 {
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(pkgtools);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 	gchar **pkg_tokens = NULL;
 	gchar *query = NULL, *filename = NULL, *location = NULL, *summary = NULL, *line, *packages_txt;
 	guint pkg_compressed = 0, pkg_uncompressed = 0;
@@ -268,11 +262,11 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 	GFileInputStream *fin = NULL;
 	GDataInputStream *data_in = NULL;
 	sqlite3_stmt *insert_statement = NULL, *update_statement = NULL, *insert_default_statement = NULL, *statement;
-	JobData *job_data = pk_backend_job_get_user_data(job);
+	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
 
 	/* Check if the temporary directory for this repository exists, then the file metadata have to be generated */
 	packages_txt = g_build_filename(tmpl,
-	                                slack_slackpkg_get_name(slackpkg),
+	                                slackpkg->get_name (),
 	                                "PACKAGES.TXT",
 	                                NULL);
 	list_file = g_file_new_for_path(packages_txt);
@@ -292,7 +286,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 	{
 		sqlite3_bind_text(statement,
 		                  1,
-		                  slack_slackpkg_get_name(slackpkg),
+		                  slackpkg->get_name (),
 		                  -1,
 		                  SQLITE_TRANSIENT);
 		sqlite3_step(statement);
@@ -309,7 +303,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 	sqlite3_bind_int(statement, 1, slack_slackpkg_get_order(slackpkg));
 	sqlite3_bind_text(statement,
 	                  2,
-	                  slack_slackpkg_get_name(slackpkg),
+	                  slackpkg->get_name (),
 	                  -1,
 	                  SQLITE_TRANSIENT);
 	sqlite3_step(statement);
@@ -397,10 +391,10 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 			if (g_strcmp0(location, "patches/packages")) /* Insert a new package */
 			{
 				/* Get the package group based on its location */
-				const char* cat = g_strrstr(location, "/");
+				const char *cat = g_strrstr(location, "/");
 				if (cat) /* Else cat = NULL */
 				{
-					cat = g_hash_table_lookup(slack_slackpkg_cat_map, cat + 1);
+					cat = static_cast<const char *> (g_hash_table_lookup(slack_slackpkg_cat_map, cat + 1));
 				}
 				if (cat)
 				{
@@ -483,7 +477,7 @@ static void
 slack_slackpkg_dispose(GObject *object)
 {
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(object);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 
 	if (priv->blacklist)
 	{
@@ -497,7 +491,7 @@ static void
 slack_slackpkg_finalize(GObject *object)
 {
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(object);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 
 	g_free(priv->name);
 	g_free(priv->mirror);
@@ -516,7 +510,7 @@ slack_slackpkg_set_property(GObject *object,
                             GParamSpec *pspec)
 {
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(object);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 
 	switch (prop_id)
 	{
@@ -539,7 +533,7 @@ slack_slackpkg_set_property(GObject *object,
 			{
 				g_regex_unref(priv->blacklist);
 			}
-			priv->blacklist = g_value_get_boxed(value);
+			priv->blacklist = static_cast<GRegex *> (g_value_get_boxed (value));
 			break;
 
 		default:
@@ -555,7 +549,7 @@ slack_slackpkg_get_property(GObject *object,
                             GParamSpec *pspec)
 {
 	SlackSlackpkg *slackpkg = SLACK_SLACKPKG(object);
-	SlackSlackpkgPrivate *priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 
 	switch (prop_id)
 	{
@@ -596,11 +590,9 @@ slack_slackpkg_class_init(SlackSlackpkgClass *klass)
 	g_object_class_override_property(object_class, PROP_MIRROR, "mirror");
 	g_object_class_override_property(object_class, PROP_ORDER, "order");
 
-	properties[PROP_BLACKLIST] = g_param_spec_boxed("blacklist",
-	                                                "Blacklist",
-	                                                "Blacklist",
-	                                                G_TYPE_REGEX,
-	                                                G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+	properties[PROP_BLACKLIST] = g_param_spec_boxed ("blacklist",
+			"Blacklist", "Blacklist", G_TYPE_REGEX,
+			static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 
 	g_object_class_install_properties(object_class, N_PROPERTIES, properties);
 
@@ -643,26 +635,26 @@ slack_slackpkg_new(const gchar *name,
                    const gchar *blacklist,
                    gchar **priority)
 {
-	SlackSlackpkg *slackpkg;
-	SlackSlackpkgPrivate *priv;
 	GRegex *regex;
 
 	if (blacklist)
 	{
-		regex = g_regex_new(blacklist, G_REGEX_OPTIMIZE, 0, NULL);
+		regex = static_cast<GRegex *> (g_regex_new(blacklist,
+					G_REGEX_OPTIMIZE, static_cast<GRegexMatchFlags> (0), NULL));
 	}
 	else
 	{
 		regex = NULL;
 	}
 
-	slackpkg = g_object_new(SLACK_TYPE_SLACKPKG,
-	                        "name", name,
-	                        "mirror", mirror,
-	                        "order", order,
-	                        "blacklist", regex,
-	                        NULL);
-	priv = slack_slackpkg_get_instance_private(slackpkg);
+	auto slackpkg = static_cast<SlackSlackpkg *> (g_object_new(SLACK_TYPE_SLACKPKG,
+				"name", name,
+				"mirror", mirror,
+				"order", order,
+				"blacklist", regex,
+				NULL));
+
+	auto priv = static_cast<SlackSlackpkgPrivate *> (slack_slackpkg_get_instance_private(slackpkg));
 	priv->priority = priority;
 
 	if (regex)
@@ -671,44 +663,6 @@ slack_slackpkg_new(const gchar *name,
 	}
 
 	return slackpkg;
-}
-
-/**
- * slack_slackpkg_get_name:
- * @slackpkg: This class instance.
- *
- * Retrieves the repository name.
- *
- * Returns: Repository name.
- **/
-const gchar *
-slack_slackpkg_get_name(SlackSlackpkg *slackpkg)
-{
-	GValue name = G_VALUE_INIT;
-
-	g_value_init(&name, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(slackpkg), "name", &name);
-
-	return g_value_get_string(&name);
-}
-
-/**
- * slack_slackpkg_get_mirror:
- * @slackpkg: This class instance.
- *
- * Retrieves the repository mirror.
- *
- * Returns: Repository mirror.
- **/
-const gchar *
-slack_slackpkg_get_mirror(SlackSlackpkg *slackpkg)
-{
-	GValue mirror = G_VALUE_INIT;
-
-	g_value_init(&mirror, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(slackpkg), "mirror", &mirror);
-
-	return g_value_get_string(&mirror);
 }
 
 /**
@@ -743,11 +697,10 @@ gboolean
 slack_slackpkg_is_blacklisted(SlackSlackpkg *slackpkg, const gchar *pkg)
 {
 	GValue blacklist = G_VALUE_INIT;
-	GRegex *regex;
 
 	g_value_init(&blacklist, G_TYPE_REGEX);
 	g_object_get_property(G_OBJECT(slackpkg), "blacklist", &blacklist);
 
-	regex = g_value_get_boxed(&blacklist);
-	return regex && g_regex_match(regex, pkg, 0, NULL);
+	auto regex = static_cast<GRegex *> (g_value_get_boxed(&blacklist));
+	return regex && g_regex_match(regex, pkg, static_cast<GRegexMatchFlags> (0), NULL);
 }

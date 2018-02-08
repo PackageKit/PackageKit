@@ -4,10 +4,6 @@
 #include <glib-object.h>
 #include <pk-backend.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 G_BEGIN_DECLS
 
 #define SLACK_TYPE_PKGTOOLS slack_pkgtools_get_type()
@@ -36,10 +32,13 @@ void slack_pkgtools_install(SlackPkgtools *pkgtools,
                             PkBackendJob *job,
                             gchar *pkg_name);
 
-G_END_DECLS
+class _SlackPkgtools
+{
+public:
+	const gchar *get_name () noexcept;
+	const gchar *get_mirror () noexcept;
+};
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* __SLACK_PKGTOOLS_H */

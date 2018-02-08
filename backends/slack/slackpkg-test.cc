@@ -1,4 +1,4 @@
-#include "slack-slackpkg.h"
+#include "slackpkg.h"
 
 static void
 slack_test_slackpkg_construct()
@@ -6,15 +6,8 @@ slack_test_slackpkg_construct()
 	SlackSlackpkg *slackpkg = slack_slackpkg_new("some", "mirror", 1, NULL, NULL);
 	GValue value = G_VALUE_INIT;
 
-	g_value_init(&value, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(slackpkg), "name", &value);
-	g_assert_cmpstr(g_value_get_string(&value), ==, "some");
-	g_value_unset(&value);
-
-	g_value_init(&value, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(slackpkg), "mirror", &value);
-	g_assert_cmpstr(g_value_get_string(&value), ==, "mirror");
-	g_value_unset(&value);
+	g_assert_cmpstr(slackpkg->get_name (), ==, "some");
+	g_assert_cmpstr(slackpkg->get_mirror (), ==, "mirror");
 
 	g_value_init(&value, G_TYPE_UINT);
 	g_object_get_property(G_OBJECT(slackpkg), "order", &value);

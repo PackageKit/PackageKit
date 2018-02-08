@@ -1,4 +1,4 @@
-#include "slack-dl.h"
+#include "dl.h"
 
 static void
 slack_test_dl_construct()
@@ -6,15 +6,8 @@ slack_test_dl_construct()
 	SlackDl *dl = slack_dl_new("some", "mirror", 1, NULL, NULL);
 	GValue value = G_VALUE_INIT;
 
-	g_value_init(&value, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(dl), "name", &value);
-	g_assert_cmpstr(g_value_get_string(&value), ==, "some");
-	g_value_unset(&value);
-
-	g_value_init(&value, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(dl), "mirror", &value);
-	g_assert_cmpstr(g_value_get_string(&value), ==, "mirror");
-	g_value_unset(&value);
+	g_assert_cmpstr(dl->get_name (), ==, "some");
+	g_assert_cmpstr(dl->get_mirror (), ==, "mirror");
 
 	g_value_init(&value, G_TYPE_UINT);
 	g_object_get_property(G_OBJECT(dl), "order", &value);

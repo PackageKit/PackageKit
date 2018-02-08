@@ -32,9 +32,9 @@ plugin_LTLIBRARIES = libpk_backend_slack.la
 libpk_backend_slack_la_SOURCES = \
 	pk-backend-slack.cc \
 	slack-utils.c \
-	slack-pkgtools.c \
-	slack-slackpkg.c \
-	slack-dl.c \
+	pkgtools.cc \
+	slackpkg.cc \
+	dl.cc \
 	job.cc
 libpk_backend_slack_la_LIBADD = \
 	-lbz2 \
@@ -61,19 +61,19 @@ check_PROGRAMS = \
 
 slack_slackpkg_test_SOURCES = \
 	slack-utils.c \
-	slack-pkgtools.c \
-	slack-slackpkg.c \
+	pkgtools.cc \
+	slackpkg.cc \
 	$(pk_dependencies_SOURCES) \
-	slack-slackpkg-test.c
+	slackpkg-test.cc
 slack_slackpkg_test_LDADD = $(PK_GLIB2_LIBS)
 slack_slackpkg_test_CFLAGS = $(AM_CFLAGS)
 
 slack_dl_test_SOURCES = \
 	slack-utils.c \
-	slack-pkgtools.c \
-	slack-dl.c \
+	pkgtools.cc \
+	dl.cc \
 	$(pk_dependencies_SOURCES) \
-	slack-dl-test.c
+	dl-test.cc
 slack_dl_test_LDADD = $(PK_GLIB2_LIBS)
 slack_dl_test_CFLAGS = $(AM_CFLAGS)
 
