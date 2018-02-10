@@ -494,7 +494,8 @@ pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointe
 				pk_backend_job_package(job, PK_INFO_ENUM_DOWNLOADING,
 									   pkg_ids[i],
 									   (gchar *) sqlite3_column_text(stmt, 0));
-				slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job, dir_path, tokens[PK_PACKAGE_ID_NAME]);
+				SLACK_PKGTOOLS (repo->data)->download (job,
+						dir_path, tokens[PK_PACKAGE_ID_NAME]);
 				path = g_build_filename(dir_path, (gchar *) sqlite3_column_text(stmt, 1), NULL);
 				to_strv[0] = path;
 				pk_backend_job_files(job, NULL, to_strv);
@@ -633,9 +634,8 @@ pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer
 
 			if (repo)
 			{
-				slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job,
-										dest_dir_name,
-										tokens[PK_PACKAGE_ID_NAME]);
+				SLACK_PKGTOOLS (repo->data)->download (job,
+						dest_dir_name, tokens[PK_PACKAGE_ID_NAME]);
 			}
 			g_strfreev(tokens);
 		}
@@ -654,7 +654,7 @@ pk_backend_install_packages_thread(PkBackendJob *job, GVariant *params, gpointer
 
 			if (repo)
 			{
-				slack_pkgtools_install(SLACK_PKGTOOLS(repo->data), job, tokens[PK_PACKAGE_ID_NAME]);
+				SLACK_PKGTOOLS (repo->data)->install (job, tokens[PK_PACKAGE_ID_NAME]);
 			}
 			g_strfreev(tokens);
 		}
@@ -869,9 +869,8 @@ pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer 
 
 				if (repo)
 				{
-					slack_pkgtools_download(SLACK_PKGTOOLS(repo->data), job,
-					                        dest_dir_name,
-					                        tokens[PK_PACKAGE_ID_NAME]);
+					SLACK_PKGTOOLS (repo->data)->download (job,
+							dest_dir_name, tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 
@@ -891,10 +890,8 @@ pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer 
 
 				if (repo)
 				{
-					slack_pkgtools_download(SLACK_PKGTOOLS(repo->data),
-					                        job,
-					                        dest_dir_name,
-					                        tokens[PK_PACKAGE_ID_NAME]);
+					SLACK_PKGTOOLS (repo->data)->download (job,
+							dest_dir_name, tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 			else

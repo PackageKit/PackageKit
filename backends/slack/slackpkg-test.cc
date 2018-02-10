@@ -4,20 +4,11 @@ static void
 slack_test_slackpkg_construct()
 {
 	SlackSlackpkg *slackpkg = slack_slackpkg_new("some", "mirror", 1, NULL, NULL);
-	GValue value = G_VALUE_INIT;
 
 	g_assert_cmpstr(slackpkg->get_name (), ==, "some");
 	g_assert_cmpstr(slackpkg->get_mirror (), ==, "mirror");
-
-	g_value_init(&value, G_TYPE_UINT);
-	g_object_get_property(G_OBJECT(slackpkg), "order", &value);
-	g_assert_cmpuint(g_value_get_uint(&value), ==, 1);
-	g_value_unset(&value);
-
-	g_value_init(&value, G_TYPE_REGEX);
-	g_object_get_property(G_OBJECT(slackpkg), "blacklist", &value);
-	g_assert_null(g_value_get_boxed(&value));
-	g_value_unset(&value);
+	g_assert_cmpuint(slackpkg->get_order (), ==, 1);
+	g_assert_false (slackpkg->is_blacklisted ("pattern"));
 
 	g_object_unref(slackpkg);
 }

@@ -300,7 +300,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 	{
 		goto out;
 	}
-	sqlite3_bind_int(statement, 1, slack_slackpkg_get_order(slackpkg));
+	sqlite3_bind_int(statement, 1, slackpkg->get_order ());
 	sqlite3_bind_text(statement,
 	                  2,
 	                  slackpkg->get_name (),
@@ -333,7 +333,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 	                        "ext = @ext, location = @location, summary = @summary, "
 	                        "desc = @desc, compressed = @compressed, uncompressed = @uncompressed "
 	                        "WHERE name LIKE @name AND repo_order = %u",
-	                        slack_slackpkg_get_order(slackpkg));
+	                        slackpkg->get_order ());
 	if (sqlite3_prepare_v2(job_data->db, query, -1, &update_statement, NULL) != SQLITE_OK)
 	{
 		goto out;
@@ -349,7 +349,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 		if (!strncmp(line, "PACKAGE NAME:  ", 15))
 		{
 			filename = g_strdup(line + 15);
-			if (slack_slackpkg_is_blacklisted(slackpkg, filename))
+			if (slackpkg->is_blacklisted (filename))
 			{
 				g_free(filename);
 				filename = NULL;
@@ -405,7 +405,7 @@ slack_slackpkg_generate_cache(SlackPkgtools *pkgtools,
 				{
 					statement = insert_default_statement;
 				}
-				sqlite3_bind_int(statement, 11, slack_slackpkg_get_order(slackpkg));
+				sqlite3_bind_int(statement, 11, slackpkg->get_order ());
 			}
 			else /* Update package information if it is a patch */
 			{
@@ -663,44 +663,4 @@ slack_slackpkg_new(const gchar *name,
 	}
 
 	return slackpkg;
-}
-
-/**
- * slack_slackpkg_get_order:
- * @slackpkg: This class instance.
- *
- * Retrieves the repository order.
- *
- * Returns: Repository order.
- **/
-guint8
-slack_slackpkg_get_order(SlackSlackpkg *slackpkg)
-{
-	GValue order = G_VALUE_INIT;
-
-	g_value_init(&order, G_TYPE_UINT);
-	g_object_get_property(G_OBJECT(slackpkg), "order", &order);
-
-	return g_value_get_uint(&order);
-}
-
-/**
- * slack_slackpkg_is_blacklisted:
- * @slackpkg: This class instance.
- * @pkg: Package name to check for.
- *
- * Checks whether a package is blacklisted.
- *
- * Returns: %TRUE if the package is blacklisted, %FALSE otherwise.
- **/
-gboolean
-slack_slackpkg_is_blacklisted(SlackSlackpkg *slackpkg, const gchar *pkg)
-{
-	GValue blacklist = G_VALUE_INIT;
-
-	g_value_init(&blacklist, G_TYPE_REGEX);
-	g_object_get_property(G_OBJECT(slackpkg), "blacklist", &blacklist);
-
-	auto regex = static_cast<GRegex *> (g_value_get_boxed(&blacklist));
-	return regex && g_regex_match(regex, pkg, static_cast<GRegexMatchFlags> (0), NULL);
 }

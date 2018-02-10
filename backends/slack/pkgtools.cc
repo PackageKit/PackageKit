@@ -34,8 +34,7 @@ slack_pkgtools_default_init(SlackPkgtoolsInterface *iface)
 }
 
 /**
- * slack_pkgtools_download:
- * @pkgtools: This class instance.
+ * SlackPkgtools::download:
  * @job: A #PkBackendJob.
  * @dest_dir_name: Destination directory.
  * @pkg_name: Package name.
@@ -45,23 +44,14 @@ slack_pkgtools_default_init(SlackPkgtoolsInterface *iface)
  * Returns: %TRUE on success, %FALSE otherwise.
  **/
 gboolean
-slack_pkgtools_download(SlackPkgtools *pkgtools,
-                        PkBackendJob *job,
-                        gchar *dest_dir_name,
-                        gchar *pkg_name)
+SlackPkgtools::download (PkBackendJob *job,
+		gchar *dest_dir_name, gchar *pkg_name) noexcept
 {
 	gchar *dest_filename, *source_url;
 	gboolean ret = FALSE;
 	sqlite3_stmt *statement = NULL;
 	CURL *curl = NULL;
 	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
-	GValue order = G_VALUE_INIT;
-	GValue mirror = G_VALUE_INIT;
-
-	g_value_init(&order, G_TYPE_UINT);
-	g_object_get_property(G_OBJECT(pkgtools), "order", &order);
-	g_value_init(&mirror, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(pkgtools), "mirror", &mirror);
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT location, (full_name || '.' || ext) FROM pkglist "
@@ -72,12 +62,12 @@ slack_pkgtools_download(SlackPkgtools *pkgtools,
 		return FALSE;
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(statement, 2, g_value_get_uint(&order));
+	sqlite3_bind_int(statement, 2, this->get_order ());
 
 	if (sqlite3_step(statement) == SQLITE_ROW)
 	{
 		dest_filename = g_build_filename(dest_dir_name, sqlite3_column_text(statement, 1), NULL);
-		source_url = g_strconcat(g_value_get_string(&mirror),
+		source_url = g_strconcat(this->get_mirror (),
 								 sqlite3_column_text(statement, 0),
 								 "/",
 								 sqlite3_column_text(statement, 1),
@@ -108,25 +98,18 @@ slack_pkgtools_download(SlackPkgtools *pkgtools,
 }
 
 /**
- * slack_pkgtools_install:
- * @pkgtools: This class instance.
+ * SlackPkgtools::install:
  * @job: A #PkBackendJob.
  * @pkg_name: Package name.
  *
  * Install a package.
  **/
 void
-slack_pkgtools_install(SlackPkgtools *pkgtools,
-                       PkBackendJob *job,
-                       gchar *pkg_name)
+SlackPkgtools::install (PkBackendJob *job, gchar *pkg_name) noexcept
 {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
 	auto job_data = static_cast<JobData *> (pk_backend_job_get_user_data(job));
-	GValue order = G_VALUE_INIT;
-
-	g_value_init(&order, G_TYPE_UINT);
-	g_object_get_property(G_OBJECT(pkgtools), "order", &order);
 
 	if ((sqlite3_prepare_v2(job_data->db,
 							"SELECT (full_name || '.' || ext) FROM pkglist "
@@ -139,7 +122,7 @@ slack_pkgtools_install(SlackPkgtools *pkgtools,
 	}
 
 	sqlite3_bind_text(statement, 1, pkg_name, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(statement, 2, g_value_get_uint(&order));
+	sqlite3_bind_int(statement, 2, this->get_order ());
 
 	if (sqlite3_step(statement) == SQLITE_ROW)
 	{
@@ -242,5 +225,44 @@ SlackPkgtools::get_mirror () noexcept
 	g_value_init (&mirror, G_TYPE_STRING);
 	g_object_get_property (G_OBJECT (this), "mirror", &mirror);
 
-	return g_value_get_string(&mirror);
+	return g_value_get_string (&mirror);
+}
+
+/**
+ * SlackPkgtools::get_order:
+ *
+ * Retrieves the repository order.
+ *
+ * Returns: Repository order.
+ **/
+guint8
+SlackPkgtools::get_order () noexcept
+{
+	GValue order = G_VALUE_INIT;
+
+	g_value_init (&order, G_TYPE_UINT);
+	g_object_get_property (G_OBJECT (this), "order", &order);
+
+	return g_value_get_uint (&order);
+}
+
+/**
+ * SlackPkgtools:is_blacklisted:
+ * @pkg: Package name to check for.
+ *
+ * Checks whether a package is blacklisted.
+ *
+ * Returns: %TRUE if the package is blacklisted, %FALSE otherwise.
+ **/
+gboolean
+SlackPkgtools::is_blacklisted (const gchar *pkg) noexcept
+{
+	GValue blacklist = G_VALUE_INIT;
+
+	g_value_init (&blacklist, G_TYPE_REGEX);
+	g_object_get_property  (G_OBJECT (this), "blacklist", &blacklist);
+
+	auto regex = static_cast<GRegex *> (g_value_get_boxed (&blacklist));
+	return regex
+		&& g_regex_match (regex, pkg, static_cast<GRegexMatchFlags> (0), NULL);
 }

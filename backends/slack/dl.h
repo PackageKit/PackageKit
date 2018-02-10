@@ -15,9 +15,6 @@ SlackDl *slack_dl_new(const gchar *name,
                       const gchar *blacklist,
                       gchar *index_file);
 
-guint8 slack_dl_get_order(SlackDl *dl);
-gboolean slack_dl_is_blacklisted(SlackDl *dl, const gchar *pkg);
-
 class _SlackDl final : public SlackPkgtools
 {
 	GObject parent;

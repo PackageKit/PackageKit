@@ -116,7 +116,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 	{
 		goto out;
 	}
-	sqlite3_bind_int(stmt, 1, slack_dl_get_order(dl));
+	sqlite3_bind_int(stmt, 1, dl->get_order ());
 	sqlite3_bind_text(stmt, 2, dl->get_name (), -1, SQLITE_TRANSIENT);
 	sqlite3_step(stmt);
 	if (sqlite3_finalize(stmt) != SQLITE_OK)
@@ -142,7 +142,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 	{
 		line_tokens = g_strsplit(line, ":", 0);
 		if ((g_strv_length(line_tokens) > 6)
-		 && !slack_dl_is_blacklisted(dl, line_tokens[0]))
+		 && !dl->is_blacklisted (line_tokens[0]))
 		{
 			pkg_tokens = slack_split_package_name(line_tokens[0]);
 
@@ -185,7 +185,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 				sqlite3_bind_text(stmt, 6, line_tokens[2], -1, SQLITE_TRANSIENT);
 				sqlite3_bind_int(stmt, 7, atoi(line_tokens[5]));
 				sqlite3_bind_int(stmt, 8, atoi(line_tokens[5]));
-				sqlite3_bind_int(stmt, 10, slack_dl_get_order(dl));
+				sqlite3_bind_int(stmt, 10, dl->get_order ());
 
 				sqlite3_step(stmt);
 				sqlite3_clear_bindings(stmt);
@@ -210,7 +210,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 		{
 			line_tokens = g_strsplit(line, ":", 0);
 			if ((g_strv_length(line_tokens) > 6)
-			 && !slack_dl_is_blacklisted(dl, line_tokens[0]))
+			 && !dl->is_blacklisted (line_tokens[0]))
 			{
 				pkg_tokens = slack_split_package_name(line_tokens[0]);
 
@@ -218,7 +218,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 				if (pkg_tokens[3]) /* Save this package as a part of the collection */
 				{
 					sqlite3_bind_text(stmt, 1, collection_name, -1, SQLITE_TRANSIENT);
-					sqlite3_bind_int(stmt, 2, slack_dl_get_order(dl));
+					sqlite3_bind_int(stmt, 2, dl->get_order ());
 					sqlite3_bind_text(stmt, 3, pkg_tokens[0], -1, SQLITE_TRANSIENT);
 					sqlite3_step(stmt);
 					sqlite3_clear_bindings(stmt);
@@ -426,44 +426,4 @@ slack_dl_new(const gchar *name,
 	}
 
 	return dl;
-}
-
-/**
- * slack_dl_get_order:
- * @dl: This class instance.
- *
- * Retrieves the repository order.
- *
- * Return value: Repository order.
- **/
-guint8
-slack_dl_get_order(SlackDl *dl)
-{
-	GValue order = G_VALUE_INIT;
-
-	g_value_init(&order, G_TYPE_UINT);
-	g_object_get_property(G_OBJECT(dl), "order", &order);
-
-	return g_value_get_uint(&order);
-}
-
-/**
- * slack_dl_is_blacklisted:
- * @dl: This class instance.
- * @pkg: Package name to check for.
- *
- * Checks whether a package is blacklisted.
- *
- * Returns: %TRUE if the package is blacklisted, %FALSE otherwise.
- **/
-gboolean
-slack_dl_is_blacklisted(SlackDl *dl, const gchar *pkg)
-{
-	GValue blacklist = G_VALUE_INIT;
-
-	g_value_init(&blacklist, G_TYPE_REGEX);
-	g_object_get_property(G_OBJECT(dl), "blacklist", &blacklist);
-
-	auto regex = static_cast<GRegex *> (g_value_get_boxed(&blacklist));
-	return regex && g_regex_match(regex, pkg, static_cast<GRegexMatchFlags> (0), NULL);
 }

@@ -1,7 +1,7 @@
 # It is a sample configuration.
 
 [slackware]
-Mirror=http://mirrors.slackware.com/slackware/@pkgmain@-14.1/
+Mirror=http://mirrors.slackware.com/slackware/@pkgmain@-14.2/
 Priority=patches;@pkgmain@;extra;pasture;testing
 #Blacklist=
 

@@ -20,10 +20,6 @@ SlackSlackpkg *slack_slackpkg_new(const gchar *name,
                                   const gchar *blacklist,
                                   gchar **priority);
 
-guint8 slack_slackpkg_get_order(SlackSlackpkg *slackpkg);
-gboolean slack_slackpkg_is_blacklisted(SlackSlackpkg *slackpkg,
-                                       const gchar *pkg);
-
 class _SlackSlackpkg final : public SlackPkgtools
 {
 	GObject parent;
